@@ -127,47 +127,6 @@ struct genl_info
 
 #define LOOSE_FLAG_COMPARISON	1
 
-struct nl_object_ops
-{
-	/* Name of object */
-	char *		oo_name;
-
-	/* Size of object structure */
-	size_t		oo_size;
-
-	/* List of attributes needed to uniquely identify the object */
-	uint32_t	oo_id_attrs;
-
-	/**
-	 * Called whenever a new object was allocated
-	 */
-	void  (*oo_constructor)(struct nl_object *);
-
-	/**
-	 * Called whenever a object in the cache gets destroyed, must
-	 * free the type specific memory allocations
-	 */
-	void  (*oo_free_data)(struct nl_object *);
-
-	/**
-	 * Callened whenever an object needs to be cloned
-	 */
-	int  (*oo_clone)(struct nl_object *, struct nl_object *);
-
-	/**
-	 * Called whenever a dump of a cache object is requested. Must
-	 * dump the specified object to the specified file descriptor
-	 */
-	int   (*oo_dump[NL_DUMP_MAX+1])(struct nl_object *,
-					struct nl_dump_params *);
-
-	int   (*oo_compare)(struct nl_object *, struct nl_object *,
-			    uint32_t, int);
-
-
-	char *(*oo_attrs2str)(int, char *, size_t);
-};
-
 struct nl_af_group
 {
 	int			ag_family;
@@ -206,15 +165,6 @@ struct nl_cache_ops
 };
 
 #define NL_OBJ_MARK		1
-
-#define NLHDR_COMMON				\
-	int			ce_refcnt;	\
-	struct nl_object_ops *	ce_ops;		\
-	struct nl_cache *	ce_cache;	\
-	struct nl_list_head	ce_list;	\
-	int			ce_msgtype;	\
-	int			ce_flags;	\
-	uint32_t		ce_mask;
 
 struct nl_object
 {

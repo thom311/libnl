@@ -698,4 +698,58 @@ int nl_str2ip_proto(const char *name)
 
 /** @} */
 
+/**
+ * @name Dumping Helpers
+ * @{
+ */
+
+/**
+ * Handle a new line while dumping
+ * @arg params		Dumping parameters
+ * @arg line		Number of lines dumped already.
+ *
+ * This function must be called before dumping any onto a
+ * new line. It will ensure proper prefixing as specified
+ * by the dumping parameters.
+ *
+ * @note This function will NOT dump any newlines itself
+ */
+void nl_new_line(struct nl_dump_params *params, int line)
+{
+	if (params->dp_prefix) {
+		int i;
+		for (i = 0; i < params->dp_prefix; i++) {
+			if (params->dp_fd)
+				fprintf(params->dp_fd, " ");
+			else if (params->dp_buf)
+				strncat(params->dp_buf, " ",
+					params->dp_buflen -
+					sizeof(params->dp_buf) - 1);
+		}
+	}
+
+	if (params->dp_nl_cb)
+		params->dp_nl_cb(params, line);
+}
+
+/**
+ * Dump a formatted character string
+ * @arg params		Dumping parameters
+ * @arg fmt		printf style formatting string
+ * @arg ...		Arguments to formatting string
+ *
+ * Dumps a printf style formatting string to the output device
+ * as specified by the dumping parameters.
+ */
+void nl_dump(struct nl_dump_params *params, const char *fmt, ...)
+{
+	va_list args;
+
+	va_start(args, fmt);
+	__dp_dump(params, fmt, args);
+	va_end(args);
+}
+
+/** @} */
+
 /** @} */

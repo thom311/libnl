@@ -69,6 +69,11 @@ extern int	nl_str2ether_proto(const char *);
 extern char *	nl_ip_proto2str(int, char *, size_t);
 extern int	nl_str2ip_proto(const char *);
 
+/* Dumping helpers */
+extern void	nl_new_line(struct nl_dump_params *, int);
+extern void	nl_dump(struct nl_dump_params *, const char *, ...);
+extern void	nl_dump_line(struct nl_dump_params *, int, const char *, ...);
+
 #ifdef __cplusplus
 }
 #endif

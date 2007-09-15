@@ -27,6 +27,8 @@ extern void *		genlmsg_put(struct nl_msg *, uint32_t, uint32_t,
 				    int, int, int, uint8_t, uint8_t);
 extern void *		genlmsg_data(const struct genlmsghdr *);
 extern int		genlmsg_len(const struct genlmsghdr *);
+extern struct nlattr *	genlmsg_attrdata(const struct genlmsghdr *, int);
+extern int		genlmsg_attrlen(const struct genlmsghdr *, int);
 
 extern char *		genl_op2name(int, int, char *, size_t);
 

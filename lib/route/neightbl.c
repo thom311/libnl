@@ -120,11 +120,10 @@ static struct nla_policy neightbl_policy[NDTA_MAX+1] = {
 
 static int neightbl_msg_parser(struct nl_cache_ops *ops,
 			       struct sockaddr_nl *who, struct nlmsghdr *n,
-			       void *arg)
+			       struct nl_parser_param *pp)
 {
 	struct rtnl_neightbl *ntbl;
 	struct nlattr *tb[NDTA_MAX + 1];
-	struct nl_parser_param *pp = arg;
 	struct rtgenmsg *rtmsg;
 	int err;
 

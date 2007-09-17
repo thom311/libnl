@@ -95,27 +95,6 @@ struct nl_cache_mngr
 
 struct nl_parser_param;
 
-enum {
-	NL_ACT_UNSPEC,
-	NL_ACT_NEW,
-	NL_ACT_DEL,
-	NL_ACT_GET,
-	NL_ACT_SET,
-	NL_ACT_CHANGE,
-	__NL_ACT_MAX,
-};
-
-#define NL_ACT_MAX (__NL_ACT_MAX - 1)
-
-#define END_OF_MSGTYPES_LIST	{ -1, -1, NULL }
-
-struct nl_msgtype
-{
-	int			mt_id;
-	int			mt_act;
-	char *			mt_name;
-};
-
 struct genl_info
 {
 	struct sockaddr_nl *	who;
@@ -127,54 +106,11 @@ struct genl_info
 
 #define LOOSE_FLAG_COMPARISON	1
 
-struct nl_af_group
-{
-	int			ag_family;
-	int			ag_group;
-};
-
-#define END_OF_GROUP_LIST AF_UNSPEC, 0
-
-struct nl_cache_ops
-{
-	char  *			co_name;
-	int			co_hdrsize;
-	int			co_protocol;
-	struct nl_af_group *	co_groups;
-	
-	/**
-	 * Called whenever an update of the cache is required. Must send
-	 * a request message to the kernel requesting a complete dump.
-	 */
-	int   (*co_request_update)(struct nl_cache *, struct nl_handle *);
-
-	/**
-	 * Called whenever a message was received that needs to be parsed.
-	 * Must parse the message and call the paser callback function
-	 * (nl_parser_param) provided via the argument.
-	 */
-	int   (*co_msg_parser)(struct nl_cache_ops *, struct sockaddr_nl *,
-			       struct nlmsghdr *, void *);
-
-	struct nl_object_ops *	co_obj_ops;
-
-	struct nl_cache_ops *co_next;
-	struct nl_cache *co_major_cache;
-	struct genl_ops *	co_genl;
-	struct nl_msgtype	co_msgtypes[];
-};
-
 #define NL_OBJ_MARK		1
 
 struct nl_object
 {
 	NLHDR_COMMON
-};
-
-struct nl_parser_param
-{
-	int             (*pp_cb)(struct nl_object *, struct nl_parser_param *);
-	void *            pp_arg;
 };
 
 struct nl_data

@@ -91,7 +91,7 @@
 static NL_LIST_HEAD(genl_ops_list);
 
 static int genl_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
-			   struct nlmsghdr *nlh, void *arg)
+			   struct nlmsghdr *nlh, struct nl_parser_param *pp)
 {
 	int i, err;
 	struct genlmsghdr *ghdr;
@@ -129,7 +129,7 @@ found:
 		if (err < 0)
 			goto errout;
 
-		err = cmd->c_msg_parser(ops, cmd, &info, arg);
+		err = cmd->c_msg_parser(ops, cmd, &info, pp);
 	}
 errout:
 	return err;

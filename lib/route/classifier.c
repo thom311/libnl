@@ -36,10 +36,9 @@
 static struct nl_cache_ops rtnl_cls_ops;
 
 static int cls_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
-			  struct nlmsghdr *nlh, void *arg)
+			  struct nlmsghdr *nlh, struct nl_parser_param *pp)
 {
 	int err;
-	struct nl_parser_param *pp = arg;
 	struct rtnl_cls *cls;
 	struct rtnl_cls_ops *cops;
 

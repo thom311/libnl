@@ -57,9 +57,8 @@ static void copy_cacheinfo_into_route(struct rta_cacheinfo *ci,
 }
 
 static int route_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
-			    struct nlmsghdr *nlh, void *arg)
+			    struct nlmsghdr *nlh, struct nl_parser_param *pp)
 {
-	struct nl_parser_param *pp = arg;
 	struct rtmsg *rtm;
 	struct rtnl_route *route;
 	struct nlattr *tb[RTA_MAX + 1];

@@ -199,12 +199,11 @@ static struct nla_policy link_policy[IFLA_MAX+1] = {
 };
 
 static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
-			   struct nlmsghdr *n, void *arg)
+			   struct nlmsghdr *n, struct nl_parser_param *pp)
 {
 	struct rtnl_link *link;
 	struct ifinfomsg *ifi;
 	struct nlattr *tb[IFLA_MAX+1];
-	struct nl_parser_param *pp = arg;
 	int err;
 
 	link = rtnl_link_alloc();

@@ -80,12 +80,11 @@ static struct nla_policy rule_policy[RTA_MAX+1] = {
 };
 
 static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
-			   struct nlmsghdr *n, void *arg)
+			   struct nlmsghdr *n, struct nl_parser_param *pp)
 {
 	struct rtnl_rule *rule;
 	struct rtmsg *r;
 	struct nlattr *tb[RTA_MAX+1];
-	struct nl_parser_param *pp = arg;
 	int err = 1;
 
 	rule = rtnl_rule_alloc();

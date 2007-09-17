@@ -96,10 +96,9 @@
 static struct nl_cache_ops rtnl_qdisc_ops;
 
 static int qdisc_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
-			    struct nlmsghdr *n, void *arg)
+			    struct nlmsghdr *n, struct nl_parser_param *pp)
 {
 	int err = -ENOMEM;
-	struct nl_parser_param *pp = arg;
 	struct rtnl_qdisc *qdisc;
 	struct rtnl_qdisc_ops *qops;
 

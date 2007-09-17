@@ -353,9 +353,8 @@ errout:
 }
 
 static int ct_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
-			 struct nlmsghdr *nlh, void *arg)
+			 struct nlmsghdr *nlh, struct nl_parser_param *pp)
 {
-	struct nl_parser_param *pp = arg;
 	struct nfnl_ct *ct;
 	int err;
 

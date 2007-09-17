@@ -54,6 +54,7 @@ typedef uint64_t	__u64;
 #include <netlink/cache.h>
 #include <netlink/route/tc.h>
 #include <netlink/object-api.h>
+#include <netlink/cache-api.h>
 #include <netlink-types.h>
 
 struct trans_tbl {

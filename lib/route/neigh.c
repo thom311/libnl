@@ -252,11 +252,10 @@ static struct nla_policy neigh_policy[NDA_MAX+1] = {
 };
 
 static int neigh_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
-			    struct nlmsghdr *n, void *arg)
+			    struct nlmsghdr *n, struct nl_parser_param *pp)
 {
 	struct rtnl_neigh *neigh;
 	struct nlattr *tb[NDA_MAX + 1];
-	struct nl_parser_param *pp = arg;
 	struct ndmsg *nm;
 	int err;
 

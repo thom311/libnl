@@ -28,10 +28,9 @@
 static struct nl_cache_ops rtnl_class_ops;
 
 static int class_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
-			    struct nlmsghdr *n, void *arg)
+			    struct nlmsghdr *n, struct nl_parser_param *pp)
 {
 	int err;
-	struct nl_parser_param *pp = arg;
 	struct rtnl_class *class;
 	struct rtnl_class_ops *cops;
 

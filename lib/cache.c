@@ -419,6 +419,9 @@ int nl_cache_request_full_dump(struct nl_handle *handle, struct nl_cache *cache)
 	NL_DBG(2, "Requesting dump from kernel for cache %p <%s>...\n",
 	          cache, nl_cache_name(cache));
 
+	if (cache->c_ops->co_request_update == NULL)
+		return nl_error(EOPNOTSUPP, "Operation not supported");
+
 	return cache->c_ops->co_request_update(cache, handle);
 }
 

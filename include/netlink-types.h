@@ -717,6 +717,7 @@ struct nfnl_ct {
 	union nfnl_ct_protoinfo	ct_protoinfo;
 
 	uint32_t		ct_status;
+	uint32_t		ct_status_mask;
 	uint32_t		ct_timeout;
 	uint32_t		ct_mark;
 	uint32_t		ct_use;

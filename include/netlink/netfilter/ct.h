@@ -53,7 +53,7 @@ extern char *		nfnl_ct_tcp_state2str(uint8_t, char *, size_t);
 extern int		nfnl_ct_str2tcp_state(const char *name);
 
 extern void		nfnl_ct_set_status(struct nfnl_ct *, uint32_t);
-extern int		nfnl_ct_test_status(const struct nfnl_ct *);
+extern void		nfnl_ct_unset_status(struct nfnl_ct *, uint32_t);
 extern uint32_t		nfnl_ct_get_status(const struct nfnl_ct *);
 
 extern void		nfnl_ct_set_timeout(struct nfnl_ct *, uint32_t);

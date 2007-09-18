@@ -204,7 +204,6 @@ static int ct_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= CT_DIFF_VAL(FAMILY,		ct_family);
 	diff |= CT_DIFF_VAL(PROTO,		ct_proto);
 	diff |= CT_DIFF_VAL(TCP_STATE,		ct_protoinfo.tcp.state);
-	diff |= CT_DIFF_VAL(STATUS,		ct_status);
 	diff |= CT_DIFF_VAL(TIMEOUT,		ct_timeout);
 	diff |= CT_DIFF_VAL(MARK,		ct_mark);
 	diff |= CT_DIFF_VAL(USE,		ct_use);
@@ -227,6 +226,12 @@ static int ct_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= CT_DIFF_VAL(REPL_ICMP_CODE,	ct_repl.proto.icmp.code);
 	diff |= CT_DIFF_VAL(REPL_PACKETS,	ct_repl.packets);
 	diff |= CT_DIFF_VAL(REPL_BYTES,		ct_repl.bytes);
+
+	if (flags & LOOSE_FLAG_COMPARISON)
+		diff |= CT_DIFF(STATUS, (a->ct_status ^ b->ct_status) &
+					b->ct_status_mask);
+	else
+		diff |= CT_DIFF(STATUS, a->ct_status != b->ct_status);
 
 #undef CT_DIFF
 #undef CT_DIFF_VAL
@@ -367,13 +372,16 @@ int nfnl_ct_str2tcp_state(const char *name)
 
 void nfnl_ct_set_status(struct nfnl_ct *ct, uint32_t status)
 {
-	ct->ct_status = status;
+	ct->ct_status_mask |= status;
+	ct->ct_status |= status;
 	ct->ce_mask |= CT_ATTR_STATUS;
 }
 
-int nfnl_ct_test_status(const struct nfnl_ct *ct)
+void nfnl_ct_unset_status(struct nfnl_ct *ct, uint32_t status)
 {
-	return !!(ct->ce_mask & CT_ATTR_STATUS);
+	ct->ct_status_mask |= status;
+	ct->ct_status &= ~status;
+	ct->ce_mask |= CT_ATTR_STATUS;
 }
 
 uint32_t nfnl_ct_get_status(const struct nfnl_ct *ct)

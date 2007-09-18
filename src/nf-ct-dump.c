@@ -13,6 +13,7 @@
 
 #include "utils.h"
 #include <netlink/netfilter/ct.h>
+#include <linux/netfilter/nf_conntrack_common.h>
 
 #include "f_ct.c"
 
@@ -28,7 +29,9 @@ static void print_usage(void)
 	"            [origpackets PACKETS] [origbytes BYTES]\n"
 	"            [replysrc ADDR] [replydst ADDR] [replysrcport PORT] [replydstport PORT]\n"
 	"            [replyicmpid ID] [replyicmptype TYPE] [replyicmpcode CODE]\n"
-	"            [replypackets PACKETS] [replybytes BYTES]\n");
+	"            [replypackets PACKETS] [replybytes BYTES]\n"
+	"            [{ replied | unreplied }] [{ assured | unassured }]\n"
+	);
 	exit(1);
 }
 

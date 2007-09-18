@@ -38,8 +38,11 @@ static void get_filter(struct nfnl_ct *ct, int argc, char **argv, int idx)
 				nfnl_ct_set_tcp_state(ct, state);
 			}
 		} else if (arg_match("status")) {
-			if (argc > ++idx)
-				nfnl_ct_set_status(ct, strtoul(argv[idx++], NULL, 0));
+			if (argc > ++idx) {
+				int status = strtoul(argv[idx++], NULL, 0);
+				nfnl_ct_set_status(ct, status);
+				nfnl_ct_unset_status(ct, ~status);
+			}
 		} else if (arg_match("timeout")) {
 			if (argc > ++idx)
 				nfnl_ct_set_timeout(ct, strtoul(argv[idx++], NULL, 0));
@@ -130,7 +133,21 @@ static void get_filter(struct nfnl_ct *ct, int argc, char **argv, int idx)
 		} else if (arg_match("replybytes")) {
 			if (argc > ++idx)
 				nfnl_ct_set_bytes(ct, 1, strtoul(argv[idx++], NULL, 0));
-		} else {
+		}
+#define MSTATUS(STR, STATUS) \
+	else if (!strcasecmp(argv[idx], STR)) { \
+		nfnl_ct_set_status(ct, STATUS); idx++; }
+#define MNOSTATUS(STR, STATUS) \
+	else if (!strcasecmp(argv[idx], STR)) { \
+		nfnl_ct_unset_status(ct, STATUS); idx++; }
+
+		MSTATUS("replied", IPS_SEEN_REPLY)
+		MNOSTATUS("unreplied", IPS_SEEN_REPLY)
+		MSTATUS("assured", IPS_ASSURED)
+		MNOSTATUS("unassured", IPS_ASSURED)
+#undef MSTATUS
+#undef MNOSTATUS
+		else {
 			fprintf(stderr, "What is '%s'?\n", argv[idx]);
 			exit(1);
 		}

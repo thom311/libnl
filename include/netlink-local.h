@@ -34,12 +34,7 @@
 #define SOL_NETLINK 270
 #endif
 
-typedef uint8_t		__u8;
-typedef uint16_t	__u16;
-typedef int16_t		__s16;
-typedef uint32_t	__u32;
-typedef int32_t		__s32;
-typedef uint64_t	__u64;
+#include <linux/types.h>
 
 /* local header copies */
 #include <linux/if.h>

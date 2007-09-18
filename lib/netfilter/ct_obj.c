@@ -219,7 +219,7 @@ static int ct_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= CT_DIFF_VAL(ORIG_PACKETS,	ct_orig.packets);
 	diff |= CT_DIFF_VAL(ORIG_BYTES,		ct_orig.bytes);
 	diff |= CT_DIFF_ADDR(REPL_SRC,		ct_repl.src);
-	diff |= CT_DIFF_ADDR(ORIG_DST,		ct_repl.dst);
+	diff |= CT_DIFF_ADDR(REPL_DST,		ct_repl.dst);
 	diff |= CT_DIFF_VAL(REPL_SRC_PORT,	ct_repl.proto.port.src);
 	diff |= CT_DIFF_VAL(REPL_DST_PORT,	ct_repl.proto.port.dst);
 	diff |= CT_DIFF_VAL(REPL_ICMP_ID,	ct_repl.proto.icmp.id);

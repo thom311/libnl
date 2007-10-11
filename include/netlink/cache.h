@@ -16,13 +16,13 @@
 #include <netlink/msg.h>
 #include <netlink/utils.h>
 #include <netlink/object.h>
+#include <netlink/cache-api.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 struct nl_cache;
-struct nl_cache_ops;
 
 typedef void (*change_func_t)(struct nl_cache *, struct nl_object *, int);
 
@@ -91,8 +91,9 @@ extern void			nl_cache_foreach_filter(struct nl_cache *,
 
 /* Cache type management */
 extern struct nl_cache_ops *	nl_cache_ops_lookup(const char *);
-extern struct nl_cache_ops *	nl_cache_ops_lookup_for_obj(struct nl_object_ops *);
-extern void			nl_cache_mngt_foreach(void (*cb)(struct nl_cache_ops *, void *), void *);
+extern struct nl_cache_ops *	nl_cache_ops_associate(int, int);
+extern struct nl_msgtype *	nl_msgtype_lookup(struct nl_cache_ops *, int);
+extern void			nl_cache_ops_foreach(void (*cb)(struct nl_cache_ops *, void *), void *);
 extern int			nl_cache_mngt_register(struct nl_cache_ops *);
 extern int			nl_cache_mngt_unregister(struct nl_cache_ops *);
 

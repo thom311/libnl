@@ -752,8 +752,8 @@ int nl_msg_parse(struct nl_msg *msg, void (*cb)(struct nl_object *, void *),
 		.arg = arg,
 	};
 
-	ops = nl_cache_mngt_associate(nlmsg_get_proto(msg),
-				      nlmsg_hdr(msg)->nlmsg_type);
+	ops = nl_cache_ops_associate(nlmsg_get_proto(msg),
+				     nlmsg_hdr(msg)->nlmsg_type);
 	if (ops == NULL)
 		return nl_error(ENOENT, "Unknown message type %d",
 				nlmsg_hdr(msg)->nlmsg_type);
@@ -815,16 +815,22 @@ static void print_hdr(FILE *ofd, struct nl_msg *msg)
 {
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	struct nl_cache_ops *ops;
+	struct nl_msgtype *mt;
 	char buf[128];
 
 	fprintf(ofd, "    .nlmsg_len = %d\n", nlh->nlmsg_len);
 
-	ops = nl_cache_mngt_associate(nlmsg_get_proto(msg), nlh->nlmsg_type);
+	ops = nl_cache_ops_associate(nlmsg_get_proto(msg), nlh->nlmsg_type);
+	if (ops) {
+		mt = nl_msgtype_lookup(ops, nlh->nlmsg_type);
+		if (!mt)
+			BUG();
 
-	fprintf(ofd, "    .nlmsg_type = %d <%s>\n", nlh->nlmsg_type,
-		ops ? nl_cache_mngt_type2name(ops, msg->nm_protocol,
-					      nlh->nlmsg_type, buf, sizeof(buf))
-		: nl_nlmsgtype2str(nlh->nlmsg_type, buf, sizeof(buf)));
+		snprintf(buf, sizeof(buf), "%s::%s", ops->co_name, mt->mt_name);
+	} else
+		nl_nlmsgtype2str(nlh->nlmsg_type, buf, sizeof(buf));
+
+	fprintf(ofd, "    .nlmsg_type = %d <%s>\n", nlh->nlmsg_type, buf);
 	fprintf(ofd, "    .nlmsg_flags = %d <%s>\n", nlh->nlmsg_flags,
 		nl_nlmsg_flags2str(nlh->nlmsg_flags, buf, sizeof(buf)));
 	fprintf(ofd, "    .nlmsg_seq = %d\n", nlh->nlmsg_seq);
@@ -901,8 +907,8 @@ void nl_msg_dump(struct nl_msg *msg, FILE *ofd)
 		int payloadlen = nlmsg_len(hdr);
 		int attrlen = 0;
 
-		ops = nl_cache_mngt_associate(nlmsg_get_proto(msg),
-					      hdr->nlmsg_type);
+		ops = nl_cache_ops_associate(nlmsg_get_proto(msg),
+					     hdr->nlmsg_type);
 		if (ops) {
 			attrlen = nlmsg_attrlen(hdr, ops->co_hdrsize);
 			payloadlen -= attrlen;

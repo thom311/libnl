@@ -22,65 +22,7 @@
 static struct nl_cache_ops *cache_ops;
 
 /**
- * Associate a message type to a set of cache operations
- * @arg protocol		netlink protocol
- * @arg message_type		netlink message type
- *
- * Associates the specified netlink message type with
- * a registered set of cache operations.
- *
- * @return The cache operations or NULL if no association
- *         could be made.
- */
-struct nl_cache_ops *nl_cache_mngt_associate(int protocol, int message_type)
-{
-	int i;
-	struct nl_cache_ops *ops;
-
-	for (ops = cache_ops; ops; ops = ops->co_next)
-		for (i = 0; ops->co_msgtypes[i].mt_id >= 0; i++)
-			if (ops->co_msgtypes[i].mt_id == message_type &&
-			    ops->co_protocol == protocol)
-				return ops;
-
-	return NULL;
-}
-
-/**
- * Convert message type to character string.
- * @arg ops		Cache operations.
- * @arg protocol	Netlink Protocol.
- * @arg msgtype		Message type.
- * @arg buf		Destination buffer.
- * @arg len		Size of destination buffer.
- *
- * Converts a message type to a character string and stores it in the
- * provided buffer.
- *
- * @return The destination buffer or the message type encoded in
- *         hexidecimal form if no match was found.
- */
-char *nl_cache_mngt_type2name(struct nl_cache_ops *ops, int protocol,
-			      int msgtype, char *buf, size_t len)
-{
-	int i;
-
-	for (i = 0; ops->co_msgtypes[i].mt_id >= 0; i++) {
-		if (ops->co_msgtypes[i].mt_id == msgtype &&
-		    ops->co_protocol == protocol) {
-			snprintf(buf, len, "%s::%s",
-				 ops->co_name,
-				 ops->co_msgtypes[i].mt_name);
-			return buf;
-		}
-	}
-
-	snprintf(buf, len, "%d:%s->0x%x()", protocol, ops->co_name, msgtype);
-	return buf;
-}
-
-/**
- * @name Cache Type Management
+ * @name Cache Operations Sets
  * @{
  */
 
@@ -103,12 +45,52 @@ struct nl_cache_ops *nl_cache_ops_lookup(const char *name)
 }
 
 /**
- * Lookupt the set of cache operations responsible for a type of object
- * @arg obj_ops		Object operations
+ * Associate a message type to a set of cache operations
+ * @arg protocol		netlink protocol
+ * @arg msgtype			netlink message type
  *
- * @return The cache operations or NULL if not found.
+ * Associates the specified netlink message type with
+ * a registered set of cache operations.
+ *
+ * @return The cache operations or NULL if no association
+ *         could be made.
  */
-struct nl_cache_ops *nl_cache_ops_lookup_for_obj(struct nl_object_ops *obj_ops)
+struct nl_cache_ops *nl_cache_ops_associate(int protocol, int msgtype)
+{
+	int i;
+	struct nl_cache_ops *ops;
+
+	for (ops = cache_ops; ops; ops = ops->co_next)
+		for (i = 0; ops->co_msgtypes[i].mt_id >= 0; i++)
+			if (ops->co_msgtypes[i].mt_id == msgtype &&
+			    ops->co_protocol == protocol)
+				return ops;
+
+	return NULL;
+}
+
+/**
+ * Lookup message type cache association
+ * @arg ops			cache operations
+ * @arg msgtype			netlink message type
+ *
+ * Searches for a matching message type association ing the specified
+ * cache operations.
+ *
+ * @return A message type association or NULL.
+ */
+struct nl_msgtype *nl_msgtype_lookup(struct nl_cache_ops *ops, int msgtype)
+{
+	int i;
+
+	for (i = 0; ops->co_msgtypes[i].mt_id >= 0; i++)
+		if (ops->co_msgtypes[i].mt_id == msgtype)
+			return &ops->co_msgtypes[i];
+
+	return NULL;
+}
+
+static struct nl_cache_ops *cache_ops_lookup_for_obj(struct nl_object_ops *obj_ops)
 {
 	struct nl_cache_ops *ops;
 
@@ -125,7 +107,7 @@ struct nl_cache_ops *nl_cache_ops_lookup_for_obj(struct nl_object_ops *obj_ops)
  * @arg cb		Callback function to be called
  * @arg arg		User specific argument.
  */
-void nl_cache_mngt_foreach(void (*cb)(struct nl_cache_ops *, void *), void *arg)
+void nl_cache_ops_foreach(void (*cb)(struct nl_cache_ops *, void *), void *arg)
 {
 	struct nl_cache_ops *ops;
 
@@ -208,7 +190,7 @@ void nl_cache_mngt_provide(struct nl_cache *cache)
 {
 	struct nl_cache_ops *ops;
 
-	ops = nl_cache_ops_lookup_for_obj(cache->c_ops->co_obj_ops);
+	ops = cache_ops_lookup_for_obj(cache->c_ops->co_obj_ops);
 	if (!ops)
 		BUG();
 	else
@@ -227,7 +209,7 @@ void nl_cache_mngt_unprovide(struct nl_cache *cache)
 {
 	struct nl_cache_ops *ops;
 
-	ops = nl_cache_ops_lookup_for_obj(cache->c_ops->co_obj_ops);
+	ops = cache_ops_lookup_for_obj(cache->c_ops->co_obj_ops);
 	if (!ops)
 		BUG();
 	else if (ops->co_major_cache == cache)

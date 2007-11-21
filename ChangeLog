@@ -1,4 +1,7 @@
-Summary of Changes from 1.0-pre6 to HEAD
+ChangeLog discontinued, git history can be found here:
+http://git.kernel.org/?p=libs/netlink/libnl.git
+
+Summary of Changes from 1.0-pre6 to 1.0-pre7
 ================================================
 	Thomas Graf <tgraf@suug.ch>
 	  o Generic netlink support

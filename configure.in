@@ -9,7 +9,7 @@
 # Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
 #
 
-AC_INIT(libnl, 1.0-pre6, tgraf@suug.ch)
+AC_INIT(libnl, 1.0-pre8, tgraf@suug.ch)
 AC_CONFIG_HEADER(lib/defs.h)
 
 save_CFLAGS="${CFLAGS}"
@@ -76,5 +76,4 @@ Included in Compilation:
   libnl:   $COMPILE_LIBNL $LIBNL_LIB
 
 Dependencies:
-bmon:
   libm             $M       (required)"

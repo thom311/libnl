@@ -363,7 +363,7 @@ static struct nl_msg *__nlmsg_alloc(size_t len)
 	nm->nm_protocol = -1;
 	nm->nm_nlh->nlmsg_len = len;
 
-	NL_DBG(2, "msg %p: Allocated new message, nlmsg_len=%d\n", nm, len);
+	NL_DBG(2, "msg %p: Allocated new message, nlmsg_len=%zu\n", nm, len);
 
 	return nm;
 errout:
@@ -494,7 +494,7 @@ void *nlmsg_reserve(struct nl_msg *n, size_t len, int pad)
 	if (tlen > len)
 		memset(tmp + len, 0, tlen - len);
 
-	NL_DBG(2, "msg %p: Reserved %d bytes, pad=%d, nlmsg_len=%d\n",
+	NL_DBG(2, "msg %p: Reserved %zu bytes, pad=%d, nlmsg_len=%d\n",
 		  n, len, pad, n->nm_nlh->nlmsg_len);
 
 	return tmp;
@@ -524,7 +524,7 @@ int nlmsg_append(struct nl_msg *n, void *data, size_t len, int pad)
 		return nl_errno(ENOMEM);
 
 	memcpy(tmp, data, len);
-	NL_DBG(2, "msg %p: Appended %d bytes with padding %d\n", n, len, pad);
+	NL_DBG(2, "msg %p: Appended %zu bytes with padding %d\n", n, len, pad);
 
 	return 0;
 }

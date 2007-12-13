@@ -55,7 +55,7 @@ static void print(struct nl_cache_ops *ops, void *arg)
 
 		printf("    cacheable object:\n" \
 		       "        name: %s:\n" \
-		       "        size: %d bytes\n" \
+		       "        size: %zu bytes\n" \
 		       "        constructor: %s\n" \
 		       "        free-data: %s\n" \
 		       "        clone: %s\n" \

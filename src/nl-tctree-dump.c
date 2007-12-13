@@ -28,7 +28,7 @@ static void print_class(struct nl_object *obj, void *arg)
 	struct nl_cache *cls_cache;
 	uint32_t parent = rtnl_class_get_handle(class);
 
-	dump_params.dp_prefix = (int)(uint64_t) arg;
+	dump_params.dp_prefix = (int)(long) arg;
 	nl_object_dump(obj, &dump_params);
 
 	leaf = rtnl_class_leaf_qdisc(class, qdisc_cache);
@@ -41,7 +41,7 @@ static void print_class(struct nl_object *obj, void *arg)
 	if (!cls_cache)
 		return;
 
-	dump_params.dp_prefix = (int)(uint64_t) arg + 2;
+	dump_params.dp_prefix = (int)(long) arg + 2;
 	nl_cache_dump(cls_cache, &dump_params);
 	nl_cache_free(cls_cache);
 }
@@ -52,7 +52,7 @@ static void print_qdisc(struct nl_object *obj, void *arg)
 	struct nl_cache *cls_cache;
 	uint32_t parent = rtnl_qdisc_get_handle(qdisc);
 
-	dump_params.dp_prefix = (int)(uint64_t) arg;
+	dump_params.dp_prefix = (int)(long) arg;
 	nl_object_dump(obj, &dump_params);
 
 	rtnl_qdisc_foreach_child(qdisc, class_cache, &print_class, arg + 2);
@@ -61,7 +61,7 @@ static void print_qdisc(struct nl_object *obj, void *arg)
 	if (!cls_cache)
 		return;
 
-	dump_params.dp_prefix = (int)(uint64_t) arg + 2;
+	dump_params.dp_prefix = (int)(long) arg + 2;
 	nl_cache_dump(cls_cache, &dump_params);
 	nl_cache_free(cls_cache);
 }

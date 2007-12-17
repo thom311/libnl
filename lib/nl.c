@@ -194,35 +194,50 @@ int nl_connect(struct nl_handle *handle, int protocol)
 	socklen_t addrlen;
 
 	handle->h_fd = socket(AF_NETLINK, SOCK_RAW, protocol);
-	if (handle->h_fd < 0)
-		return nl_error(1, "socket(AF_NETLINK, ...) failed");
+	if (handle->h_fd < 0) {
+		err = nl_error(1, "socket(AF_NETLINK, ...) failed");
+		goto errout;
+	}
 
 	if (!(handle->h_flags & NL_SOCK_BUFSIZE_SET)) {
 		err = nl_set_buffer_size(handle, 0, 0);
 		if (err < 0)
-			return err;
+			goto errout;
 	}
 
 	err = bind(handle->h_fd, (struct sockaddr*) &handle->h_local,
 		   sizeof(handle->h_local));
-	if (err < 0)
-		return nl_error(1, "bind() failed");
+	if (err < 0) {
+		err = nl_error(1, "bind() failed");
+		goto errout;
+	}
 
 	addrlen = sizeof(handle->h_local);
 	err = getsockname(handle->h_fd, (struct sockaddr *) &handle->h_local,
 			  &addrlen);
-	if (err < 0)
-		return nl_error(1, "getsockname failed");
+	if (err < 0) {
+		err = nl_error(1, "getsockname failed");
+		goto errout;
+	}
 
-	if (addrlen != sizeof(handle->h_local))
-		return nl_error(EADDRNOTAVAIL, "Invalid address length");
+	if (addrlen != sizeof(handle->h_local)) {
+		err = nl_error(EADDRNOTAVAIL, "Invalid address length");
+		goto errout;
+	}
 
-	if (handle->h_local.nl_family != AF_NETLINK)
-		return nl_error(EPFNOSUPPORT, "Address format not supported");
+	if (handle->h_local.nl_family != AF_NETLINK) {
+		err = nl_error(EPFNOSUPPORT, "Address format not supported");
+		goto errout;
+	}
 
 	handle->h_proto = protocol;
 
 	return 0;
+errout:
+	close(handle->h_fd);
+	handle->h_fd = -1;
+
+	return err;
 }
 
 /**

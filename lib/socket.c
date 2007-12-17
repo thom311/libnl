@@ -127,9 +127,13 @@ static uint32_t generate_local_port(void)
 
 static void release_local_port(uint32_t port)
 {
-	int nr = port >> 22;
+	int nr;
 
-	used_ports_map[nr / 32] &= ~(nr % 32);
+	if (port == UINT_MAX)
+		return;
+	
+	nr = port >> 22;
+	used_ports_map[nr / 32] &= ~((nr % 32) + 1);
 }
 
 /**
@@ -147,11 +151,17 @@ static struct nl_handle *__alloc_handle(struct nl_cb *cb)
 		return NULL;
 	}
 
+	handle->h_fd = -1;
 	handle->h_cb = cb;
 	handle->h_local.nl_family = AF_NETLINK;
-	handle->h_local.nl_pid = generate_local_port();
 	handle->h_peer.nl_family = AF_NETLINK;
 	handle->h_seq_expect = handle->h_seq_next = time(0);
+	handle->h_local.nl_pid = generate_local_port();
+	if (handle->h_local.nl_pid == UINT_MAX) {
+		nl_handle_destroy(handle);
+		nl_error(ENOBUFS, "Out of sequence numbers");
+		return NULL;
+	}
 
 	return handle;
 }
@@ -199,6 +209,9 @@ void nl_handle_destroy(struct nl_handle *handle)
 {
 	if (!handle)
 		return;
+
+	if (handle->h_fd >= 0)
+		close(handle->h_fd);
 
 	if (!(handle->h_flags & NL_OWN_PORT))
 		release_local_port(handle->h_local.nl_pid);
@@ -311,6 +324,9 @@ int nl_socket_add_membership(struct nl_handle *handle, int group)
 {
 	int err;
 
+	if (handle->h_fd == -1)
+		return nl_error(EBADFD, "Socket not connected");
+
 	err = setsockopt(handle->h_fd, SOL_NETLINK, NETLINK_ADD_MEMBERSHIP,
 			 &group, sizeof(group));
 	if (err < 0)
@@ -334,6 +350,9 @@ int nl_socket_add_membership(struct nl_handle *handle, int group)
 int nl_socket_drop_membership(struct nl_handle *handle, int group)
 {
 	int err;
+
+	if (handle->h_fd == -1)
+		return nl_error(EBADFD, "Socket not connected");
 
 	err = setsockopt(handle->h_fd, SOL_NETLINK, NETLINK_DROP_MEMBERSHIP,
 			 &group, sizeof(group));
@@ -396,6 +415,9 @@ int nl_socket_get_fd(struct nl_handle *handle)
  */
 int nl_socket_set_nonblocking(struct nl_handle *handle)
 {
+	if (handle->h_fd == -1)
+		return nl_error(EBADFD, "Socket not connected");
+
 	if (fcntl(handle->h_fd, F_SETFL, O_NONBLOCK) < 0)
 		return nl_error(errno, "fcntl(F_SETFL, O_NONBLOCK) failed");
 
@@ -484,6 +506,9 @@ int nl_set_buffer_size(struct nl_handle *handle, int rxbuf, int txbuf)
 
 	if (txbuf <= 0)
 		txbuf = 32768;
+
+	if (handle->h_fd == -1)
+		return nl_error(EBADFD, "Socket not connected");
 	
 	err = setsockopt(handle->h_fd, SOL_SOCKET, SO_SNDBUF,
 			 &txbuf, sizeof(txbuf));
@@ -511,6 +536,9 @@ int nl_set_passcred(struct nl_handle *handle, int state)
 {
 	int err;
 
+	if (handle->h_fd == -1)
+		return nl_error(EBADFD, "Socket not connected");
+
 	err = setsockopt(handle->h_fd, SOL_SOCKET, SO_PASSCRED,
 			 &state, sizeof(state));
 	if (err < 0)
@@ -534,6 +562,9 @@ int nl_set_passcred(struct nl_handle *handle, int state)
 int nl_socket_recv_pktinfo(struct nl_handle *handle, int state)
 {
 	int err;
+
+	if (handle->h_fd == -1)
+		return nl_error(EBADFD, "Socket not connected");
 
 	err = setsockopt(handle->h_fd, SOL_NETLINK, NETLINK_PKTINFO,
 			 &state, sizeof(state));

@@ -159,7 +159,7 @@ static struct nl_handle *__alloc_handle(struct nl_cb *cb)
 	handle->h_local.nl_pid = generate_local_port();
 	if (handle->h_local.nl_pid == UINT_MAX) {
 		nl_handle_destroy(handle);
-		nl_error(ENOBUFS, "Out of sequence numbers");
+		nl_error(ENOBUFS, "Out of local ports");
 		return NULL;
 	}
 

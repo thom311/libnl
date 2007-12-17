@@ -56,7 +56,7 @@ static int class_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (err < 0)
 		goto errout_free;
 
-	return P_ACCEPT;
+	err = P_ACCEPT;
 
 errout_free:
 	rtnl_class_put(class);

@@ -114,7 +114,7 @@ static int result_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	/* REAL HACK, fib_lookup doesn't support ACK nor does it
 	 * send a DONE message, enforce end of message stream
 	 * after just the first message */
-	return NL_STOP;
+	err = NL_STOP;
 
 errout:
 	flnl_result_put(res);

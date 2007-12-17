@@ -366,13 +366,15 @@ static int ct_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (err < 0)
 		goto errout;
 
-	return P_ACCEPT;
+	err = P_ACCEPT;
 
-errout_errno:
-	err = nl_get_errno();
 errout:
 	nfnl_ct_put(ct);
 	return err;
+
+errout_errno:
+	err = nl_get_errno();
+	goto errout;
 }
 
 int nfnl_ct_dump_request(struct nl_handle *h)

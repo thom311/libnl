@@ -131,7 +131,7 @@ static int ctrl_msg_parser(struct nl_cache_ops *ops, struct genl_cmd *cmd,
 	if (err < 0)
 		goto errout;
 
-	return P_ACCEPT;
+	err = P_ACCEPT;
 
 errout:
 	genl_family_put(family);

@@ -203,14 +203,15 @@ static int route_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (err < 0)
 		goto errout;
 
-	return P_ACCEPT;
+	err = P_ACCEPT;
 
-errout_errno:
-	err = nl_get_errno();
 errout:
 	rtnl_route_put(route);
 	return err;
 
+errout_errno:
+	err = nl_get_errno();
+	goto errout;
 }
 
 static int route_request_update(struct nl_cache *c, struct nl_handle *h)

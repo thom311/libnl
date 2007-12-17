@@ -318,7 +318,7 @@ static int neigh_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (err < 0)
 		goto errout;
 
-	return P_ACCEPT;
+	err = P_ACCEPT;
 
 errout:
 	rtnl_neigh_put(neigh);

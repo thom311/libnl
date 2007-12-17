@@ -89,18 +89,13 @@
 static int include_cb(struct nl_object *obj, struct nl_parser_param *p)
 {
 	struct nl_cache_assoc *ca = p->pp_arg;
-	int err;
 
 	NL_DBG(2, "Including object %p into cache %p\n", obj, ca->ca_cache);
 #ifdef NL_DEBUG
 	if (nl_debug >= 4)
 		nl_object_dump(obj, &nl_debug_dp);
 #endif
-	err = nl_cache_include(ca->ca_cache, obj, ca->ca_change);
-
-	nl_object_put(obj);
-
-	return err;
+	return nl_cache_include(ca->ca_cache, obj, ca->ca_change);
 }
 
 static int event_input(struct nl_msg *msg, void *arg)

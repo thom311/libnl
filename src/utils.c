@@ -18,7 +18,6 @@ static struct nl_cb *nltool_cb;
 int nltool_init(int argc, char *argv[])
 {
 	char *nlcb = getenv("NLCB");
-	char *nldbg = getenv("NLDBG");
 	int cbset = NL_CB_VERBOSE;
 	
 	if (nlcb) {
@@ -41,17 +40,6 @@ int nltool_init(int argc, char *argv[])
 		goto errout;
 	}
 
-	if (nldbg) {
-		long dbg = strtol(nldbg, NULL, 0);
-
-		if (dbg == LONG_MIN || dbg == LONG_MAX) {
-			fprintf(stderr, "Invalid value for NLDBG.\n");
-			goto errout;
-		}
-
-		nl_debug = dbg;
-	}
-	
 	return 0;
 
 errout:

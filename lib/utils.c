@@ -28,8 +28,16 @@ struct nl_dump_params nl_debug_dp = {
 	.dp_type = NL_DUMP_FULL,
 };
 
-static void __init nl_debug_dp_init(void)
+static void __init nl_debug_init(void)
 {
+	char *nldbg, *end;
+	
+	if ((nldbg = getenv("NLDBG"))) {
+		long level = strtol(nldbg, &end, 0);
+		if (nldbg != end)
+			nl_debug = level;
+	}
+
 	nl_debug_dp.dp_fd = stderr;
 }
 

@@ -96,6 +96,26 @@
 #include <netlink/msg.h>
 #include <netlink/attr.h>
 
+static int default_cb = NL_CB_DEFAULT;
+
+static void __init init_default_cb(void)
+{
+	char *nlcb;
+
+	if ((nlcb = getenv("NLCB"))) {
+		if (!strcasecmp(nlcb, "default"))
+			default_cb = NL_CB_DEFAULT;
+		else if (!strcasecmp(nlcb, "verbose"))
+			default_cb = NL_CB_VERBOSE;
+		else if (!strcasecmp(nlcb, "debug"))
+			default_cb = NL_CB_DEBUG;
+		else {
+			fprintf(stderr, "Unknown value for NLCB, valid values: "
+				"{default | verbose | debug}\n");
+		}
+	}
+}
+
 static uint32_t used_ports_map[32];
 
 static uint32_t generate_local_port(void)
@@ -175,7 +195,7 @@ struct nl_handle *nl_handle_alloc(void)
 {
 	struct nl_cb *cb;
 	
-	cb = nl_cb_alloc(NL_CB_DEFAULT);
+	cb = nl_cb_alloc(default_cb);
 	if (!cb) {
 		nl_errno(ENOMEM);
 		return NULL;

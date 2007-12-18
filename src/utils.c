@@ -13,37 +13,9 @@
 
 #include <stdlib.h>
 
-static struct nl_cb *nltool_cb;
-
 int nltool_init(int argc, char *argv[])
 {
-	char *nlcb = getenv("NLCB");
-	int cbset = NL_CB_VERBOSE;
-	
-	if (nlcb) {
-		if (!strcasecmp(nlcb, "default"))
-			cbset = NL_CB_DEFAULT;
-		else if (!strcasecmp(nlcb, "verbose"))
-			cbset = NL_CB_VERBOSE;
-		else if (!strcasecmp(nlcb, "debug"))
-			cbset = NL_CB_DEBUG;
-		else {
-			fprintf(stderr, "Unknown value for NLCB, valid values: "
-				"{default | verbose | debug}\n");
-			goto errout;
-		}
-	}
-
-	nltool_cb = nl_cb_alloc(cbset);
-	if (nltool_cb == NULL) {
-		fprintf(stderr, "Cannot allocate callback handle\n");
-		goto errout;
-	}
-
 	return 0;
-
-errout:
-	return -1;
 }
 
 int nltool_connect(struct nl_handle *nlh, int protocol)
@@ -60,7 +32,7 @@ int nltool_connect(struct nl_handle *nlh, int protocol)
 
 struct nl_handle *nltool_alloc_handle(void)
 {
-	return nl_handle_alloc_cb(nltool_cb);
+	return nl_handle_alloc();
 }
 
 struct nl_addr *nltool_addr_parse(const char *str)

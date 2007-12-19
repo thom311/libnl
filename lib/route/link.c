@@ -151,6 +151,8 @@
 #define LINK_ATTR_ARPTYPE 0x2000
 #define LINK_ATTR_STATS   0x4000
 #define LINK_ATTR_CHANGE  0x8000
+#define LINK_ATTR_OPERSTATE 0x10000
+#define LINK_ATTR_LINKMODE  0x20000
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -192,6 +194,8 @@ static struct nla_policy link_policy[IFLA_MAX+1] = {
 	[IFLA_LINK]	= { .type = NLA_U32 },
 	[IFLA_WEIGHT]	= { .type = NLA_U32 },
 	[IFLA_MASTER]	= { .type = NLA_U32 },
+	[IFLA_OPERSTATE]= { .type = NLA_U8 },
+	[IFLA_LINKMODE] = { .type = NLA_U8 },
 	[IFLA_QDISC]	= { .type = NLA_STRING,
 			    .maxlen = IFQDISCSIZ },
 	[IFLA_STATS]	= { .minlen = sizeof(struct rtnl_link_stats) },
@@ -323,6 +327,16 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		link->ce_mask |= LINK_ATTR_MASTER;
 	}
 
+	if (tb[IFLA_OPERSTATE]) {
+		link->l_operstate = nla_get_u8(tb[IFLA_OPERSTATE]);
+		link->ce_mask |= LINK_ATTR_OPERSTATE;
+	}
+
+	if (tb[IFLA_LINKMODE]) {
+		link->l_linkmode = nla_get_u8(tb[IFLA_LINKMODE]);
+		link->ce_mask |= LINK_ATTR_LINKMODE;
+	}
+
 	err = pp->pp_cb((struct nl_object *) link, pp);
 	if (err < 0)
 		goto errout;
@@ -356,9 +370,9 @@ static int link_dump_brief(struct nl_object *obj, struct nl_dump_params *p)
 	}
 
 	dp_dump(p, "%s ", nl_llproto2str(link->l_arptype, buf, sizeof(buf)));
-	dp_dump(p, "%s ", link->l_addr ?  nl_addr2str(link->l_addr, buf,
-						     sizeof(buf)) : "none");
-	dp_dump(p, "mtu %u ", link->l_mtu);
+
+	if (link->l_addr && !nl_addr_iszero(link->l_addr))
+		dp_dump(p, "%s ", nl_addr2str(link->l_addr, buf, sizeof(buf)));
 
 	if (link->ce_mask & LINK_ATTR_MASTER) {
 		struct rtnl_link *master = rtnl_link_get(cache, link->l_master);
@@ -385,7 +399,8 @@ static int link_dump_full(struct nl_object *obj, struct nl_dump_params *p)
 	line = link_dump_brief(obj, p);
 	dp_new_line(p, line++);
 
-	dp_dump(p, "    txqlen %u weight %u ", link->l_txqlen, link->l_weight);
+	dp_dump(p, "    mtu %u ", link->l_mtu);
+	dp_dump(p, "txqlen %u weight %u ", link->l_txqlen, link->l_weight);
 
 	if (link->ce_mask & LINK_ATTR_QDISC)
 		dp_dump(p, "qdisc %s ", link->l_qdisc);
@@ -396,11 +411,24 @@ static int link_dump_full(struct nl_object *obj, struct nl_dump_params *p)
 	if (link->ce_mask & LINK_ATTR_IFINDEX)
 		dp_dump(p, "index %u ", link->l_index);
 
-	if (link->ce_mask & LINK_ATTR_BRD)
-		dp_dump(p, "brd %s", nl_addr2str(link->l_bcast, buf,
-						   sizeof(buf)));
 
 	dp_dump(p, "\n");
+	dp_new_line(p, line++);
+
+	dp_dump(p, "    ");
+
+	if (link->ce_mask & LINK_ATTR_BRD)
+		dp_dump(p, "brd %s ", nl_addr2str(link->l_bcast, buf,
+						   sizeof(buf)));
+
+	if ((link->ce_mask & LINK_ATTR_OPERSTATE) &&
+	    link->l_operstate != IF_OPER_UNKNOWN) {
+		rtnl_link_operstate2str(link->l_operstate, buf, sizeof(buf));
+		dp_dump(p, "state %s ", buf);
+	}
+
+	dp_dump(p, "mode %s\n",
+		rtnl_link_mode2str(link->l_linkmode, buf, sizeof(buf)));
 
 	return line;
 }
@@ -667,6 +695,8 @@ static int link_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= LINK_DIFF(WEIGHT,	a->l_weight != b->l_weight);
 	diff |= LINK_DIFF(MASTER,	a->l_master != b->l_master);
 	diff |= LINK_DIFF(FAMILY,	a->l_family != b->l_family);
+	diff |= LINK_DIFF(OPERSTATE,	a->l_operstate != b->l_operstate);
+	diff |= LINK_DIFF(LINKMODE,	a->l_linkmode != b->l_linkmode);
 	diff |= LINK_DIFF(QDISC,	strcmp(a->l_qdisc, b->l_qdisc));
 	diff |= LINK_DIFF(IFNAME,	strcmp(a->l_name, b->l_name));
 	diff |= LINK_DIFF(ADDR,		nl_addr_cmp(a->l_addr, b->l_addr));
@@ -700,6 +730,8 @@ static struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_ARPTYPE, arptype)
 	__ADD(LINK_ATTR_STATS, stats)
 	__ADD(LINK_ATTR_CHANGE, change)
+	__ADD(LINK_ATTR_OPERSTATE, operstate)
+	__ADD(LINK_ATTR_LINKMODE, linkmode)
 };
 
 static char *link_attrs2str(int attrs, char *buf, size_t len)
@@ -877,6 +909,12 @@ struct nl_msg * rtnl_link_build_change_request(struct rtnl_link *old,
 	if (tmpl->ce_mask & LINK_ATTR_IFNAME)
 		NLA_PUT_STRING(msg, IFLA_IFNAME, tmpl->l_name);
 
+	if (tmpl->ce_mask & LINK_ATTR_OPERSTATE)
+		NLA_PUT_U8(msg, IFLA_OPERSTATE, tmpl->l_operstate);
+
+	if (tmpl->ce_mask & LINK_ATTR_LINKMODE)
+		NLA_PUT_U8(msg, IFLA_LINKMODE, tmpl->l_linkmode);
+
 	return msg;
 
 nla_put_failure:
@@ -1051,6 +1089,57 @@ char *rtnl_link_stat2str(int st, char *buf, size_t len)
 int rtnl_link_str2stat(const char *name)
 {
 	return __str2type(name, link_stats, ARRAY_SIZE(link_stats));
+}
+
+/** @} */
+
+/**
+ * @name Link Operstate Translations
+ * @{
+ */
+
+static struct trans_tbl link_operstates[] = {
+	__ADD(IF_OPER_UNKNOWN, unknown)
+	__ADD(IF_OPER_NOTPRESENT, notpresent)
+	__ADD(IF_OPER_DOWN, down)
+	__ADD(IF_OPER_LOWERLAYERDOWN, lowerlayerdown)
+	__ADD(IF_OPER_TESTING, testing)
+	__ADD(IF_OPER_DORMANT, dormant)
+	__ADD(IF_OPER_UP, up)
+};
+
+char *rtnl_link_operstate2str(int st, char *buf, size_t len)
+{
+	return __type2str(st, buf, len, link_operstates,
+			  ARRAY_SIZE(link_operstates));
+}
+
+int rtnl_link_str2operstate(const char *name)
+{
+	return __str2type(name, link_operstates,
+			  ARRAY_SIZE(link_operstates));
+}
+
+/** @} */
+
+/**
+ * @name Link Mode Translations
+ * @{
+ */
+
+static struct trans_tbl link_modes[] = {
+	__ADD(IF_LINK_MODE_DEFAULT, default)
+	__ADD(IF_LINK_MODE_DORMANT, dormant)
+};
+
+char *rtnl_link_mode2str(int st, char *buf, size_t len)
+{
+	return __type2str(st, buf, len, link_modes, ARRAY_SIZE(link_modes));
+}
+
+int rtnl_link_str2mode(const char *name)
+{
+	return __str2type(name, link_modes, ARRAY_SIZE(link_modes));
 }
 
 /** @} */
@@ -1251,6 +1340,34 @@ int rtnl_link_get_master(struct rtnl_link *link)
 		return link->l_master;
 	else
 		return RTNL_LINK_NOT_FOUND;
+}
+
+void rtnl_link_set_operstate(struct rtnl_link *link, uint8_t operstate)
+{
+	link->l_operstate = operstate;
+	link->ce_mask |= LINK_ATTR_OPERSTATE;
+}
+
+uint8_t rtnl_link_get_operstate(struct rtnl_link *link)
+{
+	if (link->ce_mask & LINK_ATTR_OPERSTATE)
+		return link->l_operstate;
+	else
+		return IF_OPER_UNKNOWN;
+}
+
+void rtnl_link_set_linkmode(struct rtnl_link *link, uint8_t linkmode)
+{
+	link->l_linkmode = linkmode;
+	link->ce_mask |= LINK_ATTR_LINKMODE;
+}
+
+uint8_t rtnl_link_get_linkmode(struct rtnl_link *link)
+{
+	if (link->ce_mask & LINK_ATTR_LINKMODE)
+		return link->l_linkmode;
+	else
+		return IF_LINK_MODE_DEFAULT;
 }
 
 uint64_t rtnl_link_get_stat(struct rtnl_link *link, int id)

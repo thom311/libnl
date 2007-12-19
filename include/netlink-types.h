@@ -173,6 +173,8 @@ struct rtnl_link
 	struct rtnl_link_map l_map;
 	uint64_t	l_stats[RTNL_LINK_STATS_MAX+1];
 	uint32_t	l_flag_mask;
+	uint8_t		l_operstate;
+	uint8_t		l_linkmode;
 };
 
 struct rtnl_ncacheinfo

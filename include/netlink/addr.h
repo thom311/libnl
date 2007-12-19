@@ -36,6 +36,7 @@ extern int		nl_addr_shared(struct nl_addr *);
 
 extern int		nl_addr_cmp(struct nl_addr *, struct nl_addr *);
 extern int		nl_addr_cmp_prefix(struct nl_addr *, struct nl_addr *);
+extern int		nl_addr_iszero(struct nl_addr *);
 extern int		nl_addr_valid(char *, int);
 extern int      	nl_addr_guess_family(struct nl_addr *);
 extern int		nl_addr_fill_sockaddr(struct nl_addr *,

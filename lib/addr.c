@@ -529,6 +529,21 @@ int nl_addr_cmp_prefix(struct nl_addr *a, struct nl_addr *b)
 }
 
 /**
+ * Returns true if the address consists of all zeros
+ * @arg addr		Address to look at.
+ */
+int nl_addr_iszero(struct nl_addr *addr)
+{
+	int i;
+
+	for (i = 0; i < addr->a_len; i++)
+		if (addr->a_addr[i])
+			return 0;
+
+	return 1;
+}
+
+/**
  * Check if an address matches a certain family.
  * @arg addr		Address represented as character string.
  * @arg family		Desired address family.

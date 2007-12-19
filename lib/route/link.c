@@ -1035,6 +1035,7 @@ static struct trans_tbl link_flags[] = {
 	__ADD(IFF_RUNNING, running)
 	__ADD(IFF_LOWER_UP, lowerup)
 	__ADD(IFF_DORMANT, dormant)
+	__ADD(IFF_ECHO, echo)
 };
 
 char * rtnl_link_flags2str(int flags, char *buf, size_t len)

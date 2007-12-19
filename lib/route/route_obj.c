@@ -136,10 +136,11 @@ static int route_dump_brief(struct nl_object *a, struct nl_dump_params *p)
 
 	link_cache = nl_cache_mngt_require("route/link");
 
-	if (r->ce_mask & ROUTE_ATTR_DST)
-		dp_dump(p, "%s ", nl_addr2str(r->rt_dst, buf, sizeof(buf)));
-	else
+	if (!(r->ce_mask & ROUTE_ATTR_DST) ||
+	    nl_addr_get_len(r->rt_dst) == 0)
 		dp_dump(p, "default ");
+	else
+		dp_dump(p, "%s ", nl_addr2str(r->rt_dst, buf, sizeof(buf)));
 
 	if (r->ce_mask & ROUTE_ATTR_OIF) {
 		if (link_cache)

@@ -340,6 +340,7 @@ static struct rtnl_link_info_ops vlan_info_ops = {
 	.io_dump[NL_DUMP_BRIEF]	= vlan_dump_brief,
 	.io_dump[NL_DUMP_FULL]	= vlan_dump_full,
 	.io_clone		= vlan_clone,
+	.io_put_attrs		= vlan_put_attrs,
 	.io_free		= vlan_free,
 };
 

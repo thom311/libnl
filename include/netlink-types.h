@@ -175,6 +175,9 @@ struct rtnl_link
 	uint32_t	l_flag_mask;
 	uint8_t		l_operstate;
 	uint8_t		l_linkmode;
+	/* 2 byte hole */
+	struct rtnl_link_info_ops *l_info_ops;
+	void *		l_info;
 };
 
 struct rtnl_ncacheinfo

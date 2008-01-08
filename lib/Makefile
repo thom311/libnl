@@ -21,6 +21,8 @@ CIN      += $(wildcard route/*.c)
 CIN      += $(wildcard route/sch/*.c)
 # Classifiers
 CIN      += $(wildcard route/cls/*.c)
+# Link Info Modules
+CIN      += $(wildcard route/link/*.c)
 # NETLINK_GENERIC
 CIN      += $(wildcard genl/*.c)
 # fib lookup

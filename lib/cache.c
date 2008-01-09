@@ -505,8 +505,11 @@ static int cache_include(struct nl_cache *cache, struct nl_object *obj,
 		old = nl_cache_search(cache, obj);
 		if (old) {
 			nl_cache_remove(old);
-			if (type->mt_act == NL_ACT_DEL && cb)
-				cb(cache, old, NL_ACT_DEL);
+			if (type->mt_act == NL_ACT_DEL) {
+				if (cb)
+					cb(cache, old, NL_ACT_DEL);
+				nl_object_put(old);
+			}
 		}
 
 		if (type->mt_act == NL_ACT_NEW) {

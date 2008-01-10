@@ -61,7 +61,7 @@ LIBNL_LIB="$LIBM"
 
 AC_SUBST(LIBNL_LIB)
 
-AC_OUTPUT([Makefile.opts libnl-1.pc])
+AC_OUTPUT([Makefile.opts libnl-1.pc doc/Doxyfile])
 
 #####################################################################
 ##

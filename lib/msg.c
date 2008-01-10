@@ -261,6 +261,14 @@ int nlmsg_attrlen(const struct nlmsghdr *nlh, int hdrlen)
  * @{
  */
 
+int nlmsg_valid_hdr(const struct nlmsghdr *nlh, int hdrlen)
+{
+	if (nlh->nlmsg_len < nlmsg_msg_size(hdrlen))
+		return 0;
+
+	return 1;
+}
+
 /**
  * check if the netlink message fits into the remaining bytes
  * @arg nlh		netlink message header
@@ -303,7 +311,7 @@ struct nlmsghdr *nlmsg_next(struct nlmsghdr *nlh, int *remaining)
 int nlmsg_parse(struct nlmsghdr *nlh, int hdrlen, struct nlattr *tb[],
 		int maxtype, struct nla_policy *policy)
 {
-	if (nlh->nlmsg_len < nlmsg_msg_size(hdrlen))
+	if (!nlmsg_valid_hdr(nlh, hdrlen))
 		return nl_errno(EINVAL);
 
 	return nla_parse(tb, maxtype, nlmsg_attrdata(nlh, hdrlen),
@@ -334,7 +342,7 @@ struct nlattr *nlmsg_find_attr(struct nlmsghdr *nlh, int hdrlen, int attrtype)
 int nlmsg_validate(struct nlmsghdr *nlh, int hdrlen, int maxtype,
 		   struct nla_policy *policy)
 {
-	if (nlh->nlmsg_len < nlmsg_msg_size(hdrlen))
+	if (!nlmsg_valid_hdr(nlh, hdrlen))
 		return nl_errno(EINVAL);
 
 	return nla_validate(nlmsg_attrdata(nlh, hdrlen),

@@ -13,6 +13,8 @@
 #define NETLINK_GENL_H_
 
 #include <netlink/netlink.h>
+#include <netlink/msg.h>
+#include <netlink/attr.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,6 +27,12 @@ extern int		genl_send_simple(struct nl_handle *, int, int,
 
 extern void *		genlmsg_put(struct nl_msg *, uint32_t, uint32_t,
 				    int, int, int, uint8_t, uint8_t);
+
+extern int		genlmsg_valid_hdr(struct nlmsghdr *, int);
+extern int		genlmsg_validate(struct nlmsghdr *, int, int,
+					 struct nla_policy *);
+extern int		genlmsg_parse(struct nlmsghdr *, int, struct nlattr **,
+				      int, struct nla_policy *);
 extern void *		genlmsg_data(const struct genlmsghdr *);
 extern int		genlmsg_len(const struct genlmsghdr *);
 extern struct nlattr *	genlmsg_attrdata(const struct genlmsghdr *, int);

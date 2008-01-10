@@ -8,13 +8,13 @@
 #define PACKAGE_NAME "libnl"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "libnl 1.0-pre8"
+#define PACKAGE_STRING "libnl 1.0-pre9"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "libnl"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.0-pre8"
+#define PACKAGE_VERSION "1.0-pre9"
 
 /* verbose errors */
 /* #undef VERBOSE_ERRORS */

@@ -604,7 +604,7 @@ int nl_cache_parse(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 {
 	int i, err;
 
-	if (nlh->nlmsg_len < nlmsg_msg_size(ops->co_hdrsize)) {
+	if (!nlmsg_valid_hdr(nlh, ops->co_hdrsize)) {
 		err = nl_error(EINVAL, "netlink message too short to be "
 				       "of kind %s", ops->co_name);
 		goto errout;

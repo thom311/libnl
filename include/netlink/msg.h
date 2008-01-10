@@ -59,6 +59,7 @@ extern struct nlattr *	  nlmsg_attrdata(const struct nlmsghdr *, int);
 extern int		  nlmsg_attrlen(const struct nlmsghdr *, int);
 
 /* message parsing */
+extern int		  nlmsg_valid_hdr(const struct nlmsghdr *, int);
 extern int		  nlmsg_ok(const struct nlmsghdr *, int);
 extern struct nlmsghdr *  nlmsg_next(struct nlmsghdr *, int *);
 extern int		  nlmsg_parse(struct nlmsghdr *, int, struct nlattr **,

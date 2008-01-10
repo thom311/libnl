@@ -87,6 +87,7 @@
  *     return 0;
  * }
  * @endcode
+ * @{
  */
 
 #include <netlink-generic.h>

@@ -417,10 +417,15 @@ int nl_send_simple(struct nl_handle *handle, int type, int flags, void *buf,
 	if (!msg)
 		return nl_errno(ENOMEM);
 
-	if (buf && size)
-		nlmsg_append(msg, buf, size, NLMSG_ALIGNTO);
+	if (buf && size) {
+		err = nlmsg_append(msg, buf, size, NLMSG_ALIGNTO);
+		if (err < 0)
+			goto errout;
+	}
+	
 
 	err = nl_send_auto_complete(handle, msg);
+errout:
 	nlmsg_free(msg);
 
 	return err;

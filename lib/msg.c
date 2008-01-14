@@ -164,6 +164,13 @@
 #include <netlink/attr.h>
 #include <linux/socket.h>
 
+static size_t default_msg_size;
+
+static void __init init_msg_size(void)
+{
+	default_msg_size = getpagesize();
+}
+
 /**
  * @name Size Calculations
  * @{
@@ -369,9 +376,10 @@ static struct nl_msg *__nlmsg_alloc(size_t len)
 		goto errout;
 
 	nm->nm_protocol = -1;
-	nm->nm_nlh->nlmsg_len = len;
+	nm->nm_size = len;
+	nm->nm_nlh->nlmsg_len = nlmsg_total_size(0);
 
-	NL_DBG(2, "msg %p: Allocated new message, nlmsg_len=%zu\n", nm, len);
+	NL_DBG(2, "msg %p: Allocated new message, maxlen=%zu\n", nm, len);
 
 	return nm;
 errout:
@@ -381,25 +389,34 @@ errout:
 }
 
 /**
- * Allocate a new netlink message
+ * Allocate a new netlink message with the default maximum payload size.
  *
- * Allocates a new netlink message without any further payload.
+ * Allocates a new netlink message without any further payload. The
+ * maximum payload size defaults to PAGESIZE or as otherwise specified
+ * with nlmsg_set_default_size().
  *
  * @return Newly allocated netlink message or NULL.
  */
 struct nl_msg *nlmsg_alloc(void)
 {
-	return __nlmsg_alloc(nlmsg_total_size(0));
+	return __nlmsg_alloc(default_msg_size);
+}
+
+/**
+ * Allocate a new netlink message with maximum payload size specified.
+ */
+struct nl_msg *nlmsg_alloc_size(size_t max)
+{
+	return __nlmsg_alloc(max);
 }
 
 /**
  * Allocate a new netlink message and inherit netlink message header
  * @arg hdr		Netlink message header template
  *
- * Allocates a new netlink message with a tailroom for the netlink
- * message header. If \a hdr is not NULL it will be used as a
- * template for the netlink message header, otherwise the header
- * is left blank.
+ * Allocates a new netlink message and inherits the original message
+ * header. If \a hdr is not NULL it will be used as a template for
+ * the netlink message header, otherwise the header is left blank.
  * 
  * @return Newly allocated netlink message or NULL
  */ 
@@ -443,6 +460,18 @@ struct nl_msg *nlmsg_alloc_simple(int nlmsgtype, int flags)
 }
 
 /**
+ * Set the default maximum message payload size for allocated messages
+ * @arg max		Size of payload in bytes.
+ */
+void nlmsg_set_default_size(size_t max)
+{
+	if (max < nlmsg_total_size(0))
+		max = nlmsg_total_size(0);
+
+	default_msg_size = max;
+}
+
+/**
  * Convert a netlink message received from a netlink socket to a nl_msg
  * @arg hdr		Netlink message received from netlink socket.
  *
@@ -477,35 +506,31 @@ errout:
  * existing netlink message. Eventual padding required will
  * be zeroed out.
  *
- * @note All existing pointers into the old data section may have
- *       become obsolete and illegal to reference after this call.
- *
  * @return Pointer to start of additional data tailroom or NULL.
  */
 void *nlmsg_reserve(struct nl_msg *n, size_t len, int pad)
 {
-	void *tmp;
+	void *buf = n->nm_nlh;
+	size_t nlmsg_len = n->nm_nlh->nlmsg_len;
 	size_t tlen;
 
 	tlen = pad ? ((len + (pad - 1)) & ~(pad - 1)) : len;
 
-	tmp = realloc(n->nm_nlh, n->nm_nlh->nlmsg_len + tlen);
-	if (!tmp) {
-		nl_errno(ENOMEM);
+	if ((tlen + nlmsg_len) > n->nm_size) {
+		nl_errno(ENOBUFS);
 		return NULL;
 	}
 
-	n->nm_nlh = tmp;
-	tmp += n->nm_nlh->nlmsg_len;
+	buf += nlmsg_len;
 	n->nm_nlh->nlmsg_len += tlen;
 
 	if (tlen > len)
-		memset(tmp + len, 0, tlen - len);
+		memset(buf + len, 0, tlen - len);
 
 	NL_DBG(2, "msg %p: Reserved %zu bytes, pad=%d, nlmsg_len=%d\n",
 		  n, len, pad, n->nm_nlh->nlmsg_len);
 
-	return tmp;
+	return buf;
 }
 
 /**
@@ -517,9 +542,6 @@ void *nlmsg_reserve(struct nl_msg *n, size_t len, int pad)
  *
  * Extends the netlink message as needed and appends the data of given
  * length to the message. 
- *
- * @note All existing pointers into the old data section may have
- *       become obsolete and illegal to reference after this call.
  *
  * @return 0 on success or a negative error code
  */

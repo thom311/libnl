@@ -74,7 +74,9 @@ extern int		  nlmsg_validate(struct nlmsghdr *, int, int,
 #define nlmsg_build(ptr)		nlmsg_inherit(ptr)
 
 extern struct nl_msg *	  nlmsg_alloc(void);
+extern struct nl_msg *	  nlmsg_alloc_size(size_t);
 extern struct nl_msg *	  nlmsg_alloc_simple(int, int);
+extern void		  nlmsg_set_default_size(size_t);
 extern struct nl_msg *	  nlmsg_inherit(struct nlmsghdr *);
 extern struct nl_msg *	  nlmsg_convert(struct nlmsghdr *);
 extern void *		  nlmsg_reserve(struct nl_msg *, size_t, int);

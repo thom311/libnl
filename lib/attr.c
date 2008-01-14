@@ -481,9 +481,8 @@ struct nlattr *nla_reserve(struct nl_msg *n, int attrtype, int attrlen)
 	
 	tlen = NLMSG_ALIGN(n->nm_nlh->nlmsg_len) + nla_total_size(attrlen);
 
-	n->nm_nlh = realloc(n->nm_nlh, tlen);
-	if (!n->nm_nlh) {
-		nl_errno(ENOMEM);
+	if ((tlen + n->nm_nlh->nlmsg_len) > n->nm_size) {
+		nl_errno(ENOBUFS);
 		return NULL;
 	}
 

@@ -137,6 +137,7 @@ struct nl_msg
 	struct sockaddr_nl	nm_dst;
 	struct ucred		nm_creds;
 	struct nlmsghdr *	nm_nlh;
+	size_t			nm_size;
 };
 
 struct rtnl_link_map

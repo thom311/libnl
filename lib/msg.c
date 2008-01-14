@@ -93,10 +93,15 @@
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * @endcode
  *
- * @par 1) Creating a new netlink message
+ * @par Example
  * @code
- * // Netlink messages can be allocated in various ways, you may
- * // allocate an empty netlink message by using nlmsg_alloc():
+ * // Various methods exist to create/allocate a new netlink
+ * // message. 
+ * //
+ * // nlmsg_alloc() will allocate an empty netlink message with
+ * // a maximum payload size which defaults to the page size of
+ * // the system. This default size can be modified using the
+ * // function nlmsg_set_default_size().
  * struct nl_msg *msg = nlmsg_alloc();
  *
  * // Very often, the message type and message flags are known
@@ -104,7 +109,7 @@
  * struct nl_msg *msg = nlmsg_alloc_simple(MY_TYPE, MY_FLAGS);
  *
  * // Alternatively an existing netlink message header can be used
- * // to inherit header values from:
+ * // to inherit the header values:
  * struct nlmsghdr hdr = {
  * 	.nlmsg_type = MY_TYPE,
  * 	.nlmsg_flags = MY_FLAGS,
@@ -112,15 +117,12 @@
  * struct nl_msg *msg = nlmsg_inherit(&hdr);
  *
  * // Last but not least, netlink messages received from netlink sockets
- * // can be converted into nl_msg objects using nlmsg_convert():
+ * // can be converted into nl_msg objects using nlmsg_convert(). This
+ * // will create a message with a maximum payload size which equals the
+ * // length of the existing netlink message, therefore no more data can
+ * // be appened without calling nlmsg_expand() first.
  * struct nl_msg *msg = nlmsg_convert(nlh_from_nl_sock);
  *
- * // The header can later be retrieved with nlmsg_hdr() and changed again:
- * nlmsg_hdr(msg)->nlmsg_flags |= YET_ANOTHER_FLAG;
- * @endcode
- *
- * @par 2) Appending data to the message
- * @code
  * // Payload may be added to the message via nlmsg_append(). The fourth
  * // parameter specifies the number of alignment bytes the data should
  * // be padding with at the end. Common values are 0 to disable it or
@@ -131,10 +133,9 @@
  * // the actual copying to a later point, nlmsg_reserve() can be used
  * // for this purpose:
  * void *data = nlmsg_reserve(msg, sizeof(mydata), NLMSG_ALIGNTO);
- * @endcode
  *
- * @par 3) Cleaning up message construction
- * @code
+ * // Attributes may be added using the attributes interface.
+ *
  * // After successful use of the message, the memory must be freed
  * // using nlmsg_free()
  * nlmsg_free(msg);
@@ -560,6 +561,37 @@ int nlmsg_append(struct nl_msg *n, void *data, size_t len, int pad)
 }
 
 /**
+ * Expand maximum payload size of a netlink message
+ * @arg n		Netlink message.
+ * @arg newlen		New maximum payload size.
+ *
+ * Reallocates the payload section of a netlink message and increases
+ * the maximum payload size of the message.
+ *
+ * @note Any pointers pointing to old payload block will be stale and
+ *       need to be refetched. Therfore, do not expand while constructing
+ *       nested attributes or while reserved data blocks are held.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int nlmsg_expand(struct nl_msg *n, size_t newlen)
+{
+	void *tmp;
+
+	if (newlen <= n->nm_size)
+		return nl_errno(EINVAL);
+
+	tmp = realloc(n->nm_nlh, newlen);
+	if (tmp == NULL)
+		return nl_errno(ENOMEM);
+
+	n->nm_nlh = tmp;
+	n->nm_size = newlen;
+
+	return 0;
+}
+
+/**
  * Add a netlink message header to a netlink message
  * @arg n		netlink message
  * @arg pid		netlink process id or NL_AUTO_PID
@@ -646,6 +678,11 @@ void nlmsg_set_proto(struct nl_msg *msg, int protocol)
 int nlmsg_get_proto(struct nl_msg *msg)
 {
 	return msg->nm_protocol;
+}
+
+size_t nlmsg_get_max_size(struct nl_msg *msg)
+{
+	return msg->nm_size;
 }
 
 void nlmsg_set_src(struct nl_msg *msg, struct sockaddr_nl *addr)

@@ -81,6 +81,7 @@ extern struct nl_msg *	  nlmsg_inherit(struct nlmsghdr *);
 extern struct nl_msg *	  nlmsg_convert(struct nlmsghdr *);
 extern void *		  nlmsg_reserve(struct nl_msg *, size_t, int);
 extern int		  nlmsg_append(struct nl_msg *, void *, size_t, int);
+extern int		  nlmsg_expand(struct nl_msg *, size_t);
 
 extern struct nlmsghdr *  nlmsg_put(struct nl_msg *, uint32_t, uint32_t,
 				    int, int, int);
@@ -90,6 +91,7 @@ extern void		  nlmsg_free(struct nl_msg *);
 /* attribute modification */
 extern void		  nlmsg_set_proto(struct nl_msg *, int);
 extern int		  nlmsg_get_proto(struct nl_msg *);
+extern size_t		  nlmsg_get_max_size(struct nl_msg *);
 extern void		  nlmsg_set_src(struct nl_msg *, struct sockaddr_nl *);
 extern struct sockaddr_nl *nlmsg_get_src(struct nl_msg *);
 extern void		  nlmsg_set_dst(struct nl_msg *, struct sockaddr_nl *);

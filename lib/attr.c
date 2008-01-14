@@ -64,15 +64,13 @@
  * @code
  * int param1 = 10;
  * char *param2 = "parameter text";
- * struct nlmsghdr hdr = {
- * 	.nlmsg_type = MY_ACTION,
- * };
- * struct nl_msg *m = nlmsg_build(&hdr);
- * nla_put_u32(m, 1, param1);
- * nla_put_string(m, 2, param2);
+ *
+ * struct nl_msg *msg = nlmsg_alloc();
+ * nla_put_u32(msg, 1, param1);
+ * nla_put_string(msg, 2, param2);
  * 
- * nl_send_auto_complete(handle, nl_msg_get(m));
- * nlmsg_free(m);
+ * nl_send_auto_complete(handle, nl_msg_get(msg));
+ * nlmsg_free(msg);
  * @endcode
  *
  * @par 2) Constructing nested attributes
@@ -80,14 +78,14 @@
  * struct nl_msg * nested_config(void)
  * {
  * 	int a = 5, int b = 10;
- * 	struct nl_msg *n = nlmsg_build(NULL);
+ * 	struct nl_msg *n = nlmsg_alloc();
  * 	nla_put_u32(n, 10, a);
  * 	nla_put_u32(n, 20, b);
  * 	return n;
  * }
  *
  * ...
- * struct nl_msg *m = nlmsg_build(&hdr);
+ * struct nl_msg *m = nlmsg_alloc();
  * struct nl_msg *nest = nested_config();
  * nla_put_nested(m, 1, nest);
  *

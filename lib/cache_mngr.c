@@ -140,6 +140,7 @@ found:
 
 /**
  * Allocate new cache manager
+ * @arg handle		Netlink socket/handle to be used
  * @arg protocol	Netlink Protocol this manager is used for
  * @arg flags		Flags
  *
@@ -195,6 +196,7 @@ errout:
  * Add cache responsibility to cache manager
  * @arg mngr		Cache manager.
  * @arg name		Name of cache to keep track of
+ * @arg cb		Function to be called upon changes.
  *
  * Allocates a new cache of the specified type and adds it to the manager.
  * The operation will trigger a full dump request from the kernel to

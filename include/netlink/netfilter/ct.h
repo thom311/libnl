@@ -39,6 +39,15 @@ extern void		nfnl_ct_put(struct nfnl_ct *);
 
 extern int		nfnl_ct_dump_request(struct nl_handle *);
 
+extern struct nl_msg *	nfnl_ct_build_add_request(const struct nfnl_ct *, int);
+extern int		nfnl_ct_add(struct nl_handle *, const struct nfnl_ct *, int);
+
+extern struct nl_msg *	nfnl_ct_build_delete_request(const struct nfnl_ct *, int);
+extern int		nfnl_ct_delete(struct nl_handle *, const struct nfnl_ct *, int);
+
+extern struct nl_msg *	nfnl_ct_build_query_request(const struct nfnl_ct *, int);
+extern int		nfnl_ct_query(struct nl_handle *, const struct nfnl_ct *, int);
+
 extern void		nfnl_ct_set_family(struct nfnl_ct *, uint8_t);
 extern uint8_t		nfnl_ct_get_family(const struct nfnl_ct *);
 

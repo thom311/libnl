@@ -755,4 +755,34 @@ struct nfnl_log {
 	uint32_t		log_seq_global;
 };
 
+struct nfnl_queue {
+	NLHDR_COMMON
+
+	uint16_t		queue_group;
+	uint32_t		queue_maxlen;
+	uint32_t		queue_copy_range;
+	uint8_t			queue_copy_mode;
+};
+
+struct nfnl_queue_msg {
+	NLHDR_COMMON
+
+	uint16_t		queue_msg_group;
+	uint8_t			queue_msg_family;
+	uint8_t			queue_msg_hook;
+	uint16_t		queue_msg_hwproto;
+	uint32_t		queue_msg_packetid;
+	uint32_t		queue_msg_mark;
+	struct timeval		queue_msg_timestamp;
+	uint32_t		queue_msg_indev;
+	uint32_t		queue_msg_outdev;
+	uint32_t		queue_msg_physindev;
+	uint32_t		queue_msg_physoutdev;
+	uint8_t			queue_msg_hwaddr[8];
+	int			queue_msg_hwaddr_len;
+	void *			queue_msg_payload;
+	int			queue_msg_payload_len;
+	uint32_t		queue_msg_verdict;
+};
+
 #endif

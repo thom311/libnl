@@ -736,24 +736,37 @@ struct nfnl_ct {
 struct nfnl_log {
 	NLHDR_COMMON
 
-	uint8_t			log_family;
-	uint8_t			log_hook;
-	uint16_t		log_hwproto;
-	uint32_t		log_mark;
-	struct timeval		log_timestamp;
-	uint32_t		log_indev;
-	uint32_t		log_outdev;
-	uint32_t		log_physindev;
-	uint32_t		log_physoutdev;
-	uint8_t			log_hwaddr[8];
-	int			log_hwaddr_len;
-	void *			log_payload;
-	int			log_payload_len;
-	char *			log_prefix;
-	uint32_t		log_uid;
-	uint32_t		log_gid;
-	uint32_t		log_seq;
-	uint32_t		log_seq_global;
+	uint16_t		log_group;
+	uint8_t			log_copy_mode;
+	uint32_t		log_copy_range;
+	uint32_t		log_flush_timeout;
+	uint32_t		log_alloc_size;
+	uint32_t		log_queue_threshold;
+	uint32_t		log_flags;
+	uint32_t		log_flag_mask;
+};
+
+struct nfnl_log_msg {
+	NLHDR_COMMON
+
+	uint8_t			log_msg_family;
+	uint8_t			log_msg_hook;
+	uint16_t		log_msg_hwproto;
+	uint32_t		log_msg_mark;
+	struct timeval		log_msg_timestamp;
+	uint32_t		log_msg_indev;
+	uint32_t		log_msg_outdev;
+	uint32_t		log_msg_physindev;
+	uint32_t		log_msg_physoutdev;
+	uint8_t			log_msg_hwaddr[8];
+	int			log_msg_hwaddr_len;
+	void *			log_msg_payload;
+	int			log_msg_payload_len;
+	char *			log_msg_prefix;
+	uint32_t		log_msg_uid;
+	uint32_t		log_msg_gid;
+	uint32_t		log_msg_seq;
+	uint32_t		log_msg_seq_global;
 };
 
 struct nfnl_queue {

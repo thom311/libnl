@@ -43,8 +43,11 @@ int main(int argc, char *argv[])
 	struct nl_handle *nfnlh;
 	struct nl_handle *rtnlh;
         struct nl_cache *link_cache;
+	struct nfnl_log *log;
+	enum nfnl_log_copy_mode copy_mode;
+	uint32_t copy_range;
 	int err = 1;
-	int family, group;
+	int family;
 
 	if (nltool_init(argc, argv) < 0)
 		return -1;
@@ -58,7 +61,8 @@ int main(int argc, char *argv[])
 	nl_socket_modify_cb(nfnlh, NL_CB_VALID, NL_CB_CUSTOM, event_input, NULL);
 
 	if ((argc > 1 && !strcasecmp(argv[1], "-h")) || argc < 3) {
-		printf("Usage: nf-log family group\n");
+		printf("Usage: nf-log family group [ copy_mode ] "
+		       "[copy_range] \n");
 		return 2;
 	}
 
@@ -72,24 +76,50 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Unknown family: %s\n", argv[1]);
 		goto errout;
 	}
-	if (nfnl_log_pf_unbind(nfnlh, family) < 0) {
-		fprintf(stderr, "%s\n", nl_geterror());
-		goto errout;
-	}
+
+	nfnl_log_pf_unbind(nfnlh, family);
 	if (nfnl_log_pf_bind(nfnlh, family) < 0) {
 		fprintf(stderr, "%s\n", nl_geterror());
 		goto errout;
 	}
 
-	group = nl_str2af(argv[2]);
-	if (nfnl_log_bind(nfnlh, group) < 0) {
+	log = nfnl_log_alloc();
+	if (log == NULL) {
 		fprintf(stderr, "%s\n", nl_geterror());
 		goto errout;
 	}
 
-	if (nfnl_log_set_mode(nfnlh, 0, NFULNL_COPY_PACKET, 0xffff) < 0) {
+	nfnl_log_set_group(log, atoi(argv[2]));
+
+	copy_mode = NFNL_LOG_COPY_META;
+	if (argc > 3) {
+		copy_mode = nfnl_log_str2copy_mode(argv[3]);
+		if (copy_mode < 0) {
+			fprintf(stderr, "%s\n", nl_geterror());
+			goto errout;
+		}
+	}
+	nfnl_log_set_copy_mode(log, copy_mode);
+
+	copy_range = 0xFFFF;
+	if (argc > 4)
+		copy_mode = atoi(argv[4]);
+	nfnl_log_set_copy_range(log, copy_range);
+
+	if (nfnl_log_create(nfnlh, log) <0) {
 		fprintf(stderr, "%s\n", nl_geterror());
 		goto errout;
+	}
+
+	{
+		struct nl_dump_params dp = {
+			.dp_type = NL_DUMP_STATS,
+			.dp_fd = stdout,
+			.dp_dump_msgtype = 1,
+		};
+
+		printf("log params: ");
+		nl_object_dump((struct nl_object *) log, &dp);
 	}
 
 	rtnlh = nltool_alloc_handle();
@@ -134,9 +164,16 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	nl_cache_mngt_unprovide(link_cache);
+	nl_cache_free(link_cache);
+
+	nfnl_log_put(log);
+
 	nl_close(rtnlh);
+	nl_handle_destroy(rtnlh);
 errout_close:
 	nl_close(nfnlh);
+	nl_handle_destroy(nfnlh);
 errout:
 	return err;
 }

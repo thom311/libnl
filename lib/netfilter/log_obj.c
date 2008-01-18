@@ -9,6 +9,7 @@
  * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
+ * Copyright (c) 2008 Patrick McHardy <kaber@trash.net>
  */
 
 #include <netlink-local.h>
@@ -16,150 +17,61 @@
 #include <netlink/netfilter/log.h>
 
 /** @cond SKIP */
-#define LOG_ATTR_FAMILY			(1UL << 0)
-#define LOG_ATTR_HWPROTO		(1UL << 1)
-#define LOG_ATTR_HOOK			(1UL << 2)
-#define LOG_ATTR_MARK			(1UL << 3)
-#define LOG_ATTR_TIMESTAMP		(1UL << 4)
-#define LOG_ATTR_INDEV			(1UL << 5)
-#define LOG_ATTR_OUTDEV			(1UL << 6)
-#define LOG_ATTR_PHYSINDEV		(1UL << 7)
-#define LOG_ATTR_PHYSOUTDEV		(1UL << 8)
-#define LOG_ATTR_HWADDR			(1UL << 9)
-#define LOG_ATTR_PAYLOAD		(1UL << 10)
-#define LOG_ATTR_PREFIX			(1UL << 11)
-#define LOG_ATTR_UID			(1UL << 12)
-#define LOG_ATTR_GID			(1UL << 13)
-#define LOG_ATTR_SEQ			(1UL << 14)
-#define LOG_ATTR_SEQ_GLOBAL		(1UL << 15)
+#define LOG_ATTR_GROUP			(1UL << 0)
+#define LOG_ATTR_COPY_MODE		(1UL << 1)
+#define LOG_ATTR_COPY_RANGE		(1UL << 3)
+#define LOG_ATTR_FLUSH_TIMEOUT		(1UL << 4)
+#define LOG_ATTR_ALLOC_SIZE		(1UL << 5)
+#define LOG_ATTR_QUEUE_THRESHOLD	(1UL << 6)
+
 /** @endcond */
 
-static void log_free_data(struct nl_object *c)
-{
-	struct nfnl_log *log = (struct nfnl_log *) c;
-
-	if (log == NULL)
-		return;
-
-	free(log->log_payload);
-	free(log->log_prefix);
-}
-
-static int log_clone(struct nl_object *_dst, struct nl_object *_src)
-{
-	struct nfnl_log *dst = (struct nfnl_log *) _dst;
-	struct nfnl_log *src = (struct nfnl_log *) _src;
-	int err;
-
-	if (src->log_payload) {
-		err = nfnl_log_set_payload(dst, src->log_payload,
-					   src->log_payload_len);
-		if (err < 0)
-			goto errout;
-	}
-
-	if (src->log_prefix) {
-		err = nfnl_log_set_prefix(dst, src->log_prefix);
-		if (err < 0)
-			goto errout;
-	}
-
-	return 0;
-errout:
-	return err;
-}
-
-static int log_dump(struct nl_object *a, struct nl_dump_params *p)
+static int nfnl_log_dump(struct nl_object *a, struct nl_dump_params *p)
 {
 	struct nfnl_log *log = (struct nfnl_log *) a;
-	struct nl_cache *link_cache;
 	char buf[64];
 
-	link_cache = nl_cache_mngt_require("route/link");
+	if (log->ce_mask & LOG_ATTR_GROUP)
+		dp_dump(p, "group=%u ", log->log_group);
 
-	if (log->ce_mask & LOG_ATTR_PREFIX)
-		dp_dump(p, "%s", log->log_prefix);
+	if (log->ce_mask & LOG_ATTR_COPY_MODE)
+		dp_dump(p, "copy_mode=%s ",
+			nfnl_log_copy_mode2str(log->log_copy_mode,
+					       buf, sizeof(buf)));
 
-	if (log->ce_mask & LOG_ATTR_INDEV) {
-		if (link_cache)
-			dp_dump(p, "IN=%s ",
-				rtnl_link_i2name(link_cache, log->log_indev,
-						 buf, sizeof(buf)));
-		else
-			dp_dump(p, "IN=%d ", log->log_indev);
-	}
+	if (log->ce_mask & LOG_ATTR_COPY_RANGE)
+		dp_dump(p, "copy_range=%u ", log->log_copy_range);
 
-	if (log->ce_mask & LOG_ATTR_PHYSINDEV) {
-		if (link_cache)
-			dp_dump(p, "PHYSIN=%s ",
-				rtnl_link_i2name(link_cache, log->log_physindev,
-						 buf, sizeof(buf)));
-		else
-			dp_dump(p, "IN=%d ", log->log_physindev);
-	}
+	if (log->ce_mask & LOG_ATTR_FLUSH_TIMEOUT)
+		dp_dump(p, "flush_timeout=%u ", log->log_flush_timeout);
 
-	if (log->ce_mask & LOG_ATTR_OUTDEV) {
-		if (link_cache)
-			dp_dump(p, "OUT=%s ",
-				rtnl_link_i2name(link_cache, log->log_outdev,
-						 buf, sizeof(buf)));
-		else
-			dp_dump(p, "OUT=%d ", log->log_outdev);
-	}
+	if (log->ce_mask & LOG_ATTR_ALLOC_SIZE)
+		dp_dump(p, "alloc_size=%u ", log->log_alloc_size);
 
-	if (log->ce_mask & LOG_ATTR_PHYSOUTDEV) {
-		if (link_cache)
-			dp_dump(p, "PHYSOUT=%s ",
-				rtnl_link_i2name(link_cache,log->log_physoutdev,
-						 buf, sizeof(buf)));
-		else
-			dp_dump(p, "PHYSOUT=%d ", log->log_physoutdev);
-	}
-
-	if (log->ce_mask & LOG_ATTR_HWADDR) {
-		int i;
-
-		dp_dump(p, "MAC");
-		for (i = 0; i < log->log_hwaddr_len; i++)
-			dp_dump(p, "%c%02x", i?':':'=', log->log_hwaddr[i]);
-		dp_dump(p, " ");
-	}
-
-	/* FIXME: parse the payload to get iptables LOG compatible format */
-
-	if (log->ce_mask & LOG_ATTR_FAMILY)
-		dp_dump(p, "FAMILY=%s ",
-			nl_af2str(log->log_family, buf, sizeof(buf)));
-
-	if (log->ce_mask & LOG_ATTR_HWPROTO)
-		dp_dump(p, "HWPROTO=%s ",
-			nl_ether_proto2str(ntohs(log->log_hwproto),
-					   buf, sizeof(buf)));
-
-	if (log->ce_mask & LOG_ATTR_HOOK)
-		dp_dump(p, "HOOK=%d ", log->log_hook);
-
-	if (log->ce_mask & LOG_ATTR_MARK)
-		dp_dump(p, "MARK=%d ", log->log_mark);
-
-	if (log->ce_mask & LOG_ATTR_PAYLOAD)
-		dp_dump(p, "PAYLOADLEN=%d ", log->log_payload_len);
-
-	if (log->ce_mask & LOG_ATTR_UID)
-		dp_dump(p, "UID=%u ", log->log_uid);
-
-	if (log->ce_mask & LOG_ATTR_GID)
-		dp_dump(p, "GID=%u ", log->log_gid);
-
-	if (log->ce_mask & LOG_ATTR_SEQ)
-		dp_dump(p, "SEQ=%d ", log->log_seq);
-
-	if (log->ce_mask & LOG_ATTR_SEQ_GLOBAL)
-		dp_dump(p, "SEQGLOBAL=%d ", log->log_seq_global);
+	if (log->ce_mask & LOG_ATTR_QUEUE_THRESHOLD)
+		dp_dump(p, "queue_threshold=%u ", log->log_queue_threshold);
 
 	dp_dump(p, "\n");
 
 	return 1;
+}
+
+static struct trans_tbl copy_modes[] = {
+	__ADD(NFNL_LOG_COPY_NONE,	none)
+	__ADD(NFNL_LOG_COPY_META,	meta)
+	__ADD(NFNL_LOG_COPY_PACKET,	packet)
+};
+
+char *nfnl_log_copy_mode2str(enum nfnl_log_copy_mode copy_mode, char *buf,
+			     size_t len)
+{
+	return __type2str(copy_mode, buf, len, copy_modes,
+			  ARRAY_SIZE(copy_modes));
+}
+
+enum nfnl_log_copy_mode nfnl_log_str2copy_mode(const char *name)
+{
+	return __str2type(name, copy_modes, ARRAY_SIZE(copy_modes));
 }
 
 /**
@@ -189,249 +101,172 @@ void nfnl_log_put(struct nfnl_log *log)
  * @{
  */
 
-void nfnl_log_set_family(struct nfnl_log *log, uint8_t family)
+void nfnl_log_set_group(struct nfnl_log *log, uint16_t group)
 {
-	log->log_family = family;
-	log->ce_mask |= LOG_ATTR_FAMILY;
+	log->log_group = group;
+	log->ce_mask |= LOG_ATTR_GROUP;
 }
 
-uint8_t nfnl_log_get_family(const struct nfnl_log *log)
+int nfnl_log_test_group(const struct nfnl_log *log)
 {
-	if (log->ce_mask & LOG_ATTR_FAMILY)
-		return log->log_family;
-	else
-		return AF_UNSPEC;
+	return !!(log->ce_mask & LOG_ATTR_GROUP);
 }
 
-void nfnl_log_set_hwproto(struct nfnl_log *log, uint16_t hwproto)
+uint16_t nfnl_log_get_group(const struct nfnl_log *log)
 {
-	log->log_hwproto = hwproto;
-	log->ce_mask |= LOG_ATTR_HWPROTO;
+	return log->log_group;
 }
 
-int nfnl_log_test_hwproto(const struct nfnl_log *log)
+void nfnl_log_set_copy_mode(struct nfnl_log *log, enum nfnl_log_copy_mode mode)
 {
-	return !!(log->ce_mask & LOG_ATTR_HWPROTO);
+	log->log_copy_mode = mode;
+	log->ce_mask |= LOG_ATTR_COPY_MODE;
 }
 
-uint16_t nfnl_log_get_hwproto(const struct nfnl_log *log)
+int nfnl_log_test_copy_mode(const struct nfnl_log *log)
 {
-	return log->log_hwproto;
+	return !!(log->ce_mask & LOG_ATTR_COPY_MODE);
 }
 
-void nfnl_log_set_hook(struct nfnl_log *log, uint8_t hook)
+enum nfnl_log_copy_mode nfnl_log_get_copy_mode(const struct nfnl_log *log)
 {
-	log->log_hook = hook;
-	log->ce_mask |= LOG_ATTR_HOOK;
+	return log->log_copy_mode;
 }
 
-int nfnl_log_test_hook(const struct nfnl_log *log)
+void nfnl_log_set_copy_range(struct nfnl_log *log, uint32_t copy_range)
 {
-	return !!(log->ce_mask & LOG_ATTR_HOOK);
+	log->log_copy_range = copy_range;
+	log->ce_mask |= LOG_ATTR_COPY_RANGE;
 }
 
-uint8_t nfnl_log_get_hook(const struct nfnl_log *log)
+int nfnl_log_test_copy_range(const struct nfnl_log *log)
 {
-	return log->log_hook;
+	return !!(log->ce_mask & LOG_ATTR_COPY_RANGE);
 }
 
-void nfnl_log_set_mark(struct nfnl_log *log, uint32_t mark)
+uint32_t nfnl_log_get_copy_range(const struct nfnl_log *log)
 {
-	log->log_mark = mark;
-	log->ce_mask |= LOG_ATTR_MARK;
+	return log->log_copy_range;
 }
 
-int nfnl_log_test_mark(const struct nfnl_log *log)
+void nfnl_log_set_flush_timeout(struct nfnl_log *log, uint32_t timeout)
 {
-	return !!(log->ce_mask & LOG_ATTR_MARK);
+	log->log_flush_timeout = timeout;
+	log->ce_mask |= LOG_ATTR_FLUSH_TIMEOUT;
 }
 
-uint32_t nfnl_log_get_mark(const struct nfnl_log *log)
+int nfnl_log_test_flush_timeout(const struct nfnl_log *log)
 {
-	return log->log_mark;
+	return !!(log->ce_mask & LOG_ATTR_FLUSH_TIMEOUT);
 }
 
-void nfnl_log_set_timestamp(struct nfnl_log *log, struct timeval *tv)
+uint32_t nfnl_log_get_flush_timeout(const struct nfnl_log *log)
 {
-	log->log_timestamp.tv_sec = tv->tv_sec;
-	log->log_timestamp.tv_usec = tv->tv_usec;
-	log->ce_mask |= LOG_ATTR_TIMESTAMP;
+	return log->log_flush_timeout;
 }
 
-const struct timeval *nfnl_log_get_timestamp(const struct nfnl_log *log)
+void nfnl_log_set_alloc_size(struct nfnl_log *log, uint32_t alloc_size)
 {
-	if (!(log->ce_mask & LOG_ATTR_TIMESTAMP))
-		return NULL;
-	return &log->log_timestamp;
+	log->log_alloc_size = alloc_size;
+	log->ce_mask |= LOG_ATTR_ALLOC_SIZE;
 }
 
-void nfnl_log_set_indev(struct nfnl_log *log, uint32_t indev)
+int nfnl_log_test_alloc_size(const struct nfnl_log *log)
 {
-	log->log_indev = indev;
-	log->ce_mask |= LOG_ATTR_INDEV;
+	return !!(log->ce_mask & LOG_ATTR_ALLOC_SIZE);
 }
 
-uint32_t nfnl_log_get_indev(const struct nfnl_log *log)
+uint32_t nfnl_log_get_alloc_size(const struct nfnl_log *log)
 {
-	return log->log_indev;
+	return log->log_alloc_size;
 }
 
-void nfnl_log_set_outdev(struct nfnl_log *log, uint32_t outdev)
+void nfnl_log_set_queue_threshold(struct nfnl_log *log, uint32_t threshold)
 {
-	log->log_outdev = outdev;
-	log->ce_mask |= LOG_ATTR_OUTDEV;
+	log->log_queue_threshold = threshold;
+	log->ce_mask |= LOG_ATTR_QUEUE_THRESHOLD;
 }
 
-uint32_t nfnl_log_get_outdev(const struct nfnl_log *log)
+int nfnl_log_test_queue_threshold(const struct nfnl_log *log)
 {
-	return log->log_outdev;
+	return !!(log->ce_mask & LOG_ATTR_QUEUE_THRESHOLD);
 }
 
-void nfnl_log_set_physindev(struct nfnl_log *log, uint32_t physindev)
+uint32_t nfnl_log_get_queue_threshold(const struct nfnl_log *log)
 {
-	log->log_physindev = physindev;
-	log->ce_mask |= LOG_ATTR_PHYSINDEV;
+	return log->log_queue_threshold;
 }
 
-uint32_t nfnl_log_get_physindev(const struct nfnl_log *log)
+/* We don't actually use the flags for anything yet since the
+ * nfnetlog_log interface truly sucks - it only contains the
+ * flag value, but not mask, so we would have to make assumptions
+ * about the supported flags.
+ */
+void nfnl_log_set_flags(struct nfnl_log *log, unsigned int flags)
 {
-	return log->log_physindev;
+	log->log_flags |= flags;
+	log->log_flag_mask |= flags;
 }
 
-void nfnl_log_set_physoutdev(struct nfnl_log *log, uint32_t physoutdev)
+void nfnl_log_unset_flags(struct nfnl_log *log, unsigned int flags)
 {
-	log->log_physoutdev = physoutdev;
-	log->ce_mask |= LOG_ATTR_PHYSOUTDEV;
+	log->log_flags &= ~flags;
+	log->log_flag_mask |= flags;
 }
 
-uint32_t nfnl_log_get_physoutdev(const struct nfnl_log *log)
+static struct trans_tbl log_flags[] = {
+	__ADD(NFNL_LOG_FLAG_SEQ,	seq)
+	__ADD(NFNL_LOG_FLAG_SEQ_GLOBAL,	seq_global)
+};
+
+char *nfnl_log_flags2str(unsigned int flags, char *buf, size_t len)
 {
-	return log->log_physoutdev;
+	return __flags2str(flags, buf, len, log_flags, ARRAY_SIZE(log_flags));
 }
 
-void nfnl_log_set_hwaddr(struct nfnl_log *log, uint8_t *hwaddr, int len)
+unsigned int nfnl_log_str2flags(const char *name)
 {
-	if (len > sizeof(log->log_hwaddr))
-		len = sizeof(log->log_hwaddr);
-	log->log_hwaddr_len = len;
-	memcpy(log->log_hwaddr, hwaddr, len);
-	log->ce_mask |= LOG_ATTR_HWADDR;
+	return __str2flags(name, log_flags, ARRAY_SIZE(log_flags));
 }
 
-const uint8_t *nfnl_log_get_hwaddr(const struct nfnl_log *log, int *len)
+static int nfnl_log_compare(struct nl_object *_a, struct nl_object *_b,
+			    uint32_t attrs, int flags)
 {
-	if (!(log->ce_mask & LOG_ATTR_HWADDR)) {
-		*len = 0;
-		return NULL;
-	}
+	struct nfnl_log *a = (struct nfnl_log *) _a;
+	struct nfnl_log *b = (struct nfnl_log *) _b;
+	int diff = 0;
 
-	*len = log->log_hwaddr_len;
-	return log->log_hwaddr;
+#define NFNL_LOG_DIFF(ATTR, EXPR) \
+	ATTR_DIFF(attrs, LOG_ATTR_##ATTR, a, b, EXPR)
+#define NFNL_LOG_DIFF_VAL(ATTR, FIELD) \
+	NFNL_LOG_DIFF(ATTR, a->FIELD != b->FIELD)
+
+	diff |= NFNL_LOG_DIFF_VAL(GROUP,		log_group);
+	diff |= NFNL_LOG_DIFF_VAL(COPY_MODE,		log_copy_mode);
+	diff |= NFNL_LOG_DIFF_VAL(COPY_RANGE,		log_copy_range);
+	diff |= NFNL_LOG_DIFF_VAL(FLUSH_TIMEOUT,	log_flush_timeout);
+	diff |= NFNL_LOG_DIFF_VAL(ALLOC_SIZE,		log_alloc_size);
+	diff |= NFNL_LOG_DIFF_VAL(QUEUE_THRESHOLD,	log_queue_threshold);
+
+#undef NFNL_LOG_DIFF
+#undef NFNL_LOG_DIFF_VAL
+
+	return diff;
 }
 
-int nfnl_log_set_payload(struct nfnl_log *log, uint8_t *payload, int len)
+static struct trans_tbl nfnl_log_attrs[] = {
+	__ADD(LOG_ATTR_GROUP,		group)
+	__ADD(LOG_ATTR_COPY_MODE,	copy_mode)
+	__ADD(LOG_ATTR_COPY_RANGE,	copy_range)
+	__ADD(LOG_ATTR_FLUSH_TIMEOUT,	flush_timeout)
+	__ADD(LOG_ATTR_ALLOC_SIZE,	alloc_size)
+	__ADD(LOG_ATTR_QUEUE_THRESHOLD, queue_threshold)
+};
+
+static char *nfnl_log_attrs2str(int attrs, char *buf, size_t len)
 {
-	free(log->log_payload);
-	log->log_payload = malloc(len);
-	if (!log->log_payload)
-		return nl_errno(ENOMEM);
-
-	memcpy(log->log_payload, payload, len);
-	log->log_payload_len = len;
-	log->ce_mask |= LOG_ATTR_PAYLOAD;
-	return 0;
-}
-
-const void *nfnl_log_get_payload(const struct nfnl_log *log, int *len)
-{
-	if (!(log->ce_mask & LOG_ATTR_PAYLOAD)) {
-		*len = 0;
-		return NULL;
-	}
-
-	*len = log->log_payload_len;
-	return log->log_payload;
-}
-
-int nfnl_log_set_prefix(struct nfnl_log *log, void *prefix)
-{
-	free(log->log_prefix);
-	log->log_prefix = strdup(prefix);
-	if (!log->log_prefix)
-		return nl_errno(ENOMEM);
-
-	log->ce_mask |= LOG_ATTR_PREFIX;
-	return 0;
-}
-
-const char *nfnl_log_get_prefix(const struct nfnl_log *log)
-{
-	return log->log_prefix;
-}
-
-void nfnl_log_set_uid(struct nfnl_log *log, uint32_t uid)
-{
-	log->log_uid = uid;
-	log->ce_mask |= LOG_ATTR_UID;
-}
-
-int nfnl_log_test_uid(const struct nfnl_log *log)
-{
-	return !!(log->ce_mask & LOG_ATTR_UID);
-}
-
-uint32_t nfnl_log_get_uid(const struct nfnl_log *log)
-{
-	return log->log_uid;
-}
-
-void nfnl_log_set_gid(struct nfnl_log *log, uint32_t gid)
-{
-	log->log_gid = gid;
-	log->ce_mask |= LOG_ATTR_GID;
-}
-
-int nfnl_log_test_gid(const struct nfnl_log *log)
-{
-	return !!(log->ce_mask & LOG_ATTR_GID);
-}
-
-uint32_t nfnl_log_get_gid(const struct nfnl_log *log)
-{
-	return log->log_gid;
-}
-
-
-void nfnl_log_set_seq(struct nfnl_log *log, uint32_t seq)
-{
-	log->log_seq = seq;
-	log->ce_mask |= LOG_ATTR_SEQ;
-}
-
-int nfnl_log_test_seq(const struct nfnl_log *log)
-{
-	return !!(log->ce_mask & LOG_ATTR_SEQ);
-}
-
-uint32_t nfnl_log_get_seq(const struct nfnl_log *log)
-{
-	return log->log_seq;
-}
-
-void nfnl_log_set_seq_global(struct nfnl_log *log, uint32_t seq_global)
-{
-	log->log_seq_global = seq_global;
-	log->ce_mask |= LOG_ATTR_SEQ_GLOBAL;
-}
-
-int nfnl_log_test_seq_global(const struct nfnl_log *log)
-{
-	return !!(log->ce_mask & LOG_ATTR_SEQ_GLOBAL);
-}
-
-uint32_t nfnl_log_get_seq_global(const struct nfnl_log *log)
-{
-	return log->log_seq_global;
+	return __flags2str(attrs, buf, len, nfnl_log_attrs,
+			   ARRAY_SIZE(nfnl_log_attrs));
 }
 
 /** @} */
@@ -439,11 +274,12 @@ uint32_t nfnl_log_get_seq_global(const struct nfnl_log *log)
 struct nl_object_ops log_obj_ops = {
 	.oo_name		= "netfilter/log",
 	.oo_size		= sizeof(struct nfnl_log),
-	.oo_free_data		= log_free_data,
-	.oo_clone		= log_clone,
-	.oo_dump[NL_DUMP_BRIEF]	= log_dump,
-	.oo_dump[NL_DUMP_FULL]	= log_dump,
-	.oo_dump[NL_DUMP_STATS]	= log_dump,
+	.oo_dump[NL_DUMP_BRIEF]	= nfnl_log_dump,
+	.oo_dump[NL_DUMP_FULL]	= nfnl_log_dump,
+	.oo_dump[NL_DUMP_STATS]	= nfnl_log_dump,
+	.oo_compare		= nfnl_log_compare,
+	.oo_attrs2str		= nfnl_log_attrs2str,
+	.oo_id_attrs		= LOG_ATTR_GROUP,
 };
 
 /** @} */

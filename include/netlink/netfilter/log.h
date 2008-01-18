@@ -9,6 +9,7 @@
  * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
+ * Copyright (c) 2008 Patrick McHardy <kaber@trash.net>
  */
 
 #ifndef NETLINK_LOG_H_
@@ -26,80 +27,79 @@ struct nfnl_log;
 
 extern struct nl_object_ops log_obj_ops;
 
+enum nfnl_log_copy_mode {
+	NFNL_LOG_COPY_NONE,
+	NFNL_LOG_COPY_META,
+	NFNL_LOG_COPY_PACKET,
+};
+
+enum nfnl_log_flags {
+	NFNL_LOG_FLAG_SEQ		= 0x1,
+	NFNL_LOG_FLAG_SEQ_GLOBAL	= 0x2,
+};
+
 /* General */
-extern struct nfnl_log *nfnl_log_alloc(void);
-extern struct nfnl_log *nfnlmsg_log_parse(struct nlmsghdr *);
+extern struct nfnl_log *	nfnl_log_alloc(void);
+extern struct nfnl_log *	nfnlmsg_log_parse(struct nlmsghdr *);
 
-extern void		nfnl_log_get(struct nfnl_log *);
-extern void		nfnl_log_put(struct nfnl_log *);
+extern void			nfnl_log_get(struct nfnl_log *);
+extern void			nfnl_log_put(struct nfnl_log *);
 
-extern struct nl_msg *	nfnl_log_build_bind(uint16_t);;
-extern int		nfnl_log_bind(struct nl_handle *, uint16_t);
-extern struct nl_msg *	nfnl_log_build_unbind(uint16_t);
-extern int		nfnl_log_unbind(struct nl_handle *, uint16_t);
-extern struct nl_msg *	nfnl_log_build_pf_bind(uint8_t);
-extern int		nfnl_log_pf_bind(struct nl_handle *, uint8_t);
-extern struct nl_msg *	nfnl_log_build_pf_unbind(uint8_t);
-extern int		nfnl_log_pf_unbind(struct nl_handle *, uint8_t);
-extern struct nl_msg *	nfnl_log_build_mode(uint16_t, uint8_t, uint32_t);
-extern int		nfnl_log_set_mode(struct nl_handle *, uint16_t,
-					  uint8_t, uint32_t);
+/* Attributes */
+extern void			nfnl_log_set_group(struct nfnl_log *, uint16_t);
+extern int			nfnl_log_test_group(const struct nfnl_log *);
+extern uint16_t			nfnl_log_get_group(const struct nfnl_log *);
 
-extern void		nfnl_log_set_family(struct nfnl_log *, uint8_t);
-extern uint8_t		nfnl_log_get_family(const struct nfnl_log *);
+extern void			nfnl_log_set_copy_mode(struct nfnl_log *,
+						       enum nfnl_log_copy_mode);
+extern int			nfnl_log_test_copy_mode(const struct nfnl_log *);
+extern enum nfnl_log_copy_mode	nfnl_log_get_copy_mode(const struct nfnl_log *);
 
-extern void		nfnl_log_set_hwproto(struct nfnl_log *, uint16_t);
-extern int		nfnl_log_test_hwproto(const struct nfnl_log *);
-extern uint16_t		nfnl_log_get_hwproto(const struct nfnl_log *);
+extern char *			nfnl_log_copy_mode2str(enum nfnl_log_copy_mode,
+						       char *, size_t);
+extern enum nfnl_log_copy_mode	nfnl_log_str2copy_mode(const char *);
 
-extern void		nfnl_log_set_hook(struct nfnl_log *, uint8_t);
-extern int		nfnl_log_test_hook(const struct nfnl_log *);
-extern uint8_t		nfnl_log_get_hook(const struct nfnl_log *);
+extern void			nfnl_log_set_copy_range(struct nfnl_log *, uint32_t);
+extern int			nfnl_log_test_copy_range(const struct nfnl_log *);
+extern uint32_t			nfnl_log_get_copy_range(const struct nfnl_log *);
 
-extern void		nfnl_log_set_mark(struct nfnl_log *, uint32_t);
-extern int		nfnl_log_test_mark(const struct nfnl_log *);
-extern uint32_t		nfnl_log_get_mark(const struct nfnl_log *);
+extern void			nfnl_log_set_flush_timeout(struct nfnl_log *, uint32_t);
+extern int			nfnl_log_test_flush_timeout(const struct nfnl_log *);
+extern uint32_t			nfnl_log_get_flush_timeout(const struct nfnl_log *);
 
-extern void		nfnl_log_set_timestamp(struct nfnl_log *,
-					       struct timeval *);
-extern const struct timeval *nfnl_log_get_timestamp(const struct nfnl_log *);
+extern void			nfnl_log_set_alloc_size(struct nfnl_log *, uint32_t);
+extern int			nfnl_log_test_alloc_size(const struct nfnl_log *);
+extern uint32_t			nfnl_log_get_alloc_size(const struct nfnl_log *);
 
-extern void		nfnl_log_set_indev(struct nfnl_log *, uint32_t);
-extern uint32_t		nfnl_log_get_indev(const struct nfnl_log *);
+extern void			nfnl_log_set_queue_threshold(struct nfnl_log *, uint32_t);
+extern int			nfnl_log_test_queue_threshold(const struct nfnl_log *);
+extern uint32_t			nfnl_log_get_queue_threshold(const struct nfnl_log *);
 
-extern void		nfnl_log_set_outdev(struct nfnl_log *, uint32_t);
-extern uint32_t		nfnl_log_get_outdev(const struct nfnl_log *);
+extern void			nfnl_log_set_flags(struct nfnl_log *, unsigned int);
+extern void			nfnl_log_unset_flags(struct nfnl_log *, unsigned int);
+extern unsigned int		nfnl_log_get_flags(const struct nfnl_log *);
 
-extern void		nfnl_log_set_physindev(struct nfnl_log *, uint32_t);
-extern uint32_t		nfnl_log_get_physindev(const struct nfnl_log *);
+extern char *			nfnl_log_flags2str(unsigned int, char *, size_t);
+extern unsigned int		nfnl_log_str2flags(const char *);
 
-extern void		nfnl_log_set_physoutdev(struct nfnl_log *, uint32_t);
-extern uint32_t		nfnl_log_get_physoutdev(const struct nfnl_log *);
+/* Message construction / sending */
+extern struct nl_msg *		nfnl_log_build_pf_bind(uint8_t);
+extern int			nfnl_log_pf_bind(struct nl_handle *, uint8_t);
 
-extern void		nfnl_log_set_hwaddr(struct nfnl_log *, uint8_t *, int);
-extern const uint8_t *	nfnl_log_get_hwaddr(const struct nfnl_log *, int *);
+extern struct nl_msg *		nfnl_log_build_pf_unbind(uint8_t);
+extern int			nfnl_log_pf_unbind(struct nl_handle *, uint8_t);
 
-extern int		nfnl_log_set_payload(struct nfnl_log *, uint8_t *, int);
-extern const void *	nfnl_log_get_payload(const struct nfnl_log *, int *);
+extern struct nl_msg *		nfnl_log_build_create_request(const struct nfnl_log *);
+extern int			nfnl_log_create(struct nl_handle *,
+						const struct nfnl_log *);
 
-extern int		nfnl_log_set_prefix(struct nfnl_log *, void *);
-extern const char *	nfnl_log_get_prefix(const struct nfnl_log *);
+extern struct nl_msg *		nfnl_log_build_change_request(const struct nfnl_log *);
+extern int			nfnl_log_change(struct nl_handle *,
+						const struct nfnl_log *);
 
-extern void		nfnl_log_set_uid(struct nfnl_log *, uint32_t);
-extern int		nfnl_log_test_uid(const struct nfnl_log *);
-extern uint32_t		nfnl_log_get_uid(const struct nfnl_log *);
-
-extern void		nfnl_log_set_gid(struct nfnl_log *, uint32_t);
-extern int		nfnl_log_test_gid(const struct nfnl_log *);
-extern uint32_t		nfnl_log_get_gid(const struct nfnl_log *);
-
-extern void		nfnl_log_set_seq(struct nfnl_log *, uint32_t);
-extern int		nfnl_log_test_seq(const struct nfnl_log *);
-extern uint32_t		nfnl_log_get_seq(const struct nfnl_log *);
-
-extern void		nfnl_log_set_seq_global(struct nfnl_log *, uint32_t);
-extern int		nfnl_log_test_seq_global(const struct nfnl_log *);
-extern uint32_t		nfnl_log_get_seq_global(const struct nfnl_log *);
+extern struct nl_msg *		nfnl_log_build_delete_request(const struct nfnl_log *);
+extern int			nfnl_log_delete(struct nl_handle *,
+						const struct nfnl_log *);
 
 #ifdef __cplusplus
 }

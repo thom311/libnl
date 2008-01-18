@@ -63,6 +63,11 @@ static void __init init_routing_table_names(void)
 	add_routing_table_name(RT_TABLE_LOCAL, "local");
 };
 
+static void __exit release_routing_table_names(void)
+{
+	__trans_list_clear(&table_names);
+}
+
 int rtnl_route_read_table_names(const char *path)
 {
 	__trans_list_clear(&table_names);
@@ -103,6 +108,11 @@ static void __init init_proto_names(void)
 	add_proto_name(RTPROT_BOOT, "boot");
 	add_proto_name(RTPROT_STATIC, "static");
 };
+
+static void __exit release_proto_names(void)
+{
+	__trans_list_clear(&proto_names);
+}
 
 int rtnl_route_read_protocol_names(const char *path)
 {

@@ -751,6 +751,7 @@ struct nfnl_log {
 	int			log_payload_len;
 	char *			log_prefix;
 	uint32_t		log_uid;
+	uint32_t		log_gid;
 	uint32_t		log_seq;
 	uint32_t		log_seq_global;
 };

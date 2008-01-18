@@ -29,8 +29,9 @@
 #define LOG_ATTR_PAYLOAD		(1UL << 10)
 #define LOG_ATTR_PREFIX			(1UL << 11)
 #define LOG_ATTR_UID			(1UL << 12)
-#define LOG_ATTR_SEQ			(1UL << 13)
-#define LOG_ATTR_SEQ_GLOBAL		(1UL << 14)
+#define LOG_ATTR_GID			(1UL << 13)
+#define LOG_ATTR_SEQ			(1UL << 14)
+#define LOG_ATTR_SEQ_GLOBAL		(1UL << 15)
 /** @endcond */
 
 static void log_free_data(struct nl_object *c)
@@ -143,6 +144,12 @@ static int log_dump(struct nl_object *a, struct nl_dump_params *p)
 
 	if (log->ce_mask & LOG_ATTR_PAYLOAD)
 		dp_dump(p, "PAYLOADLEN=%d ", log->log_payload_len);
+
+	if (log->ce_mask & LOG_ATTR_UID)
+		dp_dump(p, "UID=%u ", log->log_uid);
+
+	if (log->ce_mask & LOG_ATTR_GID)
+		dp_dump(p, "GID=%u ", log->log_gid);
 
 	if (log->ce_mask & LOG_ATTR_SEQ)
 		dp_dump(p, "SEQ=%d ", log->log_seq);
@@ -377,6 +384,23 @@ uint32_t nfnl_log_get_uid(const struct nfnl_log *log)
 {
 	return log->log_uid;
 }
+
+void nfnl_log_set_gid(struct nfnl_log *log, uint32_t gid)
+{
+	log->log_gid = gid;
+	log->ce_mask |= LOG_ATTR_GID;
+}
+
+int nfnl_log_test_gid(const struct nfnl_log *log)
+{
+	return !!(log->ce_mask & LOG_ATTR_GID);
+}
+
+uint32_t nfnl_log_get_gid(const struct nfnl_log *log)
+{
+	return log->log_gid;
+}
+
 
 void nfnl_log_set_seq(struct nfnl_log *log, uint32_t seq)
 {

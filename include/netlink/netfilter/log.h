@@ -89,6 +89,10 @@ extern void		nfnl_log_set_uid(struct nfnl_log *, uint32_t);
 extern int		nfnl_log_test_uid(const struct nfnl_log *);
 extern uint32_t		nfnl_log_get_uid(const struct nfnl_log *);
 
+extern void		nfnl_log_set_gid(struct nfnl_log *, uint32_t);
+extern int		nfnl_log_test_gid(const struct nfnl_log *);
+extern uint32_t		nfnl_log_get_gid(const struct nfnl_log *);
+
 extern void		nfnl_log_set_seq(struct nfnl_log *, uint32_t);
 extern int		nfnl_log_test_seq(const struct nfnl_log *);
 extern uint32_t		nfnl_log_get_seq(const struct nfnl_log *);

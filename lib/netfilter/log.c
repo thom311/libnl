@@ -58,6 +58,7 @@ static struct nla_policy log_policy[NFULA_MAX+1] = {
 	//[NFULA_PAYLOAD]
 	[NFULA_PREFIX]			= { .type = NLA_STRING, },
 	[NFULA_UID]			= { .type = NLA_U32 },
+	[NFULA_GID]			= { .type = NLA_U32 },
 	[NFULA_SEQ]			= { .type = NLA_U32 },
 	[NFULA_SEQ_GLOBAL]		= { .type = NLA_U32 },
 };
@@ -145,6 +146,10 @@ struct nfnl_log *nfnlmsg_log_parse(struct nlmsghdr *nlh)
 	attr = tb[NFULA_UID];
 	if (attr)
 		nfnl_log_set_uid(log, ntohl(nla_get_u32(attr)));
+
+	attr = tb[NFULA_GID];
+	if (attr)
+		nfnl_log_set_gid(log, ntohl(nla_get_u32(attr)));
 
 	attr = tb[NFULA_SEQ];
 	if (attr)

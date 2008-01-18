@@ -86,7 +86,8 @@ struct nfnl_log *nfnlmsg_log_parse(struct nlmsghdr *nlh)
 	if (attr) {
 		struct nfulnl_msg_packet_hdr *hdr = nla_data(attr);
 
-		nfnl_log_set_hwproto(log, hdr->hw_protocol);
+		if (hdr->hw_protocol)
+			nfnl_log_set_hwproto(log, hdr->hw_protocol);
 		nfnl_log_set_hook(log, hdr->hook);
 	}
 

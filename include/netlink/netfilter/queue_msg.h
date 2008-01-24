@@ -41,7 +41,7 @@ extern uint8_t			nfnl_queue_msg_get_family(const struct nfnl_queue_msg *);
 
 extern void			nfnl_queue_msg_set_packetid(struct nfnl_queue_msg *, uint32_t);
 extern int			nfnl_queue_msg_test_packetid(const struct nfnl_queue_msg *);
-extern uint16_t			nfnl_queue_msg_get_packetid(const struct nfnl_queue_msg *);
+extern uint32_t			nfnl_queue_msg_get_packetid(const struct nfnl_queue_msg *);
 
 extern void			nfnl_queue_msg_set_hwproto(struct nfnl_queue_msg *, uint16_t);
 extern int			nfnl_queue_msg_test_hwproto(const struct nfnl_queue_msg *);

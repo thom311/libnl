@@ -227,7 +227,7 @@ int nfnl_queue_msg_test_packetid(const struct nfnl_queue_msg *msg)
 	return !!(msg->ce_mask & QUEUE_MSG_ATTR_PACKETID);
 }
 
-uint16_t nfnl_queue_msg_get_packetid(const struct nfnl_queue_msg *msg)
+uint32_t nfnl_queue_msg_get_packetid(const struct nfnl_queue_msg *msg)
 {
 	return msg->queue_msg_packetid;
 }

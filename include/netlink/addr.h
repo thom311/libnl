@@ -22,6 +22,7 @@ struct nl_addr;
 
 /* Creation */
 extern struct nl_addr *	nl_addr_alloc(size_t);
+extern struct nl_addr *	nl_addr_alloc_from_attr(struct nlattr *, int);
 extern struct nl_addr *	nl_addr_build(int, void *, size_t);
 extern struct nl_addr *	nl_addr_parse(const char *, int);
 extern struct nl_addr *	nl_addr_clone(struct nl_addr *);

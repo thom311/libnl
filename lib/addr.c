@@ -203,6 +203,21 @@ struct nl_addr *nl_addr_build(int family, void *buf, size_t size)
 }
 
 /**
+ * Allocate abstract address based on netlink attribute.
+ * @arg nla		Netlink attribute of unspecific type.
+ * @arg family		Address family.
+ *
+ * Considers the netlink attribute payload a address of the specified
+ * family and allocates a new abstract address based on it.
+ *
+ * @return Newly allocated address handle or NULL.
+ */
+struct nl_addr *nl_addr_alloc_from_attr(struct nlattr *nla, int family)
+{
+	return nl_addr_build(family, nla_data(nla), nla_len(nla));
+}
+
+/**
  * Allocate abstract address object based on a character string
  * @arg addrstr		Address represented as character string.
  * @arg hint		Address family hint or AF_UNSPEC.

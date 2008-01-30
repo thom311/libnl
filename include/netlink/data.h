@@ -22,6 +22,7 @@ struct nl_data;
 
 /* General */
 extern struct nl_data *	nl_data_alloc(void *, size_t);
+extern struct nl_data * nl_data_alloc_from_attr(struct nlattr *);
 extern struct nl_data *	nl_data_clone(struct nl_data *);
 extern int		nl_data_append(struct nl_data *, void *, size_t);
 extern void		nl_data_free(struct nl_data *);

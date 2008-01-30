@@ -341,6 +341,7 @@ static inline int nl_cb_call(struct nl_cb *cb, int type, struct nl_msg *msg)
 
 #define __init __attribute__ ((constructor))
 #define __exit __attribute__ ((destructor))
+#define __deprecated __attribute__ ((deprecated))
 
 #define P_ACCEPT 0
 #define P_IGNORE 0

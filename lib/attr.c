@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #include <netlink-local.h>
@@ -21,89 +21,376 @@
  * @ingroup msg
  * @defgroup attr Attributes
  * Netlink Attributes Construction/Parsing Interface
- * @par 0) Introduction
- * Netlink attributes are chained together following each other:
+ *
+ * \section attr_sec Netlink Attributes
+ * Netlink attributes allow for data chunks of arbitary length to be
+ * attached to a netlink message. Each attribute is encoded with a
+ * type and length field, both 16 bits, stored in the attribute header
+ * preceding the attribute data. The main advantage of using attributes
+ * over packing everything into the family header is that the interface
+ * stays extendable as new attributes can supersede old attributes while
+ * remaining backwards compatible. Also attributes can be defined optional
+ * thus avoiding the transmission of unnecessary empty data blocks.
+ * Special nested attributes allow for more complex data structures to
+ * be transmitted, e.g. trees, lists, etc.
+ *
+ * While not required, netlink attributes typically follow the family
+ * header of a netlink message and must be properly aligned to NLA_ALIGNTO:
  * @code
- *    <------- nla_total_size(payload) ------->
- *    <---- nla_attr_size(payload) ----->
- *   +----------+- - -+- - - - - - - - - +- - -+-------- - -
- *   |  Header  | Pad |     Payload      | Pad |  Header
- *   +----------+- - -+- - - - - - - - - +- - -+-------- - -
- *                     <- nla_len(nla) ->      ^
- *   nla_data(nla)----^                        |
- *   nla_next(nla)-----------------------------'
+ *   +----------------+- - -+---------------+- - -+------------+- - -+
+ *   | Netlink Header | Pad | Family Header | Pad | Attributes | Pad |
+ *   +----------------+- - -+---------------+- - -+------------+- - -+
  * @endcode
  *
+ * The actual attributes are chained together each separately aligned to
+ * NLA_ALIGNTO. The position of an attribute is defined based on the
+ * length field of the preceding attributes:
+ * @code
+ *   +-------------+- - -+-------------+- - -+------
+ *   | Attribute 1 | Pad | Attribute 2 | Pad | ...
+ *   +-------------+- - -+-------------+- - -+------
+ *   nla_next(attr1)------^
+ * @endcode
+ *
+ * The attribute itself consists of the attribute header followed by
+ * the actual payload also aligned to NLA_ALIGNTO. The function nla_data()
+ * returns a pointer to the start of the payload while nla_len() returns
+ * the length of the payload in bytes.
+ *
+ * \b Note: Be aware, NLA_ALIGNTO equals to 4 bytes, therefore it is not
+ * safe to dereference any 64 bit data types directly.
+ *
+ * @code
+ *    <----------- nla_total_size(payload) ----------->
+ *    <-------- nla_attr_size(payload) --------->
+ *   +------------------+- - -+- - - - - - - - - +- - -+
+ *   | Attribute Header | Pad |     Payload      | Pad |
+ *   +------------------+- - -+- - - - - - - - - +- - -+
+ *   nla_data(nla)-------------^
+ *                             <- nla_len(nla) ->
+ * @endcode
+ *
+ * @subsection attr_datatypes Attribute Data Types
+ * A number of basic data types are supported to simplify access and
+ * validation of netlink attributes. This data type information is
+ * not encoded in the attribute, both the kernel and userspace part
+ * are required to share this information on their own.
+ *
+ * One of the major advantages of these basic types is the automatic
+ * validation of each attribute based on an attribute policy. The
+ * validation covers most of the checks required to safely use
+ * attributes and thus keeps the individual sanity check to a minimum.
+ *
+ * Never access attribute payload without ensuring basic validation
+ * first, attributes may:
+ * - not be present even though required
+ * - contain less actual payload than expected
+ * - fake a attribute length which exceeds the end of the message
+ * - contain unterminated character strings
+ *
+ * Policies are defined as array of the struct nla_policy. The array is
+ * indexed with the attribute type, therefore the array must be sized
+ * accordingly.
+ * @code
+ * static struct nla_policy my_policy[ATTR_MAX+1] = {
+ * 	[ATTR_FOO] = { .type = ..., .minlen = ..., .maxlen = ... },
+ * };
+ *
+ * err = nla_validate(attrs, attrlen, ATTR_MAX, &my_policy);
+ * @endcode
+ *
+ * Some basic validations are performed on every attribute, regardless of type.
+ * - If the attribute type exceeds the maximum attribute type specified or
+ *   the attribute type is lesser-or-equal than zero, the attribute will
+ *   be silently ignored.
+ * - If the payload length falls below the \a minlen value the attribute
+ *   will be rejected.
+ * - If \a maxlen is non-zero and the payload length exceeds the \a maxlen
+ *   value the attribute will be rejected.
+ *
+ *
+ * @par Unspecific Attribute (NLA_UNSPEC)
+ * This is the standard type if no type is specified. It is used for
+ * binary data of arbitary length. Typically this attribute carries
+ * a binary structure or a stream of bytes.
  * @par
- * The attribute header and payload must be aligned properly:
  * @code
- *  <------- NLA_HDRLEN ------> <-- NLA_ALIGN(payload)-->
- * +---------------------+- - -+- - - - - - - - - -+- - -+
- * |        Header       | Pad |     Payload       | Pad |
- * |   (struct nlattr)   | ing |                   | ing |
- * +---------------------+- - -+- - - - - - - - - -+- - -+
- *  <-------------- nlattr->nla_len -------------->
+ * // In this example, we will assume a binary structure requires to
+ * // be transmitted. The definition of the structure will typically
+ * // go into a header file available to both the kernel and userspace
+ * // side.
+ * //
+ * // Note: Be careful when putting 64 bit data types into a structure.
+ * // The attribute payload is only aligned to 4 bytes, dereferencing
+ * // the member may fail.
+ * struct my_struct {
+ *     int a;
+ *     int b;
+ * };
+ *
+ * // The validation function will not enforce an exact length match to
+ * // allow structures to grow as required. Note: While it is allowed
+ * // to add members to the end of the structure, changing the order or
+ * // inserting members in the middle of the structure will break your
+ * // binary interface.
+ * static struct nla_policy my_policy[ATTR_MAX+1] = {
+ *     [ATTR_MY_STRICT] = { .type = NLA_UNSPEC,
+ *                          .minlen = sizeof(struct my_struct) },
+ *
+ * // The binary structure is appened to the message using nla_put()
+ * struct my_struct foo = { .a = 1, .b = 2 };
+ * nla_put(msg, ATTR_MY_STRUCT, sizeof(foo), &foo);
+ *
+ * // On the receiving side, a pointer to the structure pointing inside
+ * // the message payload is returned by nla_get().
+ * if (attrs[ATTR_MY_STRUCT])
+ *     struct my_struct *foo = nla_get(attrs[ATTR_MY_STRUCT]);
  * @endcode
  *
- * @par Nested TLVs:
- * Nested TLVs are an array of TLVs nested into another TLV. This can be useful
- * to allow subsystems to have their own formatting rules without the need to
- * make the underlying layer be aware of it. It can also be useful to transfer
- * arrays, lists and flattened trees.
- * \code
- *  <-------------------- NLA_ALIGN(...) ------------------->
- * +---------------+- - - - - - - - - - - - - - - - - -+- - -+
- * |               |+---------+---------+- - -+-------+|     |
- * |  TLV Header   ||  TLV 1  |  TLV 2  |     | TLV n || Pad |
- * |               |+---------+---------+- - -+-------+|     |
- * +---------------+- - - - - - - - - - - - - - - - - -+- - -+
- *                  <--------- nla_data(nla) --------->
- * \endcode
- *
- * @par 1) Constructing a message with attributes
+ * @par Integers (NLA_U8, NLA_U16, NLA_U32, NLA_U64)
+ * Integers come in different sizes from 8 bit to 64 bit. However, since the
+ * payload length is aligned to 4 bytes, integers smaller than 32 bit are
+ * only useful to enforce the maximum range of values.
+ * @par
+ * \b Note: There is no difference made between signed and unsigned integers.
+ * The validation only enforces the minimal payload length required to store
+ * an integer of specified type.
+ * @par
  * @code
- * int param1 = 10;
- * char *param2 = "parameter text";
+ * // Even though possible, it does not make sense to specify .minlen or
+ * // .maxlen for integer types. The data types implies the corresponding
+ * // minimal payload length.
+ * static struct nla_policy my_policy[ATTR_MAX+1] = {
+ *     [ATTR_FOO] = { .type = NLA_U32 },
  *
- * struct nl_msg *msg = nlmsg_alloc();
- * nla_put_u32(msg, 1, param1);
- * nla_put_string(msg, 2, param2);
- * 
- * nl_send_auto_complete(handle, nl_msg_get(msg));
- * nlmsg_free(msg);
+ * // Numeric values can be appended directly using the respective
+ * // nla_put_uxxx() function
+ * nla_put_u32(msg, ATTR_FOO, 123);
+ *
+ * // Same for the receiving side.
+ * if (attrs[ATTR_FOO])
+ *     uint32_t foo = nla_get_u32(attrs[ATTR_FOO]);
  * @endcode
  *
- * @par 2) Constructing nested attributes
+ * @par Character string (NLA_STRING)
+ * This data type represents a NUL terminated character string of variable
+ * length. For binary data streams the type NLA_UNSPEC is recommended.
+ * @par
  * @code
- * struct nl_msg * nested_config(void)
- * {
- * 	int a = 5, int b = 10;
- * 	struct nl_msg *n = nlmsg_alloc();
- * 	nla_put_u32(n, 10, a);
- * 	nla_put_u32(n, 20, b);
- * 	return n;
+ * // Enforce a NUL terminated character string of at most 4 characters
+ * // including the NUL termination.
+ * static struct nla_policy my_policy[ATTR_MAX+1] = {
+ *     [ATTR_BAR] = { .type = NLA_STRING, maxlen = 4 },
+ *
+ * // nla_put_string() creates a string attribute of the necessary length
+ * // and appends it to the message including the NUL termination.
+ * nla_put_string(msg, ATTR_BAR, "some text");
+ *
+ * // It is safe to use the returned character string directly if the
+ * // attribute has been validated as the validation enforces the proper
+ * // termination of the string.
+ * if (attrs[ATTR_BAR])
+ *     char *text = nla_get_string(attrs[ATTR_BAR]);
+ * @endcode
+ *
+ * @par Flag (NLA_FLAG)
+ * This attribute type may be used to indicate the presence of a flag. The
+ * attribute is only valid if the payload length is zero. The presence of
+ * the attribute header indicates the presence of the flag.
+ * @par
+ * @code
+ * // This attribute type is special as .minlen and .maxlen have no effect.
+ * static struct nla_policy my_policy[ATTR_MAX+1] = {
+ *     [ATTR_FLAG] = { .type = NLA_FLAG },
+ *
+ * // nla_put_flag() appends a zero sized attribute to the message.
+ * nla_put_flag(msg, ATTR_FLAG);
+ *
+ * // There is no need for a receival function, the presence is the value.
+ * if (attrs[ATTR_FLAG])
+ *     // flag is present
+ * @endcode
+ *
+ * @par Micro Seconds (NLA_MSECS)
+ *
+ * @par Nested Attribute (NLA_NESTED)
+ * Attributes can be nested and put into a container to create groups, lists
+ * or to construct trees of attributes. Nested attributes are often used to
+ * pass attributes to a subsystem where the top layer has no knowledge of the
+ * configuration possibilities of each subsystem.
+ * @par
+ * \b Note: When validating the attributes using nlmsg_validate() or
+ * nlmsg_parse() it will only affect the top level attributes. Each
+ * level of nested attributes must be validated seperately using
+ * nla_parse_nested() or nla_validate().
+ * @par
+ * @code
+ * // The minimal length policy may be used to enforce the presence of at
+ * // least one attribute.
+ * static struct nla_policy my_policy[ATTR_MAX+1] = {
+ *     [ATTR_OPTS] = { .type = NLA_NESTED, minlen = NLA_HDRLEN },
+ *
+ * // Nested attributes are constructed by enclosing the attributes
+ * // to be nested with calls to nla_nest_start() respetively nla_nest_end().
+ * struct nlattr *opts = nla_nest_start(msg, ATTR_OPTS);
+ * nla_put_u32(msg, ATTR_FOO, 123);
+ * nla_put_string(msg, ATTR_BAR, "some text");
+ * nla_nest_end(msg, opts);
+ *
+ * // Various methods exist to parse nested attributes, the easiest being
+ * // nla_parse_nested() which also allows validation in the same step.
+ * if (attrs[ATTR_OPTS]) {
+ *     struct nlattr *nested[ATTR_MAX+1];
+ *
+ *     nla_parse_nested(nested, ATTR_MAX, attrs[ATTR_OPTS], &policy);
+ *
+ *     if (nested[ATTR_FOO])
+ *         uint32_t foo = nla_get_u32(nested[ATTR_FOO]);
  * }
- *
- * ...
- * struct nl_msg *m = nlmsg_alloc();
- * struct nl_msg *nest = nested_config();
- * nla_put_nested(m, 1, nest);
- *
- * nl_send_auto_complete(handle, nl_msg_get(m));
- * nlmsg_free(nest);
- * nlmsg_free(m);
  * @endcode
+ *
+ * @subsection attr_exceptions Exception Based Attribute Construction
+ * Often a large number of attributes are added to a message in a single
+ * function. In order to simplify error handling, a second set of
+ * construction functions exist which jump to a error label when they
+ * fail instead of returning an error code. This second set consists
+ * of macros which are named after their error code based counterpart
+ * except that the name is written all uppercase.
+ *
+ * All of the macros jump to the target \c nla_put_failure if they fail.
+ * @code
+ * void my_func(struct nl_msg *msg)
+ * {
+ *     NLA_PUT_U32(msg, ATTR_FOO, 10);
+ *     NLA_PUT_STRING(msg, ATTR_BAR, "bar");
+ *
+ *     return 0;
+ *
+ * nla_put_failure:
+ *     return -ENOMEM;
+ * }
+ * @endcode
+ *
+ * @subsection attr_examples Examples
+ * @par Example 1.1 Constructing a netlink message with attributes.
+ * @code
+ * struct nl_msg *build_msg(int ifindex, struct nl_addr *lladdr, int mtu)
+ * {
+ *     struct nl_msg *msg;
+ *     struct nlattr *info, *vlan;
+ *     struct ifinfomsg ifi = {
+ *         .ifi_family = AF_INET,
+ *         .ifi_index = ifindex,
+ *     };
+ *
+ *     // Allocate a new netlink message, type=RTM_SETLINK, flags=NLM_F_ECHO
+ *     if (!(msg = nlmsg_alloc_simple(RTM_SETLINK, NLM_F_ECHO)))
+ *         return NULL;
+ *
+ *     // Append the family specific header (struct ifinfomsg)
+ *     if (nlmsg_append(msg, &ifi, sizeof(ifi), NLMSG_ALIGNTO) < 0)
+ *         goto nla_put_failure
+ *
+ *     // Append a 32 bit integer attribute to carry the MTU
+ *     NLA_PUT_U32(msg, IFLA_MTU, mtu);
+ *
+ *     // Append a unspecific attribute to carry the link layer address
+ *     NLA_PUT_ADDR(msg, IFLA_ADDRESS, lladdr);
+ *
+ *     // Append a container for nested attributes to carry link information
+ *     if (!(info = nla_nest_start(msg, IFLA_LINKINFO)))
+ *         goto nla_put_failure;
+ *
+ *     // Put a string attribute into the container
+ *     NLA_PUT_STRING(msg, IFLA_INFO_KIND, "vlan");
+ *
+ *     // Append another container inside the open container to carry
+ *     // vlan specific attributes
+ *     if (!(vlan = nla_nest_start(msg, IFLA_INFO_DATA)))
+ *         goto nla_put_failure;
+ *
+ *     // add vlan specific info attributes here...
+ *
+ *     // Finish nesting the vlan attributes and close the second container.
+ *     nla_nest_end(msg, vlan);
+ *
+ *     // Finish nesting the link info attribute and close the first container.
+ *     nla_nest_end(msg, info);
+ *
+ *     return msg;
+ *
+ * // If any of the construction macros fails, we end up here.
+ * nla_put_failure:
+ *     nlmsg_free(msg);
+ *     return NULL;
+ * }
+ * @endcode
+ *
+ * @par Example 2.1 Parsing a netlink message with attributes.
+ * @code
+ * int parse_message(struct nl_msg *msg)
+ * {
+ *     // The policy defines two attributes: a 32 bit integer and a container
+ *     // for nested attributes.
+ *     struct nla_policy attr_policy[ATTR_MAX+1] = {
+ *         [ATTR_FOO] = { .type = NLA_U32 },
+ *         [ATTR_BAR] = { .type = NLA_NESTED },
+ *     };
+ *     struct nlattr *attrs[ATTR_MAX+1];
+ *     int err;
+ *
+ *     // The nlmsg_parse() function will make sure that the message contains
+ *     // enough payload to hold the header (struct my_hdr), validates any
+ *     // attributes attached to the messages and stores a pointer to each
+ *     // attribute in the attrs[] array accessable by attribute type.
+ *     if ((err = nlmsg_parse(nlmsg_hdr(msg), sizeof(struct my_hdr), attrs,
+ *                            ATTR_MAX, attr_policy)) < 0)
+ *         goto errout;
+ *
+ *     if (attrs[ATTR_FOO]) {
+ *         // It is safe to directly access the attribute payload without
+ *         // any further checks since nlmsg_parse() enforced the policy.
+ *         uint32_t foo = nla_get_u32(attrs[ATTR_FOO]);
+ *     }
+ *
+ *     if (attrs[ATTR_BAR]) {
+ *         struct nlattr *nested[NESTED_MAX+1];
+ *
+ *         // Attributes nested in a container can be parsed the same way
+ *         // as top level attributes.
+ *         if ((err = nla_parse_nested(nested, NESTED_MAX, attrs[ATTR_BAR],
+ *                                     nested_policy)) < 0)
+ *             goto errout;
+ *
+ *         // Process nested attributes here.
+ *     }
+ *
+ *     err = 0;
+ * errout:
+ *     return err;
+ * }
+ * @endcode
+ *
  * @{
  */
 
 /**
- * @name Size Calculations
+ * @name Attribute Size Calculation
  * @{
  */
 
 /**
- * length of attribute not including padding
- * @arg payload		length of payload
+ * Return size of attribute whithout padding.
+ * @arg payload		Payload length of attribute.
+ *
+ * @code
+ *    <-------- nla_attr_size(payload) --------->
+ *   +------------------+- - -+- - - - - - - - - +- - -+
+ *   | Attribute Header | Pad |     Payload      | Pad |
+ *   +------------------+- - -+- - - - - - - - - +- - -+
+ * @endcode
+ *
+ * @return Size of attribute in bytes without padding.
  */
 int nla_attr_size(int payload)
 {
@@ -111,8 +398,17 @@ int nla_attr_size(int payload)
 }
 
 /**
- * total length of attribute including padding
- * @arg payload		length of payload
+ * Return size of attribute including padding.
+ * @arg payload		Payload length of attribute.
+ *
+ * @code
+ *    <----------- nla_total_size(payload) ----------->
+ *   +------------------+- - -+- - - - - - - - - +- - -+
+ *   | Attribute Header | Pad |     Payload      | Pad |
+ *   +------------------+- - -+- - - - - - - - - +- - -+
+ * @endcode
+ *
+ * @return Size of attribute in bytes.
  */
 int nla_total_size(int payload)
 {
@@ -120,8 +416,17 @@ int nla_total_size(int payload)
 }
 
 /**
- * length of padding at the tail of the attribute
- * @arg payload		length of payload
+ * Return length of padding at the tail of the attribute.
+ * @arg payload		Payload length of attribute.
+ *
+ * @code
+ *   +------------------+- - -+- - - - - - - - - +- - -+
+ *   | Attribute Header | Pad |     Payload      | Pad |
+ *   +------------------+- - -+- - - - - - - - - +- - -+
+ *                                                <--->  
+ * @endcode
+ *
+ * @return Length of padding in bytes.
  */
 int nla_padlen(int payload)
 {
@@ -131,13 +436,15 @@ int nla_padlen(int payload)
 /** @} */
 
 /**
- * @name Payload Access
+ * @name Parsing Attributes
  * @{
  */
 
 /**
- * attribute type
- * @arg nla		netlink attribute
+ * Return type of the attribute.
+ * @arg nla		Attribute.
+ *
+ * @return Type of attribute.
  */
 int nla_type(const struct nlattr *nla)
 {
@@ -145,8 +452,10 @@ int nla_type(const struct nlattr *nla)
 }
 
 /**
- * head of payload
- * @arg nla		netlink attribute
+ * Return pointer to the payload section.
+ * @arg nla		Attribute.
+ *
+ * @return Pointer to start of payload section.
  */
 void *nla_data(const struct nlattr *nla)
 {
@@ -154,25 +463,27 @@ void *nla_data(const struct nlattr *nla)
 }
 
 /**
- * length of payload
- * @arg nla		netlink attribute
+ * Return length of the payload .
+ * @arg nla		Attribute
+ *
+ * @return Length of payload in bytes.
  */
 int nla_len(const struct nlattr *nla)
 {
 	return nla->nla_len - NLA_HDRLEN;
 }
 
-/** @} */
-
 /**
- * @name Attribute Parsing
- * @{
- */
-
-/**
- * check if the netlink attribute fits into the remaining bytes
- * @arg nla		netlink attribute
- * @arg remaining	number of bytes remaining in attribute stream
+ * Check if the attribute header and payload can be accessed safely.
+ * @arg nla		Attribute of any kind.
+ * @arg remaining	Number of bytes remaining in attribute stream.
+ *
+ * Verifies that the header and payload do not exceed the number of
+ * bytes left in the attribute stream. This function must be called
+ * before access the attribute header or payload when iterating over
+ * the attribute stream using nla_next().
+ *
+ * @return True if the attribute can be accessed safely, false otherwise.
  */
 int nla_ok(const struct nlattr *nla, int remaining)
 {
@@ -182,12 +493,20 @@ int nla_ok(const struct nlattr *nla, int remaining)
 }
 
 /**
- * next netlink attribte in attribute stream
- * @arg nla		netlink attribute
- * @arg remaining	number of bytes remaining in attribute stream
+ * Return next attribute in a stream of attributes.
+ * @arg nla		Attribute of any kind.
+ * @arg remaining	Variable to count remaining bytes in stream.
  *
- * @return the next netlink attribute in the attribute stream and
- * decrements remaining by the size of the current attribute.
+ * Calculates the offset to the next attribute based on the attribute
+ * given. The attribute provided is assumed to be accessible, the
+ * caller is responsible to use nla_ok() beforehand. The offset (length
+ * of specified attribute including padding) is then subtracted from
+ * the remaining bytes variable and a pointer to the next attribute is
+ * returned.
+ *
+ * nla_next() can be called as long as remainig is >0.
+ *
+ * @return Pointer to next attribute.
  */
 struct nlattr *nla_next(const struct nlattr *nla, int *remaining)
 {
@@ -245,18 +564,21 @@ static int validate_nla(struct nlattr *nla, int maxtype,
 
 
 /**
- * Parse a stream of attributes into a tb buffer
- * @arg tb		destination array with maxtype+1 elements
- * @arg maxtype		maximum attribute type to be expected
- * @arg head		head of attribute stream
- * @arg len		length of attribute stream
- * @arg policy		validation policy
+ * Create attribute index based on a stream of attributes.
+ * @arg tb		Index array to be filled (maxtype+1 elements).
+ * @arg maxtype		Maximum attribute type expected and accepted.
+ * @arg head		Head of attribute stream.
+ * @arg len		Length of attribute stream.
+ * @arg policy		Attribute validation policy.
  *
- * Parses a stream of attributes and stores a pointer to each attribute in
- * the tb array accessable via the attribute type. Attributes with a type
- * exceeding maxtype will be silently ignored for backwards compatibility
- * reasons. policy may be set to NULL if no validation is required.
+ * Iterates over the stream of attributes and stores a pointer to each
+ * attribute in the index array using the attribute type as index to
+ * the array. Attribute with a type greater than the maximum type
+ * specified will be silently ignored in order to maintain backwards
+ * compatibility. If \a policy is not NULL, the attribute will be
+ * validated using the specified policy.
  *
+ * @see nla_validate
  * @return 0 on success or a negative error code.
  */
 int nla_parse(struct nlattr *tb[], int maxtype, struct nlattr *head, int len,
@@ -295,33 +617,20 @@ errout:
 	return err;
 }
 
-
 /**
- * parse nested attributes
- * @arg tb		destination array with maxtype+1 elements
- * @arg maxtype		maximum attribute type to be expected
- * @arg nla		attribute containing the nested attributes
- * @arg policy		validation policy
+ * Validate a stream of attributes.
+ * @arg head		Head of attributes stream.
+ * @arg len		Length of attributes stream.
+ * @arg maxtype		Maximum attribute type expected and accepted.
+ * @arg policy		Validation policy.
  *
- * @see nla_parse()
- */
-int nla_parse_nested(struct nlattr *tb[], int maxtype, struct nlattr *nla,
-		     struct nla_policy *policy)
-{
-	return nla_parse(tb, maxtype, nla_data(nla), nla_len(nla), policy);
-}
-
-/**
- * Validate a stream of attributes
- * @arg head		head of attribute stream
- * @arg len		length of attribute stream
- * @arg maxtype		maximum attribute type to be expected
- * @arg policy		validation policy
+ * Iterates over the stream of attributes and validates each attribute
+ * one by one using the specified policy. Attributes with a type greater
+ * than the maximum type specified will be silently ignored in order to
+ * maintain backwards compatibility.
  *
- * Validates all attributes in the specified attribute stream
- * against the specified policy. Attributes with a type exceeding
- * maxtype will be ignored. See documenation of struct nla_policy
- * for more details.
+ * See \ref attr_datatypes for more details on what kind of validation
+ * checks are performed on each attribute data type.
  *
  * @return 0 on success or a negative error code.
  */
@@ -343,12 +652,16 @@ errout:
 }
 
 /**
- * Find a specific attribute in a stream of attributes
- * @arg head		head of attribute stream
- * @arg len		length of attribute stream
- * @arg attrtype	type of attribute to look for
+ * Find a single attribute in a stream of attributes.
+ * @arg head		Head of attributes stream.
+ * @arg len		Length of attributes stream.
+ * @arg attrtype	Attribute type to look for.
  *
- * @return the first attribute in the stream matching the specified type.
+ * Iterates over the stream of attributes and compares each type with
+ * the type specified. Returns the first attribute which matches the
+ * type.
+ *
+ * @return Pointer to attribute found or NULL.
  */
 struct nlattr *nla_find(struct nlattr *head, int len, int attrtype)
 {
@@ -365,20 +678,20 @@ struct nlattr *nla_find(struct nlattr *head, int len, int attrtype)
 /** @} */
 
 /**
- * @name Utilities
+ * @name Helper Functions
  * @{
  */
 
 /**
- * Copy a netlink attribute into another memory area
- * @arg dest		where to copy to memcpy
- * @arg src		netlink attribute to copy from
- * @arg count		size of the destination area
+ * Copy attribute payload to another memory area.
+ * @arg dest		Pointer to destination memory area.
+ * @arg src		Attribute
+ * @arg count		Number of bytes to copy at most.
  *
  * Note: The number of bytes copied is limited by the length of
- *       attribute's payload. memcpy
+ *       the attribute payload.
  *
- * @return the number of bytes copied.
+ * @return The number of bytes copied to dest.
  */
 int nla_memcpy(void *dest, struct nlattr *src, int count)
 {
@@ -394,16 +707,16 @@ int nla_memcpy(void *dest, struct nlattr *src, int count)
 }
 
 /**
- * Copy string attribute payload into a sized buffer
- * @arg dst		where to copy the string to
- * @arg nla		attribute to copy the string from
- * @arg dstsize		size of destination buffer
+ * Copy string attribute payload to a buffer.
+ * @arg dst		Pointer to destination buffer.
+ * @arg nla		Attribute of type NLA_STRING.
+ * @arg dstsize		Size of destination buffer in bytes.
  *
- * Copies at most dstsize - 1 bytes into the destination buffer.
- * The result is always a valid NUL-terminated string. Unlike
+ * Copies at most dstsize - 1 bytes to the destination buffer.
+ * The result is always a valid NUL terminated string. Unlike
  * strlcpy the destination buffer is always padded out.
  *
- * @return the length of the source buffer.
+ * @return The length of string attribute without the terminating NUL.
  */
 size_t nla_strlcpy(char *dst, const struct nlattr *nla, size_t dstsize)
 {
@@ -424,13 +737,15 @@ size_t nla_strlcpy(char *dst, const struct nlattr *nla, size_t dstsize)
 }
 
 /**
- * Compare an attribute with sized memory area
- * @arg nla		netlink attribute
- * @arg data		memory area
- * @arg size		size of memory area
+ * Compare attribute payload with memory area.
+ * @arg nla		Attribute.
+ * @arg data		Memory area to compare to.
+ * @arg size		Number of bytes to compare.
+ *
+ * @see memcmp(3)
+ * @return An integer less than, equal to, or greater than zero.
  */
-int nla_memcmp(const struct nlattr *nla, const void *data,
-			     size_t size)
+int nla_memcmp(const struct nlattr *nla, const void *data, size_t size)
 {
 	int d = nla_len(nla) - size;
 
@@ -441,9 +756,12 @@ int nla_memcmp(const struct nlattr *nla, const void *data,
 }
 
 /**
- * Compare a string attribute against a string
- * @arg nla		netlink string attribute
- * @arg str		another string
+ * Compare string attribute payload with string
+ * @arg nla		Attribute of type NLA_STRING.
+ * @arg str		NUL terminated string.
+ *
+ * @see strcmp(3)
+ * @return An integer less than, equal to, or greater than zero.
  */
 int nla_strcmp(const struct nlattr *nla, const char *str)
 {
@@ -459,150 +777,302 @@ int nla_strcmp(const struct nlattr *nla, const char *str)
 /** @} */
 
 /**
- * @name Attribute Construction
+ * @name Unspecific Attribute
  * @{
  */
 
 /**
- * reserve room for attribute on the skb
- * @arg n		netlink message
- * @arg attrtype	attribute type
- * @arg attrlen		length of attribute payload
+ * Reserve space for a attribute.
+ * @arg msg		Netlink Message.
+ * @arg attrtype	Attribute Type.
+ * @arg attrlen		Length of payload.
  *
- * Adds a netlink attribute header to a netlink message and reserves
- * room for the payload but does not copy it.
+ * Reserves room for a attribute in the specified netlink message and
+ * fills in the attribute header (type, length). Returns NULL if there
+ * is unsuficient space for the attribute.
+ *
+ * Any padding between payload and the start of the next attribute is
+ * zeroed out.
+ *
+ * @return Pointer to start of attribute or NULL on failure.
  */
-struct nlattr *nla_reserve(struct nl_msg *n, int attrtype, int attrlen)
+struct nlattr *nla_reserve(struct nl_msg *msg, int attrtype, int attrlen)
 {
 	struct nlattr *nla;
 	int tlen;
 	
-	tlen = NLMSG_ALIGN(n->nm_nlh->nlmsg_len) + nla_total_size(attrlen);
+	tlen = NLMSG_ALIGN(msg->nm_nlh->nlmsg_len) + nla_total_size(attrlen);
 
-	if ((tlen + n->nm_nlh->nlmsg_len) > n->nm_size) {
+	if ((tlen + msg->nm_nlh->nlmsg_len) > msg->nm_size) {
 		nl_errno(ENOBUFS);
 		return NULL;
 	}
 
-	nla = (struct nlattr *) nlmsg_tail(n->nm_nlh);
+	nla = (struct nlattr *) nlmsg_tail(msg->nm_nlh);
 	nla->nla_type = attrtype;
 	nla->nla_len = nla_attr_size(attrlen);
 
 	memset((unsigned char *) nla + nla->nla_len, 0, nla_padlen(attrlen));
-	n->nm_nlh->nlmsg_len = tlen;
+	msg->nm_nlh->nlmsg_len = tlen;
 
 	NL_DBG(2, "msg %p: Reserved %d bytes at offset +%td for attr %d "
-		  "nlmsg_len=%d\n", n, attrlen,
-		  (void *) nla - nlmsg_data(n->nm_nlh),
-		  attrtype, n->nm_nlh->nlmsg_len);
+		  "nlmsg_len=%d\n", msg, attrlen,
+		  (void *) nla - nlmsg_data(msg->nm_nlh),
+		  attrtype, msg->nm_nlh->nlmsg_len);
 
 	return nla;
 }
 
 /**
- * Add a netlink attribute to a netlink message
- * @arg n		netlink message
- * @arg attrtype	attribute type
- * @arg attrlen		length of attribute payload
- * @arg data		head of attribute payload
+ * Add a unspecific attribute to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ * @arg datalen		Length of data to be used as payload.
+ * @arg data		Pointer to data to be used as attribute payload.
  *
- * @return -1 if the tailroom of the skb is insufficient to store
- * the attribute header and payload.
+ * Reserves room for a unspecific attribute and copies the provided data
+ * into the message as payload of the attribute. Returns an error if there
+ * is insufficient space for the attribute.
+ *
+ * @see nla_reserve
+ * @return 0 on success or a negative error code.
  */
-int nla_put(struct nl_msg *n, int attrtype, int attrlen, const void *data)
+int nla_put(struct nl_msg *msg, int attrtype, int datalen, const void *data)
 {
 	struct nlattr *nla;
 
-	nla = nla_reserve(n, attrtype, attrlen);
+	nla = nla_reserve(msg, attrtype, datalen);
 	if (!nla)
 		return nl_errno(ENOMEM);
 
-	memcpy(nla_data(nla), data, attrlen);
+	memcpy(nla_data(nla), data, datalen);
 	NL_DBG(2, "msg %p: Wrote %d bytes at offset +%td for attr %d\n",
-	       n, attrlen, (void *) nla - nlmsg_data(n->nm_nlh), attrtype);
+	       msg, datalen, (void *) nla - nlmsg_data(msg->nm_nlh), attrtype);
 
 	return 0;
 }
 
 /**
- * Add a nested netlink attribute to a netlink message
- * @arg n		netlink message
- * @arg attrtype	attribute type
- * @arg nested		netlink attribute to nest
+ * Add abstract data as unspecific attribute to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ * @arg data		Abstract data object.
  *
- * @return -1 if the tailroom of the skb is insufficient to store
- * the attribute header and payload.
+ * Equivalent to nla_put() except that the length of the payload is
+ * derived from the abstract data object.
+ *
+ * @see nla_put
+ * @return 0 on success or a negative error code.
  */
-int nla_put_nested(struct nl_msg *n, int attrtype, struct nl_msg *nested)
+int nla_put_data(struct nl_msg *msg, int attrtype, struct nl_data *data)
 {
-	return nla_put(n, attrtype, nlmsg_len(nested->nm_nlh),
-		       nlmsg_data(nested->nm_nlh));
+	return nla_put(msg, attrtype, nl_data_get_size(data),
+		       nl_data_get(data));
+}
+
+/* FIXME: Remove in 1.2 */
+struct nl_data * nla_get_data(struct nlattr *nla)
+{
+	return nl_data_alloc_from_attr(nla);
 }
 
 /**
- * Add a u16 netlink attribute to a netlink message
- * @arg n		netlink message
- * @arg attrtype	attribute type
- * @arg value		numeric value
+ * Add abstract address as unspecific attribute to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ * @arg addr		Abstract address object.
+ *
+ * @see nla_put
+ * @return 0 on success or a negative error code.
  */
-int nla_put_u8(struct nl_msg *n, int attrtype, uint8_t value)
+int nla_put_addr(struct nl_msg *msg, int attrtype, struct nl_addr *addr)
 {
-	return nla_put(n, attrtype, sizeof(uint8_t), &value);
+	return nla_put(msg, attrtype, nl_addr_get_len(addr),
+		       nl_addr_get_binary_addr(addr));
+}
+
+/* FIXME: Remove in 1.2 */
+struct nl_addr *nla_get_addr(struct nlattr *nla, int family)
+{
+	return nl_addr_alloc_from_attr(nla, family);
+}
+
+/** @} */
+
+/**
+ * @name Integer Attributes
+ */
+
+/**
+ * Add 8 bit integer attribute to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ * @arg value		Numeric value to store as payload.
+ *
+ * @see nla_put
+ * @return 0 on success or a negative error code.
+ */
+int nla_put_u8(struct nl_msg *msg, int attrtype, uint8_t value)
+{
+	return nla_put(msg, attrtype, sizeof(uint8_t), &value);
 }
 
 /**
- * Add a u16 netlink attribute to a netlink message
- * @arg n		netlink message
- * @arg attrtype	attribute type
- * @arg value		numeric value
+ * Return value of 8 bit integer attribute.
+ * @arg nla		8 bit integer attribute
+ *
+ * @return Payload as 8 bit integer.
  */
-int nla_put_u16(struct nl_msg *n, int attrtype, uint16_t value)
+uint8_t nla_get_u8(struct nlattr *nla)
 {
-	return nla_put(n, attrtype, sizeof(uint16_t), &value);
+	return *(uint8_t *) nla_data(nla);
 }
 
 /**
- * Add a u32 netlink attribute to a netlink message
- * @arg n		netlink message
- * @arg attrtype	attribute type
- * @arg value		numeric value
+ * Add 16 bit integer attribute to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ * @arg value		Numeric value to store as payload.
+ *
+ * @see nla_put
+ * @return 0 on success or a negative error code.
  */
-int nla_put_u32(struct nl_msg *n, int attrtype, uint32_t value)
+int nla_put_u16(struct nl_msg *msg, int attrtype, uint16_t value)
 {
-	return nla_put(n, attrtype, sizeof(uint32_t), &value);
+	return nla_put(msg, attrtype, sizeof(uint16_t), &value);
 }
 
 /**
- * Add a u64 netlink attribute to a netlink message
- * @arg n		netlink message
- * @arg attrtype	attribute type
- * @arg value		numeric value
+ * Return payload of 16 bit integer attribute.
+ * @arg nla		16 bit integer attribute
+ *
+ * @return Payload as 16 bit integer.
  */
-int nla_put_u64(struct nl_msg *n, int attrtype, uint64_t value)
+uint16_t nla_get_u16(struct nlattr *nla)
 {
-	return nla_put(n, attrtype, sizeof(uint64_t), &value);
+	return *(uint16_t *) nla_data(nla);
 }
 
 /**
- * Add a string netlink attribute to a netlink message
- * @arg n		netlink message
- * @arg attrtype	attribute type
- * @arg str		NUL terminated string
+ * Add 32 bit integer attribute to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ * @arg value		Numeric value to store as payload.
+ *
+ * @see nla_put
+ * @return 0 on success or a negative error code.
  */
-int nla_put_string(struct nl_msg *n, int attrtype, const char *str)
+int nla_put_u32(struct nl_msg *msg, int attrtype, uint32_t value)
 {
-	return nla_put(n, attrtype, strlen(str) + 1, str);
+	return nla_put(msg, attrtype, sizeof(uint32_t), &value);
 }
 
 /**
- * Add a flag netlink attribute to a netlink message
- * @arg n		netlink message
- * @arg attrtype	attribute type
+ * Return payload of 32 bit integer attribute.
+ * @arg nla		32 bit integer attribute.
+ *
+ * @return Payload as 32 bit integer.
  */
-int nla_put_flag(struct nl_msg *n, int attrtype)
+uint32_t nla_get_u32(struct nlattr *nla)
 {
-	return nla_put(n, attrtype, 0, NULL);
+	return *(uint32_t *) nla_data(nla);
 }
+
+/**
+ * Add 64 bit integer attribute to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ * @arg value		Numeric value to store as payload.
+ *
+ * @see nla_put
+ * @return 0 on success or a negative error code.
+ */
+int nla_put_u64(struct nl_msg *msg, int attrtype, uint64_t value)
+{
+	return nla_put(msg, attrtype, sizeof(uint64_t), &value);
+}
+
+/**
+ * Return payload of u64 attribute
+ * @arg nla		u64 netlink attribute
+ *
+ * @return Payload as 64 bit integer.
+ */
+uint64_t nla_get_u64(struct nlattr *nla)
+{
+	uint64_t tmp;
+
+	nla_memcpy(&tmp, nla, sizeof(tmp));
+
+	return tmp;
+}
+
+/** @} */
+
+/**
+ * @name String Attribute
+ */
+
+/**
+ * Add string attribute to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ * @arg str		NUL terminated string.
+ *
+ * @see nla_put
+ * @return 0 on success or a negative error code.
+ */
+int nla_put_string(struct nl_msg *msg, int attrtype, const char *str)
+{
+	return nla_put(msg, attrtype, strlen(str) + 1, str);
+}
+
+/**
+ * Return payload of string attribute.
+ * @arg nla		String attribute.
+ *
+ * @return Pointer to attribute payload.
+ */
+char *nla_get_string(struct nlattr *nla)
+{
+	return (char *) nla_data(nla);
+}
+
+/** @} */
+
+/**
+ * @name Flag Attribute
+ */
+
+/**
+ * Add flag netlink attribute to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ *
+ * @see nla_put
+ * @return 0 on success or a negative error code.
+ */
+int nla_put_flag(struct nl_msg *msg, int attrtype)
+{
+	return nla_put(msg, attrtype, 0, NULL);
+}
+
+/**
+ * Return true if flag attribute is set.
+ * @arg nla		Flag netlink attribute.
+ *
+ * @return True if flag is set, otherwise false.
+ */
+int nla_get_flag(struct nlattr *nla)
+{
+	return !!nla;
+}
+
+/** @} */
+
+/**
+ * @name Microseconds Attribute
+ */
 
 /**
  * Add a msecs netlink attribute to a netlink message
@@ -616,136 +1086,6 @@ int nla_put_msecs(struct nl_msg *n, int attrtype, unsigned long msecs)
 }
 
 /**
- * Add an abstract data netlink attribute to a netlink message
- * @arg n		netlink message
- * @arg attrtype	attribute type
- * @arg data		abstract data
- */
-int nla_put_data(struct nl_msg *n, int attrtype, struct nl_data *data)
-{
-	return nla_put(n, attrtype, nl_data_get_size(data),
-		       nl_data_get(data));
-}
-
-/**
- * Add an abstract address netlink attribute to a netlink message
- * @arg n		netlink message
- * @arg attrtype	attribute type
- * @arg addr		abstract address
- */
-int nla_put_addr(struct nl_msg *n, int attrtype, struct nl_addr *addr)
-{
-	return nla_put(n, attrtype, nl_addr_get_len(addr),
-		       nl_addr_get_binary_addr(addr));
-}
-
-/** @} */
-
-/**
- * @name Attribute Nesting
- * @{
- */
-
-/**
- * Start a new level of nested attributes
- * @arg n		netlink message
- * @arg attrtype	attribute type of container
- *
- * @return the container attribute
- */
-struct nlattr *nla_nest_start(struct nl_msg *n, int attrtype)
-{
-	struct nlattr *start = (struct nlattr *) nlmsg_tail(n->nm_nlh);
-
-	if (nla_put(n, attrtype, 0, NULL) < 0)
-		return NULL;
-
-	return start;
-}
-
-/**
- * Finalize nesting of attributes
- * @arg n		netlink message
- * @arg start		container attribute
- *
- * Corrects the container attribute header to include the all
- * appeneded attributes.
- *
- * @return the total data length of the skb.
- */
-int nla_nest_end(struct nl_msg *n, struct nlattr *start)
-{
-	start->nla_len = (unsigned char *) nlmsg_tail(n->nm_nlh) -
-				(unsigned char *) start;
-	return 0;
-}
-
-/** @} */
-
-/**
- * @name Attribute Reading
- * @{
- */
-
-/**
- * Return payload of u32 attribute
- * @arg nla		u32 netlink attribute
- */
-uint32_t nla_get_u32(struct nlattr *nla)
-{
-	return *(uint32_t *) nla_data(nla);
-}
-
-/**
- * Return payload of u16 attribute
- * @arg nla		u16 netlink attribute
- */
-uint16_t nla_get_u16(struct nlattr *nla)
-{
-	return *(uint16_t *) nla_data(nla);
-}
-
-/**
- * Return payload of u8 attribute
- * @arg nla		u8 netlink attribute
- */
-uint8_t nla_get_u8(struct nlattr *nla)
-{
-	return *(uint8_t *) nla_data(nla);
-}
-
-/**
- * Return payload of u64 attribute
- * @arg nla		u64 netlink attribute
- */
-uint64_t nla_get_u64(struct nlattr *nla)
-{
-	uint64_t tmp;
-
-	nla_memcpy(&tmp, nla, sizeof(tmp));
-
-	return tmp;
-}
-
-/**
- * return payload of string attribute
- * @arg nla		string netlink attribute
- */
-char *nla_get_string(struct nlattr *nla)
-{
-	return (char *) nla_data(nla);
-}
-
-/**
- * Return payload of flag attribute
- * @arg nla		flag netlink attribute
- */
-int nla_get_flag(struct nlattr *nla)
-{
-	return !!nla;
-}
-
-/**
  * Return payload of msecs attribute
  * @arg nla		msecs netlink attribute
  *
@@ -756,27 +1096,82 @@ unsigned long nla_get_msecs(struct nlattr *nla)
 	return nla_get_u64(nla);
 }
 
+/** @} */
+
 /**
- * Return payload of address attribute
- * @arg nla		address netlink attribute
- * @arg family		address family
- *
- * @return Newly allocated address handle or NULL
+ * @name Nested Attribute
  */
-struct nl_addr *nla_get_addr(struct nlattr *nla, int family)
+
+/**
+ * Add nested attributes to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ * @arg nested		Message containing attributes to be nested.
+ *
+ * Takes the attributes found in the \a nested message and appends them
+ * to the message \a msg nested in a container of the type \a attrtype.
+ * The \a nested message may not have a family specific header.
+ *
+ * @see nla_put
+ * @return 0 on success or a negative error code.
+ */
+int nla_put_nested(struct nl_msg *msg, int attrtype, struct nl_msg *nested)
 {
-	return nl_addr_build(family, nla_data(nla), nla_len(nla));
+	return nla_put(msg, attrtype, nlmsg_len(nested->nm_nlh),
+		       nlmsg_data(nested->nm_nlh));
+}
+
+
+/**
+ * Start a new level of nested attributes.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type of container.
+ *
+ * @return Pointer to container attribute.
+ */
+struct nlattr *nla_nest_start(struct nl_msg *msg, int attrtype)
+{
+	struct nlattr *start = (struct nlattr *) nlmsg_tail(msg->nm_nlh);
+
+	if (nla_put(msg, attrtype, 0, NULL) < 0)
+		return NULL;
+
+	return start;
 }
 
 /**
- * Return payload of abstract data attribute
- * @arg nla		abstract data netlink attribute
+ * Finalize nesting of attributes.
+ * @arg msg		Netlink message.
+ * @arg start		Container attribute as returned from nla_nest_start().
  *
- * @return Newly allocated abstract data handle or NULL
+ * Corrects the container attribute header to include the appeneded attributes.
+ *
+ * @return 0
  */
-struct nl_data *nla_get_data(struct nlattr *nla)
+int nla_nest_end(struct nl_msg *msg, struct nlattr *start)
 {
-	return nl_data_alloc(nla_data(nla), nla_len(nla));
+	start->nla_len = (unsigned char *) nlmsg_tail(msg->nm_nlh) -
+				(unsigned char *) start;
+	return 0;
+}
+
+/**
+ * Create attribute index based on nested attribute
+ * @arg tb		Index array to be filled (maxtype+1 elements).
+ * @arg maxtype		Maximum attribute type expected and accepted.
+ * @arg nla		Nested Attribute.
+ * @arg policy		Attribute validation policy.
+ *
+ * Feeds the stream of attributes nested into the specified attribute
+ * to nla_parse().
+ *
+ * @see nla_parse
+ * @return 0 on success or a negative error code.
+ */
+int nla_parse_nested(struct nlattr *tb[], int maxtype, struct nlattr *nla,
+		     struct nla_policy *policy)
+{
+	return nla_parse(tb, maxtype, nla_data(nla), nla_len(nla), policy);
 }
 
 /** @} */

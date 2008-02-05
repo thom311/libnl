@@ -365,20 +365,24 @@ int nl_cache_mngr_data_ready(struct nl_cache_mngr *mngr)
 }
 
 /**
- * Free cache manager
- * @arg mngr		Cache manager
+ * Free cache manager and all caches.
+ * @arg mngr		Cache manager.
  *
  * Release all resources after usage of a cache manager.
  */
 void nl_cache_mngr_free(struct nl_cache_mngr *mngr)
 {
+	int i;
+
 	if (!mngr)
 		return;
 
-	if (mngr->cm_handle) {
+	if (mngr->cm_handle)
 		nl_close(mngr->cm_handle);
-		nl_handle_destroy(mngr->cm_handle);
-	}
+
+	for (i = 0; i < mngr->cm_nassocs; i++)
+		if (mngr->cm_assocs[i].ca_cache)
+			nl_cache_free(mngr->cm_assocs[i].ca_cache);
 
 	free(mngr->cm_assocs);
 	free(mngr);

@@ -1,4 +1,7 @@
 #include "../src/utils.h"
+#include <signal.h>
+
+static int quit = 0;
 
 static void change_cb(struct nl_cache *cache, struct nl_object *obj,
 		      int action)
@@ -18,11 +21,18 @@ static void change_cb(struct nl_cache *cache, struct nl_object *obj,
 	nl_object_dump(obj, &dp);
 }
 
+static void sigint(int arg)
+{
+	quit = 1;
+}
+
 int main(int argc, char *argv[])
 {
 	struct nl_cache_mngr *mngr;
 	struct nl_cache *lc, *nc, *ac, *rc;
 	struct nl_handle *handle;
+
+	signal(SIGINT, sigint);
 
 	nltool_init(argc, argv);
 
@@ -58,9 +68,9 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	for (;;) {
+	while (!quit) {
 		int err = nl_cache_mngr_poll(mngr, 5000);
-		if (err < 0) {
+		if (err < 0 && err != -EINTR) {
 			nl_perror("nl_cache_mngr_poll()");
 			return -1;
 		}
@@ -68,6 +78,7 @@ int main(int argc, char *argv[])
 	}
 
 	nl_cache_mngr_free(mngr);
+	nl_handle_destroy(handle);
 
 	return 0;
 }

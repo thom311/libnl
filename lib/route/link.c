@@ -533,7 +533,7 @@ static int link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 
 	res = nl_cancel_down_bytes(link->l_stats[RTNL_LINK_RX_BYTES], &unit);
 
-	strcpy(fmt, "    RX  %X.2f %s %10llu %10llu %10llu %10llu %10llu\n");
+	strcpy(fmt, "     RX %X.2f %s %10llu %10llu %10llu %10llu %10llu\n");
 	fmt[9] = *unit == 'B' ? '9' : '7';
 	
 	dp_dump_line(p, line++, fmt,
@@ -546,7 +546,7 @@ static int link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 
 	res = nl_cancel_down_bytes(link->l_stats[RTNL_LINK_TX_BYTES], &unit);
 
-	strcpy(fmt, "    TX  %X.2f %s %10llu %10llu %10llu %10llu %10llu\n");
+	strcpy(fmt, "     TX %X.2f %s %10llu %10llu %10llu %10llu %10llu\n");
 	fmt[9] = *unit == 'B' ? '9' : '7';
 	
 	dp_dump_line(p, line++, fmt,
@@ -560,7 +560,7 @@ static int link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	dp_dump_line(p, line++, "    Errors:  length       over        crc "
 				"     frame     missed  multicast\n");
 
-	dp_dump_line(p, line++, "    RX   %10" PRIu64 " %10" PRIu64 " %10"
+	dp_dump_line(p, line++, "     RX  %10" PRIu64 " %10" PRIu64 " %10"
 				PRIu64 " %10" PRIu64 " %10" PRIu64 " %10"
 				PRIu64 "\n",
 		link->l_stats[RTNL_LINK_RX_LEN_ERR],
@@ -570,10 +570,10 @@ static int link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 		link->l_stats[RTNL_LINK_RX_MISSED_ERR],
 		link->l_stats[RTNL_LINK_MULTICAST]);
 
-	dp_dump_line(p, line++, "    Errors: aborted    carrier  heartbeat "
+	dp_dump_line(p, line++, "            aborted    carrier  heartbeat "
 				"    window  collision\n");
 	
-	dp_dump_line(p, line++, "    TX   %10" PRIu64 " %10" PRIu64 " %10"
+	dp_dump_line(p, line++, "     TX  %10" PRIu64 " %10" PRIu64 " %10"
 				PRIu64 " %10" PRIu64 " %10" PRIu64 "\n",
 		link->l_stats[RTNL_LINK_TX_ABORT_ERR],
 		link->l_stats[RTNL_LINK_TX_CARRIER_ERR],

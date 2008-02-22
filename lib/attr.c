@@ -522,7 +522,6 @@ static uint16_t nla_attr_minlen[NLA_TYPE_MAX+1] = {
 	[NLA_U32]	= sizeof(uint32_t),
 	[NLA_U64]	= sizeof(uint64_t),
 	[NLA_STRING]	= 1,
-	[NLA_NESTED]	= NLA_HDRLEN,
 };
 
 static int validate_nla(struct nlattr *nla, int maxtype,

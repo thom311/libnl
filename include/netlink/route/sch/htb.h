@@ -30,9 +30,9 @@ extern void rtnl_htb_set_rate(struct rtnl_class *, uint32_t);
 extern void rtnl_htb_set_ceil(struct rtnl_class *, uint32_t);
 extern void rtnl_htb_set_rbuffer(struct rtnl_class *, uint32_t);
 extern void rtnl_htb_set_cbuffer(struct rtnl_class *, uint32_t);
-extern void rtnl_htb_set_quantum(struct rtnl_class *class, uint32_t quantum);
-extern void rtnl_htb_set_overhead(struct rtnl_class *class, uint8_t overhead);
-extern void rtnl_htb_set_mpu(struct rtnl_class *class, uint8_t mpu);
+extern void rtnl_htb_set_quantum(struct rtnl_class *, uint32_t quantum);
+extern void rtnl_htb_set_overhead(struct rtnl_class *, uint8_t overhead);
+extern void rtnl_htb_set_mpu(struct rtnl_class *, uint8_t mpu);
 
 #ifdef __cplusplus
 }

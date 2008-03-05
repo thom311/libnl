@@ -228,6 +228,9 @@ int nfnl_log_delete(struct nl_handle *nlh, const struct nfnl_log *log)
 static struct nl_cache_ops nfnl_log_ops = {
 	.co_name		= "netfilter/log",
 	.co_obj_ops		= &log_obj_ops,
+	.co_msgtypes		= {
+		END_OF_MSGTYPES_LIST,
+	},
 };
 
 static void __init log_init(void)

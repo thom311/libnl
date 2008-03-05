@@ -218,6 +218,9 @@ int nfnl_queue_delete(struct nl_handle *nlh, const struct nfnl_queue *queue)
 static struct nl_cache_ops nfnl_queue_ops = {
 	.co_name		= "netfilter/queue",
 	.co_obj_ops		= &queue_obj_ops,
+	.co_msgtypes		= {
+		END_OF_MSGTYPES_LIST,
+	},
 };
 
 static void __init nfnl_queue_init(void)

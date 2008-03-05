@@ -60,11 +60,14 @@ struct nl_cache_ops *nl_cache_ops_associate(int protocol, int msgtype)
 	int i;
 	struct nl_cache_ops *ops;
 
-	for (ops = cache_ops; ops; ops = ops->co_next)
+	for (ops = cache_ops; ops; ops = ops->co_next) {
+		if (ops->co_protocol != protocol)
+			continue;
+
 		for (i = 0; ops->co_msgtypes[i].mt_id >= 0; i++)
-			if (ops->co_msgtypes[i].mt_id == msgtype &&
-			    ops->co_protocol == protocol)
+			if (ops->co_msgtypes[i].mt_id == msgtype)
 				return ops;
+	}
 
 	return NULL;
 }

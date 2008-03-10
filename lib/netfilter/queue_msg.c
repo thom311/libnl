@@ -54,7 +54,7 @@ static struct nla_policy queue_policy[NFQA_MAX+1] = {
 	[NFQA_IFINDEX_PHYSINDEV]	= { .type = NLA_U32 },
 	[NFQA_IFINDEX_PHYSOUTDEV]	= { .type = NLA_U32 },
 	[NFQA_HWADDR]			= {
-		.minlen	= sizeof(struct nfqnl_msg_packet_timestamp),
+		.minlen	= sizeof(struct nfqnl_msg_packet_hw),
 	},
 };
 

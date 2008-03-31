@@ -365,13 +365,8 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	}
 
 	if (tb[IFLA_MAP]) {
-		struct rtnl_link_ifmap *map =  nla_data(tb[IFLA_MAP]);
-		link->l_map.lm_mem_start = map->mem_start;
-		link->l_map.lm_mem_end   = map->mem_end;
-		link->l_map.lm_base_addr = map->base_addr;
-		link->l_map.lm_irq       = map->irq;
-		link->l_map.lm_dma       = map->dma;
-		link->l_map.lm_port      = map->port;
+		nla_memcpy(&link->l_map, tb[IFLA_MAP], 
+			   sizeof(struct rtnl_link_ifmap));
 		link->ce_mask |= LINK_ATTR_MAP;
 	}
 

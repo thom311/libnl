@@ -551,6 +551,9 @@ abort:
 #define NL_CB_CALL(cb, type, msg) \
 do { \
 	err = nl_cb_call(cb, type, msg); \
+	if (free_msg && (err & NL_KEEP_MSG))	 \
+		free_msg = 0;			 \
+	err &= ~NL_KEEP_MSG;			 \
 	switch (err) { \
 	case NL_OK: \
 		err = 0; \
@@ -564,10 +567,23 @@ do { \
 	} \
 } while (0)
 
+/*
+ * NOTE: on handling freeing of the message data
+ *
+ * By default, the message data is freed after handling is done. In
+ * order to allow a callback using it after exiting the message
+ * handling loop, it can return NL_KEEP_MSG ORed to it's return code.
+ * 
+ * Once the freeing of the message is disabled, it cannot be activated
+ * again; this way, if a callback decides to switch it off because it
+ * will keep the allocated data, another one cannot activate it, have
+ * it freed and cause a race condition with later access to that (now
+ * freed) data.
+ */ 
 static int recvmsgs(struct nl_handle *handle, struct nl_cb *cb)
 {
 	int n, err = 0, multipart = 0;
-	unsigned char *buf = NULL;
+	unsigned char *buf = NULL, free_msg = 1;
 	struct nlmsghdr *hdr;
 	struct sockaddr_nl nla = {0};
 	struct nl_msg *msg = NULL;
@@ -590,7 +606,9 @@ continue_reading:
 		NL_DBG(3, "recgmsgs(%p): Processing valid message...\n",
 		       handle);
 
-		nlmsg_free(msg);
+		if (free_msg)
+			nlmsg_free(msg);
+		free_msg = 1;	/* By default, we free the message data */
 		msg = nlmsg_convert(hdr);
 		if (!msg) {
 			err = nl_errno(ENOMEM);
@@ -728,7 +746,8 @@ skip:
 		hdr = nlmsg_next(hdr, &n);
 	}
 	
-	nlmsg_free(msg);
+	if (free_msg)
+		nlmsg_free(msg);
 	free(buf);
 	free(creds);
 	buf = NULL;

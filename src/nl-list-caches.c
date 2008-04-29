@@ -49,7 +49,6 @@ static void print(struct nl_cache_ops *ops, void *arg)
 			"stats",
 			"xml",
 			"env",
-			"events"
 		};
 		int i;
 

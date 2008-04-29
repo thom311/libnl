@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #include "utils.h"
@@ -33,8 +33,8 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	printf("Address    Family           PID    Groups   rmem   wmem   " \
-	       "CB         refcnt\n");
+	printf("Address            Family           PID    Groups   rmem   "
+	       "wmem   CB         refcnt\n");
 
 	while (fgets(buf, sizeof(buf), fd)) {
 		unsigned long sk, cb;
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 		if (ret != 8)
 			continue;
 		
-		printf("0x%08lx %-16s %-6d %08x %-6d %-6d 0x%08lx %d\n",
+		printf("0x%016lx %-16s %-6d %08x %-6d %-6d 0x%08lx %d\n",
 			sk, nl_nlfamily2str(proto, p, sizeof(p)), pid,
 			groups, rmem, wmem, cb, refcnt);
 	}

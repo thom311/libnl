@@ -13,19 +13,10 @@
 
 #define PROC_NETLINK "/proc/net/netlink"
 
-static void print_usage(void)
-{
-	fprintf(stderr, "Usage: nl-list-sockets [<file>]\n");
-	exit(1);
-}
-
 int main(int argc, char *argv[])
 {
 	FILE *fd;
 	char buf[2048], p[64];
-
-	if (argc > 1 && !strcasecmp(argv[1], "-h"))
-		print_usage();
 
 	fd = fopen(PROC_NETLINK, "r");
 	if (fd == NULL) {

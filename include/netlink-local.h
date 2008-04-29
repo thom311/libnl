@@ -119,7 +119,7 @@ static inline int __assert_error(const char *file, int line, char *func,
 #define nl_errno(E)	nl_error(E, NULL)
 
 /* backwards compat */
-#define dp_new_line(params, line)	nl_new_line(params, line)
+#define dp_new_line(params, line)	nl_new_line(params)
 #define dp_dump(params, fmt, arg...)	nl_dump(params, fmt, ##arg)
 
 static inline int __trans_list_add(int i, const char *a,
@@ -284,17 +284,7 @@ static inline void __dp_dump(struct nl_dump_params *parms, const char *fmt,
 	}
 }
 
-static inline void dp_dump_line(struct nl_dump_params *parms, int line,
-				const char *fmt, ...)
-{
-	va_list args;
-
-	nl_new_line(parms, line);
-
-	va_start(args, fmt);
-	__dp_dump(parms, fmt, args);
-	va_end(args);
-}
+#define dp_dump_line(params, line, fmt, arg...)	nl_dump_line(params, fmt, ##arg)
 
 static inline void dump_from_ops(struct nl_object *obj,
 				 struct nl_dump_params *params)
@@ -303,6 +293,8 @@ static inline void dump_from_ops(struct nl_object *obj,
 
 	if (type < 0 || type > NL_DUMP_MAX)
 		BUG();
+
+	params->dp_line = 0;
 
 	if (params->dp_dump_msgtype) {
 #if 0
@@ -317,7 +309,7 @@ static inline void dump_from_ops(struct nl_object *obj,
 #endif
 		params->dp_pre_dump = 1;
 	} else
-		dp_new_line(params, 0);
+		nl_new_line(params);
 
 	if (obj->ce_ops->oo_dump[type])
 		obj->ce_ops->oo_dump[type](obj, params);

@@ -70,9 +70,9 @@ extern char *	nl_ip_proto2str(int, char *, size_t);
 extern int	nl_str2ip_proto(const char *);
 
 /* Dumping helpers */
-extern void	nl_new_line(struct nl_dump_params *, int);
+extern void	nl_new_line(struct nl_dump_params *);
 extern void	nl_dump(struct nl_dump_params *, const char *, ...);
-extern void	nl_dump_line(struct nl_dump_params *, int, const char *, ...);
+extern void	nl_dump_line(struct nl_dump_params *, const char *, ...);
 
 #ifdef __cplusplus
 }

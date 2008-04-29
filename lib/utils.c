@@ -147,7 +147,7 @@ char *nl_geterror(void)
 	if (nlerrno)
 		return strerror(nlerrno);
 
-	return "Sucess\n";
+	return "Success\n";
 }
 
 /**
@@ -714,7 +714,6 @@ int nl_str2ip_proto(const char *name)
 /**
  * Handle a new line while dumping
  * @arg params		Dumping parameters
- * @arg line		Number of lines dumped already.
  *
  * This function must be called before dumping any onto a
  * new line. It will ensure proper prefixing as specified
@@ -722,8 +721,10 @@ int nl_str2ip_proto(const char *name)
  *
  * @note This function will NOT dump any newlines itself
  */
-void nl_new_line(struct nl_dump_params *params, int line)
+void nl_new_line(struct nl_dump_params *params)
 {
+	params->dp_line++;
+
 	if (params->dp_prefix) {
 		int i;
 		for (i = 0; i < params->dp_prefix; i++) {
@@ -737,7 +738,7 @@ void nl_new_line(struct nl_dump_params *params, int line)
 	}
 
 	if (params->dp_nl_cb)
-		params->dp_nl_cb(params, line);
+		params->dp_nl_cb(params, params->dp_line);
 }
 
 /**
@@ -757,6 +758,18 @@ void nl_dump(struct nl_dump_params *params, const char *fmt, ...)
 	__dp_dump(params, fmt, args);
 	va_end(args);
 }
+
+void nl_dump_line(struct nl_dump_params *parms, const char *fmt, ...)
+{
+	va_list args;
+
+	nl_new_line(parms);
+
+	va_start(args, fmt);
+	__dp_dump(parms, fmt, args);
+	va_end(args);
+}
+
 
 /** @} */
 

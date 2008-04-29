@@ -264,6 +264,9 @@ void nl_cache_clear(struct nl_cache *cache)
  */
 void nl_cache_free(struct nl_cache *cache)
 {
+	if (!cache)
+		return;
+
 	nl_cache_clear(cache);
 	NL_DBG(1, "Freeing cache %p <%s>...\n", cache, nl_cache_name(cache));
 	free(cache);

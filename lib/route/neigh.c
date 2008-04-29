@@ -213,7 +213,7 @@ static int neigh_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= NEIGH_DIFF(LLADDR,	nl_addr_cmp(a->n_lladdr, b->n_lladdr));
 	diff |= NEIGH_DIFF(DST,		nl_addr_cmp(a->n_dst, b->n_dst));
 
-	if (flags & LOOSE_FLAG_COMPARISON) {
+	if (flags & LOOSE_COMPARISON) {
 		diff |= NEIGH_DIFF(STATE,
 				  (a->n_state ^ b->n_state) & b->n_state_mask);
 		diff |= NEIGH_DIFF(FLAGS,

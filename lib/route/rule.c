@@ -840,13 +840,13 @@ int rtnl_rule_get_action(struct rtnl_rule *rule)
 		return nl_errno(ENOENT);
 }
 
-void rtnl_rule_set_realms(struct rtnl_rule *rule, realm_t realms)
+void rtnl_rule_set_realms(struct rtnl_rule *rule, uint32_t realms)
 {
 	rule->r_realms = realms;
 	rule->ce_mask |= RULE_ATTR_REALMS;
 }
 
-realm_t rtnl_rule_get_realms(struct rtnl_rule *rule)
+uint32_t rtnl_rule_get_realms(struct rtnl_rule *rule)
 {
 	if (rule->ce_mask & RULE_ATTR_REALMS)
 		return rule->r_realms;

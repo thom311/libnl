@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_LOCAL_TYPES_H_
@@ -104,7 +104,7 @@ struct genl_info
 	struct nlattr **	attrs;
 };
 
-#define LOOSE_FLAG_COMPARISON	1
+#define LOOSE_COMPARISON	1
 
 #define NL_OBJ_MARK		1
 
@@ -244,11 +244,6 @@ struct rtnl_addr
 	uint32_t a_flag_mask;
 };
 
-#define NEXTHOP_HAS_FLAGS   0x000001
-#define NEXTHOP_HAS_WEIGHT  0x000002
-#define NEXTHOP_HAS_IFINDEX 0x000004
-#define NEXTHOP_HAS_GATEWAY 0x000008
-
 struct rtnl_nexthop
 {
 	uint8_t			rtnh_flags;
@@ -257,9 +252,9 @@ struct rtnl_nexthop
 	/* 1 byte spare */
 	uint32_t		rtnh_ifindex;
 	struct nl_addr *	rtnh_gateway;
-	uint32_t		rtnh_mask;
-
+	uint32_t		ce_mask; /* HACK to support attr macros */
 	struct nl_list_head	rtnh_list;
+	uint32_t		rtnh_realms;
 };
 
 struct rtnl_route
@@ -270,24 +265,22 @@ struct rtnl_route
 	uint8_t			rt_dst_len;
 	uint8_t			rt_src_len;
 	uint8_t			rt_tos;
-	uint8_t			rt_table;
 	uint8_t			rt_protocol;
 	uint8_t			rt_scope;
 	uint8_t			rt_type;
+	uint8_t			rt_nmetrics;
 	uint32_t		rt_flags;
 	struct nl_addr *	rt_dst;
 	struct nl_addr *	rt_src;
-	char			rt_iif[IFNAMSIZ];
-	uint32_t		rt_oif;
-	struct nl_addr *	rt_gateway;
+	uint32_t		rt_table;
+	uint32_t		rt_iif;
 	uint32_t		rt_prio;
 	uint32_t		rt_metrics[RTAX_MAX];
 	uint32_t		rt_metrics_mask;
+	uint32_t		rt_nr_nh;
 	struct nl_addr *	rt_pref_src;
 	struct nl_list_head	rt_nexthops;
-	realm_t			rt_realms;
 	struct rtnl_rtcacheinfo	rt_cacheinfo;
-	uint32_t		rt_mp_algo;
 	uint32_t		rt_flag_mask;
 };
 

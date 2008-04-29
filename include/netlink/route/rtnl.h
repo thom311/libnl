@@ -23,8 +23,6 @@ extern "C" {
  * @{
  */
 
-typedef uint32_t	realm_t;
-
 /**
  * Mask specying the size of each realm part
  * @ingroup rtnl

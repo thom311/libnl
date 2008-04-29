@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -20,6 +20,14 @@
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/route.h>
+
+/** @cond SKIP */
+#define NH_ATTR_FLAGS   0x000001
+#define NH_ATTR_WEIGHT  0x000002
+#define NH_ATTR_IFINDEX 0x000004
+#define NH_ATTR_GATEWAY 0x000008
+#define NH_ATTR_REALMS  0x000010
+/** @endcond */
 
 /**
  * @name Allocation/Freeing
@@ -53,7 +61,7 @@ struct rtnl_nexthop *rtnl_route_nh_clone(struct rtnl_nexthop *src)
 	nh->rtnh_flag_mask = src->rtnh_flag_mask;
 	nh->rtnh_weight = src->rtnh_weight;
 	nh->rtnh_ifindex = src->rtnh_ifindex;
-	nh->rtnh_mask = src->rtnh_mask;
+	nh->ce_mask = src->ce_mask;
 
 	if (src->rtnh_gateway) {
 		nh->rtnh_gateway = nl_addr_clone(src->rtnh_gateway);
@@ -74,78 +82,251 @@ void rtnl_route_nh_free(struct rtnl_nexthop *nh)
 
 /** @} */
 
-/**
- * @name Attributes
- */
-
-void rtnl_route_nh_set_weight(struct rtnl_nexthop *nh, int weight)
+int rtnl_route_nh_compare(struct rtnl_nexthop *a, struct rtnl_nexthop *b,
+			  uint32_t attrs, int loose)
 {
-	nh->rtnh_weight = weight;
-	nh->rtnh_mask |= NEXTHOP_HAS_WEIGHT;
+	int diff = 0;
+
+#define NH_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, NH_ATTR_##ATTR, a, b, EXPR)
+
+	diff |= NH_DIFF(IFINDEX,	a->rtnh_ifindex != b->rtnh_ifindex);
+	diff |= NH_DIFF(WEIGHT,		a->rtnh_weight != b->rtnh_weight);
+	diff |= NH_DIFF(REALMS,		a->rtnh_realms != b->rtnh_realms);
+	diff |= NH_DIFF(GATEWAY,	nl_addr_cmp(a->rtnh_gateway,
+						    b->rtnh_gateway));
+
+	if (loose)
+		diff |= NH_DIFF(FLAGS,
+			  (a->rtnh_flags ^ b->rtnh_flags) & b->rtnh_flag_mask);
+	else
+		diff |= NH_DIFF(FLAGS, a->rtnh_flags != b->rtnh_flags);
+	
+#undef NH_DIFF
+
+	return diff;
 }
 
-int rtnl_route_nh_get_weight(struct rtnl_nexthop *nh)
+static void nh_dump_oneline(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 {
-	if (nh->rtnh_mask & NEXTHOP_HAS_WEIGHT)
-		return nh->rtnh_weight;
-	else
-		return 0;
+	struct nl_cache *link_cache;
+	char buf[128];
+
+	link_cache = nl_cache_mngt_require("route/link");
+
+	nl_dump(dp, "via");
+
+	if (nh->ce_mask & NH_ATTR_GATEWAY)
+		nl_dump(dp, " %s", nl_addr2str(nh->rtnh_gateway,
+						   buf, sizeof(buf)));
+
+	if(nh->ce_mask & NH_ATTR_IFINDEX) {
+		if (link_cache) {
+			nl_dump(dp, " dev %s",
+				rtnl_link_i2name(link_cache,
+						 nh->rtnh_ifindex,
+						 buf, sizeof(buf)));
+		} else
+			nl_dump(dp, " dev %d", nh->rtnh_ifindex);
+	}
+
+	nl_dump(dp, " ");
+}
+
+static void nh_dump_details(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
+{
+	struct nl_cache *link_cache;
+	char buf[128];
+
+	link_cache = nl_cache_mngt_require("route/link");
+
+	nl_dump(dp, "nexthop");
+
+	if (nh->ce_mask & NH_ATTR_GATEWAY)
+		nl_dump(dp, " via %s", nl_addr2str(nh->rtnh_gateway,
+						   buf, sizeof(buf)));
+
+	if(nh->ce_mask & NH_ATTR_IFINDEX) {
+		if (link_cache) {
+			nl_dump(dp, " dev %s",
+				rtnl_link_i2name(link_cache,
+						 nh->rtnh_ifindex,
+						 buf, sizeof(buf)));
+		} else
+			nl_dump(dp, " dev %d", nh->rtnh_ifindex);
+	}
+
+	if (nh->ce_mask & NH_ATTR_WEIGHT)
+		nl_dump(dp, " weight %u", nh->rtnh_weight);
+
+	if (nh->ce_mask & NH_ATTR_REALMS)
+		nl_dump(dp, " realm %04x:%04x",
+			RTNL_REALM_FROM(nh->rtnh_realms),
+			RTNL_REALM_TO(nh->rtnh_realms));
+
+	if (nh->ce_mask & NH_ATTR_FLAGS)
+		nl_dump(dp, " <%s>", rtnl_route_nh_flags2str(nh->rtnh_flags,
+							buf, sizeof(buf)));
+}
+
+static void nh_dump_env(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
+{
+	struct nl_cache *link_cache;
+	char buf[128];
+
+	link_cache = nl_cache_mngt_require("route/link");
+
+	if (nh->ce_mask & NH_ATTR_GATEWAY)
+		nl_dump_line(dp, "ROUTE_NH%d_VIA=%s\n", dp->dp_ivar,
+			nl_addr2str(nh->rtnh_gateway, buf, sizeof(buf)));
+
+	if(nh->ce_mask & NH_ATTR_IFINDEX) {
+		if (link_cache) {
+			nl_dump_line(dp, "ROUTE_NH%d_DEV=%s\n", dp->dp_ivar,
+					rtnl_link_i2name(link_cache,
+						 nh->rtnh_ifindex,
+						 buf, sizeof(buf)));
+		} else
+			nl_dump_line(dp, "ROUTE_NH%d_DEV=%d\n", dp->dp_ivar,
+					nh->rtnh_ifindex);
+	}
+
+	if (nh->ce_mask & NH_ATTR_WEIGHT)
+		nl_dump_line(dp, "ROUTE_NH%d_WEIGHT=%u\n", dp->dp_ivar,
+				nh->rtnh_weight);
+
+	if (nh->ce_mask & NH_ATTR_REALMS)
+		nl_dump_line(dp, "ROUTE_NH%d_REALM=%04x:%04x\n", dp->dp_ivar,
+			RTNL_REALM_FROM(nh->rtnh_realms),
+			RTNL_REALM_TO(nh->rtnh_realms));
+
+	if (nh->ce_mask & NH_ATTR_FLAGS)
+		nl_dump_line(dp, "ROUTE_NH%d_FLAGS=<%s>\n", dp->dp_ivar,
+			rtnl_route_nh_flags2str(nh->rtnh_flags,
+							buf, sizeof(buf)));
+}
+void rtnl_route_nh_dump(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
+{
+	switch (dp->dp_type) {
+	case NL_DUMP_ONELINE:
+		nh_dump_oneline(nh, dp);
+		break;
+
+	case NL_DUMP_DETAILS:
+	case NL_DUMP_STATS:
+		if (dp->dp_ivar == NH_DUMP_FROM_DETAILS)
+			nh_dump_details(nh, dp);
+		break;
+
+	case NL_DUMP_ENV:
+		nh_dump_env(nh, dp);
+		break;
+	
+	default:
+		break;
+	}
+}
+
+/**
+ * @name Attributes
+ * @{
+ */
+
+void rtnl_route_nh_set_weight(struct rtnl_nexthop *nh, uint8_t weight)
+{
+	nh->rtnh_weight = weight;
+	nh->ce_mask |= NH_ATTR_WEIGHT;
+}
+
+uint8_t rtnl_route_nh_get_weight(struct rtnl_nexthop *nh)
+{
+	return nh->rtnh_weight;
 }
 
 void rtnl_route_nh_set_ifindex(struct rtnl_nexthop *nh, int ifindex)
 {
 	nh->rtnh_ifindex = ifindex;
-	nh->rtnh_mask |= NEXTHOP_HAS_IFINDEX;
+	nh->ce_mask |= NH_ATTR_IFINDEX;
 }
 
 int rtnl_route_nh_get_ifindex(struct rtnl_nexthop *nh)
 {
-	if (nh->rtnh_mask & NEXTHOP_HAS_IFINDEX)
-		return nh->rtnh_ifindex;
-	else
-		return -1;
+	return nh->rtnh_ifindex;
 }	
 
 void rtnl_route_nh_set_gateway(struct rtnl_nexthop *nh, struct nl_addr *addr)
 {
 	struct nl_addr *old = nh->rtnh_gateway;
 
-	nh->rtnh_gateway = nl_addr_get(addr);
+	if (addr) {
+		nh->rtnh_gateway = nl_addr_get(addr);
+		nh->ce_mask |= NH_ATTR_GATEWAY;
+	} else {
+		nh->ce_mask &= ~NH_ATTR_GATEWAY;
+		nh->rtnh_gateway = NULL;
+	}
+
 	if (old)
 		nl_addr_put(old);
-
-	nh->rtnh_mask |= NEXTHOP_HAS_GATEWAY;
 }
 
 struct nl_addr *rtnl_route_nh_get_gateway(struct rtnl_nexthop *nh)
 {
-	if (nh->rtnh_mask & NEXTHOP_HAS_GATEWAY)
-		return nh->rtnh_gateway;
-	else
-		return NULL;
+	return nh->rtnh_gateway;
 }
 
 void rtnl_route_nh_set_flags(struct rtnl_nexthop *nh, unsigned int flags)
 {
 	nh->rtnh_flag_mask |= flags;
 	nh->rtnh_flags |= flags;
-	nh->rtnh_mask |= NEXTHOP_HAS_FLAGS;
+	nh->ce_mask |= NH_ATTR_FLAGS;
 }
 
 void rtnl_route_nh_unset_flags(struct rtnl_nexthop *nh, unsigned int flags)
 {
 	nh->rtnh_flag_mask |= flags;
 	nh->rtnh_flags &= ~flags;
-	nh->rtnh_mask |= NEXTHOP_HAS_FLAGS;
+	nh->ce_mask |= NH_ATTR_FLAGS;
 }
 
 unsigned int rtnl_route_nh_get_flags(struct rtnl_nexthop *nh)
 {
-	if (nh->rtnh_mask & NEXTHOP_HAS_FLAGS)
-		return nh->rtnh_flags;
-	else
-		return 0;
+	return nh->rtnh_flags;
+}
+
+void rtnl_route_nh_set_realms(struct rtnl_nexthop *nh, uint32_t realms)
+{
+	nh->rtnh_realms = realms;
+	nh->ce_mask |= NH_ATTR_REALMS;
+}
+
+uint32_t rtnl_route_nh_get_realms(struct rtnl_nexthop *nh)
+{
+	return nh->rtnh_realms;
 }
 
 /** @} */
+
+/**
+ * @name Nexthop Flags Translations
+ * @{
+ */
+
+static struct trans_tbl nh_flags[] = {
+	__ADD(RTNH_F_DEAD, dead)
+	__ADD(RTNH_F_PERVASIVE, pervasive)
+	__ADD(RTNH_F_ONLINK, onlink)
+};
+
+char *rtnl_route_nh_flags2str(int flags, char *buf, size_t len)
+{
+	return __flags2str(flags, buf, len, nh_flags, ARRAY_SIZE(nh_flags));
+}
+
+int rtnl_route_nh_str2flags(const char *name)
+{
+	return __str2flags(name, nh_flags, ARRAY_SIZE(nh_flags));
+}
+
+/** @} */
+
 /** @} */

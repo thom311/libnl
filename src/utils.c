@@ -13,6 +13,21 @@
 
 #include <stdlib.h>
 
+void fatal(int err, const char *fmt, ...)
+{
+	va_list ap;
+
+	fprintf(stderr, "Error: ");
+
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
+
+	fprintf(stderr, "\n");
+
+	exit(err);
+}
+
 int nltool_init(int argc, char *argv[])
 {
 	return 0;
@@ -24,7 +39,7 @@ int nltool_connect(struct nl_handle *nlh, int protocol)
 
 	err = nl_connect(nlh, protocol);
 	if (err < 0)
-		fprintf(stderr, "Unable to connect netlink socket%s\n",
+		fatal(err, "Unable to connect netlink socket: %s",
 			nl_geterror());
 
 	return err;
@@ -32,7 +47,12 @@ int nltool_connect(struct nl_handle *nlh, int protocol)
 
 struct nl_handle *nltool_alloc_handle(void)
 {
-	return nl_handle_alloc();
+	struct nl_handle *sock;
+
+	if (!(sock = nl_handle_alloc()))
+		fatal(ENOBUFS, "Unable to allocate netlink socket");
+
+	return sock;
 }
 
 struct nl_addr *nltool_addr_parse(const char *str)
@@ -71,10 +91,10 @@ struct nl_cache *nltool_alloc_link_cache(struct nl_handle *nlh)
 
 	cache = rtnl_link_alloc_cache(nlh);
 	if (!cache)
-		fprintf(stderr, "Unable to retrieve link cache: %s\n",
+		fatal(nl_get_errno(), "Unable to retrieve link cache: %s",
 			nl_geterror());
-	else
-		nl_cache_mngt_provide(cache);
+
+	nl_cache_mngt_provide(cache);
 
 	return cache;
 }
@@ -85,10 +105,10 @@ struct nl_cache *nltool_alloc_addr_cache(struct nl_handle *nlh)
 
 	cache = rtnl_addr_alloc_cache(nlh);
 	if (!cache)
-		fprintf(stderr, "Unable to retrieve address cache: %s\n",
+		fatal(nl_get_errno(), "Unable to retrieve address cache: %s\n",
 			nl_geterror());
-	else
-		nl_cache_mngt_provide(cache);
+
+	nl_cache_mngt_provide(cache);
 
 	return cache;
 }
@@ -99,10 +119,10 @@ struct nl_cache *nltool_alloc_neigh_cache(struct nl_handle *nlh)
 
 	cache = rtnl_neigh_alloc_cache(nlh);
 	if (!cache)
-		fprintf(stderr, "Unable to retrieve neighbour cache: %s\n",
+		fatal(nl_get_errno(), "Unable to retrieve neighbour cache: %s\n",
 			nl_geterror());
-	else
-		nl_cache_mngt_provide(cache);
+
+	nl_cache_mngt_provide(cache);
 
 	return cache;
 }
@@ -113,8 +133,8 @@ struct nl_cache *nltool_alloc_neightbl_cache(struct nl_handle *nlh)
 
 	cache = rtnl_neightbl_alloc_cache(nlh);
 	if (!cache)
-		fprintf(stderr, "Unable to retrieve neighbour table "
-				"cache: %s\n", nl_geterror());
+		fatal(nl_get_errno(), "Unable to retrieve neighbour table "
+				"cache: %s", nl_geterror());
 	else
 		nl_cache_mngt_provide(cache);
 
@@ -127,10 +147,10 @@ struct nl_cache *nltool_alloc_route_cache(struct nl_handle *nlh)
 
 	cache = rtnl_route_alloc_cache(nlh);
 	if (!cache)
-		fprintf(stderr, "Unable to retrieve route cache: %s\n",
+		fatal(nl_get_errno(), "Unable to retrieve route cache: %s\n",
 			nl_geterror());
-	else
-		nl_cache_mngt_provide(cache);
+
+	nl_cache_mngt_provide(cache);
 
 	return cache;
 }
@@ -141,10 +161,10 @@ struct nl_cache *nltool_alloc_rule_cache(struct nl_handle *nlh)
 
 	cache = rtnl_rule_alloc_cache(nlh);
 	if (!cache)
-		fprintf(stderr, "Unable to retrieve rule cache: %s\n",
+		fatal(nl_get_errno(), "Unable to retrieve rule cache: %s\n",
 			nl_geterror());
-	else
-		nl_cache_mngt_provide(cache);
+
+	nl_cache_mngt_provide(cache);
 
 	return cache;
 }
@@ -155,10 +175,10 @@ struct nl_cache *nltool_alloc_qdisc_cache(struct nl_handle *nlh)
 
 	cache = rtnl_qdisc_alloc_cache(nlh);
 	if (!cache)
-		fprintf(stderr, "Unable to retrieve qdisc cache: %s\n",
+		fatal(nl_get_errno(), "Unable to retrieve qdisc cache: %s\n",
 			nl_geterror());
-	else
-		nl_cache_mngt_provide(cache);
+
+	nl_cache_mngt_provide(cache);
 
 	return cache;
 }
@@ -169,10 +189,10 @@ struct nl_cache *nltool_alloc_genl_family_cache(struct nl_handle *nlh)
 
 	cache = genl_ctrl_alloc_cache(nlh);
 	if (!cache)
-		fprintf(stderr, "Unable to retrieve genl family cache: %s\n",
+		fatal(nl_get_errno(), "Unable to retrieve genl family cache: %s\n",
 			nl_geterror());
-	else
-		nl_cache_mngt_provide(cache);
+
+	nl_cache_mngt_provide(cache);
 
 	return cache;
 }

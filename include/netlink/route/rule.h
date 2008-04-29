@@ -69,8 +69,8 @@ extern char *		rtnl_rule_get_iif(struct rtnl_rule *);
 extern void		rtnl_rule_set_classid(struct rtnl_rule *, uint32_t);
 extern uint32_t		rtnl_rule_get_classid(struct rtnl_rule *);
 
-extern void		rtnl_rule_set_realms(struct rtnl_rule *, realm_t);
-extern realm_t		rtnl_rule_get_realms(struct rtnl_rule *);
+extern void		rtnl_rule_set_realms(struct rtnl_rule *, uint32_t);
+extern uint32_t		rtnl_rule_get_realms(struct rtnl_rule *);
 
 #ifdef __cplusplus
 }

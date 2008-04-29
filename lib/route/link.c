@@ -795,7 +795,7 @@ static int link_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= LINK_DIFF(ADDR,		nl_addr_cmp(a->l_addr, b->l_addr));
 	diff |= LINK_DIFF(BRD,		nl_addr_cmp(a->l_bcast, b->l_bcast));
 
-	if (flags & LOOSE_FLAG_COMPARISON)
+	if (flags & LOOSE_COMPARISON)
 		diff |= LINK_DIFF(FLAGS,
 				  (a->l_flags ^ b->l_flags) & b->l_flag_mask);
 	else

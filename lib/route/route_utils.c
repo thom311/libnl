@@ -167,27 +167,4 @@ int rtnl_route_str2metric(const char *name)
 
 /** @} */
 
-/**
- * @name Nexthop Flags Translations
- * @{
- */
-
-static struct trans_tbl nh_flags[] = {
-	__ADD(RTNH_F_DEAD, dead)
-	__ADD(RTNH_F_PERVASIVE, pervasive)
-	__ADD(RTNH_F_ONLINK, onlink)
-};
-
-char * rtnl_route_nh_flags2str(int flags, char *buf, size_t len)
-{
-	return __flags2str(flags, buf, len, nh_flags, ARRAY_SIZE(nh_flags));
-}
-
-int rtnl_route_nh_str2flags(const char *name)
-{
-	return __str2flags(name, nh_flags, ARRAY_SIZE(nh_flags));
-}
-
-/** @} */
-
 /** @} */

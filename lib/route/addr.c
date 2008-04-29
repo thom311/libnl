@@ -585,7 +585,7 @@ static int addr_compare(struct nl_object *_a, struct nl_object *_b,
 						    b->a_multicast));
 	diff |= ADDR_DIFF(BROADCAST,	nl_addr_cmp(a->a_bcast, b->a_bcast));
 
-	if (flags & LOOSE_FLAG_COMPARISON)
+	if (flags & LOOSE_COMPARISON)
 		diff |= ADDR_DIFF(FLAGS,
 				  (a->a_flags ^ b->a_flags) & b->a_flag_mask);
 	else

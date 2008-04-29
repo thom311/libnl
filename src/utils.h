@@ -43,6 +43,8 @@
 #include <netlink/genl/mngt.h>
 #include <netlink/netfilter/ct.h>
 
+extern void fatal(int err, const char *fmt, ...);
+
 extern int nltool_init(int argc, char *argv[]);
 extern int nltool_connect(struct nl_handle *nlh, int protocol);
 extern struct nl_addr *nltool_addr_parse(const char *str);

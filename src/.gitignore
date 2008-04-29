@@ -23,8 +23,8 @@ nl-qdisc-add
 nl-qdisc-delete
 nl-qdisc-dump
 nl-route-add
-nl-route-del
-nl-route-dump
+nl-route-delete
+nl-route-list
 nl-route-get
 nl-rule-dump
 nl-tctree-dump

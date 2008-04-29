@@ -197,7 +197,7 @@ static int ct_compare(struct nl_object *_a, struct nl_object *_b,
 #define CT_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, CT_ATTR_##ATTR, a, b, EXPR)
 #define CT_DIFF_VAL(ATTR, FIELD) CT_DIFF(ATTR, a->FIELD != b->FIELD)
 #define CT_DIFF_ADDR(ATTR, FIELD) \
-	((flags & LOOSE_FLAG_COMPARISON) \
+	((flags & LOOSE_COMPARISON) \
 		? CT_DIFF(ATTR, nl_addr_cmp_prefix(a->FIELD, b->FIELD)) \
 		: CT_DIFF(ATTR, nl_addr_cmp(a->FIELD, b->FIELD)))
 
@@ -227,7 +227,7 @@ static int ct_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= CT_DIFF_VAL(REPL_PACKETS,	ct_repl.packets);
 	diff |= CT_DIFF_VAL(REPL_BYTES,		ct_repl.bytes);
 
-	if (flags & LOOSE_FLAG_COMPARISON)
+	if (flags & LOOSE_COMPARISON)
 		diff |= CT_DIFF(STATUS, (a->ct_status ^ b->ct_status) &
 					b->ct_status_mask);
 	else

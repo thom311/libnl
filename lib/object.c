@@ -318,7 +318,7 @@ int nl_object_match_filter(struct nl_object *obj, struct nl_object *filter)
 		return 0;
 	
 	return !(ops->oo_compare(obj, filter, filter->ce_mask,
-				 LOOSE_FLAG_COMPARISON));
+				 LOOSE_COMPARISON));
 }
 
 /**

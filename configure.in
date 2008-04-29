@@ -9,7 +9,7 @@
 # Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
 #
 
-AC_INIT(libnl, 1.1, tgraf@suug.ch)
+AC_INIT(libnl, 1.2, tgraf@suug.ch)
 AC_CONFIG_HEADER(lib/defs.h)
 
 save_CFLAGS="${CFLAGS}"
@@ -22,58 +22,16 @@ AC_PROG_INSTALL
 AC_C_CONST
 AC_C_INLINE
 
-#####################################################################
-##
-## libm check
-##
-#####################################################################
-M="No "
 AC_CHECK_LIB(m, pow,
 [
   LIBM="-lm"
-  M="Yes"
 ],[
     echo
     echo "*** Error: libm required ***"
     echo
-    exit
 ])
 
-#####################################################################
-##
-## verbose error strings
-##
-#####################################################################
-AC_ARG_ENABLE(verbose-errors,
-[  --enable-verbose-errors enable verbose errors (debugging)],[
-	if test x$enableval = xyes; then
-		AC_DEFINE_UNQUOTED(VERBOSE_ERRORS,"1",[verbose errors])
-	fi
-])
-
-#####################################################################
-##
-## compile decisions
-##
-#####################################################################
-COMPILE_LIBNL="Yes "
 LIBNL_LIB="$LIBM"
-
 AC_SUBST(LIBNL_LIB)
 
 AC_OUTPUT([Makefile.opts libnl-1.pc doc/Doxyfile])
-
-#####################################################################
-##
-## status report
-##
-#####################################################################
-echo "
-----------------------------------------------------------------------
-SUMMARY:
-
-Included in Compilation:
-  libnl:   $COMPILE_LIBNL $LIBNL_LIB
-
-Dependencies:
-  libm             $M       (required)"

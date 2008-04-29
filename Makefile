@@ -22,13 +22,12 @@ all: Makefile.opts
 	done
 
 clean: Makefile.opts
-	rm -f cscope.*
 	@for dir in $(SUBDIRS); do \
 		echo "Entering $$dir" && $(MAKE) -C $$dir clean || exit $$?; \
 	done
 
 distclean: clean
-	@$(RM) -rf Makefile.opts autom4te.cache config.log config.status
+	@$(RM) -rf Makefile.opts autom4te.cache config.log config.status cscope.*
 	@for dir in $(SUBDIRS); do \
 		echo "Entering $$dir" && $(MAKE) -C $$dir distclean || exit $$?; \
 	done

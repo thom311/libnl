@@ -11,33 +11,43 @@
 
 #include "route-utils.h"
 
+static void print_version(void)
+{
+	fprintf(stderr, "%s\n", LIBNL_STRING);
+	exit(0);
+}
+
 static void print_usage(void)
 {
 	printf(
-	"Usage: nl-route-list [OPTION]...\n"
+	"Usage: nl-route-list [OPTION]... [ROUTE]\n"
 	"\n"
 	"Options\n"
-	" -f, --family=FAMILY	address family\n"
+	" -f, --format=TYPE	Output format { brief | details | stats }\n"
+	" -h, --help            Show this help\n"
+	" -v, --version		Show versioning information\n"
+	"\n"
+	"Route Options\n"
 	" -d, --dst=ADDR        destination prefix, e.g. 10.10.0.0/16\n"
-	" -n, --nh=NEXTHOP      nexthop configuration:\n"
+	" -n, --nexthop=NH      nexthop configuration:\n"
 	"                         dev=DEV         route via device\n"
 	"                         weight=WEIGHT   weight of nexthop\n"
 	"                         flags=FLAGS\n"
 	"                         via=GATEWAY     route via other node\n"
 	"                         realms=REALMS\n"
 	"                         e.g. dev=eth0,via=192.168.1.12\n"
-	" -s, --src=ADDR        source prefix\n"
-	" -i, --iif=DEV         incomming interface\n"
-	" -P, --pref-src=ADDR   preferred source address\n"
-	" -t, --table=TABLE     routing table\n"
-	" -m, --metric=OPTS     metrics\n"
-	" -p, --prio=NUM        priotity\n"
-	" -S, --scope=SCOPE     scope\n"
-	" -x, --proto=PROTO     protocol\n"
-	" -T, --type=TYPE       routing type\n"
-	" -D, --dumptype=TYPE   { brief | detailed | stats | env }\n"
-	" -h, --help            show this help\n");
-	exit(1);
+	" -t, --table=TABLE     Routing table\n"
+	"     --family=FAMILY	Address family\n"
+	"     --src=ADDR        Source prefix\n"
+	"     --iif=DEV         Incomming interface\n"
+	"     --pref-src=ADDR   Preferred source address\n"
+	"     --metrics=OPTS    Metrics configurations\n"
+	"     --priority=NUM    Priotity\n"
+	"     --scope=SCOPE     Scope\n"
+	"     --protocol=PROTO  Protocol\n"
+	"     --type=TYPE       { unicast | local | broadcast | multicast }\n"
+	);
+	exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -62,44 +72,56 @@ int main(int argc, char *argv[])
 
 	for (;;) {
 		int c, optidx = 0;
+		enum {
+			ARG_FAMILY = 257,
+			ARG_SRC = 258,
+			ARG_IIF,
+			ARG_PREF_SRC,
+			ARG_METRICS,
+			ARG_PRIORITY,
+			ARG_SCOPE,
+			ARG_PROTOCOL,
+			ARG_TYPE,
+		};
 		static struct option long_opts[] = {
-			{ "family", 1, 0, 'f' },
-			{ "dst", 1, 0, 'd' },
-			{ "src", 1, 0, 's' },
-			{ "iif", 1, 0, 'i' },
-			{ "nh", 1, 0, 'n' },
-			{ "pref-src", 1, 0, 'P' },
-			{ "table", 1, 0, 't' },
-			{ "metric", 1, 0, 'm' },
-			{ "prio", 1, 0, 'p' },
-			{ "scope", 1, 0, 'S' },
-			{ "proto", 1, 0, 'x' },
-			{ "type", 1, 0, 'T' },
-			{ "dumptype", 1, 0, 'D' },
+			{ "format", 1, 0, 'f' },
 			{ "help", 0, 0, 'h' },
+			{ "version", 0, 0, 'v' },
+			{ "dst", 1, 0, 'd' },
+			{ "nexthop", 1, 0, 'n' },
+			{ "table", 1, 0, 't' },
+			{ "family", 1, 0, ARG_FAMILY },
+			{ "src", 1, 0, ARG_SRC },
+			{ "iif", 1, 0, ARG_IIF },
+			{ "pref-src", 1, 0, ARG_PREF_SRC },
+			{ "metrics", 1, 0, ARG_METRICS },
+			{ "priority", 1, 0, ARG_PRIORITY },
+			{ "scope", 1, 0, ARG_SCOPE },
+			{ "protocol", 1, 0, ARG_PROTOCOL },
+			{ "type", 1, 0, ARG_TYPE },
 			{ 0, 0, 0, 0 }
 		};
 
-		c = getopt_long(argc, argv, "f:d:s:i:n:P:t:m:p:S:x:T:D:h",
-				long_opts, &optidx);
+		c = getopt_long(argc, argv, "f:hvd:n:t:", long_opts, &optidx);
 		if (c == -1)
 			break;
 
 		switch (c) {
-		case 'f': parse_family(route, optarg); break;
-		case 'd': parse_dst(route, optarg); break;
-		case 's': parse_src(route, optarg); break;
-		case 'i': parse_iif(route, optarg, link_cache); break;
-		case 'n': parse_nexthop(route, optarg, link_cache); break;
-		case 'P': parse_pref_src(route, optarg); break;
-		case 't': parse_table(route, optarg); break;
-		case 'm': parse_metric(route, optarg); break;
-		case 'p': parse_prio(route, optarg); break;
-		case 'S': parse_scope(route, optarg); break;
-		case 'x': parse_protocol(route, optarg); break;
-		case 'T': parse_type(route, optarg); break;
-		case 'D': params.dp_type = nltool_parse_dumptype(optarg); break;
+		case 'f': params.dp_type = nltool_parse_dumptype(optarg); break;
 		case 'h': print_usage(); break;
+		case 'v': print_version(); break;
+		case 'd': parse_dst(route, optarg); break;
+		case 'n': parse_nexthop(route, optarg, link_cache); break;
+		case 't': parse_table(route, optarg); break;
+		case ARG_FAMILY: parse_family(route, optarg); break;
+		case ARG_SRC: parse_src(route, optarg); break;
+		case ARG_IIF: parse_iif(route, optarg, link_cache); break;
+		case ARG_PREF_SRC: parse_pref_src(route, optarg); break;
+		case ARG_METRICS: parse_metric(route, optarg); break;
+		case ARG_PRIORITY: parse_prio(route, optarg); break;
+		case ARG_SCOPE: parse_scope(route, optarg); break;
+		case ARG_PROTOCOL: parse_protocol(route, optarg); break;
+		case ARG_TYPE: parse_type(route, optarg); break;
 		}
 	}
 

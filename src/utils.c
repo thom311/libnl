@@ -71,7 +71,7 @@ int nltool_parse_dumptype(const char *str)
 {
 	if (!strcasecmp(str, "brief"))
 		return NL_DUMP_BRIEF;
-	else if (!strcasecmp(str, "detailed"))
+	else if (!strcasecmp(str, "details") || !strcasecmp(str, "detailed"))
 		return NL_DUMP_FULL;
 	else if (!strcasecmp(str, "stats"))
 		return NL_DUMP_STATS;

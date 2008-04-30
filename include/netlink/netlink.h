@@ -25,6 +25,7 @@
 #include <linux/rtnetlink.h>
 #include <linux/genetlink.h>
 #include <linux/netfilter/nfnetlink.h>
+#include <netlink/version.h>
 #include <netlink/types.h>
 #include <netlink/handlers.h>
 #include <netlink/socket.h>

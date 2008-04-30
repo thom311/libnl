@@ -34,4 +34,4 @@ AC_CHECK_LIB(m, pow,
 LIBNL_LIB="$LIBM"
 AC_SUBST(LIBNL_LIB)
 
-AC_OUTPUT([Makefile.opts libnl-1.pc doc/Doxyfile])
+AC_OUTPUT([Makefile.opts libnl-1.pc doc/Doxyfile include/netlink/version.h])

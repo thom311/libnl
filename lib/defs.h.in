@@ -15,9 +15,6 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
-/* verbose errors */
-#undef VERBOSE_ERRORS
-
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
 

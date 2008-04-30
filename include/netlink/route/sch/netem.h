@@ -31,6 +31,13 @@ extern int rtnl_netem_get_reorder_probability(struct rtnl_qdisc *);
 extern int rtnl_netem_set_reorder_correlation(struct rtnl_qdisc *, int);
 extern int rtnl_netem_get_reorder_correlation(struct rtnl_qdisc *);
 
+/* Corruption */
+extern int rtnl_netem_set_corruption_probability(struct rtnl_qdisc *, int);
+extern int rtnl_netem_get_corruption_probability(struct rtnl_qdisc *);
+
+extern int rtnl_netem_set_corruption_correlation(struct rtnl_qdisc *, int);
+extern int rtnl_netem_get_corruption_correlation(struct rtnl_qdisc *);
+
 /* Packet Loss */
 extern int rtnl_netem_set_loss(struct rtnl_qdisc *, int);
 extern int rtnl_netem_get_loss(struct rtnl_qdisc *);
@@ -54,6 +61,12 @@ extern int rtnl_netem_get_jitter(struct rtnl_qdisc *);
 
 extern int rtnl_netem_set_delay_correlation(struct rtnl_qdisc *, int);
 extern int rtnl_netem_get_delay_correlation(struct rtnl_qdisc *);
+
+/* Delay Distribution */
+#define MAXDIST 65536
+extern int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *, const char *);
+extern int rtnl_netem_get_delay_distribution_size(struct rtnl_qdisc *);
+extern int rtnl_netem_get_delay_distribution(struct rtnl_qdisc *, int16_t **);
 
 #ifdef __cplusplus
 }

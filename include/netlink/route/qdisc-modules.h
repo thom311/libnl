@@ -40,6 +40,8 @@ struct rtnl_qdisc_ops
 	 */
 	struct nl_msg *(*qo_get_opts)(struct rtnl_qdisc *);
 
+	int (*qo_build_msg)(struct rtnl_qdisc *, struct nl_msg *);
+
 	/**
 	 * TCA_OPTIONS message parser
 	 */

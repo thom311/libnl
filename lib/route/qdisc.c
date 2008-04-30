@@ -171,6 +171,14 @@ static struct nl_msg *qdisc_build(struct rtnl_qdisc *qdisc, int type, int flags)
 				goto errout;
 		}
 	}
+	/* Some qdiscs don't accept properly nested messages (e.g. netem). To
+	 * accomodate for this, they can complete the message themselves.
+	 */		
+	else if (qops && qops->qo_build_msg) {
+		err = qops->qo_build_msg(qdisc, msg);
+		if ( err < 0 )
+			goto errout;
+	}
 
 	return msg;
 errout:

@@ -62,7 +62,7 @@ static int tbf_msg_parser(struct rtnl_qdisc *q)
 	if (err < 0)
 		return err;
 	
-	tbf = tbf_qdisc(q);
+	tbf = tbf_alloc(q);
 	if (!tbf)
 		return nl_errno(ENOMEM);
 

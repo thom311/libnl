@@ -575,6 +575,18 @@ struct rtnl_netem_reo
 	uint32_t	nmro_correlation;
 };
 
+struct rtnl_netem_crpt
+{
+	uint32_t	nmcr_probability;
+	uint32_t	nmcr_correlation;
+};
+
+struct rtnl_netem_dist
+{
+	int16_t	*	dist_data;
+	size_t		dist_size;
+};
+
 struct rtnl_netem
 {
 	uint32_t		qnm_latency;
@@ -586,6 +598,8 @@ struct rtnl_netem
 	uint32_t		qnm_mask;
 	struct rtnl_netem_corr	qnm_corr;
 	struct rtnl_netem_reo	qnm_ro;
+	struct rtnl_netem_crpt	qnm_crpt;
+	struct rtnl_netem_dist  qnm_dist;
 };
 
 struct rtnl_htb_qdisc

@@ -134,6 +134,10 @@ void parse_nexthop(struct rtnl_route *route, char *subopts,
 		if (ret == -1)
 			fatal(EINVAL, "Unknown nexthop token \"%s\"", arg);
 
+		if (arg == NULL)
+			fatal(EINVAL, "Missing argument to option \"%s\"\n",
+				tokens[ret]);
+
 		switch (ret) {
 		case NH_DEV:
 			ival = rtnl_link_name2i(link_cache, arg);

@@ -18,6 +18,7 @@
 #include <inttypes.h>
 #include <errno.h>
 #include <stdint.h>
+#include <ctype.h>
 #include <getopt.h>
 #include <sys/types.h>
 #include <sys/socket.h>

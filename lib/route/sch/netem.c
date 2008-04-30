@@ -136,6 +136,8 @@ static int netem_msg_parser(struct rtnl_qdisc *qdisc)
 		}
 		
 		/* sch_netem does not currently dump TCA_NETEM_DELAY_DIST */
+		netem->qnm_dist.dist_data = NULL;
+		netem->qnm_dist.dist_size = 0;
 	}
 
 	return 0;
@@ -184,7 +186,8 @@ int netem_build_msg(struct rtnl_qdisc *qdisc, struct nl_msg *msg)
 	struct tc_netem_corrupt corrupt;
 	struct rtnl_netem *netem;
 	
-	unsigned char set_correlation = 0, set_reorder = 0, set_corrupt = 0;
+	unsigned char set_correlation = 0, set_reorder = 0,
+		set_corrupt = 0, set_dist = 0;
 
 	memset(&opts, 0, sizeof(opts));
 	memset(&cor, 0, sizeof(cor));
@@ -245,7 +248,8 @@ int netem_build_msg(struct rtnl_qdisc *qdisc, struct nl_msg *msg)
 				"netem: Specified corrupt correlation without corrupt probability.");
 	}
 	
-	if ( netem->qnm_dist.dist_data && (netem->qnm_latency == 0 || netem->qnm_jitter == 0)) {
+	if ( netem->qnm_dist.dist_data && netem->qnm_dist.dist_size ) {
+		if (netem->qnm_latency == 0 || netem->qnm_jitter == 0) {
 		return nl_error(EINVAL, 
 			"netem: Distribution specified with empty latency and jitter values.");
 	}
@@ -259,6 +263,8 @@ int netem_build_msg(struct rtnl_qdisc *qdisc, struct nl_msg *msg)
 			return nl_error(ENOMEM, 
 				"netem: Unable to reallocate message size to contain delay distribution data.");
 		msg->nm_size = new_msg_len;
+			set_dist = 1;
+		}
 	}
 	
 	opts.latency = netem->qnm_latency;
@@ -300,7 +306,7 @@ int netem_build_msg(struct rtnl_qdisc *qdisc, struct nl_msg *msg)
 			return nl_error(err, "netem: Unable to add TCA_NETEM_CORRUPT to nl_msg.");
 	}
 	
-	if ( netem->qnm_dist.dist_data && netem->qnm_dist.dist_size ) {
+	if ( set_dist ) {
 		err = nla_put(msg, TCA_NETEM_DELAY_DIST,
 			netem->qnm_dist.dist_size * sizeof(netem->qnm_dist.dist_data[0]),
 			netem->qnm_dist.dist_data);

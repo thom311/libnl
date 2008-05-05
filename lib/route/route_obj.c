@@ -215,8 +215,14 @@ static int route_dump_details(struct nl_object *a, struct nl_dump_params *p)
 		nl_dump(p, "protocol %s ",
 			rtnl_route_proto2str(r->rt_protocol, buf, sizeof(buf)));
 
-	if (r->ce_mask & ROUTE_ATTR_IIF)
-		nl_dump(p, "iif %s ", r->rt_iif);
+	if (r->ce_mask & ROUTE_ATTR_IIF) {
+		if (link_cache) {
+			nl_dump(p, "iif %s ",
+				rtnl_link_i2name(link_cache, r->rt_iif,
+						 buf, sizeof(buf)));
+		} else
+			nl_dump(p, "iif %d ", r->rt_iif);
+	}
 
 	if (r->ce_mask & ROUTE_ATTR_SRC)
 		nl_dump(p, "src %s ", nl_addr2str(r->rt_src, buf, sizeof(buf)));
@@ -276,7 +282,10 @@ static int route_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 static int route_dump_env(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_route *route = (struct rtnl_route *) obj;
+	struct nl_cache *link_cache;
 	char buf[128];
+
+	link_cache = nl_cache_mngt_require("route/link");
 
 	nl_dump(p, "ROUTE_FAMILY=%s\n",
 		     nl_af2str(route->rt_family, buf, sizeof(buf)));
@@ -293,8 +302,14 @@ static int route_dump_env(struct nl_object *obj, struct nl_dump_params *p)
 		nl_dump_line(p, "ROUTE_PREFSRC=%s\n",
 			     nl_addr2str(route->rt_pref_src, buf, sizeof(buf)));
 
-	if (route->ce_mask & ROUTE_ATTR_IIF)
-		nl_dump_line(p, "ROUTE_IIF=%s\n", route->rt_iif);
+	if (route->ce_mask & ROUTE_ATTR_IIF) {
+		if (link_cache) {
+			nl_dump_line(p, "ROUTE_IIF=%s",
+				rtnl_link_i2name(link_cache, route->rt_iif,
+						 buf, sizeof(buf)));
+		} else
+			nl_dump_line(p, "ROUTE_IIF=%d", route->rt_iif);
+	}
 
 	if (route->ce_mask & ROUTE_ATTR_TOS)
 		nl_dump_line(p, "ROUTE_TOS=%u\n", route->rt_tos);

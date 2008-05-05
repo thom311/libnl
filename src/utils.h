@@ -56,7 +56,7 @@ extern struct nl_cache *nltool_alloc_link_cache(struct nl_handle *nlh);
 extern struct nl_cache *nltool_alloc_addr_cache(struct nl_handle *nlh);
 extern struct nl_cache *nltool_alloc_neigh_cache(struct nl_handle *nlh);
 extern struct nl_cache *nltool_alloc_neightbl_cache(struct nl_handle *nlh);
-extern struct nl_cache *nltool_alloc_route_cache(struct nl_handle *nlh);
+extern struct nl_cache *nltool_alloc_route_cache(struct nl_handle *nlh, int);
 extern struct nl_cache *nltool_alloc_rule_cache(struct nl_handle *nlh);
 extern struct nl_cache *nltool_alloc_qdisc_cache(struct nl_handle *nlh);
 extern struct nl_cache *nltool_alloc_genl_family_cache(struct nl_handle *nlh);

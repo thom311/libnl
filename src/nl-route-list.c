@@ -23,6 +23,7 @@ static void print_usage(void)
 	"Usage: nl-route-list [OPTION]... [ROUTE]\n"
 	"\n"
 	"Options\n"
+	" -c, --cache           List the contents of the route cache\n"
 	" -f, --format=TYPE	Output format { brief | details | stats }\n"
 	" -h, --help            Show this help\n"
 	" -v, --version		Show versioning information\n"
@@ -59,12 +60,11 @@ int main(int argc, char *argv[])
 		.dp_fd = stdout,
 		.dp_type = NL_DUMP_BRIEF
 	};
-	int err = 1;
+	int err = 1, print_cache = 0;
 
 	nlh = nltool_alloc_handle();
 	nltool_connect(nlh, NETLINK_ROUTE);
 	link_cache = nltool_alloc_link_cache(nlh);
-	route_cache = nltool_alloc_route_cache(nlh);
 
 	route = rtnl_route_alloc();
 	if (!route)
@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
 			ARG_TYPE,
 		};
 		static struct option long_opts[] = {
+			{ "cache", 0, 0, 'c' },
 			{ "format", 1, 0, 'f' },
 			{ "help", 0, 0, 'h' },
 			{ "version", 0, 0, 'v' },
@@ -102,11 +103,12 @@ int main(int argc, char *argv[])
 			{ 0, 0, 0, 0 }
 		};
 
-		c = getopt_long(argc, argv, "f:hvd:n:t:", long_opts, &optidx);
+		c = getopt_long(argc, argv, "cf:hvd:n:t:", long_opts, &optidx);
 		if (c == -1)
 			break;
 
 		switch (c) {
+		case 'c': print_cache = 1; break;
 		case 'f': params.dp_type = nltool_parse_dumptype(optarg); break;
 		case 'h': print_usage(); break;
 		case 'v': print_version(); break;
@@ -125,13 +127,16 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	route_cache = nltool_alloc_route_cache(nlh,
+				print_cache ? ROUTE_CACHE_CONTENT : 0);
+
 	nl_cache_dump_filter(route_cache, &params, OBJ_CAST(route));
 
 	err = 0;
 
 	rtnl_route_put(route);
-errout:
 	nl_cache_free(route_cache);
+errout:
 	nl_cache_free(link_cache);
 	nl_close(nlh);
 	nl_handle_destroy(nlh);

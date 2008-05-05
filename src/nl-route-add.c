@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 	nlh = nltool_alloc_handle();
 	nltool_connect(nlh, NETLINK_ROUTE);
 	link_cache = nltool_alloc_link_cache(nlh);
-	route_cache = nltool_alloc_route_cache(nlh);
+	route_cache = nltool_alloc_route_cache(nlh, 0);
 
 	route = rtnl_route_alloc();
 	if (!route)

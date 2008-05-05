@@ -141,11 +141,11 @@ struct nl_cache *nltool_alloc_neightbl_cache(struct nl_handle *nlh)
 	return cache;
 }
 
-struct nl_cache *nltool_alloc_route_cache(struct nl_handle *nlh)
+struct nl_cache *nltool_alloc_route_cache(struct nl_handle *nlh, int flags)
 {
 	struct nl_cache *cache;
 
-	cache = rtnl_route_alloc_cache(nlh);
+	cache = rtnl_route_alloc_cache(nlh, AF_UNSPEC, flags);
 	if (!cache)
 		fatal(nl_get_errno(), "Unable to retrieve route cache: %s\n",
 			nl_geterror());

@@ -48,7 +48,14 @@ errout:
 
 static int route_request_update(struct nl_cache *c, struct nl_handle *h)
 {
-	return nl_rtgen_request(h, RTM_GETROUTE, AF_UNSPEC, NLM_F_DUMP);
+	struct rtmsg rhdr = {
+		.rtm_family = c->c_iarg1,
+	};
+
+	if (c->c_iarg2 & ROUTE_CACHE_CONTENT)
+		rhdr.rtm_flags |= RTM_F_CLONED;
+
+	return nl_send_simple(h, RTM_GETROUTE, NLM_F_DUMP, &rhdr, sizeof(rhdr));
 }
 
 /**
@@ -59,6 +66,8 @@ static int route_request_update(struct nl_cache *c, struct nl_handle *h)
 /**
  * Build a route cache holding all routes currently configured in the kernel
  * @arg handle		netlink handle
+ * @arg family		Address family of routes to cover or AF_UNSPEC
+ * @arg flags		Flags
  *
  * Allocates a new cache, initializes it properly and updates it to
  * contain all routes currently configured in the kernel.
@@ -67,13 +76,17 @@ static int route_request_update(struct nl_cache *c, struct nl_handle *h)
  *       cache after using it.
  * @return The cache or NULL if an error has occured.
  */
-struct nl_cache *rtnl_route_alloc_cache(struct nl_handle *handle)
+struct nl_cache *rtnl_route_alloc_cache(struct nl_handle *handle,
+					int family, int flags)
 {
 	struct nl_cache *cache;
 
 	cache = nl_cache_alloc(&rtnl_route_ops);
 	if (!cache)
 		return NULL;
+
+	cache->c_iarg1 = family;
+	cache->c_iarg2 = flags;
 
 	if (handle && nl_cache_refill(handle, cache) < 0) {
 		free(cache);

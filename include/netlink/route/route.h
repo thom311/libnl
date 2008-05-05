@@ -23,6 +23,9 @@
 extern "C" {
 #endif
 
+/* flags */
+#define ROUTE_CACHE_CONTENT	1
+
 struct rtnl_route;
 
 struct rtnl_rtcacheinfo
@@ -42,7 +45,8 @@ extern struct nl_object_ops route_obj_ops;
 /* General */
 extern struct rtnl_route *	rtnl_route_alloc(void);
 extern void			rtnl_route_put(struct rtnl_route *);
-extern struct nl_cache *	rtnl_route_alloc_cache(struct nl_handle *);
+extern struct nl_cache *	rtnl_route_alloc_cache(struct nl_handle *,
+						       int, int);
 
 extern void		rtnl_route_get(struct rtnl_route *);
 extern void		rtnl_route_put(struct rtnl_route *);

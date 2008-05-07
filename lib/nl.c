@@ -482,7 +482,7 @@ int nl_recv(struct nl_handle *handle, struct sockaddr_nl *nla,
 		page_size = getpagesize();
 
 	iov.iov_len = page_size;
-	iov.iov_base = *buf = calloc(1, iov.iov_len);
+	iov.iov_base = *buf = malloc(iov.iov_len);
 
 	if (handle->h_flags & NL_SOCK_PASSCRED) {
 		msg.msg_controllen = CMSG_SPACE(sizeof(struct ucred));

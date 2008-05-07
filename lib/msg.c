@@ -372,9 +372,11 @@ static struct nl_msg *__nlmsg_alloc(size_t len)
 	if (!nm)
 		goto errout;
 
-	nm->nm_nlh = calloc(1, len);
+	nm->nm_nlh = malloc(len);
 	if (!nm->nm_nlh)
 		goto errout;
+
+	memset(nm->nm_nlh, 0, sizeof(struct nlmsghdr));
 
 	nm->nm_protocol = -1;
 	nm->nm_size = len;

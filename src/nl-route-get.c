@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 	if (!dst)
 		goto errout_link_cache;
 
-	route_cache = nltool_alloc_route_cache(nlh);
+	route_cache = nltool_alloc_route_cache(nlh, 0);
 	if (!route_cache)
 		goto errout_addr_put;
 

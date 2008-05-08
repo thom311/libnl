@@ -763,6 +763,34 @@ int rtnl_route_get_nnexthops(struct rtnl_route *route)
 	return route->rt_nr_nh;
 }
 
+void rtnl_route_foreach_nexthop(struct rtnl_route *r,
+                                void (*cb)(struct rtnl_nexthop *, void *),
+                                void *arg)
+{
+	struct rtnl_nexthop *nh;
+    
+	if (r->ce_mask & ROUTE_ATTR_MULTIPATH) {
+		nl_list_for_each_entry(nh, &r->rt_nexthops, rtnh_list) {
+                        cb(nh, arg);
+		}
+	}
+}
+
+struct rtnl_nexthop *rtnl_route_nexthop_n(struct rtnl_route *r, int n)
+{
+	struct rtnl_nexthop *nh;
+	int i;
+    
+	if (r->ce_mask & ROUTE_ATTR_MULTIPATH && r->rt_nr_nh > n) {
+		i = 0;
+		nl_list_for_each_entry(nh, &r->rt_nexthops, rtnh_list) {
+                        if (i == n) return nh;
+			i++;
+		}
+	}
+        return NULL;
+}
+
 /** @} */
 
 /**

@@ -102,6 +102,12 @@ extern void		rtnl_route_remove_nexthop(struct rtnl_route *,
 extern struct nl_list_head *	rtnl_route_get_nexthops(struct rtnl_route *);
 extern int		rtnl_route_get_nnexthops(struct rtnl_route *);
 
+extern void		rtnl_route_foreach_nexthop(struct rtnl_route *r,
+                                 void (*cb)(struct rtnl_nexthop *, void *),
+                                 void *arg);
+
+extern struct rtnl_nexthop * rtnl_route_nexthop_n(struct rtnl_route *r, int n);
+
 extern int		rtnl_route_guess_scope(struct rtnl_route *);
 
 extern char *		rtnl_route_table2str(int, char *, size_t);

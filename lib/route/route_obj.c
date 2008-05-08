@@ -385,14 +385,11 @@ static int route_compare(struct nl_object *_a, struct nl_object *_b,
 				goto nh_mismatch;
 		}
 
-		for (i = 1; i < RTAX_MAX; i++) {
-			uint32_t val_a, val_b;
-
-			if (!rtnl_route_get_metric(a, i, &val_a)) {
-				if (rtnl_route_get_metric(b, i, &val_b) != 0 ||
-				    val_a != val_b)
-					ROUTE_DIFF(METRICS, 1);
-			}
+		for (i = 0; i < RTAX_MAX - 1; i++) {
+			if (a->rt_metrics_mask & (1 << i) &&
+			    (!(b->rt_metrics_mask & (1 << i)) ||
+			     a->rt_metrics[i] != b->rt_metrics[i]))
+				ROUTE_DIFF(METRICS, 1);
 		}
 
 		diff |= ROUTE_DIFF(FLAGS,
@@ -428,17 +425,13 @@ static int route_compare(struct nl_object *_a, struct nl_object *_b,
 				goto nh_mismatch;
 		}
 
-		for (i = 1; i < RTAX_MAX; i++) {
-			int avail_a, avail_b;
-			uint32_t val_a, val_b;
-
-			avail_a = rtnl_route_get_metric(a, i, &val_a);
-			avail_b = rtnl_route_get_metric(b, i, &val_b);
-
-			if (avail_a ^ avail_b)
+		for (i = 0; i < RTAX_MAX - 1; i++) {
+			if ((a->rt_metrics_mask & (1 << i)) ^
+			    (b->rt_metrics_mask & (1 << i)))
 				diff |= ROUTE_DIFF(METRICS, 1);
 			else
-				diff |= ROUTE_DIFF(METRICS, val_a != val_b);
+				diff |= ROUTE_DIFF(METRICS,
+					a->rt_metrics[i] != b->rt_metrics[i]);
 		}
 
 		diff |= ROUTE_DIFF(FLAGS, a->rt_flags != b->rt_flags);
@@ -705,7 +698,7 @@ int rtnl_route_get_metric(struct rtnl_route *route, int metric, uint32_t *value)
 		    RTAX_MAX);
 
 	if (!(route->rt_metrics_mask & (1 << (metric - 1))))
-		return nl_error(ENOENT, "Metric not available");
+		return nl_error(ENOENT, "Metric %d not available", metric);
 
 	if (value)
 		*value = route->rt_metrics[metric - 1];

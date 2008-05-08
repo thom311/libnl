@@ -107,7 +107,8 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	rule->r_dst_len = r->rtm_dst_len;
 	rule->r_table = r->rtm_table;
 	rule->ce_mask = (RULE_ATTR_FAMILY | RULE_ATTR_TYPE | RULE_ATTR_DSFIELD |
-			 RULE_ATTR_SRC_LEN | RULE_ATTR_DST_LEN |RULE_ATTR_TYPE);
+			 RULE_ATTR_SRC_LEN | RULE_ATTR_DST_LEN |RULE_ATTR_TYPE |
+			 RULE_ATTR_TABLE);
 
 	if (tb[RTA_PRIORITY]) {
 		rule->r_prio = nla_get_u32(tb[RTA_PRIORITY]);
@@ -157,6 +158,11 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		}
 		rule->ce_mask |= RULE_ATTR_SRCMAP;
 	}
+
+	if (tb[RTA_TABLE]) {
+            rule->r_table = nla_get_u32(tb[RTA_TABLE]);
+            rule->ce_mask |= RULE_ATTR_TABLE;
+        }
 
 	err = pp->pp_cb((struct nl_object *) rule, pp);
 	if (err < 0)

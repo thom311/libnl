@@ -59,7 +59,6 @@ extern int			nl_recv(struct nl_handle *,
 
 extern int			nl_recvmsgs(struct nl_handle *, struct nl_cb *);
 
-#define nl_recvmsgs_def(handle) nl_recvmsgs_default(handle)
 extern int			nl_recvmsgs_default(struct nl_handle *);
 
 extern int			nl_wait_for_ack(struct nl_handle *);

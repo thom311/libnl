@@ -36,8 +36,6 @@ extern struct nl_object *	nl_cache_get_last(struct nl_cache *);
 extern struct nl_object *	nl_cache_get_next(struct nl_object *);
 extern struct nl_object *	nl_cache_get_prev(struct nl_object *);
 
-/* Cache creation/deletion */
-#define nl_cache_alloc_from_ops(ptr)	nl_cache_alloc(ptr)
 extern struct nl_cache *	nl_cache_alloc(struct nl_cache_ops *);
 extern int			nl_cache_alloc_and_fill(struct nl_cache_ops *,
 							struct nl_handle *,
@@ -54,9 +52,7 @@ extern int			nl_cache_add(struct nl_cache *,
 					     struct nl_object *);
 extern int			nl_cache_parse_and_add(struct nl_cache *,
 						       struct nl_msg *);
-#define nl_cache_delete(a, b)	nl_cache_remove(b)
 extern void			nl_cache_remove(struct nl_object *);
-#define nl_cache_update(a, b)	nl_cache_refill(a, b)
 extern int			nl_cache_refill(struct nl_handle *,
 						struct nl_cache *);
 extern int			nl_cache_pickup(struct nl_handle *,

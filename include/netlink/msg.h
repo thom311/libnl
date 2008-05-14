@@ -68,11 +68,6 @@ extern struct nlattr *	  nlmsg_find_attr(struct nlmsghdr *, int, int);
 extern int		  nlmsg_validate(struct nlmsghdr *, int, int,
 					 struct nla_policy *);
 
-/* Backward compatibility */
-#define nlmsg_new()	   		nlmsg_alloc()
-#define nlmsg_build_simple(a, b)	nlmsg_alloc_simple(a, b)
-#define nlmsg_build(ptr)		nlmsg_inherit(ptr)
-
 extern struct nl_msg *	  nlmsg_alloc(void);
 extern struct nl_msg *	  nlmsg_alloc_size(size_t);
 extern struct nl_msg *	  nlmsg_alloc_simple(int, int);

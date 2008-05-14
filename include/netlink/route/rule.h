@@ -44,9 +44,7 @@ extern void		rtnl_rule_set_family(struct rtnl_rule *, int);
 extern int		rtnl_rule_get_family(struct rtnl_rule *);
 extern void		rtnl_rule_set_prio(struct rtnl_rule *, int);
 extern int		rtnl_rule_get_prio(struct rtnl_rule *);
-#define rtnl_rule_set_fwmark(ptr, n) rtnl_rule_set_mark(ptr, n)
 extern void		rtnl_rule_set_mark(struct rtnl_rule *, uint64_t);
-#define rtnl_rule_get_fwmark(ptr) rtnl_rule_get_mark(ptr)
 extern uint64_t		rtnl_rule_get_mark(struct rtnl_rule *);
 extern void		rtnl_rule_set_table(struct rtnl_rule *, int);
 extern int		rtnl_rule_get_table(struct rtnl_rule *);

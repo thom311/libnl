@@ -250,7 +250,7 @@ int genl_family_add_op(struct genl_family *family, int id, int flags)
 
 	op = calloc(1, sizeof(*op));
 	if (op == NULL)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	op->o_id = id;
 	op->o_flags = flags;

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -175,10 +175,8 @@ struct nl_cache *nl_cache_alloc(struct nl_cache_ops *ops)
 	struct nl_cache *cache;
 
 	cache = calloc(1, sizeof(*cache));
-	if (!cache) {
-		nl_errno(ENOMEM);
+	if (!cache)
 		return NULL;
-	}
 
 	nl_init_list_head(&cache->c_items);
 	cache->c_ops = ops;
@@ -188,22 +186,43 @@ struct nl_cache *nl_cache_alloc(struct nl_cache_ops *ops)
 	return cache;
 }
 
+int nl_cache_alloc_and_fill(struct nl_cache_ops *ops, struct nl_handle *sock,
+			    struct nl_cache **result)
+{
+	struct nl_cache *cache;
+	int err;
+	
+	if (!(cache = nl_cache_alloc(ops)))
+		return -NLE_NOMEM;
+
+	if (sock && (err = nl_cache_refill(sock, cache)) < 0) {
+		nl_cache_free(cache);
+		return err;
+	}
+
+	*result = cache;
+	return 0;
+}
+
 /**
  * Allocate an empty cache based on type name
  * @arg kind		Name of cache type
  * @return A newly allocated and initialized cache.
  */
-struct nl_cache *nl_cache_alloc_name(const char *kind)
+int nl_cache_alloc_name(const char *kind, struct nl_cache **result)
 {
 	struct nl_cache_ops *ops;
+	struct nl_cache *cache;
 
 	ops = nl_cache_ops_lookup(kind);
-	if (!ops) {
-		nl_error(ENOENT, "Unable to lookup cache \"%s\"", kind);
-		return NULL;
-	}
+	if (!ops)
+		return -NLE_NOCACHE;
 
-	return nl_cache_alloc(ops);
+	if (!(cache = nl_cache_alloc(ops)))
+		return -NLE_NOMEM;
+
+	*result = cache;
+	return 0;
 }
 
 /**
@@ -307,12 +326,12 @@ int nl_cache_add(struct nl_cache *cache, struct nl_object *obj)
 	struct nl_object *new;
 
 	if (cache->c_ops->co_obj_ops != obj->ce_ops)
-		return nl_error(EINVAL, "Object mismatches cache type");
+		return -NLE_OBJ_MISMATCH;
 
 	if (!nl_list_empty(&obj->ce_list)) {
 		new = nl_object_clone(obj);
 		if (!new)
-			return nl_errno(ENOMEM);
+			return -NLE_NOMEM;
 	} else {
 		nl_object_get(obj);
 		new = obj;
@@ -334,7 +353,7 @@ int nl_cache_add(struct nl_cache *cache, struct nl_object *obj)
 int nl_cache_move(struct nl_cache *cache, struct nl_object *obj)
 {
 	if (cache->c_ops->co_obj_ops != obj->ce_ops)
-		return nl_error(EINVAL, "Object mismatches cache type");
+		return -NLE_OBJ_MISMATCH;
 
 	NL_DBG(3, "Moving object %p to cache %p\n", obj, cache);
 	
@@ -423,7 +442,7 @@ int nl_cache_request_full_dump(struct nl_handle *handle, struct nl_cache *cache)
 	          cache, nl_cache_name(cache));
 
 	if (cache->c_ops->co_request_update == NULL)
-		return nl_error(EOPNOTSUPP, "Operation not supported");
+		return -NLE_OPNOTSUPP;
 
 	return cache->c_ops->co_request_update(cache, handle);
 }
@@ -457,7 +476,7 @@ int __cache_pickup(struct nl_handle *handle, struct nl_cache *cache,
 
 	cb = nl_cb_clone(handle->h_cb);
 	if (cb == NULL)
-		return nl_get_errno();
+		return -NLE_NOMEM;
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, update_msg_parser, &x);
 
@@ -465,7 +484,7 @@ int __cache_pickup(struct nl_handle *handle, struct nl_cache *cache,
 	if (err < 0)
 		NL_DBG(2, "While picking up for %p <%s>, recvmsgs() returned " \
 		       "%d: %s", cache, nl_cache_name(cache),
-		       err, nl_geterror());
+		       err, nl_geterror(err));
 
 	nl_cb_put(cb);
 
@@ -542,14 +561,14 @@ int nl_cache_include(struct nl_cache *cache, struct nl_object *obj,
 	int i;
 
 	if (ops->co_obj_ops != obj->ce_ops)
-		return nl_error(EINVAL, "Object mismatches cache type");
+		return -NLE_OBJ_MISMATCH;
 
 	for (i = 0; ops->co_msgtypes[i].mt_id >= 0; i++)
 		if (ops->co_msgtypes[i].mt_id == obj->ce_msgtype)
 			return cache_include(cache, obj, &ops->co_msgtypes[i],
 					     change_cb);
 
-	return nl_errno(EINVAL);
+	return -NLE_MSGTYPE_NOSUPPORT;
 }
 
 static int resync_cb(struct nl_object *c, struct nl_parser_param *p)
@@ -610,23 +629,19 @@ int nl_cache_parse(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 {
 	int i, err;
 
-	if (!nlmsg_valid_hdr(nlh, ops->co_hdrsize)) {
-		err = nl_error(EINVAL, "netlink message too short to be "
-				       "of kind %s", ops->co_name);
-		goto errout;
-	}
+	if (!nlmsg_valid_hdr(nlh, ops->co_hdrsize))
+		return -NLE_MSG_TOOSHORT;
 
 	for (i = 0; ops->co_msgtypes[i].mt_id >= 0; i++) {
 		if (ops->co_msgtypes[i].mt_id == nlh->nlmsg_type) {
 			err = ops->co_msg_parser(ops, who, nlh, params);
-			if (err != -ENOENT)
+			if (err != -NLE_OPNOTSUPP)
 				goto errout;
 		}
 	}
 
 
-	err = nl_error(EINVAL, "Unsupported netlink message type %d",
-		       nlh->nlmsg_type);
+	err = -NLE_MSGTYPE_NOSUPPORT;
 errout:
 	return err;
 }

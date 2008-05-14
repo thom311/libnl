@@ -164,7 +164,7 @@ int genlmsg_validate(struct nlmsghdr *nlh, int hdrlen, int maxtype,
 	struct genlmsghdr *ghdr;
 
 	if (!genlmsg_valid_hdr(nlh, hdrlen))
-		return nl_errno(EINVAL);
+		return -NLE_MSG_TOOSHORT;
 
 	ghdr = nlmsg_data(nlh);
 	return nla_validate(genlmsg_attrdata(ghdr, hdrlen),
@@ -177,7 +177,7 @@ int genlmsg_parse(struct nlmsghdr *nlh, int hdrlen, struct nlattr *tb[],
 	struct genlmsghdr *ghdr;
 
 	if (!genlmsg_valid_hdr(nlh, hdrlen))
-		return nl_errno(EINVAL);
+		return -NLE_MSG_TOOSHORT;
 
 	ghdr = nlmsg_data(nlh);
 	return nla_parse(tb, maxtype, genlmsg_attrdata(ghdr, hdrlen),

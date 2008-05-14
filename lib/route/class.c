@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -36,7 +36,7 @@ static int class_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	class = rtnl_class_alloc();
 	if (!class) {
-		err = nl_errno(ENOMEM);
+		err = -NLE_NOMEM;
 		goto errout;
 	}
 	class->ce_msgtype = n->nlmsg_type;
@@ -81,15 +81,15 @@ static int class_request_update(struct nl_cache *cache,
  * @{
  */
 
-static struct nl_msg *class_build(struct rtnl_class *class, int type, int flags)
+static int class_build(struct rtnl_class *class, int type, int flags,
+		       struct nl_msg **result)
 {
 	struct rtnl_class_ops *cops;
-	struct nl_msg *msg;
 	int err;
 
-	msg = tca_build_msg((struct rtnl_tca *) class, type, flags);
-	if (!msg)
-		goto errout;
+	err = tca_build_msg((struct rtnl_tca *) class, type, flags, result);
+	if (err < 0)
+		return err;
 
 	cops = rtnl_class_lookup_ops(class);
 	if (cops && cops->co_get_opts) {
@@ -97,23 +97,24 @@ static struct nl_msg *class_build(struct rtnl_class *class, int type, int flags)
 		
 		opts = cops->co_get_opts(class);
 		if (opts) {
-			err = nla_put_nested(msg, TCA_OPTIONS, opts);
+			err = nla_put_nested(*result, TCA_OPTIONS, opts);
 			nlmsg_free(opts);
 			if (err < 0)
 				goto errout;
 		}
 	}
 
-	return msg;
+	return 0;
 errout:
-	nlmsg_free(msg);
-	return NULL;
+	nlmsg_free(*result);
+	return err;
 }
 
 /**
  * Build a netlink message to add a new class
  * @arg class		class to add 
  * @arg flags		additional netlink message flags
+ * @arg result		Pointer to store resulting message.
  *
  * Builds a new netlink message requesting an addition of a class.
  * The netlink message header isn't fully equipped with all relevant
@@ -123,11 +124,12 @@ errout:
  * Common message flags
  *   - NLM_F_REPLACE - replace possibly existing classes
  *
- * @return New netlink message
+ * @return 0 on success or a negative error code.
  */
-struct nl_msg *rtnl_class_build_add_request(struct rtnl_class *class, int flags)
+int rtnl_class_build_add_request(struct rtnl_class *class, int flags,
+				 struct nl_msg **result)
 {
-	return class_build(class, RTM_NEWTCLASS, NLM_F_CREATE | flags);
+	return class_build(class, RTM_NEWTCLASS, NLM_F_CREATE | flags, result);
 }
 
 /**
@@ -151,12 +153,10 @@ int rtnl_class_add(struct nl_handle *handle, struct rtnl_class *class,
 	struct nl_msg *msg;
 	int err;
 
-	msg = rtnl_class_build_add_request(class, flags);
-	if (!msg)
-		return nl_errno(ENOMEM);
+	if ((err = rtnl_class_build_add_request(class, flags, &msg)) < 0)
+		return err;
 
-	err = nl_send_auto_complete(handle, msg);
-	if (err < 0)
+	if ((err = nl_send_auto_complete(handle, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
@@ -181,22 +181,25 @@ int rtnl_class_add(struct nl_handle *handle, struct rtnl_class *class,
  *
  * @return The cache or NULL if an error has occured.
  */
-struct nl_cache * rtnl_class_alloc_cache(struct nl_handle *handle, int ifindex)
+int rtnl_class_alloc_cache(struct nl_handle *handle, int ifindex,
+			   struct nl_cache **result)
 {
 	struct nl_cache * cache;
+	int err;
 	
 	cache = nl_cache_alloc(&rtnl_class_ops);
 	if (!cache)
-		return NULL;
+		return -NLE_NOMEM;
 
 	cache->c_iarg1 = ifindex;
 	
-	if (handle && nl_cache_refill(handle, cache) < 0) {
+	if (handle && (err = nl_cache_refill(handle, cache)) < 0) {
 		nl_cache_free(cache);
-		return NULL;
+		return err;
 	}
 
-	return cache;
+	*result = cache;
+	return 0;
 }
 
 /** @} */

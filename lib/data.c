@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -56,7 +56,6 @@ struct nl_data *nl_data_alloc(void *buf, size_t size)
 
 	return data;
 errout:
-	nl_errno(ENOMEM);
 	return NULL;
 }
 
@@ -105,7 +104,7 @@ int nl_data_append(struct nl_data *data, void *buf, size_t size)
 	if (size > 0) {
 		data->d_data = realloc(data->d_data, data->d_size + size);
 		if (!data->d_data)
-			return nl_errno(ENOMEM);
+			return -NLE_NOMEM;
 
 		if (buf)
 			memcpy(data->d_data + data->d_size, buf, size);

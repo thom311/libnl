@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -195,7 +195,7 @@ int nl_connect(struct nl_handle *handle, int protocol)
 
 	handle->h_fd = socket(AF_NETLINK, SOCK_RAW, protocol);
 	if (handle->h_fd < 0) {
-		err = nl_error(1, "socket(AF_NETLINK, ...) failed");
+		err = -nl_syserr2nlerr(errno);
 		goto errout;
 	}
 
@@ -208,7 +208,7 @@ int nl_connect(struct nl_handle *handle, int protocol)
 	err = bind(handle->h_fd, (struct sockaddr*) &handle->h_local,
 		   sizeof(handle->h_local));
 	if (err < 0) {
-		err = nl_error(1, "bind() failed");
+		err = -nl_syserr2nlerr(errno);
 		goto errout;
 	}
 
@@ -216,17 +216,17 @@ int nl_connect(struct nl_handle *handle, int protocol)
 	err = getsockname(handle->h_fd, (struct sockaddr *) &handle->h_local,
 			  &addrlen);
 	if (err < 0) {
-		err = nl_error(1, "getsockname failed");
+		err = -nl_syserr2nlerr(errno);
 		goto errout;
 	}
 
 	if (addrlen != sizeof(handle->h_local)) {
-		err = nl_error(EADDRNOTAVAIL, "Invalid address length");
+		err = -NLE_NOADDR;
 		goto errout;
 	}
 
 	if (handle->h_local.nl_family != AF_NETLINK) {
-		err = nl_error(EPFNOSUPPORT, "Address format not supported");
+		err = -NLE_AF_NOSUPPORT;
 		goto errout;
 	}
 
@@ -275,7 +275,7 @@ int nl_sendto(struct nl_handle *handle, void *buf, size_t size)
 	ret = sendto(handle->h_fd, buf, size, 0, (struct sockaddr *)
 		     &handle->h_peer, sizeof(handle->h_peer));
 	if (ret < 0)
-		return nl_errno(errno);
+		return -nl_syserr2nlerr(errno);
 
 	return ret;
 }
@@ -309,7 +309,7 @@ int nl_sendmsg(struct nl_handle *handle, struct nl_msg *msg, struct msghdr *hdr)
 
 	ret = sendmsg(handle->h_fd, hdr, 0);
 	if (ret < 0)
-		return nl_errno(errno);
+		return -nl_syserr2nlerr(errno);
 
 	return ret;
 }
@@ -415,7 +415,7 @@ int nl_send_simple(struct nl_handle *handle, int type, int flags, void *buf,
 
 	msg = nlmsg_alloc_simple(type, flags);
 	if (!msg)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	if (buf && size) {
 		err = nlmsg_append(msg, buf, size, NLMSG_ALIGNTO);
@@ -503,7 +503,7 @@ retry:
 		} else {
 			free(msg.msg_control);
 			free(*buf);
-			return nl_error(errno, "recvmsg failed");
+			return -nl_syserr2nlerr(errno);
 		}
 	}
 
@@ -527,7 +527,7 @@ retry:
 	if (msg.msg_namelen != sizeof(struct sockaddr_nl)) {
 		free(msg.msg_control);
 		free(*buf);
-		return nl_error(EADDRNOTAVAIL, "socket address size mismatch");
+		return -NLE_NOADDR;
 	}
 
 	for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
@@ -611,7 +611,7 @@ continue_reading:
 		free_msg = 1;	/* By default, we free the message data */
 		msg = nlmsg_convert(hdr);
 		if (!msg) {
-			err = nl_errno(ENOMEM);
+			err = -NLE_NOMEM;
 			goto out;
 		}
 
@@ -634,8 +634,7 @@ continue_reading:
 			if (cb->cb_set[NL_CB_INVALID])
 				NL_CB_CALL(cb, NL_CB_INVALID, msg);
 			else {
-				err = nl_error(EINVAL,
-					"Sequence number mismatch");
+				err = -NLE_SEQ_MISMATCH;
 				goto out;
 			}
 		}
@@ -692,7 +691,7 @@ continue_reading:
 			if (cb->cb_set[NL_CB_OVERRUN])
 				NL_CB_CALL(cb, NL_CB_OVERRUN, msg);
 			else {
-				err = nl_error(EOVERFLOW, "Overrun");
+				err = -NLE_MSG_OVERFLOW;
 				goto out;
 			}
 		}
@@ -709,8 +708,7 @@ continue_reading:
 				if (cb->cb_set[NL_CB_INVALID])
 					NL_CB_CALL(cb, NL_CB_INVALID, msg);
 				else {
-					err = nl_error(EINVAL,
-					        "Truncated error message");
+					err = -NLE_MSG_TRUNC;
 					goto out;
 				}
 			} else if (e->error) {
@@ -723,13 +721,11 @@ continue_reading:
 					else if (err == NL_SKIP)
 						goto skip;
 					else if (err == NL_STOP) {
-						err = nl_error(-e->error,
-						         "Netlink Error");
+						err = -nl_syserr2nlerr(e->error);
 						goto out;
 					}
 				} else {
-					err = nl_error(-e->error,
-						  "Netlink Error");
+					err = -nl_syserr2nlerr(e->error);
 					goto out;
 				}
 			} else if (cb->cb_set[NL_CB_ACK])
@@ -823,7 +819,7 @@ int nl_wait_for_ack(struct nl_handle *handle)
 
 	cb = nl_cb_clone(handle->h_cb);
 	if (cb == NULL)
-		return nl_get_errno();
+		return -NLE_NOMEM;
 
 	nl_cb_set(cb, NL_CB_ACK, NL_CB_CUSTOM, ack_wait_handler, NULL);
 	err = nl_recvmsgs(handle, cb);

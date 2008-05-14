@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_FIB_LOOKUP_H_
@@ -28,8 +28,9 @@ extern void			flnl_result_put(struct flnl_result *);
 
 extern struct nl_cache *	flnl_result_alloc_cache(void);
 
-extern struct nl_msg *		flnl_lookup_build_request(struct flnl_request *,
-							  int);
+extern int			flnl_lookup_build_request(struct flnl_request *,
+							  int,
+							  struct nl_msg **);
 extern int			flnl_lookup(struct nl_handle *,
 					    struct flnl_request *,
 					    struct nl_cache *);

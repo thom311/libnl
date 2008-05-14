@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -44,7 +44,7 @@ static int cls_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	cls = rtnl_cls_alloc();
 	if (!cls) {
-		err = nl_errno(ENOMEM);
+		err = -NLE_NOMEM;
 		goto errout;
 	}
 	cls->ce_msgtype = nlh->nlmsg_type;
@@ -88,18 +88,18 @@ static int cls_request_update(struct nl_cache *cache, struct nl_handle *handle)
 }
 
 
-static struct nl_msg *cls_build(struct rtnl_cls *cls, int type, int flags)
+static int cls_build(struct rtnl_cls *cls, int type, int flags,
+		     struct nl_msg **result)
 {
-	struct nl_msg *msg;
 	struct rtnl_cls_ops *cops;
 	int err, prio, proto;
 	struct tcmsg *tchdr;
 
-	msg = tca_build_msg((struct rtnl_tca *) cls, type, flags);
-	if (!msg)
-		goto errout;
+	err = tca_build_msg((struct rtnl_tca *) cls, type, flags, result);
+	if (err < 0)
+		return err;
 
-	tchdr = nlmsg_data(nlmsg_hdr(msg));
+	tchdr = nlmsg_data(nlmsg_hdr(*result));
 	prio = rtnl_cls_get_prio(cls);
 	proto = rtnl_cls_get_protocol(cls);
 	tchdr->tcm_info = TC_H_MAKE(prio << 16, htons(proto)),
@@ -110,17 +110,17 @@ static struct nl_msg *cls_build(struct rtnl_cls *cls, int type, int flags)
 		
 		opts = cops->co_get_opts(cls);
 		if (opts) {
-			err = nla_put_nested(msg, TCA_OPTIONS, opts);
+			err = nla_put_nested(*result, TCA_OPTIONS, opts);
 			nlmsg_free(opts);
 			if (err < 0)
 				goto errout;
 		}
 	}
 
-	return msg;
+	return 0;
 errout:
-	nlmsg_free(msg);
-	return NULL;
+	nlmsg_free(*result);
+	return err;
 }
 
 /**
@@ -132,6 +132,7 @@ errout:
  * Build a netlink message to add a new classifier
  * @arg cls		classifier to add
  * @arg flags		additional netlink message flags
+ * @arg result		Pointer to store resulting message.
  *
  * Builds a new netlink message requesting an addition of a classifier
  * The netlink message header isn't fully equipped with all relevant
@@ -140,11 +141,12 @@ errout:
  * the new classifier set via \c rtnl_cls_set_* functions. \a opts
  * may point to the clsasifier specific options.
  *
- * @return New netlink message
+ * @return 0 on success or a negative error code.
  */
-struct nl_msg * rtnl_cls_build_add_request(struct rtnl_cls *cls, int flags)
+int rtnl_cls_build_add_request(struct rtnl_cls *cls, int flags,
+			       struct nl_msg **result)
 {
-	return cls_build(cls, RTM_NEWTFILTER, NLM_F_CREATE | flags);
+	return cls_build(cls, RTM_NEWTFILTER, NLM_F_CREATE | flags, result);
 }
 
 /**
@@ -161,15 +163,13 @@ struct nl_msg * rtnl_cls_build_add_request(struct rtnl_cls *cls, int flags)
  */
 int rtnl_cls_add(struct nl_handle *handle, struct rtnl_cls *cls, int flags)
 {
-	int err;
 	struct nl_msg *msg;
+	int err;
 	
-	msg = rtnl_cls_build_add_request(cls, flags);
-	if (!msg)
-		return nl_errno(ENOMEM);
+	if ((err = rtnl_cls_build_add_request(cls, flags, &msg)) < 0)
+		return err;
 	
-	err = nl_send_auto_complete(handle, msg);
-	if (err < 0)
+	if ((err = nl_send_auto_complete(handle, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
@@ -180,17 +180,19 @@ int rtnl_cls_add(struct nl_handle *handle, struct rtnl_cls *cls, int flags)
  * Build a netlink message to change classifier attributes
  * @arg cls		classifier to change
  * @arg flags		additional netlink message flags
+ * @arg result		Pointer to store resulting message.
  *
  * Builds a new netlink message requesting a change of a neigh
  * attributes. The netlink message header isn't fully equipped with
  * all relevant fields and must thus be sent out via nl_send_auto_complete()
  * or supplemented as needed.
  *
- * @return The netlink message
+ * @return 0 on success or a negative error code.
  */
-struct nl_msg *rtnl_cls_build_change_request(struct rtnl_cls *cls, int flags)
+int rtnl_cls_build_change_request(struct rtnl_cls *cls, int flags,
+				  struct nl_msg **result)
 {
-	return cls_build(cls, RTM_NEWTFILTER, NLM_F_REPLACE | flags);
+	return cls_build(cls, RTM_NEWTFILTER, NLM_F_REPLACE | flags, result);
 }
 
 /**
@@ -208,15 +210,13 @@ struct nl_msg *rtnl_cls_build_change_request(struct rtnl_cls *cls, int flags)
 int rtnl_cls_change(struct nl_handle *handle, struct rtnl_cls *cls,
 		    int flags)
 {
-	int err;
 	struct nl_msg *msg;
+	int err;
 	
-	msg = rtnl_cls_build_change_request(cls, flags);
-	if (!msg)
-		return nl_errno(ENOMEM);
+	if ((err = rtnl_cls_build_change_request(cls, flags, &msg)) < 0)
+		return err;
 	
-	err = nl_send_auto_complete(handle, msg);
-	if (err < 0)
+	if ((err = nl_send_auto_complete(handle, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
@@ -227,17 +227,19 @@ int rtnl_cls_change(struct nl_handle *handle, struct rtnl_cls *cls,
  * Build a netlink request message to delete a classifier
  * @arg cls		classifier to delete
  * @arg flags		additional netlink message flags
+ * @arg result		Pointer to store resulting message.
  *
  * Builds a new netlink message requesting a deletion of a classifier.
  * The netlink message header isn't fully equipped with all relevant
  * fields and must thus be sent out via nl_send_auto_complete()
  * or supplemented as needed.
  *
- * @return New netlink message
+ * @return 0 on success or a negative error code.
  */
-struct nl_msg *rtnl_cls_build_delete_request(struct rtnl_cls *cls, int flags)
+int rtnl_cls_build_delete_request(struct rtnl_cls *cls, int flags,
+				  struct nl_msg **result)
 {
-	return cls_build(cls, RTM_DELTFILTER, flags);
+	return cls_build(cls, RTM_DELTFILTER, flags, result);
 }
 
 
@@ -255,15 +257,13 @@ struct nl_msg *rtnl_cls_build_delete_request(struct rtnl_cls *cls, int flags)
  */
 int rtnl_cls_delete(struct nl_handle *handle, struct rtnl_cls *cls, int flags)
 {
-	int err;
 	struct nl_msg *msg;
+	int err;
 	
-	msg = rtnl_cls_build_delete_request(cls, flags);
-	if (!msg)
-		return nl_errno(ENOMEM);
+	if ((err = rtnl_cls_build_delete_request(cls, flags, &msg)) < 0)
+		return err;
 	
-	err = nl_send_auto_complete(handle, msg);
-	if (err < 0)
+	if ((err = nl_send_auto_complete(handle, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
@@ -284,32 +284,33 @@ int rtnl_cls_delete(struct nl_handle *handle, struct rtnl_cls *cls, int flags)
  * @arg ifindex		interface index of the link the classes are
  *                      attached to.
  * @arg parent          parent qdisc/class
+ * @arg result		Pointer to store resulting cache.
  *
  * Allocates a new cache, initializes it properly and updates it to
  * include all classes attached to the specified interface.
  *
  * @note The caller is responsible for destroying and freeing the
  *       cache after using it.
- * @return The cache or NULL if an error has occured.
+ * @return 0 on success or a negative error code.
  */
-struct nl_cache *rtnl_cls_alloc_cache(struct nl_handle *handle,
-				      int ifindex, uint32_t parent)
+int rtnl_cls_alloc_cache(struct nl_handle *handle, int ifindex, uint32_t parent,			 struct nl_cache **result)
 {
 	struct nl_cache * cache;
+	int err;
 	
-	cache = nl_cache_alloc(&rtnl_cls_ops);
-	if (cache == NULL)
-		return NULL;
+	if (!(cache = nl_cache_alloc(&rtnl_cls_ops)))
+		return -NLE_NOMEM;
 
 	cache->c_iarg1 = ifindex;
 	cache->c_iarg2 = parent;
 	
-	if (handle && nl_cache_refill(handle, cache) < 0) {
+	if (handle && (err = nl_cache_refill(handle, cache)) < 0) {
 		nl_cache_free(cache);
-		return NULL;
+		return err;
 	}
 
-	return cache;
+	*result = cache;
+	return 0;
 }
 
 /** @} */

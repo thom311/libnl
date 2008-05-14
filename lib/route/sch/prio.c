@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -58,11 +58,11 @@ static int prio_msg_parser(struct rtnl_qdisc *qdisc)
 	struct tc_prio_qopt *opt;
 
 	if (qdisc->q_opts->d_size < sizeof(*opt))
-		return nl_error(EINVAL, "prio specific option size mismatch");
+		return -NLE_INVAL;
 
 	prio = prio_alloc(qdisc);
 	if (!prio)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	opt = (struct tc_prio_qopt *) qdisc->q_opts->d_data;
 	prio->qp_bands = opt->bands;
@@ -173,7 +173,7 @@ int rtnl_qdisc_prio_set_bands(struct rtnl_qdisc *qdisc, int bands)
 	
 	prio = prio_alloc(qdisc);
 	if (!prio)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	prio->qp_bands = bands;
 	prio->qp_mask |= SCH_PRIO_ATTR_BANDS;
@@ -194,7 +194,7 @@ int rtnl_qdisc_prio_get_bands(struct rtnl_qdisc *qdisc)
 	if (prio && prio->qp_mask & SCH_PRIO_ATTR_BANDS)
 		return prio->qp_bands;
 	else
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 }
 
 /**
@@ -212,18 +212,17 @@ int rtnl_qdisc_prio_set_priomap(struct rtnl_qdisc *qdisc, uint8_t priomap[],
 
 	prio = prio_alloc(qdisc);
 	if (!prio)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	if (!(prio->qp_mask & SCH_PRIO_ATTR_BANDS))
-		return nl_error(EINVAL, "Set number of bands first");
+		return -NLE_MISSING_ATTR;
 
 	if ((len / sizeof(uint8_t)) > (TC_PRIO_MAX+1))
-		return nl_error(ERANGE, "priomap length out of bounds");
+		return -NLE_RANGE;
 
 	for (i = 0; i <= TC_PRIO_MAX; i++) {
 		if (priomap[i] > prio->qp_bands)
-			return nl_error(ERANGE, "priomap element %d " \
-			    "out of bounds, increase bands number");
+			return -NLE_RANGE;
 	}
 
 	memcpy(prio->qp_priomap, priomap, len);
@@ -245,10 +244,8 @@ uint8_t *rtnl_qdisc_prio_get_priomap(struct rtnl_qdisc *qdisc)
 	prio = prio_qdisc(qdisc);
 	if (prio && prio->qp_mask & SCH_PRIO_ATTR_PRIOMAP)
 		return prio->qp_priomap;
-	else {
-		nl_errno(ENOENT);
+	else
 		return NULL;
-	}
 }
 
 /** @} */

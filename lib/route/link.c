@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -215,21 +215,19 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	if (src->l_addr)
 		if (!(dst->l_addr = nl_addr_clone(src->l_addr)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	if (src->l_bcast)
 		if (!(dst->l_bcast = nl_addr_clone(src->l_bcast)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	if (src->l_info_ops && src->l_info_ops->io_clone) {
 		err = src->l_info_ops->io_clone(dst, src);
 		if (err < 0)
-			goto errout;
+			return err;
 	}
 
 	return 0;
-errout:
-	return nl_get_errno();
 }
 
 static struct nla_policy link_policy[IFLA_MAX+1] = {
@@ -265,7 +263,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	link = rtnl_link_alloc();
 	if (link == NULL) {
-		err = nl_errno(ENOMEM);
+		err = -NLE_NOMEM;
 		goto errout;
 	}
 		
@@ -276,7 +274,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		goto errout;
 
 	if (tb[IFLA_IFNAME] == NULL) {
-		err = nl_error(EINVAL, "Missing link name TLV");
+		err = -NLE_MISSING_ATTR;
 		goto errout;
 	}
 
@@ -859,27 +857,16 @@ void rtnl_link_put(struct rtnl_link *link)
 /**
  * Allocate link cache and fill in all configured links.
  * @arg handle		Netlink handle.
+ * @arg result		Pointer to store resulting cache.
  *
  * Allocates a new link cache, initializes it properly and updates it
  * to include all links currently configured in the kernel.
  *
- * @note Free the memory after usage.
- * @return Newly allocated cache or NULL if an error occured.
+ * @return 0 on success or a negative error code.
  */
-struct nl_cache *rtnl_link_alloc_cache(struct nl_handle *handle)
+int rtnl_link_alloc_cache(struct nl_handle *sock, struct nl_cache **result)
 {
-	struct nl_cache * cache;
-	
-	cache = nl_cache_alloc(&rtnl_link_ops);
-	if (cache == NULL)
-		return NULL;
-	
-	if (handle && nl_cache_refill(handle, cache) < 0) {
-		nl_cache_free(cache);
-		return NULL;
-	}
-
-	return cache;
+	return nl_cache_alloc_and_fill(&rtnl_link_ops, sock, result);
 }
 
 /**
@@ -962,9 +949,9 @@ struct rtnl_link *rtnl_link_get_by_name(struct nl_cache *cache,
  * @note Not all attributes can be changed, see
  *       \ref link_changeable "Changeable Attributes" for more details.
  */
-struct nl_msg * rtnl_link_build_change_request(struct rtnl_link *old,
-					       struct rtnl_link *tmpl,
-					       int flags)
+int rtnl_link_build_change_request(struct rtnl_link *old,
+				   struct rtnl_link *tmpl, int flags,
+				   struct nl_msg **result)
 {
 	struct nl_msg *msg;
 	struct ifinfomsg ifi = {
@@ -979,7 +966,7 @@ struct nl_msg * rtnl_link_build_change_request(struct rtnl_link *old,
 
 	msg = nlmsg_alloc_simple(RTM_SETLINK, flags);
 	if (!msg)
-		goto nla_put_failure;
+		return -NLE_NOMEM;
 
 	if (nlmsg_append(msg, &ifi, sizeof(ifi), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
@@ -1023,11 +1010,12 @@ struct nl_msg * rtnl_link_build_change_request(struct rtnl_link *old,
 		nla_nest_end(msg, info);
 	}
 
-	return msg;
+	*result = msg;
+	return 0;
 
 nla_put_failure:
 	nlmsg_free(msg);
-	return NULL;
+	return -NLE_MSGSIZE;
 }
 
 /**
@@ -1048,15 +1036,13 @@ nla_put_failure:
 int rtnl_link_change(struct nl_handle *handle, struct rtnl_link *old,
 		     struct rtnl_link *tmpl, int flags)
 {
-	int err;
 	struct nl_msg *msg;
+	int err;
 	
-	msg = rtnl_link_build_change_request(old, tmpl, flags);
-	if (!msg)
-		return nl_errno(ENOMEM);
+	if ((err = rtnl_link_build_change_request(old, tmpl, flags, &msg)) < 0)
+		return err;
 	
-	err = nl_send_auto_complete(handle, msg);
-	if (err < 0)
+	if ((err = nl_send_auto_complete(handle, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
@@ -1504,7 +1490,7 @@ int rtnl_link_set_info_type(struct rtnl_link *link, const char *type)
 	int err;
 
 	if ((io = rtnl_link_info_ops_lookup(type)) == NULL)
-		return nl_error(ENOENT, "No such link info type exists");
+		return -NLE_OPNOTSUPP;
 
 	if (link->l_info_ops)
 		release_link_info(link);

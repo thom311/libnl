@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
  */
@@ -75,34 +75,32 @@ static int ct_clone(struct nl_object *_dst, struct nl_object *_src)
 	if (src->ct_orig.src) {
 		addr = nl_addr_clone(src->ct_orig.src);
 		if (!addr)
-			goto errout;
+			return -NLE_NOMEM;
 		dst->ct_orig.src = addr;
 	}
 
 	if (src->ct_orig.dst) {
 		addr = nl_addr_clone(src->ct_orig.dst);
 		if (!addr)
-			goto errout;
+			return -NLE_NOMEM;
 		dst->ct_orig.dst = addr;
 	}
 
 	if (src->ct_repl.src) {
 		addr = nl_addr_clone(src->ct_repl.src);
 		if (!addr)
-			goto errout;
+			return -NLE_NOMEM;
 		dst->ct_repl.src = addr;
 	}
 
 	if (src->ct_repl.dst) {
 		addr = nl_addr_clone(src->ct_repl.dst);
 		if (!addr)
-			goto errout;
+			return -NLE_NOMEM;
 		dst->ct_repl.dst = addr;
 	}
 
 	return 0;
-errout:
-	return nl_get_errno();
 }
 
 static void ct_dump_dir(struct nfnl_ct *ct, int repl,
@@ -458,7 +456,7 @@ static int ct_set_addr(struct nfnl_ct *ct, struct nl_addr *addr,
 {
 	if (ct->ce_mask & CT_ATTR_FAMILY) {
 		if (addr->a_family != ct->ct_family)
-			return nl_error(EINVAL, "Address family mismatch");
+			return -NLE_AF_MISMATCH;
 	} else
 		nfnl_ct_set_family(ct, addr->a_family);
 

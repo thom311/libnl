@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2006 Petr Gotthard <petr.gotthard@siemens.com>
  * Copyright (c) 2006 Siemens AG Oesterreich
  */
@@ -63,7 +63,7 @@ static int fw_msg_parser(struct rtnl_cls *cls)
 
 	f = fw_alloc(cls);
 	if (!f)
-		goto errout_nomem;
+		return -NLE_NOMEM;
 
 	if (tb[TCA_FW_CLASSID]) {
 		f->cf_classid = nla_get_u32(tb[TCA_FW_CLASSID]);
@@ -73,14 +73,14 @@ static int fw_msg_parser(struct rtnl_cls *cls)
 	if (tb[TCA_FW_ACT]) {
 		f->cf_act = nla_get_data(tb[TCA_FW_ACT]);
 		if (!f->cf_act)
-			goto errout_nomem;
+			return -NLE_NOMEM;
 		f->cf_mask |= FW_ATTR_ACTION;
 	}
 
 	if (tb[TCA_FW_POLICE]) {
 		f->cf_police = nla_get_data(tb[TCA_FW_POLICE]);
 		if (!f->cf_police)
-			goto errout_nomem;
+			return -NLE_NOMEM;
 		f->cf_mask |= FW_ATTR_POLICE;
 	}
 
@@ -90,11 +90,6 @@ static int fw_msg_parser(struct rtnl_cls *cls)
 	}
 
 	return 0;
-
-errout_nomem:
-	err = nl_errno(ENOMEM);
-
-	return err;
 }
 
 static void fw_free_data(struct rtnl_cls *cls)
@@ -119,19 +114,17 @@ static int fw_clone(struct rtnl_cls *_dst, struct rtnl_cls *_src)
 
 	dst = fw_alloc(_dst);
 	if (!dst)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	if (src->cf_act)
 		if (!(dst->cf_act = nl_data_clone(src->cf_act)))
-			goto errout;
+			return -NLE_NOMEM;
 	
 	if (src->cf_police)
 		if (!(dst->cf_police = nl_data_clone(src->cf_police)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	return 0;
-errout:
-	return nl_get_errno();
 }
 
 static int fw_dump_brief(struct rtnl_cls *cls, struct nl_dump_params *p,
@@ -217,7 +210,7 @@ int rtnl_fw_set_classid(struct rtnl_cls *cls, uint32_t classid)
 	
 	f = fw_alloc(cls);
 	if (!f)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	f->cf_classid = classid;
 	f->cf_mask |= FW_ATTR_CLASSID;

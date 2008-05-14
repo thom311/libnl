@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -61,17 +61,17 @@ static int ctrl_msg_parser(struct nl_cache_ops *ops, struct genl_cmd *cmd,
 
 	family = genl_family_alloc();
 	if (family == NULL) {
-		err = nl_errno(ENOMEM);
+		err = -NLE_NOMEM;
 		goto errout;
 	}
 
 	if (info->attrs[CTRL_ATTR_FAMILY_NAME] == NULL) {
-		err = nl_error(EINVAL, "Missing family name TLV");
+		err = -NLE_MISSING_ATTR;
 		goto errout;
 	}
 
 	if (info->attrs[CTRL_ATTR_FAMILY_ID] == NULL) {
-		err = nl_error(EINVAL, "Missing family id TLV");
+		err = -NLE_MISSING_ATTR;
 		goto errout;
 	}
 
@@ -111,7 +111,7 @@ static int ctrl_msg_parser(struct nl_cache_ops *ops, struct genl_cmd *cmd,
 				goto errout;
 
 			if (tb[CTRL_ATTR_OP_ID] == NULL) {
-				err = nl_errno(EINVAL);
+				err = -NLE_MISSING_ATTR;
 				goto errout;
 			}
 			
@@ -143,20 +143,9 @@ errout:
  * @{
  */
 
-struct nl_cache *genl_ctrl_alloc_cache(struct nl_handle *handle)
+int genl_ctrl_alloc_cache(struct nl_handle *sock, struct nl_cache **result)
 {
-	struct nl_cache * cache;
-	
-	cache = nl_cache_alloc(&genl_ctrl_ops);
-	if (cache == NULL)
-		return NULL;
-	
-	if (handle && nl_cache_refill(handle, cache) < 0) {
-		nl_cache_free(cache);
-		return NULL;
-	}
-
-	return cache;
+	return nl_cache_alloc_and_fill(&genl_ctrl_ops, sock, result);
 }
 
 /**
@@ -241,13 +230,12 @@ int genl_ctrl_resolve(struct nl_handle *handle, const char *name)
 	struct genl_family *family;
 	int err;
 
-	cache = genl_ctrl_alloc_cache(handle);
-	if (cache == NULL)
-		return nl_get_errno();
+	if ((err = genl_ctrl_alloc_cache(handle, &cache)) < 0)
+		return err;
 
 	family = genl_ctrl_search_by_name(cache, name);
 	if (family == NULL) {
-		err = nl_error(ENOENT, "Generic Netlink Family not found");
+		err = -NLE_OBJ_NOTFOUND;
 		goto errout;
 	}
 

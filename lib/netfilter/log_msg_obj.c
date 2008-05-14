@@ -341,7 +341,7 @@ int nfnl_log_msg_set_payload(struct nfnl_log_msg *msg, uint8_t *payload, int len
 	free(msg->log_msg_payload);
 	msg->log_msg_payload = malloc(len);
 	if (!msg->log_msg_payload)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	memcpy(msg->log_msg_payload, payload, len);
 	msg->log_msg_payload_len = len;
@@ -365,7 +365,7 @@ int nfnl_log_msg_set_prefix(struct nfnl_log_msg *msg, void *prefix)
 	free(msg->log_msg_prefix);
 	msg->log_msg_prefix = strdup(prefix);
 	if (!msg->log_msg_prefix)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	msg->ce_mask |= LOG_MSG_ATTR_PREFIX;
 	return 0;

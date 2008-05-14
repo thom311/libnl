@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -108,12 +108,12 @@ static int genl_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			goto found;
 	}
 
-	err = nl_errno(ENOENT);
+	err = -NLE_MSGTYPE_NOSUPPORT;
 	goto errout;
 
 found:
 	if (cmd->c_msg_parser == NULL)
-		err = nl_error(EOPNOTSUPP, "No message parser found.");
+		err = -NLE_OPNOTSUPP;
 	else {
 		struct nlattr *tb[cmd->c_maxattr + 1];
 		struct genl_info info = {
@@ -174,22 +174,17 @@ int genl_register(struct nl_cache_ops *ops)
 	int err;
 
 	if (ops->co_protocol != NETLINK_GENERIC) {
-		err = nl_error(EINVAL, "cache operations not for protocol " \
-			       "NETLINK_GENERIC (protocol=%s)",
-			       ops->co_protocol);
+		err = -NLE_PROTO_MISMATCH;
 		goto errout;
 	}
 
 	if (ops->co_hdrsize < GENL_HDRSIZE(0)) {
-		err = nl_error(EINVAL, "co_hdrsize too short, probably " \
-			       "not including genlmsghdr, minsize=%d",
-			       GENL_HDRSIZE(0));
+		err = -NLE_INVAL;
 		goto errout;
 	}
 
 	if (ops->co_genl == NULL) {
-		err = nl_error(EINVAL, "co_genl is NULL, must provide " \
-			       "valid genl operations");
+		err = -NLE_INVAL;
 		goto errout;
 	}
 
@@ -236,8 +231,7 @@ static int __genl_ops_resolve(struct nl_cache *ctrl, struct genl_ops *ops)
 		return 0;
 	}
 
-	return nl_error(ENOENT, "Unable to find generic netlink family \"%s\"",
-			ops->o_name);
+	return -NLE_OBJ_NOTFOUND;
 }
 
 int genl_ops_resolve(struct nl_handle *handle, struct genl_ops *ops)
@@ -245,11 +239,8 @@ int genl_ops_resolve(struct nl_handle *handle, struct genl_ops *ops)
 	struct nl_cache *ctrl;
 	int err;
 
-	ctrl = genl_ctrl_alloc_cache(handle);
-	if (ctrl == NULL) {
-		err = nl_get_errno();
+	if ((err = genl_ctrl_alloc_cache(handle, &ctrl)) < 0)
 		goto errout;
-	}
 
 	err = __genl_ops_resolve(ctrl, ops);
 
@@ -264,11 +255,8 @@ int genl_mngt_resolve(struct nl_handle *handle)
 	struct genl_ops *ops;
 	int err = 0;
 
-	ctrl = genl_ctrl_alloc_cache(handle);
-	if (ctrl == NULL) {
-		err = nl_get_errno();
+	if ((err = genl_ctrl_alloc_cache(handle, &ctrl)) < 0)
 		goto errout;
-	}
 
 	nl_list_for_each_entry(ops, &genl_ops_list, o_list) {
 		err = __genl_ops_resolve(ctrl, ops);

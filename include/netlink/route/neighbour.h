@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_NEIGHBOUR_H_
@@ -22,39 +22,31 @@ extern "C" {
 
 struct rtnl_neigh;
 
-/* neighbour object allocation/freeage */
-extern struct rtnl_neigh *	rtnl_neigh_alloc(void);
-extern void			rtnl_neigh_put(struct rtnl_neigh *);
+extern struct rtnl_neigh *rtnl_neigh_alloc(void);
+extern void	rtnl_neigh_put(struct rtnl_neigh *);
 
-/* neighbour cache management */
-extern struct nl_cache *	rtnl_neigh_alloc_cache(struct nl_handle *);
-extern struct rtnl_neigh *	rtnl_neigh_get(struct nl_cache *, int,
+extern int	rtnl_neigh_alloc_cache(struct nl_handle *, struct nl_cache **);
+extern struct rtnl_neigh *rtnl_neigh_get(struct nl_cache *, int,
 					       struct nl_addr *);
 
-/* Neigbour state translations */
-extern char *			rtnl_neigh_state2str(int, char *, size_t);
-extern int			rtnl_neigh_str2state(const char *);
+extern char *	rtnl_neigh_state2str(int, char *, size_t);
+extern int	rtnl_neigh_str2state(const char *);
 
-/* Neighbour flags translations */
-extern char *			rtnl_neigh_flags2str(int, char *, size_t);
-extern int			rtnl_neigh_str2flag(const char *);
+extern char *	rtnl_neigh_flags2str(int, char *, size_t);
+extern int	rtnl_neigh_str2flag(const char *);
 
-/* Neighbour Addition */
-extern int			rtnl_neigh_add(struct nl_handle *,
-					       struct rtnl_neigh *, int);
-extern struct nl_msg *		rtnl_neigh_build_add_request(struct rtnl_neigh *, int);
+extern int	rtnl_neigh_add(struct nl_handle *, struct rtnl_neigh *, int);
+extern int	rtnl_neigh_build_add_request(struct rtnl_neigh *, int,
+					     struct nl_msg **);
 
-/* Neighbour Modification */
-extern int			rtnl_neigh_change(struct nl_handle *,
-						  struct rtnl_neigh *, int);
-extern struct nl_msg *		rtnl_neigh_build_change_request(struct rtnl_neigh *, int);
+extern int	rtnl_neigh_change(struct nl_handle *, struct rtnl_neigh *, int);
+extern int	rtnl_neigh_build_change_request(struct rtnl_neigh *, int,
+						struct nl_msg **);
 
-/* Neighbour Deletion */
-extern int			rtnl_neigh_delete(struct nl_handle *,
-						  struct rtnl_neigh *, int);
-extern struct nl_msg *		rtnl_neigh_build_delete_request(struct rtnl_neigh *, int);
+extern int	rtnl_neigh_delete(struct nl_handle *, struct rtnl_neigh *, int);
+extern int	rtnl_neigh_build_delete_request(struct rtnl_neigh *, int,
+						struct nl_msg **);
 
-/* Access functions */
 extern void			rtnl_neigh_set_state(struct rtnl_neigh *, int);
 extern int			rtnl_neigh_get_state(struct rtnl_neigh *);
 extern void			rtnl_neigh_unset_state(struct rtnl_neigh *,

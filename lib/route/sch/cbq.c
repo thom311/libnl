@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #include <netlink-local.h>
@@ -99,7 +99,7 @@ static int cbq_msg_parser(struct rtnl_tca *tca)
 
 	cbq = cbq_alloc(tca);
 	if (!cbq)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	nla_memcpy(&cbq->cbq_lss, tb[TCA_CBQ_LSSOPT], sizeof(cbq->cbq_lss));
 	nla_memcpy(&cbq->cbq_rate, tb[TCA_CBQ_RATE], sizeof(cbq->cbq_rate));
@@ -133,7 +133,7 @@ static int cbq_clone(struct rtnl_tca *_dst, struct rtnl_tca *_src)
 	struct rtnl_cbq *src = cbq_qdisc(_src);
 
 	if (src && !cbq_alloc(_dst))
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 	else
 		return 0;
 }

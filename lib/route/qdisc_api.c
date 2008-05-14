@@ -46,7 +46,7 @@ int rtnl_qdisc_register(struct rtnl_qdisc_ops *qops)
 
 	for (op = &qdisc_ops_list; (o = *op) != NULL; op = &o->qo_next)
 		if (!strcasecmp(qops->qo_kind, o->qo_kind))
-			return nl_errno(EEXIST);
+			return -NLE_EXIST;
 
 	qops->qo_next = NULL;
 	*op = qops;
@@ -67,7 +67,7 @@ int rtnl_qdisc_unregister(struct rtnl_qdisc_ops *qops)
 			break;
 
 	if (!o)
-		return nl_errno(ENOENT);
+		return -NLE_OBJ_NOTFOUND;
 
 	*op = qops->qo_next;
 

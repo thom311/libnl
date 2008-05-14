@@ -100,28 +100,26 @@ static int route_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	if (src->rt_dst)
 		if (!(dst->rt_dst = nl_addr_clone(src->rt_dst)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	if (src->rt_src)
 		if (!(dst->rt_src = nl_addr_clone(src->rt_src)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	if (src->rt_pref_src)
 		if (!(dst->rt_pref_src = nl_addr_clone(src->rt_pref_src)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	nl_init_list_head(&dst->rt_nexthops);
 	nl_list_for_each_entry(nh, &src->rt_nexthops, rtnh_list) {
 		new = rtnl_route_nh_clone(nh);
 		if (!new)
-			goto errout;
+			return -NLE_NOMEM;
 
 		rtnl_route_add_nexthop(dst, new);
 	}
 
 	return 0;
-errout:
-	return nl_get_errno();
 }
 
 static int route_dump_oneline(struct nl_object *a, struct nl_dump_params *p)
@@ -559,8 +557,7 @@ uint32_t rtnl_route_get_priority(struct rtnl_route *route)
 int rtnl_route_set_family(struct rtnl_route *route, uint8_t family)
 {
 	if (family != AF_INET && family != AF_INET6 && family != AF_DECnet)
-		return nl_error(EINVAL, "Unsupported address family, "
-		                "supported: { INET | INET6 | DECnet }");
+		return -NLE_AF_NOSUPPORT;
 
 	route->rt_family = family;
 	route->ce_mask |= ROUTE_ATTR_FAMILY;
@@ -577,7 +574,7 @@ int rtnl_route_set_dst(struct rtnl_route *route, struct nl_addr *addr)
 {
 	if (route->ce_mask & ROUTE_ATTR_FAMILY) {
 		if (addr->a_family != route->rt_family)
-			return nl_error(EINVAL, "Address family mismatch");
+			return -NLE_AF_MISMATCH;
 	} else
 		route->rt_family = addr->a_family;
 
@@ -600,12 +597,11 @@ struct nl_addr *rtnl_route_get_dst(struct rtnl_route *route)
 int rtnl_route_set_src(struct rtnl_route *route, struct nl_addr *addr)
 {
 	if (addr->a_family == AF_INET)
-		return nl_error(EINVAL, "IPv4 does not support source based "
-				"routing.");
+		return -NLE_SRCRT_NOSUPPORT;
 
 	if (route->ce_mask & ROUTE_ATTR_FAMILY) {
 		if (addr->a_family != route->rt_family)
-			return nl_error(EINVAL, "Address family mismatch");
+			return -NLE_AF_MISMATCH;
 	} else
 		route->rt_family = addr->a_family;
 
@@ -627,8 +623,8 @@ struct nl_addr *rtnl_route_get_src(struct rtnl_route *route)
 int rtnl_route_set_type(struct rtnl_route *route, uint8_t type)
 {
 	if (type > RTN_MAX)
-		return nl_error(ERANGE, "Invalid route type %d, valid range "
-				"is 0..%d", type, RTN_MAX);
+		return -NLE_RANGE;
+
 	route->rt_type = type;
 	route->ce_mask |= ROUTE_ATTR_TYPE;
 
@@ -662,8 +658,7 @@ uint32_t rtnl_route_get_flags(struct rtnl_route *route)
 int rtnl_route_set_metric(struct rtnl_route *route, int metric, uint32_t value)
 {
 	if (metric > RTAX_MAX || metric < 1)
-		return nl_error(EINVAL, "Metric out of range (1..%d)",
-		    RTAX_MAX);
+		return -NLE_RANGE;
 
 	route->rt_metrics[metric - 1] = value;
 
@@ -680,8 +675,7 @@ int rtnl_route_set_metric(struct rtnl_route *route, int metric, uint32_t value)
 int rtnl_route_unset_metric(struct rtnl_route *route, int metric)
 {
 	if (metric > RTAX_MAX || metric < 1)
-		return nl_error(EINVAL, "Metric out of range (1..%d)",
-		    RTAX_MAX);
+		return -NLE_RANGE;
 
 	if (route->rt_metrics_mask & (1 << (metric - 1))) {
 		route->rt_nmetrics--;
@@ -694,11 +688,10 @@ int rtnl_route_unset_metric(struct rtnl_route *route, int metric)
 int rtnl_route_get_metric(struct rtnl_route *route, int metric, uint32_t *value)
 {
 	if (metric > RTAX_MAX || metric < 1)
-		return nl_error(EINVAL, "Metric out of range (1..%d)",
-		    RTAX_MAX);
+		return -NLE_RANGE;
 
 	if (!(route->rt_metrics_mask & (1 << (metric - 1))))
-		return nl_error(ENOENT, "Metric %d not available", metric);
+		return -NLE_OBJ_NOTFOUND;
 
 	if (value)
 		*value = route->rt_metrics[metric - 1];
@@ -710,7 +703,7 @@ int rtnl_route_set_pref_src(struct rtnl_route *route, struct nl_addr *addr)
 {
 	if (route->ce_mask & ROUTE_ATTR_FAMILY) {
 		if (addr->a_family != route->rt_family)
-			return nl_error(EINVAL, "Address family mismatch");
+			return -NLE_AF_MISMATCH;
 	} else
 		route->rt_family = addr->a_family;
 
@@ -844,7 +837,7 @@ static struct nla_policy route_policy[RTA_MAX+1] = {
 	[RTA_MULTIPATH]	= { .type = NLA_NESTED },
 };
 
-struct rtnl_route *rtnl_route_parse(struct nlmsghdr *nlh)
+int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 {
 	struct rtmsg *rtm;
 	struct rtnl_route *route;
@@ -855,7 +848,7 @@ struct rtnl_route *rtnl_route_parse(struct nlmsghdr *nlh)
 
 	route = rtnl_route_alloc();
 	if (!route) {
-		err = nl_errno(ENOMEM);
+		err = -NLE_NOMEM;
 		goto errout;
 	}
 
@@ -1034,8 +1027,7 @@ struct rtnl_route *rtnl_route_parse(struct nlmsghdr *nlh)
 
 			if (rtnl_route_nh_compare(old_nh, first,
 						  old_nh->ce_mask, 0)) {
-				nl_error(EINVAL, "Mismatch of multipath "
-					"configuration.");
+				err = -NLE_INVAL;
 				goto errout;
 			}
 
@@ -1043,11 +1035,12 @@ struct rtnl_route *rtnl_route_parse(struct nlmsghdr *nlh)
 		}
 	}
 
-	return route;
+	*result = route;
+	return 0;
 
 errout:
 	rtnl_route_put(route);
-	return NULL;
+	return err;
 }
 
 int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)
@@ -1065,8 +1058,7 @@ int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)
 	};
 
 	if (route->rt_dst == NULL)
-		return nl_error(EINVAL, "Cannot build route message, please "
-				"specify route destination.");
+		return -NLE_MISSING_ATTR;
 
 	rtmsg.rtm_dst_len = nl_addr_get_prefixlen(route->rt_dst);
 	if (route->rt_src)
@@ -1145,7 +1137,7 @@ int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)
 	return 0;
 
 nla_put_failure:
-	return -ENOBUFS;
+	return -NLE_MSGSIZE;
 }
 
 /** @cond SKIP */

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_CLASS_H_
@@ -24,20 +24,20 @@ struct rtnl_class;
 
 extern struct nl_object_ops class_obj_ops;
 
-/* General */
 extern struct rtnl_class *	rtnl_class_alloc(void);
-extern void			rtnl_class_put(struct rtnl_class *);
-extern struct nl_cache *	rtnl_class_alloc_cache(struct nl_handle *, int);
+extern void		rtnl_class_put(struct rtnl_class *);
+extern int		rtnl_class_alloc_cache(struct nl_handle *, int,
+					       struct nl_cache **);
 
 /* leaf qdisc access */
 extern struct rtnl_qdisc *	rtnl_class_leaf_qdisc(struct rtnl_class *,
 						      struct nl_cache *);
 
-/* class addition */
-extern struct nl_msg * rtnl_class_build_add_request(struct rtnl_class *, int);
-extern int rtnl_class_add(struct nl_handle *, struct rtnl_class *, int);
+extern int		rtnl_class_build_add_request(struct rtnl_class *, int,
+						     struct nl_msg **);
+extern int		rtnl_class_add(struct nl_handle *, struct rtnl_class *,
+				       int);
 
-/* attribute modification */
 extern void		rtnl_class_set_ifindex(struct rtnl_class *, int);
 extern int		rtnl_class_get_ifindex(struct rtnl_class *);
 extern void		rtnl_class_set_handle(struct rtnl_class *, uint32_t);

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -140,7 +140,7 @@ static int nl_error_handler_verbose(struct sockaddr_nl *who,
 	print_header_content(ofd, &e->msg);
 	fprintf(ofd, "\n");
 
-	return e->error;
+	return -nl_syserr2nlerr(e->error);
 }
 
 static int nl_valid_handler_debug(struct nl_msg *msg, void *arg)
@@ -261,10 +261,8 @@ struct nl_cb *nl_cb_alloc(enum nl_cb_kind kind)
 		return NULL;
 
 	cb = calloc(1, sizeof(*cb));
-	if (!cb) {
-		nl_errno(ENOMEM);
+	if (!cb)
 		return NULL;
-	}
 
 	cb->cb_refcnt = 1;
 
@@ -338,10 +336,10 @@ int nl_cb_set(struct nl_cb *cb, enum nl_cb_type type, enum nl_cb_kind kind,
 	      nl_recvmsg_msg_cb_t func, void *arg)
 {
 	if (type < 0 || type > NL_CB_TYPE_MAX)
-		return nl_error(ERANGE, "Callback type out of range");
+		return -NLE_RANGE;
 
 	if (kind < 0 || kind > NL_CB_KIND_MAX)
-		return nl_error(ERANGE, "Callback kind out of range");
+		return -NLE_RANGE;
 
 	if (kind == NL_CB_CUSTOM) {
 		cb->cb_set[type] = func;
@@ -388,7 +386,7 @@ int nl_cb_err(struct nl_cb *cb, enum nl_cb_kind kind,
 	      nl_recvmsg_err_cb_t func, void *arg)
 {
 	if (kind < 0 || kind > NL_CB_KIND_MAX)
-		return nl_error(ERANGE, "Callback kind out of range");
+		return -NLE_RANGE;
 
 	if (kind == NL_CB_CUSTOM) {
 		cb->cb_err = func;

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -66,11 +66,11 @@ static int red_msg_parser(struct rtnl_qdisc *qdisc)
 		return err;
 
 	if (!tb[TCA_RED_PARMS])
-		return nl_error(EINVAL, "Missing TCA_RED_PARMS");
+		return -NLE_MISSING_ATTR;
 
 	red = red_alloc(qdisc);
 	if (!red)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	opts = nla_data(tb[TCA_RED_PARMS]);
 
@@ -171,7 +171,7 @@ int rtnl_red_set_limit(struct rtnl_qdisc *qdisc, int limit)
 
 	red = red_alloc(qdisc);
 	if (!red)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	red->qr_limit = limit;
 	red->qr_mask |= RED_ATTR_LIMIT;
@@ -192,7 +192,7 @@ int rtnl_red_get_limit(struct rtnl_qdisc *qdisc)
 	if (red && (red->qr_mask & RED_ATTR_LIMIT))
 		return red->qr_limit;
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /** @} */

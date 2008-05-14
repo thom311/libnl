@@ -267,7 +267,7 @@
  *     return 0;
  *
  * nla_put_failure:
- *     return -ENOMEM;
+ *     return -NLE_NOMEM;
  * }
  * @endcode
  *
@@ -544,18 +544,18 @@ static int validate_nla(struct nlattr *nla, int maxtype,
 		minlen = nla_attr_minlen[pt->type];
 
 	if (pt->type == NLA_FLAG && nla_len(nla) > 0)
-		return nl_errno(ERANGE);
+		return -NLE_RANGE;
 
 	if (nla_len(nla) < minlen)
-		return nl_errno(ERANGE);
+		return -NLE_RANGE;
 
 	if (pt->maxlen && nla_len(nla) > pt->maxlen)
-		return nl_errno(ERANGE);
+		return -NLE_RANGE;
 
 	if (pt->type == NLA_STRING) {
 		char *data = nla_data(nla);
 		if (data[nla_len(nla) - 1] != '\0')
-			return nl_errno(EINVAL);
+			return -NLE_INVAL;
 	}
 
 	return 0;
@@ -802,10 +802,8 @@ struct nlattr *nla_reserve(struct nl_msg *msg, int attrtype, int attrlen)
 	
 	tlen = NLMSG_ALIGN(msg->nm_nlh->nlmsg_len) + nla_total_size(attrlen);
 
-	if ((tlen + msg->nm_nlh->nlmsg_len) > msg->nm_size) {
-		nl_errno(ENOBUFS);
+	if ((tlen + msg->nm_nlh->nlmsg_len) > msg->nm_size)
 		return NULL;
-	}
 
 	nla = (struct nlattr *) nlmsg_tail(msg->nm_nlh);
 	nla->nla_type = attrtype;
@@ -842,7 +840,7 @@ int nla_put(struct nl_msg *msg, int attrtype, int datalen, const void *data)
 
 	nla = nla_reserve(msg, attrtype, datalen);
 	if (!nla)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	memcpy(nla_data(nla), data, datalen);
 	NL_DBG(2, "msg %p: Wrote %d bytes at offset +%td for attr %d\n",

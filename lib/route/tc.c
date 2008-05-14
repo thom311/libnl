@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -66,7 +66,7 @@ int tca_msg_parser(struct nlmsghdr *n, struct rtnl_tca *g)
 		return err;
 
 	if (tb[TCA_KIND] == NULL)
-		return nl_error(EINVAL, "Missing tca kind TLV");
+		return -NLE_MISSING_ATTR;
 
 	nla_strlcpy(g->tc_kind, tb[TCA_KIND], TCKINDSIZ);
 
@@ -83,7 +83,7 @@ int tca_msg_parser(struct nlmsghdr *n, struct rtnl_tca *g)
 	if (tb[TCA_OPTIONS]) {
 		g->tc_opts = nla_get_data(tb[TCA_OPTIONS]);
 		if (!g->tc_opts)
-			return nl_errno(ENOMEM);
+			return -NLE_NOMEM;
 		g->ce_mask |= TCA_ATTR_OPTS;
 	}
 	
@@ -128,7 +128,7 @@ int tca_msg_parser(struct nlmsghdr *n, struct rtnl_tca *g)
 		if (tbs[TCA_STATS_APP]) {
 			g->tc_xstats = nla_get_data(tbs[TCA_STATS_APP]);
 			if (g->tc_xstats == NULL)
-				return -ENOMEM;
+				return -NLE_NOMEM;
 		} else
 			goto compat_xstats;
 	} else {
@@ -151,7 +151,7 @@ compat_xstats:
 		if (tb[TCA_XSTATS]) {
 			g->tc_xstats = nla_get_data(tb[TCA_XSTATS]);
 			if (g->tc_xstats == NULL)
-				return -ENOMEM;
+				return -NLE_NOMEM;
 			g->ce_mask |= TCA_ATTR_XSTATS;
 		}
 	}
@@ -171,18 +171,16 @@ int tca_clone(struct rtnl_tca *dst, struct rtnl_tca *src)
 	if (src->tc_opts) {
 		dst->tc_opts = nl_data_clone(src->tc_opts);
 		if (!dst->tc_opts)
-			goto errout;
+			return -NLE_NOMEM;
 	}
 	
 	if (src->tc_xstats) {
 		dst->tc_xstats = nl_data_clone(src->tc_xstats);
 		if (!dst->tc_xstats)
-			goto errout;
+			return -NLE_NOMEM;
 	}
 
 	return 0;
-errout:
-	return nl_get_errno();
 }
 
 int tca_dump_brief(struct rtnl_tca *g, const char *type,
@@ -332,7 +330,8 @@ uint64_t tca_get_stat(struct rtnl_tca *t, int id)
 	return t->tc_stats[id];
 }
 
-struct nl_msg *tca_build_msg(struct rtnl_tca *tca, int type, int flags)
+int tca_build_msg(struct rtnl_tca *tca, int type, int flags,
+		  struct nl_msg **result)
 {
 	struct nl_msg *msg;
 	struct tcmsg tchdr = {
@@ -344,7 +343,7 @@ struct nl_msg *tca_build_msg(struct rtnl_tca *tca, int type, int flags)
 
 	msg = nlmsg_alloc_simple(type, flags);
 	if (!msg)
-		goto nla_put_failure;
+		return -NLE_NOMEM;
 
 	if (nlmsg_append(msg, &tchdr, sizeof(tchdr), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
@@ -352,11 +351,12 @@ struct nl_msg *tca_build_msg(struct rtnl_tca *tca, int type, int flags)
 	if (tca->ce_mask & TCA_ATTR_KIND)
 	    NLA_PUT_STRING(msg, TCA_KIND, tca->tc_kind);
 
-	return msg;
+	*result = msg;
+	return 0;
 
 nla_put_failure:
 	nlmsg_free(msg);
-	return NULL;
+	return -NLE_MSGSIZE;
 }
 
 /** @endcond */
@@ -425,7 +425,7 @@ int rtnl_tc_calc_cell_log(int cell_size)
 		if ((1 << i) == cell_size)
 			return i;
 
-	return nl_errno(EINVAL);
+	return -NLE_INVAL;
 }
 
 
@@ -546,13 +546,13 @@ int rtnl_tc_str2handle(const char *name, uint32_t *res)
 		/* :YYYY */
 		h = 0;
 		if (':' != *colon)
-			return -EINVAL;
+			return -NLE_INVAL;
 	}
 
 	if (':' == *colon) {
 		/* check if we would lose bits */
 		if (TC_H_MAJ(h))
-			return -ERANGE;
+			return -NLE_RANGE;
 		h <<= 16;
 
 		if ('\0' == colon[1]) {
@@ -564,10 +564,10 @@ int rtnl_tc_str2handle(const char *name, uint32_t *res)
 
 			/* check if we overlap with major part */
 			if (TC_H_MAJ(l))
-				return -ERANGE;
+				return -NLE_RANGE;
 
 			if ('\0' != *end)
-				return -EINVAL;
+				return -NLE_INVAL;
 
 			*res = (h | l);
 		}
@@ -575,7 +575,7 @@ int rtnl_tc_str2handle(const char *name, uint32_t *res)
 		/* XXXXYYYY */
 		*res = h;
 	} else
-		return -EINVAL;
+		return -NLE_INVAL;
 
 	return 0;
 }

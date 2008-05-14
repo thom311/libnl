@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
  * Copyright (c) 2008 Patrick McHardy <kaber@trash.net>
@@ -62,7 +62,7 @@ static struct nla_policy log_msg_policy[NFULA_MAX+1] = {
 	[NFULA_SEQ_GLOBAL]		= { .type = NLA_U32 },
 };
 
-struct nfnl_log_msg *nfnlmsg_log_msg_parse(struct nlmsghdr *nlh)
+int nfnlmsg_log_msg_parse(struct nlmsghdr *nlh, struct nfnl_log_msg **result)
 {
 	struct nfnl_log_msg *msg;
 	struct nlattr *tb[NFULA_MAX+1];
@@ -71,7 +71,7 @@ struct nfnl_log_msg *nfnlmsg_log_msg_parse(struct nlmsghdr *nlh)
 
 	msg = nfnl_log_msg_alloc();
 	if (!msg)
-		return NULL;
+		return -NLE_NOMEM;
 
 	msg->ce_msgtype = nlh->nlmsg_type;
 
@@ -158,11 +158,12 @@ struct nfnl_log_msg *nfnlmsg_log_msg_parse(struct nlmsghdr *nlh)
 	if (attr)
 		nfnl_log_msg_set_seq_global(msg, ntohl(nla_get_u32(attr)));
 
-	return msg;
+	*result = msg;
+	return 0;
 
 errout:
 	nfnl_log_msg_put(msg);
-	return NULL;
+	return err;
 }
 
 static int log_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
@@ -171,9 +172,8 @@ static int log_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct nfnl_log_msg *msg;
 	int err;
 
-	msg = nfnlmsg_log_msg_parse(nlh);
-	if (log == NULL)
-		goto errout_errno;
+	if ((err = nfnlmsg_log_msg_parse(nlh, &msg)) < 0)
+		goto errout;
 
 	err = pp->pp_cb((struct nl_object *) msg, pp);
 	if (err < 0)
@@ -184,10 +184,6 @@ static int log_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 errout:
 	nfnl_log_msg_put(msg);
 	return err;
-
-errout_errno:
-	err = nl_get_errno();
-	goto errout;
 }
 
 /** @} */

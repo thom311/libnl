@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
  * Copyright (c) 2008 Patrick McHardy <kaber@trash.net>
@@ -29,7 +29,8 @@ extern struct nl_object_ops log_msg_obj_ops;
 
 /* General */
 extern struct nfnl_log_msg *nfnl_log_msg_alloc(void);
-extern struct nfnl_log_msg *nfnlmsg_log_msg_parse(struct nlmsghdr *);
+extern int		nfnlmsg_log_msg_parse(struct nlmsghdr *,
+					      struct nfnl_log_msg **);
 
 extern void		nfnl_log_msg_get(struct nfnl_log_msg *);
 extern void		nfnl_log_msg_put(struct nfnl_log_msg *);

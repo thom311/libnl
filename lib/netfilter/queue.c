@@ -41,8 +41,8 @@ static int send_queue_request(struct nl_handle *handle, struct nl_msg *msg)
  * @{
  */
 
-static struct nl_msg *build_queue_cmd_request(uint8_t family, uint16_t queuenum,
-					      uint8_t command)
+static int build_queue_cmd_request(uint8_t family, uint16_t queuenum,
+				   uint8_t command, struct nl_msg **result)
 {
 	struct nl_msg *msg;
 	struct nfqnl_msg_config_cmd cmd;
@@ -50,7 +50,7 @@ static struct nl_msg *build_queue_cmd_request(uint8_t family, uint16_t queuenum,
 	msg = nfnlmsg_alloc_simple(NFNL_SUBSYS_QUEUE, NFQNL_MSG_CONFIG, 0,
 				   family, queuenum);
 	if (msg == NULL)
-		return NULL;
+		return -NLE_NOMEM;
 
 	cmd.pf = htons(family);
 	cmd._pad = 0;
@@ -58,56 +58,58 @@ static struct nl_msg *build_queue_cmd_request(uint8_t family, uint16_t queuenum,
 	if (nla_put(msg, NFQA_CFG_CMD, sizeof(cmd), &cmd) < 0)
 		goto nla_put_failure;
 
-	return msg;
+	*result = msg;
+	return 0;
 
 nla_put_failure:
 	nlmsg_free(msg);
-	return NULL;
+	return -NLE_MSGSIZE;
 }
 
-struct nl_msg *nfnl_queue_build_pf_bind(uint8_t pf)
+int nfnl_queue_build_pf_bind(uint8_t pf, struct nl_msg **result)
 {
-	return build_queue_cmd_request(pf, 0, NFQNL_CFG_CMD_PF_BIND);
+	return build_queue_cmd_request(pf, 0, NFQNL_CFG_CMD_PF_BIND, result);
 }
 
 int nfnl_queue_pf_bind(struct nl_handle *nlh, uint8_t pf)
 {
 	struct nl_msg *msg;
+	int err;
 
-	msg = nfnl_queue_build_pf_bind(pf);
-	if (!msg)
-		return nl_get_errno();
+	if ((err = nfnl_queue_build_pf_bind(pf, &msg)) < 0)
+		return err;
 
 	return send_queue_request(nlh, msg);
 }
 
-struct nl_msg *nfnl_queue_build_pf_unbind(uint8_t pf)
+int nfnl_queue_build_pf_unbind(uint8_t pf, struct nl_msg **result)
 {
-	return build_queue_cmd_request(pf, 0, NFQNL_CFG_CMD_PF_UNBIND);
+	return build_queue_cmd_request(pf, 0, NFQNL_CFG_CMD_PF_UNBIND, result);
 }
 
 int nfnl_queue_pf_unbind(struct nl_handle *nlh, uint8_t pf)
 {
 	struct nl_msg *msg;
+	int err;
 
-	msg = nfnl_queue_build_pf_unbind(pf);
-	if (!msg)
-		return nl_get_errno();
+	if ((err = nfnl_queue_build_pf_unbind(pf, &msg)) < 0)
+		return err;
 
 	return send_queue_request(nlh, msg);
 }
 
-static struct nl_msg *nfnl_queue_build_request(const struct nfnl_queue *queue)
+static int nfnl_queue_build_request(const struct nfnl_queue *queue,
+				    struct nl_msg **result)
 {
 	struct nl_msg *msg;
 
 	if (!nfnl_queue_test_group(queue))
-		return NULL;
+		return -NLE_MISSING_ATTR;
 
 	msg = nfnlmsg_alloc_simple(NFNL_SUBSYS_QUEUE, NFQNL_MSG_CONFIG, 0,
 				   0, nfnl_queue_get_group(queue));
 	if (msg == NULL)
-		return NULL;
+		return -NLE_NOMEM;
 
 	if (nfnl_queue_test_maxlen(queue) &&
 	    nla_put_u32(msg, NFQA_CFG_QUEUE_MAXLEN,
@@ -136,79 +138,82 @@ static struct nl_msg *nfnl_queue_build_request(const struct nfnl_queue *queue)
 		if (nla_put(msg, NFQA_CFG_PARAMS, sizeof(params), &params) < 0)
 			goto nla_put_failure;
 	}
-	return msg;
+
+	*result = msg;
+	return 0;
 
 nla_put_failure:
 	nlmsg_free(msg);
-	return NULL;
+	return -NLE_MSGSIZE;
 }
 
-struct nl_msg *nfnl_queue_build_create_request(const struct nfnl_queue *queue)
+int nfnl_queue_build_create_request(const struct nfnl_queue *queue,
+				    struct nl_msg **result)
 {
-	struct nl_msg *msg;
 	struct nfqnl_msg_config_cmd cmd;
+	int err;
 
-	msg = nfnl_queue_build_request(queue);
-	if (msg == NULL)
-		return NULL;
+	if ((err = nfnl_queue_build_request(queue, result)) < 0)
+		return err;
 
 	cmd.pf = 0;
 	cmd._pad = 0;
 	cmd.command = NFQNL_CFG_CMD_BIND;
 
-	if (nla_put(msg, NFQA_CFG_CMD, sizeof(cmd), &cmd) < 0)
-		goto nla_put_failure;
+	NLA_PUT(*result, NFQA_CFG_CMD, sizeof(cmd), &cmd);
 
-	return msg;
+	return 0;
 
 nla_put_failure:
-	nlmsg_free(msg);
-	return NULL;
+	nlmsg_free(*result);
+	return -NLE_MSGSIZE;
 }
 
 int nfnl_queue_create(struct nl_handle *nlh, const struct nfnl_queue *queue)
 {
 	struct nl_msg *msg;
+	int err;
 
-	msg = nfnl_queue_build_create_request(queue);
-	if (msg == NULL)
-		return nl_errno(ENOMEM);
+	if ((err = nfnl_queue_build_create_request(queue, &msg)) < 0)
+		return err;
 
 	return send_queue_request(nlh, msg);
 }
 
-struct nl_msg *nfnl_queue_build_change_request(const struct nfnl_queue *queue)
+int nfnl_queue_build_change_request(const struct nfnl_queue *queue,
+				    struct nl_msg **result)
 {
-	return nfnl_queue_build_request(queue);
+	return nfnl_queue_build_request(queue, result);
 }
 
 int nfnl_queue_change(struct nl_handle *nlh, const struct nfnl_queue *queue)
 {
 	struct nl_msg *msg;
+	int err;
 
-	msg = nfnl_queue_build_change_request(queue);
-	if (msg == NULL)
-		return nl_errno(ENOMEM);
+	if ((err = nfnl_queue_build_change_request(queue, &msg)) < 0)
+		return err;
 
 	return send_queue_request(nlh, msg);
 }
 
-struct nl_msg *nfnl_queue_build_delete_request(const struct nfnl_queue *queue)
+int nfnl_queue_build_delete_request(const struct nfnl_queue *queue,
+				    struct nl_msg **result)
 {
 	if (!nfnl_queue_test_group(queue))
-		return NULL;
+		return -NLE_MISSING_ATTR;
 
 	return build_queue_cmd_request(0, nfnl_queue_get_group(queue),
-				       NFQNL_CFG_CMD_UNBIND);
+				       NFQNL_CFG_CMD_UNBIND, result);
 }
 
 int nfnl_queue_delete(struct nl_handle *nlh, const struct nfnl_queue *queue)
 {
 	struct nl_msg *msg;
+	int err;
 
-	msg = nfnl_queue_build_delete_request(queue);
-	if (msg == NULL)
-		return nl_errno(ENOMEM);
+	if ((err = nfnl_queue_build_delete_request(queue, &msg)) < 0)
+		return err;
 
 	return send_queue_request(nlh, msg);
 }

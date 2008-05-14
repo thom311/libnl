@@ -40,7 +40,8 @@ enum nfnl_log_flags {
 
 /* General */
 extern struct nfnl_log *	nfnl_log_alloc(void);
-extern struct nfnl_log *	nfnlmsg_log_parse(struct nlmsghdr *);
+extern int			nfnlmsg_log_parse(struct nlmsghdr *,
+						  struct nfnl_log **);
 
 extern void			nfnl_log_get(struct nfnl_log *);
 extern void			nfnl_log_put(struct nfnl_log *);
@@ -82,24 +83,23 @@ extern unsigned int		nfnl_log_get_flags(const struct nfnl_log *);
 extern char *			nfnl_log_flags2str(unsigned int, char *, size_t);
 extern unsigned int		nfnl_log_str2flags(const char *);
 
-/* Message construction / sending */
-extern struct nl_msg *		nfnl_log_build_pf_bind(uint8_t);
-extern int			nfnl_log_pf_bind(struct nl_handle *, uint8_t);
+extern int	nfnl_log_build_pf_bind(uint8_t, struct nl_msg **);
+extern int	nfnl_log_pf_bind(struct nl_handle *, uint8_t);
 
-extern struct nl_msg *		nfnl_log_build_pf_unbind(uint8_t);
-extern int			nfnl_log_pf_unbind(struct nl_handle *, uint8_t);
+extern int	nfnl_log_build_pf_unbind(uint8_t, struct nl_msg **);
+extern int	nfnl_log_pf_unbind(struct nl_handle *, uint8_t);
 
-extern struct nl_msg *		nfnl_log_build_create_request(const struct nfnl_log *);
-extern int			nfnl_log_create(struct nl_handle *,
-						const struct nfnl_log *);
+extern int	nfnl_log_build_create_request(const struct nfnl_log *,
+					      struct nl_msg **);
+extern int	nfnl_log_create(struct nl_handle *, const struct nfnl_log *);
 
-extern struct nl_msg *		nfnl_log_build_change_request(const struct nfnl_log *);
-extern int			nfnl_log_change(struct nl_handle *,
-						const struct nfnl_log *);
+extern int	nfnl_log_build_change_request(const struct nfnl_log *,
+					      struct nl_msg **);
+extern int	nfnl_log_change(struct nl_handle *, const struct nfnl_log *);
 
-extern struct nl_msg *		nfnl_log_build_delete_request(const struct nfnl_log *);
-extern int			nfnl_log_delete(struct nl_handle *,
-						const struct nfnl_log *);
+extern int	nfnl_log_build_delete_request(const struct nfnl_log *,
+					      struct nl_msg **);
+extern int	nfnl_log_delete(struct nl_handle *, const struct nfnl_log *);
 
 #ifdef __cplusplus
 }

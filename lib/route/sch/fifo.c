@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -60,11 +60,11 @@ static int fifo_msg_parser(struct rtnl_qdisc *qdisc)
 	struct tc_fifo_qopt *opt;
 
 	if (qdisc->q_opts->d_size < sizeof(struct tc_fifo_qopt))
-		return nl_error(EINVAL, "FIFO options size mismatch");
+		return -NLE_INVAL;
 
 	fifo = fifo_alloc(qdisc);
 	if (!fifo)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	opt = (struct tc_fifo_qopt *) qdisc->q_opts->d_data;
 	fifo->qf_limit = opt->limit;
@@ -148,7 +148,7 @@ int rtnl_qdisc_fifo_set_limit(struct rtnl_qdisc *qdisc, int limit)
 	
 	fifo = fifo_alloc(qdisc);
 	if (!fifo)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 		
 	fifo->qf_limit = limit;
 	fifo->qf_mask |= SCH_FIFO_ATTR_LIMIT;
@@ -169,7 +169,7 @@ int rtnl_qdisc_fifo_get_limit(struct rtnl_qdisc *qdisc)
 	if (fifo && fifo->qf_mask & SCH_FIFO_ATTR_LIMIT)
 		return fifo->qf_limit;
 	else
-		return nl_errno(ENOMEM);
+		return -NLE_NOATTR;
 }
 
 /** @} */

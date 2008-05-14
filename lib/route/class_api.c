@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -43,7 +43,7 @@ int rtnl_class_register(struct rtnl_class_ops *cops)
 
 	for (op = &class_ops_list; (o = *op) != NULL; op = &o->co_next)
 		if (!strcasecmp(cops->co_kind, o->co_kind))
-			return nl_errno(EEXIST);
+			return -NLE_EXIST;
 
 	cops->co_next = NULL;
 	*op = cops;
@@ -64,7 +64,7 @@ int rtnl_class_unregister(struct rtnl_class_ops *cops)
 			break;
 
 	if (!o)
-		return nl_errno(ENOENT);
+		return -NLE_OBJ_NOTFOUND;
 
 	*op = cops->co_next;
 

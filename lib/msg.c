@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -320,7 +320,7 @@ int nlmsg_parse(struct nlmsghdr *nlh, int hdrlen, struct nlattr *tb[],
 		int maxtype, struct nla_policy *policy)
 {
 	if (!nlmsg_valid_hdr(nlh, hdrlen))
-		return nl_errno(EINVAL);
+		return -NLE_MSG_TOOSHORT;
 
 	return nla_parse(tb, maxtype, nlmsg_attrdata(nlh, hdrlen),
 			 nlmsg_attrlen(nlh, hdrlen), policy);
@@ -351,7 +351,7 @@ int nlmsg_validate(struct nlmsghdr *nlh, int hdrlen, int maxtype,
 		   struct nla_policy *policy)
 {
 	if (!nlmsg_valid_hdr(nlh, hdrlen))
-		return nl_errno(EINVAL);
+		return -NLE_MSG_TOOSHORT;
 
 	return nla_validate(nlmsg_attrdata(nlh, hdrlen),
 			    nlmsg_attrlen(nlh, hdrlen), maxtype, policy);
@@ -387,7 +387,6 @@ static struct nl_msg *__nlmsg_alloc(size_t len)
 	return nm;
 errout:
 	free(nm);
-	nl_errno(ENOMEM);
 	return NULL;
 }
 
@@ -519,10 +518,8 @@ void *nlmsg_reserve(struct nl_msg *n, size_t len, int pad)
 
 	tlen = pad ? ((len + (pad - 1)) & ~(pad - 1)) : len;
 
-	if ((tlen + nlmsg_len) > n->nm_size) {
-		nl_errno(ENOBUFS);
+	if ((tlen + nlmsg_len) > n->nm_size)
 		return NULL;
-	}
 
 	buf += nlmsg_len;
 	n->nm_nlh->nlmsg_len += tlen;
@@ -554,7 +551,7 @@ int nlmsg_append(struct nl_msg *n, void *data, size_t len, int pad)
 
 	tmp = nlmsg_reserve(n, len, pad);
 	if (tmp == NULL)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	memcpy(tmp, data, len);
 	NL_DBG(2, "msg %p: Appended %zu bytes with padding %d\n", n, len, pad);
@@ -581,11 +578,11 @@ int nlmsg_expand(struct nl_msg *n, size_t newlen)
 	void *tmp;
 
 	if (newlen <= n->nm_size)
-		return nl_errno(EINVAL);
+		return -NLE_INVAL;
 
 	tmp = realloc(n->nm_nlh, newlen);
 	if (tmp == NULL)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	n->nm_nlh = tmp;
 	n->nm_size = newlen;
@@ -823,8 +820,7 @@ int nl_msg_parse(struct nl_msg *msg, void (*cb)(struct nl_object *, void *),
 	ops = nl_cache_ops_associate(nlmsg_get_proto(msg),
 				     nlmsg_hdr(msg)->nlmsg_type);
 	if (ops == NULL)
-		return nl_error(ENOENT, "Unknown message type %d",
-				nlmsg_hdr(msg)->nlmsg_type);
+		return -NLE_MSGTYPE_NOSUPPORT;
 	p.pp_arg = &x;
 
 	return nl_cache_parse(ops, NULL, nlmsg_hdr(msg), &p);

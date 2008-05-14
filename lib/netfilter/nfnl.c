@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
  */
@@ -178,7 +178,7 @@ static int nfnlmsg_append(struct nl_msg *msg, uint8_t family, uint16_t res_id)
 
 	nfg = nlmsg_reserve(msg, sizeof(*nfg), NLMSG_ALIGNTO);
 	if (nfg == NULL)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	nfg->nfgen_family = family;
 	nfg->version = NFNETLINK_V0;
@@ -236,7 +236,7 @@ int nfnlmsg_put(struct nl_msg *msg, uint32_t pid, uint32_t seq,
 
 	nlh = nlmsg_put(msg, pid, seq, NFNLMSG_TYPE(subsys_id, type), 0, flags);
 	if (nlh == NULL)
-		return nl_get_errno();
+		return -NLE_MSGSIZE;
 
 	return nfnlmsg_append(msg, family, res_id);
 }

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_NEIGHTBL_H_
@@ -25,14 +25,15 @@ struct rtnl_neightbl;
 extern struct rtnl_neightbl *rtnl_neightbl_alloc(void);
 extern void rtnl_neightbl_put(struct rtnl_neightbl *);
 extern void rtnl_neightbl_free(struct rtnl_neightbl *);
-extern struct nl_cache *rtnl_neightbl_alloc_cache(struct nl_handle *);
+extern int rtnl_neightbl_alloc_cache(struct nl_handle *, struct nl_cache **);
 extern struct rtnl_neightbl *rtnl_neightbl_get(struct nl_cache *,
 					       const char *, int);
 extern void rtnl_neightbl_dump(struct rtnl_neightbl *, FILE *,
 			       struct nl_dump_params *);
 
-extern struct nl_msg *rtnl_neightbl_build_change_request(struct rtnl_neightbl *,
-						 struct rtnl_neightbl *);
+extern int rtnl_neightbl_build_change_request(struct rtnl_neightbl *,
+					      struct rtnl_neightbl *,
+					      struct nl_msg **);
 extern int rtnl_neightbl_change(struct nl_handle *, struct rtnl_neightbl *,
 				struct rtnl_neightbl *);
 

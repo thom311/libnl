@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -187,15 +187,13 @@ static int neigh_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	if (src->n_lladdr)
 		if (!(dst->n_lladdr = nl_addr_clone(src->n_lladdr)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	if (src->n_dst)
 		if (!(dst->n_dst = nl_addr_clone(src->n_dst)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	return 0;
-errout:
-	return nl_get_errno();
 }
 
 static int neigh_compare(struct nl_object *_a, struct nl_object *_b,
@@ -261,7 +259,7 @@ static int neigh_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	neigh = rtnl_neigh_alloc();
 	if (!neigh) {
-		err = nl_errno(ENOMEM);
+		err = -NLE_NOMEM;
 		goto errout;
 	}
 
@@ -523,30 +521,16 @@ void rtnl_neigh_put(struct rtnl_neigh *neigh)
 /**
  * Build a neighbour cache including all neighbours currently configured in the kernel.
  * @arg handle		netlink handle
+ * @arg result		Pointer to store resulting cache.
  *
  * Allocates a new neighbour cache, initializes it properly and updates it
  * to include all neighbours currently configured in the kernel.
  *
- * @note The caller is responsible for destroying and freeing the
- *       cache after using it.
- * @return The new cache or NULL if an error occured.
+ * @return 0 on success or a negative error code.
  */
-struct nl_cache *rtnl_neigh_alloc_cache(struct nl_handle *handle)
+int rtnl_neigh_alloc_cache(struct nl_handle *sock, struct nl_cache **result)
 {
-	struct nl_cache *cache;
-
-	cache = nl_cache_alloc(&rtnl_neigh_ops);
-	if (cache == NULL)
-		return NULL;
-
-	if (handle && nl_cache_refill(handle, cache) < 0) {
-		nl_cache_free(cache);
-		return NULL;
-	}
-
-	NL_DBG(2, "Returning new cache %p\n", cache);
-
-	return cache;
+	return nl_cache_alloc_and_fill(&rtnl_neigh_ops, sock, result);
 }
 
 /**
@@ -579,8 +563,8 @@ struct rtnl_neigh * rtnl_neigh_get(struct nl_cache *cache, int ifindex,
  * @{
  */
 
-static struct nl_msg * build_neigh_msg(struct rtnl_neigh *tmpl, int cmd,
-				       int flags)
+static int build_neigh_msg(struct rtnl_neigh *tmpl, int cmd, int flags,
+			   struct nl_msg **result)
 {
 	struct nl_msg *msg;
 	struct ndmsg nhdr = {
@@ -594,7 +578,7 @@ static struct nl_msg * build_neigh_msg(struct rtnl_neigh *tmpl, int cmd,
 
 	msg = nlmsg_alloc_simple(cmd, flags);
 	if (!msg)
-		return NULL;
+		return -NLE_NOMEM;
 
 	if (nlmsg_append(msg, &nhdr, sizeof(nhdr), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
@@ -604,17 +588,19 @@ static struct nl_msg * build_neigh_msg(struct rtnl_neigh *tmpl, int cmd,
 	if (tmpl->ce_mask & NEIGH_ATTR_LLADDR)
 		NLA_PUT_ADDR(msg, NDA_LLADDR, tmpl->n_lladdr);
 
-	return msg;
+	*result = msg;
+	return 0;
 
 nla_put_failure:
 	nlmsg_free(msg);
-	return NULL;
+	return -NLE_MSGSIZE;
 }
 
 /**
  * Build netlink request message to add a new neighbour
  * @arg tmpl		template with data of new neighbour
  * @arg flags		additional netlink message flags
+ * @arg result		Pointer to store resulting message.
  *
  * Builds a new netlink message requesting a addition of a new
  * neighbour. The netlink message header isn't fully equipped with
@@ -628,11 +614,13 @@ nla_put_failure:
  *  - Destination address (rtnl_neigh_set_dst())
  *  - Link layer address (rtnl_neigh_set_lladdr())
  *
- * @return The netlink message
+ * @return 0 on success or a negative error code.
  */
-struct nl_msg * rtnl_neigh_build_add_request(struct rtnl_neigh *tmpl, int flags)
+int rtnl_neigh_build_add_request(struct rtnl_neigh *tmpl, int flags,
+				 struct nl_msg **result)
 {
-	return build_neigh_msg(tmpl, RTM_NEWNEIGH, NLM_F_CREATE | flags);
+	return build_neigh_msg(tmpl, RTM_NEWNEIGH, NLM_F_CREATE | flags,
+			       result);
 }
 
 /**
@@ -658,12 +646,10 @@ int rtnl_neigh_add(struct nl_handle *handle, struct rtnl_neigh *tmpl, int flags)
 	int err;
 	struct nl_msg *msg;
 	
-	msg = rtnl_neigh_build_add_request(tmpl, flags);
-	if (!msg)
-		return nl_errno(ENOMEM);
+	if ((err = rtnl_neigh_build_add_request(tmpl, flags, &msg)) < 0)
+		return err;
 
-	err = nl_send_auto_complete(handle, msg);
-	if (err < 0)
+	if ((err = nl_send_auto_complete(handle, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
@@ -681,6 +667,7 @@ int rtnl_neigh_add(struct nl_handle *handle, struct rtnl_neigh *tmpl, int flags)
  * Build a netlink request message to delete a neighbour
  * @arg neigh		neighbour to delete
  * @arg flags		additional netlink message flags
+ * @arg result		Pointer to store resulting message.
  *
  * Builds a new netlink message requesting a deletion of a neighbour.
  * The netlink message header isn't fully equipped with all relevant
@@ -688,12 +675,12 @@ int rtnl_neigh_add(struct nl_handle *handle, struct rtnl_neigh *tmpl, int flags)
  * or supplemented as needed. \a neigh must point to an existing
  * neighbour.
  *
- * @return The netlink message
+ * @return 0 on success or a negative error code.
  */
-struct nl_msg *rtnl_neigh_build_delete_request(struct rtnl_neigh *neigh,
-					       int flags)
+int rtnl_neigh_build_delete_request(struct rtnl_neigh *neigh, int flags,
+				    struct nl_msg **result)
 {
-	return build_neigh_msg(neigh, RTM_DELNEIGH, flags);
+	return build_neigh_msg(neigh, RTM_DELNEIGH, flags, result);
 }
 
 /**
@@ -711,15 +698,13 @@ struct nl_msg *rtnl_neigh_build_delete_request(struct rtnl_neigh *neigh,
 int rtnl_neigh_delete(struct nl_handle *handle, struct rtnl_neigh *neigh,
 		      int flags)
 {
-	int err;
 	struct nl_msg *msg;
+	int err;
 	
-	msg = rtnl_neigh_build_delete_request(neigh, flags);
-	if (!msg)
-		return nl_errno(ENOMEM);
+	if ((err = rtnl_neigh_build_delete_request(neigh, flags, &msg)) < 0)
+		return err;
 
-	err = nl_send_auto_complete(handle, msg);
-	if (err < 0)
+	if ((err = nl_send_auto_complete(handle, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
@@ -737,20 +722,23 @@ int rtnl_neigh_delete(struct nl_handle *handle, struct rtnl_neigh *neigh,
  * Build a netlink request message to change neighbour attributes
  * @arg neigh		the neighbour to change
  * @arg flags		additional netlink message flags
+ * @arg result		Pointer to store resulting message.
  *
  * Builds a new netlink message requesting a change of a neigh
  * attributes. The netlink message header isn't fully equipped with
  * all relevant fields and must thus be sent out via nl_send_auto_complete()
  * or supplemented as needed.
  *
- * @return The netlink message
  * @note Not all attributes can be changed, see
  *       \ref neigh_changeable "Changeable Attributes" for a list.
+ *
+ * @return 0 on success or a negative error code.
  */
-struct nl_msg *rtnl_neigh_build_change_request(struct rtnl_neigh *neigh,
-					       int flags)
+int rtnl_neigh_build_change_request(struct rtnl_neigh *neigh, int flags,
+				    struct nl_msg **result)
 {
-	return build_neigh_msg(neigh, RTM_NEWNEIGH, NLM_F_REPLACE | flags);
+	return build_neigh_msg(neigh, RTM_NEWNEIGH, NLM_F_REPLACE | flags,
+			       result);
 }
 
 /**
@@ -770,15 +758,13 @@ struct nl_msg *rtnl_neigh_build_change_request(struct rtnl_neigh *neigh,
 int rtnl_neigh_change(struct nl_handle *handle, struct rtnl_neigh *neigh,
 		      int flags)
 {
-	int err;
 	struct nl_msg *msg;
+	int err;
 	
-	msg = rtnl_neigh_build_change_request(neigh, flags);
-	if (!msg)
-		return nl_errno(ENOMEM);
+	if ((err = rtnl_neigh_build_change_request(neigh, flags, &msg)) < 0)
+		return err;
 
-	err = nl_send_auto_complete(handle, msg);
-	if (err < 0)
+	if ((err = nl_send_auto_complete(handle, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
@@ -905,8 +891,7 @@ static inline int __assign_addr(struct rtnl_neigh *neigh, struct nl_addr **pos,
 	if (!nocheck) {
 		if (neigh->ce_mask & NEIGH_ATTR_FAMILY) {
 			if (new->a_family != neigh->n_family)
-				return nl_error(EINVAL,
-						"Address family mismatch");
+				return -NLE_AF_MISMATCH;
 		} else {
 			neigh->n_family = new->a_family;
 			neigh->ce_mask |= NEIGH_ATTR_FAMILY;

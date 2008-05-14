@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -60,15 +60,13 @@ static int rule_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	if (src->r_src)
 		if (!(dst->r_src = nl_addr_clone(src->r_src)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	if (src->r_dst)
 		if (!(dst->r_dst = nl_addr_clone(src->r_dst)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	return 0;
-errout:
-	return nl_get_errno();
 }
 
 static struct nla_policy rule_policy[RTA_MAX+1] = {
@@ -89,7 +87,7 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	rule = rtnl_rule_alloc();
 	if (!rule) {
-		err = nl_errno(ENOMEM);
+		err = -NLE_NOMEM;
 		goto errout;
 	}
 
@@ -118,7 +116,7 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (tb[RTA_SRC]) {
 		rule->r_src = nla_get_addr(tb[RTA_SRC], r->rtm_family);
 		if (!rule->r_src) {
-			err = nl_errno(ENOMEM);
+			err = -NLE_NOMEM;
 			goto errout;
 		}
 		nl_addr_set_prefixlen(rule->r_src, r->rtm_src_len);
@@ -128,7 +126,7 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (tb[RTA_DST]) {
 		rule->r_dst = nla_get_addr(tb[RTA_DST], r->rtm_family);
 		if (!rule->r_dst) {
-			err = nl_errno(ENOMEM);
+			err = -NLE_NOMEM;
 			goto errout;
 		}
 		nl_addr_set_prefixlen(rule->r_dst, r->rtm_dst_len);
@@ -153,7 +151,7 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (tb[RTA_GATEWAY]) {
 		rule->r_srcmap = nla_get_addr(tb[RTA_GATEWAY], r->rtm_family);
 		if (!rule->r_srcmap) {
-			err = nl_errno(ENOMEM);
+			err = -NLE_NOMEM;
 			goto errout;
 		}
 		rule->ce_mask |= RULE_ATTR_SRCMAP;
@@ -440,51 +438,34 @@ void rtnl_rule_put(struct rtnl_rule *rule)
  */
 
 /**
- * Build a rule cache including all rules of the specified family currently configured in the kernel.
- * @arg handle		netlink handle
- * @arg family		address family
- *
- * Allocates a new rule cache, initializes it properly and updates it
- * to include all rules of the specified address family currently
- * configured in the kernel.
- *
- * @note The caller is responsible for destroying and freeing the
- *       cache after using it. (nl_cache_destroy_and_free())
- * @return The new cache or NULL if an error occured.
- */
-struct nl_cache * rtnl_rule_alloc_cache_by_family(struct nl_handle *handle,
-						  int family)
-{
-	struct nl_cache * cache;
-
-	cache = nl_cache_alloc(&rtnl_rule_ops);
-	if (cache == NULL)
-		return NULL;
-
-	/* XXX RULE_CACHE_FAMILY(cache) = family; */
-
-	if (handle && nl_cache_refill(handle, cache) < 0) {
-		free(cache);
-		return NULL;
-	}
-
-	return cache;
-}
-
-/**
  * Build a rule cache including all rules currently configured in the kernel.
  * @arg handle		netlink handle
+ * @arg family		Address family or AF_UNSPEC.
+ * @arg result		Pointer to store resulting cache.
  *
  * Allocates a new rule cache, initializes it properly and updates it
  * to include all rules currently configured in the kernel.
  *
- * @note The caller is responsible for destroying and freeing the
- *       cache after using it. (nl_cache_destroy_and_free())
- * @return The new cache or NULL if an error occured.
+ * @return 0 on success or a negative error code.
  */
-struct nl_cache * rtnl_rule_alloc_cache(struct nl_handle *handle)
+int rtnl_rule_alloc_cache(struct nl_handle *sock, int family,
+			  struct nl_cache **result)
 {
-	return rtnl_rule_alloc_cache_by_family(handle, AF_UNSPEC);
+	struct nl_cache * cache;
+	int err;
+
+	if (!(cache = nl_cache_alloc(&rtnl_rule_ops)))
+		return -NLE_NOMEM;
+
+	cache->c_iarg1 = family;
+
+	if (sock && (err = nl_cache_refill(sock, cache)) < 0) {
+		free(cache);
+		return err;
+	}
+
+	*result = cache;
+	return 0;
 }
 
 /** @} */
@@ -494,7 +475,8 @@ struct nl_cache * rtnl_rule_alloc_cache(struct nl_handle *handle)
  * @{
  */
 
-static struct nl_msg *build_rule_msg(struct rtnl_rule *tmpl, int cmd, int flags)
+static int build_rule_msg(struct rtnl_rule *tmpl, int cmd, int flags,
+			  struct nl_msg **result)
 {
 	struct nl_msg *msg;
 	struct rtmsg rtm = {
@@ -524,7 +506,7 @@ static struct nl_msg *build_rule_msg(struct rtnl_rule *tmpl, int cmd, int flags)
 
 	msg = nlmsg_alloc_simple(cmd, flags);
 	if (!msg)
-		goto nla_put_failure;
+		return -NLE_NOMEM;
 
 	if (nlmsg_append(msg, &rtm, sizeof(rtm), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
@@ -547,11 +529,12 @@ static struct nl_msg *build_rule_msg(struct rtnl_rule *tmpl, int cmd, int flags)
 	if (tmpl->ce_mask & RULE_ATTR_IIF)
 		NLA_PUT_STRING(msg, RTA_IIF, tmpl->r_iif);
 
-	return msg;
+	*result = msg;
+	return 0;
 
 nla_put_failure:
 	nlmsg_free(msg);
-	return NULL;
+	return -NLE_MSGSIZE;
 }
 
 /**
@@ -567,9 +550,11 @@ nla_put_failure:
  * 
  * @return The netlink message
  */
-struct nl_msg *rtnl_rule_build_add_request(struct rtnl_rule *tmpl, int flags)
+int rtnl_rule_build_add_request(struct rtnl_rule *tmpl, int flags,
+				struct nl_msg **result)
 {
-	return build_rule_msg(tmpl, RTM_NEWRULE, NLM_F_CREATE | flags);
+	return build_rule_msg(tmpl, RTM_NEWRULE, NLM_F_CREATE | flags,
+			      result);
 }
 
 /**
@@ -586,18 +571,17 @@ struct nl_msg *rtnl_rule_build_add_request(struct rtnl_rule *tmpl, int flags)
  */
 int rtnl_rule_add(struct nl_handle *handle, struct rtnl_rule *tmpl, int flags)
 {
-	int err;
 	struct nl_msg *msg;
+	int err;
 	
-	msg = rtnl_rule_build_add_request(tmpl, flags);
-	if (!msg)
-		return nl_errno(ENOMEM);
+	if ((err = rtnl_rule_build_add_request(tmpl, flags, &msg)) < 0)
+		return err;
 
 	err = nl_send_auto_complete(handle, msg);
+	nlmsg_free(msg);
 	if (err < 0)
 		return err;
 
-	nlmsg_free(msg);
 	return nl_wait_for_ack(handle);
 }
 
@@ -621,9 +605,10 @@ int rtnl_rule_add(struct nl_handle *handle, struct rtnl_rule *tmpl, int flags)
  *
  * @return The netlink message
  */
-struct nl_msg *rtnl_rule_build_delete_request(struct rtnl_rule *rule, int flags)
+int rtnl_rule_build_delete_request(struct rtnl_rule *rule, int flags,
+				   struct nl_msg **result)
 {
-	return build_rule_msg(rule, RTM_DELRULE, flags);
+	return build_rule_msg(rule, RTM_DELRULE, flags, result);
 }
 
 /**
@@ -641,18 +626,17 @@ struct nl_msg *rtnl_rule_build_delete_request(struct rtnl_rule *rule, int flags)
 int rtnl_rule_delete(struct nl_handle *handle, struct rtnl_rule *rule,
 		     int flags)
 {
-	int err;
 	struct nl_msg *msg;
+	int err;
 	
-	msg = rtnl_rule_build_delete_request(rule, flags);
-	if (!msg)
-		return nl_errno(ENOMEM);
+	if ((err = rtnl_rule_build_delete_request(rule, flags, &msg)) < 0)
+		return err;
 
 	err = nl_send_auto_complete(handle, msg);
+	nlmsg_free(msg);
 	if (err < 0)
 		return err;
 
-	nlmsg_free(msg);
 	return nl_wait_for_ack(handle);
 }
 
@@ -770,7 +754,7 @@ static inline int __assign_addr(struct rtnl_rule *rule, struct nl_addr **pos,
 {
 	if (rule->ce_mask & RULE_ATTR_FAMILY) {
 		if (new->a_family != rule->r_family)
-			return nl_error(EINVAL, "Address family mismatch");
+			return -NLE_AF_MISMATCH;
 	} else
 		rule->r_family = new->a_family;
 
@@ -817,7 +801,7 @@ struct nl_addr *rtnl_rule_get_dst(struct rtnl_rule *rule)
 int rtnl_rule_set_iif(struct rtnl_rule *rule, const char *dev)
 {
 	if (strlen(dev) > IFNAMSIZ-1)
-		return nl_errno(ERANGE);
+		return -NLE_RANGE;
 
 	strcpy(rule->r_iif, dev);
 	rule->ce_mask |= RULE_ATTR_IIF;
@@ -843,7 +827,7 @@ int rtnl_rule_get_action(struct rtnl_rule *rule)
 	if (rule->ce_mask & RULE_ATTR_TYPE)
 		return rule->r_type;
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 void rtnl_rule_set_realms(struct rtnl_rule *rule, uint32_t realms)

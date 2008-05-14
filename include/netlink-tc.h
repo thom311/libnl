@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_TC_PRIV_H_
@@ -51,7 +51,7 @@ extern void tca_set_kind(struct rtnl_tca *, const char *);
 extern char *tca_get_kind(struct rtnl_tca *);
 extern uint64_t tca_get_stat(struct rtnl_tca *, int );
 
-extern struct nl_msg *tca_build_msg(struct rtnl_tca *tca, int type, int flags);
+extern int tca_build_msg(struct rtnl_tca *, int, int, struct nl_msg **);
 
 static inline void *tca_priv(struct rtnl_tca *tca)
 {

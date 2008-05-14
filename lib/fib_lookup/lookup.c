@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -63,7 +63,7 @@ static int result_clone(struct nl_object *_dst, struct nl_object *_src)
 	if (src->fr_req)
 		if (!(dst->fr_req = (struct flnl_request *)
 				nl_object_clone(OBJ_CAST(src->fr_req))))
-			return nl_get_errno();
+			return -NLE_NOMEM;
 	
 	return 0;
 }
@@ -74,7 +74,7 @@ static int result_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct flnl_result *res;
 	struct fib_result_nl *fr;
 	struct nl_addr *addr;
-	int err = -EINVAL;
+	int err = -NLE_INVAL;
 
 	res = flnl_result_alloc();
 	if (!res)
@@ -209,7 +209,8 @@ struct nl_cache *flnl_result_alloc_cache(void)
  * @note Not all attributes can be changed, see
  *       \ref link_changeable "Changeable Attributes" for more details.
  */
-struct nl_msg *flnl_lookup_build_request(struct flnl_request *req, int flags)
+int flnl_lookup_build_request(struct flnl_request *req, int flags,
+			      struct nl_msg **result)
 {
 	struct nl_msg *msg;
 	struct nl_addr *addr;
@@ -228,25 +229,24 @@ struct nl_msg *flnl_lookup_build_request(struct flnl_request *req, int flags)
 	fr.tb_id_in = table >= 0 ? table : RT_TABLE_UNSPEC;
 
 	addr = flnl_request_get_addr(req);
-	if (!addr) {
-		nl_error(EINVAL, "Request must specify the address");
-		return NULL;
-	}
+	if (!addr)
+		return -NLE_MISSING_ATTR;
 
 	fr.fl_addr = *(uint32_t *) nl_addr_get_binary_addr(addr);
 
 	msg = nlmsg_alloc_simple(0, flags);
 	if (!msg)
-		goto errout;
+		return -NLE_NOMEM;
 
 	if (nlmsg_append(msg, &fr, sizeof(fr), NLMSG_ALIGNTO) < 0)
 		goto errout;
 
-	return msg;
+	*result = msg;
+	return 0;
 
 errout:
 	nlmsg_free(msg);
-	return NULL;
+	return -NLE_MSGSIZE;
 }
 
 /**
@@ -266,9 +266,8 @@ int flnl_lookup(struct nl_handle *handle, struct flnl_request *req,
 	struct nl_msg *msg;
 	int err;
 
-	msg = flnl_lookup_build_request(req, 0);
-	if (!msg)
-		return nl_errno(ENOMEM);
+	if ((err = flnl_lookup_build_request(req, 0, &msg)) < 0)
+		return err;
 
 	err = nl_send_auto_complete(handle, msg);
 	nlmsg_free(msg);

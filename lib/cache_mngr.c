@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2007 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -146,17 +146,18 @@ found:
  *
  * @return Newly allocated cache manager or NULL on failure.
  */
-struct nl_cache_mngr *nl_cache_mngr_alloc(struct nl_handle *handle,
-					  int protocol, int flags)
+int nl_cache_mngr_alloc(struct nl_handle *handle, int protocol, int flags,
+			struct nl_cache_mngr **result)
 {
 	struct nl_cache_mngr *mngr;
+	int err = -NLE_NOMEM;
 
 	if (handle == NULL)
 		BUG();
 
 	mngr = calloc(1, sizeof(*mngr));
 	if (!mngr)
-		goto enomem;
+		goto errout;
 
 	mngr->cm_handle = handle;
 	mngr->cm_nassocs = 32;
@@ -165,8 +166,7 @@ struct nl_cache_mngr *nl_cache_mngr_alloc(struct nl_handle *handle,
 	mngr->cm_assocs = calloc(mngr->cm_nassocs,
 				 sizeof(struct nl_cache_assoc));
 	if (!mngr->cm_assocs)
-		goto enomem;
-
+		goto errout;
 
 	nl_socket_modify_cb(mngr->cm_handle, NL_CB_VALID, NL_CB_CUSTOM,
 			    event_input, mngr);
@@ -174,22 +174,21 @@ struct nl_cache_mngr *nl_cache_mngr_alloc(struct nl_handle *handle,
 	/* Required to receive async event notifications */
 	nl_disable_sequence_check(mngr->cm_handle);
 
-	if (nl_connect(mngr->cm_handle, protocol) < 0)
+	if ((err = nl_connect(mngr->cm_handle, protocol) < 0))
 		goto errout;
 
-	if (nl_socket_set_nonblocking(mngr->cm_handle) < 0)
+	if ((err = nl_socket_set_nonblocking(mngr->cm_handle) < 0))
 		goto errout;
 
 	NL_DBG(1, "Allocated cache manager %p, protocol %d, %d caches\n",
 	       mngr, protocol, mngr->cm_nassocs);
 
-	return mngr;
+	*result = mngr;
+	return 0;
 
-enomem:
-	nl_errno(ENOMEM);
 errout:
 	nl_cache_mngr_free(mngr);
-	return NULL;
+	return err;
 }
 
 /**
@@ -197,6 +196,7 @@ errout:
  * @arg mngr		Cache manager.
  * @arg name		Name of cache to keep track of
  * @arg cb		Function to be called upon changes.
+ * @arg result		Pointer to store added cache.
  *
  * Allocates a new cache of the specified type and adds it to the manager.
  * The operation will trigger a full dump request from the kernel to
@@ -204,10 +204,10 @@ errout:
  * to the notification group of the cache to keep track of any further
  * changes.
  *
- * @return The newly allocated cache or NULL on failure.
+ * @return 0 on success or a negative error code.
  */
-struct nl_cache *nl_cache_mngr_add(struct nl_cache_mngr *mngr, const char *name,
-				   change_func_t cb)
+int nl_cache_mngr_add(struct nl_cache_mngr *mngr, const char *name,
+		      change_func_t cb, struct nl_cache **result)
 {
 	struct nl_cache_ops *ops;
 	struct nl_cache *cache;
@@ -215,28 +215,19 @@ struct nl_cache *nl_cache_mngr_add(struct nl_cache_mngr *mngr, const char *name,
 	int err, i;
 
 	ops = nl_cache_ops_lookup(name);
-	if (!ops) {
-		nl_error(ENOENT, "Unknown cache type");
-		return NULL;
-	}
+	if (!ops)
+		return -NLE_NOCACHE;
 
-	if (ops->co_protocol != mngr->cm_protocol) {
-		nl_error(EINVAL, "Netlink protocol mismatch");
-		return NULL;
-	}
+	if (ops->co_protocol != mngr->cm_protocol)
+		return -NLE_PROTO_MISMATCH;
 
-	if (ops->co_groups == NULL) {
-		nl_error(EOPNOTSUPP, NULL);
-		return NULL;
-	}
+	if (ops->co_groups == NULL)
+		return -NLE_OPNOTSUPP;
 
-	for (i = 0; i < mngr->cm_nassocs; i++) {
+	for (i = 0; i < mngr->cm_nassocs; i++)
 		if (mngr->cm_assocs[i].ca_cache &&
-		    mngr->cm_assocs[i].ca_cache->c_ops == ops) {
-			nl_error(EEXIST, "Cache of this type already managed");
-			return NULL;
-		}
-	}
+		    mngr->cm_assocs[i].ca_cache->c_ops == ops)
+			return -NLE_EXIST;
 
 retry:
 	for (i = 0; i < mngr->cm_nassocs; i++)
@@ -248,10 +239,9 @@ retry:
 		mngr->cm_assocs = realloc(mngr->cm_assocs,
 					  mngr->cm_nassocs *
 					  sizeof(struct nl_cache_assoc));
-		if (mngr->cm_assocs == NULL) {
-			nl_errno(ENOMEM);
-			return NULL;
-		} else {
+		if (mngr->cm_assocs == NULL)
+			return -NLE_NOMEM;
+		else {
 			NL_DBG(1, "Increased capacity of cache manager %p " \
 				  "to %d\n", mngr, mngr->cm_nassocs);
 			goto retry;
@@ -259,10 +249,8 @@ retry:
 	}
 
 	cache = nl_cache_alloc(ops);
-	if (!cache) {
-		nl_errno(ENOMEM);
-		return NULL;
-	}
+	if (!cache)
+		return -NLE_NOMEM;
 
 	for (grp = ops->co_groups; grp->ag_group; grp++) {
 		err = nl_socket_add_membership(mngr->cm_handle, grp->ag_group);
@@ -283,7 +271,8 @@ retry:
 	NL_DBG(1, "Added cache %p <%s> to cache manager %p\n",
 	       cache, nl_cache_name(cache), mngr);
 
-	return cache;
+	*result = cache;
+	return 0;
 
 errout_drop_membership:
 	for (grp = ops->co_groups; grp->ag_group; grp++)
@@ -291,7 +280,7 @@ errout_drop_membership:
 errout_free_cache:
 	nl_cache_free(cache);
 
-	return NULL;
+	return err;
 }
 
 /**
@@ -334,7 +323,7 @@ int nl_cache_mngr_poll(struct nl_cache_mngr *mngr, int timeout)
 	ret = poll(&fds, 1, timeout);
 	NL_DBG(3, "Cache manager %p, poll() returned %d\n", mngr, ret);
 	if (ret < 0)
-		return nl_errno(errno);
+		return -nl_syserr2nlerr(errno);
 
 	if (ret == 0)
 		return 0;

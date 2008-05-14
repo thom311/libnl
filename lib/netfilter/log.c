@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
  */
@@ -31,8 +31,8 @@
  * @{
  */
 
-static struct nl_msg *build_log_cmd_request(uint8_t family, uint16_t queuenum,
-					    uint8_t command)
+static int build_log_cmd_request(uint8_t family, uint16_t queuenum,
+				 uint8_t command, struct nl_msg **result)
 {
 	struct nl_msg *msg;
 	struct nfulnl_msg_config_cmd cmd;
@@ -40,17 +40,18 @@ static struct nl_msg *build_log_cmd_request(uint8_t family, uint16_t queuenum,
 	msg = nfnlmsg_alloc_simple(NFNL_SUBSYS_ULOG, NFULNL_MSG_CONFIG, 0,
 				   family, queuenum);
 	if (msg == NULL)
-		return NULL;
+		return -NLE_NOMEM;
 
 	cmd.command = command;
 	if (nla_put(msg, NFULA_CFG_CMD, sizeof(cmd), &cmd) < 0)
 		goto nla_put_failure;
 
-	return msg;
+	*result = msg;
+	return 0;
 
 nla_put_failure:
 	nlmsg_free(msg);
-	return NULL;
+	return -NLE_MSGSIZE;
 }
 
 static int send_log_request(struct nl_handle *handle, struct nl_msg *msg)
@@ -65,49 +66,50 @@ static int send_log_request(struct nl_handle *handle, struct nl_msg *msg)
 	return nl_wait_for_ack(handle);
 }
 
-struct nl_msg *nfnl_log_build_pf_bind(uint8_t pf)
+int nfnl_log_build_pf_bind(uint8_t pf, struct nl_msg **result)
 {
-	return build_log_cmd_request(pf, 0, NFULNL_CFG_CMD_PF_BIND);
+	return build_log_cmd_request(pf, 0, NFULNL_CFG_CMD_PF_BIND, result);
 }
 
 int nfnl_log_pf_bind(struct nl_handle *nlh, uint8_t pf)
 {
 	struct nl_msg *msg;
+	int err;
 
-	msg = nfnl_log_build_pf_bind(pf);
-	if (!msg)
-		return nl_get_errno();
+	if ((err = nfnl_log_build_pf_bind(pf, &msg)) < 0)
+		return err;
 
 	return send_log_request(nlh, msg);
 }
 
-struct nl_msg *nfnl_log_build_pf_unbind(uint8_t pf)
+int nfnl_log_build_pf_unbind(uint8_t pf, struct nl_msg **result)
 {
-	return build_log_cmd_request(pf, 0, NFULNL_CFG_CMD_PF_UNBIND);
+	return build_log_cmd_request(pf, 0, NFULNL_CFG_CMD_PF_UNBIND, result);
 }
 
 int nfnl_log_pf_unbind(struct nl_handle *nlh, uint8_t pf)
 {
 	struct nl_msg *msg;
+	int err;
 
-	msg = nfnl_log_build_pf_unbind(pf);
-	if (!msg)
-		return nl_get_errno();
+	if ((err = nfnl_log_build_pf_unbind(pf, &msg)) < 0)
+		return err;
 
 	return send_log_request(nlh, msg);
 }
 
-static struct nl_msg *nfnl_log_build_request(const struct nfnl_log *log)
+static int nfnl_log_build_request(const struct nfnl_log *log,
+				  struct nl_msg **result)
 {
 	struct nl_msg *msg;
 
 	if (!nfnl_log_test_group(log))
-		return NULL;
+		return -NLE_MISSING_ATTR;
 
 	msg = nfnlmsg_alloc_simple(NFNL_SUBSYS_ULOG, NFULNL_MSG_CONFIG, 0,
 				   0, nfnl_log_get_group(log));
 	if (msg == NULL)
-		return NULL;
+		return -NLE_NOMEM;
 
 	/* This sucks. The nfnetlink_log interface always expects both
 	 * parameters to be present. Needs to be done properly.
@@ -148,77 +150,80 @@ static struct nl_msg *nfnl_log_build_request(const struct nfnl_log *log)
 			htonl(nfnl_log_get_queue_threshold(log))) < 0)
 		goto nla_put_failure;
 
-	return msg;
+	*result = msg;
+	return 0;
 
 nla_put_failure:
 	nlmsg_free(msg);
-	return NULL;
+	return -NLE_MSGSIZE;
 }
 
-struct nl_msg *nfnl_log_build_create_request(const struct nfnl_log *log)
+int nfnl_log_build_create_request(const struct nfnl_log *log,
+				  struct nl_msg **result)
 {
-	struct nl_msg *msg;
 	struct nfulnl_msg_config_cmd cmd;
+	int err;
 
-	msg = nfnl_log_build_request(log);
-	if (msg == NULL)
-		return NULL;
+	if ((err = nfnl_log_build_request(log, result)) < 0)
+		return err;
 
 	cmd.command = NFULNL_CFG_CMD_BIND;
 
-	if (nla_put(msg, NFULA_CFG_CMD, sizeof(cmd), &cmd) < 0)
+	if (nla_put(*result, NFULA_CFG_CMD, sizeof(cmd), &cmd) < 0)
 		goto nla_put_failure;
 
-	return msg;
+	return 0;
 
 nla_put_failure:
-	nlmsg_free(msg);
-	return NULL;
+	nlmsg_free(*result);
+	return -NLE_MSGSIZE;
 }
 
 int nfnl_log_create(struct nl_handle *nlh, const struct nfnl_log *log)
 {
 	struct nl_msg *msg;
+	int err;
 
-	msg = nfnl_log_build_create_request(log);
-	if (msg == NULL)
-		return nl_errno(ENOMEM);
+	if ((err = nfnl_log_build_create_request(log, &msg)) < 0)
+		return err;
 
 	return send_log_request(nlh, msg);
 }
 
-struct nl_msg *nfnl_log_build_change_request(const struct nfnl_log *log)
+int nfnl_log_build_change_request(const struct nfnl_log *log,
+				  struct nl_msg **result)
 {
-	return nfnl_log_build_request(log);
+	return nfnl_log_build_request(log, result);
 }
 
 int nfnl_log_change(struct nl_handle *nlh, const struct nfnl_log *log)
 {
 	struct nl_msg *msg;
+	int err;
 
-	msg = nfnl_log_build_change_request(log);
-	if (msg == NULL)
-		return nl_errno(ENOMEM);
+	if ((err = nfnl_log_build_change_request(log, &msg)) < 0)
+		return err;
 
 	return send_log_request(nlh, msg);
 }
 
-struct nl_msg *nfnl_log_build_delete_request(const struct nfnl_log *log)
+int nfnl_log_build_delete_request(const struct nfnl_log *log,
+				  struct nl_msg **result)
 {
 	if (!nfnl_log_test_group(log))
-		return NULL;
+		return -NLE_MISSING_ATTR;
 
 	return build_log_cmd_request(0, nfnl_log_get_group(log),
-				     NFULNL_CFG_CMD_UNBIND);
+				     NFULNL_CFG_CMD_UNBIND, result);
 }
 
 int nfnl_log_delete(struct nl_handle *nlh, const struct nfnl_log *log)
 {
 	struct nl_msg *msg;
+	int err;
 
-	msg = nfnl_log_build_delete_request(log);
-	if (msg == NULL)
-		return nl_errno(ENOMEM);
+	if ((err = nfnl_log_build_delete_request(log, &msg)) < 0)
+		return err;
 
 	return send_log_request(nlh, msg);
 }

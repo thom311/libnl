@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -64,7 +64,7 @@ static int tbf_msg_parser(struct rtnl_qdisc *q)
 	
 	tbf = tbf_alloc(q);
 	if (!tbf)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	if (tb[TCA_TBF_PARMS]) {
 		struct tc_tbf_qopt opts;
@@ -226,7 +226,7 @@ int rtnl_qdisc_tbf_set_limit(struct rtnl_qdisc *qdisc, int limit)
 	
 	tbf = tbf_alloc(qdisc);
 	if (!tbf)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	tbf->qt_limit = limit;
 	tbf->qt_mask |= TBF_ATTR_LIMIT;
@@ -270,11 +270,10 @@ int rtnl_qdisc_tbf_set_limit_by_latency(struct rtnl_qdisc *qdisc, int latency)
 
 	tbf = tbf_alloc(qdisc);
 	if (!tbf)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	if (!(tbf->qt_mask & TBF_ATTR_RATE))
-		return nl_error(EINVAL, "The rate must be specified before "
-				"limit can be calculated based on latency.");
+		return -NLE_MISSING_ATTR;
 
 	limit = calc_limit(&tbf->qt_rate, latency, tbf->qt_rate_bucket);
 
@@ -301,8 +300,8 @@ int rtnl_qdisc_tbf_get_limit(struct rtnl_qdisc *qdisc)
 	tbf = tbf_qdisc(qdisc);
 	if (tbf && (tbf->qt_mask & TBF_ATTR_LIMIT))
 		return tbf->qt_limit;
-	return
-		nl_errno(ENOENT);
+	else
+		return -NLE_NOATTR;
 }
 
 /**
@@ -317,7 +316,7 @@ int rtnl_qdisc_tbf_set_mpu(struct rtnl_qdisc *qdisc, int mpu)
 	
 	tbf = tbf_alloc(qdisc);
 	if (!tbf)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	tbf->qt_mpu = mpu;
 	tbf->qt_mask |= TBF_ATTR_MPU;
@@ -337,8 +336,8 @@ int rtnl_qdisc_tbf_get_mpu(struct rtnl_qdisc *qdisc)
 	tbf = tbf_qdisc(qdisc);
 	if (tbf && (tbf->qt_mask & TBF_ATTR_MPU))
 		return tbf->qt_mpu;
-	return
-		nl_errno(ENOENT);
+	else
+		return -NLE_NOATTR;
 }
 
 static inline int calc_cell_log(int cell, int bucket)
@@ -374,7 +373,7 @@ int rtnl_qdisc_tbf_set_rate(struct rtnl_qdisc *qdisc, int rate, int bucket,
 	
 	tbf = tbf_alloc(qdisc);
 	if (!tbf)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	cell_log = calc_cell_log(cell, bucket);
 	if (cell_log < 0)
@@ -453,7 +452,7 @@ int rtnl_qdisc_tbf_set_peakrate(struct rtnl_qdisc *qdisc, int rate, int bucket,
 	
 	tbf = tbf_alloc(qdisc);
 	if (!tbf)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	cell_log = calc_cell_log(cell, bucket);
 	if (cell_log < 0)

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_GENL_CTRL_H_
@@ -22,7 +22,8 @@ extern "C" {
 
 struct genl_family;
 
-extern struct nl_cache *	genl_ctrl_alloc_cache(struct nl_handle *);
+extern int			genl_ctrl_alloc_cache(struct nl_handle *,
+						      struct nl_cache **);
 extern struct genl_family *	genl_ctrl_search(struct nl_cache *, int);
 extern struct genl_family *	genl_ctrl_search_by_name(struct nl_cache *,
 							 const char *);

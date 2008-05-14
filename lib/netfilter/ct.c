@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
  * Copyright (c= 2008 Patrick McHardy <kaber@trash.net>
@@ -152,7 +152,7 @@ static int ct_parse_ip(struct nfnl_ct *ct, int repl, struct nlattr *attr)
 	return 0;
 
 errout_errno:
-	return nl_get_errno();
+	err = -NLE_NOMEM;
 errout:
 	return err;
 }
@@ -287,7 +287,7 @@ int nfnlmsg_ct_group(struct nlmsghdr *nlh)
 	}
 }
 
-struct nfnl_ct *nfnlmsg_ct_parse(struct nlmsghdr *nlh)
+int nfnlmsg_ct_parse(struct nlmsghdr *nlh, struct nfnl_ct **result)
 {
 	struct nfnl_ct *ct;
 	struct nlattr *tb[CTA_MAX+1];
@@ -295,7 +295,7 @@ struct nfnl_ct *nfnlmsg_ct_parse(struct nlmsghdr *nlh)
 
 	ct = nfnl_ct_alloc();
 	if (!ct)
-		return NULL;
+		return -NLE_NOMEM;
 
 	ct->ce_msgtype = nlh->nlmsg_type;
 
@@ -346,11 +346,12 @@ struct nfnl_ct *nfnlmsg_ct_parse(struct nlmsghdr *nlh)
 			goto errout;
 	}
 
-	return ct;
+	*result = ct;
+	return 0;
 
 errout:
 	nfnl_ct_put(ct);
-	return NULL;
+	return err;
 }
 
 static int ct_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
@@ -359,9 +360,8 @@ static int ct_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct nfnl_ct *ct;
 	int err;
 
-	ct = nfnlmsg_ct_parse(nlh);
-	if (ct == NULL)
-		goto errout_errno;
+	if ((err = nfnlmsg_ct_parse(nlh, &ct)) < 0)
+		goto errout;
 
 	err = pp->pp_cb((struct nl_object *) ct, pp);
 	if (err < 0)
@@ -372,10 +372,6 @@ static int ct_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 errout:
 	nfnl_ct_put(ct);
 	return err;
-
-errout_errno:
-	err = nl_get_errno();
-	goto errout;
 }
 
 int nfnl_ct_dump_request(struct nl_handle *h)
@@ -453,31 +449,35 @@ static int nfnl_ct_build_tuple(struct nl_msg *msg, const struct nfnl_ct *ct,
 	return 0;
 
 nla_put_failure:
-	return -1;
+	return -NLE_MSGSIZE;
 }
 
-static struct nl_msg *nfnl_ct_build_message(const struct nfnl_ct *ct, int cmd, int flags)
+static int nfnl_ct_build_message(const struct nfnl_ct *ct, int cmd, int flags,
+				 struct nl_msg **result)
 {
 	struct nl_msg *msg;
+	int err;
 
 	msg = nfnlmsg_alloc_simple(NFNL_SUBSYS_CTNETLINK, cmd, flags,
 				   nfnl_ct_get_family(ct), 0);
 	if (msg == NULL)
-		return NULL;
+		return -NLE_NOMEM;
 
-	if (nfnl_ct_build_tuple(msg, ct, 0) < 0)
+	if ((err = nfnl_ct_build_tuple(msg, ct, 0)) < 0)
 		goto err_out;
 
-	return msg;
+	*result = msg;
+	return 0;
 
 err_out:
 	nlmsg_free(msg);
-	return NULL;
+	return err;
 }
 
-struct nl_msg *nfnl_ct_build_add_request(const struct nfnl_ct *ct, int flags)
+int nfnl_ct_build_add_request(const struct nfnl_ct *ct, int flags,
+			      struct nl_msg **result)
 {
-	return nfnl_ct_build_message(ct, IPCTNL_MSG_CT_NEW, flags);
+	return nfnl_ct_build_message(ct, IPCTNL_MSG_CT_NEW, flags, result);
 }
 
 int nfnl_ct_add(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
@@ -485,9 +485,8 @@ int nfnl_ct_add(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
 	struct nl_msg *msg;
 	int err;
 
-	msg = nfnl_ct_build_add_request(ct, flags);
-	if (msg == NULL)
-		return nl_errno(ENOMEM);
+	if ((err = nfnl_ct_build_add_request(ct, flags, &msg)) < 0)
+		return err;
 
 	err = nl_send_auto_complete(h, msg);
 	nlmsg_free(msg);
@@ -497,9 +496,10 @@ int nfnl_ct_add(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
 	return nl_wait_for_ack(h);
 }
 
-struct nl_msg *nfnl_ct_build_delete_request(const struct nfnl_ct *ct, int flags)
+int nfnl_ct_build_delete_request(const struct nfnl_ct *ct, int flags,
+				 struct nl_msg **result)
 {
-	return nfnl_ct_build_message(ct, IPCTNL_MSG_CT_DELETE, flags);
+	return nfnl_ct_build_message(ct, IPCTNL_MSG_CT_DELETE, flags, result);
 }
 
 int nfnl_ct_del(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
@@ -507,9 +507,8 @@ int nfnl_ct_del(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
 	struct nl_msg *msg;
 	int err;
 
-	msg = nfnl_ct_build_delete_request(ct, flags);
-	if (msg == NULL)
-		return nl_errno(ENOMEM);
+	if ((err = nfnl_ct_build_delete_request(ct, flags, &msg)) < 0)
+		return err;
 
 	err = nl_send_auto_complete(h, msg);
 	nlmsg_free(msg);
@@ -519,9 +518,10 @@ int nfnl_ct_del(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
 	return nl_wait_for_ack(h);
 }
 
-struct nl_msg *nfnl_ct_build_query_request(const struct nfnl_ct *ct, int flags)
+int nfnl_ct_build_query_request(const struct nfnl_ct *ct, int flags,
+				struct nl_msg **result)
 {
-	return nfnl_ct_build_message(ct, IPCTNL_MSG_CT_GET, flags);
+	return nfnl_ct_build_message(ct, IPCTNL_MSG_CT_GET, flags, result);
 }
 
 int nfnl_ct_query(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
@@ -529,9 +529,8 @@ int nfnl_ct_query(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
 	struct nl_msg *msg;
 	int err;
 
-	msg = nfnl_ct_build_query_request(ct, flags);
-	if (msg == NULL)
-		return nl_errno(ENOMEM);
+	if ((err = nfnl_ct_build_query_request(ct, flags, &msg)) < 0)
+		return err;
 
 	err = nl_send_auto_complete(h, msg);
 	nlmsg_free(msg);
@@ -549,28 +548,16 @@ int nfnl_ct_query(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
 /**
  * Build a conntrack cache holding all conntrack currently in the kernel
  * @arg handle		netlink handle
+ * @arg result		Pointer to store resulting cache.
  *
  * Allocates a new cache, initializes it properly and updates it to
  * contain all conntracks currently in the kernel.
  *
- * @note The caller is responsible for destroying and freeing the
- *       cache after using it.
- * @return The cache or NULL if an error has occured.
+ * @return 0 on success or a negative error code.
  */
-struct nl_cache *nfnl_ct_alloc_cache(struct nl_handle *handle)
+int nfnl_ct_alloc_cache(struct nl_handle *sock, struct nl_cache **result)
 {
-	struct nl_cache *cache;
-
-	cache = nl_cache_alloc(&nfnl_ct_ops);
-	if (!cache)
-		return NULL;
-
-	if (handle && nl_cache_refill(handle, cache) < 0) {
-		free(cache);
-		return NULL;
-	}
-
-	return cache;
+	return nl_cache_alloc_and_fill(&nfnl_ct_ops, sock, result);
 }
 
 /** @} */

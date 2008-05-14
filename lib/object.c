@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -47,10 +47,8 @@ struct nl_object *nl_object_alloc(struct nl_object_ops *ops)
 		BUG();
 
 	new = calloc(1, ops->oo_size);
-	if (!new) {
-		nl_errno(ENOMEM);
+	if (!new)
 		return NULL;
-	}
 
 	new->ce_refcnt = 1;
 	nl_init_list_head(&new->ce_list);
@@ -69,17 +67,18 @@ struct nl_object *nl_object_alloc(struct nl_object_ops *ops)
  * @arg kind		name of object type
  * @return The new object or nULL
  */
-struct nl_object *nl_object_alloc_name(const char *kind)
+int nl_object_alloc_name(const char *kind, struct nl_object **result)
 {
 	struct nl_cache_ops *ops;
 
 	ops = nl_cache_ops_lookup(kind);
-	if (!ops) {
-		nl_error(ENOENT, "Unable to lookup cache kind \"%s\"", kind);
-		return NULL;
-	}
+	if (!ops)
+		return -NLE_OPNOTSUPP;
 
-	return nl_object_alloc(ops->co_obj_ops);
+	if (!(*result = nl_object_alloc(ops->co_obj_ops)))
+		return -NLE_NOMEM;
+
+	return 0;
 }
 
 struct nl_derived_object {

@@ -26,7 +26,8 @@ extern struct nl_object_ops queue_msg_obj_ops;
 
 /* General */
 extern struct nfnl_queue_msg *	nfnl_queue_msg_alloc(void);
-extern struct nfnl_queue_msg *	nfnlmsg_queue_msg_parse(struct nlmsghdr *);
+extern int			nfnlmsg_queue_msg_parse(struct nlmsghdr *,
+						struct nfnl_queue_msg **);
 
 extern void			nfnl_queue_msg_get(struct nfnl_queue_msg *);
 extern void			nfnl_queue_msg_put(struct nfnl_queue_msg *);

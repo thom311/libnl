@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -140,11 +140,11 @@ static inline int dnet_pton(const char *src, char *addrbuf)
 	pos = dnet_num(src, &area);
 	if ((pos == 0) || (area > 63) ||
 	    ((*(src + pos) != '.') && (*(src + pos) != ',')))
-		return -EINVAL;
+		return -NLE_INVAL;
 
 	pos = dnet_num(src + pos + 1, &node);
 	if ((pos == 0) || (node > 1023))
-		return -EINVAL;
+		return -NLE_INVAL;
 
 	*(uint16_t *)addrbuf = dn_ntohs((area << 10) | node);
 
@@ -166,10 +166,8 @@ struct nl_addr *nl_addr_alloc(size_t maxsize)
 	struct nl_addr *addr;
 	
 	addr = calloc(1, sizeof(*addr) + maxsize);
-	if (!addr) {
-		nl_errno(ENOMEM);
+	if (!addr)
 		return NULL;
-	}
 
 	addr->a_refcnt = 1;
 	addr->a_maxsize = maxsize;
@@ -221,6 +219,7 @@ struct nl_addr *nl_addr_alloc_from_attr(struct nlattr *nla, int family)
  * Allocate abstract address object based on a character string
  * @arg addrstr		Address represented as character string.
  * @arg hint		Address family hint or AF_UNSPEC.
+ * @arg result		Pointer to store resulting address.
  *
  * Regognizes the following address formats:
  *@code
@@ -241,9 +240,9 @@ struct nl_addr *nl_addr_alloc_from_attr(struct nlattr *nla, int family)
  * The prefix length may be appened at the end prefixed with a
  * slash, e.g. 10.0.0.0/8.
  *
- * @return Newly allocated abstract address object or NULL.
+ * @return 0 on success or a negative error code.
  */
-struct nl_addr *nl_addr_parse(const char *addrstr, int hint)
+int nl_addr_parse(const char *addrstr, int hint, struct nl_addr **result)
 {
 	int err, copy = 0, len = 0, family = AF_UNSPEC;
 	char *str, *prefix, buf[32];
@@ -251,7 +250,7 @@ struct nl_addr *nl_addr_parse(const char *addrstr, int hint)
 
 	str = strdup(addrstr);
 	if (!str) {
-		err = nl_errno(ENOMEM);
+		err = -NLE_NOMEM;
 		goto errout;
 	}
 
@@ -289,8 +288,7 @@ struct nl_addr *nl_addr_parse(const char *addrstr, int hint)
 				goto prefix;
 
 			default:
-				err = nl_error(EINVAL, "Unsuported address" \
-				    "family for default address");
+				err = -NLE_AF_NOSUPPORT;
 				goto errout;
 		}
 	}
@@ -304,7 +302,7 @@ struct nl_addr *nl_addr_parse(const char *addrstr, int hint)
 			goto prefix;
 		}
 		if (hint == AF_INET) {
-			err = nl_error(EINVAL, "Invalid IPv4 address");
+			err = -NLE_NOADDR;
 			goto errout;
 		}
 	}
@@ -316,7 +314,7 @@ struct nl_addr *nl_addr_parse(const char *addrstr, int hint)
 			goto prefix;
 		}
 		if (hint == AF_INET6) {
-			err = nl_error(EINVAL, "Invalid IPv6 address");
+			err = -NLE_NOADDR;
 			goto errout;
 		}
 	}
@@ -338,7 +336,7 @@ struct nl_addr *nl_addr_parse(const char *addrstr, int hint)
 		}
 
 		if (hint == AF_LLC) {
-			err = nl_error(EINVAL, "Invalid link layer address");
+			err = -NLE_NOADDR;
 			goto errout;
 		}
 	}
@@ -351,7 +349,7 @@ struct nl_addr *nl_addr_parse(const char *addrstr, int hint)
 			goto prefix;
 		}
 		if (hint == AF_DECnet) {
-			err = nl_error(EINVAL, "Invalid DECnet address");
+			err = -NLE_NOADDR;
 			goto errout;
 		}
 	}
@@ -363,7 +361,7 @@ struct nl_addr *nl_addr_parse(const char *addrstr, int hint)
 			long l = strtol(s, &p, 16);
 
 			if (s == p || l > 0xff || i >= sizeof(buf)) {
-				err = -EINVAL;
+				err = -NLE_INVAL;
 				goto errout;
 			}
 
@@ -378,13 +376,13 @@ struct nl_addr *nl_addr_parse(const char *addrstr, int hint)
 		goto prefix;
 	}
 
-	err = nl_error(EINVAL, "Invalid address");
+	err = -NLE_NOADDR;
 	goto errout;
 
 prefix:
 	addr = nl_addr_alloc(len);
 	if (!addr) {
-		err = nl_errno(ENOMEM);
+		err = -NLE_NOMEM;
 		goto errout;
 	}
 
@@ -398,18 +396,19 @@ prefix:
 		long pl = strtol(++prefix, &p, 0);
 		if (p == prefix) {
 			nl_addr_destroy(addr);
-			err = -EINVAL;
+			err = -NLE_INVAL;
 			goto errout;
 		}
 		nl_addr_set_prefixlen(addr, pl);
 	} else
 		nl_addr_set_prefixlen(addr, len * 8);
 
+	*result = addr;
 	err = 0;
 errout:
 	free(str);
 
-	return err ? NULL : addr;
+	return err;
 }
 
 /**
@@ -634,7 +633,7 @@ int nl_addr_fill_sockaddr(struct nl_addr *addr, struct sockaddr *sa,
 		struct sockaddr_in *sai = (struct sockaddr_in *) sa;
 
 		if (*salen < sizeof(*sai))
-			return -EINVAL;
+			return -NLE_INVAL;
 
 		sai->sin_family = addr->a_family;
 		memcpy(&sai->sin_addr, addr->a_addr, 4);
@@ -646,7 +645,7 @@ int nl_addr_fill_sockaddr(struct nl_addr *addr, struct sockaddr *sa,
 		struct sockaddr_in6 *sa6 = (struct sockaddr_in6 *) sa;
 
 		if (*salen < sizeof(*sa6))
-			return -EINVAL;
+			return -NLE_INVAL;
 
 		sa6->sin6_family = addr->a_family;
 		memcpy(&sa6->sin6_addr, addr->a_addr, 16);
@@ -655,7 +654,7 @@ int nl_addr_fill_sockaddr(struct nl_addr *addr, struct sockaddr *sa,
 		break;
 
 	default:
-		return -EINVAL;
+		return -NLE_INVAL;
 	}
 
 	return 0;
@@ -672,6 +671,7 @@ int nl_addr_fill_sockaddr(struct nl_addr *addr, struct sockaddr *sa,
 /**
  * Call getaddrinfo() for an abstract address object.
  * @arg addr		Abstract address object.
+ * @arg result		Pointer to store resulting address list.
  * 
  * Calls getaddrinfo() for the specified abstract address in AI_NUMERICHOST
  * mode.
@@ -679,13 +679,11 @@ int nl_addr_fill_sockaddr(struct nl_addr *addr, struct sockaddr *sa,
  * @note The caller is responsible for freeing the linked list using the
  *       interface provided by getaddrinfo(3).
  *
- * @return A linked list of addrinfo handles or  NULL with an error message
- *         associated.
+ * @return 0 on success or a negative error code.
  */
-struct addrinfo *nl_addr_info(struct nl_addr *addr)
+int nl_addr_info(struct nl_addr *addr, struct addrinfo **result)
 {
 	int err;
-	struct addrinfo *res;
 	char buf[INET6_ADDRSTRLEN+5];
 	struct addrinfo hint = {
 		.ai_flags = AI_NUMERICHOST,
@@ -694,13 +692,24 @@ struct addrinfo *nl_addr_info(struct nl_addr *addr)
 
 	nl_addr2str(addr, buf, sizeof(buf));
 
-	err = getaddrinfo(buf, NULL, &hint, &res);
+	err = getaddrinfo(buf, NULL, &hint, result);
 	if (err != 0) {
-		nl_error(err, gai_strerror(err));
-		return NULL;
+		switch (err) {
+		case EAI_ADDRFAMILY: return -NLE_AF_NOSUPPORT;
+		case EAI_AGAIN: return -NLE_AGAIN;
+		case EAI_BADFLAGS: return -NLE_INVAL;
+		case EAI_FAIL: return -NLE_NOADDR;
+		case EAI_FAMILY: return -NLE_AF_NOSUPPORT;
+		case EAI_MEMORY: return -NLE_NOMEM;
+		case EAI_NODATA: return -NLE_NOADDR;
+		case EAI_NONAME: return -NLE_OBJ_NOTFOUND;
+		case EAI_SERVICE: return -NLE_OPNOTSUPP;
+		case EAI_SOCKTYPE: return -NLE_BAD_SOCK;
+		default: return -NLE_FAILURE;
+		}
 	}
 
-	return res;
+	return 0;
 }
 
 /**
@@ -756,7 +765,7 @@ int nl_addr_get_family(struct nl_addr *addr)
 int nl_addr_set_binary_addr(struct nl_addr *addr, void *buf, size_t len)
 {
 	if (len > addr->a_maxsize)
-		return -ERANGE;
+		return -NLE_RANGE;
 
 	addr->a_len = len;
 	memcpy(addr->a_addr, buf, len);

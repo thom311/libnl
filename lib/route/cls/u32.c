@@ -137,8 +137,7 @@ static int u32_msg_parser(struct rtnl_cls *cls)
 		int pcnt_size;
 
 		if (!tb[TCA_U32_SEL]) {
-			err = nl_error(EINVAL, "Missing TCA_U32_SEL required "
-					       "for TCA_U32_PCNT");
+			err = -NLE_MISSING_ATTR;
 			goto errout;
 		}
 		
@@ -146,7 +145,7 @@ static int u32_msg_parser(struct rtnl_cls *cls)
 		pcnt_size = sizeof(struct tc_u32_pcnt) +
 				(sel->nkeys * sizeof(uint64_t));
 		if (nla_len(tb[TCA_U32_PCNT]) < pcnt_size) {
-			err = nl_error(EINVAL, "Invalid size for TCA_U32_PCNT");
+			err = -NLE_INVAL;
 			goto errout;
 		}
 
@@ -164,7 +163,7 @@ static int u32_msg_parser(struct rtnl_cls *cls)
 	return 0;
 
 errout_nomem:
-	err = nl_errno(ENOMEM);
+	err = -NLE_NOMEM;
 errout:
 	return err;
 }
@@ -193,27 +192,25 @@ static int u32_clone(struct rtnl_cls *_dst, struct rtnl_cls *_src)
 
 	dst = u32_alloc(_dst);
 	if (!dst)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	if (src->cu_selector)
 		if (!(dst->cu_selector = nl_data_clone(src->cu_selector)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	if (src->cu_act)
 		if (!(dst->cu_act = nl_data_clone(src->cu_act)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	if (src->cu_police)
 		if (!(dst->cu_police = nl_data_clone(src->cu_police)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	if (src->cu_pcnt)
 		if (!(dst->cu_pcnt = nl_data_clone(src->cu_pcnt)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	return 0;
-errout:
-	return nl_get_errno();
 }
 
 static int u32_dump_brief(struct rtnl_cls *cls, struct nl_dump_params *p,
@@ -419,7 +416,7 @@ int rtnl_u32_set_classid(struct rtnl_cls *cls, uint32_t classid)
 	
 	u = u32_alloc(cls);
 	if (!u)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	u->cu_classid = classid;
 	u->cu_mask |= U32_ATTR_CLASSID;
@@ -441,11 +438,11 @@ int rtnl_u32_set_flags(struct rtnl_cls *cls, int flags)
 
 	u = u32_alloc(cls);
 	if (!u)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	sel = u32_selector_alloc(u);
 	if (!sel)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	sel->flags |= flags;
 	u->cu_mask |= U32_ATTR_SELECTOR;
@@ -476,11 +473,11 @@ int rtnl_u32_add_key(struct rtnl_cls *cls, uint32_t val, uint32_t mask,
 
 	u = u32_alloc(cls);
 	if (!u)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	sel = u32_selector_alloc(u);
 	if (!sel)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	err = nl_data_append(u->cu_selector, NULL, sizeof(struct tc_u32_key));
 	if (err < 0)
@@ -523,7 +520,7 @@ int rtnl_u32_add_key_uint16(struct rtnl_cls *cls, uint16_t val, uint16_t mask,
 {
 	int shift = ((off & 3) == 0 ? 16 : 0);
 	if (off % 2)
-		return nl_error(EINVAL, "Invalid offset alignment");
+		return -NLE_INVAL;
 
 	return rtnl_u32_add_key(cls, htonl((uint32_t)val << shift),
 				htonl((uint32_t)mask << shift),

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_UTILS_H_
@@ -37,10 +37,6 @@ extern "C" {
 #define NL_PROB_MAX 0xffffffff
 
 /** @} */
-
-extern char *	nl_geterror(void);
-extern int	nl_get_errno(void);
-extern void	nl_perror(const char *);
 
 /* unit pretty-printing */
 extern double	nl_cancel_down_bytes(unsigned long long, char **);

@@ -61,10 +61,10 @@ struct rtnl_link_info_ops *rtnl_link_info_ops_lookup(const char *name)
 int rtnl_link_register_info(struct rtnl_link_info_ops *ops)
 {
 	if (ops->io_name == NULL)
-		return nl_error(EINVAL, "No name specified");
+		return -NLE_INVAL;
 
 	if (rtnl_link_info_ops_lookup(ops->io_name))
-		return nl_error(EEXIST, "Link info operations already exist");
+		return -NLE_EXIST;
 
 	NL_DBG(1, "Registered link info operations %s\n", ops->io_name);
 
@@ -83,10 +83,10 @@ int rtnl_link_unregister_info(struct rtnl_link_info_ops *ops)
 			break;
 
 	if (!t)
-		return nl_error(ENOENT, "No such link info operations");
+		return -NLE_OPNOTSUPP;
 
 	if (t->io_refcnt > 0)
-		return nl_error(EBUSY, "Info operations in use");
+		return -NLE_BUSY;
 
 	NL_DBG(1, "Unregistered link info perations %s\n", ops->io_name);
 

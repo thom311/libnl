@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -41,48 +41,6 @@ static void __init nl_debug_init(void)
 	nl_debug_dp.dp_fd = stderr;
 }
 
-/**
- * @name Error Code Helpers
- * @{
- */
-
-static char *errbuf;
-static int nlerrno;
-
-/** @cond SKIP */
-int __nl_error(int err, const char *file, unsigned int line, const char *func,
-	       const char *fmt, ...)
-{
-	char *user_err;
-	va_list args;
-
-	if (errbuf) {
-		free(errbuf);
-		errbuf = NULL;
-	}
-
-	nlerrno = err;
-
-	if (fmt) {
-		va_start(args, fmt);
-		vasprintf(&user_err, fmt, args);
-		va_end(args);
-	}
-
-#ifdef VERBOSE_ERRORS
-	asprintf(&errbuf, "%s:%u:%s: %s (errno = %s)",
-		 file, line, func, fmt ? user_err : "", strerror(err));
-#else
-	asprintf(&errbuf, "%s (errno = %s)",
-		 fmt ? user_err : "", strerror(err));
-#endif
-
-	if (fmt)
-		free(user_err);
-
-	return -err;
-}
-
 int __nl_read_num_str_file(const char *path, int (*cb)(long, const char *))
 {
 	FILE *fd;
@@ -90,8 +48,7 @@ int __nl_read_num_str_file(const char *path, int (*cb)(long, const char *))
 
 	fd = fopen(path, "r");
 	if (fd == NULL)
-		return nl_error(errno, "Unable to open file %s for reading",
-				path);
+		return -nl_syserr2nlerr(errno);
 
 	while (fgets(buf, sizeof(buf), fd)) {
 		int goodlen, err;
@@ -103,17 +60,17 @@ int __nl_read_num_str_file(const char *path, int (*cb)(long, const char *))
 
 		num = strtol(buf, &end, 0);
 		if (end == buf)
-			return nl_error(EINVAL, "Parsing error");
+			return -NLE_INVAL;
 
 		if (num == LONG_MIN || num == LONG_MAX)
-			return nl_error(errno, "Number of out range");
+			return -NLE_RANGE;
 
 		while (*end == ' ' || *end == '\t')
 			end++;
 
 		goodlen = strcspn(end, "#\r\n\t ");
 		if (goodlen == 0)
-			return nl_error(EINVAL, "Empty string");
+			return -NLE_INVAL;
 
 		end[goodlen] = '\0';
 
@@ -126,49 +83,6 @@ int __nl_read_num_str_file(const char *path, int (*cb)(long, const char *))
 
 	return 0;
 }
-
-/** @endcond */
-
-int nl_get_errno(void)
-{
-	return nlerrno;
-}
-
-
-/**
- * Return error message for an error code
- * @return error message
- */
-char *nl_geterror(void)
-{
-	if (errbuf)
-		return errbuf;
-
-	if (nlerrno)
-		return strerror(nlerrno);
-
-	return "Success\n";
-}
-
-/**
- * Print a libnl error message
- * @arg s		error message prefix
- *
- * Prints the error message of the call that failed last.
- *
- * If s is not NULL and *s is not a null byte the argument
- * string is printed, followed by a colon and a blank. Then
- * the error message and a new-line.
- */
-void nl_perror(const char *s)
-{
-	if (s && *s)
-		fprintf(stderr, "%s: %s\n", s, nl_geterror());
-	else
-		fprintf(stderr, "%s\n", nl_geterror());
-}
-
-/** @} */
 
 /**
  * @name Unit Pretty-Printing

@@ -6,8 +6,8 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
- *                         Baruch Even <baruch@ev-en.org>,
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2006 Baruch Even <baruch@ev-en.org>,
  *                         Mediatrix Telecom, inc. <ericb@mediatrix.com>
  */
 
@@ -154,27 +154,25 @@ static int addr_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	if (src->a_peer)
 		if (!(dst->a_peer = nl_addr_clone(src->a_peer)))
-			goto errout;
+			return -NLE_NOMEM;
 	
 	if (src->a_local)
 		if (!(dst->a_local = nl_addr_clone(src->a_local)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	if (src->a_bcast)
 		if (!(dst->a_bcast = nl_addr_clone(src->a_bcast)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	if (src->a_anycast)
 		if (!(dst->a_anycast = nl_addr_clone(src->a_anycast)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	if (src->a_multicast)
 		if (!(dst->a_multicast = nl_addr_clone(src->a_multicast)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	return 0;
-errout:
-	return nl_get_errno();
 }
 
 static struct nla_policy addr_policy[IFA_MAX+1] = {
@@ -189,11 +187,11 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct rtnl_addr *addr;
 	struct ifaddrmsg *ifa;
 	struct nlattr *tb[IFA_MAX+1];
-	int err = -ENOMEM, peer_prefix = 0;
+	int err, peer_prefix = 0;
 
 	addr = rtnl_addr_alloc();
 	if (!addr) {
-		err = nl_errno(ENOMEM);
+		err = -NLE_NOMEM;
 		goto errout;
 	}
 	addr->ce_msgtype = nlh->nlmsg_type;
@@ -639,25 +637,15 @@ void rtnl_addr_put(struct rtnl_addr *addr)
  * @{
  */
 
-struct nl_cache *rtnl_addr_alloc_cache(struct nl_handle *handle)
+int rtnl_addr_alloc_cache(struct nl_handle *sock, struct nl_cache **result)
 {
-	struct nl_cache *cache;
-	
-	cache = nl_cache_alloc(&rtnl_addr_ops);
-	if (!cache)
-		return NULL;
-
-	if (handle && nl_cache_refill(handle, cache) < 0) {
-		nl_cache_free(cache);
-		return NULL;
-	}
-
-	return cache;
+	return nl_cache_alloc_and_fill(&rtnl_addr_ops, sock, result);
 }
 
 /** @} */
 
-static struct nl_msg *build_addr_msg(struct rtnl_addr *tmpl, int cmd, int flags)
+static int build_addr_msg(struct rtnl_addr *tmpl, int cmd, int flags,
+			  struct nl_msg **result)
 {
 	struct nl_msg *msg;
 	struct ifaddrmsg am = {
@@ -680,7 +668,7 @@ static struct nl_msg *build_addr_msg(struct rtnl_addr *tmpl, int cmd, int flags)
 
 	msg = nlmsg_alloc_simple(cmd, flags);
 	if (!msg)
-		goto nla_put_failure;
+		return -NLE_NOMEM;
 
 	if (nlmsg_append(msg, &am, sizeof(am), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
@@ -702,11 +690,12 @@ static struct nl_msg *build_addr_msg(struct rtnl_addr *tmpl, int cmd, int flags)
 	if (tmpl->ce_mask & ADDR_ATTR_ANYCAST)
 		NLA_PUT_ADDR(msg, IFA_ANYCAST, tmpl->a_anycast);
 
-	return msg;
+	*result = msg;
+	return 0;
 
 nla_put_failure:
 	nlmsg_free(msg);
-	return NULL;
+	return -NLE_MSGSIZE;
 }
 
 /**
@@ -718,6 +707,7 @@ nla_put_failure:
  * Build netlink request message to request addition of new address
  * @arg addr		Address object representing the new address.
  * @arg flags		Additional netlink message flags.
+ * @arg result		Pointer to store resulting message.
  *
  * Builds a new netlink message requesting the addition of a new
  * address. The netlink message header isn't fully equipped with
@@ -732,20 +722,19 @@ nla_put_failure:
  * which case a host scope is used if not specified otherwise.
  *
  * @note Free the memory after usage using nlmsg_free().
- * @return Newly allocated netlink message or NULL if an error occured.
+ *
+ * @return 0 on success or a negative error code.
  */
-struct nl_msg *rtnl_addr_build_add_request(struct rtnl_addr *addr, int flags)
+int rtnl_addr_build_add_request(struct rtnl_addr *addr, int flags,
+				struct nl_msg **result)
 {
 	int required = ADDR_ATTR_IFINDEX | ADDR_ATTR_FAMILY |
 		       ADDR_ATTR_PREFIXLEN | ADDR_ATTR_LOCAL;
 
-	if ((addr->ce_mask & required) != required) {
-		nl_error(EINVAL, "Missing mandatory attributes, required are: "
-				 "ifindex, family, prefixlen, local address.");
-		return NULL;
-	}
+	if ((addr->ce_mask & required) != required)
+		return -NLE_MISSING_ATTR;
 	
-	return build_addr_msg(addr, RTM_NEWADDR, NLM_F_CREATE | flags);
+	return build_addr_msg(addr, RTM_NEWADDR, NLM_F_CREATE | flags, result);
 }
 
 /**
@@ -767,9 +756,8 @@ int rtnl_addr_add(struct nl_handle *handle, struct rtnl_addr *addr, int flags)
 	struct nl_msg *msg;
 	int err;
 
-	msg = rtnl_addr_build_add_request(addr, flags);
-	if (!msg)
-		return nl_get_errno();
+	if ((err = rtnl_addr_build_add_request(addr, flags, &msg)) < 0)
+		return err;
 
 	err = nl_send_auto_complete(handle, msg);
 	nlmsg_free(msg);
@@ -790,6 +778,7 @@ int rtnl_addr_add(struct nl_handle *handle, struct rtnl_addr *addr, int flags)
  * Build a netlink request message to request deletion of an address
  * @arg addr		Address object to be deleteted.
  * @arg flags		Additional netlink message flags.
+ * @arg result		Pointer to store resulting message.
  *
  * Builds a new netlink message requesting a deletion of an address.
  * The netlink message header isn't fully equipped with all relevant
@@ -806,19 +795,18 @@ int rtnl_addr_add(struct nl_handle *handle, struct rtnl_addr *addr, int flags)
  *   - peer address (rtnl_addr_set_peer(), IPv4 only)
  *
  * @note Free the memory after usage using nlmsg_free().
- * @return Newly allocated netlink message or NULL if an error occured.
+ *
+ * @return 0 on success or a negative error code.
  */
-struct nl_msg *rtnl_addr_build_delete_request(struct rtnl_addr *addr, int flags)
+int rtnl_addr_build_delete_request(struct rtnl_addr *addr, int flags,
+				   struct nl_msg **result)
 {
 	int required = ADDR_ATTR_IFINDEX | ADDR_ATTR_FAMILY;
 
-	if ((addr->ce_mask & required) != required) {
-		nl_error(EINVAL, "Missing mandatory attributes, required are: "
-				 "ifindex, family");
-		return NULL;
-	}
-	
-	return build_addr_msg(addr, RTM_DELADDR, flags);
+	if ((addr->ce_mask & required) != required)
+		return -NLE_MISSING_ATTR;
+
+	return build_addr_msg(addr, RTM_DELADDR, flags, result);
 }
 
 /**
@@ -841,9 +829,8 @@ int rtnl_addr_delete(struct nl_handle *handle, struct rtnl_addr *addr,
 	struct nl_msg *msg;
 	int err;
 
-	msg = rtnl_addr_build_delete_request(addr, flags);
-	if (!msg)
-		return nl_get_errno();
+	if ((err = rtnl_addr_build_delete_request(addr, flags, &msg)) < 0)
+		return err;
 
 	err = nl_send_auto_complete(handle, msg);
 	nlmsg_free(msg);
@@ -954,7 +941,7 @@ static inline int __assign_addr(struct rtnl_addr *addr, struct nl_addr **pos,
 {
 	if (addr->ce_mask & ADDR_ATTR_FAMILY) {
 		if (new->a_family != addr->a_family)
-			return nl_error(EINVAL, "Address family mismatch");
+			return -NLE_AF_MISMATCH;
 	} else
 		addr->a_family = new->a_family;
 

@@ -39,10 +39,8 @@ struct rtnl_nexthop *rtnl_route_nh_alloc(void)
 	struct rtnl_nexthop *nh;
 
 	nh = calloc(1, sizeof(*nh));
-	if (!nh) {
-		nl_errno(ENOMEM);
+	if (!nh)
 		return NULL;
-	}
 
 	nl_init_list_head(&nh->rtnh_list);
 

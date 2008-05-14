@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -69,11 +69,11 @@ static int netem_msg_parser(struct rtnl_qdisc *qdisc)
 	struct tc_netem_qopt *opts;
 
 	if (qdisc->q_opts->d_size < sizeof(*opts))
-		return nl_error(EINVAL, "Netem specific options size mismatch");
+		return -NLE_INVAL;
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	opts = (struct tc_netem_qopt *) qdisc->q_opts->d_data;
 	netem->qnm_latency = opts->latency;
@@ -202,56 +202,48 @@ int netem_build_msg(struct rtnl_qdisc *qdisc, struct nl_msg *msg)
 	
 	if ( netem->qnm_ro.nmro_probability != 0 ) {
 		if (netem->qnm_latency == 0) {
-			return nl_error(EINVAL,
-				"netem: Specified reorder gap without latency.");
+			return -NLE_MISSING_ATTR;
 		}
 		if (netem->qnm_gap == 0) netem->qnm_gap = 1;
 	}
 	else if ( netem->qnm_gap ) { 
-		return nl_error(EINVAL,
-			"netem: Specified reorder gap without reorder probability.");
+		return -NLE_MISSING_ATTR;
 	}
 
 	if ( netem->qnm_corr.nmc_delay != 0 ) {
 		if ( netem->qnm_latency == 0 || netem->qnm_jitter == 0) {
-			return nl_error(EINVAL,
-				"netem: Specified delay correlation without delay size / jitter.");
+			return -NLE_MISSING_ATTR;
 		}
 		set_correlation = 1;
 	}
 	
 	if ( netem->qnm_corr.nmc_loss != 0 ) {
 		if ( netem->qnm_loss == 0 ) {
-			return nl_error(EINVAL,
-				"netem: Specified loss correlation without loss probability.");
+			return -NLE_MISSING_ATTR;
 		}
 		set_correlation = 1;
 	}
 
 	if ( netem->qnm_corr.nmc_duplicate != 0 ) {
 		if ( netem->qnm_duplicate == 0 ) {
-			return nl_error(EINVAL,
-				"netem: Specified dup correlation without duplication probability.");
+			return -NLE_MISSING_ATTR;
 		}
 		set_correlation = 1;
 	}
 	
 	if ( netem->qnm_ro.nmro_probability != 0 ) set_reorder = 1;
 	else if ( netem->qnm_ro.nmro_correlation != 0 ) {
-			return nl_error(EINVAL,
-				"netem: Specified reorder correlation without reorder probability.");
+			return -NLE_MISSING_ATTR;
 	}
 	
 	if ( netem->qnm_crpt.nmcr_probability != 0 ) set_corrupt = 1;
 	else if ( netem->qnm_crpt.nmcr_correlation != 0 ) {
-			return nl_error(EINVAL,
-				"netem: Specified corrupt correlation without corrupt probability.");
+			return -NLE_MISSING_ATTR;
 	}
 	
 	if ( netem->qnm_dist.dist_data && netem->qnm_dist.dist_size ) {
 		if (netem->qnm_latency == 0 || netem->qnm_jitter == 0) {
-		return nl_error(EINVAL, 
-			"netem: Distribution specified with empty latency and jitter values.");
+			return -NLE_MISSING_ATTR;
 	}
 	else {
 		/* Resize to accomodate the large distribution table */
@@ -260,8 +252,7 @@ int netem_build_msg(struct rtnl_qdisc *qdisc, struct nl_msg *msg)
 		
 		msg->nm_nlh = (struct nlmsghdr *) realloc(msg->nm_nlh, new_msg_len);
 		if ( msg->nm_nlh == NULL )
-			return nl_error(ENOMEM, 
-				"netem: Unable to reallocate message size to contain delay distribution data.");
+			return -NLE_NOMEM;
 		msg->nm_size = new_msg_len;
 			set_dist = 1;
 		}
@@ -274,44 +265,34 @@ int netem_build_msg(struct rtnl_qdisc *qdisc, struct nl_msg *msg)
 	opts.duplicate = netem->qnm_duplicate;
 	opts.jitter = netem->qnm_jitter;
 	
-	err = nla_put(msg, TCA_OPTIONS, sizeof(opts), &opts);
-	if (err)
-		return nl_error(err, "netem: Unable to add TCA_OPTIONS to nl_msg.");
+	NLA_PUT(msg, TCA_OPTIONS, sizeof(opts), &opts);
 	
 	if ( set_correlation ) {
 		cor.delay_corr = netem->qnm_corr.nmc_delay;
 		cor.loss_corr = netem->qnm_corr.nmc_loss;
 		cor.dup_corr = netem->qnm_corr.nmc_duplicate;
 
-		err = nla_put(msg, TCA_NETEM_CORR, sizeof(cor), &cor);
-		if (err)
-			return nl_error(err, "netem: Unable to add TCA_NETEM_CORR to nl_msg.");
+		NLA_PUT(msg, TCA_NETEM_CORR, sizeof(cor), &cor);
 	}
 	
 	if ( set_reorder ) {
 		reorder.probability = netem->qnm_ro.nmro_probability;
 		reorder.correlation = netem->qnm_ro.nmro_correlation;
 
-		err = nla_put(msg, TCA_NETEM_REORDER, sizeof(reorder), &reorder);
-		if (err)
-			return nl_error(err, "netem: Unable to add TCA_NETEM_REORDER to nl_msg.");
+		NLA_PUT(msg, TCA_NETEM_REORDER, sizeof(reorder), &reorder);
 	}
 	
 	if ( set_corrupt ) {
 		corrupt.probability = netem->qnm_crpt.nmcr_probability;
 		corrupt.correlation = netem->qnm_crpt.nmcr_correlation;
 
-		err = nla_put(msg, TCA_NETEM_CORRUPT, sizeof(corrupt), &corrupt);
-		if (err)
-			return nl_error(err, "netem: Unable to add TCA_NETEM_CORRUPT to nl_msg.");
+		NLA_PUT(msg, TCA_NETEM_CORRUPT, sizeof(corrupt), &corrupt);
 	}
 	
 	if ( set_dist ) {
-		err = nla_put(msg, TCA_NETEM_DELAY_DIST,
+		NLA_PUT(msg, TCA_NETEM_DELAY_DIST,
 			netem->qnm_dist.dist_size * sizeof(netem->qnm_dist.dist_data[0]),
 			netem->qnm_dist.dist_data);
-		if (err)
-			return nl_error(err, "netem: Unable to add TCA_NETEM_DELAY_DIST to nl_msg.");
 	}
 
 	/* Length specified in the TCA_OPTIONS section must span the entire
@@ -329,6 +310,8 @@ int netem_build_msg(struct rtnl_qdisc *qdisc, struct nl_msg *msg)
 	msg->nm_nlh->nlmsg_len += (head->nla_len - old_len);
 	
 	return err;
+nla_put_failure:
+	return -NLE_MSGSIZE;
 }
 
 /**
@@ -348,7 +331,7 @@ int rtnl_netem_set_limit(struct rtnl_qdisc *qdisc, int limit)
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 	
 	netem->qnm_limit = limit;
 	netem->qnm_mask |= SCH_NETEM_ATTR_LIMIT;
@@ -369,7 +352,7 @@ int rtnl_netem_get_limit(struct rtnl_qdisc *qdisc)
 	if (netem && (netem->qnm_mask & SCH_NETEM_ATTR_LIMIT))
 		return netem->qnm_limit;
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /** @} */
@@ -391,7 +374,7 @@ int rtnl_netem_set_gap(struct rtnl_qdisc *qdisc, int gap)
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	netem->qnm_gap = gap;
 	netem->qnm_mask |= SCH_NETEM_ATTR_GAP;
@@ -412,7 +395,7 @@ int rtnl_netem_get_gap(struct rtnl_qdisc *qdisc)
 	if (netem && (netem->qnm_mask & SCH_NETEM_ATTR_GAP))
 		return netem->qnm_gap;
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /**
@@ -427,7 +410,7 @@ int rtnl_netem_set_reorder_probability(struct rtnl_qdisc *qdisc, int prob)
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	netem->qnm_ro.nmro_probability = prob;
 	netem->qnm_mask |= SCH_NETEM_ATTR_RO_PROB;
@@ -448,7 +431,7 @@ int rtnl_netem_get_reorder_probability(struct rtnl_qdisc *qdisc)
 	if (netem && (netem->qnm_mask & SCH_NETEM_ATTR_RO_PROB))
 		return netem->qnm_ro.nmro_probability;
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /**
@@ -463,7 +446,7 @@ int rtnl_netem_set_reorder_correlation(struct rtnl_qdisc *qdisc, int prob)
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	netem->qnm_ro.nmro_correlation = prob;
 	netem->qnm_mask |= SCH_NETEM_ATTR_RO_CORR;
@@ -484,7 +467,7 @@ int rtnl_netem_get_reorder_correlation(struct rtnl_qdisc *qdisc)
 	if (netem && (netem->qnm_mask & SCH_NETEM_ATTR_RO_CORR))
 		return netem->qnm_ro.nmro_correlation;
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /** @} */
@@ -506,7 +489,7 @@ int rtnl_netem_set_corruption_probability(struct rtnl_qdisc *qdisc, int prob)
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	netem->qnm_crpt.nmcr_probability = prob;
 	netem->qnm_mask |= SCH_NETEM_ATTR_CORRUPT_PROB;
@@ -527,7 +510,7 @@ int rtnl_netem_get_corruption_probability(struct rtnl_qdisc *qdisc)
 	if (netem && (netem->qnm_mask & SCH_NETEM_ATTR_CORRUPT_PROB))
 		return netem->qnm_crpt.nmcr_probability;
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /**
@@ -542,7 +525,7 @@ int rtnl_netem_set_corruption_correlation(struct rtnl_qdisc *qdisc, int prob)
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	netem->qnm_crpt.nmcr_correlation = prob;
 	netem->qnm_mask |= SCH_NETEM_ATTR_CORRUPT_CORR;
@@ -563,7 +546,7 @@ int rtnl_netem_get_corruption_correlation(struct rtnl_qdisc *qdisc)
 	if (netem && (netem->qnm_mask & SCH_NETEM_ATTR_CORRUPT_CORR))
 		return netem->qnm_crpt.nmcr_correlation;
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /** @} */
@@ -585,7 +568,7 @@ int rtnl_netem_set_loss(struct rtnl_qdisc *qdisc, int prob)
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	netem->qnm_loss = prob;
 	netem->qnm_mask |= SCH_NETEM_ATTR_LOSS;
@@ -606,7 +589,7 @@ int rtnl_netem_get_loss(struct rtnl_qdisc *qdisc)
 	if (netem && (netem->qnm_mask & SCH_NETEM_ATTR_LOSS))
 		return netem->qnm_loss;
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /**
@@ -621,7 +604,7 @@ int rtnl_netem_set_loss_correlation(struct rtnl_qdisc *qdisc, int prob)
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	netem->qnm_corr.nmc_loss = prob;
 	netem->qnm_mask |= SCH_NETEM_ATTR_LOSS_CORR;
@@ -642,7 +625,7 @@ int rtnl_netem_get_loss_correlation(struct rtnl_qdisc *qdisc)
 	if (netem && (netem->qnm_mask & SCH_NETEM_ATTR_LOSS_CORR))
 		return netem->qnm_corr.nmc_loss;
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /** @} */
@@ -664,7 +647,7 @@ int rtnl_netem_set_duplicate(struct rtnl_qdisc *qdisc, int prob)
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	netem->qnm_duplicate = prob;
 	netem->qnm_mask |= SCH_NETEM_ATTR_DUPLICATE;
@@ -685,7 +668,7 @@ int rtnl_netem_get_duplicate(struct rtnl_qdisc *qdisc)
 	if (netem && (netem->qnm_mask & SCH_NETEM_ATTR_DUPLICATE))
 		return netem->qnm_duplicate;
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /**
@@ -700,7 +683,7 @@ int rtnl_netem_set_duplicate_correlation(struct rtnl_qdisc *qdisc, int prob)
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	netem->qnm_corr.nmc_duplicate = prob;
 	netem->qnm_mask |= SCH_NETEM_ATTR_DUP_CORR;
@@ -721,7 +704,7 @@ int rtnl_netem_get_duplicate_correlation(struct rtnl_qdisc *qdisc)
 	if (netem && (netem->qnm_mask & SCH_NETEM_ATTR_DUP_CORR))
 		return netem->qnm_corr.nmc_duplicate;
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /** @} */
@@ -743,7 +726,7 @@ int rtnl_netem_set_delay(struct rtnl_qdisc *qdisc, int delay)
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	netem->qnm_latency = nl_us2ticks(delay);
 	netem->qnm_mask |= SCH_NETEM_ATTR_LATENCY;
@@ -764,7 +747,7 @@ int rtnl_netem_get_delay(struct rtnl_qdisc *qdisc)
 	if (netem && (netem->qnm_mask & SCH_NETEM_ATTR_LATENCY))
 		return nl_ticks2us(netem->qnm_latency);
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /**
@@ -779,7 +762,7 @@ int rtnl_netem_set_jitter(struct rtnl_qdisc *qdisc, int jitter)
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	netem->qnm_jitter = nl_us2ticks(jitter);
 	netem->qnm_mask |= SCH_NETEM_ATTR_JITTER;
@@ -800,7 +783,7 @@ int rtnl_netem_get_jitter(struct rtnl_qdisc *qdisc)
 	if (netem && (netem->qnm_mask & SCH_NETEM_ATTR_JITTER))
 		return nl_ticks2us(netem->qnm_jitter);
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /**
@@ -814,7 +797,7 @@ int rtnl_netem_set_delay_correlation(struct rtnl_qdisc *qdisc, int prob)
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	netem->qnm_corr.nmc_delay = prob;
 	netem->qnm_mask |= SCH_NETEM_ATTR_DELAY_CORR;
@@ -835,7 +818,7 @@ int rtnl_netem_get_delay_correlation(struct rtnl_qdisc *qdisc)
 	if (netem && (netem->qnm_mask & SCH_NETEM_ATTR_DELAY_CORR))
 		return netem->qnm_corr.nmc_delay;
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /**
@@ -851,7 +834,7 @@ int rtnl_netem_get_delay_distribution_size(struct rtnl_qdisc *qdisc)
 	if (netem && (netem->qnm_mask & SCH_NETEM_ATTR_DIST))
 		return netem->qnm_dist.dist_size;
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /**
@@ -870,7 +853,7 @@ int rtnl_netem_get_delay_distribution(struct rtnl_qdisc *qdisc, int16_t **dist_p
 		return 0;
 	}
 	else
-		return nl_errno(ENOENT);
+		return -NLE_NOATTR;
 }
 
 /**
@@ -884,7 +867,7 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 
 	netem = netem_alloc(qdisc);
 	if (!netem)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 		
 	FILE *f = NULL;
 	int i, n = 0;
@@ -906,7 +889,8 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 		f = fopen(name, "r");
 	}
 	
-	if ( f == NULL ) return nl_error(errno, "netem: Unable to open distribution file.");
+	if ( f == NULL )
+		return -nl_syserr2nlerr(errno);
 	
 	netem->qnm_dist.dist_data = (int16_t *) calloc (MAXDIST, sizeof(int16_t));
 	
@@ -925,7 +909,7 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 			if (n >= MAXDIST) {
 				free(line);
 				fclose(f);
-				return nl_error(EINVAL,	"netem: Distribution file too long.");
+				return -NLE_INVAL;
 			}
 			netem->qnm_dist.dist_data[n++] = x;
 		}		

@@ -33,8 +33,8 @@ static int route_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct rtnl_route *route;
 	int err;
 
-	if (!(route = rtnl_route_parse(nlh)))
-		return -EINVAL;
+	if ((err = rtnl_route_parse(nlh, &route)) < 0)
+		return err;
 
 	if ((err = pp->pp_cb((struct nl_object *) route, pp)) < 0)
 		goto errout;
@@ -76,24 +76,25 @@ static int route_request_update(struct nl_cache *c, struct nl_handle *h)
  *       cache after using it.
  * @return The cache or NULL if an error has occured.
  */
-struct nl_cache *rtnl_route_alloc_cache(struct nl_handle *handle,
-					int family, int flags)
+int rtnl_route_alloc_cache(struct nl_handle *handle, int family, int flags,
+			   struct nl_cache **result)
 {
 	struct nl_cache *cache;
+	int err;
 
-	cache = nl_cache_alloc(&rtnl_route_ops);
-	if (!cache)
-		return NULL;
+	if (!(cache = nl_cache_alloc(&rtnl_route_ops)))
+		return -NLE_NOMEM;
 
 	cache->c_iarg1 = family;
 	cache->c_iarg2 = flags;
 
-	if (handle && nl_cache_refill(handle, cache) < 0) {
+	if (handle && (err = nl_cache_refill(handle, cache)) < 0) {
 		free(cache);
-		return NULL;
+		return err;
 	}
 
-	return cache;
+	*result = cache;
+	return 0;
 }
 
 /** @} */
@@ -103,26 +104,29 @@ struct nl_cache *rtnl_route_alloc_cache(struct nl_handle *handle,
  * @{
  */
 
-static struct nl_msg *build_route_msg(struct rtnl_route *tmpl, int cmd,
-				      int flags)
+static int build_route_msg(struct rtnl_route *tmpl, int cmd, int flags,
+			   struct nl_msg **result)
 {
 	struct nl_msg *msg;
+	int err;
 
-	msg = nlmsg_alloc_simple(cmd, flags);
-	if (msg == NULL)
-		return NULL;
+	if (!(msg = nlmsg_alloc_simple(cmd, flags)))
+		return -NLE_NOMEM;
 
-	if (rtnl_route_build_msg(msg, tmpl) < 0) {
+	if ((err = rtnl_route_build_msg(msg, tmpl)) < 0) {
 		nlmsg_free(msg);
-		return NULL;
+		return err;
 	}
 
-	return msg;
+	*result = msg;
+	return 0;
 }
 
-struct nl_msg *rtnl_route_build_add_request(struct rtnl_route *tmpl, int flags)
+int rtnl_route_build_add_request(struct rtnl_route *tmpl, int flags,
+				 struct nl_msg **result)
 {
-	return build_route_msg(tmpl, RTM_NEWROUTE, NLM_F_CREATE | flags);
+	return build_route_msg(tmpl, RTM_NEWROUTE, NLM_F_CREATE | flags,
+			       result);
 }
 
 int rtnl_route_add(struct nl_handle *handle, struct rtnl_route *route,
@@ -131,9 +135,8 @@ int rtnl_route_add(struct nl_handle *handle, struct rtnl_route *route,
 	struct nl_msg *msg;
 	int err;
 
-	msg = rtnl_route_build_add_request(route, flags);
-	if (!msg)
-		return nl_get_errno();
+	if ((err = rtnl_route_build_add_request(route, flags, &msg)) < 0)
+		return err;
 
 	err = nl_send_auto_complete(handle, msg);
 	nlmsg_free(msg);
@@ -143,9 +146,10 @@ int rtnl_route_add(struct nl_handle *handle, struct rtnl_route *route,
 	return nl_wait_for_ack(handle);
 }
 
-struct nl_msg *rtnl_route_build_del_request(struct rtnl_route *tmpl, int flags)
+int rtnl_route_build_del_request(struct rtnl_route *tmpl, int flags,
+				 struct nl_msg **result)
 {
-	return build_route_msg(tmpl, RTM_DELROUTE, flags);
+	return build_route_msg(tmpl, RTM_DELROUTE, flags, result);
 }
 
 int rtnl_route_delete(struct nl_handle *handle, struct rtnl_route *route,
@@ -154,9 +158,8 @@ int rtnl_route_delete(struct nl_handle *handle, struct rtnl_route *route,
 	struct nl_msg *msg;
 	int err;
 
-	msg = rtnl_route_build_del_request(route, flags);
-	if (!msg)
-		return nl_get_errno();
+	if ((err = rtnl_route_build_del_request(route, flags, &msg)) < 0)
+		return err;
 
 	err = nl_send_auto_complete(handle, msg);
 	nlmsg_free(msg);

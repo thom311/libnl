@@ -400,7 +400,7 @@ int nfnl_queue_msg_set_payload(struct nfnl_queue_msg *msg, uint8_t *payload,
 	free(msg->queue_msg_payload);
 	msg->queue_msg_payload = malloc(len);
 	if (!msg->queue_msg_payload)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	memcpy(msg->queue_msg_payload, payload, len);
 	msg->queue_msg_payload_len = len;

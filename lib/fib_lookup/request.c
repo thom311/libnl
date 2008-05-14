@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -48,11 +48,9 @@ static int request_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	if (src->lr_addr)
 		if (!(dst->lr_addr = nl_addr_clone(src->lr_addr)))
-			goto errout;
+			return -NLE_NOMEM;
 
 	return 0;
-errout:
-	return nl_get_errno();
 }
 
 static int request_compare(struct nl_object *_a, struct nl_object *_b,
@@ -152,7 +150,7 @@ int flnl_request_get_table(struct flnl_request *req)
 int flnl_request_set_addr(struct flnl_request *req, struct nl_addr *addr)
 {
 	if (addr->a_family != AF_INET)
-		return nl_error(EINVAL, "Address must be an IPv4 address");
+		return -NLE_AF_NOSUPPORT;
 
 	if (req->lr_addr)
 		nl_addr_put(req->lr_addr);

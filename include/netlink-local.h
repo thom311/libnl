@@ -81,42 +81,8 @@ struct trans_list {
 		assert(0);	\
 	} while (0)
 
-#define RET_ERR(R, E)                    \
-    do {                                 \
-		errno = E;                       \
-		return -R;                       \
-	} while (0)
-
-extern int __nl_error(int, const char *, unsigned int,
-	const char *, const char *, ...);
-
 extern int __nl_read_num_str_file(const char *path,
 				  int (*cb)(long, const char *));
-
-#ifdef NL_ERROR_ASSERT
-#include <assert.h>
-static inline int __assert_error(const char *file, int line, char *func,
-	const char *fmt, ...)
-{
-	va_list args;
-	fprintf(stderr, "%s:%d:%s: ", file, line, func);
-	va_start(args, fmt);
-	vfprintf(stderr, fmt, args);
-	va_end(args);
-	fprintf(stderr, "\n");
-	assert(0);
-	return 0;
-}
-#define nl_error(E, FMT,ARG...) \
-	__assert_error(__FILE__, __LINE__, __FUNCTION__, FMT, ##ARG)
-
-#else
-#define nl_error(E, FMT,ARG...) \
-	__nl_error(E, __FILE__, __LINE__, __FUNCTION__, FMT, ##ARG)
-
-#endif
-
-#define nl_errno(E)	nl_error(E, NULL)
 
 /* backwards compat */
 #define dp_new_line(params, line)	nl_new_line(params)
@@ -129,7 +95,7 @@ static inline int __trans_list_add(int i, const char *a,
 
 	tl = calloc(1, sizeof(*tl));
 	if (!tl)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	tl->i = i;
 	tl->a = strdup(a);

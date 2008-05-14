@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -166,10 +166,8 @@ static struct nl_handle *__alloc_handle(struct nl_cb *cb)
 	struct nl_handle *handle;
 
 	handle = calloc(1, sizeof(*handle));
-	if (!handle) {
-		nl_errno(ENOMEM);
+	if (!handle)
 		return NULL;
-	}
 
 	handle->h_fd = -1;
 	handle->h_cb = cb;
@@ -179,7 +177,6 @@ static struct nl_handle *__alloc_handle(struct nl_cb *cb)
 	handle->h_local.nl_pid = generate_local_port();
 	if (handle->h_local.nl_pid == UINT_MAX) {
 		nl_handle_destroy(handle);
-		nl_error(ENOBUFS, "Out of local ports");
 		return NULL;
 	}
 
@@ -196,10 +193,8 @@ struct nl_handle *nl_handle_alloc(void)
 	struct nl_cb *cb;
 	
 	cb = nl_cb_alloc(default_cb);
-	if (!cb) {
-		nl_errno(ENOMEM);
+	if (!cb)
 		return NULL;
-	}
 
 	return __alloc_handle(cb);
 }
@@ -345,13 +340,12 @@ int nl_socket_add_membership(struct nl_handle *handle, int group)
 	int err;
 
 	if (handle->h_fd == -1)
-		return nl_error(EBADFD, "Socket not connected");
+		return -NLE_BAD_SOCK;
 
 	err = setsockopt(handle->h_fd, SOL_NETLINK, NETLINK_ADD_MEMBERSHIP,
 			 &group, sizeof(group));
 	if (err < 0)
-		return nl_error(errno, "setsockopt(NETLINK_ADD_MEMBERSHIP) "
-				       "failed");
+		return -nl_syserr2nlerr(errno);
 
 	return 0;
 }
@@ -372,13 +366,12 @@ int nl_socket_drop_membership(struct nl_handle *handle, int group)
 	int err;
 
 	if (handle->h_fd == -1)
-		return nl_error(EBADFD, "Socket not connected");
+		return -NLE_BAD_SOCK;
 
 	err = setsockopt(handle->h_fd, SOL_NETLINK, NETLINK_DROP_MEMBERSHIP,
 			 &group, sizeof(group));
 	if (err < 0)
-		return nl_error(errno, "setsockopt(NETLINK_DROP_MEMBERSHIP) "
-				       "failed");
+		return -nl_syserr2nlerr(errno);
 
 	return 0;
 }
@@ -436,10 +429,10 @@ int nl_socket_get_fd(struct nl_handle *handle)
 int nl_socket_set_nonblocking(struct nl_handle *handle)
 {
 	if (handle->h_fd == -1)
-		return nl_error(EBADFD, "Socket not connected");
+		return -NLE_BAD_SOCK;
 
 	if (fcntl(handle->h_fd, F_SETFL, O_NONBLOCK) < 0)
-		return nl_error(errno, "fcntl(F_SETFL, O_NONBLOCK) failed");
+		return -nl_syserr2nlerr(errno);
 
 	return 0;
 }
@@ -528,17 +521,17 @@ int nl_set_buffer_size(struct nl_handle *handle, int rxbuf, int txbuf)
 		txbuf = 32768;
 
 	if (handle->h_fd == -1)
-		return nl_error(EBADFD, "Socket not connected");
+		return -NLE_BAD_SOCK;
 	
 	err = setsockopt(handle->h_fd, SOL_SOCKET, SO_SNDBUF,
 			 &txbuf, sizeof(txbuf));
 	if (err < 0)
-		return nl_error(errno, "setsockopt(SO_SNDBUF) failed");
+		return -nl_syserr2nlerr(errno);
 
 	err = setsockopt(handle->h_fd, SOL_SOCKET, SO_RCVBUF,
 			 &rxbuf, sizeof(rxbuf));
 	if (err < 0)
-		return nl_error(errno, "setsockopt(SO_RCVBUF) failed");
+		return -nl_syserr2nlerr(errno);
 
 	handle->h_flags |= NL_SOCK_BUFSIZE_SET;
 
@@ -557,12 +550,12 @@ int nl_set_passcred(struct nl_handle *handle, int state)
 	int err;
 
 	if (handle->h_fd == -1)
-		return nl_error(EBADFD, "Socket not connected");
+		return -NLE_BAD_SOCK;
 
 	err = setsockopt(handle->h_fd, SOL_SOCKET, SO_PASSCRED,
 			 &state, sizeof(state));
 	if (err < 0)
-		return nl_error(errno, "setsockopt(SO_PASSCRED) failed");
+		return -nl_syserr2nlerr(errno);
 
 	if (state)
 		handle->h_flags |= NL_SOCK_PASSCRED;
@@ -584,12 +577,12 @@ int nl_socket_recv_pktinfo(struct nl_handle *handle, int state)
 	int err;
 
 	if (handle->h_fd == -1)
-		return nl_error(EBADFD, "Socket not connected");
+		return -NLE_BAD_SOCK;
 
 	err = setsockopt(handle->h_fd, SOL_NETLINK, NETLINK_PKTINFO,
 			 &state, sizeof(state));
 	if (err < 0)
-		return nl_error(errno, "setsockopt(NETLINK_PKTINFO) failed");
+		return -nl_syserr2nlerr(errno);
 
 	return 0;
 }

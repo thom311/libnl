@@ -58,7 +58,8 @@ static struct nla_policy queue_policy[NFQA_MAX+1] = {
 	},
 };
 
-struct nfnl_queue_msg *nfnlmsg_queue_msg_parse(struct nlmsghdr *nlh)
+int nfnlmsg_queue_msg_parse(struct nlmsghdr *nlh,
+			    struct nfnl_queue_msg **result)
 {
 	struct nfnl_queue_msg *msg;
 	struct nlattr *tb[NFQA_MAX+1];
@@ -67,7 +68,7 @@ struct nfnl_queue_msg *nfnlmsg_queue_msg_parse(struct nlmsghdr *nlh)
 
 	msg = nfnl_queue_msg_alloc();
 	if (!msg)
-		return NULL;
+		return -NLE_NOMEM;
 
 	msg->ce_msgtype = nlh->nlmsg_type;
 
@@ -135,11 +136,12 @@ struct nfnl_queue_msg *nfnlmsg_queue_msg_parse(struct nlmsghdr *nlh)
 			goto errout;
 	}
 
-	return msg;
+	*result = msg;
+	return 0;
 
 errout:
 	nfnl_queue_msg_put(msg);
-	return NULL;
+	return err;
 }
 
 static int queue_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
@@ -148,9 +150,8 @@ static int queue_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct nfnl_queue_msg *msg;
 	int err;
 
-	msg = nfnlmsg_queue_msg_parse(nlh);
-	if (msg == NULL)
-		goto errout_errno;
+	if ((err = nfnlmsg_queue_msg_parse(nlh, &msg)) < 0)
+		goto errout;
 
 	err = pp->pp_cb((struct nl_object *) msg, pp);
 	if (err < 0)
@@ -161,10 +162,6 @@ static int queue_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 errout:
 	nfnl_queue_msg_put(msg);
 	return err;
-
-errout_errno:
-	err = nl_get_errno();
-	goto errout;
 }
 
 /** @} */
@@ -205,7 +202,7 @@ int nfnl_queue_msg_send_verdict(struct nl_handle *nlh,
 
 	nlmsg = nfnl_queue_msg_build_verdict(msg);
 	if (nlmsg == NULL)
-		return nl_errno(ENOMEM);
+		return -NLE_NOMEM;
 
 	err = nl_send_auto_complete(nlh, nlmsg);
 	nlmsg_free(nlmsg);

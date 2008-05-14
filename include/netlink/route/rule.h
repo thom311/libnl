@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_RULE_H_
@@ -27,14 +27,15 @@ struct rtnl_rule;
 extern struct rtnl_rule *	rtnl_rule_alloc(void);
 extern void			rtnl_rule_put(struct rtnl_rule *);
 
-extern struct nl_cache * rtnl_rule_alloc_cache(struct nl_handle *);
-extern struct nl_cache * rtnl_rule_alloc_cache_by_family(struct nl_handle *,
-							 int);
+extern int	rtnl_rule_alloc_cache(struct nl_handle *, int,
+				      struct nl_cache **);
 extern void rtnl_rule_dump(struct rtnl_rule *, FILE *, struct nl_dump_params *);
 
-extern struct nl_msg * rtnl_rule_build_add_request(struct rtnl_rule *, int);
+extern int	rtnl_rule_build_add_request(struct rtnl_rule *, int,
+					    struct nl_msg **);
 extern int rtnl_rule_add(struct nl_handle *, struct rtnl_rule *, int);
-extern struct nl_msg * rtnl_rule_build_delete_request(struct rtnl_rule *, int);
+extern int	rtnl_rule_build_delete_request(struct rtnl_rule *, int,
+					       struct nl_msg **);
 extern int rtnl_rule_delete(struct nl_handle *, struct rtnl_rule *, int);
 
 

@@ -42,7 +42,7 @@ extern int	rtnl_addr_delete(struct nl_handle *,
 extern char *	rtnl_addr_flags2str(int, char *, size_t);
 extern int	rtnl_addr_str2flags(const char *);
 
-extern void	rtnl_addr_set_label(struct rtnl_addr *, const char *);
+extern int	rtnl_addr_set_label(struct rtnl_addr *, const char *);
 extern char *	rtnl_addr_get_label(struct rtnl_addr *);
 
 extern void	rtnl_addr_set_ifindex(struct rtnl_addr *, int);

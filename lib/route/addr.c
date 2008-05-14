@@ -850,10 +850,15 @@ int rtnl_addr_delete(struct nl_handle *handle, struct rtnl_addr *addr,
  * @{
  */
 
-void rtnl_addr_set_label(struct rtnl_addr *addr, const char *label)
+int rtnl_addr_set_label(struct rtnl_addr *addr, const char *label)
 {
-	strncpy(addr->a_label, label, sizeof(addr->a_label) - 1);
+	if (strlen(label) > sizeof(addr->a_label) - 1)
+		return -NLE_RANGE;
+
+	strcpy(addr->a_label, label);
 	addr->ce_mask |= ADDR_ATTR_LABEL;
+
+	return 0;
 }
 
 char *rtnl_addr_get_label(struct rtnl_addr *addr)

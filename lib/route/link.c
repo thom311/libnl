@@ -1092,11 +1092,11 @@ char * rtnl_link_i2name(struct nl_cache *cache, int ifindex, char *dst,
  * @arg cache		link cache
  * @arg name		link name
  *
- * @return interface index or RTNL_LINK_NOT_FOUND if no match was found.
+ * @return interface index or 0 if no match was found.
  */
 int rtnl_link_name2i(struct nl_cache *cache, const char *name)
 {
-	int ifindex = RTNL_LINK_NOT_FOUND;
+	int ifindex = 0;
 	struct rtnl_link *link;
 	
 	link = rtnl_link_get_by_name(cache, name);
@@ -1366,10 +1366,7 @@ void rtnl_link_set_ifindex(struct rtnl_link *link, int ifindex)
 
 int rtnl_link_get_ifindex(struct rtnl_link *link)
 {
-	if (link->ce_mask & LINK_ATTR_IFINDEX)
-		return link->l_index;
-	else
-		return RTNL_LINK_NOT_FOUND;
+	return link->l_index;
 }
 
 void rtnl_link_set_mtu(struct rtnl_link *link, unsigned int mtu)
@@ -1422,10 +1419,7 @@ void rtnl_link_set_link(struct rtnl_link *link, int ifindex)
 
 int rtnl_link_get_link(struct rtnl_link *link)
 {
-	if (link->ce_mask & LINK_ATTR_LINK)
-		return link->l_link;
-	else
-		return RTNL_LINK_NOT_FOUND;
+	return link->l_link;
 }
 
 void rtnl_link_set_master(struct rtnl_link *link, int ifindex)
@@ -1436,10 +1430,7 @@ void rtnl_link_set_master(struct rtnl_link *link, int ifindex)
 
 int rtnl_link_get_master(struct rtnl_link *link)
 {
-	if (link->ce_mask & LINK_ATTR_MASTER)
-		return link->l_master;
-	else
-		return RTNL_LINK_NOT_FOUND;
+	return link->l_master;
 }
 
 void rtnl_link_set_operstate(struct rtnl_link *link, uint8_t operstate)

@@ -274,10 +274,7 @@ void tca_set_ifindex(struct rtnl_tca *t, int ifindex)
 
 int tca_get_ifindex(struct rtnl_tca *t)
 {
-	if (t->ce_mask & TCA_ATTR_IFINDEX)
-		return t->tc_ifindex;
-	else
-		return RTNL_LINK_NOT_FOUND;
+	return t->tc_ifindex;
 }
 
 void tca_set_handle(struct rtnl_tca *t, uint32_t handle)

@@ -872,10 +872,7 @@ void rtnl_addr_set_ifindex(struct rtnl_addr *addr, int ifindex)
 
 int rtnl_addr_get_ifindex(struct rtnl_addr *addr)
 {
-	if (addr->ce_mask & ADDR_ATTR_IFINDEX)
-		return addr->a_ifindex;
-	else
-		return RTNL_LINK_NOT_FOUND;
+	return addr->a_ifindex;
 }
 
 void rtnl_addr_set_family(struct rtnl_addr *addr, int family)
@@ -886,10 +883,7 @@ void rtnl_addr_set_family(struct rtnl_addr *addr, int family)
 
 int rtnl_addr_get_family(struct rtnl_addr *addr)
 {
-	if (addr->ce_mask & ADDR_ATTR_FAMILY)
-		return addr->a_family;
-	else
-		return AF_UNSPEC;
+	return addr->a_family;
 }
 
 void rtnl_addr_set_prefixlen(struct rtnl_addr *addr, int prefix)

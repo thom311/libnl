@@ -883,10 +883,7 @@ void rtnl_neigh_set_ifindex(struct rtnl_neigh *neigh, int ifindex)
 
 int rtnl_neigh_get_ifindex(struct rtnl_neigh *neigh)
 {
-	if (neigh->ce_mask & NEIGH_ATTR_IFINDEX)
-		return neigh->n_ifindex;
-	else
-		return RTNL_LINK_NOT_FOUND;
+	return neigh->n_ifindex;
 }
 
 static inline int __assign_addr(struct rtnl_neigh *neigh, struct nl_addr **pos,

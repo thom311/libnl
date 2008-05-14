@@ -51,12 +51,6 @@ enum rtnl_link_st {
 
 #define RTNL_LINK_STATS_MAX (__RTNL_LINK_STATS_MAX - 1)
 
-/**
- * Special interface index stating the link was not found.
- * @ingroup link
- */
-#define RTNL_LINK_NOT_FOUND -1
-
 /* link object allocation/freeage */
 extern struct rtnl_link *rtnl_link_alloc(void);
 extern void	rtnl_link_put(struct rtnl_link *);

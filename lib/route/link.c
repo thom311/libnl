@@ -330,18 +330,23 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	}
 
 	if (tb[IFLA_ADDRESS]) {
-		link->l_addr = nla_get_addr(tb[IFLA_ADDRESS], AF_UNSPEC);
-		if (link->l_addr == NULL)
+		link->l_addr = nl_addr_alloc_attr(tb[IFLA_ADDRESS], AF_UNSPEC);
+		if (link->l_addr == NULL) {
+			err = -NLE_NOMEM;
 			goto errout;
+		}
 		nl_addr_set_family(link->l_addr,
 				   nl_addr_guess_family(link->l_addr));
 		link->ce_mask |= LINK_ATTR_ADDR;
 	}
 
 	if (tb[IFLA_BROADCAST]) {
-		link->l_bcast = nla_get_addr(tb[IFLA_BROADCAST], AF_UNSPEC);
-		if (link->l_bcast == NULL)
+		link->l_bcast = nl_addr_alloc_attr(tb[IFLA_BROADCAST],
+						   AF_UNSPEC);
+		if (link->l_bcast == NULL) {
+			err = -NLE_NOMEM;
 			goto errout;
+		}
 		nl_addr_set_family(link->l_bcast,
 				   nl_addr_guess_family(link->l_bcast));
 		link->ce_mask |= LINK_ATTR_BRD;

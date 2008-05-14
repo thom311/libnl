@@ -71,14 +71,14 @@ static int fw_msg_parser(struct rtnl_cls *cls)
 	}
 
 	if (tb[TCA_FW_ACT]) {
-		f->cf_act = nla_get_data(tb[TCA_FW_ACT]);
+		f->cf_act = nl_data_alloc_attr(tb[TCA_FW_ACT]);
 		if (!f->cf_act)
 			return -NLE_NOMEM;
 		f->cf_mask |= FW_ATTR_ACTION;
 	}
 
 	if (tb[TCA_FW_POLICE]) {
-		f->cf_police = nla_get_data(tb[TCA_FW_POLICE]);
+		f->cf_police = nl_data_alloc_attr(tb[TCA_FW_POLICE]);
 		if (!f->cf_police)
 			return -NLE_NOMEM;
 		f->cf_mask |= FW_ATTR_POLICE;

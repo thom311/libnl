@@ -113,36 +113,36 @@ static int ct_parse_ip(struct nfnl_ct *ct, int repl, struct nlattr *attr)
 		goto errout;
 
 	if (tb[CTA_IP_V4_SRC]) {
-		addr = nla_get_addr(tb[CTA_IP_V4_SRC], AF_INET);
+		addr = nl_addr_alloc_attr(tb[CTA_IP_V4_SRC], AF_INET);
 		if (addr == NULL)
-			goto errout_errno;
+			goto errout_enomem;
 		err = nfnl_ct_set_src(ct, repl, addr);
 		nl_addr_put(addr);
 		if (err < 0)
 			goto errout;
 	}
 	if (tb[CTA_IP_V4_DST]) {
-		addr = nla_get_addr(tb[CTA_IP_V4_DST], AF_INET);
+		addr = nl_addr_alloc_attr(tb[CTA_IP_V4_DST], AF_INET);
 		if (addr == NULL)
-			goto errout_errno;
+			goto errout_enomem;
 		err = nfnl_ct_set_dst(ct, repl, addr);
 		nl_addr_put(addr);
 		if (err < 0)
 			goto errout;
 	}
 	if (tb[CTA_IP_V6_SRC]) {
-		addr = nla_get_addr(tb[CTA_IP_V6_SRC], AF_INET6);
+		addr = nl_addr_alloc_attr(tb[CTA_IP_V6_SRC], AF_INET6);
 		if (addr == NULL)
-			goto errout_errno;
+			goto errout_enomem;
 		err = nfnl_ct_set_src(ct, repl, addr);
 		nl_addr_put(addr);
 		if (err < 0)
 			goto errout;
 	}
 	if (tb[CTA_IP_V6_DST]) {
-		addr = nla_get_addr(tb[CTA_IP_V6_DST], AF_INET6);
+		addr = nl_addr_alloc_attr(tb[CTA_IP_V6_DST], AF_INET6);
 		if (addr == NULL)
-			goto errout_errno;
+			goto errout_enomem;
 		err = nfnl_ct_set_dst(ct, repl, addr);
 		nl_addr_put(addr);
 		if (err < 0)
@@ -151,7 +151,7 @@ static int ct_parse_ip(struct nfnl_ct *ct, int repl, struct nlattr *attr)
 
 	return 0;
 
-errout_errno:
+errout_enomem:
 	err = -NLE_NOMEM;
 errout:
 	return err;

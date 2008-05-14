@@ -187,21 +187,20 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct rtnl_addr *addr;
 	struct ifaddrmsg *ifa;
 	struct nlattr *tb[IFA_MAX+1];
-	int err, peer_prefix = 0;
+	int err, peer_prefix = 0, family;
 
 	addr = rtnl_addr_alloc();
-	if (!addr) {
-		err = -NLE_NOMEM;
-		goto errout;
-	}
+	if (!addr)
+		return -NLE_NOMEM;
+
 	addr->ce_msgtype = nlh->nlmsg_type;
 
 	err = nlmsg_parse(nlh, sizeof(*ifa), tb, IFA_MAX, addr_policy);
 	if (err < 0)
-		goto errout_free;
+		goto errout;
 
 	ifa = nlmsg_data(nlh);
-	addr->a_family = ifa->ifa_family;
+	addr->a_family = family = ifa->ifa_family;
 	addr->a_prefixlen = ifa->ifa_prefixlen;
 	addr->a_flags = ifa->ifa_flags;
 	addr->a_scope = ifa->ifa_scope;
@@ -227,18 +226,18 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	}
 
 	if (tb[IFA_LOCAL]) {
-		addr->a_local = nla_get_addr(tb[IFA_LOCAL], addr->a_family);
+		addr->a_local = nl_addr_alloc_attr(tb[IFA_LOCAL], family);
 		if (!addr->a_local)
-			goto errout_free;
+			goto errout_nomem;
 		addr->ce_mask |= ADDR_ATTR_LOCAL;
 	}
 
 	if (tb[IFA_ADDRESS]) {
 		struct nl_addr *a;
 
-		a = nla_get_addr(tb[IFA_ADDRESS], addr->a_family);
+		a = nl_addr_alloc_attr(tb[IFA_ADDRESS], family);
 		if (!a)
-			goto errout_free;
+			goto errout_nomem;
 
 		/* IPv6 sends the local address as IFA_ADDRESS with
 		 * no IFA_LOCAL, IPv4 sends both IFA_LOCAL and IFA_ADDRESS
@@ -258,40 +257,44 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			      addr->a_prefixlen);
 
 	if (tb[IFA_BROADCAST]) {
-		addr->a_bcast = nla_get_addr(tb[IFA_BROADCAST], addr->a_family);
+		addr->a_bcast = nl_addr_alloc_attr(tb[IFA_BROADCAST], family);
 		if (!addr->a_bcast)
-			goto errout_free;
+			goto errout_nomem;
 
 		addr->ce_mask |= ADDR_ATTR_BROADCAST;
 	}
 
 	if (tb[IFA_ANYCAST]) {
-		addr->a_anycast = nla_get_addr(tb[IFA_ANYCAST], addr->a_family);
+		addr->a_anycast = nl_addr_alloc_attr(tb[IFA_ANYCAST], family);
 		if (!addr->a_anycast)
-			goto errout_free;
+			goto errout_nomem;
 
 		addr->ce_mask |= ADDR_ATTR_ANYCAST;
 	}
 
 	if (tb[IFA_MULTICAST]) {
-		addr->a_multicast = nla_get_addr(tb[IFA_MULTICAST],
-						 addr->a_family);
+		addr->a_multicast = nl_addr_alloc_attr(tb[IFA_MULTICAST],
+						       family);
 		if (!addr->a_multicast)
-			goto errout_free;
+			goto errout_nomem;
 
 		addr->ce_mask |= ADDR_ATTR_MULTICAST;
 	}
 
 	err = pp->pp_cb((struct nl_object *) addr, pp);
 	if (err < 0)
-		goto errout_free;
+		goto errout;
 
 	err = P_ACCEPT;
 
-errout_free:
-	rtnl_addr_put(addr);
 errout:
+	rtnl_addr_put(addr);
+
 	return err;
+
+errout_nomem:
+	err = -NLE_NOMEM;
+	goto errout;
 }
 
 static int addr_request_update(struct nl_cache *cache, struct nl_handle *handle)

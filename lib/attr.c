@@ -867,12 +867,6 @@ int nla_put_data(struct nl_msg *msg, int attrtype, struct nl_data *data)
 		       nl_data_get(data));
 }
 
-/* FIXME: Remove in 1.2 */
-struct nl_data * nla_get_data(struct nlattr *nla)
-{
-	return nl_data_alloc_from_attr(nla);
-}
-
 /**
  * Add abstract address as unspecific attribute to netlink message.
  * @arg msg		Netlink message.
@@ -886,12 +880,6 @@ int nla_put_addr(struct nl_msg *msg, int attrtype, struct nl_addr *addr)
 {
 	return nla_put(msg, attrtype, nl_addr_get_len(addr),
 		       nl_addr_get_binary_addr(addr));
-}
-
-/* FIXME: Remove in 1.2 */
-struct nl_addr *nla_get_addr(struct nlattr *nla, int family)
-{
-	return nl_addr_alloc_from_attr(nla, family);
 }
 
 /** @} */

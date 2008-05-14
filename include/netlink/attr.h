@@ -126,10 +126,6 @@ extern int		nla_nest_end(struct nl_msg *, struct nlattr *);
 extern int		nla_parse_nested(struct nlattr **, int, struct nlattr *,
 					 struct nla_policy *);
 
-/* DEPRECATED! */
-extern struct nl_data *	nla_get_data(struct nlattr *);
-extern struct nl_addr *	nla_get_addr(struct nlattr *, int);
-
 /**
  * @name Attribute Construction (Exception Based)
  * @{

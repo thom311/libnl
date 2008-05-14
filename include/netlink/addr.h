@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_ADDR_H_
@@ -22,7 +22,7 @@ struct nl_addr;
 
 /* Creation */
 extern struct nl_addr *	nl_addr_alloc(size_t);
-extern struct nl_addr *	nl_addr_alloc_from_attr(struct nlattr *, int);
+extern struct nl_addr *	nl_addr_alloc_attr(struct nlattr *, int);
 extern struct nl_addr *	nl_addr_build(int, void *, size_t);
 extern int		nl_addr_parse(const char *, int, struct nl_addr **);
 extern struct nl_addr *	nl_addr_clone(struct nl_addr *);

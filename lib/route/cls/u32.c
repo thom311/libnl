@@ -97,7 +97,7 @@ static int u32_msg_parser(struct rtnl_cls *cls)
 	}
 
 	if (tb[TCA_U32_SEL]) {
-		u->cu_selector = nla_get_data(tb[TCA_U32_SEL]);
+		u->cu_selector = nl_data_alloc_attr(tb[TCA_U32_SEL]);
 		if (!u->cu_selector)
 			goto errout_nomem;
 		u->cu_mask |= U32_ATTR_SELECTOR;
@@ -119,14 +119,14 @@ static int u32_msg_parser(struct rtnl_cls *cls)
 	}
 
 	if (tb[TCA_U32_ACT]) {
-		u->cu_act = nla_get_data(tb[TCA_U32_ACT]);
+		u->cu_act = nl_data_alloc_attr(tb[TCA_U32_ACT]);
 		if (!u->cu_act)
 			goto errout_nomem;
 		u->cu_mask |= U32_ATTR_ACTION;
 	}
 
 	if (tb[TCA_U32_POLICE]) {
-		u->cu_police = nla_get_data(tb[TCA_U32_POLICE]);
+		u->cu_police = nl_data_alloc_attr(tb[TCA_U32_POLICE]);
 		if (!u->cu_police)
 			goto errout_nomem;
 		u->cu_mask |= U32_ATTR_POLICE;
@@ -149,7 +149,7 @@ static int u32_msg_parser(struct rtnl_cls *cls)
 			goto errout;
 		}
 
-		u->cu_pcnt = nla_get_data(tb[TCA_U32_PCNT]);
+		u->cu_pcnt = nl_data_alloc_attr(tb[TCA_U32_PCNT]);
 		if (!u->cu_pcnt)
 			goto errout_nomem;
 		u->cu_mask |= U32_ATTR_PCNT;

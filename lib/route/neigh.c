@@ -281,18 +281,22 @@ static int neigh_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			   NEIGH_ATTR_TYPE);
 
 	if (tb[NDA_LLADDR]) {
-		neigh->n_lladdr = nla_get_addr(tb[NDA_LLADDR], AF_UNSPEC);
-		if (!neigh->n_lladdr)
+		neigh->n_lladdr = nl_addr_alloc_attr(tb[NDA_LLADDR], AF_UNSPEC);
+		if (!neigh->n_lladdr) {
+			err = -NLE_NOMEM;
 			goto errout;
+		}
 		nl_addr_set_family(neigh->n_lladdr,
 				   nl_addr_guess_family(neigh->n_lladdr));
 		neigh->ce_mask |= NEIGH_ATTR_LLADDR;
 	}
 
 	if (tb[NDA_DST]) {
-		neigh->n_dst = nla_get_addr(tb[NDA_DST], neigh->n_family);
-		if (!neigh->n_dst)
+		neigh->n_dst = nl_addr_alloc_attr(tb[NDA_DST], neigh->n_family);
+		if (!neigh->n_dst) {
+			err = -NLE_NOMEM;
 			goto errout;
+		}
 		neigh->ce_mask |= NEIGH_ATTR_DST;
 	}
 

@@ -210,7 +210,7 @@ struct nl_addr *nl_addr_build(int family, void *buf, size_t size)
  *
  * @return Newly allocated address handle or NULL.
  */
-struct nl_addr *nl_addr_alloc_from_attr(struct nlattr *nla, int family)
+struct nl_addr *nl_addr_alloc_attr(struct nlattr *nla, int family)
 {
 	return nl_addr_build(family, nla_data(nla), nla_len(nla));
 }

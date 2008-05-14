@@ -81,7 +81,7 @@ int tca_msg_parser(struct nlmsghdr *n, struct rtnl_tca *g)
 		      TCA_ATTR_PARENT | TCA_ATTR_INFO | TCA_ATTR_KIND);
 
 	if (tb[TCA_OPTIONS]) {
-		g->tc_opts = nla_get_data(tb[TCA_OPTIONS]);
+		g->tc_opts = nl_data_alloc_attr(tb[TCA_OPTIONS]);
 		if (!g->tc_opts)
 			return -NLE_NOMEM;
 		g->ce_mask |= TCA_ATTR_OPTS;
@@ -126,7 +126,7 @@ int tca_msg_parser(struct nlmsghdr *n, struct rtnl_tca *g)
 		g->ce_mask |= TCA_ATTR_STATS;
 		
 		if (tbs[TCA_STATS_APP]) {
-			g->tc_xstats = nla_get_data(tbs[TCA_STATS_APP]);
+			g->tc_xstats = nl_data_alloc_attr(tbs[TCA_STATS_APP]);
 			if (g->tc_xstats == NULL)
 				return -NLE_NOMEM;
 		} else
@@ -149,7 +149,7 @@ int tca_msg_parser(struct nlmsghdr *n, struct rtnl_tca *g)
 
 compat_xstats:
 		if (tb[TCA_XSTATS]) {
-			g->tc_xstats = nla_get_data(tb[TCA_XSTATS]);
+			g->tc_xstats = nl_data_alloc_attr(tb[TCA_XSTATS]);
 			if (g->tc_xstats == NULL)
 				return -NLE_NOMEM;
 			g->ce_mask |= TCA_ATTR_XSTATS;

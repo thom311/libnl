@@ -837,6 +837,67 @@ static struct nla_policy route_policy[RTA_MAX+1] = {
 	[RTA_MULTIPATH]	= { .type = NLA_NESTED },
 };
 
+static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
+{
+	struct rtnl_nexthop *nh = NULL;
+	struct rtnexthop *rtnh = nla_data(attr);
+	size_t tlen = nla_len(attr);
+	int err;
+
+	while (tlen >= sizeof(*rtnh) && tlen >= rtnh->rtnh_len) {
+		nh = rtnl_route_nh_alloc();
+		if (!nh)
+			return -NLE_NOMEM;
+
+		rtnl_route_nh_set_weight(nh, rtnh->rtnh_hops);
+		rtnl_route_nh_set_ifindex(nh, rtnh->rtnh_ifindex);
+		rtnl_route_nh_set_flags(nh, rtnh->rtnh_flags);
+
+		if (rtnh->rtnh_len > sizeof(*rtnh)) {
+			struct nlattr *ntb[RTA_MAX + 1];
+
+			err = nla_parse(ntb, RTA_MAX, (struct nlattr *)
+					RTNH_DATA(rtnh),
+					rtnh->rtnh_len - sizeof(*rtnh),
+					route_policy);
+			if (err < 0)
+				goto errout;
+
+			if (ntb[RTA_GATEWAY]) {
+				struct nl_addr *addr;
+
+				addr = nl_addr_alloc_attr(ntb[RTA_GATEWAY],
+							  route->rt_family);
+				if (!addr) {
+					err = -NLE_NOMEM;
+					goto errout;
+				}
+
+				rtnl_route_nh_set_gateway(nh, addr);
+				nl_addr_put(addr);
+			}
+
+			if (ntb[RTA_FLOW]) {
+				uint32_t realms;
+				
+				realms = nla_get_u32(ntb[RTA_FLOW]);
+				rtnl_route_nh_set_realms(nh, realms);
+			}
+		}
+
+		rtnl_route_add_nexthop(route, nh);
+		tlen -= RTNH_ALIGN(rtnh->rtnh_len);
+		rtnh = RTNH_NEXT(rtnh);
+	}
+
+	err = 0;
+errout:
+	if (err && nh)
+		rtnl_route_nh_free(nh);
+
+	return err;
+}
+
 int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 {
 	struct rtmsg *rtm;
@@ -844,7 +905,7 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 	struct nlattr *tb[RTA_MAX + 1];
 	struct nl_addr *src = NULL, *dst = NULL, *addr;
 	struct rtnl_nexthop *old_nh = NULL;
-	int err;
+	int err, family;
 
 	route = rtnl_route_alloc();
 	if (!route) {
@@ -859,7 +920,7 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 		goto errout;
 
 	rtm = nlmsg_data(nlh);
-	route->rt_family = rtm->rtm_family;
+	route->rt_family = family = rtm->rtm_family;
 	route->rt_tos = rtm->rtm_tos;
 	route->rt_table = rtm->rtm_table;
 	route->rt_type = rtm->rtm_type;
@@ -873,11 +934,11 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 			  ROUTE_ATTR_FLAGS;
 
 	if (tb[RTA_DST]) {
-		dst = nla_get_addr(tb[RTA_DST], rtm->rtm_family);
-		if (dst == NULL)
-			goto errout;
+		if (!(dst = nl_addr_alloc_attr(tb[RTA_DST], family)))
+			goto errout_nomem;
 	} else {
-		dst = nl_addr_alloc(0);
+		if (!(dst = nl_addr_alloc(0)))
+			goto errout_nomem;
 		nl_addr_set_family(dst, rtm->rtm_family);
 	}
 
@@ -889,11 +950,11 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 	nl_addr_put(dst);
 
 	if (tb[RTA_SRC]) {
-		src = nla_get_addr(tb[RTA_SRC], rtm->rtm_family);
-		if (src == NULL)
-			goto errout;
+		if (!(src = nl_addr_alloc_attr(tb[RTA_SRC], family)))
+			goto errout_nomem;
 	} else if (rtm->rtm_src_len)
-		src = nl_addr_alloc(0);
+		if (!(src = nl_addr_alloc(0)))
+			goto errout_nomem;
 
 	if (src) {
 		nl_addr_set_prefixlen(src, rtm->rtm_src_len);
@@ -908,9 +969,8 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 		rtnl_route_set_priority(route, nla_get_u32(tb[RTA_PRIORITY]));
 
 	if (tb[RTA_PREFSRC]) {
-		addr = nla_get_addr(tb[RTA_PREFSRC], route->rt_family);
-		if (addr == NULL)
-			goto errout;
+		if (!(addr = nl_addr_alloc_attr(tb[RTA_PREFSRC], family)))
+			goto errout_nomem;
 		rtnl_route_set_pref_src(route, addr);
 		nl_addr_put(addr);
 	}
@@ -932,49 +992,9 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 		}
 	}
 
-	if (tb[RTA_MULTIPATH]) {
-		struct rtnl_nexthop *nh;
-		struct rtnexthop *rtnh = nla_data(tb[RTA_MULTIPATH]);
-		size_t tlen = nla_len(tb[RTA_MULTIPATH]);
-
-		while (tlen >= sizeof(*rtnh) && tlen >= rtnh->rtnh_len) {
-			nh = rtnl_route_nh_alloc();
-			if (!nh)
-				goto errout;
-
-			rtnl_route_nh_set_weight(nh, rtnh->rtnh_hops);
-			rtnl_route_nh_set_ifindex(nh, rtnh->rtnh_ifindex);
-			rtnl_route_nh_set_flags(nh, rtnh->rtnh_flags);
-
-			if (rtnh->rtnh_len > sizeof(*rtnh)) {
-				struct nlattr *ntb[RTA_MAX + 1];
-				nla_parse(ntb, RTA_MAX, (struct nlattr *)
-					  RTNH_DATA(rtnh),
-					  rtnh->rtnh_len - sizeof(*rtnh),
-					  route_policy);
-
-				if (ntb[RTA_GATEWAY]) {
-					struct nl_addr *addr;
-
-					addr = nla_get_addr(ntb[RTA_GATEWAY],
-							route->rt_family);
-					rtnl_route_nh_set_gateway(nh, addr);
-					nl_addr_put(addr);
-				}
-
-				if (ntb[RTA_FLOW]) {
-					uint32_t realms;
-					
-					realms = nla_get_u32(ntb[RTA_FLOW]);
-					rtnl_route_nh_set_realms(nh, realms);
-				}
-			}
-
-			rtnl_route_add_nexthop(route, nh);
-			tlen -= RTNH_ALIGN(rtnh->rtnh_len);
-			rtnh = RTNH_NEXT(rtnh);
-		}
-	}
+	if (tb[RTA_MULTIPATH])
+		if ((err = parse_multipath(route, tb[RTA_MULTIPATH])) < 0)
+			goto errout;
 
 	if (tb[RTA_CACHEINFO]) {
 		nla_memcpy(&route->rt_cacheinfo, tb[RTA_CACHEINFO],
@@ -993,9 +1013,8 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 		if (!old_nh && !(old_nh = rtnl_route_nh_alloc()))
 			goto errout;
 
-		addr = nla_get_addr(tb[RTA_GATEWAY], route->rt_family);
-		if (addr == NULL)
-			goto errout;
+		if (!(addr = nl_addr_alloc_attr(tb[RTA_GATEWAY], family)))
+			goto errout_nomem;
 
 		rtnl_route_nh_set_gateway(old_nh, addr);
 		nl_addr_put(addr);
@@ -1041,6 +1060,10 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 errout:
 	rtnl_route_put(route);
 	return err;
+
+errout_nomem:
+	err = -NLE_NOMEM;
+	goto errout;
 }
 
 int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)

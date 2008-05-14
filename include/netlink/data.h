@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_DATA_H_
@@ -22,7 +22,7 @@ struct nl_data;
 
 /* General */
 extern struct nl_data *	nl_data_alloc(void *, size_t);
-extern struct nl_data * nl_data_alloc_from_attr(struct nlattr *);
+extern struct nl_data * nl_data_alloc_attr(struct nlattr *);
 extern struct nl_data *	nl_data_clone(struct nl_data *);
 extern int		nl_data_append(struct nl_data *, void *, size_t);
 extern void		nl_data_free(struct nl_data *);

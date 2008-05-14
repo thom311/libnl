@@ -83,7 +83,7 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct rtnl_rule *rule;
 	struct rtmsg *r;
 	struct nlattr *tb[RTA_MAX+1];
-	int err = 1;
+	int err = 1, family;
 
 	rule = rtnl_rule_alloc();
 	if (!rule) {
@@ -98,7 +98,7 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (err < 0)
 		goto errout;
 
-	rule->r_family = r->rtm_family;
+	rule->r_family = family = r->rtm_family;
 	rule->r_type = r->rtm_type;
 	rule->r_dsfield = r->rtm_tos;
 	rule->r_src_len = r->rtm_src_len;
@@ -114,21 +114,15 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	}
 
 	if (tb[RTA_SRC]) {
-		rule->r_src = nla_get_addr(tb[RTA_SRC], r->rtm_family);
-		if (!rule->r_src) {
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+		if (!(rule->r_src = nl_addr_alloc_attr(tb[RTA_SRC], family)))
+			goto errout_enomem;
 		nl_addr_set_prefixlen(rule->r_src, r->rtm_src_len);
 		rule->ce_mask |= RULE_ATTR_SRC;
 	}
 
 	if (tb[RTA_DST]) {
-		rule->r_dst = nla_get_addr(tb[RTA_DST], r->rtm_family);
-		if (!rule->r_dst) {
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+		if (!(rule->r_dst = nl_addr_alloc_attr(tb[RTA_DST], family)))
+			goto errout_enomem;
 		nl_addr_set_prefixlen(rule->r_dst, r->rtm_dst_len);
 		rule->ce_mask |= RULE_ATTR_DST;
 	}
@@ -149,11 +143,9 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	}
 
 	if (tb[RTA_GATEWAY]) {
-		rule->r_srcmap = nla_get_addr(tb[RTA_GATEWAY], r->rtm_family);
-		if (!rule->r_srcmap) {
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+		rule->r_srcmap = nl_addr_alloc_attr(tb[RTA_GATEWAY], family);
+		if (!rule->r_srcmap)
+			goto errout_enomem;
 		rule->ce_mask |= RULE_ATTR_SRCMAP;
 	}
 
@@ -171,6 +163,10 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 errout:
 	rtnl_rule_put(rule);
 	return err;
+
+errout_enomem:
+	err = -NLE_NOMEM;
+	goto errout;
 }
 
 static int rule_request_update(struct nl_cache *c, struct nl_handle *h)

@@ -69,7 +69,7 @@ errout:
  * @see nla_data_alloc
  * @return Newly allocated data handle or NULL
  */
-struct nl_data *nl_data_alloc_from_attr(struct nlattr *nla)
+struct nl_data *nl_data_alloc_attr(struct nlattr *nla)
 {
 	return nl_data_alloc(nla_data(nla), nla_len(nla));
 }

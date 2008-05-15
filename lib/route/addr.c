@@ -48,11 +48,10 @@
  * // cannot be set for IPv6 addresses.
  * rtnl_addr_set_scope(addr, rtnl_str2scope("site"));
  *
- * // Broadcast and anycast address may be specified using the relevant
+ * // Broadcast address may be specified using the relevant
  * // functions, the address family will be verified if one of the other
  * // addresses has been set already. Currently only works for IPv4.
  * rtnl_addr_set_broadcast(addr, broadcast_addr);
- * rtnl_addr_set_anycast(addr, anycast_addr);
  *
  * // Build the netlink message and send it to the kernel, the operation will
  * // block until the operation has been completed. Alternatively the required
@@ -126,8 +125,7 @@
 #define ADDR_ATTR_PEER		0x0080
 #define ADDR_ATTR_LOCAL		0x0100
 #define ADDR_ATTR_BROADCAST	0x0200
-#define ADDR_ATTR_ANYCAST	0x0400
-#define ADDR_ATTR_MULTICAST	0x0800
+#define ADDR_ATTR_MULTICAST	0x0400
 
 static struct nl_cache_ops rtnl_addr_ops;
 static struct nl_object_ops addr_obj_ops;
@@ -143,7 +141,6 @@ static void addr_free_data(struct nl_object *obj)
 	nl_addr_put(addr->a_peer);
 	nl_addr_put(addr->a_local);
 	nl_addr_put(addr->a_bcast);
-	nl_addr_put(addr->a_anycast);
 	nl_addr_put(addr->a_multicast);
 }
 
@@ -162,10 +159,6 @@ static int addr_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	if (src->a_bcast)
 		if (!(dst->a_bcast = nl_addr_clone(src->a_bcast)))
-			return -NLE_NOMEM;
-
-	if (src->a_anycast)
-		if (!(dst->a_anycast = nl_addr_clone(src->a_anycast)))
 			return -NLE_NOMEM;
 
 	if (src->a_multicast)
@@ -264,14 +257,6 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		addr->ce_mask |= ADDR_ATTR_BROADCAST;
 	}
 
-	if (tb[IFA_ANYCAST]) {
-		addr->a_anycast = nl_addr_alloc_attr(tb[IFA_ANYCAST], family);
-		if (!addr->a_anycast)
-			goto errout_nomem;
-
-		addr->ce_mask |= ADDR_ATTR_ANYCAST;
-	}
-
 	if (tb[IFA_MULTICAST]) {
 		addr->a_multicast = nl_addr_alloc_attr(tb[IFA_MULTICAST],
 						       family);
@@ -343,7 +328,7 @@ static int addr_dump_full(struct nl_object *obj, struct nl_dump_params *p)
 	char buf[128];
 
 	if (addr->ce_mask & (ADDR_ATTR_LABEL | ADDR_ATTR_BROADCAST |
-			    ADDR_ATTR_ANYCAST | ADDR_ATTR_MULTICAST)) {
+			     ADDR_ATTR_MULTICAST)) {
 		dp_dump_line(p, line++, "  ");
 
 		if (addr->ce_mask & ADDR_ATTR_LABEL)
@@ -352,11 +337,6 @@ static int addr_dump_full(struct nl_object *obj, struct nl_dump_params *p)
 		if (addr->ce_mask & ADDR_ATTR_BROADCAST)
 			dp_dump(p, " broadcast %s",
 				nl_addr2str(addr->a_bcast, buf, sizeof(buf)));
-
-		if (addr->ce_mask & ADDR_ATTR_ANYCAST)
-			dp_dump(p, " anycast %s",
-				nl_addr2str(addr->a_anycast, buf,
-					      sizeof(buf)));
 
 		if (addr->ce_mask & ADDR_ATTR_MULTICAST)
 			dp_dump(p, " multicast %s",
@@ -418,10 +398,6 @@ static int addr_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
 	if (addr->ce_mask & ADDR_ATTR_BROADCAST)
 		dp_dump_line(p, line++, "  <broadcast>%s</broadcast>\n",
 			     nl_addr2str(addr->a_bcast, buf, sizeof(buf)));
-
-	if (addr->ce_mask & ADDR_ATTR_ANYCAST)
-		dp_dump_line(p, line++, "  <anycast>%s</anycast>\n",
-			     nl_addr2str(addr->a_anycast, buf, sizeof(buf)));
 
 	if (addr->ce_mask & ADDR_ATTR_MULTICAST)
 		dp_dump_line(p, line++, "  <multicast>%s</multicast>\n",
@@ -505,10 +481,6 @@ static int addr_dump_env(struct nl_object *obj, struct nl_dump_params *p)
 		dp_dump_line(p, line++, "ADDR_BROADCAST=%s\n",
 			     nl_addr2str(addr->a_bcast, buf, sizeof(buf)));
 
-	if (addr->ce_mask & ADDR_ATTR_ANYCAST)
-		dp_dump_line(p, line++, "ADDR_ANYCAST=%s\n",
-			     nl_addr2str(addr->a_anycast, buf, sizeof(buf)));
-
 	if (addr->ce_mask & ADDR_ATTR_MULTICAST)
 		dp_dump_line(p, line++, "ADDR_MULTICAST=%s\n",
 			     nl_addr2str(addr->a_multicast, buf,
@@ -576,7 +548,6 @@ static int addr_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= ADDR_DIFF(LABEL,	strcmp(a->a_label, b->a_label));
 	diff |= ADDR_DIFF(PEER,		nl_addr_cmp(a->a_peer, b->a_peer));
 	diff |= ADDR_DIFF(LOCAL,	nl_addr_cmp(a->a_local, b->a_local));
-	diff |= ADDR_DIFF(ANYCAST,	nl_addr_cmp(a->a_anycast,b->a_anycast));
 	diff |= ADDR_DIFF(MULTICAST,	nl_addr_cmp(a->a_multicast,
 						    b->a_multicast));
 	diff |= ADDR_DIFF(BROADCAST,	nl_addr_cmp(a->a_bcast, b->a_bcast));
@@ -603,7 +574,6 @@ static struct trans_tbl addr_attrs[] = {
 	__ADD(ADDR_ATTR_PEER, peer)
 	__ADD(ADDR_ATTR_LOCAL, local)
 	__ADD(ADDR_ATTR_BROADCAST, broadcast)
-	__ADD(ADDR_ATTR_ANYCAST, anycast)
 	__ADD(ADDR_ATTR_MULTICAST, multicast)
 };
 
@@ -684,9 +654,6 @@ static int build_addr_msg(struct rtnl_addr *tmpl, int cmd, int flags,
 
 	if (tmpl->ce_mask & ADDR_ATTR_BROADCAST)
 		NLA_PUT_ADDR(msg, IFA_BROADCAST, tmpl->a_bcast);
-
-	if (tmpl->ce_mask & ADDR_ATTR_ANYCAST)
-		NLA_PUT_ADDR(msg, IFA_ANYCAST, tmpl->a_anycast);
 
 	*result = msg;
 	return 0;
@@ -1001,20 +968,6 @@ struct nl_addr *rtnl_addr_get_broadcast(struct rtnl_addr *addr)
 {
 	if (addr->ce_mask & ADDR_ATTR_BROADCAST)
 		return addr->a_bcast;
-	else
-		return NULL;
-}
-
-int rtnl_addr_set_anycast(struct rtnl_addr *addr, struct nl_addr *anycast)
-{
-	return __assign_addr(addr, &addr->a_anycast, anycast,
-			     ADDR_ATTR_ANYCAST);
-}
-
-struct nl_addr *rtnl_addr_get_anycast(struct rtnl_addr *addr)
-{
-	if (addr->ce_mask & ADDR_ATTR_ANYCAST)
-		return addr->a_anycast;
 	else
 		return NULL;
 }

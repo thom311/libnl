@@ -71,9 +71,6 @@ extern struct nl_addr *rtnl_addr_get_peer(struct rtnl_addr *);
 extern int	rtnl_addr_set_broadcast(struct rtnl_addr *, struct nl_addr *);
 extern struct nl_addr *rtnl_addr_get_broadcast(struct rtnl_addr *);
 
-extern int	rtnl_addr_set_anycast(struct rtnl_addr *, struct nl_addr *);
-extern struct nl_addr *rtnl_addr_get_anycast(struct rtnl_addr *);
-
 extern int	rtnl_addr_set_multicast(struct rtnl_addr *, struct nl_addr *);
 extern struct nl_addr *rtnl_addr_get_multicast(struct rtnl_addr *);
 

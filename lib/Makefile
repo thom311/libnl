@@ -40,6 +40,7 @@ ROUTE_LIB := $(PACKAGE_NAME)-route.so
 GENL_LIB  := $(PACKAGE_NAME)-genl.so
 NF_LIB    := $(PACKAGE_NAME)-nf.so
 LIBS      := $(CORE_LIB) $(ROUTE_LIB) $(GENL_LIB) $(NF_LIB)
+LIBS_V    := $(LIBS:%.so=%.so.$(PACKAGE_VERSION))
 
 export
 
@@ -91,7 +92,7 @@ distclean:
 
 install:
 	mkdir -p $(DESTDIR)$(libdir)/
-	install -m 0644 $(OUT_SLIB) $(DESTDIR)$(libdir)
+	install -m 0644 $(LIBS_V) $(DESTDIR)$(libdir)
 
 $(DEPS): ../Makefile.opts
 

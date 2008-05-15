@@ -217,10 +217,6 @@ static int neightbl_msg_parser(struct nl_cache_ops *ops,
 	}
 
 	err = pp->pp_cb((struct nl_object *) ntbl, pp);
-	if (err < 0)
-		goto errout;
-
-	err = P_ACCEPT;
 errout:
 	rtnl_neightbl_put(ntbl);
 	return err;

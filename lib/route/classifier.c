@@ -64,11 +64,6 @@ static int cls_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	}
 
 	err = pp->pp_cb((struct nl_object *) cls, pp);
-	if (err < 0)
-		goto errout_free;
-
-	err = P_ACCEPT;
-
 errout_free:
 	rtnl_cls_put(cls);
 errout:

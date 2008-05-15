@@ -124,9 +124,6 @@ static inline int nl_cb_call(struct nl_cb *cb, int type, struct nl_msg *msg)
 #define __exit __attribute__ ((destructor))
 #define __deprecated __attribute__ ((deprecated))
 
-#define P_ACCEPT 0
-#define P_IGNORE 0
-
 #define min(x,y) ({ \
 	typeof(x) _x = (x);	\
 	typeof(y) _y = (y);	\

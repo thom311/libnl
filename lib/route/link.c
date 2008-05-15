@@ -417,11 +417,6 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	}
 
 	err = pp->pp_cb((struct nl_object *) link, pp);
-	if (err < 0)
-		goto errout;
-
-	err = P_ACCEPT;
-
 errout:
 	rtnl_link_put(link);
 	return err;

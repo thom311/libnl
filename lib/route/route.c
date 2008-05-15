@@ -36,12 +36,8 @@ static int route_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if ((err = rtnl_route_parse(nlh, &route)) < 0)
 		return err;
 
-	if ((err = pp->pp_cb((struct nl_object *) route, pp)) < 0)
-		goto errout;
+	err = pp->pp_cb((struct nl_object *) route, pp);
 
-	err = P_ACCEPT;
-
-errout:
 	rtnl_route_put(route);
 	return err;
 }

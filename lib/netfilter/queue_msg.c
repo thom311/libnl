@@ -154,11 +154,6 @@ static int queue_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		goto errout;
 
 	err = pp->pp_cb((struct nl_object *) msg, pp);
-	if (err < 0)
-		goto errout;
-
-	err = P_ACCEPT;
-
 errout:
 	nfnl_queue_msg_put(msg);
 	return err;

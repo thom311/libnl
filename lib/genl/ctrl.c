@@ -128,11 +128,6 @@ static int ctrl_msg_parser(struct nl_cache_ops *ops, struct genl_cmd *cmd,
 	}
 
 	err = pp->pp_cb((struct nl_object *) family, pp);
-	if (err < 0)
-		goto errout;
-
-	err = P_ACCEPT;
-
 errout:
 	genl_family_put(family);
 	return err;

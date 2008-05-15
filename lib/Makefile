@@ -6,55 +6,84 @@
 #	License as published by the Free Software Foundation version 2.1
 #	of the License.
 #
-# Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+# Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
 #
 
 ifeq ($(shell [ ! -r ../Makefile.opts ] && echo 1),)
     include ../Makefile.opts
 endif
 
-# Core
-CIN      := $(wildcard *.c)
-# NETLINK_ROUTE
-CIN      += $(wildcard route/*.c)
-# Schedulers
-CIN      += $(wildcard route/sch/*.c)
-# Classifiers
-CIN      += $(wildcard route/cls/*.c)
-# Link Info Modules
-CIN      += $(wildcard route/link/*.c)
-# NETLINK_GENERIC
-CIN      += $(wildcard genl/*.c)
-# fib lookup
-CIN      += $(wildcard fib_lookup/*.c)
-# Netfilter
-CIN      += $(wildcard netfilter/*.c)
+CORE_C    := $(wildcard *.c)
+CORE_OBJ  := $(CORE_C:%.c=%.o)
 
-DEPS     := $(CIN:%.c=%.d)
-OBJ      := $(CIN:%.c=%.o)
-CFLAGS   += -fPIC
-OUT_SLIB := $(PACKAGE_NAME).so.$(PACKAGE_VERSION)
-LN_SLIB  := $(PACKAGE_NAME).so
+ROUTE_C   := $(wildcard route/*.c)
+ROUTE_C   += $(wildcard route/cls/*.c)
+ROUTE_C   += $(wildcard route/sch/*.c)
+ROUTE_C   += $(wildcard route/link/*.c)
+ROUTE_C   += $(wildcard fib_lookup/*.c)
+ROUTE_OBJ := $(ROUTE_C:%.c=%.o)
+
+GENL_C    := $(wildcard genl/*.c)
+GENL_OBJ  := $(GENL_C:%.c=%.o)
+
+NF_C    := $(wildcard netfilter/*.c)
+NF_OBJ    := $(NF_C:%.c=%.o)
+
+ALL_C     := $(CORE_C) $(ROUTE_C) $(GENL_C) $(NF_C)
+ALL_OBJ   := $(ALL_C:%.c=%.o)
+DEPS      := $(ALL_C:%.c=%.d)
+
+CFLAGS    += -fPIC
+
+CORE_LIB  := $(PACKAGE_NAME).so
+ROUTE_LIB := $(PACKAGE_NAME)-route.so
+GENL_LIB  := $(PACKAGE_NAME)-genl.so
+NF_LIB    := $(PACKAGE_NAME)-nf.so
+LIBS      := $(CORE_LIB) $(ROUTE_LIB) $(GENL_LIB) $(NF_LIB)
 
 export
 
-.PHONY: all clean install librtn.a $(OUT_SLIB)
-
+.PHONY: all clean install $(LIBS)
 
 all:
-	@echo "  MAKE $(OUT_SLIB)"; \
-	$(MAKE) $(OUT_SLIB)
+	@echo "  MAKE $(LIBS)"; \
+	$(MAKE) $(LIBS)
 
-$(OUT_SLIB): ../Makefile.opts $(OBJ)
-	@echo "  LD $(OUT_SLIB)"; \
-	$(CC) -shared -Wl,-soname=libnl.so.1.2 -o $(OUT_SLIB) $(OBJ) $(LIBNL_LIB) -lc
-	@echo "  LN $(LN1_SLIB) $(LN_SLIB)"; \
-	$(RM) -f $(LN_SLIB) ; $(LN) -s $(OUT_SLIB) $(LN_SLIB)
+$(CORE_LIB).$(PACKAGE_VERSION): $(CORE_OBJ)
+	@echo "  LD $@"; \
+	$(CC) -shared -Wl,-soname=$@ -o $@ $^ $(LIBNL_LIB)
+
+$(CORE_LIB): $(CORE_LIB).$(PACKAGE_VERSION)
+	@echo "  LN $@ -> $<"; \
+	$(RM) -f $@; $(LN) $< -s $@
+
+$(ROUTE_LIB).$(PACKAGE_VERSION): $(ROUTE_OBJ)
+	@echo "  LD $@"; \
+	$(CC) -shared -Wl,-soname=$@ -o $@ $^ $(LIBNL_LIB)
+
+$(ROUTE_LIB): $(ROUTE_LIB).$(PACKAGE_VERSION)
+	@echo "  LN $@ -> $<"; \
+	$(RM) -f $@; $(LN) $< -s $@
+
+$(GENL_LIB).$(PACKAGE_VERSION): $(GENL_OBJ)
+	@echo "  LD $@"; \
+	$(CC) -shared -Wl,-soname=$@ -o $@ $^ $(LIBNL_LIB)
+
+$(GENL_LIB): $(GENL_LIB).$(PACKAGE_VERSION)
+	@echo "  LN $@ -> $<"; \
+	$(RM) -f $@; $(LN) $< -s $@
+
+$(NF_LIB).$(PACKAGE_VERSION): $(NF_OBJ)
+	@echo "  LD $@"; \
+	$(CC) -shared -Wl,-soname=$@ -o $@ $^ $(LIBNL_LIB)
+
+$(NF_LIB): $(NF_LIB).$(PACKAGE_VERSION)
+	@echo "  LN $@ -> $<"; \
+	$(RM) -f $@; $(LN) $< -s $@
 
 clean:
 	@echo "  CLEAN lib"; \
-	$(RM) -f $(OBJ) $(OUT_SLIB) $(LN_SLIB) $(LN1_SLIB); \
-	$(RM) -f $(DEPS) $(OUT_SLIB) $(LN_SLIB) $(LN1_SLIB)
+	$(RM) -f $(ALL_OBJ) $(LIBS) $(DEPS)
 
 distclean:
 	@echo "  DISTCLEAN lib"; \

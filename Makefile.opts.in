@@ -16,7 +16,7 @@ CPPFLAGS         := @CPPFLAGS@
 PACKAGE_NAME     := @PACKAGE_NAME@
 PACKAGE_VERSION  := @PACKAGE_VERSION@
 
-LIBNL_LIB        := @LIBNL_LIB@
+LIBNL_LIB        := @LIBNL_LIB@ -lc -L.
 
 prefix           := @prefix@
 exec_prefix      := @exec_prefix@

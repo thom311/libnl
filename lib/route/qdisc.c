@@ -233,10 +233,11 @@ int rtnl_qdisc_add(struct nl_sock *sk, struct rtnl_qdisc *qdisc,
 	if ((err = rtnl_qdisc_build_add_request(qdisc, flags, &msg)) < 0)
 		return err;
 
-	if ((err = nl_send_auto_complete(sk, msg)) < 0)
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
 		return err;
 
-	nlmsg_free(msg);
 	return nl_wait_for_ack(sk);
 }
 
@@ -288,10 +289,11 @@ int rtnl_qdisc_change(struct nl_sock *sk, struct rtnl_qdisc *qdisc,
 	if ((err = rtnl_qdisc_build_change_request(qdisc, new, &msg)) < 0)
 		return err;
 
-	if ((err = nl_send_auto_complete(sk, msg)) < 0)
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
 		return err;
 
-	nlmsg_free(msg);
 	return nl_wait_for_ack(sk);
 }
 
@@ -360,10 +362,11 @@ int rtnl_qdisc_delete(struct nl_sock *sk, struct rtnl_qdisc *qdisc)
 	if ((err = rtnl_qdisc_build_delete_request(qdisc, &msg)) < 0)
 		return err;
 
-	if ((err = nl_send_auto_complete(sk, msg)) < 0)
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
 		return err;
 
-	nlmsg_free(msg);
 	return nl_wait_for_ack(sk);
 }
 

@@ -1047,10 +1047,11 @@ int rtnl_link_change(struct nl_sock *sk, struct rtnl_link *old,
 	if ((err = rtnl_link_build_change_request(old, tmpl, flags, &msg)) < 0)
 		return err;
 	
-	if ((err = nl_send_auto_complete(sk, msg)) < 0)
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
 		return err;
 
-	nlmsg_free(msg);
 	return nl_wait_for_ack(sk);
 }
 

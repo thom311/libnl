@@ -169,10 +169,11 @@ int rtnl_cls_add(struct nl_sock *sk, struct rtnl_cls *cls, int flags)
 	if ((err = rtnl_cls_build_add_request(cls, flags, &msg)) < 0)
 		return err;
 	
-	if ((err = nl_send_auto_complete(sk, msg)) < 0)
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
 		return err;
 
-	nlmsg_free(msg);
 	return nl_wait_for_ack(sk);
 }
 
@@ -215,10 +216,11 @@ int rtnl_cls_change(struct nl_sock *sk, struct rtnl_cls *cls, int flags)
 	if ((err = rtnl_cls_build_change_request(cls, flags, &msg)) < 0)
 		return err;
 	
-	if ((err = nl_send_auto_complete(sk, msg)) < 0)
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
 		return err;
 
-	nlmsg_free(msg);
 	return nl_wait_for_ack(sk);
 }
 
@@ -262,10 +264,11 @@ int rtnl_cls_delete(struct nl_sock *sk, struct rtnl_cls *cls, int flags)
 	if ((err = rtnl_cls_build_delete_request(cls, flags, &msg)) < 0)
 		return err;
 	
-	if ((err = nl_send_auto_complete(sk, msg)) < 0)
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
 		return err;
 
-	nlmsg_free(msg);
 	return nl_wait_for_ack(sk);
 }
 

@@ -653,10 +653,11 @@ int rtnl_neigh_add(struct nl_sock *sk, struct rtnl_neigh *tmpl, int flags)
 	if ((err = rtnl_neigh_build_add_request(tmpl, flags, &msg)) < 0)
 		return err;
 
-	if ((err = nl_send_auto_complete(sk, msg)) < 0)
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
 		return err;
 
-	nlmsg_free(msg);
 	return nl_wait_for_ack(sk);
 }
 
@@ -708,10 +709,11 @@ int rtnl_neigh_delete(struct nl_sock *sk, struct rtnl_neigh *neigh,
 	if ((err = rtnl_neigh_build_delete_request(neigh, flags, &msg)) < 0)
 		return err;
 
-	if ((err = nl_send_auto_complete(sk, msg)) < 0)
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
 		return err;
 
-	nlmsg_free(msg);
 	return nl_wait_for_ack(sk);
 }
 
@@ -767,10 +769,11 @@ int rtnl_neigh_change(struct nl_sock *sk, struct rtnl_neigh *neigh, int flags)
 	if ((err = rtnl_neigh_build_change_request(neigh, flags, &msg)) < 0)
 		return err;
 
-	if ((err = nl_send_auto_complete(sk, msg)) < 0)
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
 		return err;
 
-	nlmsg_free(msg);
 	return nl_wait_for_ack(sk);
 }
 

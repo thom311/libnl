@@ -655,6 +655,24 @@ void nl_new_line(struct nl_dump_params *params)
 		params->dp_nl_cb(params, params->dp_line);
 }
 
+static void dump_one(struct nl_dump_params *parms, const char *fmt,
+		     va_list args)
+{
+	if (parms->dp_fd)
+		vfprintf(parms->dp_fd, fmt, args);
+	else if (parms->dp_buf || parms->dp_cb) {
+		char *buf = NULL;
+		vasprintf(&buf, fmt, args);
+		if (parms->dp_cb)
+			parms->dp_cb(parms, buf);
+		else
+			strncat(parms->dp_buf, buf,
+			        parms->dp_buflen - strlen(parms->dp_buf) - 1);
+		free(buf);
+	}
+}
+
+
 /**
  * Dump a formatted character string
  * @arg params		Dumping parameters
@@ -669,7 +687,7 @@ void nl_dump(struct nl_dump_params *params, const char *fmt, ...)
 	va_list args;
 
 	va_start(args, fmt);
-	__dp_dump(params, fmt, args);
+	dump_one(params, fmt, args);
 	va_end(args);
 }
 
@@ -680,11 +698,185 @@ void nl_dump_line(struct nl_dump_params *parms, const char *fmt, ...)
 	nl_new_line(parms);
 
 	va_start(args, fmt);
-	__dp_dump(parms, fmt, args);
+	dump_one(parms, fmt, args);
 	va_end(args);
 }
 
 
 /** @} */
+
+/** @cond SKIP */
+
+int __trans_list_add(int i, const char *a, struct nl_list_head *head)
+{
+	struct trans_list *tl;
+
+	tl = calloc(1, sizeof(*tl));
+	if (!tl)
+		return -NLE_NOMEM;
+
+	tl->i = i;
+	tl->a = strdup(a);
+
+	nl_list_add_tail(&tl->list, head);
+
+	return 0;
+}
+
+void __trans_list_clear(struct nl_list_head *head)
+{
+	struct trans_list *tl, *next;
+
+	nl_list_for_each_entry_safe(tl, next, head, list) {
+		free(tl->a);
+		free(tl);
+	}
+}
+
+char *__type2str(int type, char *buf, size_t len, struct trans_tbl *tbl,
+		 size_t tbl_len)
+{
+	int i;
+	for (i = 0; i < tbl_len; i++) {
+		if (tbl[i].i == type) {
+			snprintf(buf, len, "%s", tbl[i].a);
+			return buf;
+		}
+	}
+
+	snprintf(buf, len, "0x%x", type);
+	return buf;
+}
+
+char *__list_type2str(int type, char *buf, size_t len,
+		      struct nl_list_head *head)
+{
+	struct trans_list *tl;
+
+	nl_list_for_each_entry(tl, head, list) {
+		if (tl->i == type) {
+			snprintf(buf, len, "%s", tl->a);
+			return buf;
+		}
+	}
+
+	snprintf(buf, len, "0x%x", type);
+	return buf;
+}
+
+char *__flags2str(int flags, char *buf, size_t len,
+		  struct trans_tbl *tbl, size_t tbl_len)
+{
+	int i;
+	int tmp = flags;
+
+	memset(buf, 0, len);
+	
+	for (i = 0; i < tbl_len; i++) {
+		if (tbl[i].i & tmp) {
+			tmp &= ~tbl[i].i;
+			strncat(buf, tbl[i].a, len - strlen(buf) - 1);
+			if ((tmp & flags))
+				strncat(buf, ",", len - strlen(buf) - 1);
+		}
+	}
+
+	return buf;
+}
+
+int __str2type(const char *buf, struct trans_tbl *tbl, size_t tbl_len)
+{
+	unsigned long l;
+	char *end;
+	int i;
+
+	if (*buf == '\0')
+		return -1;
+
+	for (i = 0; i < tbl_len; i++)
+		if (!strcasecmp(tbl[i].a, buf))
+			return tbl[i].i;
+
+	l = strtoul(buf, &end, 0);
+	if (l == ULONG_MAX || *end != '\0')
+		return -1;
+
+	return (int) l;
+}
+
+int __list_str2type(const char *buf, struct nl_list_head *head)
+{
+	struct trans_list *tl;
+	unsigned long l;
+	char *end;
+
+	if (*buf == '\0')
+		return -1;
+
+	nl_list_for_each_entry(tl, head, list) {
+		if (!strcasecmp(tl->a, buf))
+			return tl->i;
+	}
+
+	l = strtoul(buf, &end, 0);
+	if (l == ULONG_MAX || *end != '\0')
+		return -1;
+
+	return (int) l;
+}
+
+int __str2flags(const char *buf, struct trans_tbl *tbl, size_t tbl_len)
+{
+	int i, flags = 0, len;
+	char *p = (char *) buf, *t;
+
+	for (;;) {
+		if (*p == ' ')
+			p++;
+	
+		t = strchr(p, ',');
+		len = t ? t - p : strlen(p);
+		for (i = 0; i < tbl_len; i++)
+			if (!strncasecmp(tbl[i].a, p, len))
+				flags |= tbl[i].i;
+
+		if (!t)
+			return flags;
+
+		p = ++t;
+	}
+
+	return 0;
+}
+
+void dump_from_ops(struct nl_object *obj, struct nl_dump_params *params)
+{
+	int type = params->dp_type;
+
+	if (type < 0 || type > NL_DUMP_MAX)
+		BUG();
+
+	params->dp_line = 0;
+
+	if (params->dp_dump_msgtype) {
+#if 0
+		/* XXX */
+		char buf[64];
+
+		dp_dump_line(params, 0, "%s ",
+			     nl_cache_mngt_type2name(obj->ce_ops,
+			     			     obj->ce_ops->co_protocol,
+						     obj->ce_msgtype,
+						     buf, sizeof(buf)));
+#endif
+		params->dp_pre_dump = 1;
+	} else
+		nl_new_line(params);
+
+	if (obj->ce_ops->oo_dump[type])
+		obj->ce_ops->oo_dump[type](obj, params);
+}
+
+/** @endcond */
 
 /** @} */

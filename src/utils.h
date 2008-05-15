@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef __SRC_UTILS_H_
@@ -44,23 +44,26 @@
 #include <netlink/genl/mngt.h>
 #include <netlink/netfilter/ct.h>
 
-extern void fatal(int err, const char *fmt, ...);
+extern void		nlt_print_version(void);
+extern void		fatal(int err, const char *fmt, ...);
+extern struct nl_addr *	nlt_addr_parse(const char *, int);
 
-extern int nltool_init(int argc, char *argv[]);
-extern int nltool_connect(struct nl_handle *nlh, int protocol);
-extern struct nl_addr *nltool_addr_parse(const char *str);
-extern int nltool_parse_dumptype(const char *str);
-extern struct nl_handle *nltool_alloc_handle(void);
+extern int		nlt_connect(struct nl_sock *, int);
+extern struct nl_sock *	nlt_alloc_socket(void);
 
-extern struct nl_cache *nltool_alloc_link_cache(struct nl_handle *nlh);
-extern struct nl_cache *nltool_alloc_addr_cache(struct nl_handle *nlh);
-extern struct nl_cache *nltool_alloc_neigh_cache(struct nl_handle *nlh);
-extern struct nl_cache *nltool_alloc_neightbl_cache(struct nl_handle *nlh);
-extern struct nl_cache *nltool_alloc_route_cache(struct nl_handle *nlh, int);
-extern struct nl_cache *nltool_alloc_rule_cache(struct nl_handle *nlh);
-extern struct nl_cache *nltool_alloc_qdisc_cache(struct nl_handle *nlh);
-extern struct nl_cache *nltool_alloc_genl_family_cache(struct nl_handle *nlh);
+extern int nlt_parse_dumptype(const char *str);
+extern int nlt_confirm(struct nl_object *, struct nl_dump_params *, int);
 
-#define arg_match(str) !strcasecmp(argv[idx], str)
+extern struct nl_cache *nlt_alloc_link_cache(struct nl_sock *);
+
+extern struct nl_cache *nlt_alloc_addr_cache(struct nl_sock *);
+extern struct rtnl_addr *nlt_alloc_addr(void);
+
+extern struct nl_cache *nltool_alloc_neigh_cache(struct nl_sock *nlh);
+extern struct nl_cache *nltool_alloc_neightbl_cache(struct nl_sock *nlh);
+extern struct nl_cache *nltool_alloc_route_cache(struct nl_sock *nlh, int);
+extern struct nl_cache *nltool_alloc_rule_cache(struct nl_sock *nlh);
+extern struct nl_cache *nltool_alloc_qdisc_cache(struct nl_sock *nlh);
+extern struct nl_cache *nltool_alloc_genl_family_cache(struct nl_sock *nlh);
 
 #endif

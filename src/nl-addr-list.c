@@ -1,5 +1,5 @@
 /*
- * src/nl-addr-delete.c     Delete addresses
+ * src/nl-addr-list.c     List addresses
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License as
@@ -10,62 +10,37 @@
 
 #include "addr-utils.h"
 
-static struct nl_handle *sock;
-static int interactive = 0, default_yes = 0, quiet = 0;
-static int deleted = 0;
-
 static void print_usage(void)
 {
 	printf(
-	"Usage: nl-addr-delete [OPTION]... [ADDRESS]\n"
+	"Usage: nl-addr-list [OPTION]... [ADDRESS]\n"
 	"\n"
 	"Options\n"
-	" -i, --interactive     Run interactively\n"
-	"     --yes             Set default answer to yes\n"
-	" -q, --quiet           Do not print informal notifications\n"
+	" -f, --format=TYPE     Output format { brief | details | stats }\n"
 	" -h, --help            Show this help\n"
 	" -v, --version         Show versioning information\n"
 	"\n"
 	"Address Options\n"
-	" -a, --local=ADDR      local address, e.g. 10.0.0.1\n"
-	" -d, --dev=DEV         device the address is on\n"
+	" -a, --local=ADDR	local address, e.g. 10.0.0.1\n"
+	" -d, --dev=DEV		device the address is on\n"
 	"     --family=FAMILY   address family\n"
 	"     --label=STRING    address label\n"
 	"     --peer=ADDR       peer address\n"
-	"     --scope=SCOPE     address scope\n"
+	"     --scope=SCOPE	address scope\n"
 	"     --broadcast=ADDR  broadcast address\n"
 	);
-
 	exit(0);
-}
-
-static void delete_cb(struct nl_object *obj, void *arg)
-{
-	struct rtnl_addr *addr = nl_object_priv(obj);
-	struct nl_dump_params params = {
-		.dp_type = NL_DUMP_ONELINE,
-		.dp_fd = stdout,
-	};
-	int err;
-
-	if (interactive && !nlt_confirm(obj, &params, default_yes))
-		return;
-
-	if ((err = rtnl_addr_delete(sock, addr, 0)) < 0)
-		fatal(err, "Unable to delete address: %s\n", nl_geterror(err));
-
-	if (!quiet) {
-		printf("Deleted ");
-		nl_object_dump(obj, &params);
-	}
-
-	deleted++;
 }
 
 int main(int argc, char *argv[])
 {
+	struct nl_handle *sock;
 	struct rtnl_addr *addr;
 	struct nl_cache *link_cache, *addr_cache;
+	struct nl_dump_params params = {
+		.dp_type = NL_DUMP_ONELINE,
+		.dp_fd = stdout,
+	};
 
 	sock = nlt_alloc_socket();
 	nlt_connect(sock, NETLINK_ROUTE);
@@ -78,15 +53,12 @@ int main(int argc, char *argv[])
 		enum {
 			ARG_FAMILY = 257,
 			ARG_LABEL = 258,
-			ARG_YES,
 			ARG_PEER,
 			ARG_SCOPE,
 			ARG_BROADCAST,
 		};
 		static struct option long_opts[] = {
-			{ "interactive", 0, 0, 'i' },
-			{ "yes", 0, 0, ARG_YES },
-			{ "quiet", 0, 0, 'q' },
+			{ "format", 1, 0, 'f' },
 			{ "help", 0, 0, 'h' },
 			{ "version", 0, 0, 'v' },
 			{ "local", 1, 0, 'a' },
@@ -98,15 +70,13 @@ int main(int argc, char *argv[])
 			{ "broadcast", 1, 0, ARG_BROADCAST },
 			{ 0, 0, 0, 0 }
 		};
-	
-		c = getopt_long(argc, argv, "iqhva:d:", long_opts, &optidx);
+
+		c = getopt_long(argc, argv, "f:hva:d:", long_opts, &optidx);
 		if (c == -1)
 			break;
 
 		switch (c) {
-		case 'i': interactive = 1; break;
-		case ARG_YES: default_yes = 1; break;
-		case 'q': quiet = 1; break;
+		case 'f': params.dp_type = nlt_parse_dumptype(optarg); break;
 		case 'h': print_usage(); break;
 		case 'v': nlt_print_version(); break;
 		case 'a': parse_local(addr, optarg); break;
@@ -117,12 +87,9 @@ int main(int argc, char *argv[])
 		case ARG_SCOPE: parse_scope(addr, optarg); break;
 		case ARG_BROADCAST: parse_broadcast(addr, optarg); break;
 		}
- 	}
+	}
 
-	nl_cache_foreach_filter(addr_cache, OBJ_CAST(addr), delete_cb, NULL);
-
-	if (!quiet)
-		printf("Deleted %d addresses\n", deleted);
+	nl_cache_dump_filter(addr_cache, &params, OBJ_CAST(addr));
 
 	return 0;
 }

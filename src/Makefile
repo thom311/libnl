@@ -21,10 +21,10 @@ all: $(TOOLS)
 
 $(TOOLS): utils.o
 nl-route-add nl-route-delete nl-route-list: route-utils.o
+nl-addr-add nl-addr-delete nl-addr-list: addr-utils.o
 
 nl-%: nl-%.c
-	@echo "  LD $@"; \
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lnl-route
 
 genl-%: genl-%.c
 	@echo "  LD $@"; \

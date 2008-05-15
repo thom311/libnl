@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -27,7 +27,7 @@
 
 /**
  * Send routing netlink request message
- * @arg handle		Netlink handle.
+ * @arg sk		Netlink socket.
  * @arg type		Netlink message type.
  * @arg family		Address family.
  * @arg flags		Additional netlink message flags.
@@ -37,13 +37,13 @@
  *
  * @return 0 on success or a negative error code.
  */
-int nl_rtgen_request(struct nl_handle *handle, int type, int family, int flags)
+int nl_rtgen_request(struct nl_sock *sk, int type, int family, int flags)
 {
 	struct rtgenmsg gmsg = {
 		.rtgen_family = family,
 	};
 
-	return nl_send_simple(handle, type, flags, &gmsg, sizeof(gmsg));
+	return nl_send_simple(sk, type, flags, &gmsg, sizeof(gmsg));
 }
 
 /** @} */

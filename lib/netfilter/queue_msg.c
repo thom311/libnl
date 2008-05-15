@@ -194,7 +194,7 @@ nla_put_failure:
 	return NULL;
 }
 
-int nfnl_queue_msg_send_verdict(struct nl_handle *nlh,
+int nfnl_queue_msg_send_verdict(struct nl_sock *nlh,
 				const struct nfnl_queue_msg *msg)
 {
 	struct nl_msg *nlmsg;

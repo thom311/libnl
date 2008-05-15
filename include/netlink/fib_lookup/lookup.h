@@ -31,7 +31,7 @@ extern struct nl_cache *	flnl_result_alloc_cache(void);
 extern int			flnl_lookup_build_request(struct flnl_request *,
 							  int,
 							  struct nl_msg **);
-extern int			flnl_lookup(struct nl_handle *,
+extern int			flnl_lookup(struct nl_sock *,
 					    struct flnl_request *,
 					    struct nl_cache *);
 

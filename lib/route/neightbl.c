@@ -226,7 +226,7 @@ errout:
 	return err;
 }
 
-static int neightbl_request_update(struct nl_cache *c, struct nl_handle *h)
+static int neightbl_request_update(struct nl_cache *c, struct nl_sock *h)
 {
 	return nl_rtgen_request(h, RTM_GETNEIGHTBL, AF_UNSPEC, NLM_F_DUMP);
 }
@@ -394,7 +394,7 @@ void rtnl_neightbl_put(struct rtnl_neightbl *neightbl)
 
 /**
  * Build a neighbour table cache including all neighbour tables currently configured in the kernel.
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg result		Pointer to store resulting cache.
  *
  * Allocates a new neighbour table cache, initializes it properly and
@@ -403,9 +403,9 @@ void rtnl_neightbl_put(struct rtnl_neightbl *neightbl)
  *
  * @return 0 on success or a negative error code.
  */
-int rtnl_neightbl_alloc_cache(struct nl_handle *sock, struct nl_cache **result)
+int rtnl_neightbl_alloc_cache(struct nl_sock *sk, struct nl_cache **result)
 {
-	return nl_cache_alloc_and_fill(&rtnl_neightbl_ops, sock, result);
+	return nl_cache_alloc_and_fill(&rtnl_neightbl_ops, sk, result);
 }
 
 /**
@@ -570,7 +570,7 @@ nla_put_failure:
 
 /**
  * Change neighbour table attributes
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg old		neighbour table to be changed
  * @arg tmpl		template with requested changes
  *
@@ -581,7 +581,7 @@ nla_put_failure:
  *
  * @return 0 on success or a negative error code
  */
-int rtnl_neightbl_change(struct nl_handle *handle, struct rtnl_neightbl *old,
+int rtnl_neightbl_change(struct nl_sock *sk, struct rtnl_neightbl *old,
 			 struct rtnl_neightbl *tmpl)
 {
 	struct nl_msg *msg;
@@ -590,11 +590,11 @@ int rtnl_neightbl_change(struct nl_handle *handle, struct rtnl_neightbl *old,
 	if ((err = rtnl_neightbl_build_change_request(old, tmpl, &msg)) < 0)
 		return err;
 
-	if ((err = nl_send_auto_complete(handle, msg)) < 0)
+	if ((err = nl_send_auto_complete(sk, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */

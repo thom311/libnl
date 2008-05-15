@@ -78,7 +78,7 @@
  * @code
  * // The first step is to retrieve a list of all available interfaces within
  * // the kernel and put them into a cache.
- * struct nl_cache *cache = rtnl_link_alloc_cache(nl_handle);
+ * struct nl_cache *cache = rtnl_link_alloc_cache(sk);
  *
  * // In a second step, a specific link may be looked up by either interface
  * // index or interface name.
@@ -112,12 +112,12 @@
  * // Two ways exist to commit this change request, the first one is to
  * // build the required netlink message and send it out in one single
  * // step:
- * rtnl_link_change(nl_handle, old, request);
+ * rtnl_link_change(sk, old, request);
  *
  * // An alternative way is to build the netlink message and send it
  * // out yourself using nl_send_auto_complete()
  * struct nl_msg *msg = rtnl_link_build_change_request(old, request);
- * nl_send_auto_complete(nl_handle, nlmsg_hdr(msg));
+ * nl_send_auto_complete(sk, nlmsg_hdr(msg));
  * nlmsg_free(msg);
  *
  * // Don't forget to give back the link object ;->
@@ -427,9 +427,9 @@ errout:
 	return err;
 }
 
-static int link_request_update(struct nl_cache *c, struct nl_handle *h)
+static int link_request_update(struct nl_cache *cache, struct nl_sock *sk)
 {
-	return nl_rtgen_request(h, RTM_GETLINK, AF_UNSPEC, NLM_F_DUMP);
+	return nl_rtgen_request(sk, RTM_GETLINK, AF_UNSPEC, NLM_F_DUMP);
 }
 
 static int link_dump_brief(struct nl_object *obj, struct nl_dump_params *p)
@@ -861,7 +861,7 @@ void rtnl_link_put(struct rtnl_link *link)
 
 /**
  * Allocate link cache and fill in all configured links.
- * @arg handle		Netlink handle.
+ * @arg sk		Netlink socket.
  * @arg result		Pointer to store resulting cache.
  *
  * Allocates a new link cache, initializes it properly and updates it
@@ -869,9 +869,9 @@ void rtnl_link_put(struct rtnl_link *link)
  *
  * @return 0 on success or a negative error code.
  */
-int rtnl_link_alloc_cache(struct nl_handle *sock, struct nl_cache **result)
+int rtnl_link_alloc_cache(struct nl_sock *sk, struct nl_cache **result)
 {
-	return nl_cache_alloc_and_fill(&rtnl_link_ops, sock, result);
+	return nl_cache_alloc_and_fill(&rtnl_link_ops, sk, result);
 }
 
 /**
@@ -1025,7 +1025,7 @@ nla_put_failure:
 
 /**
  * Change link attributes
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg old		link to be changed
  * @arg tmpl		template with requested changes
  * @arg flags		additional netlink message flags
@@ -1038,7 +1038,7 @@ nla_put_failure:
  * @note Not all attributes can be changed, see
  *       \ref link_changeable "Changeable Attributes" for more details.
  */
-int rtnl_link_change(struct nl_handle *handle, struct rtnl_link *old,
+int rtnl_link_change(struct nl_sock *sk, struct rtnl_link *old,
 		     struct rtnl_link *tmpl, int flags)
 {
 	struct nl_msg *msg;
@@ -1047,11 +1047,11 @@ int rtnl_link_change(struct nl_handle *handle, struct rtnl_link *old,
 	if ((err = rtnl_link_build_change_request(old, tmpl, flags, &msg)) < 0)
 		return err;
 	
-	if ((err = nl_send_auto_complete(handle, msg)) < 0)
+	if ((err = nl_send_auto_complete(sk, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */

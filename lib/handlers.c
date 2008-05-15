@@ -412,7 +412,7 @@ int nl_cb_err(struct nl_cb *cb, enum nl_cb_kind kind,
  * @arg func		replacement callback for nl_recvmsgs()
  */
 void nl_cb_overwrite_recvmsgs(struct nl_cb *cb,
-			      int (*func)(struct nl_handle *, struct nl_cb *))
+			      int (*func)(struct nl_sock *, struct nl_cb *))
 {
 	cb->cb_recvmsgs_ow = func;
 }
@@ -423,7 +423,7 @@ void nl_cb_overwrite_recvmsgs(struct nl_cb *cb,
  * @arg func		replacement callback for nl_recv()
  */
 void nl_cb_overwrite_recv(struct nl_cb *cb,
-			  int (*func)(struct nl_handle *, struct sockaddr_nl *,
+			  int (*func)(struct nl_sock *, struct sockaddr_nl *,
 				      unsigned char **, struct ucred **))
 {
 	cb->cb_recv_ow = func;
@@ -435,7 +435,7 @@ void nl_cb_overwrite_recv(struct nl_cb *cb,
  * @arg func		replacement callback for nl_send()
  */
 void nl_cb_overwrite_send(struct nl_cb *cb,
-			  int (*func)(struct nl_handle *, struct nl_msg *))
+			  int (*func)(struct nl_sock *, struct nl_msg *))
 {
 	cb->cb_send_ow = func;
 }

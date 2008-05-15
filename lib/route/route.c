@@ -46,7 +46,7 @@ errout:
 	return err;
 }
 
-static int route_request_update(struct nl_cache *c, struct nl_handle *h)
+static int route_request_update(struct nl_cache *c, struct nl_sock *h)
 {
 	struct rtmsg rhdr = {
 		.rtm_family = c->c_iarg1,
@@ -65,7 +65,7 @@ static int route_request_update(struct nl_cache *c, struct nl_handle *h)
 
 /**
  * Build a route cache holding all routes currently configured in the kernel
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg family		Address family of routes to cover or AF_UNSPEC
  * @arg flags		Flags
  *
@@ -76,7 +76,7 @@ static int route_request_update(struct nl_cache *c, struct nl_handle *h)
  *       cache after using it.
  * @return The cache or NULL if an error has occured.
  */
-int rtnl_route_alloc_cache(struct nl_handle *handle, int family, int flags,
+int rtnl_route_alloc_cache(struct nl_sock *sk, int family, int flags,
 			   struct nl_cache **result)
 {
 	struct nl_cache *cache;
@@ -88,7 +88,7 @@ int rtnl_route_alloc_cache(struct nl_handle *handle, int family, int flags,
 	cache->c_iarg1 = family;
 	cache->c_iarg2 = flags;
 
-	if (handle && (err = nl_cache_refill(handle, cache)) < 0) {
+	if (sk && (err = nl_cache_refill(sk, cache)) < 0) {
 		free(cache);
 		return err;
 	}
@@ -129,8 +129,7 @@ int rtnl_route_build_add_request(struct rtnl_route *tmpl, int flags,
 			       result);
 }
 
-int rtnl_route_add(struct nl_handle *handle, struct rtnl_route *route,
-		   int flags)
+int rtnl_route_add(struct nl_sock *sk, struct rtnl_route *route, int flags)
 {
 	struct nl_msg *msg;
 	int err;
@@ -138,12 +137,12 @@ int rtnl_route_add(struct nl_handle *handle, struct rtnl_route *route,
 	if ((err = rtnl_route_build_add_request(route, flags, &msg)) < 0)
 		return err;
 
-	err = nl_send_auto_complete(handle, msg);
+	err = nl_send_auto_complete(sk, msg);
 	nlmsg_free(msg);
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 int rtnl_route_build_del_request(struct rtnl_route *tmpl, int flags,
@@ -152,8 +151,7 @@ int rtnl_route_build_del_request(struct rtnl_route *tmpl, int flags,
 	return build_route_msg(tmpl, RTM_DELROUTE, flags, result);
 }
 
-int rtnl_route_delete(struct nl_handle *handle, struct rtnl_route *route,
-		      int flags)
+int rtnl_route_delete(struct nl_sock *sk, struct rtnl_route *route, int flags)
 {
 	struct nl_msg *msg;
 	int err;
@@ -161,12 +159,12 @@ int rtnl_route_delete(struct nl_handle *handle, struct rtnl_route *route,
 	if ((err = rtnl_route_build_del_request(route, flags, &msg)) < 0)
 		return err;
 
-	err = nl_send_auto_complete(handle, msg);
+	err = nl_send_auto_complete(sk, msg);
 	nlmsg_free(msg);
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */

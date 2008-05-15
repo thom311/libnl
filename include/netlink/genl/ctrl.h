@@ -22,12 +22,12 @@ extern "C" {
 
 struct genl_family;
 
-extern int			genl_ctrl_alloc_cache(struct nl_handle *,
+extern int			genl_ctrl_alloc_cache(struct nl_sock *,
 						      struct nl_cache **);
 extern struct genl_family *	genl_ctrl_search(struct nl_cache *, int);
 extern struct genl_family *	genl_ctrl_search_by_name(struct nl_cache *,
 							 const char *);
-extern int			genl_ctrl_resolve(struct nl_handle *,
+extern int			genl_ctrl_resolve(struct nl_sock *,
 						  const char *);
 
 #ifdef __cplusplus

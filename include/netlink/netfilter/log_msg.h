@@ -21,7 +21,6 @@
 extern "C" {
 #endif
 
-struct nl_handle;
 struct nlmsghdr;
 struct nfnl_log_msg;
 

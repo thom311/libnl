@@ -64,15 +64,14 @@ errout:
 	return err;
 }
 
-static int class_request_update(struct nl_cache *cache,
-				struct nl_handle *handle)
+static int class_request_update(struct nl_cache *cache, struct nl_sock *sk)
 {
 	struct tcmsg tchdr = {
 		.tcm_family = AF_UNSPEC,
 		.tcm_ifindex = cache->c_iarg1,
 	};
 
-	return nl_send_simple(handle, RTM_GETTCLASS, NLM_F_DUMP, &tchdr,
+	return nl_send_simple(sk, RTM_GETTCLASS, NLM_F_DUMP, &tchdr,
 			      sizeof(tchdr));
 }
 
@@ -134,7 +133,7 @@ int rtnl_class_build_add_request(struct rtnl_class *class, int flags,
 
 /**
  * Add a new class
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg class		class to delete
  * @arg flags		additional netlink message flags
  *
@@ -147,8 +146,7 @@ int rtnl_class_build_add_request(struct rtnl_class *class, int flags,
  *
  * @return 0 on success or a negative error code
  */
-int rtnl_class_add(struct nl_handle *handle, struct rtnl_class *class,
-		   int flags)
+int rtnl_class_add(struct nl_sock *sk, struct rtnl_class *class, int flags)
 {
 	struct nl_msg *msg;
 	int err;
@@ -156,11 +154,11 @@ int rtnl_class_add(struct nl_handle *handle, struct rtnl_class *class,
 	if ((err = rtnl_class_build_add_request(class, flags, &msg)) < 0)
 		return err;
 
-	if ((err = nl_send_auto_complete(handle, msg)) < 0)
+	if ((err = nl_send_auto_complete(sk, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */
@@ -172,7 +170,7 @@ int rtnl_class_add(struct nl_handle *handle, struct rtnl_class *class,
 
 /**
  * Build a class cache including all classes attached to the specified interface
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg ifindex		interface index of the link the classes are
  *                      attached to.
  *
@@ -181,7 +179,7 @@ int rtnl_class_add(struct nl_handle *handle, struct rtnl_class *class,
  *
  * @return The cache or NULL if an error has occured.
  */
-int rtnl_class_alloc_cache(struct nl_handle *handle, int ifindex,
+int rtnl_class_alloc_cache(struct nl_sock *sk, int ifindex,
 			   struct nl_cache **result)
 {
 	struct nl_cache * cache;
@@ -193,7 +191,7 @@ int rtnl_class_alloc_cache(struct nl_handle *handle, int ifindex,
 
 	cache->c_iarg1 = ifindex;
 	
-	if (handle && (err = nl_cache_refill(handle, cache)) < 0) {
+	if (sk && (err = nl_cache_refill(sk, cache)) < 0) {
 		nl_cache_free(cache);
 		return err;
 	}

@@ -140,26 +140,26 @@ found:
 
 /**
  * Allocate new cache manager
- * @arg handle		Netlink socket/handle to be used
+ * @arg sk		Netlink socket.
  * @arg protocol	Netlink Protocol this manager is used for
  * @arg flags		Flags
  *
  * @return Newly allocated cache manager or NULL on failure.
  */
-int nl_cache_mngr_alloc(struct nl_handle *handle, int protocol, int flags,
+int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 			struct nl_cache_mngr **result)
 {
 	struct nl_cache_mngr *mngr;
 	int err = -NLE_NOMEM;
 
-	if (handle == NULL)
+	if (sk == NULL)
 		BUG();
 
 	mngr = calloc(1, sizeof(*mngr));
 	if (!mngr)
 		goto errout;
 
-	mngr->cm_handle = handle;
+	mngr->cm_handle = sk;
 	mngr->cm_nassocs = 32;
 	mngr->cm_protocol = protocol;
 	mngr->cm_flags = flags;

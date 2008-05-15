@@ -234,12 +234,12 @@ static int __genl_ops_resolve(struct nl_cache *ctrl, struct genl_ops *ops)
 	return -NLE_OBJ_NOTFOUND;
 }
 
-int genl_ops_resolve(struct nl_handle *handle, struct genl_ops *ops)
+int genl_ops_resolve(struct nl_sock *sk, struct genl_ops *ops)
 {
 	struct nl_cache *ctrl;
 	int err;
 
-	if ((err = genl_ctrl_alloc_cache(handle, &ctrl)) < 0)
+	if ((err = genl_ctrl_alloc_cache(sk, &ctrl)) < 0)
 		goto errout;
 
 	err = __genl_ops_resolve(ctrl, ops);
@@ -249,13 +249,13 @@ errout:
 	return err;
 }
 
-int genl_mngt_resolve(struct nl_handle *handle)
+int genl_mngt_resolve(struct nl_sock *sk)
 {
 	struct nl_cache *ctrl;
 	struct genl_ops *ops;
 	int err = 0;
 
-	if ((err = genl_ctrl_alloc_cache(handle, &ctrl)) < 0)
+	if ((err = genl_ctrl_alloc_cache(sk, &ctrl)) < 0)
 		goto errout;
 
 	nl_list_for_each_entry(ops, &genl_ops_list, o_list) {

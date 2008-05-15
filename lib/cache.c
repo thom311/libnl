@@ -186,7 +186,7 @@ struct nl_cache *nl_cache_alloc(struct nl_cache_ops *ops)
 	return cache;
 }
 
-int nl_cache_alloc_and_fill(struct nl_cache_ops *ops, struct nl_handle *sock,
+int nl_cache_alloc_and_fill(struct nl_cache_ops *ops, struct nl_sock *sock,
 			    struct nl_cache **result)
 {
 	struct nl_cache *cache;
@@ -427,7 +427,7 @@ struct nl_object *nl_cache_search(struct nl_cache *cache,
 
 /**
  * Request a full dump from the kernel to fill a cache
- * @arg handle		Netlink handle
+ * @arg sk		Netlink socket.
  * @arg cache		Cache subjected to be filled.
  *
  * Send a dumping request to the kernel causing it to dump all objects
@@ -436,7 +436,7 @@ struct nl_object *nl_cache_search(struct nl_cache *cache,
  * Use nl_cache_pickup() to read the objects from the socket and fill them
  * into a cache.
  */
-int nl_cache_request_full_dump(struct nl_handle *handle, struct nl_cache *cache)
+int nl_cache_request_full_dump(struct nl_sock *sk, struct nl_cache *cache)
 {
 	NL_DBG(2, "Requesting dump from kernel for cache %p <%s>...\n",
 	          cache, nl_cache_name(cache));
@@ -444,7 +444,7 @@ int nl_cache_request_full_dump(struct nl_handle *handle, struct nl_cache *cache)
 	if (cache->c_ops->co_request_update == NULL)
 		return -NLE_OPNOTSUPP;
 
-	return cache->c_ops->co_request_update(cache, handle);
+	return cache->c_ops->co_request_update(cache, sk);
 }
 
 /** @cond SKIP */
@@ -461,7 +461,7 @@ static int update_msg_parser(struct nl_msg *msg, void *arg)
 }
 /** @endcond */
 
-int __cache_pickup(struct nl_handle *handle, struct nl_cache *cache,
+int __cache_pickup(struct nl_sock *sk, struct nl_cache *cache,
 		   struct nl_parser_param *param)
 {
 	int err;
@@ -474,13 +474,13 @@ int __cache_pickup(struct nl_handle *handle, struct nl_cache *cache,
 	NL_DBG(1, "Picking up answer for cache %p <%s>...\n",
 		  cache, nl_cache_name(cache));
 
-	cb = nl_cb_clone(handle->h_cb);
+	cb = nl_cb_clone(sk->s_cb);
 	if (cb == NULL)
 		return -NLE_NOMEM;
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, update_msg_parser, &x);
 
-	err = nl_recvmsgs(handle, cb);
+	err = nl_recvmsgs(sk, cb);
 	if (err < 0)
 		NL_DBG(2, "While picking up for %p <%s>, recvmsgs() returned " \
 		       "%d: %s", cache, nl_cache_name(cache),
@@ -498,7 +498,7 @@ static int pickup_cb(struct nl_object *c, struct nl_parser_param *p)
 
 /**
  * Pickup a netlink dump response and put it into a cache.
- * @arg handle		Netlink handle.
+ * @arg sk		Netlink socket.
  * @arg cache		Cache to put items into.
  *
  * Waits for netlink messages to arrive, parses them and puts them into
@@ -506,14 +506,14 @@ static int pickup_cb(struct nl_object *c, struct nl_parser_param *p)
  *
  * @return 0 on success or a negative error code.
  */
-int nl_cache_pickup(struct nl_handle *handle, struct nl_cache *cache)
+int nl_cache_pickup(struct nl_sock *sk, struct nl_cache *cache)
 {
 	struct nl_parser_param p = {
 		.pp_cb = pickup_cb,
 		.pp_arg = cache,
 	};
 
-	return __cache_pickup(handle, cache, &p);
+	return __cache_pickup(sk, cache, &p);
 }
 
 static int cache_include(struct nl_cache *cache, struct nl_object *obj,
@@ -578,7 +578,7 @@ static int resync_cb(struct nl_object *c, struct nl_parser_param *p)
 	return nl_cache_include(ca->ca_cache, c, ca->ca_change);
 }
 
-int nl_cache_resync(struct nl_handle *handle, struct nl_cache *cache,
+int nl_cache_resync(struct nl_sock *sk, struct nl_cache *cache,
 		    change_func_t change_cb)
 {
 	struct nl_object *obj, *next;
@@ -597,11 +597,11 @@ int nl_cache_resync(struct nl_handle *handle, struct nl_cache *cache,
 	/* Mark all objects so we can see if some of them are obsolete */
 	nl_cache_mark_all(cache);
 
-	err = nl_cache_request_full_dump(handle, cache);
+	err = nl_cache_request_full_dump(sk, cache);
 	if (err < 0)
 		goto errout;
 
-	err = __cache_pickup(handle, cache, &p);
+	err = __cache_pickup(sk, cache, &p);
 	if (err < 0)
 		goto errout;
 
@@ -669,7 +669,7 @@ int nl_cache_parse_and_add(struct nl_cache *cache, struct nl_msg *msg)
 
 /**
  * (Re)fill a cache with the contents in the kernel.
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg cache		cache to update
  *
  * Clears the specified cache and fills it with the current state in
@@ -677,11 +677,11 @@ int nl_cache_parse_and_add(struct nl_cache *cache, struct nl_msg *msg)
  *
  * @return 0 or a negative error code.
  */
-int nl_cache_refill(struct nl_handle *handle, struct nl_cache *cache)
+int nl_cache_refill(struct nl_sock *sk, struct nl_cache *cache)
 {
 	int err;
 
-	err = nl_cache_request_full_dump(handle, cache);
+	err = nl_cache_request_full_dump(sk, cache);
 	if (err < 0)
 		return err;
 
@@ -689,7 +689,7 @@ int nl_cache_refill(struct nl_handle *handle, struct nl_cache *cache)
 	       cache, nl_cache_name(cache));
 	nl_cache_clear(cache);
 
-	return nl_cache_pickup(handle, cache);
+	return nl_cache_pickup(sk, cache);
 }
 
 /** @} */

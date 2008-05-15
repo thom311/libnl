@@ -133,14 +133,14 @@ errout:
 	return err;
 }
 
-static int qdisc_request_update(struct nl_cache *c, struct nl_handle *h)
+static int qdisc_request_update(struct nl_cache *c, struct nl_sock *sk)
 {
 	struct tcmsg tchdr = {
 		.tcm_family = AF_UNSPEC,
 		.tcm_ifindex = c->c_iarg1,
 	};
 
-	return nl_send_simple(h, RTM_GETQDISC, NLM_F_DUMP, &tchdr,
+	return nl_send_simple(sk, RTM_GETQDISC, NLM_F_DUMP, &tchdr,
 			      sizeof(tchdr));
 }
 
@@ -211,7 +211,7 @@ int rtnl_qdisc_build_add_request(struct rtnl_qdisc *qdisc, int flags,
 
 /**
  * Add a new qdisc
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg qdisc		qdisc to delete
  * @arg flags		additional netlink message flags
  *
@@ -224,7 +224,7 @@ int rtnl_qdisc_build_add_request(struct rtnl_qdisc *qdisc, int flags,
  *
  * @return 0 on success or a negative error code
  */
-int rtnl_qdisc_add(struct nl_handle *handle, struct rtnl_qdisc *qdisc,
+int rtnl_qdisc_add(struct nl_sock *sk, struct rtnl_qdisc *qdisc,
 		   int flags)
 {
 	struct nl_msg *msg;
@@ -233,11 +233,11 @@ int rtnl_qdisc_add(struct nl_handle *handle, struct rtnl_qdisc *qdisc,
 	if ((err = rtnl_qdisc_build_add_request(qdisc, flags, &msg)) < 0)
 		return err;
 
-	if ((err = nl_send_auto_complete(handle, msg)) < 0)
+	if ((err = nl_send_auto_complete(sk, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */
@@ -269,7 +269,7 @@ int rtnl_qdisc_build_change_request(struct rtnl_qdisc *qdisc,
 
 /**
  * Change attributes of a qdisc
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg qdisc		qdisc to change
  * @arg new		new qdisc attributes
  *
@@ -279,7 +279,7 @@ int rtnl_qdisc_build_change_request(struct rtnl_qdisc *qdisc,
  *
  * @return 0 on success or a negative error code
  */
-int rtnl_qdisc_change(struct nl_handle *handle, struct rtnl_qdisc *qdisc,
+int rtnl_qdisc_change(struct nl_sock *sk, struct rtnl_qdisc *qdisc,
 		      struct rtnl_qdisc *new)
 {
 	struct nl_msg *msg;
@@ -288,11 +288,11 @@ int rtnl_qdisc_change(struct nl_handle *handle, struct rtnl_qdisc *qdisc,
 	if ((err = rtnl_qdisc_build_change_request(qdisc, new, &msg)) < 0)
 		return err;
 
-	if ((err = nl_send_auto_complete(handle, msg)) < 0)
+	if ((err = nl_send_auto_complete(sk, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */
@@ -343,7 +343,7 @@ int rtnl_qdisc_build_delete_request(struct rtnl_qdisc *qdisc,
 
 /**
  * Delete a qdisc
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg qdisc		qdisc to delete
  *
  * Builds a netlink message by calling rtnl_qdisc_build_delete_request(),
@@ -352,7 +352,7 @@ int rtnl_qdisc_build_delete_request(struct rtnl_qdisc *qdisc,
  *
  * @return 0 on success or a negative error code
  */
-int rtnl_qdisc_delete(struct nl_handle *handle, struct rtnl_qdisc *qdisc)
+int rtnl_qdisc_delete(struct nl_sock *sk, struct rtnl_qdisc *qdisc)
 {
 	struct nl_msg *msg;
 	int err;
@@ -360,11 +360,11 @@ int rtnl_qdisc_delete(struct nl_handle *handle, struct rtnl_qdisc *qdisc)
 	if ((err = rtnl_qdisc_build_delete_request(qdisc, &msg)) < 0)
 		return err;
 
-	if ((err = nl_send_auto_complete(handle, msg)) < 0)
+	if ((err = nl_send_auto_complete(sk, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */
@@ -377,7 +377,7 @@ int rtnl_qdisc_delete(struct nl_handle *handle, struct rtnl_qdisc *qdisc)
 /**
  * Build a qdisc cache including all qdiscs currently configured in
  * the kernel
- * @arg sock		netlink handle
+ * @arg sk		Netlink socket.
  * @arg result		Pointer to store resulting message.
  *
  * Allocates a new cache, initializes it properly and updates it to
@@ -385,9 +385,9 @@ int rtnl_qdisc_delete(struct nl_handle *handle, struct rtnl_qdisc *qdisc)
  *
  * @return 0 on success or a negative error code.
  */
-int rtnl_qdisc_alloc_cache(struct nl_handle *sock, struct nl_cache **result)
+int rtnl_qdisc_alloc_cache(struct nl_sock *sk, struct nl_cache **result)
 {
-	return nl_cache_alloc_and_fill(&rtnl_qdisc_ops, sock, result);
+	return nl_cache_alloc_and_fill(&rtnl_qdisc_ops, sk, result);
 }
 
 /**

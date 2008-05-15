@@ -31,7 +31,7 @@
 static struct nl_cache_ops genl_ctrl_ops;
 /** @endcond */
 
-static int ctrl_request_update(struct nl_cache *c, struct nl_handle *h)
+static int ctrl_request_update(struct nl_cache *c, struct nl_sock *h)
 {
 	return genl_send_simple(h, GENL_ID_CTRL, CTRL_CMD_GETFAMILY,
 				CTRL_VERSION, NLM_F_DUMP);
@@ -143,7 +143,7 @@ errout:
  * @{
  */
 
-int genl_ctrl_alloc_cache(struct nl_handle *sock, struct nl_cache **result)
+int genl_ctrl_alloc_cache(struct nl_sock *sock, struct nl_cache **result)
 {
 	return nl_cache_alloc_and_fill(&genl_ctrl_ops, sock, result);
 }
@@ -216,7 +216,7 @@ struct genl_family *genl_ctrl_search_by_name(struct nl_cache *cache,
 
 /**
  * Resolve generic netlink family name to its identifier
- * @arg handle		Netlink Handle
+ * @arg sk		Netlink socket.
  * @arg name		Name of generic netlink family
  *
  * Resolves the generic netlink family name to its identifer and returns
@@ -224,13 +224,13 @@ struct genl_family *genl_ctrl_search_by_name(struct nl_cache *cache,
  *
  * @return A positive identifier or a negative error code.
  */
-int genl_ctrl_resolve(struct nl_handle *handle, const char *name)
+int genl_ctrl_resolve(struct nl_sock *sk, const char *name)
 {
 	struct nl_cache *cache;
 	struct genl_family *family;
 	int err;
 
-	if ((err = genl_ctrl_alloc_cache(handle, &cache)) < 0)
+	if ((err = genl_ctrl_alloc_cache(sk, &cache)) < 0)
 		return err;
 
 	family = genl_ctrl_search_by_name(cache, name);

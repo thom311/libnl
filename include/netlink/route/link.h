@@ -57,7 +57,7 @@ extern void	rtnl_link_put(struct rtnl_link *);
 extern void	rtnl_link_free(struct rtnl_link *);
 
 /* link cache management */
-extern int	rtnl_link_alloc_cache(struct nl_handle *, struct nl_cache **);
+extern int	rtnl_link_alloc_cache(struct nl_sock *, struct nl_cache **);
 extern struct rtnl_link *rtnl_link_get(struct nl_cache *, int);
 extern struct rtnl_link *rtnl_link_get_by_name(struct nl_cache *, const char *);
 
@@ -65,7 +65,7 @@ extern struct rtnl_link *rtnl_link_get_by_name(struct nl_cache *, const char *);
 extern int	rtnl_link_build_change_request(struct rtnl_link *,
 					       struct rtnl_link *, int,
 					       struct nl_msg **);
-extern int	rtnl_link_change(struct nl_handle *, struct rtnl_link *,
+extern int	rtnl_link_change(struct nl_sock *, struct rtnl_link *,
 				 struct rtnl_link *, int);
 
 /* Name <-> Index Translations */

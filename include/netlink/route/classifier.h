@@ -26,18 +26,18 @@ extern struct nl_object_ops cls_obj_ops;
 extern struct rtnl_cls *rtnl_cls_alloc(void);
 extern void	rtnl_cls_put(struct rtnl_cls *);
 
-extern int	rtnl_cls_alloc_cache(struct nl_handle *, int, uint32_t,
+extern int	rtnl_cls_alloc_cache(struct nl_sock *, int, uint32_t,
 				     struct nl_cache **);
 
 extern int	rtnl_cls_build_add_request(struct rtnl_cls *, int,
 					   struct nl_msg **);
-extern int	rtnl_cls_add(struct nl_handle *, struct rtnl_cls *, int);
+extern int	rtnl_cls_add(struct nl_sock *, struct rtnl_cls *, int);
 
 extern int	rtnl_cls_build_change_request(struct rtnl_cls *, int,
 					      struct nl_msg **);
 extern int	rtnl_cls_build_delete_request(struct rtnl_cls *, int,
 					      struct nl_msg **);
-extern int	rtnl_cls_delete(struct nl_handle *, struct rtnl_cls *, int);
+extern int	rtnl_cls_delete(struct nl_sock *, struct rtnl_cls *, int);
 
 extern void rtnl_cls_set_ifindex(struct rtnl_cls *, int);
 extern void rtnl_cls_set_handle(struct rtnl_cls *, uint32_t);

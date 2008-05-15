@@ -25,7 +25,7 @@ struct rtnl_neightbl;
 extern struct rtnl_neightbl *rtnl_neightbl_alloc(void);
 extern void rtnl_neightbl_put(struct rtnl_neightbl *);
 extern void rtnl_neightbl_free(struct rtnl_neightbl *);
-extern int rtnl_neightbl_alloc_cache(struct nl_handle *, struct nl_cache **);
+extern int rtnl_neightbl_alloc_cache(struct nl_sock *, struct nl_cache **);
 extern struct rtnl_neightbl *rtnl_neightbl_get(struct nl_cache *,
 					       const char *, int);
 extern void rtnl_neightbl_dump(struct rtnl_neightbl *, FILE *,
@@ -34,7 +34,7 @@ extern void rtnl_neightbl_dump(struct rtnl_neightbl *, FILE *,
 extern int rtnl_neightbl_build_change_request(struct rtnl_neightbl *,
 					      struct rtnl_neightbl *,
 					      struct nl_msg **);
-extern int rtnl_neightbl_change(struct nl_handle *, struct rtnl_neightbl *,
+extern int rtnl_neightbl_change(struct nl_sock *, struct rtnl_neightbl *,
 				struct rtnl_neightbl *);
 
 extern void rtnl_neightbl_set_family(struct rtnl_neightbl *, int);

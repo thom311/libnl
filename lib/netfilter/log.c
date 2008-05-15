@@ -54,16 +54,16 @@ nla_put_failure:
 	return -NLE_MSGSIZE;
 }
 
-static int send_log_request(struct nl_handle *handle, struct nl_msg *msg)
+static int send_log_request(struct nl_sock *sk, struct nl_msg *msg)
 {
 	int err;
 
-	err = nl_send_auto_complete(handle, msg);
+	err = nl_send_auto_complete(sk, msg);
 	nlmsg_free(msg);
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 int nfnl_log_build_pf_bind(uint8_t pf, struct nl_msg **result)
@@ -71,7 +71,7 @@ int nfnl_log_build_pf_bind(uint8_t pf, struct nl_msg **result)
 	return build_log_cmd_request(pf, 0, NFULNL_CFG_CMD_PF_BIND, result);
 }
 
-int nfnl_log_pf_bind(struct nl_handle *nlh, uint8_t pf)
+int nfnl_log_pf_bind(struct nl_sock *nlh, uint8_t pf)
 {
 	struct nl_msg *msg;
 	int err;
@@ -87,7 +87,7 @@ int nfnl_log_build_pf_unbind(uint8_t pf, struct nl_msg **result)
 	return build_log_cmd_request(pf, 0, NFULNL_CFG_CMD_PF_UNBIND, result);
 }
 
-int nfnl_log_pf_unbind(struct nl_handle *nlh, uint8_t pf)
+int nfnl_log_pf_unbind(struct nl_sock *nlh, uint8_t pf)
 {
 	struct nl_msg *msg;
 	int err;
@@ -179,7 +179,7 @@ nla_put_failure:
 	return -NLE_MSGSIZE;
 }
 
-int nfnl_log_create(struct nl_handle *nlh, const struct nfnl_log *log)
+int nfnl_log_create(struct nl_sock *nlh, const struct nfnl_log *log)
 {
 	struct nl_msg *msg;
 	int err;
@@ -196,7 +196,7 @@ int nfnl_log_build_change_request(const struct nfnl_log *log,
 	return nfnl_log_build_request(log, result);
 }
 
-int nfnl_log_change(struct nl_handle *nlh, const struct nfnl_log *log)
+int nfnl_log_change(struct nl_sock *nlh, const struct nfnl_log *log)
 {
 	struct nl_msg *msg;
 	int err;
@@ -217,7 +217,7 @@ int nfnl_log_build_delete_request(const struct nfnl_log *log,
 				     NFULNL_CFG_CMD_UNBIND, result);
 }
 
-int nfnl_log_delete(struct nl_handle *nlh, const struct nfnl_log *log)
+int nfnl_log_delete(struct nl_sock *nlh, const struct nfnl_log *log)
 {
 	struct nl_msg *msg;
 	int err;

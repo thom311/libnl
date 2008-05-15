@@ -44,7 +44,7 @@ extern struct nl_object_ops route_obj_ops;
 
 extern struct rtnl_route *	rtnl_route_alloc(void);
 extern void	rtnl_route_put(struct rtnl_route *);
-extern int	rtnl_route_alloc_cache(struct nl_handle *, int, int,
+extern int	rtnl_route_alloc_cache(struct nl_sock *, int, int,
 				       struct nl_cache **);
 
 extern void	rtnl_route_get(struct rtnl_route *);
@@ -55,10 +55,10 @@ extern int	rtnl_route_build_msg(struct nl_msg *, struct rtnl_route *);
 
 extern int	rtnl_route_build_add_request(struct rtnl_route *, int,
 					     struct nl_msg **);
-extern int	rtnl_route_add(struct nl_handle *, struct rtnl_route *, int);
+extern int	rtnl_route_add(struct nl_sock *, struct rtnl_route *, int);
 extern int	rtnl_route_build_del_request(struct rtnl_route *, int,
 					     struct nl_msg **);
-extern int	rtnl_route_delete(struct nl_handle *, struct rtnl_route *, int);
+extern int	rtnl_route_delete(struct nl_sock *, struct rtnl_route *, int);
 
 extern void	rtnl_route_set_table(struct rtnl_route *, uint32_t);
 extern uint32_t	rtnl_route_get_table(struct rtnl_route *);

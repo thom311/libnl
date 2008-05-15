@@ -25,7 +25,7 @@ struct rtnl_neigh;
 extern struct rtnl_neigh *rtnl_neigh_alloc(void);
 extern void	rtnl_neigh_put(struct rtnl_neigh *);
 
-extern int	rtnl_neigh_alloc_cache(struct nl_handle *, struct nl_cache **);
+extern int	rtnl_neigh_alloc_cache(struct nl_sock *, struct nl_cache **);
 extern struct rtnl_neigh *rtnl_neigh_get(struct nl_cache *, int,
 					       struct nl_addr *);
 
@@ -35,15 +35,15 @@ extern int	rtnl_neigh_str2state(const char *);
 extern char *	rtnl_neigh_flags2str(int, char *, size_t);
 extern int	rtnl_neigh_str2flag(const char *);
 
-extern int	rtnl_neigh_add(struct nl_handle *, struct rtnl_neigh *, int);
+extern int	rtnl_neigh_add(struct nl_sock *, struct rtnl_neigh *, int);
 extern int	rtnl_neigh_build_add_request(struct rtnl_neigh *, int,
 					     struct nl_msg **);
 
-extern int	rtnl_neigh_change(struct nl_handle *, struct rtnl_neigh *, int);
+extern int	rtnl_neigh_change(struct nl_sock *, struct rtnl_neigh *, int);
 extern int	rtnl_neigh_build_change_request(struct rtnl_neigh *, int,
 						struct nl_msg **);
 
-extern int	rtnl_neigh_delete(struct nl_handle *, struct rtnl_neigh *, int);
+extern int	rtnl_neigh_delete(struct nl_sock *, struct rtnl_neigh *, int);
 extern int	rtnl_neigh_build_delete_request(struct rtnl_neigh *, int,
 						struct nl_msg **);
 

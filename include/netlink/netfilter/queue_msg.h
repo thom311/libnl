@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-struct nl_handle;
+struct nl_sock;
 struct nlmsghdr;
 struct nfnl_queue_msg;
 
@@ -91,7 +91,7 @@ extern int			nfnl_queue_msg_test_verdict(const struct nfnl_queue_msg *);
 extern unsigned int		nfnl_queue_msg_get_verdict(const struct nfnl_queue_msg *);
 
 extern struct nl_msg *		nfnl_queue_msg_build_verdict(const struct nfnl_queue_msg *);
-extern int			nfnl_queue_msg_send_verdict(struct nl_handle *,
+extern int			nfnl_queue_msg_send_verdict(struct nl_sock *,
 							    const struct nfnl_queue_msg *);
 
 #ifdef __cplusplus

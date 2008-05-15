@@ -58,7 +58,7 @@
  * // block until the operation has been completed. Alternatively the required
  * // netlink message can be built using rtnl_addr_build_add_request() to be
  * // sent out using nl_send_auto_complete().
- * rtnl_addr_add(handle, addr, 0);
+ * rtnl_addr_add(sk, addr, 0);
  *
  * // Free the memory
  * rtnl_addr_put(addr);
@@ -99,7 +99,7 @@
  * // block until the operation has been completed. Alternatively the required
  * // netlink message can be built using rtnl_addr_build_delete_request()
  * // to be sent out using nl_send_auto_complete().
- * rtnl_addr_delete(handle, addr, 0);
+ * rtnl_addr_delete(sk, addr, 0);
  *
  * // Free the memory
  * rtnl_addr_put(addr);
@@ -297,9 +297,9 @@ errout_nomem:
 	goto errout;
 }
 
-static int addr_request_update(struct nl_cache *cache, struct nl_handle *handle)
+static int addr_request_update(struct nl_cache *cache, struct nl_sock *sk)
 {
-	return nl_rtgen_request(handle, RTM_GETADDR, AF_UNSPEC, NLM_F_DUMP);
+	return nl_rtgen_request(sk, RTM_GETADDR, AF_UNSPEC, NLM_F_DUMP);
 }
 
 static int addr_dump_brief(struct nl_object *obj, struct nl_dump_params *p)
@@ -640,9 +640,9 @@ void rtnl_addr_put(struct rtnl_addr *addr)
  * @{
  */
 
-int rtnl_addr_alloc_cache(struct nl_handle *sock, struct nl_cache **result)
+int rtnl_addr_alloc_cache(struct nl_sock *sk, struct nl_cache **result)
 {
-	return nl_cache_alloc_and_fill(&rtnl_addr_ops, sock, result);
+	return nl_cache_alloc_and_fill(&rtnl_addr_ops, sk, result);
 }
 
 /** @} */
@@ -742,7 +742,7 @@ int rtnl_addr_build_add_request(struct rtnl_addr *addr, int flags,
 
 /**
  * Request addition of new address
- * @arg handle		Netlink handle.
+ * @arg sk		Netlink socket.
  * @arg addr		Address object representing the new address.
  * @arg flags		Additional netlink message flags.
  *
@@ -754,7 +754,7 @@ int rtnl_addr_build_add_request(struct rtnl_addr *addr, int flags,
  *
  * @return 0 on sucess or a negative error if an error occured.
  */
-int rtnl_addr_add(struct nl_handle *handle, struct rtnl_addr *addr, int flags)
+int rtnl_addr_add(struct nl_sock *sk, struct rtnl_addr *addr, int flags)
 {
 	struct nl_msg *msg;
 	int err;
@@ -762,12 +762,12 @@ int rtnl_addr_add(struct nl_handle *handle, struct rtnl_addr *addr, int flags)
 	if ((err = rtnl_addr_build_add_request(addr, flags, &msg)) < 0)
 		return err;
 
-	err = nl_send_auto_complete(handle, msg);
+	err = nl_send_auto_complete(sk, msg);
 	nlmsg_free(msg);
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */
@@ -814,7 +814,7 @@ int rtnl_addr_build_delete_request(struct rtnl_addr *addr, int flags,
 
 /**
  * Request deletion of an address
- * @arg handle		Netlink handle.
+ * @arg sk		Netlink socket.
  * @arg addr		Address object to be deleted.
  * @arg flags		Additional netlink message flags.
  *
@@ -826,8 +826,7 @@ int rtnl_addr_build_delete_request(struct rtnl_addr *addr, int flags,
  *
  * @return 0 on sucess or a negative error if an error occured.
  */
-int rtnl_addr_delete(struct nl_handle *handle, struct rtnl_addr *addr,
-		     int flags)
+int rtnl_addr_delete(struct nl_sock *sk, struct rtnl_addr *addr, int flags)
 {
 	struct nl_msg *msg;
 	int err;
@@ -835,12 +834,12 @@ int rtnl_addr_delete(struct nl_handle *handle, struct rtnl_addr *addr,
 	if ((err = rtnl_addr_build_delete_request(addr, flags, &msg)) < 0)
 		return err;
 
-	err = nl_send_auto_complete(handle, msg);
+	err = nl_send_auto_complete(sk, msg);
 	nlmsg_free(msg);
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */

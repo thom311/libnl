@@ -27,16 +27,16 @@ struct rtnl_rule;
 extern struct rtnl_rule *	rtnl_rule_alloc(void);
 extern void			rtnl_rule_put(struct rtnl_rule *);
 
-extern int	rtnl_rule_alloc_cache(struct nl_handle *, int,
+extern int	rtnl_rule_alloc_cache(struct nl_sock *, int,
 				      struct nl_cache **);
 extern void rtnl_rule_dump(struct rtnl_rule *, FILE *, struct nl_dump_params *);
 
 extern int	rtnl_rule_build_add_request(struct rtnl_rule *, int,
 					    struct nl_msg **);
-extern int rtnl_rule_add(struct nl_handle *, struct rtnl_rule *, int);
+extern int rtnl_rule_add(struct nl_sock *, struct rtnl_rule *, int);
 extern int	rtnl_rule_build_delete_request(struct rtnl_rule *, int,
 					       struct nl_msg **);
-extern int rtnl_rule_delete(struct nl_handle *, struct rtnl_rule *, int);
+extern int rtnl_rule_delete(struct nl_sock *, struct rtnl_rule *, int);
 
 
 /* attribute modification */

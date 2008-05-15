@@ -39,7 +39,7 @@ extern "C" {
  * // function which must trigger a complete dump on the kernel-side of
  * // whatever the cache covers.
  * static int my_request_update(struct nl_cache *cache,
- * 				struct nl_handle *socket)
+ * 				struct nl_sock *socket)
  * {
  * 	// In this example, we request a full dump of the interface table
  * 	return nl_rtgen_request(socket, RTM_GETLINK, AF_UNSPEC, NLM_F_DUMP);
@@ -172,7 +172,7 @@ struct nl_cache_ops
 	 * Called whenever an update of the cache is required. Must send
 	 * a request message to the kernel requesting a complete dump.
 	 */
-	int   (*co_request_update)(struct nl_cache *, struct nl_handle *);
+	int   (*co_request_update)(struct nl_cache *, struct nl_sock *);
 
 	/**
 	 * Called whenever a message was received that needs to be parsed.

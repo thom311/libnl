@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_GENL_H_
@@ -20,9 +20,9 @@
 extern "C" {
 #endif
 
-extern int		genl_connect(struct nl_handle *);
+extern int		genl_connect(struct nl_sock *);
 
-extern int		genl_send_simple(struct nl_handle *, int, int,
+extern int		genl_send_simple(struct nl_sock *, int, int,
 					 int, int);
 
 extern void *		genlmsg_put(struct nl_msg *, uint32_t, uint32_t,

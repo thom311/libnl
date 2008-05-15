@@ -251,7 +251,7 @@ errout:
 
 /**
  * Perform FIB Lookup
- * @arg handle		Netlink handle.
+ * @arg sk		Netlink socket.
  * @arg req		Lookup request object.
  * @arg cache		Cache for result.
  *
@@ -260,7 +260,7 @@ errout:
  *
  * @return 0 on success or a negative error code.
  */
-int flnl_lookup(struct nl_handle *handle, struct flnl_request *req,
+int flnl_lookup(struct nl_sock *sk, struct flnl_request *req,
 		struct nl_cache *cache)
 {
 	struct nl_msg *msg;
@@ -269,12 +269,12 @@ int flnl_lookup(struct nl_handle *handle, struct flnl_request *req,
 	if ((err = flnl_lookup_build_request(req, 0, &msg)) < 0)
 		return err;
 
-	err = nl_send_auto_complete(handle, msg);
+	err = nl_send_auto_complete(sk, msg);
 	nlmsg_free(msg);
 	if (err < 0)
 		return err;
 
-	return nl_cache_pickup(handle, cache);
+	return nl_cache_pickup(sk, cache);
 }
 
 /** @} */

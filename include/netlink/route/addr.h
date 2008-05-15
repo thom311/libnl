@@ -28,15 +28,15 @@ struct rtnl_addr;
 extern struct rtnl_addr *rtnl_addr_alloc(void);
 extern void	rtnl_addr_put(struct rtnl_addr *);
 
-extern int	rtnl_addr_alloc_cache(struct nl_handle *, struct nl_cache **);
+extern int	rtnl_addr_alloc_cache(struct nl_sock *, struct nl_cache **);
 
 extern int	rtnl_addr_build_add_request(struct rtnl_addr *, int,
 					    struct nl_msg **);
-extern int	rtnl_addr_add(struct nl_handle *, struct rtnl_addr *, int);
+extern int	rtnl_addr_add(struct nl_sock *, struct rtnl_addr *, int);
 
 extern int	rtnl_addr_build_delete_request(struct rtnl_addr *, int,
 					       struct nl_msg **);
-extern int	rtnl_addr_delete(struct nl_handle *,
+extern int	rtnl_addr_delete(struct nl_sock *,
 				 struct rtnl_addr *, int);
 
 extern char *	rtnl_addr_flags2str(int, char *, size_t);

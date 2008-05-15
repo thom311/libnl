@@ -38,7 +38,7 @@ extern struct nl_object *	nl_cache_get_prev(struct nl_object *);
 
 extern struct nl_cache *	nl_cache_alloc(struct nl_cache_ops *);
 extern int			nl_cache_alloc_and_fill(struct nl_cache_ops *,
-							struct nl_handle *,
+							struct nl_sock *,
 							struct nl_cache **);
 extern int			nl_cache_alloc_name(const char *,
 						    struct nl_cache **);
@@ -53,11 +53,11 @@ extern int			nl_cache_add(struct nl_cache *,
 extern int			nl_cache_parse_and_add(struct nl_cache *,
 						       struct nl_msg *);
 extern void			nl_cache_remove(struct nl_object *);
-extern int			nl_cache_refill(struct nl_handle *,
+extern int			nl_cache_refill(struct nl_sock *,
 						struct nl_cache *);
-extern int			nl_cache_pickup(struct nl_handle *,
+extern int			nl_cache_pickup(struct nl_sock *,
 						struct nl_cache *);
-extern int			nl_cache_resync(struct nl_handle *,
+extern int			nl_cache_resync(struct nl_sock *,
 						struct nl_cache *,
 						change_func_t);
 extern int			nl_cache_include(struct nl_cache *,
@@ -106,7 +106,7 @@ struct nl_cache_mngr;
 
 #define NL_AUTO_PROVIDE		1
 
-extern int			nl_cache_mngr_alloc(struct nl_handle *,
+extern int			nl_cache_mngr_alloc(struct nl_sock *,
 						    int, int,
 						    struct nl_cache_mngr **);
 extern int			nl_cache_mngr_add(struct nl_cache_mngr *,

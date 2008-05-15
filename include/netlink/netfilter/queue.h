@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-struct nl_handle;
+struct nl_sock;
 struct nlmsghdr;
 struct nfnl_queue;
 
@@ -60,24 +60,24 @@ extern int			nfnl_queue_test_copy_range(const struct nfnl_queue *);
 extern uint32_t			nfnl_queue_get_copy_range(const struct nfnl_queue *);
 
 extern int	nfnl_queue_build_pf_bind(uint8_t, struct nl_msg **);
-extern int	nfnl_queue_pf_bind(struct nl_handle *, uint8_t);
+extern int	nfnl_queue_pf_bind(struct nl_sock *, uint8_t);
 
 extern int	nfnl_queue_build_pf_unbind(uint8_t, struct nl_msg **);
-extern int	nfnl_queue_pf_unbind(struct nl_handle *, uint8_t);
+extern int	nfnl_queue_pf_unbind(struct nl_sock *, uint8_t);
 
 extern int	nfnl_queue_build_create_request(const struct nfnl_queue *,
 						struct nl_msg **);
-extern int	nfnl_queue_create(struct nl_handle *,
+extern int	nfnl_queue_create(struct nl_sock *,
 				  const struct nfnl_queue *);
 
 extern int	nfnl_queue_build_change_request(const struct nfnl_queue *,
 						struct nl_msg **);
-extern int	nfnl_queue_change(struct nl_handle *,
+extern int	nfnl_queue_change(struct nl_sock *,
 				  const struct nfnl_queue *);
 
 extern int	nfnl_queue_build_delete_request(const struct nfnl_queue *,
 						struct nl_msg **);
-extern int	nfnl_queue_delete(struct nl_handle *,
+extern int	nfnl_queue_delete(struct nl_sock *,
 				  const struct nfnl_queue *);
 
 #ifdef __cplusplus

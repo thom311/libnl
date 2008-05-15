@@ -61,7 +61,7 @@
  * @code
  * // The first step is to retrieve a list of all available neighbour within
  * // the kernel and put them into a cache.
- * struct nl_cache *cache = rtnl_neigh_alloc_cache(handle);
+ * struct nl_cache *cache = rtnl_neigh_alloc_cache(sk);
  *
  * // Neighbours can then be looked up by the interface and destination
  * // address:
@@ -86,7 +86,7 @@
  * // block until the operation has been completed. Alternatively the required
  * // netlink message can be built using rtnl_neigh_build_add_request()
  * // to be sent out using nl_send_auto_complete().
- * rtnl_neigh_add(nl_handle, neigh, NLM_F_REPLACE);
+ * rtnl_neigh_add(sk, neigh, NLM_F_REPLACE);
  *
  * // Free the memory
  * rtnl_neigh_put(neigh);
@@ -109,7 +109,7 @@
  * // block until the operation has been completed. Alternatively the required
  * // netlink message can be built using rtnl_neigh_build_delete_request()
  * // to be sent out using nl_send_auto_complete().
- * rtnl_neigh_delete(handle, neigh, 0);
+ * rtnl_neigh_delete(sk, neigh, 0);
  *
  * // Free the memory
  * rtnl_neigh_put(neigh);
@@ -139,7 +139,7 @@
  * // block until the operation has been completed. Alternatively the required
  * // netlink message can be built using rtnl_neigh_build_change_request()
  * // to be sent out using nl_send_auto_complete().
- * rtnl_neigh_change(handle, neigh, 0);
+ * rtnl_neigh_change(sk, neigh, 0);
  *
  * // Free the memory
  * rtnl_neigh_put(neigh);
@@ -327,7 +327,7 @@ errout:
 	return err;
 }
 
-static int neigh_request_update(struct nl_cache *c, struct nl_handle *h)
+static int neigh_request_update(struct nl_cache *c, struct nl_sock *h)
 {
 	return nl_rtgen_request(h, RTM_GETNEIGH, AF_UNSPEC, NLM_F_DUMP);
 }
@@ -524,7 +524,7 @@ void rtnl_neigh_put(struct rtnl_neigh *neigh)
 
 /**
  * Build a neighbour cache including all neighbours currently configured in the kernel.
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg result		Pointer to store resulting cache.
  *
  * Allocates a new neighbour cache, initializes it properly and updates it
@@ -532,7 +532,7 @@ void rtnl_neigh_put(struct rtnl_neigh *neigh)
  *
  * @return 0 on success or a negative error code.
  */
-int rtnl_neigh_alloc_cache(struct nl_handle *sock, struct nl_cache **result)
+int rtnl_neigh_alloc_cache(struct nl_sock *sock, struct nl_cache **result)
 {
 	return nl_cache_alloc_and_fill(&rtnl_neigh_ops, sock, result);
 }
@@ -629,7 +629,7 @@ int rtnl_neigh_build_add_request(struct rtnl_neigh *tmpl, int flags,
 
 /**
  * Add a new neighbour
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg tmpl		template with requested changes
  * @arg flags		additional netlink message flags
  *
@@ -645,7 +645,7 @@ int rtnl_neigh_build_add_request(struct rtnl_neigh *tmpl, int flags,
  *
  * @return 0 on sucess or a negative error if an error occured.
  */
-int rtnl_neigh_add(struct nl_handle *handle, struct rtnl_neigh *tmpl, int flags)
+int rtnl_neigh_add(struct nl_sock *sk, struct rtnl_neigh *tmpl, int flags)
 {
 	int err;
 	struct nl_msg *msg;
@@ -653,11 +653,11 @@ int rtnl_neigh_add(struct nl_handle *handle, struct rtnl_neigh *tmpl, int flags)
 	if ((err = rtnl_neigh_build_add_request(tmpl, flags, &msg)) < 0)
 		return err;
 
-	if ((err = nl_send_auto_complete(handle, msg)) < 0)
+	if ((err = nl_send_auto_complete(sk, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */
@@ -689,7 +689,7 @@ int rtnl_neigh_build_delete_request(struct rtnl_neigh *neigh, int flags,
 
 /**
  * Delete a neighbour
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg neigh		neighbour to delete
  * @arg flags		additional netlink message flags
  *
@@ -699,7 +699,7 @@ int rtnl_neigh_build_delete_request(struct rtnl_neigh *neigh, int flags,
  *
  * @return 0 on sucess or a negative error if an error occured.
  */
-int rtnl_neigh_delete(struct nl_handle *handle, struct rtnl_neigh *neigh,
+int rtnl_neigh_delete(struct nl_sock *sk, struct rtnl_neigh *neigh,
 		      int flags)
 {
 	struct nl_msg *msg;
@@ -708,11 +708,11 @@ int rtnl_neigh_delete(struct nl_handle *handle, struct rtnl_neigh *neigh,
 	if ((err = rtnl_neigh_build_delete_request(neigh, flags, &msg)) < 0)
 		return err;
 
-	if ((err = nl_send_auto_complete(handle, msg)) < 0)
+	if ((err = nl_send_auto_complete(sk, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */
@@ -747,7 +747,7 @@ int rtnl_neigh_build_change_request(struct rtnl_neigh *neigh, int flags,
 
 /**
  * Change neighbour attributes
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg neigh		neighbour to be changed
  * @arg flags		additional netlink message flags
  *
@@ -759,8 +759,7 @@ int rtnl_neigh_build_change_request(struct rtnl_neigh *neigh, int flags,
  * @note Not all attributes can be changed, see
  *       \ref neigh_changeable "Changeable Attributes" for a list.
  */
-int rtnl_neigh_change(struct nl_handle *handle, struct rtnl_neigh *neigh,
-		      int flags)
+int rtnl_neigh_change(struct nl_sock *sk, struct rtnl_neigh *neigh, int flags)
 {
 	struct nl_msg *msg;
 	int err;
@@ -768,11 +767,11 @@ int rtnl_neigh_change(struct nl_handle *handle, struct rtnl_neigh *neigh,
 	if ((err = rtnl_neigh_build_change_request(neigh, flags, &msg)) < 0)
 		return err;
 
-	if ((err = nl_send_auto_complete(handle, msg)) < 0)
+	if ((err = nl_send_auto_complete(sk, msg)) < 0)
 		return err;
 
 	nlmsg_free(msg);
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */

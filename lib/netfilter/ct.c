@@ -374,15 +374,15 @@ errout:
 	return err;
 }
 
-int nfnl_ct_dump_request(struct nl_handle *h)
+int nfnl_ct_dump_request(struct nl_sock *sk)
 {
-	return nfnl_send_simple(h, NFNL_SUBSYS_CTNETLINK, IPCTNL_MSG_CT_GET,
+	return nfnl_send_simple(sk, NFNL_SUBSYS_CTNETLINK, IPCTNL_MSG_CT_GET,
 				NLM_F_DUMP, AF_UNSPEC, 0);
 }
 
-static int ct_request_update(struct nl_cache *c, struct nl_handle *h)
+static int ct_request_update(struct nl_cache *cache, struct nl_sock *sk)
 {
-	return nfnl_ct_dump_request(h);
+	return nfnl_ct_dump_request(sk);
 }
 
 static int nfnl_ct_build_tuple(struct nl_msg *msg, const struct nfnl_ct *ct,
@@ -480,7 +480,7 @@ int nfnl_ct_build_add_request(const struct nfnl_ct *ct, int flags,
 	return nfnl_ct_build_message(ct, IPCTNL_MSG_CT_NEW, flags, result);
 }
 
-int nfnl_ct_add(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
+int nfnl_ct_add(struct nl_sock *sk, const struct nfnl_ct *ct, int flags)
 {
 	struct nl_msg *msg;
 	int err;
@@ -488,12 +488,12 @@ int nfnl_ct_add(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
 	if ((err = nfnl_ct_build_add_request(ct, flags, &msg)) < 0)
 		return err;
 
-	err = nl_send_auto_complete(h, msg);
+	err = nl_send_auto_complete(sk, msg);
 	nlmsg_free(msg);
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(h);
+	return nl_wait_for_ack(sk);
 }
 
 int nfnl_ct_build_delete_request(const struct nfnl_ct *ct, int flags,
@@ -502,7 +502,7 @@ int nfnl_ct_build_delete_request(const struct nfnl_ct *ct, int flags,
 	return nfnl_ct_build_message(ct, IPCTNL_MSG_CT_DELETE, flags, result);
 }
 
-int nfnl_ct_del(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
+int nfnl_ct_del(struct nl_sock *sk, const struct nfnl_ct *ct, int flags)
 {
 	struct nl_msg *msg;
 	int err;
@@ -510,12 +510,12 @@ int nfnl_ct_del(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
 	if ((err = nfnl_ct_build_delete_request(ct, flags, &msg)) < 0)
 		return err;
 
-	err = nl_send_auto_complete(h, msg);
+	err = nl_send_auto_complete(sk, msg);
 	nlmsg_free(msg);
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(h);
+	return nl_wait_for_ack(sk);
 }
 
 int nfnl_ct_build_query_request(const struct nfnl_ct *ct, int flags,
@@ -524,7 +524,7 @@ int nfnl_ct_build_query_request(const struct nfnl_ct *ct, int flags,
 	return nfnl_ct_build_message(ct, IPCTNL_MSG_CT_GET, flags, result);
 }
 
-int nfnl_ct_query(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
+int nfnl_ct_query(struct nl_sock *sk, const struct nfnl_ct *ct, int flags)
 {
 	struct nl_msg *msg;
 	int err;
@@ -532,12 +532,12 @@ int nfnl_ct_query(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
 	if ((err = nfnl_ct_build_query_request(ct, flags, &msg)) < 0)
 		return err;
 
-	err = nl_send_auto_complete(h, msg);
+	err = nl_send_auto_complete(sk, msg);
 	nlmsg_free(msg);
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(h);
+	return nl_wait_for_ack(sk);
 }
 
 /**
@@ -547,7 +547,7 @@ int nfnl_ct_query(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
 
 /**
  * Build a conntrack cache holding all conntrack currently in the kernel
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg result		Pointer to store resulting cache.
  *
  * Allocates a new cache, initializes it properly and updates it to
@@ -555,9 +555,9 @@ int nfnl_ct_query(struct nl_handle *h, const struct nfnl_ct *ct, int flags)
  *
  * @return 0 on success or a negative error code.
  */
-int nfnl_ct_alloc_cache(struct nl_handle *sock, struct nl_cache **result)
+int nfnl_ct_alloc_cache(struct nl_sock *sk, struct nl_cache **result)
 {
-	return nl_cache_alloc_and_fill(&nfnl_ct_ops, sock, result);
+	return nl_cache_alloc_and_fill(&nfnl_ct_ops, sk, result);
 }
 
 /** @} */

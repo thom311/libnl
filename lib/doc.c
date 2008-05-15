@@ -19,7 +19,7 @@
  * Almost all subsystem provide a function to allocate a new cache
  * of some form. The function usually looks like this:
  * @code
- * struct nl_cache *<object name>_alloc_cache(struct nl_handle *handle)
+ * struct nl_cache *<object name>_alloc_cache(struct nl_sock *sk);
  * @endcode
  *
  * These functions allocate a new cache for the own object type,

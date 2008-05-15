@@ -26,7 +26,7 @@
 #define NL_MSG_CRED_PRESENT 1
 
 struct nl_cache_ops;
-struct nl_handle;
+struct nl_sock;
 struct nl_object;
 
 struct nl_cb
@@ -39,34 +39,34 @@ struct nl_cb
 
 	/** May be used to replace nl_recvmsgs with your own implementation
 	 * in all internal calls to nl_recvmsgs. */
-	int			(*cb_recvmsgs_ow)(struct nl_handle *,
+	int			(*cb_recvmsgs_ow)(struct nl_sock *,
 						  struct nl_cb *);
 
 	/** Overwrite internal calls to nl_recv, must return the number of
 	 * octets read and allocate a buffer for the received data. */
-	int			(*cb_recv_ow)(struct nl_handle *,
+	int			(*cb_recv_ow)(struct nl_sock *,
 					      struct sockaddr_nl *,
 					      unsigned char **,
 					      struct ucred **);
 
 	/** Overwrites internal calls to nl_send, must send the netlink
 	 * message. */
-	int			(*cb_send_ow)(struct nl_handle *,
+	int			(*cb_send_ow)(struct nl_sock *,
 					      struct nl_msg *);
 
 	int			cb_refcnt;
 };
 
-struct nl_handle
+struct nl_sock
 {
-	struct sockaddr_nl	h_local;
-	struct sockaddr_nl	h_peer;
-	int			h_fd;
-	int			h_proto;
-	unsigned int		h_seq_next;
-	unsigned int		h_seq_expect;
-	int			h_flags;
-	struct nl_cb *		h_cb;
+	struct sockaddr_nl	s_local;
+	struct sockaddr_nl	s_peer;
+	int			s_fd;
+	int			s_proto;
+	unsigned int		s_seq_next;
+	unsigned int		s_seq_expect;
+	int			s_flags;
+	struct nl_cb *		s_cb;
 };
 
 struct nl_cache
@@ -89,7 +89,7 @@ struct nl_cache_mngr
 	int			cm_protocol;
 	int			cm_flags;
 	int			cm_nassocs;
-	struct nl_handle *	cm_handle;
+	struct nl_sock *	cm_handle;
 	struct nl_cache_assoc *	cm_assocs;
 };
 

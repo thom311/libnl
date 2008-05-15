@@ -28,7 +28,7 @@ struct nfnl_ct;
 extern struct nl_object_ops ct_obj_ops;
 
 extern struct nfnl_ct *	nfnl_ct_alloc(void);
-extern int	nfnl_ct_alloc_cache(struct nl_handle *, struct nl_cache **);
+extern int	nfnl_ct_alloc_cache(struct nl_sock *, struct nl_cache **);
 
 extern int	nfnlmsg_ct_group(struct nlmsghdr *);
 extern int	nfnlmsg_ct_parse(struct nlmsghdr *, struct nfnl_ct **);
@@ -36,19 +36,19 @@ extern int	nfnlmsg_ct_parse(struct nlmsghdr *, struct nfnl_ct **);
 extern void	nfnl_ct_get(struct nfnl_ct *);
 extern void	nfnl_ct_put(struct nfnl_ct *);
 
-extern int	nfnl_ct_dump_request(struct nl_handle *);
+extern int	nfnl_ct_dump_request(struct nl_sock *);
 
 extern int	nfnl_ct_build_add_request(const struct nfnl_ct *, int,
 					  struct nl_msg **);
-extern int	nfnl_ct_add(struct nl_handle *, const struct nfnl_ct *, int);
+extern int	nfnl_ct_add(struct nl_sock *, const struct nfnl_ct *, int);
 
 extern int	nfnl_ct_build_delete_request(const struct nfnl_ct *, int,
 					     struct nl_msg **);
-extern int	nfnl_ct_delete(struct nl_handle *, const struct nfnl_ct *, int);
+extern int	nfnl_ct_delete(struct nl_sock *, const struct nfnl_ct *, int);
 
 extern int	nfnl_ct_build_query_request(const struct nfnl_ct *, int,
 					    struct nl_msg **);
-extern int	nfnl_ct_query(struct nl_handle *, const struct nfnl_ct *, int);
+extern int	nfnl_ct_query(struct nl_sock *, const struct nfnl_ct *, int);
 
 extern void	nfnl_ct_set_family(struct nfnl_ct *, uint8_t);
 extern uint8_t	nfnl_ct_get_family(const struct nfnl_ct *);

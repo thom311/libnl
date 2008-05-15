@@ -169,7 +169,7 @@ errout_enomem:
 	goto errout;
 }
 
-static int rule_request_update(struct nl_cache *c, struct nl_handle *h)
+static int rule_request_update(struct nl_cache *c, struct nl_sock *h)
 {
 	return nl_rtgen_request(h, RTM_GETRULE, AF_UNSPEC, NLM_F_DUMP);
 }
@@ -435,7 +435,7 @@ void rtnl_rule_put(struct rtnl_rule *rule)
 
 /**
  * Build a rule cache including all rules currently configured in the kernel.
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg family		Address family or AF_UNSPEC.
  * @arg result		Pointer to store resulting cache.
  *
@@ -444,7 +444,7 @@ void rtnl_rule_put(struct rtnl_rule *rule)
  *
  * @return 0 on success or a negative error code.
  */
-int rtnl_rule_alloc_cache(struct nl_handle *sock, int family,
+int rtnl_rule_alloc_cache(struct nl_sock *sock, int family,
 			  struct nl_cache **result)
 {
 	struct nl_cache * cache;
@@ -555,7 +555,7 @@ int rtnl_rule_build_add_request(struct rtnl_rule *tmpl, int flags,
 
 /**
  * Add a new rule
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg tmpl		template with requested changes
  * @arg flags		additional netlink message flags
  *
@@ -565,7 +565,7 @@ int rtnl_rule_build_add_request(struct rtnl_rule *tmpl, int flags,
  *
  * @return 0 on sucess or a negative error if an error occured.
  */
-int rtnl_rule_add(struct nl_handle *handle, struct rtnl_rule *tmpl, int flags)
+int rtnl_rule_add(struct nl_sock *sk, struct rtnl_rule *tmpl, int flags)
 {
 	struct nl_msg *msg;
 	int err;
@@ -573,12 +573,12 @@ int rtnl_rule_add(struct nl_handle *handle, struct rtnl_rule *tmpl, int flags)
 	if ((err = rtnl_rule_build_add_request(tmpl, flags, &msg)) < 0)
 		return err;
 
-	err = nl_send_auto_complete(handle, msg);
+	err = nl_send_auto_complete(sk, msg);
 	nlmsg_free(msg);
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */
@@ -609,7 +609,7 @@ int rtnl_rule_build_delete_request(struct rtnl_rule *rule, int flags,
 
 /**
  * Delete a rule
- * @arg handle		netlink handle
+ * @arg sk		Netlink socket.
  * @arg rule		rule to delete
  * @arg flags		additional netlink message flags
  *
@@ -619,8 +619,7 @@ int rtnl_rule_build_delete_request(struct rtnl_rule *rule, int flags,
  *
  * @return 0 on sucess or a negative error if an error occured.
  */
-int rtnl_rule_delete(struct nl_handle *handle, struct rtnl_rule *rule,
-		     int flags)
+int rtnl_rule_delete(struct nl_sock *sk, struct rtnl_rule *rule, int flags)
 {
 	struct nl_msg *msg;
 	int err;
@@ -628,12 +627,12 @@ int rtnl_rule_delete(struct nl_handle *handle, struct rtnl_rule *rule,
 	if ((err = rtnl_rule_build_delete_request(rule, flags, &msg)) < 0)
 		return err;
 
-	err = nl_send_auto_complete(handle, msg);
+	err = nl_send_auto_complete(sk, msg);
 	nlmsg_free(msg);
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(handle);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */

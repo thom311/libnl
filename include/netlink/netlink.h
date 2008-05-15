@@ -39,29 +39,29 @@ extern int nl_debug;
 extern struct nl_dump_params nl_debug_dp;
 
 /* Connection Management */
-extern int			nl_connect(struct nl_handle *, int);
-extern void			nl_close(struct nl_handle *);
+extern int			nl_connect(struct nl_sock *, int);
+extern void			nl_close(struct nl_sock *);
 
 /* Send */
-extern int			nl_sendto(struct nl_handle *, void *, size_t);
-extern int			nl_sendmsg(struct nl_handle *, struct nl_msg *,
+extern int			nl_sendto(struct nl_sock *, void *, size_t);
+extern int			nl_sendmsg(struct nl_sock *, struct nl_msg *,
 					   struct msghdr *);
-extern int			nl_send(struct nl_handle *, struct nl_msg *);
-extern int			nl_send_auto_complete(struct nl_handle *,
+extern int			nl_send(struct nl_sock *, struct nl_msg *);
+extern int			nl_send_auto_complete(struct nl_sock *,
 						      struct nl_msg *);
-extern int			nl_send_simple(struct nl_handle *, int, int,
+extern int			nl_send_simple(struct nl_sock *, int, int,
 					       void *, size_t);
 
 /* Receive */
-extern int			nl_recv(struct nl_handle *,
+extern int			nl_recv(struct nl_sock *,
 					struct sockaddr_nl *, unsigned char **,
 					struct ucred **);
 
-extern int			nl_recvmsgs(struct nl_handle *, struct nl_cb *);
+extern int			nl_recvmsgs(struct nl_sock *, struct nl_cb *);
 
-extern int			nl_recvmsgs_default(struct nl_handle *);
+extern int			nl_recvmsgs_default(struct nl_sock *);
 
-extern int			nl_wait_for_ack(struct nl_handle *);
+extern int			nl_wait_for_ack(struct nl_sock *);
 
 /* Netlink Family Translations */
 extern char *			nl_nlfamily2str(int, char *, size_t);

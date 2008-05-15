@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -38,12 +38,12 @@
  * #include <netlink/genl/genl.h>
  * #include <netlink/genl/ctrl.h>
  *
- * struct nl_handle *sock;
+ * struct nl_sock *sock;
  * struct nl_msg *msg;
  * int family;
  *
  * // Allocate a new netlink socket
- * sock = nl_handle_alloc();
+ * sock = nl_socket_alloc();
  *
  * // Connect to generic netlink socket on kernel side
  * genl_connect(sock);
@@ -100,9 +100,9 @@
  * @{
  */
 
-int genl_connect(struct nl_handle *handle)
+int genl_connect(struct nl_sock *sk)
 {
-	return nl_connect(handle, NETLINK_GENERIC);
+	return nl_connect(sk, NETLINK_GENERIC);
 }
 
 /** @} */
@@ -114,7 +114,7 @@ int genl_connect(struct nl_handle *handle)
 
 /**
  * Send trivial generic netlink message
- * @arg handle		Netlink handle.
+ * @arg sk		Netlink socket.
  * @arg family		Generic netlink family
  * @arg cmd		Command
  * @arg version		Version
@@ -125,7 +125,7 @@ int genl_connect(struct nl_handle *handle)
  *
  * @return 0 on success or a negative error code.
  */
-int genl_send_simple(struct nl_handle *handle, int family, int cmd,
+int genl_send_simple(struct nl_sock *sk, int family, int cmd,
 		     int version, int flags)
 {
 	struct genlmsghdr hdr = {
@@ -133,7 +133,7 @@ int genl_send_simple(struct nl_handle *handle, int family, int cmd,
 		.version = version,
 	};
 
-	return nl_send_simple(handle, family, flags, &hdr, sizeof(hdr));
+	return nl_send_simple(sk, family, flags, &hdr, sizeof(hdr));
 }
 
 /** @} */

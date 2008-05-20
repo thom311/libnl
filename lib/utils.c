@@ -199,7 +199,7 @@ long nl_size2int(const char *str)
 	char *p;
 	long l = strtol(str, &p, 0);
 	if (p == str)
-		return -1;
+		return -NLE_INVAL;
 
 	if (*p) {
 		if (!strcasecmp(p, "kb") || !strcasecmp(p, "k"))
@@ -217,7 +217,7 @@ long nl_size2int(const char *str)
 		else if (!strcasecmp(p, "bit"))
 			l /= 8;
 		else if (strcasecmp(p, "b") != 0)
-			return -1;
+			return -NLE_INVAL;
 	}
 
 	return l;
@@ -242,16 +242,16 @@ long nl_prob2int(const char *str)
 	double d = strtod(str, &p);
 
 	if (p == str)
-		return -1;
+		return -NLE_INVAL;
 
 	if (d > 1.0)
 		d /= 100.0f;
 
 	if (d > 1.0f || d < 0.0f)
-		return -1;
+		return -NLE_RANGE;
 
 	if (*p && strcmp(p, "%") != 0)
-		return -1;
+		return -NLE_INVAL;
 
 	return rint(d * NL_PROB_MAX);
 }
@@ -361,7 +361,7 @@ long nl_time2int(const char *str)
 	char *p;
 	long l = strtol(str, &p, 0);
 	if (p == str)
-		return -1;
+		return -NLE_INVAL;
 
 	if (*p) {
 		if (!strcasecmp(p, "min") == 0 || !strcasecmp(p, "m"))
@@ -371,7 +371,7 @@ long nl_time2int(const char *str)
 		else if (!strcasecmp(p, "day") || !strcasecmp(p, "d"))
 			l *= 60*60*24;
 		else if (strcasecmp(p, "s") != 0)
-			return -1;
+			return -NLE_INVAL;
 	}
 
 	return l;
@@ -613,7 +613,7 @@ int nl_str2ip_proto(const char *name)
 
 	l = strtoul(name, &end, 0);
 	if (l == ULONG_MAX || *end != '\0')
-		return -1;
+		return -NLE_OBJ_NOTFOUND;
 
 	return (int) l;
 }
@@ -791,7 +791,7 @@ int __str2type(const char *buf, struct trans_tbl *tbl, size_t tbl_len)
 	int i;
 
 	if (*buf == '\0')
-		return -1;
+		return -NLE_INVAL;
 
 	for (i = 0; i < tbl_len; i++)
 		if (!strcasecmp(tbl[i].a, buf))
@@ -799,7 +799,7 @@ int __str2type(const char *buf, struct trans_tbl *tbl, size_t tbl_len)
 
 	l = strtoul(buf, &end, 0);
 	if (l == ULONG_MAX || *end != '\0')
-		return -1;
+		return -NLE_OBJ_NOTFOUND;
 
 	return (int) l;
 }
@@ -811,7 +811,7 @@ int __list_str2type(const char *buf, struct nl_list_head *head)
 	char *end;
 
 	if (*buf == '\0')
-		return -1;
+		return -NLE_INVAL;
 
 	nl_list_for_each_entry(tl, head, list) {
 		if (!strcasecmp(tl->a, buf))
@@ -820,7 +820,7 @@ int __list_str2type(const char *buf, struct nl_list_head *head)
 
 	l = strtoul(buf, &end, 0);
 	if (l == ULONG_MAX || *end != '\0')
-		return -1;
+		return -NLE_OBJ_NOTFOUND;
 
 	return (int) l;
 }

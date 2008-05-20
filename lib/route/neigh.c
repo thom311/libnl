@@ -940,6 +940,11 @@ void rtnl_neigh_set_family(struct rtnl_neigh *neigh, int family)
 	neigh->ce_mask |= NEIGH_ATTR_FAMILY;
 }
 
+int rtnl_neigh_get_family(struct rtnl_neigh *neigh)
+{
+	return neigh->n_family;
+}
+
 void rtnl_neigh_set_type(struct rtnl_neigh *neigh, int type)
 {
 	neigh->n_type = type;

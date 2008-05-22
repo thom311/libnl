@@ -735,8 +735,12 @@ int nl_addr_resolve(struct nl_addr *addr, char *host, size_t hostlen)
 	if (err < 0)
 		return err;
 
-	return getnameinfo((struct sockaddr *) &buf, salen,
-			   host, hostlen, NULL, 0, NI_NAMEREQD);
+	err = getnameinfo((struct sockaddr *) &buf, salen, host, hostlen,
+			  NULL, 0, NI_NAMEREQD);
+	if (err < 0)
+		return nl_syserr2nlerr(err);
+
+	return 0;
 }
 
 /** @} */

@@ -174,10 +174,8 @@ static int rule_dump_brief(struct nl_object *o, struct nl_dump_params *p)
 	struct rtnl_rule *r = (struct rtnl_rule *) o;
 	char buf[128];
 
-	if (r->ce_mask & RULE_ATTR_PRIO)
-		dp_dump(p, "%d:\t", r->r_prio);
-	else
-		dp_dump(p, "0:\t");
+	dp_dump(p, "%8d ", (r->ce_mask & RULE_ATTR_PRIO) ? r->r_prio : 0);
+	dp_dump(p, "%s ", nl_af2str(r->r_family, buf, sizeof(buf)));
 
 	if (r->ce_mask & RULE_ATTR_SRC)
 		dp_dump(p, "from %s ",
@@ -222,14 +220,9 @@ static int rule_dump_full(struct nl_object *obj, struct nl_dump_params *p)
 
 	line = rule_dump_brief(obj, p);
 
-	dp_dump_line(p, line++, "  family %s",
-		     nl_af2str(rule->r_family, buf, sizeof(buf)));
-
 	if (rule->ce_mask & RULE_ATTR_SRCMAP)
-		dp_dump(p, " srcmap %s",
+		dp_dump_line(p, line++, "  srcmap %s\n",
 			nl_addr2str(rule->r_srcmap, buf, sizeof(buf)));
-
-	dp_dump(p, "\n");
 
 	return line;
 }

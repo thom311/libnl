@@ -170,13 +170,13 @@ static int ct_parse_proto(struct nfnl_ct *ct, int repl, struct nlattr *attr)
 		nfnl_ct_set_proto(ct, nla_get_u8(tb[CTA_PROTO_NUM]));
 	if (tb[CTA_PROTO_SRC_PORT])
 		nfnl_ct_set_src_port(ct, repl,
-				nla_get_u16(tb[CTA_PROTO_SRC_PORT]));
+			ntohs(nla_get_u16(tb[CTA_PROTO_SRC_PORT])));
 	if (tb[CTA_PROTO_DST_PORT])
 		nfnl_ct_set_dst_port(ct, repl,
-				nla_get_u16(tb[CTA_PROTO_DST_PORT]));
+			ntohs(nla_get_u16(tb[CTA_PROTO_DST_PORT])));
 	if (tb[CTA_PROTO_ICMP_ID])
 		nfnl_ct_set_icmp_id(ct, repl,
-				nla_get_u16(tb[CTA_PROTO_ICMP_ID]));
+			ntohs(nla_get_u16(tb[CTA_PROTO_ICMP_ID])));
 	if (tb[CTA_PROTO_ICMP_TYPE])
 		nfnl_ct_set_icmp_type(ct, repl,
 				nla_get_u8(tb[CTA_PROTO_ICMP_TYPE]));
@@ -420,15 +420,15 @@ static int nfnl_ct_build_tuple(struct nl_msg *msg, const struct nfnl_ct *ct,
 
 	if (nfnl_ct_test_src_port(ct, repl))
 		NLA_PUT_U16(msg, CTA_PROTO_SRC_PORT,
-			    nfnl_ct_get_src_port(ct, repl));
+			htons(nfnl_ct_get_src_port(ct, repl)));
 
 	if (nfnl_ct_test_dst_port(ct, repl))
 		NLA_PUT_U16(msg, CTA_PROTO_DST_PORT,
-			    nfnl_ct_get_dst_port(ct, repl));
+			htons(nfnl_ct_get_dst_port(ct, repl)));
 
 	if (nfnl_ct_test_icmp_id(ct, repl))
 		NLA_PUT_U16(msg, CTA_PROTO_ICMP_ID,
-			    nfnl_ct_get_icmp_id(ct, repl));
+			htons(nfnl_ct_get_icmp_id(ct, repl)));
 
 	if (nfnl_ct_test_icmp_type(ct, repl))
 		NLA_PUT_U8(msg, CTA_PROTO_ICMP_TYPE,

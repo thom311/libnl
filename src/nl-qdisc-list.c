@@ -1,5 +1,5 @@
 /*
- * src/nl-qdisc-delete.c     Delete Queuing Disciplines
+ * src/nl-qdisc-list.c     List Qdiscs
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -11,18 +11,15 @@
 
 #include "qdisc-utils.h"
 
-static int quiet = 0, default_yes = 0, deleted = 0, interactive = 0;
-struct nl_sock *sock;
+static int quiet = 0;
 
 static void print_usage(void)
 {
 	printf(
-	"Usage: nl-qdisc-delete [OPTION]... [QDISC]\n"
+	"Usage: nl-qdisc-list [OPTION]... [QDISC]\n"
 	"\n"
 	"Options\n"
-	" -i, --interactive     Run interactively\n"
-	"     --yes             Set default answer to yes\n"
-	" -q, --quiet           Do not print informal notifications\n"
+	" -f, --format=TYPE     Output format { brief | details | stats }\n"
 	" -h, --help            Show this help\n"
 	" -v, --version         Show versioning information\n"
 	"\n"
@@ -32,37 +29,18 @@ static void print_usage(void)
 	" -H, --handle=HANDLE   Identifier\n"
 	" -k, --kind=NAME       Kind of qdisc (e.g. pfifo_fast)\n"
 	);
-
 	exit(0);
-}
-
-static void delete_cb(struct nl_object *obj, void *arg)
-{
-	struct rtnl_qdisc *qdisc = nl_object_priv(obj);
-	struct nl_dump_params params = {
-		.dp_type = NL_DUMP_ONELINE,
-		.dp_fd = stdout,
-	};
-	int err;
-
-	if (interactive && !nlt_confirm(obj, &params, default_yes))
-		return;
-
-	if ((err = rtnl_qdisc_delete(sock, qdisc)) < 0)
-		fatal(err, "Unable to delete qdisc: %s\n", nl_geterror(err));
-
-	if (!quiet) {
-		printf("Deleted ");
-		nl_object_dump(obj, &params);
-	}
-
-	deleted++;
 }
 
 int main(int argc, char *argv[])
 {
+	struct nl_sock *sock;
 	struct rtnl_qdisc *qdisc;
 	struct nl_cache *link_cache, *qdisc_cache;
+	struct nl_dump_params params = {
+		.dp_type = NL_DUMP_ONELINE,
+		.dp_fd = stdout,
+	};
  
 	sock = nlt_alloc_socket();
 	nlt_connect(sock, NETLINK_ROUTE);
@@ -76,8 +54,7 @@ int main(int argc, char *argv[])
 			ARG_YES = 257,
 		};
 		static struct option long_opts[] = {
-			{ "interactive", 0, 0, 'i' },
-			{ "yes", 0, 0, ARG_YES },
+			{ "format", 1, 0, 'f' },
 			{ "quiet", 0, 0, 'q' },
 			{ "help", 0, 0, 'h' },
 			{ "version", 0, 0, 'v' },
@@ -88,13 +65,13 @@ int main(int argc, char *argv[])
 			{ 0, 0, 0, 0 }
 		};
 	
-		c = getopt_long(argc, argv, "iqhvd:p:H:k:", long_opts, &optidx);
+		c = getopt_long(argc, argv, "f:qhvd:p:H:k:",
+				long_opts, &optidx);
 		if (c == -1)
 			break;
 
 		switch (c) {
-		case 'i': interactive = 1; break;
-		case ARG_YES: default_yes = 1; break;
+		case 'f': params.dp_type = nlt_parse_dumptype(optarg); break;
 		case 'q': quiet = 1; break;
 		case 'h': print_usage(); break;
 		case 'v': nlt_print_version(); break;
@@ -105,10 +82,7 @@ int main(int argc, char *argv[])
 		}
  	}
 
-	nl_cache_foreach_filter(qdisc_cache, OBJ_CAST(qdisc), delete_cb, NULL);
-
-	if (!quiet)
-		printf("Deleted %d qdiscs\n", deleted);
+	nl_cache_dump_filter(qdisc_cache, &params, OBJ_CAST(qdisc));
 
 	return 0;
 }

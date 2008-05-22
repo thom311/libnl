@@ -6,31 +6,45 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "utils.h"
+#include "link-utils.h"
 
 static void print_usage(void)
 {
 	printf(
-"Usage: nl-link-stats <ifindex> [<statistic> ...]\n"
-"  ifindex   := { all | number }\n"
-"  statistic := { (rx|tx)_packets | (rx|tx)_bytes | (rx|tx)_errors |\n"
-"                 (rx|tx)_dropped | (rx|tx)_compressed | (rx|tx)_fifo_err |\n" \
-"                 rx_len_err | rx_over_err | rx_crc_err | rx_frame_err |\n"
-"                 rx_missed_err | tx_abort_err | tx_carrier_err |\n"
-"                 tx_hbeat_err | tx_win_err | tx_collision | multicast }\n");
-	exit(1);
+	"Usage: nl-link-stats [OPTION]... [LINK] [ListOfStats]\n"
+	"\n"
+	"Options\n"
+	" -l, --list            List available statistic names\n"
+	" -h, --help            Show this help\n"
+	" -v, --version         Show versioning information\n"
+	"\n"
+	"Link Options\n"
+	" -n, --name=NAME	link name\n"
+	" -i, --index=NUM       interface index\n"
+	);
+	exit(0);
 }
 
-static char **gargv;
+static void list_stat_names(void)
+{
+	char buf[64];
+	int i;
+
+	for (i = 0; i < RTNL_LINK_STATS_MAX; i++)
+		printf("%s\n", rtnl_link_stat2str(i, buf, sizeof(buf)));
+
+	exit(0);
+}
+
 static int gargc;
 
 static void dump_stat(struct rtnl_link *link, int id)
 {
 	uint64_t st = rtnl_link_get_stat(link, id);
-	char buf[62];
+	char buf[64];
 
 	printf("%s.%s %" PRIu64 "\n", rtnl_link_get_name(link),
 	       rtnl_link_stat2str(id, buf, sizeof(buf)), st);
@@ -38,72 +52,67 @@ static void dump_stat(struct rtnl_link *link, int id)
 
 static void dump_stats(struct nl_object *obj, void *arg)
 {
-	int i;
 	struct rtnl_link *link = (struct rtnl_link *) obj;
+	char **argv = arg;
 
-	if (!strcasecmp(gargv[0], "all")) {
+	if (optind >= gargc) {
+		int i;
+
 		for (i = 0; i < RTNL_LINK_STATS_MAX; i++)
 			dump_stat(link, i);
 	} else {
-		for (i = 0; i < gargc; i++) {
-			int id = rtnl_link_str2stat(gargv[i]);
+		while (optind < gargc) {
+			int id = rtnl_link_str2stat(argv[optind]);
 
 			if (id < 0)
 				fprintf(stderr, "Warning: Unknown statistic "
-					"\"%s\"\n", gargv[i]);
+					"\"%s\"\n", argv[optind]);
 			else
 				dump_stat(link, id);
+
+			optind++;
 		}
 	}
 }
 
 int main(int argc, char *argv[])
 {
-	struct nl_handle *nlh;
+	struct nl_sock *sock;
 	struct nl_cache *link_cache;
-	int err = 1;
+	struct rtnl_link *link;
 
-	if (nltool_init(argc, argv) < 0)
-		return -1;
+	sock = nlt_alloc_socket();
+	nlt_connect(sock, NETLINK_ROUTE);
+	link_cache = nlt_alloc_link_cache(sock);
+	link = nlt_alloc_link();
 
-	if (argc < 3 || !strcmp(argv[1], "-h"))
-		print_usage();
+	for (;;) {
+		int c, optidx = 0;
+		static struct option long_opts[] = {
+			{ "list", 0, 0, 'l' },
+			{ "help", 0, 0, 'h' },
+			{ "version", 0, 0, 'v' },
+			{ "name", 1, 0, 'n' },
+			{ "index", 1, 0, 'i' },
+			{ 0, 0, 0, 0 }
+		};
 
-	nlh = nltool_alloc_handle();
-	if (!nlh)
-		return -1;
+		c = getopt_long(argc, argv, "lhvn:i:", long_opts, &optidx);
+		if (c == -1)
+			break;
 
-	if (nltool_connect(nlh, NETLINK_ROUTE) < 0)
-		goto errout;
-
-	link_cache = nltool_alloc_link_cache(nlh);
-	if (!link_cache)
-		goto errout_close;
-
-	gargv = &argv[2];
-	gargc = argc - 2;
-
-	if (!strcasecmp(argv[1], "all"))
-		nl_cache_foreach(link_cache, dump_stats, NULL);
-	else {
-		int ifindex = strtoul(argv[1], NULL, 0);
-		struct rtnl_link *link = rtnl_link_get(link_cache, ifindex);
-
-		if (!link) {
-			fprintf(stderr, "Could not find ifindex %d\n", ifindex);
-			goto errout_link_cache;
+		switch (c) {
+		case 'l': list_stat_names(); break;
+		case 'h': print_usage(); break;
+		case 'v': nlt_print_version(); break;
+		case 'n': parse_name(link, optarg); break;
+		case 'i': parse_ifindex(link, optarg); break;
 		}
-
-		dump_stats((struct nl_object *) link, NULL);
-		rtnl_link_put(link);
 	}
 
-	err = 0;
-errout_link_cache:
-	nl_cache_free(link_cache);
-errout_close:
-	nl_close(nlh);
-errout:
-	nl_handle_destroy(nlh);
-	return err;
+	gargc = argc;
+	nl_cache_foreach_filter(link_cache, OBJ_CAST(link), dump_stats, argv);
+
+	return 0;
 }
+

@@ -20,19 +20,35 @@ TOOLS	:= $(CIN:%.c=%)
 all: $(TOOLS)
 
 $(TOOLS): utils.o
-nl-route-add nl-route-delete nl-route-list: route-utils.o
-nl-addr-add nl-addr-delete nl-addr-list: addr-utils.o
+nl-route-add nl-route-delete nl-route-list: route-utils.o rtnl-utils.o
+nl-route-get: rtnl-utils.o
+nl-addr-add nl-addr-delete nl-addr-list: addr-utils.o rtnl-utils.o
+nl-link-list nl-link-set nl-link-stats: link-utils.o rtnl-utils.o
+nl-link-ifindex2name nl-link-name2ifindex: rtnl-utils.o
+nl-neigh-add nl-neigh-delete nl-neigh-list: neigh-utils.o rtnl-utils.o
+nl-qdisc-delete nl-qdisc-list: qdisc-utils.o rtnl-utils.o
+nl-rule-list: rule-utils.o rtnl-utils.o
+nl-neightbl-list: rtnl-utils.o
+nl-monitor: rtnl-utils.o
+nl-tctree-list: rtnl-utils.o
+
+genl-ctrl-list: ctrl-utils.o
+
+nf-ct-list: ct-utils.o
+nf-log: log-utils.o rtnl-utils.o
+nf-queue: queue-utils.o rtnl-utils.o
 
 nl-%: nl-%.c
+	@echo "  LD $@"; \
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lnl-route
 
 genl-%: genl-%.c
 	@echo "  LD $@"; \
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lnl-genl
 
 nf-%: nf-%.c
 	@echo "  LD $@"; \
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lnl-nf
 
 clean:
 	@echo "  CLEAN src"; \

@@ -1,25 +1,38 @@
 /*
- * src/nl-tctree-dump.c		Dump Traffic Control Tree
+ * src/nl-tctree-list.c		List Traffic Control Tree
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #include "utils.h"
 #include <linux/pkt_sched.h>
 
-static struct nl_handle *nl_handle;
+static struct nl_sock *sock;
 static struct nl_cache *qdisc_cache, *class_cache;
-static struct nl_dump_params dump_params = {
-	.dp_type = NL_DUMP_FULL,
+static struct nl_dump_params params = {
+	.dp_type = NL_DUMP_DETAILS,
 };
 
 static int ifindex;
 static void print_qdisc(struct nl_object *, void *);
+
+static void print_usage(void)
+{
+	printf(
+	"Usage: nl-tctree-list [OPTION]...\n"
+	"\n"
+	"Options\n"
+	" -f, --format=TYPE	Output format { brief | details | stats }\n"
+	" -h, --help            Show this help\n"
+	" -v, --version		Show versioning information\n"
+	);
+	exit(0);
+}
 
 static void print_class(struct nl_object *obj, void *arg)
 {
@@ -28,8 +41,8 @@ static void print_class(struct nl_object *obj, void *arg)
 	struct nl_cache *cls_cache;
 	uint32_t parent = rtnl_class_get_handle(class);
 
-	dump_params.dp_prefix = (int)(long) arg;
-	nl_object_dump(obj, &dump_params);
+	params.dp_prefix = (int)(long) arg;
+	nl_object_dump(obj, &params);
 
 	leaf = rtnl_class_leaf_qdisc(class, qdisc_cache);
 	if (leaf)
@@ -37,12 +50,11 @@ static void print_class(struct nl_object *obj, void *arg)
 
 	rtnl_class_foreach_child(class, class_cache, &print_class, arg + 2);
 
-	cls_cache = rtnl_cls_alloc_cache(nl_handle, ifindex, parent);
-	if (!cls_cache)
+	if (rtnl_cls_alloc_cache(sock, ifindex, parent, &cls_cache) < 0)
 		return;
 
-	dump_params.dp_prefix = (int)(long) arg + 2;
-	nl_cache_dump(cls_cache, &dump_params);
+	params.dp_prefix = (int)(long) arg + 2;
+	nl_cache_dump(cls_cache, &params);
 	nl_cache_free(cls_cache);
 }
 
@@ -52,17 +64,16 @@ static void print_qdisc(struct nl_object *obj, void *arg)
 	struct nl_cache *cls_cache;
 	uint32_t parent = rtnl_qdisc_get_handle(qdisc);
 
-	dump_params.dp_prefix = (int)(long) arg;
-	nl_object_dump(obj, &dump_params);
+	params.dp_prefix = (int)(long) arg;
+	nl_object_dump(obj, &params);
 
 	rtnl_qdisc_foreach_child(qdisc, class_cache, &print_class, arg + 2);
 
-	cls_cache = rtnl_cls_alloc_cache(nl_handle, ifindex, parent);
-	if (!cls_cache)
+	if (rtnl_cls_alloc_cache(sock, ifindex, parent, &cls_cache) < 0)
 		return;
 
-	dump_params.dp_prefix = (int)(long) arg + 2;
-	nl_cache_dump(cls_cache, &dump_params);
+	params.dp_prefix = (int)(long) arg + 2;
+	nl_cache_dump(cls_cache, &params);
 	nl_cache_free(cls_cache);
 }
 
@@ -72,11 +83,10 @@ static void print_link(struct nl_object *obj, void *arg)
 	struct rtnl_qdisc *qdisc;
 
 	ifindex = rtnl_link_get_ifindex(link);
-	dump_params.dp_prefix = 0;
-	nl_object_dump(obj, &dump_params);
+	params.dp_prefix = 0;
+	nl_object_dump(obj, &params);
 
-	class_cache = rtnl_class_alloc_cache(nl_handle, ifindex);
-	if (!class_cache)
+	if (rtnl_class_alloc_cache(sock, ifindex, &class_cache) < 0)
 		return;
 
 	qdisc = rtnl_qdisc_get_by_parent(qdisc_cache, ifindex, TC_H_ROOT);
@@ -104,41 +114,34 @@ int main(int argc, char *argv[])
 {
 	struct nl_cache *link_cache;
 
-	if (nltool_init(argc, argv) < 0)
-		return -1;
+	sock = nlt_alloc_socket();
+	nlt_connect(sock, NETLINK_ROUTE);
+	link_cache = nlt_alloc_link_cache(sock);
+	qdisc_cache = nlt_alloc_qdisc_cache(sock);
 
-	dump_params.dp_fd = stdout;
+	params.dp_fd = stdout;
 
-	if (argc > 1) {
-		if (!strcasecmp(argv[1], "brief"))
-			dump_params.dp_type = NL_DUMP_BRIEF;
-		else if (!strcasecmp(argv[1], "full"))
-			dump_params.dp_type = NL_DUMP_FULL;
-		else if (!strcasecmp(argv[1], "stats"))
-			dump_params.dp_type = NL_DUMP_STATS;
+	for (;;) {
+		int c, optidx = 0;
+		static struct option long_opts[] = {
+			{ "format", 1, 0, 'f' },
+			{ "help", 0, 0, 'h' },
+			{ "version", 0, 0, 'v' },
+			{ 0, 0, 0, 0 }
+		};
+
+		c = getopt_long(argc, argv, "f:hv", long_opts, &optidx);
+		if (c == -1)
+			break;
+
+		switch (c) {
+		case 'f': params.dp_type = nlt_parse_dumptype(optarg); break;
+		case 'h': print_usage(); break;
+		case 'v': nlt_print_version(); break;
+		}
 	}
-
-	nl_handle = nltool_alloc_handle();
-	if (!nl_handle)
-		return 1;
-
-	if (nltool_connect(nl_handle, NETLINK_ROUTE) < 0)
-		return 1;
-
-	link_cache = nltool_alloc_link_cache(nl_handle);
-	if (!link_cache)
-		return 1;
-
-	qdisc_cache = nltool_alloc_qdisc_cache(nl_handle);
-	if (!qdisc_cache)
-		return 1;
 
 	nl_cache_foreach(link_cache, &print_link, NULL);
 
-	nl_cache_free(qdisc_cache);
-	nl_cache_free(link_cache);
-
-	nl_close(nl_handle);
-	nl_handle_destroy(nl_handle);
 	return 0;
 }

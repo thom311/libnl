@@ -6,78 +6,117 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "utils.h"
+#include "link-utils.h"
 
-static void print_usage(void)
-{
-	printf(
-	"Usage: nl-link-set <ifindex> <changes>\n"
-	"  changes := [dev DEV] [mtu MTU] [txqlen TXQLEN] [weight WEIGHT] [link LINK]\n"
+static struct nl_sock *sock;
+static int quiet = 0;
+
+#if 0
+	"  changes := [link LINK]\n"
 	"             [master MASTER] [qdisc QDISC] [addr ADDR] [broadcast BRD]\n"
 	"             [{ up | down }] [{ arp | noarp }] [{ promisc | nopromisc }]\n"
 	"             [{ dynamic | nodynamic }] [{ multicast | nomulticast }]\n"
 	"             [{ trailers | notrailers }] [{ allmulticast | noallmulticast }]\n");
-	exit(1);
+#endif
+
+static void print_usage(void)
+{
+	printf(
+	"Usage: nl-link-set [OPTION]... [LINK]\n"
+	"\n"
+	"Options\n"
+	" -q, --quiet		Do not print informal notifications\n"
+	" -h, --help            Show this help\n"
+	" -v, --version         Show versioning information\n"
+	"\n"
+	"Selecting the Link\n"
+	" -n, --name=NAME	link name\n"
+	" -i, --index           interface index\n"
+	"Change Options\n"
+	"     --rename=NAME     rename interface\n"
+	"     --mtu=NUM         MTU value\n"
+	"     --txqlen=NUM      TX queue length\n"
+	"     --weight=NUM      weight\n"
+	);
+	exit(0);
 }
 
-#include "f_link.c"
+static void set_cb(struct nl_object *obj, void *arg)
+{
+	struct rtnl_link *link = nl_object_priv(obj);
+	struct rtnl_link *change = arg;
+	struct nl_dump_params params = {
+		.dp_type = NL_DUMP_ONELINE,
+		.dp_fd = stdout,
+	};
+	int err;
+
+	if ((err = rtnl_link_change(sock, link, change, 0) < 0))
+		fatal(err, "Unable to change link: %s", nl_geterror(err));
+
+	if (!quiet) {
+		printf("Changed ");
+		nl_object_dump(OBJ_CAST(link), &params);
+	}
+}
 
 int main(int argc, char *argv[])
 {
-	struct nl_handle *nlh;
 	struct nl_cache *link_cache;
-	struct rtnl_link *link, *orig;
-	int err = 1, ifindex;
+	struct rtnl_link *link, *change;
+	int ok = 0;
 
-	if (nltool_init(argc, argv) < 0)
-		return -1;
+	sock = nlt_alloc_socket();
+	nlt_connect(sock, NETLINK_ROUTE);
+	link_cache = nlt_alloc_link_cache(sock);
+	link = nlt_alloc_link();
+	change = nlt_alloc_link();
 
-	if (argc < 2 || !strcmp(argv[1], "-h"))
+	for (;;) {
+		int c, optidx = 0;
+		enum {
+			ARG_RENAME = 257,
+			ARG_MTU = 258,
+			ARG_TXQLEN,
+			ARG_WEIGHT,
+		};
+		static struct option long_opts[] = {
+			{ "quiet", 0, 0, 'q' },
+			{ "help", 0, 0, 'h' },
+			{ "version", 0, 0, 'v' },
+			{ "name", 1, 0, 'n' },
+			{ "index", 1, 0, 'i' },
+			{ "rename", 1, 0, ARG_RENAME },
+			{ "mtu", 1, 0, ARG_MTU },
+			{ "txqlen", 1, 0, ARG_TXQLEN },
+			{ "weight", 1, 0, ARG_WEIGHT },
+			{ 0, 0, 0, 0 }
+		};
+
+		c = getopt_long(argc, argv, "qhvn:i:", long_opts, &optidx);
+		if (c == -1)
+			break;
+
+		switch (c) {
+		case 'q': quiet = 1; break;
+		case 'h': print_usage(); break;
+		case 'v': nlt_print_version(); break;
+		case 'n': ok++; parse_name(link, optarg); break;
+		case 'i': ok++; parse_ifindex(link, optarg); break;
+		case ARG_RENAME: parse_name(change, optarg); break;
+		case ARG_MTU: parse_mtu(link, optarg); break;
+		case ARG_TXQLEN: parse_txqlen(link, optarg); break;
+		case ARG_WEIGHT: parse_weight(link, optarg); break;
+		}
+	}
+
+	if (!ok)
 		print_usage();
 
-	nlh = nltool_alloc_handle();
-	if (!nlh)
-		return -1;
+	nl_cache_foreach_filter(link_cache, OBJ_CAST(link), set_cb, change);
 
-	link = rtnl_link_alloc();
-	if (!link)
-		goto errout;
-
-	if (nltool_connect(nlh, NETLINK_ROUTE) < 0)
-		goto errout_free;
-
-	link_cache = nltool_alloc_link_cache(nlh);
-	if (!link_cache)
-		goto errout_close;
-
-	ifindex = strtoul(argv[1], NULL, 0);
-
-	if (!(orig = rtnl_link_get(link_cache, ifindex))) {
-		fprintf(stderr, "Interface index %d does not exist\n", ifindex);
-		goto errout_cache;
-	}
-
-	get_filter(link, argc, argv, 2, link_cache);
-
-	if (rtnl_link_change(nlh, orig, link, 0) < 0) {
-		fprintf(stderr, "Unable to change link: %s\n", nl_geterror());
-		goto errout_put;
-	}
-
-	err = 0;
-
-errout_put:
-	rtnl_link_put(orig);
-errout_cache:
-	nl_cache_free(link_cache);
-errout_close:
-	nl_close(nlh);
-errout_free:
-	rtnl_link_put(link);
-errout:
-	nl_handle_destroy(nlh);
-	return err;
+	return 0;
 }

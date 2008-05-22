@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
  */
@@ -36,67 +36,58 @@ static int event_input(struct nl_msg *msg, void *arg)
 
 int main(int argc, char *argv[])
 {
-	struct nl_handle *nlh;
-	int err = 1;
+	struct nl_sock *sock;
+	int err;
 	int i, idx;
 
 	static const struct {
 		enum nfnetlink_groups gr_id;
 		const char* gr_name;
-	} known_groups[] = {
+	} groups[] = {
 		{ NFNLGRP_CONNTRACK_NEW, "ct-new" },
 		{ NFNLGRP_CONNTRACK_UPDATE, "ct-update" },
 		{ NFNLGRP_CONNTRACK_DESTROY, "ct-destroy" },
 		{ NFNLGRP_NONE, NULL }
 	};
 
-	if (nltool_init(argc, argv) < 0)
-		return -1;
-
-	nlh = nltool_alloc_handle();
-	if (nlh == NULL)
-		return -1;
-
-	nl_disable_sequence_check(nlh);
-
-	nl_socket_modify_cb(nlh, NL_CB_VALID, NL_CB_CUSTOM, event_input, NULL);
+	sock = nlt_alloc_socket();
+	nl_disable_sequence_check(sock);
+	nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM, event_input, NULL);
 
 	if (argc > 1 && !strcasecmp(argv[1], "-h")) {
 		printf("Usage: nf-monitor [<groups>]\n");
 
 		printf("Known groups:");
-		for (i = 0; known_groups[i].gr_id != NFNLGRP_NONE; i++)
-			printf(" %s", known_groups[i].gr_name);
+		for (i = 0; groups[i].gr_id != NFNLGRP_NONE; i++)
+			printf(" %s", groups[i].gr_name);
 		printf("\n");
 		return 2;
 	}
 
-	if (nfnl_connect(nlh) < 0) {
-		fprintf(stderr, "%s\n", nl_geterror());
-		goto errout;
-	}
+	nlt_connect(sock, NETLINK_NETFILTER);
 
 	for (idx = 1; argc > idx; idx++) {
-		for (i = 0; known_groups[i].gr_id != NFNLGRP_NONE; i++) {
-			if (!strcmp(argv[idx], known_groups[i].gr_name)) {
+		for (i = 0; groups[i].gr_id != NFNLGRP_NONE; i++) {
+			if (strcmp(argv[idx], groups[i].gr_name))
+				continue;
 
-				if (nl_socket_add_membership(nlh, known_groups[i].gr_id) < 0) {
-					fprintf(stderr, "%s: %s\n", argv[idx], nl_geterror());
-					goto errout;
-				}
-
-				break;
-			}
+			err = nl_socket_add_membership(sock, groups[i].gr_id);
+			if (err < 0)
+				fatal(err, "Unable to add membership: %s",
+				      nl_geterror(err));
+			break;
 		}
-		if (known_groups[i].gr_id == NFNLGRP_NONE)
-			fprintf(stderr, "Warning: Unknown group: %s\n", argv[idx]);
+
+		if (groups[i].gr_id == NFNLGRP_NONE)
+			fatal(NLE_OBJ_NOTFOUND, "Unknown group: \"%s\"",
+			      argv[idx]);
 	}
 
 	while (1) {
 		fd_set rfds;
 		int fd, retval;
 
-		fd = nl_socket_get_fd(nlh);
+		fd = nl_socket_get_fd(sock);
 
 		FD_ZERO(&rfds);
 		FD_SET(fd, &rfds);
@@ -105,11 +96,9 @@ int main(int argc, char *argv[])
 
 		if (retval) {
 			/* FD_ISSET(fd, &rfds) will be true */
-			nl_recvmsgs_default(nlh);
+			nl_recvmsgs_default(sock);
 		}
 	}
 
-	nl_close(nlh);
-errout:
-	return err;
+	return 0;
 }

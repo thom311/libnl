@@ -1,5 +1,5 @@
 /*
- * src/ nl-neigh-add.c     Add a neighbour
+ * src/nl-neigh-list.c      List Neighbours
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -11,17 +11,13 @@
 
 #include "neigh-utils.h"
 
-static int quiet = 0;
-
 static void print_usage(void)
 {
 	printf(
-	"Usage: nl-neigh-add [OPTION]... NEIGHBOUR\n"
+	"Usage: nl-neigh-list [OPTION]... [NEIGHBOUR]\n"
 	"\n"
 	"Options\n"
-	"     --update-only     Do not create neighbour, updates exclusively\n"
-	"     --create-only     Do not update neighbour if it exists already.\n"
-	" -q, --quiet           Do not print informal notifications\n"
+	" -f, --format=TYPE     Output format { brief | details | stats }\n"
 	" -h, --help            Show this help\n"
 	" -v, --version         Show versioning information\n"
 	"\n"
@@ -29,13 +25,9 @@ static void print_usage(void)
 	" -a, --addr=ADDR       Destination address of neighbour\n"
 	" -l, --lladdr=ADDR     Link layer address of neighbour\n"
 	" -d, --dev=DEV         Device the neighbour is connected to\n"
+	"     --family=FAMILY   Destination address family\n"
 	"     --state=STATE     Neighbour state, (default = permanent)\n"
-	"\n"
-	"Example\n"
-	"  nl-neigh-add --create-only --addr=10.0.0.1 --dev=eth0 \\\n"
-	"               --lladdr=AA:BB:CC:DD:EE:FF\n"
 	);
-
 	exit(0);
 }
 
@@ -43,65 +35,53 @@ int main(int argc, char *argv[])
 {
 	struct nl_sock *sock;
 	struct rtnl_neigh *neigh;
-	struct nl_cache *link_cache;
-	struct nl_dump_params dp = {
+	struct nl_cache *link_cache, *neigh_cache;
+	struct nl_dump_params params = {
 		.dp_type = NL_DUMP_ONELINE,
 		.dp_fd = stdout,
 	};
-	int err, ok = 0, nlflags = NLM_F_REPLACE | NLM_F_CREATE;
  
 	sock = nlt_alloc_socket();
 	nlt_connect(sock, NETLINK_ROUTE);
 	link_cache = nlt_alloc_link_cache(sock);
+	neigh_cache = nlt_alloc_neigh_cache(sock);
  	neigh = nlt_alloc_neigh();
  
 	for (;;) {
 		int c, optidx = 0;
 		enum {
-			ARG_UPDATE_ONLY = 257,
-			ARG_CREATE_ONLY = 258,
-			ARG_STATE,
+			ARG_FAMILY = 257,
+			ARG_STATE = 258,
 		};
 		static struct option long_opts[] = {
-			{ "update-only", 0, 0, ARG_UPDATE_ONLY },
-			{ "create-only", 0, 0, ARG_CREATE_ONLY },
-			{ "quiet", 0, 0, 'q' },
+			{ "format", 1, 0, 'f' },
 			{ "help", 0, 0, 'h' },
 			{ "version", 0, 0, 'v' },
 			{ "addr", 1, 0, 'a' },
 			{ "lladdr", 1, 0, 'l' },
 			{ "dev", 1, 0, 'd' },
+			{ "family", 1, 0, ARG_FAMILY },
 			{ "state", 1, 0, ARG_STATE },
 			{ 0, 0, 0, 0 }
 		};
 	
-		c = getopt_long(argc, argv, "qhva:l:d:", long_opts, &optidx);
+		c = getopt_long(argc, argv, "f:hva:l:d:", long_opts, &optidx);
 		if (c == -1)
 			break;
 
 		switch (c) {
-		case ARG_UPDATE_ONLY: nlflags &= ~NLM_F_CREATE; break;
-		case ARG_CREATE_ONLY: nlflags |= NLM_F_EXCL; break;
-		case 'q': quiet = 1; break;
+		case 'f': params.dp_type = nlt_parse_dumptype(optarg); break;
 		case 'h': print_usage(); break;
 		case 'v': nlt_print_version(); break;
-		case 'a': ok++; parse_dst(neigh, optarg); break;
+		case 'a': parse_dst(neigh, optarg); break;
 		case 'l': parse_lladdr(neigh, optarg); break;
 		case 'd': parse_dev(neigh, link_cache, optarg); break;
+		case ARG_FAMILY: parse_family(neigh, optarg); break;
 		case ARG_STATE: parse_state(neigh, optarg); break;
 		}
  	}
 
-	if (!ok)
-		print_usage();
-
-	if ((err = rtnl_neigh_add(sock, neigh, nlflags)) < 0)
-		fatal(err, "Unable to add neighbour: %s", nl_geterror(err));
-
-	if (!quiet) {
-		printf("Added ");
-		nl_object_dump(OBJ_CAST(neigh), &dp);
- 	}
+	nl_cache_dump_filter(neigh_cache, &params, OBJ_CAST(neigh));
 
 	return 0;
 }

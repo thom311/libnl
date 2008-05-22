@@ -13,7 +13,7 @@
 
 static int interactive = 0, default_yes = 0, quiet = 0;
 static int deleted = 0;
-static struct nl_handle *nlh;
+static struct nl_handle *sock;
 
 static void print_version(void)
 {
@@ -59,36 +59,21 @@ static void print_usage(void)
 static void delete_cb(struct nl_object *obj, void *arg)
 {
 	struct rtnl_route *route = (struct rtnl_route *) obj;
-	struct nl_dump_params dp = {
+	struct nl_dump_params params = {
 		.dp_type = NL_DUMP_ONELINE,
 		.dp_fd = stdout,
 	};
 	int err;
 
-	if (interactive) {
-		int answer;
+	if (interactive && !nlt_confirm(obj, &params, default_yes))
+		return;
 
-		nl_object_dump(obj, &dp);
-		printf("Delete? (%c/%c) ",
-			default_yes ? 'Y' : 'y',
-			default_yes ? 'n' : 'N');
-
-		do {
-			answer = tolower(getchar());
-			if (answer == '\n')
-				answer = default_yes ? 'y' : 'n';
-		} while (answer != 'y' && answer != 'n');
-
-		if (answer == 'n')
-			return;
-	}
-
-	if ((err = rtnl_route_delete(nlh, route, 0)) < 0)
-		fatal(err, "rtnl_route_del failed: %s\n", nl_geterror());
+	if ((err = rtnl_route_delete(sock, route, 0)) < 0)
+		fatal(err, "Unable to delete route: %s", nl_geterror(err));
 
 	if (!quiet) {
 		printf("Deleted ");
-		nl_object_dump(obj, &dp);
+		nl_object_dump(obj, &params);
 	}
 
 	deleted++;
@@ -98,16 +83,13 @@ int main(int argc, char *argv[])
 {
 	struct nl_cache *link_cache, *route_cache;
 	struct rtnl_route *route;
-	int err = 1, nf = 0;
+	int nf = 0;
 
-	nlh = nltool_alloc_handle();
-	nltool_connect(nlh, NETLINK_ROUTE);
-	link_cache = nltool_alloc_link_cache(nlh);
-	route_cache = nltool_alloc_route_cache(nlh, 0);
-
-	route = rtnl_route_alloc();
-	if (!route)
-		goto errout;
+	sock = nlt_alloc_socket();
+	nlt_connect(sock, NETLINK_ROUTE);
+	link_cache = nlt_alloc_link_cache(sock);
+	route_cache = nlt_alloc_route_cache(sock, 0);
+	route = nlt_alloc_route();
 
 	for (;;) {
 		int c, optidx = 0;
@@ -180,14 +162,5 @@ int main(int argc, char *argv[])
 	if (!quiet)
 		printf("Deleted %d routes\n", deleted);
 
-	err = 0;
-
-	rtnl_route_put(route);
-errout:
-	nl_cache_free(route_cache);
-	nl_cache_free(link_cache);
-	nl_close(nlh);
-	nl_handle_destroy(nlh);
-
-	return err;
+	return 0;
 }

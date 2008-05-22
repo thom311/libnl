@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
 #include "utils.h"
@@ -35,7 +35,7 @@ static int event_input(struct nl_msg *msg, void *arg)
 
 int main(int argc, char *argv[])
 {
-	struct nl_handle *nlh;
+	struct nl_sock *sock;
 	struct nl_cache *link_cache;
 	int err = 1;
 	int i, idx;
@@ -61,16 +61,9 @@ int main(int argc, char *argv[])
 		{ RTNLGRP_NONE, NULL }
 	};
 
-	if (nltool_init(argc, argv) < 0)
-		return -1;
-
-	nlh = nltool_alloc_handle();
-	if (nlh == NULL)
-		return -1;
-
-	nl_disable_sequence_check(nlh);
-
-	nl_socket_modify_cb(nlh, NL_CB_VALID, NL_CB_CUSTOM, event_input, NULL);
+	sock = nlt_alloc_socket();
+	nl_disable_sequence_check(sock);
+	nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM, event_input, NULL);
 
 	if (argc > 1 && !strcasecmp(argv[1], "-h")) {
 		printf("Usage: nl-monitor [<groups>]\n");
@@ -82,18 +75,14 @@ int main(int argc, char *argv[])
 		return 2;
 	}
 
-	if (nl_connect(nlh, NETLINK_ROUTE) < 0) {
-		fprintf(stderr, "%s\n", nl_geterror());
-		goto errout;
-	}
+	nlt_connect(sock, NETLINK_ROUTE);
 
 	for (idx = 1; argc > idx; idx++) {
 		for (i = 0; known_groups[i].gr_id != RTNLGRP_NONE; i++) {
 			if (!strcmp(argv[idx], known_groups[i].gr_name)) {
 
-				if (nl_socket_add_membership(nlh, known_groups[i].gr_id) < 0) {
-					fprintf(stderr, "%s: %s\n", argv[idx], nl_geterror());
-					goto errout;
+				if ((err = nl_socket_add_membership(sock, known_groups[i].gr_id)) < 0) {
+					fatal(err, "%s: %s\n", argv[idx], nl_geterror(err));
 				}
 
 				break;
@@ -103,18 +92,13 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Warning: Unknown group: %s\n", argv[idx]);
 	}
 
-	if ((link_cache = rtnl_link_alloc_cache(nlh)) == NULL) {
-		fprintf(stderr, "%s\n", nl_geterror());
-		goto errout_close;
-	}
-
-	nl_cache_mngt_provide(link_cache);
+	link_cache = nlt_alloc_link_cache(sock);
 
 	while (1) {
 		fd_set rfds;
 		int fd, retval;
 
-		fd = nl_socket_get_fd(nlh);
+		fd = nl_socket_get_fd(sock);
 
 		FD_ZERO(&rfds);
 		FD_SET(fd, &rfds);
@@ -123,13 +107,9 @@ int main(int argc, char *argv[])
 
 		if (retval) {
 			/* FD_ISSET(fd, &rfds) will be true */
-			nl_recvmsgs_default(nlh);
+			nl_recvmsgs_default(sock);
 		}
 	}
 
-	nl_cache_free(link_cache);
-errout_close:
-	nl_close(nlh);
-errout:
-	return err;
+	return 0;
 }

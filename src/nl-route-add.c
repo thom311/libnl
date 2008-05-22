@@ -14,12 +14,6 @@
 static int quiet = 0;
 static struct nl_cache *link_cache, *route_cache;
 
-static void print_version(void)
-{
-	fprintf(stderr, "%s\n", LIBNL_STRING);
-	exit(0);
-}
-
 static void print_usage(void)
 {
 	printf(
@@ -55,7 +49,7 @@ static void print_usage(void)
 
 int main(int argc, char *argv[])
 {
-	struct nl_handle *nlh;
+	struct nl_handle *sock;
 	struct rtnl_route *route;
 	struct nl_dump_params dp = {
 		.dp_type = NL_DUMP_ONELINE,
@@ -63,14 +57,11 @@ int main(int argc, char *argv[])
 	};
 	int err = 1;
 
-	nlh = nltool_alloc_handle();
-	nltool_connect(nlh, NETLINK_ROUTE);
-	link_cache = nltool_alloc_link_cache(nlh);
-	route_cache = nltool_alloc_route_cache(nlh, 0);
-
-	route = rtnl_route_alloc();
-	if (!route)
-		goto errout;
+	sock = nlt_alloc_socket();
+	nlt_connect(sock, NETLINK_ROUTE);
+	link_cache = nlt_alloc_link_cache(sock);
+	route_cache = nlt_alloc_route_cache(sock, 0);
+	route = nlt_alloc_route();
 
 	for (;;) {
 		int c, optidx = 0;
@@ -111,7 +102,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 		case 'q': quiet = 1; break;
 		case 'h': print_usage(); break;
-		case 'v': print_version(); break;
+		case 'v': nlt_print_version(); break;
 		case 'd': parse_dst(route, optarg); break;
 		case 'n': parse_nexthop(route, optarg, link_cache); break;
 		case 't': parse_table(route, optarg); break;
@@ -127,24 +118,13 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (rtnl_route_add(nlh, route, 0) < 0) {
-		fprintf(stderr, "rtnl_route_add failed: %s\n", nl_geterror());
-		goto errout_free;
-	}
+	if ((err = rtnl_route_add(sock, route, 0)) < 0)
+		fatal(err, "Unable to add route: %s", nl_geterror(err));
 
 	if (!quiet) {
 		printf("Added ");
 		nl_object_dump(OBJ_CAST(route), &dp);
 	}
 
-	err = 0;
-errout_free:
-	rtnl_route_put(route);
-errout:
-	nl_cache_free(route_cache);
-	nl_cache_free(link_cache);
-	nl_close(nlh);
-	nl_handle_destroy(nlh);
-
-	return err;
+	return 0;
 }

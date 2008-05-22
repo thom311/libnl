@@ -14,6 +14,7 @@
 
 #include "utils.h"
 
+extern struct rtnl_addr *nlt_alloc_addr(void);
 extern void parse_family(struct rtnl_addr *, char *);
 extern void parse_local(struct rtnl_addr *, char *);
 extern void parse_dev(struct rtnl_addr *, struct nl_cache *, char *);

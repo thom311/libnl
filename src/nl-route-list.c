@@ -11,12 +11,6 @@
 
 #include "route-utils.h"
 
-static void print_version(void)
-{
-	fprintf(stderr, "%s\n", LIBNL_STRING);
-	exit(0);
-}
-
 static void print_usage(void)
 {
 	printf(
@@ -53,22 +47,19 @@ static void print_usage(void)
 
 int main(int argc, char *argv[])
 {
-	struct nl_handle *nlh;
+	struct nl_sock *sock;
 	struct nl_cache *link_cache, *route_cache;
 	struct rtnl_route *route;
 	struct nl_dump_params params = {
 		.dp_fd = stdout,
 		.dp_type = NL_DUMP_BRIEF
 	};
-	int err = 1, print_cache = 0;
+	int print_cache = 0;
 
-	nlh = nltool_alloc_handle();
-	nltool_connect(nlh, NETLINK_ROUTE);
-	link_cache = nltool_alloc_link_cache(nlh);
-
-	route = rtnl_route_alloc();
-	if (!route)
-		goto errout;
+	sock = nlt_alloc_socket();
+	nlt_connect(sock, NETLINK_ROUTE);
+	link_cache = nlt_alloc_link_cache(sock);
+	route = nlt_alloc_route();
 
 	for (;;) {
 		int c, optidx = 0;
@@ -109,9 +100,9 @@ int main(int argc, char *argv[])
 
 		switch (c) {
 		case 'c': print_cache = 1; break;
-		case 'f': params.dp_type = nltool_parse_dumptype(optarg); break;
+		case 'f': params.dp_type = nlt_parse_dumptype(optarg); break;
 		case 'h': print_usage(); break;
-		case 'v': print_version(); break;
+		case 'v': nlt_print_version(); break;
 		case 'd': parse_dst(route, optarg); break;
 		case 'n': parse_nexthop(route, optarg, link_cache); break;
 		case 't': parse_table(route, optarg); break;
@@ -127,19 +118,10 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	route_cache = nltool_alloc_route_cache(nlh,
+	route_cache = nlt_alloc_route_cache(sock,
 				print_cache ? ROUTE_CACHE_CONTENT : 0);
 
 	nl_cache_dump_filter(route_cache, &params, OBJ_CAST(route));
 
-	err = 0;
-
-	rtnl_route_put(route);
-	nl_cache_free(route_cache);
-errout:
-	nl_cache_free(link_cache);
-	nl_close(nlh);
-	nl_handle_destroy(nlh);
-
-	return err;
+	return 0;
 }

@@ -14,6 +14,7 @@
 
 #include "utils.h"
 
+extern struct rtnl_route *nlt_alloc_route(void);
 extern void	parse_family(struct rtnl_route *, char *);
 extern void	parse_dst(struct rtnl_route *, char *);
 extern void	parse_src(struct rtnl_route *, char *);

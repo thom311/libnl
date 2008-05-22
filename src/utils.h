@@ -44,6 +44,8 @@
 #include <netlink/genl/mngt.h>
 #include <netlink/netfilter/ct.h>
 
+extern uint32_t parse_u32(const char *);
+
 extern void		nlt_print_version(void);
 extern void		fatal(int err, const char *fmt, ...);
 extern struct nl_addr *	nlt_addr_parse(const char *, int);
@@ -55,15 +57,13 @@ extern int nlt_parse_dumptype(const char *str);
 extern int nlt_confirm(struct nl_object *, struct nl_dump_params *, int);
 
 extern struct nl_cache *nlt_alloc_link_cache(struct nl_sock *);
-
 extern struct nl_cache *nlt_alloc_addr_cache(struct nl_sock *);
-extern struct rtnl_addr *nlt_alloc_addr(void);
-
-extern struct nl_cache *nltool_alloc_neigh_cache(struct nl_sock *nlh);
-extern struct nl_cache *nltool_alloc_neightbl_cache(struct nl_sock *nlh);
-extern struct nl_cache *nltool_alloc_route_cache(struct nl_sock *nlh, int);
-extern struct nl_cache *nltool_alloc_rule_cache(struct nl_sock *nlh);
-extern struct nl_cache *nltool_alloc_qdisc_cache(struct nl_sock *nlh);
-extern struct nl_cache *nltool_alloc_genl_family_cache(struct nl_sock *nlh);
+extern struct nl_cache *nlt_alloc_neigh_cache(struct nl_sock *);
+extern struct nl_cache *nlt_alloc_neightbl_cache(struct nl_sock *);
+extern struct nl_cache *nlt_alloc_qdisc_cache(struct nl_sock *);
+extern struct nl_cache *nlt_alloc_route_cache(struct nl_sock *, int);
+extern struct nl_cache *nlt_alloc_rule_cache(struct nl_sock *);
+extern struct nl_cache *alloc_cache(struct nl_sock *, const char *,
+			     int (*ac)(struct nl_sock *, struct nl_cache **));
 
 #endif

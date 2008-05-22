@@ -11,6 +11,17 @@
 
 #include "addr-utils.h"
 
+struct rtnl_addr *nlt_alloc_addr(void)
+{
+	struct rtnl_addr *addr;
+
+	addr = rtnl_addr_alloc();
+	if (!addr)
+		fatal(ENOMEM, "Unable to allocate address object");
+
+	return addr;
+}
+
 void parse_family(struct rtnl_addr *addr, char *arg)
 {
 	int family;

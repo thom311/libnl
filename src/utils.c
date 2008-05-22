@@ -13,6 +13,18 @@
 
 #include <stdlib.h>
 
+uint32_t parse_u32(const char *arg)
+{
+	unsigned long lval;
+	char *endptr;
+
+	lval = strtoul(arg, &endptr, 0);
+	if (endptr == arg || lval == ULONG_MAX)
+		fatal(EINVAL, "Unable to parse \"%s\", not a number.", arg);
+
+	return (uint32_t) lval;
+}
+
 void nlt_print_version(void)
 {
 	printf("libnl tools version %s\n", LIBNL_VERSION);
@@ -112,8 +124,8 @@ int nlt_confirm(struct nl_object *obj, struct nl_dump_params *params,
 	return answer == 'y';
 }
 
-static struct nl_cache *alloc_cache(struct nl_sock *sock, const char *name,
-			    int (*ac)(struct nl_sock *, struct nl_cache **))
+struct nl_cache *alloc_cache(struct nl_sock *sock, const char *name,
+			     int (*ac)(struct nl_sock *, struct nl_cache **))
 {
 	struct nl_cache *cache;
 	int err;
@@ -125,69 +137,5 @@ static struct nl_cache *alloc_cache(struct nl_sock *sock, const char *name,
 	nl_cache_mngt_provide(cache);
 
 	return cache;
-}
-
-struct nl_cache *nlt_alloc_link_cache(struct nl_sock *sk)
-{
-	return alloc_cache(sk, "link", rtnl_link_alloc_cache);
-}
-
-struct nl_cache *nlt_alloc_addr_cache(struct nl_sock *sk)
-{
-	return alloc_cache(sk, "address", rtnl_addr_alloc_cache);
-}
-
-struct rtnl_addr *nlt_alloc_addr(void)
-{
-	struct rtnl_addr *addr;
-
-	addr = rtnl_addr_alloc();
-	if (!addr)
-		fatal(ENOMEM, "Unable to allocate address object");
-
-	return addr;
-}
-
-struct nl_cache *nltool_alloc_neigh_cache(struct nl_sock *sk)
-{
-	return alloc_cache(sk, "neighbour", rtnl_neigh_alloc_cache);
-}
-
-struct nl_cache *nltool_alloc_neightbl_cache(struct nl_sock *sk)
-{
-	return alloc_cache(sk, "neighbour table", rtnl_neightbl_alloc_cache);
-}
-
-struct nl_cache *nltool_alloc_route_cache(struct nl_sock *sk, int flags)
-{
-	struct nl_cache *cache;
-	int err;
-
-	if ((err = rtnl_route_alloc_cache(sk, AF_UNSPEC, flags, &cache)) < 0)
-		fatal(err, "Unable to allocate route cache: %s\n",
-		      nl_geterror(err));
-
-	nl_cache_mngt_provide(cache);
-
-	return cache;
-}
-
-struct nl_cache *nltool_alloc_rule_cache(struct nl_sock *sk)
-{
-	struct nl_cache *cache;
-	int err;
-
-	if ((err = rtnl_rule_alloc_cache(sk, AF_UNSPEC, &cache)) < 0)
-		fatal(err, "Unable to allocate routing rule cache: %s\n",
-		      nl_geterror(err));
-
-	nl_cache_mngt_provide(cache);
-
-	return cache;
-}
-
-struct nl_cache *nltool_alloc_qdisc_cache(struct nl_sock *sk)
-{
-	return alloc_cache(sk, "queueing disciplines", rtnl_qdisc_alloc_cache);
 }
 

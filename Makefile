@@ -13,7 +13,7 @@ ifeq ($(shell [ ! -r Makefile.opts ] && echo 1),)
     include Makefile.opts
 endif
 
-SUBDIRS := lib include doc src tests
+SUBDIRS := lib include doc src
 .PHONY: all clean distclean install gendoc $(SUBDIRS)
 
 all: Makefile.opts

@@ -39,10 +39,6 @@ extern int	rtnl_neigh_add(struct nl_sock *, struct rtnl_neigh *, int);
 extern int	rtnl_neigh_build_add_request(struct rtnl_neigh *, int,
 					     struct nl_msg **);
 
-extern int	rtnl_neigh_change(struct nl_sock *, struct rtnl_neigh *, int);
-extern int	rtnl_neigh_build_change_request(struct rtnl_neigh *, int,
-						struct nl_msg **);
-
 extern int	rtnl_neigh_delete(struct nl_sock *, struct rtnl_neigh *, int);
 extern int	rtnl_neigh_build_delete_request(struct rtnl_neigh *, int,
 						struct nl_msg **);

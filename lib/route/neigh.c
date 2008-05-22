@@ -86,7 +86,7 @@
  * // block until the operation has been completed. Alternatively the required
  * // netlink message can be built using rtnl_neigh_build_add_request()
  * // to be sent out using nl_send_auto_complete().
- * rtnl_neigh_add(sk, neigh, NLM_F_REPLACE);
+ * rtnl_neigh_add(sk, neigh, NLM_F_CREATE);
  *
  * // Free the memory
  * rtnl_neigh_put(neigh);
@@ -139,7 +139,7 @@
  * // block until the operation has been completed. Alternatively the required
  * // netlink message can be built using rtnl_neigh_build_change_request()
  * // to be sent out using nl_send_auto_complete().
- * rtnl_neigh_change(sk, neigh, 0);
+ * rtnl_neigh_add(sk, neigh, NLM_F_REPLACE);
  *
  * // Free the memory
  * rtnl_neigh_put(neigh);
@@ -568,9 +568,13 @@ static int build_neigh_msg(struct rtnl_neigh *tmpl, int cmd, int flags,
 	struct nl_msg *msg;
 	struct ndmsg nhdr = {
 		.ndm_ifindex = tmpl->n_ifindex,
-		.ndm_family = nl_addr_get_family(tmpl->n_dst),
 		.ndm_state = NUD_PERMANENT,
 	};
+
+	if (!(tmpl->ce_mask & NEIGH_ATTR_DST))
+		return -NLE_MISSING_ATTR;
+
+	nhdr.ndm_family = nl_addr_get_family(tmpl->n_dst);
 
 	if (tmpl->ce_mask & NEIGH_ATTR_STATE)
 		nhdr.ndm_state = tmpl->n_state;
@@ -618,8 +622,7 @@ nla_put_failure:
 int rtnl_neigh_build_add_request(struct rtnl_neigh *tmpl, int flags,
 				 struct nl_msg **result)
 {
-	return build_neigh_msg(tmpl, RTM_NEWNEIGH, NLM_F_CREATE | flags,
-			       result);
+	return build_neigh_msg(tmpl, RTM_NEWNEIGH, flags, result);
 }
 
 /**
@@ -702,66 +705,6 @@ int rtnl_neigh_delete(struct nl_sock *sk, struct rtnl_neigh *neigh,
 	int err;
 	
 	if ((err = rtnl_neigh_build_delete_request(neigh, flags, &msg)) < 0)
-		return err;
-
-	err = nl_send_auto_complete(sk, msg);
-	nlmsg_free(msg);
-	if (err < 0)
-		return err;
-
-	return nl_wait_for_ack(sk);
-}
-
-/** @} */
-
-/**
- * @name Neighbour Modification
- * @{
- */
-
-/**
- * Build a netlink request message to change neighbour attributes
- * @arg neigh		the neighbour to change
- * @arg flags		additional netlink message flags
- * @arg result		Pointer to store resulting message.
- *
- * Builds a new netlink message requesting a change of a neigh
- * attributes. The netlink message header isn't fully equipped with
- * all relevant fields and must thus be sent out via nl_send_auto_complete()
- * or supplemented as needed.
- *
- * @note Not all attributes can be changed, see
- *       \ref neigh_changeable "Changeable Attributes" for a list.
- *
- * @return 0 on success or a negative error code.
- */
-int rtnl_neigh_build_change_request(struct rtnl_neigh *neigh, int flags,
-				    struct nl_msg **result)
-{
-	return build_neigh_msg(neigh, RTM_NEWNEIGH, NLM_F_REPLACE | flags,
-			       result);
-}
-
-/**
- * Change neighbour attributes
- * @arg sk		Netlink socket.
- * @arg neigh		neighbour to be changed
- * @arg flags		additional netlink message flags
- *
- * Builds a netlink message by calling rtnl_neigh_build_change_request(),
- * sends the request to the kernel and waits for the next ACK to be
- * received and thus blocks until the request has been fullfilled.
- *
- * @return 0 on sucess or a negative error if an error occured.
- * @note Not all attributes can be changed, see
- *       \ref neigh_changeable "Changeable Attributes" for a list.
- */
-int rtnl_neigh_change(struct nl_sock *sk, struct rtnl_neigh *neigh, int flags)
-{
-	struct nl_msg *msg;
-	int err;
-	
-	if ((err = rtnl_neigh_build_change_request(neigh, flags, &msg)) < 0)
 		return err;
 
 	err = nl_send_auto_complete(sk, msg);

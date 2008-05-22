@@ -60,7 +60,7 @@ $(CORE_LIB): $(CORE_LIB).$(PACKAGE_VERSION)
 
 $(ROUTE_LIB).$(PACKAGE_VERSION): $(ROUTE_OBJ)
 	@echo "  LD $@"; \
-	$(CC) -shared -Wl,-soname=$@ -o $@ $^ $(LIBNL_LIB)
+	$(CC) -shared -Wl,-soname=$@ -o $@ $^ $(LIBNL_LIB) -lnl
 
 $(ROUTE_LIB): $(ROUTE_LIB).$(PACKAGE_VERSION)
 	@echo "  LN $@ -> $<"; \
@@ -68,7 +68,7 @@ $(ROUTE_LIB): $(ROUTE_LIB).$(PACKAGE_VERSION)
 
 $(GENL_LIB).$(PACKAGE_VERSION): $(GENL_OBJ)
 	@echo "  LD $@"; \
-	$(CC) -shared -Wl,-soname=$@ -o $@ $^ $(LIBNL_LIB)
+	$(CC) -shared -Wl,-soname=$@ -o $@ $^ $(LIBNL_LIB) -lnl
 
 $(GENL_LIB): $(GENL_LIB).$(PACKAGE_VERSION)
 	@echo "  LN $@ -> $<"; \
@@ -76,7 +76,7 @@ $(GENL_LIB): $(GENL_LIB).$(PACKAGE_VERSION)
 
 $(NF_LIB).$(PACKAGE_VERSION): $(NF_OBJ)
 	@echo "  LD $@"; \
-	$(CC) -shared -Wl,-soname=$@ -o $@ $^ $(LIBNL_LIB)
+	$(CC) -shared -Wl,-soname=$@ -o $@ $^ $(LIBNL_LIB) -lnl -lnl-route
 
 $(NF_LIB): $(NF_LIB).$(PACKAGE_VERSION)
 	@echo "  LN $@ -> $<"; \

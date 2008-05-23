@@ -121,27 +121,24 @@ errout:
 	return err;
 }
 
-static int result_dump_brief(struct nl_object *obj, struct nl_dump_params *p)
+static void result_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct flnl_result *res = (struct flnl_result *) obj;
 	char buf[128];
-	int line = 1;
 
-	dp_dump(p, "table %s prefixlen %u next-hop-selector %u\n",
+	nl_dump_line(p, "table %s prefixlen %u next-hop-selector %u\n",
 		rtnl_route_table2str(res->fr_table_id, buf, sizeof(buf)),
 		res->fr_prefixlen, res->fr_nh_sel);
-	dp_dump_line(p, line++, "type %s ",
+	nl_dump_line(p, "type %s ",
 		     nl_rtntype2str(res->fr_type, buf, sizeof(buf)));
-	dp_dump(p, "scope %s error %s (%d)\n",
+	nl_dump(p, "scope %s error %s (%d)\n",
 		rtnl_scope2str(res->fr_scope, buf, sizeof(buf)),
 		strerror(-res->fr_error), res->fr_error);
-
-	return line;
 }
 
-static int result_dump_full(struct nl_object *obj, struct nl_dump_params *p)
+static void result_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 {
-	return result_dump_brief(obj, p);
+	result_dump_line(obj, p);
 }
 
 static int result_compare(struct nl_object *_a, struct nl_object *_b,
@@ -321,8 +318,10 @@ static struct nl_object_ops result_obj_ops = {
 	.oo_size		= sizeof(struct flnl_result),
 	.oo_free_data		= result_free_data,
 	.oo_clone		= result_clone,
-	.oo_dump[NL_DUMP_BRIEF]	= result_dump_brief,
-	.oo_dump[NL_DUMP_FULL]	= result_dump_full,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= result_dump_line,
+	    [NL_DUMP_DETAILS]	= result_dump_details,
+	},
 	.oo_compare		= result_compare,
 };
 

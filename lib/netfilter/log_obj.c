@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
  * Copyright (c) 2008 Patrick McHardy <kaber@trash.net>
@@ -26,34 +26,34 @@
 
 /** @endcond */
 
-static int nfnl_log_dump(struct nl_object *a, struct nl_dump_params *p)
+static void nfnl_log_dump(struct nl_object *a, struct nl_dump_params *p)
 {
 	struct nfnl_log *log = (struct nfnl_log *) a;
 	char buf[64];
 
+	nl_new_line(p);
+
 	if (log->ce_mask & LOG_ATTR_GROUP)
-		dp_dump(p, "group=%u ", log->log_group);
+		nl_dump(p, "group=%u ", log->log_group);
 
 	if (log->ce_mask & LOG_ATTR_COPY_MODE)
-		dp_dump(p, "copy_mode=%s ",
+		nl_dump(p, "copy_mode=%s ",
 			nfnl_log_copy_mode2str(log->log_copy_mode,
 					       buf, sizeof(buf)));
 
 	if (log->ce_mask & LOG_ATTR_COPY_RANGE)
-		dp_dump(p, "copy_range=%u ", log->log_copy_range);
+		nl_dump(p, "copy_range=%u ", log->log_copy_range);
 
 	if (log->ce_mask & LOG_ATTR_FLUSH_TIMEOUT)
-		dp_dump(p, "flush_timeout=%u ", log->log_flush_timeout);
+		nl_dump(p, "flush_timeout=%u ", log->log_flush_timeout);
 
 	if (log->ce_mask & LOG_ATTR_ALLOC_SIZE)
-		dp_dump(p, "alloc_size=%u ", log->log_alloc_size);
+		nl_dump(p, "alloc_size=%u ", log->log_alloc_size);
 
 	if (log->ce_mask & LOG_ATTR_QUEUE_THRESHOLD)
-		dp_dump(p, "queue_threshold=%u ", log->log_queue_threshold);
+		nl_dump(p, "queue_threshold=%u ", log->log_queue_threshold);
 
-	dp_dump(p, "\n");
-
-	return 1;
+	nl_dump(p, "\n");
 }
 
 static struct trans_tbl copy_modes[] = {
@@ -274,9 +274,11 @@ static char *nfnl_log_attrs2str(int attrs, char *buf, size_t len)
 struct nl_object_ops log_obj_ops = {
 	.oo_name		= "netfilter/log",
 	.oo_size		= sizeof(struct nfnl_log),
-	.oo_dump[NL_DUMP_BRIEF]	= nfnl_log_dump,
-	.oo_dump[NL_DUMP_FULL]	= nfnl_log_dump,
-	.oo_dump[NL_DUMP_STATS]	= nfnl_log_dump,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= nfnl_log_dump,
+	    [NL_DUMP_DETAILS]	= nfnl_log_dump,
+	    [NL_DUMP_STATS]	= nfnl_log_dump,
+	},
 	.oo_compare		= nfnl_log_compare,
 	.oo_attrs2str		= nfnl_log_attrs2str,
 	.oo_id_attrs		= LOG_ATTR_GROUP,

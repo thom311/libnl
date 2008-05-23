@@ -25,7 +25,7 @@
 int nl_debug = 0;
 
 struct nl_dump_params nl_debug_dp = {
-	.dp_type = NL_DUMP_FULL,
+	.dp_type = NL_DUMP_DETAILS,
 };
 
 static void __init nl_debug_init(void)
@@ -870,8 +870,7 @@ void dump_from_ops(struct nl_object *obj, struct nl_dump_params *params)
 						     buf, sizeof(buf)));
 #endif
 		params->dp_pre_dump = 1;
-	} else
-		nl_new_line(params);
+	}
 
 	if (obj->ce_ops->oo_dump[type])
 		obj->ce_ops->oo_dump[type](obj, params);

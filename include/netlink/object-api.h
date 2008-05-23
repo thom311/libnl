@@ -94,7 +94,6 @@ extern "C" {
  * 				   struct nl_dump_params *params)
  * {
  * 	struct my_obj *my_obj = nl_object_priv(obj);
- * 	int line = 1;	// We will print at least one line for sure
  *
  * 	// It is absolutely essential to use nl_dump() when printing
  *	// any text to make sure the dumping parameters are respected.
@@ -102,14 +101,11 @@ extern "C" {
  *
  * 	// Before we can dump the next line, make sure to prefix
  *	// this line correctly.
- * 	nl_new_line(params, line++);
+ * 	nl_new_line(params);
  *
  * 	// You may also split a line into multiple nl_dump() calls.
  * 	nl_dump(params, "String: %s ", my_obj->my_string);
  * 	nl_dump(params, "String-2: %s\n", my_obj->another_string);
- *
- * 	// Return the number of lines dumped
- * 	return line;
  * }
  *
  * struct nl_object_ops my_ops = {
@@ -304,8 +300,8 @@ struct nl_object_ops
 	 *
 	 * The functions must return the number of lines printed.
 	 */
-	int   (*oo_dump[NL_DUMP_MAX+1])(struct nl_object *,
-					struct nl_dump_params *);
+	void (*oo_dump[NL_DUMP_MAX+1])(struct nl_object *,
+				       struct nl_dump_params *);
 
 	/**
 	 * Comparison function

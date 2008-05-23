@@ -28,28 +28,28 @@
 /** @endcond */
 
 
-static int nfnl_queue_dump(struct nl_object *a, struct nl_dump_params *p)
+static void nfnl_queue_dump(struct nl_object *a, struct nl_dump_params *p)
 {
 	struct nfnl_queue *queue = (struct nfnl_queue *) a;
 	char buf[64];
 
+	nl_new_line(p);
+
 	if (queue->ce_mask & QUEUE_ATTR_GROUP)
-		dp_dump(p, "group=%u ", queue->queue_group);
+		nl_dump(p, "group=%u ", queue->queue_group);
 
 	if (queue->ce_mask & QUEUE_ATTR_MAXLEN)
-		dp_dump(p, "maxlen=%u ", queue->queue_maxlen);
+		nl_dump(p, "maxlen=%u ", queue->queue_maxlen);
 
 	if (queue->ce_mask & QUEUE_ATTR_COPY_MODE)
-		dp_dump(p, "copy_mode=%s ",
+		nl_dump(p, "copy_mode=%s ",
 			nfnl_queue_copy_mode2str(queue->queue_copy_mode,
 						 buf, sizeof(buf)));
 
 	if (queue->ce_mask & QUEUE_ATTR_COPY_RANGE)
-		dp_dump(p, "copy_range=%u ", queue->queue_copy_range);
+		nl_dump(p, "copy_range=%u ", queue->queue_copy_range);
 
-	dp_dump(p, "\n");
-
-	return 1;
+	nl_dump(p, "\n");
 }
 
 static struct trans_tbl copy_modes[] = {
@@ -202,9 +202,11 @@ static char *nfnl_queue_attrs2str(int attrs, char *buf, size_t len)
 struct nl_object_ops queue_obj_ops = {
 	.oo_name		= "netfilter/queue",
 	.oo_size		= sizeof(struct nfnl_queue),
-	.oo_dump[NL_DUMP_BRIEF]	= nfnl_queue_dump,
-	.oo_dump[NL_DUMP_FULL]	= nfnl_queue_dump,
-	.oo_dump[NL_DUMP_STATS]	= nfnl_queue_dump,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= nfnl_queue_dump,
+	    [NL_DUMP_DETAILS]	= nfnl_queue_dump,
+	    [NL_DUMP_STATS]	= nfnl_queue_dump,
+	},
 	.oo_compare		= nfnl_queue_compare,
 	.oo_attrs2str		= nfnl_queue_attrs2str,
 	.oo_id_attrs		= QUEUE_ATTR_GROUP,

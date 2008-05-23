@@ -59,59 +59,50 @@ errout:
 	return err;
 }
 
-static int cls_dump_brief(struct nl_object *obj, struct nl_dump_params *p)
+static void cls_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 {
 	char buf[32];
 	struct rtnl_cls *cls = (struct rtnl_cls *) obj;
 	struct rtnl_cls_ops *cops;
-	int line;
 
-	line = tca_dump_brief((struct rtnl_tca *) cls, "cls", p, 0);
+	tca_dump_line((struct rtnl_tca *) cls, "cls", p);
 
-	dp_dump(p, " prio %u protocol %s", cls->c_prio,
+	nl_dump(p, " prio %u protocol %s", cls->c_prio,
 		nl_ether_proto2str(cls->c_protocol, buf, sizeof(buf)));
 
 	cops = rtnl_cls_lookup_ops(cls);
-	if (cops && cops->co_dump[NL_DUMP_BRIEF])
-		line = cops->co_dump[NL_DUMP_BRIEF](cls, p, line);
-	dp_dump(p, "\n");
-
-	return line;
+	if (cops && cops->co_dump[NL_DUMP_LINE])
+		cops->co_dump[NL_DUMP_LINE](cls, p);
+	nl_dump(p, "\n");
 }
 
-static int cls_dump_full(struct nl_object *obj, struct nl_dump_params *p)
+static void cls_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_cls *cls = (struct rtnl_cls *) obj;
 	struct rtnl_cls_ops *cops;
-	int line;
 
-	line = cls_dump_brief(obj, p);
-	line = tca_dump_full((struct rtnl_tca *) cls, p, line);
+	cls_dump_line(obj, p);
+	tca_dump_details((struct rtnl_tca *) cls, p);
 
 	cops = rtnl_cls_lookup_ops(cls);
-	if (cops && cops->co_dump[NL_DUMP_FULL])
-		line = cops->co_dump[NL_DUMP_FULL](cls, p, line);
+	if (cops && cops->co_dump[NL_DUMP_DETAILS])
+		cops->co_dump[NL_DUMP_DETAILS](cls, p);
 	else
-		dp_dump(p, "no options\n");
-
-	return line;
+		nl_dump(p, "no options\n");
 }
 
-static int cls_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
+static void cls_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_cls *cls = (struct rtnl_cls *) obj;
 	struct rtnl_cls_ops *cops;
-	int line;
 
-	line = cls_dump_full(obj, p);
-	line = tca_dump_stats((struct rtnl_tca *) cls, p, line);
-	dp_dump(p, "\n");
+	cls_dump_details(obj, p);
+	tca_dump_stats((struct rtnl_tca *) cls, p);
+	nl_dump(p, "\n");
 
 	cops = rtnl_cls_lookup_ops(cls);
 	if (cops && cops->co_dump[NL_DUMP_STATS])
-		line = cops->co_dump[NL_DUMP_STATS](cls, p, line);
-
-	return line;
+		cops->co_dump[NL_DUMP_STATS](cls, p);
 }
 
 /**
@@ -193,9 +184,11 @@ struct nl_object_ops cls_obj_ops = {
 	.oo_size		= sizeof(struct rtnl_cls),
 	.oo_free_data		= cls_free_data,
 	.oo_clone		= cls_clone,
-	.oo_dump[NL_DUMP_BRIEF]	= cls_dump_brief,
-	.oo_dump[NL_DUMP_FULL]	= cls_dump_full,
-	.oo_dump[NL_DUMP_STATS]	= cls_dump_stats,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= cls_dump_line,
+	    [NL_DUMP_DETAILS]	= cls_dump_details,
+	    [NL_DUMP_STATS]	= cls_dump_stats,
+	},
 	.oo_compare		= tca_compare,
 	.oo_id_attrs		= (TCA_ATTR_IFINDEX | TCA_ATTR_HANDLE),
 };

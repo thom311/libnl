@@ -183,44 +183,41 @@ int tca_clone(struct rtnl_tca *dst, struct rtnl_tca *src)
 	return 0;
 }
 
-int tca_dump_brief(struct rtnl_tca *g, const char *type,
-		   struct nl_dump_params *p, int line)
+void tca_dump_line(struct rtnl_tca *g, const char *type,
+		   struct nl_dump_params *p)
 {
 	char handle[32], parent[32];
 	struct nl_cache *link_cache;
 	
 	link_cache = nl_cache_mngt_require("route/link");
 
-	dp_dump(p, "%s %s ", g->tc_kind, type);
+	nl_dump_line(p, "%s %s ", g->tc_kind, type);
 
 	if (link_cache) {
 		char buf[32];
-		dp_dump(p, "dev %s ",
+		nl_dump(p, "dev %s ",
 			rtnl_link_i2name(link_cache, g->tc_ifindex,
 					 buf, sizeof(buf)));
 	} else
-		dp_dump(p, "dev %u ", g->tc_ifindex);
+		nl_dump(p, "dev %u ", g->tc_ifindex);
 	
-	dp_dump(p, "handle %s parent %s",
+	nl_dump(p, "handle %s parent %s",
 		rtnl_tc_handle2str(g->tc_handle, handle, sizeof(handle)),
 		rtnl_tc_handle2str(g->tc_parent, parent, sizeof(parent)));
-
-	return 1;
 }
 
-int tca_dump_full(struct rtnl_tca *g, struct nl_dump_params *p, int line)
+void tca_dump_details(struct rtnl_tca *g, struct nl_dump_params *p)
 {
-	dp_dump_line(p, line++, "  ");
-	return line;
+	nl_dump_line(p, "  ");
 }
 
-int tca_dump_stats(struct rtnl_tca *g, struct nl_dump_params *p, int line)
+void tca_dump_stats(struct rtnl_tca *g, struct nl_dump_params *p)
 {
 	char *unit, fmt[64];
 	float res;
 	strcpy(fmt, "        %7.2f %s %10u %10u %10u %10u %10u\n");
 
-	dp_dump_line(p, line++,
+	nl_dump_line(p, 
 		"    Stats:    bytes    packets      drops overlimits" \
 		"       qlen    backlog\n");
 
@@ -228,7 +225,7 @@ int tca_dump_stats(struct rtnl_tca *g, struct nl_dump_params *p, int line)
 	if (*unit == 'B')
 		fmt[11] = '9';
 
-	dp_dump_line(p, line++, fmt, res, unit,
+	nl_dump_line(p, fmt, res, unit,
 		g->tc_stats[RTNL_TC_PACKETS],
 		g->tc_stats[RTNL_TC_DROPS],
 		g->tc_stats[RTNL_TC_OVERLIMITS],
@@ -242,9 +239,7 @@ int tca_dump_stats(struct rtnl_tca *g, struct nl_dump_params *p, int line)
 	if (*unit == 'B')
 		fmt[11] = '9';
 
-	dp_dump_line(p, line++, fmt, res, unit, g->tc_stats[RTNL_TC_RATE_PPS]);
-
-	return line;
+	nl_dump_line(p, fmt, res, unit, g->tc_stats[RTNL_TC_RATE_PPS]);
 }
 
 int tca_compare(struct nl_object *_a, struct nl_object *_b,

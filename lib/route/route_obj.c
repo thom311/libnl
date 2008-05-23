@@ -122,7 +122,7 @@ static int route_clone(struct nl_object *_dst, struct nl_object *_src)
 	return 0;
 }
 
-static int route_dump_oneline(struct nl_object *a, struct nl_dump_params *p)
+static void route_dump_line(struct nl_object *a, struct nl_dump_params *p)
 {
 	struct rtnl_route *r = (struct rtnl_route *) a;
 	struct nl_cache *link_cache;
@@ -130,7 +130,7 @@ static int route_dump_oneline(struct nl_object *a, struct nl_dump_params *p)
 
 	link_cache = nl_cache_mngt_require("route/link");
 
-	nl_dump(p, "%s ", nl_af2str(r->rt_family, buf, sizeof(buf)));
+	nl_dump_line(p, "%s ", nl_af2str(r->rt_family, buf, sizeof(buf)));
 
 	if (!(r->ce_mask & ROUTE_ATTR_DST) ||
 	    nl_addr_get_len(r->rt_dst) == 0)
@@ -182,11 +182,9 @@ static int route_dump_oneline(struct nl_object *a, struct nl_dump_params *p)
 	}
 
 	nl_dump(p, "\n");
-
-	return 1;
 }
 
-static int route_dump_details(struct nl_object *a, struct nl_dump_params *p)
+static void route_dump_details(struct nl_object *a, struct nl_dump_params *p)
 {
 	struct rtnl_route *r = (struct rtnl_route *) a;
 	struct nl_cache *link_cache;
@@ -195,7 +193,7 @@ static int route_dump_details(struct nl_object *a, struct nl_dump_params *p)
 
 	link_cache = nl_cache_mngt_require("route/link");
 
-	route_dump_oneline(a, p);
+	route_dump_line(a, p);
 	nl_dump_line(p, "    ");
 
 	if (r->ce_mask & ROUTE_ATTR_PREF_SRC)
@@ -254,11 +252,9 @@ static int route_dump_details(struct nl_object *a, struct nl_dump_params *p)
 					r->rt_metrics[i]);
 		nl_dump(p, "]\n");
 	}
-
-	return 0;
 }
 
-static int route_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
+static void route_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_route *route = (struct rtnl_route *) obj;
 
@@ -273,11 +269,9 @@ static int route_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 			     ci->rtci_last_use / nl_get_hz(),
 			     ci->rtci_expires / nl_get_hz());
 	}
-
-	return 0;
 }
 
-static int route_dump_env(struct nl_object *obj, struct nl_dump_params *p)
+static void route_dump_env(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_route *route = (struct rtnl_route *) obj;
 	struct nl_cache *link_cache;
@@ -285,7 +279,7 @@ static int route_dump_env(struct nl_object *obj, struct nl_dump_params *p)
 
 	link_cache = nl_cache_mngt_require("route/link");
 
-	nl_dump(p, "ROUTE_FAMILY=%s\n",
+	nl_dump_line(p, "ROUTE_FAMILY=%s\n",
 		     nl_af2str(route->rt_family, buf, sizeof(buf)));
 
 	if (route->ce_mask & ROUTE_ATTR_DST)
@@ -340,8 +334,6 @@ static int route_dump_env(struct nl_object *obj, struct nl_dump_params *p)
 			rtnl_route_nh_dump(nh, p);
 		}
 	}
-
-	return 0;
 }
 
 static int route_compare(struct nl_object *_a, struct nl_object *_b,
@@ -1170,10 +1162,12 @@ struct nl_object_ops route_obj_ops = {
 	.oo_constructor		= route_constructor,
 	.oo_free_data		= route_free_data,
 	.oo_clone		= route_clone,
-	.oo_dump[NL_DUMP_ONELINE]	= route_dump_oneline,
-	.oo_dump[NL_DUMP_DETAILS]	= route_dump_details,
-	.oo_dump[NL_DUMP_STATS]		= route_dump_stats,
-	.oo_dump[NL_DUMP_ENV]		= route_dump_env,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= route_dump_line,
+	    [NL_DUMP_DETAILS]	= route_dump_details,
+	    [NL_DUMP_STATS]	= route_dump_stats,
+	    [NL_DUMP_ENV]	= route_dump_env,
+	},
 	.oo_compare		= route_compare,
 	.oo_attrs2str		= route_attrs2str,
 	.oo_id_attrs		= (ROUTE_ATTR_FAMILY | ROUTE_ATTR_TOS |

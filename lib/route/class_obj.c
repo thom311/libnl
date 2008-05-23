@@ -55,62 +55,54 @@ errout:
 	return err;
 }
 
-static int class_dump_brief(struct nl_object *obj, struct nl_dump_params *p)
+static void class_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_class *class = (struct rtnl_class *) obj;
 	struct rtnl_class_ops *cops;
 
-	int line = tca_dump_brief((struct rtnl_tca *) class, "class", p, 0);
+	tca_dump_line((struct rtnl_tca *) class, "class", p);
 
 	cops = rtnl_class_lookup_ops(class);
-	if (cops && cops->co_dump[NL_DUMP_BRIEF])
-		line = cops->co_dump[NL_DUMP_BRIEF](class, p, line);
-	dp_dump(p, "\n");
-
-	return line;
+	if (cops && cops->co_dump[NL_DUMP_LINE])
+		cops->co_dump[NL_DUMP_LINE](class, p);
+	nl_dump(p, "\n");
 }
 
-static int class_dump_full(struct nl_object *obj, struct nl_dump_params *p)
+static void class_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_class *class = (struct rtnl_class *) obj;
 	struct rtnl_class_ops *cops;
-	int line;
 
-	line = class_dump_brief(obj, p);
-	line = tca_dump_full((struct rtnl_tca *) class, p, line);
+	class_dump_line(obj, p);
+	tca_dump_details((struct rtnl_tca *) class, p);
 	
 	if (class->c_info) {
 		char buf[32];
-		dp_dump(p, "child-qdisc %s ",
+		nl_dump(p, "child-qdisc %s ",
 			rtnl_tc_handle2str(class->c_info, buf, sizeof(buf)));
 	}
 
 	cops = rtnl_class_lookup_ops(class);
-	if (cops && cops->co_dump[NL_DUMP_FULL])
-		line = cops->co_dump[NL_DUMP_FULL](class, p, line);
+	if (cops && cops->co_dump[NL_DUMP_DETAILS])
+		cops->co_dump[NL_DUMP_DETAILS](class, p);
 	else if (!class->c_info)
-		dp_dump(p, "noop (no leaf qdisc)");
+		nl_dump(p, "noop (no leaf qdisc)");
 
-	dp_dump(p, "\n");
-
-	return line;
+	nl_dump(p, "\n");
 }
 
-static int class_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
+static void class_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_class *class = (struct rtnl_class *) obj;
 	struct rtnl_class_ops *cops;
-	int line;
 
-	line = class_dump_full(obj, p);
-	line = tca_dump_stats((struct rtnl_tca *) class, p, line);
-	dp_dump(p, "\n");
+	class_dump_details(obj, p);
+	tca_dump_stats((struct rtnl_tca *) class, p);
+	nl_dump(p, "\n");
 
 	cops = rtnl_class_lookup_ops(class);
 	if (cops && cops->co_dump[NL_DUMP_STATS])
-		line = cops->co_dump[NL_DUMP_STATS](class, p, line);
-
-	return line;
+		cops->co_dump[NL_DUMP_STATS](class, p);
 }
 
 /**
@@ -277,9 +269,11 @@ struct nl_object_ops class_obj_ops = {
 	.oo_size		= sizeof(struct rtnl_class),
 	.oo_free_data         	= class_free_data,
 	.oo_clone		= class_clone,
-	.oo_dump[NL_DUMP_BRIEF]	= class_dump_brief,
-	.oo_dump[NL_DUMP_FULL]	= class_dump_full,
-	.oo_dump[NL_DUMP_STATS]	= class_dump_stats,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= class_dump_line,
+	    [NL_DUMP_DETAILS]	= class_dump_details,
+	    [NL_DUMP_STATS]	= class_dump_stats,
+	},
 	.oo_compare		= tca_compare,
 	.oo_id_attrs		= (TCA_ATTR_IFINDEX | TCA_ATTR_HANDLE),
 };

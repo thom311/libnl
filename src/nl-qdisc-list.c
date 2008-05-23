@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 	struct rtnl_qdisc *qdisc;
 	struct nl_cache *link_cache, *qdisc_cache;
 	struct nl_dump_params params = {
-		.dp_type = NL_DUMP_ONELINE,
+		.dp_type = NL_DUMP_LINE,
 		.dp_fd = stdout,
 	};
  

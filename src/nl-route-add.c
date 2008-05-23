@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	struct nl_handle *sock;
 	struct rtnl_route *route;
 	struct nl_dump_params dp = {
-		.dp_type = NL_DUMP_ONELINE,
+		.dp_type = NL_DUMP_LINE,
 		.dp_fd = stdout,
 	};
 	int err = 1;

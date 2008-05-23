@@ -49,7 +49,7 @@ static void set_cb(struct nl_object *obj, void *arg)
 	struct rtnl_link *link = nl_object_priv(obj);
 	struct rtnl_link *change = arg;
 	struct nl_dump_params params = {
-		.dp_type = NL_DUMP_ONELINE,
+		.dp_type = NL_DUMP_LINE,
 		.dp_fd = stdout,
 	};
 	int err;

@@ -45,8 +45,8 @@ struct rtnl_link_info_ops
 
 	/** Called when the link object is dumped.
 	 * Must dump the info type specific attributes. */
-	int	      (*io_dump[NL_DUMP_MAX+1])(struct rtnl_link *,
-						struct nl_dump_params *, int);
+	void	      (*io_dump[NL_DUMP_MAX+1])(struct rtnl_link *,
+						struct nl_dump_params *);
 
 	/** Called when a link object is cloned.
 	 * Must clone all info type specific attributes. */

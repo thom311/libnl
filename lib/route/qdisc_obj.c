@@ -56,54 +56,49 @@ errout:
 	return err;
 }
 
-static int qdisc_dump_brief(struct nl_object *obj, struct nl_dump_params *p)
+static void qdisc_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_qdisc *qdisc = (struct rtnl_qdisc *) obj;
 	struct rtnl_qdisc_ops *qops;
-
-	int line = tca_dump_brief((struct rtnl_tca *) qdisc, "qdisc", p, 0);
+	
+	tca_dump_line((struct rtnl_tca *) qdisc, "qdisc", p);
 
 	qops = rtnl_qdisc_lookup_ops(qdisc);
-	if (qops && qops->qo_dump[NL_DUMP_BRIEF])
-		line = qops->qo_dump[NL_DUMP_BRIEF](qdisc, p, line);
+	if (qops && qops->qo_dump[NL_DUMP_LINE])
+		qops->qo_dump[NL_DUMP_LINE](qdisc, p);
 
-	dp_dump(p, "\n");
-
-	return line;
+	nl_dump(p, "\n");
 }
 
-static int qdisc_dump_full(struct nl_object *arg, struct nl_dump_params *p)
+static void qdisc_dump_details(struct nl_object *arg, struct nl_dump_params *p)
 {
 	struct rtnl_qdisc *qdisc = (struct rtnl_qdisc *) arg;
 	struct rtnl_qdisc_ops *qops;
 
-	int line = qdisc_dump_brief(arg, p);
+	qdisc_dump_line(arg, p);
 
-	line = tca_dump_full((struct rtnl_tca *) qdisc, p, line);
-	dp_dump(p, "refcnt %u ", qdisc->q_info);
+	tca_dump_details((struct rtnl_tca *) qdisc, p);
+	nl_dump(p, "refcnt %u ", qdisc->q_info);
 
 	qops = rtnl_qdisc_lookup_ops(qdisc);
-	if (qops && qops->qo_dump[NL_DUMP_FULL])
-		line = qops->qo_dump[NL_DUMP_FULL](qdisc, p, line);
+	if (qops && qops->qo_dump[NL_DUMP_DETAILS])
+		qops->qo_dump[NL_DUMP_DETAILS](qdisc, p);
 
-	dp_dump(p, "\n");
-	return line;
+	nl_dump(p, "\n");
 }
 
-static int qdisc_dump_stats(struct nl_object *arg, struct nl_dump_params *p)
+static void qdisc_dump_stats(struct nl_object *arg, struct nl_dump_params *p)
 {
 	struct rtnl_qdisc *qdisc = (struct rtnl_qdisc *) arg;
 	struct rtnl_qdisc_ops *qops;
 
-	int line = qdisc_dump_full(arg, p);
-	line = tca_dump_stats((struct rtnl_tca *) qdisc, p, line );
-	dp_dump(p, "\n");
+	qdisc_dump_details(arg, p);
+	tca_dump_stats((struct rtnl_tca *) qdisc, p);
+	nl_dump(p, "\n");
 
 	qops = rtnl_qdisc_lookup_ops(qdisc);
 	if (qops && qops->qo_dump[NL_DUMP_STATS])
-		line = qops->qo_dump[NL_DUMP_STATS](qdisc, p, line);
-
-	return line;
+		qops->qo_dump[NL_DUMP_STATS](qdisc, p);
 }
 
 /**
@@ -263,9 +258,11 @@ struct nl_object_ops qdisc_obj_ops = {
 	.oo_size		= sizeof(struct rtnl_qdisc),
 	.oo_free_data		= qdisc_free_data,
 	.oo_clone		= qdisc_clone,
-	.oo_dump[NL_DUMP_BRIEF]	= qdisc_dump_brief,
-	.oo_dump[NL_DUMP_FULL]	= qdisc_dump_full,
-	.oo_dump[NL_DUMP_STATS]	= qdisc_dump_stats,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= qdisc_dump_line,
+	    [NL_DUMP_DETAILS]	= qdisc_dump_details,
+	    [NL_DUMP_STATS]	= qdisc_dump_stats,
+	},
 	.oo_compare		= tca_compare,
 	.oo_id_attrs		= (TCA_ATTR_IFINDEX | TCA_ATTR_HANDLE),
 };

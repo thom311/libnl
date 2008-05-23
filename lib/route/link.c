@@ -427,110 +427,99 @@ static int link_request_update(struct nl_cache *cache, struct nl_sock *sk)
 	return nl_rtgen_request(sk, RTM_GETLINK, AF_UNSPEC, NLM_F_DUMP);
 }
 
-static int link_dump_brief(struct nl_object *obj, struct nl_dump_params *p)
+static void link_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 {
 	char buf[128];
 	struct nl_cache *cache = dp_cache(obj);
 	struct rtnl_link *link = (struct rtnl_link *) obj;
-	int line = 1;
 
-	dp_dump(p, "%s %s ", link->l_name,
-			     nl_llproto2str(link->l_arptype, buf, sizeof(buf)));
+	nl_dump_line(p, "%s %s ", link->l_name,
+		     nl_llproto2str(link->l_arptype, buf, sizeof(buf)));
 
 	if (link->l_addr && !nl_addr_iszero(link->l_addr))
-		dp_dump(p, "%s ", nl_addr2str(link->l_addr, buf, sizeof(buf)));
+		nl_dump(p, "%s ", nl_addr2str(link->l_addr, buf, sizeof(buf)));
 
 	if (link->ce_mask & LINK_ATTR_MASTER) {
 		struct rtnl_link *master = rtnl_link_get(cache, link->l_master);
-		dp_dump(p, "master %s ", master ? master->l_name : "inv");
+		nl_dump(p, "master %s ", master ? master->l_name : "inv");
 		if (master)
 			rtnl_link_put(master);
 	}
 
 	rtnl_link_flags2str(link->l_flags, buf, sizeof(buf));
 	if (buf[0])
-		dp_dump(p, "<%s> ", buf);
+		nl_dump(p, "<%s> ", buf);
 
 	if (link->ce_mask & LINK_ATTR_LINK) {
 		struct rtnl_link *ll = rtnl_link_get(cache, link->l_link);
-		dp_dump(p, "slave-of %s ", ll ? ll->l_name : "NONE");
+		nl_dump(p, "slave-of %s ", ll ? ll->l_name : "NONE");
 		if (ll)
 			rtnl_link_put(ll);
 	}
 
-	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_BRIEF])
-		line = link->l_info_ops->io_dump[NL_DUMP_BRIEF](link, p, line);
+	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_LINE])
+		link->l_info_ops->io_dump[NL_DUMP_LINE](link, p);
 
-	dp_dump(p, "\n");
-
-	return line;
+	nl_dump(p, "\n");
 }
 
-static int link_dump_full(struct nl_object *obj, struct nl_dump_params *p)
+static void link_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_link *link = (struct rtnl_link *) obj;
 	char buf[64];
-	int line;
 
-	line = link_dump_brief(obj, p);
-	dp_new_line(p, line++);
+	link_dump_line(obj, p);
 
-	dp_dump(p, "    mtu %u ", link->l_mtu);
-	dp_dump(p, "txqlen %u weight %u ", link->l_txqlen, link->l_weight);
+	nl_dump_line(p, "    mtu %u ", link->l_mtu);
+	nl_dump(p, "txqlen %u weight %u ", link->l_txqlen, link->l_weight);
 
 	if (link->ce_mask & LINK_ATTR_QDISC)
-		dp_dump(p, "qdisc %s ", link->l_qdisc);
+		nl_dump(p, "qdisc %s ", link->l_qdisc);
 
 	if (link->ce_mask & LINK_ATTR_MAP && link->l_map.lm_irq)
-		dp_dump(p, "irq %u ", link->l_map.lm_irq);
+		nl_dump(p, "irq %u ", link->l_map.lm_irq);
 
 	if (link->ce_mask & LINK_ATTR_IFINDEX)
-		dp_dump(p, "index %u ", link->l_index);
+		nl_dump(p, "index %u ", link->l_index);
 
 
-	dp_dump(p, "\n");
-	dp_new_line(p, line++);
-
-	dp_dump(p, "    ");
+	nl_dump(p, "\n");
+	nl_dump_line(p, "    ");
 
 	if (link->ce_mask & LINK_ATTR_BRD)
-		dp_dump(p, "brd %s ", nl_addr2str(link->l_bcast, buf,
+		nl_dump(p, "brd %s ", nl_addr2str(link->l_bcast, buf,
 						   sizeof(buf)));
 
 	if ((link->ce_mask & LINK_ATTR_OPERSTATE) &&
 	    link->l_operstate != IF_OPER_UNKNOWN) {
 		rtnl_link_operstate2str(link->l_operstate, buf, sizeof(buf));
-		dp_dump(p, "state %s ", buf);
+		nl_dump(p, "state %s ", buf);
 	}
 
-	dp_dump(p, "mode %s\n",
+	nl_dump(p, "mode %s\n",
 		rtnl_link_mode2str(link->l_linkmode, buf, sizeof(buf)));
 
-	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_FULL])
-		line = link->l_info_ops->io_dump[NL_DUMP_FULL](link, p, line);
-
-	return line;
+	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_DETAILS])
+		link->l_info_ops->io_dump[NL_DUMP_DETAILS](link, p);
 }
 
-static int link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
+static void link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_link *link = (struct rtnl_link *) obj;
 	char *unit, fmt[64];
 	float res;
-	int line;
 	
-	line = link_dump_full(obj, p);
+	link_dump_details(obj, p);
 
-	dp_dump_line(p, line++, "    Stats:    bytes    packets     errors "
-				"   dropped   fifo-err compressed\n");
+	nl_dump_line(p, "    Stats:    bytes    packets     errors "
+			"   dropped   fifo-err compressed\n");
 
 	res = nl_cancel_down_bytes(link->l_stats[RTNL_LINK_RX_BYTES], &unit);
 
 	strcpy(fmt, "     RX %X.2f %s %10llu %10llu %10llu %10llu %10llu\n");
 	fmt[9] = *unit == 'B' ? '9' : '7';
 	
-	dp_dump_line(p, line++, fmt,
-		res, unit,
+	nl_dump_line(p, fmt, res, unit,
 		link->l_stats[RTNL_LINK_RX_PACKETS],
 		link->l_stats[RTNL_LINK_RX_ERRORS],
 		link->l_stats[RTNL_LINK_RX_DROPPED],
@@ -542,18 +531,17 @@ static int link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	strcpy(fmt, "     TX %X.2f %s %10llu %10llu %10llu %10llu %10llu\n");
 	fmt[9] = *unit == 'B' ? '9' : '7';
 	
-	dp_dump_line(p, line++, fmt,
-		res, unit,
+	nl_dump_line(p, fmt, res, unit,
 		link->l_stats[RTNL_LINK_TX_PACKETS],
 		link->l_stats[RTNL_LINK_TX_ERRORS],
 		link->l_stats[RTNL_LINK_TX_DROPPED],
 		link->l_stats[RTNL_LINK_TX_FIFO_ERR],
 		link->l_stats[RTNL_LINK_TX_COMPRESSED]);
 
-	dp_dump_line(p, line++, "    Errors:  length       over        crc "
-				"     frame     missed  multicast\n");
+	nl_dump_line(p, "    Errors:  length       over        crc "
+			"     frame     missed  multicast\n");
 
-	dp_dump_line(p, line++, "     RX  %10" PRIu64 " %10" PRIu64 " %10"
+	nl_dump_line(p, "     RX  %10" PRIu64 " %10" PRIu64 " %10"
 				PRIu64 " %10" PRIu64 " %10" PRIu64 " %10"
 				PRIu64 "\n",
 		link->l_stats[RTNL_LINK_RX_LEN_ERR],
@@ -563,11 +551,11 @@ static int link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 		link->l_stats[RTNL_LINK_RX_MISSED_ERR],
 		link->l_stats[RTNL_LINK_MULTICAST]);
 
-	dp_dump_line(p, line++, "            aborted    carrier  heartbeat "
-				"    window  collision\n");
+	nl_dump_line(p, "            aborted    carrier  heartbeat "
+			"    window  collision\n");
 	
-	dp_dump_line(p, line++, "     TX  %10" PRIu64 " %10" PRIu64 " %10"
-				PRIu64 " %10" PRIu64 " %10" PRIu64 "\n",
+	nl_dump_line(p, "     TX  %10" PRIu64 " %10" PRIu64 " %10"
+			PRIu64 " %10" PRIu64 " %10" PRIu64 "\n",
 		link->l_stats[RTNL_LINK_TX_ABORT_ERR],
 		link->l_stats[RTNL_LINK_TX_CARRIER_ERR],
 		link->l_stats[RTNL_LINK_TX_HBEAT_ERR],
@@ -575,40 +563,38 @@ static int link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 		link->l_stats[RTNL_LINK_TX_COLLISIONS]);
 
 	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_STATS])
-		line = link->l_info_ops->io_dump[NL_DUMP_STATS](link, p, line);
-
-	return line;
+		link->l_info_ops->io_dump[NL_DUMP_STATS](link, p);
 }
 
-static int link_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
+static void link_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_link *link = (struct rtnl_link *) obj;
 	struct nl_cache *cache = dp_cache(obj);
 	char buf[128];
-	int i, line = 0;
+	int i;
 
-	dp_dump_line(p, line++, "<link name=\"%s\" index=\"%u\">\n",
+	nl_dump_line(p, "<link name=\"%s\" index=\"%u\">\n",
 		     link->l_name, link->l_index);
-	dp_dump_line(p, line++, "  <family>%s</family>\n",
+	nl_dump_line(p, "  <family>%s</family>\n",
 		     nl_af2str(link->l_family, buf, sizeof(buf)));
-	dp_dump_line(p, line++, "  <arptype>%s</arptype>\n",
+	nl_dump_line(p, "  <arptype>%s</arptype>\n",
 		     nl_llproto2str(link->l_arptype, buf, sizeof(buf)));
-	dp_dump_line(p, line++, "  <address>%s</address>\n",
+	nl_dump_line(p, "  <address>%s</address>\n",
 		     nl_addr2str(link->l_addr, buf, sizeof(buf)));
-	dp_dump_line(p, line++, "  <mtu>%u</mtu>\n", link->l_mtu);
-	dp_dump_line(p, line++, "  <txqlen>%u</txqlen>\n", link->l_txqlen);
-	dp_dump_line(p, line++, "  <weight>%u</weight>\n", link->l_weight);
+	nl_dump_line(p, "  <mtu>%u</mtu>\n", link->l_mtu);
+	nl_dump_line(p, "  <txqlen>%u</txqlen>\n", link->l_txqlen);
+	nl_dump_line(p, "  <weight>%u</weight>\n", link->l_weight);
 
 	rtnl_link_flags2str(link->l_flags, buf, sizeof(buf));
 	if (buf[0])
-		dp_dump_line(p, line++, "  <flags>%s</flags>\n", buf);
+		nl_dump_line(p, "  <flags>%s</flags>\n", buf);
 
 	if (link->ce_mask & LINK_ATTR_QDISC)
-		dp_dump_line(p, line++, "  <qdisc>%s</qdisc>\n", link->l_qdisc);
+		nl_dump_line(p, "  <qdisc>%s</qdisc>\n", link->l_qdisc);
 
 	if (link->ce_mask & LINK_ATTR_LINK) {
 		struct rtnl_link *ll = rtnl_link_get(cache, link->l_link);
-		dp_dump_line(p, line++, "  <link>%s</link>\n",
+		nl_dump_line(p, "  <link>%s</link>\n",
 			     ll ? ll->l_name : "none");
 		if (ll)
 			rtnl_link_put(ll);
@@ -616,91 +602,87 @@ static int link_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
 
 	if (link->ce_mask & LINK_ATTR_MASTER) {
 		struct rtnl_link *master = rtnl_link_get(cache, link->l_master);
-		dp_dump_line(p, line++, "  <master>%s</master>\n",
+		nl_dump_line(p, "  <master>%s</master>\n",
 			     master ? master->l_name : "none");
 		if (master)
 			rtnl_link_put(master);
 	}
 
 	if (link->ce_mask & LINK_ATTR_BRD)
-		dp_dump_line(p, line++, "  <broadcast>%s</broadcast>\n",
+		nl_dump_line(p, "  <broadcast>%s</broadcast>\n",
 			     nl_addr2str(link->l_bcast, buf, sizeof(buf)));
 
 	if (link->ce_mask & LINK_ATTR_STATS) {
-		dp_dump_line(p, line++, "  <stats>\n");
+		nl_dump_line(p, "  <stats>\n");
 		for (i = 0; i <= RTNL_LINK_STATS_MAX; i++) {
 			rtnl_link_stat2str(i, buf, sizeof(buf));
-			dp_dump_line(p, line++,
-				     "    <%s>%" PRIu64 "</%s>\n",
+			nl_dump_line(p, "    <%s>%" PRIu64 "</%s>\n",
 				     buf, link->l_stats[i], buf);
 		}
-		dp_dump_line(p, line++, "  </stats>\n");
+		nl_dump_line(p, "  </stats>\n");
 	}
 
 	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_XML]) {
-		dp_dump_line(p, line++, "  <info>\n");
-		line = link->l_info_ops->io_dump[NL_DUMP_XML](link, p, line);
-		dp_dump_line(p, line++, "  </info>\n");
+		nl_dump_line(p, "  <info>\n");
+		link->l_info_ops->io_dump[NL_DUMP_XML](link, p);
+		nl_dump_line(p, "  </info>\n");
 	}
 
-	dp_dump_line(p, line++, "</link>\n");
+	nl_dump_line(p, "</link>\n");
 
 #if 0
 	uint32_t	l_change;	/**< Change mask */
 	struct rtnl_lifmap l_map;	/**< Interface device mapping */
 #endif
-
-	return line;
 }
 
-static int link_dump_env(struct nl_object *obj, struct nl_dump_params *p)
+static void link_dump_env(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_link *link = (struct rtnl_link *) obj;
 	struct nl_cache *cache = dp_cache(obj);
 	char buf[128];
-	int i, line = 0;
+	int i;
 
-	dp_dump_line(p, line++, "LINK_NAME=%s\n", link->l_name);
-	dp_dump_line(p, line++, "LINK_IFINDEX=%u\n", link->l_index);
-	dp_dump_line(p, line++, "LINK_FAMILY=%s\n",
+	nl_dump_line(p, "LINK_NAME=%s\n", link->l_name);
+	nl_dump_line(p, "LINK_IFINDEX=%u\n", link->l_index);
+	nl_dump_line(p, "LINK_FAMILY=%s\n",
 		     nl_af2str(link->l_family, buf, sizeof(buf)));
-	dp_dump_line(p, line++, "LINK_TYPE=%s\n",
+	nl_dump_line(p, "LINK_TYPE=%s\n",
 		     nl_llproto2str(link->l_arptype, buf, sizeof(buf)));
 	if (link->ce_mask & LINK_ATTR_ADDR)
-		dp_dump_line(p, line++, "LINK_ADDRESS=%s\n",
+		nl_dump_line(p, "LINK_ADDRESS=%s\n",
 			     nl_addr2str(link->l_addr, buf, sizeof(buf)));
-	dp_dump_line(p, line++, "LINK_MTU=%u\n", link->l_mtu);
-	dp_dump_line(p, line++, "LINK_TXQUEUELEN=%u\n", link->l_txqlen);
-	dp_dump_line(p, line++, "LINK_WEIGHT=%u\n", link->l_weight);
+	nl_dump_line(p, "LINK_MTU=%u\n", link->l_mtu);
+	nl_dump_line(p, "LINK_TXQUEUELEN=%u\n", link->l_txqlen);
+	nl_dump_line(p, "LINK_WEIGHT=%u\n", link->l_weight);
 
 	rtnl_link_flags2str(link->l_flags & ~IFF_RUNNING, buf, sizeof(buf));
 	if (buf[0])
-		dp_dump_line(p, line++, "LINK_FLAGS=%s\n", buf);
+		nl_dump_line(p, "LINK_FLAGS=%s\n", buf);
 
 	if (link->ce_mask & LINK_ATTR_QDISC)
-		dp_dump_line(p, line++, "LINK_QDISC=%s\n", link->l_qdisc);
+		nl_dump_line(p, "LINK_QDISC=%s\n", link->l_qdisc);
 
 	if (link->ce_mask & LINK_ATTR_LINK) {
 		struct rtnl_link *ll = rtnl_link_get(cache, link->l_link);
 
-		dp_dump_line(p, line++, "LINK_LINK_IFINDEX=%d\n", link->l_link);
+		nl_dump_line(p, "LINK_LINK_IFINDEX=%d\n", link->l_link);
 		if (ll) {
-			dp_dump_line(p, line++, "LINK_LINK_IFNAME=%s\n",
-				     ll->l_name);
+			nl_dump_line(p, "LINK_LINK_IFNAME=%s\n", ll->l_name);
 			rtnl_link_put(ll);
 		}
 	}
 
 	if (link->ce_mask & LINK_ATTR_MASTER) {
 		struct rtnl_link *master = rtnl_link_get(cache, link->l_master);
-		dp_dump_line(p, line++, "LINK_MASTER=%s\n",
+		nl_dump_line(p, "LINK_MASTER=%s\n",
 			     master ? master->l_name : "none");
 		if (master)
 			rtnl_link_put(master);
 	}
 
 	if (link->ce_mask & LINK_ATTR_BRD)
-		dp_dump_line(p, line++, "LINK_BROADCAST=%s\n",
+		nl_dump_line(p, "LINK_BROADCAST=%s\n",
 			     nl_addr2str(link->l_bcast, buf, sizeof(buf)));
 
 	if (link->ce_mask & LINK_ATTR_STATS) {
@@ -713,15 +695,12 @@ static int link_dump_env(struct nl_object *obj, struct nl_dump_params *p)
 				*c = toupper(*c);
 				c++;
 			}
-			dp_dump_line(p, line++,
-				     "%s=%" PRIu64 "\n", buf, link->l_stats[i]);
+			nl_dump_line(p, "%s=%" PRIu64 "\n", buf, link->l_stats[i]);
 		}
 	}
 
 	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_ENV])
-		line = link->l_info_ops->io_dump[NL_DUMP_ENV](link, p, line);
-
-	return line;
+		link->l_info_ops->io_dump[NL_DUMP_ENV](link, p);
 }
 
 #if 0
@@ -1517,11 +1496,13 @@ static struct nl_object_ops link_obj_ops = {
 	.oo_size		= sizeof(struct rtnl_link),
 	.oo_free_data		= link_free_data,
 	.oo_clone		= link_clone,
-	.oo_dump[NL_DUMP_BRIEF]	= link_dump_brief,
-	.oo_dump[NL_DUMP_FULL]	= link_dump_full,
-	.oo_dump[NL_DUMP_STATS]	= link_dump_stats,
-	.oo_dump[NL_DUMP_XML]	= link_dump_xml,
-	.oo_dump[NL_DUMP_ENV]	= link_dump_env,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= link_dump_line,
+	    [NL_DUMP_DETAILS]	= link_dump_details,
+	    [NL_DUMP_STATS]	= link_dump_stats,
+	    [NL_DUMP_XML]	= link_dump_xml,
+	    [NL_DUMP_ENV]	= link_dump_env,
+	},
 	.oo_compare		= link_compare,
 	.oo_attrs2str		= link_attrs2str,
 	.oo_id_attrs		= LINK_ATTR_IFINDEX,

@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 	struct rtnl_neigh *neigh;
 	struct nl_cache *link_cache;
 	struct nl_dump_params dp = {
-		.dp_type = NL_DUMP_ONELINE,
+		.dp_type = NL_DUMP_LINE,
 		.dp_fd = stdout,
 	};
 	int err, ok = 0, nlflags = NLM_F_REPLACE | NLM_F_CREATE;

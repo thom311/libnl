@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 	struct nl_cache *link_cache, *rule_cache;
 	struct nl_dump_params params = {
 		.dp_fd = stdout,
-		.dp_type = NL_DUMP_BRIEF
+		.dp_type = NL_DUMP_LINE,
 	};
 
 	sock = nlt_alloc_socket();

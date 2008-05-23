@@ -34,11 +34,10 @@ extern int tca_parse(struct nlattr **, int, struct rtnl_tca *,
 extern int  tca_msg_parser(struct nlmsghdr *, struct rtnl_tca *);
 extern void tca_free_data(struct rtnl_tca *);
 extern int  tca_clone(struct rtnl_tca *, struct rtnl_tca *);
-extern int  tca_dump_brief(struct rtnl_tca *, const char *,
-			   struct nl_dump_params *, int);
-extern int  tca_dump_full(struct rtnl_tca *, struct nl_dump_params *, int);
-extern int  tca_dump_stats(struct rtnl_tca *,
-				struct nl_dump_params *, int);
+extern void tca_dump_line(struct rtnl_tca *, const char *,
+			  struct nl_dump_params *);
+extern void tca_dump_details(struct rtnl_tca *, struct nl_dump_params *);
+extern void tca_dump_stats(struct rtnl_tca *, struct nl_dump_params *);
 extern int  tca_compare(struct nl_object *, struct nl_object *, uint32_t, int);
 
 extern void tca_set_ifindex(struct rtnl_tca *, int);

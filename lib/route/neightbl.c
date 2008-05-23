@@ -228,12 +228,11 @@ static int neightbl_request_update(struct nl_cache *c, struct nl_sock *h)
 }
 
 
-static int neightbl_dump_brief(struct nl_object *arg, struct nl_dump_params *p)
+static void neightbl_dump_line(struct nl_object *arg, struct nl_dump_params *p)
 {
-	int line = 1;
 	struct rtnl_neightbl *ntbl = (struct rtnl_neightbl *) arg;
 
-	dp_dump(p, "%s", ntbl->nt_name);
+	nl_dump_line(p, "%s", ntbl->nt_name);
 
 	if (ntbl->nt_parms.ntp_mask & NEIGHTBLPARM_ATTR_IFINDEX) {
 		struct nl_cache *link_cache;
@@ -242,57 +241,52 @@ static int neightbl_dump_brief(struct nl_object *arg, struct nl_dump_params *p)
 
 		if (link_cache) {
 			char buf[32];
-			dp_dump(p, "<%s> ",
+			nl_dump(p, "<%s> ",
 				rtnl_link_i2name(link_cache,
 						 ntbl->nt_parms.ntp_ifindex,
 						 buf, sizeof(buf)));
 		} else
-			dp_dump(p, "<%u> ", ntbl->nt_parms.ntp_ifindex);
+			nl_dump(p, "<%u> ", ntbl->nt_parms.ntp_ifindex);
 	} else
-		dp_dump(p, " ");
+		nl_dump(p, " ");
 
 	if (ntbl->ce_mask & NEIGHTBL_ATTR_CONFIG)
-		dp_dump(p, "entries %u ", ntbl->nt_config.ndtc_entries);
+		nl_dump(p, "entries %u ", ntbl->nt_config.ndtc_entries);
 
 	if (ntbl->ce_mask & NEIGHTBL_ATTR_PARMS) {
 		char rt[32], rt2[32];
 		struct rtnl_neightbl_parms *pa = &ntbl->nt_parms;
 
-		dp_dump(p, "reachable-time %s retransmit-time %s",
+		nl_dump(p, "reachable-time %s retransmit-time %s",
 			nl_msec2str(pa->ntp_reachable_time, rt, sizeof(rt)),
 			nl_msec2str(pa->ntp_retrans_time, rt2, sizeof(rt2)));
 	}
 
-	dp_dump(p, "\n");
-
-	return line;
+	nl_dump(p, "\n");
 }
 
-static int neightbl_dump_full(struct nl_object *arg, struct nl_dump_params *p)
+static void neightbl_dump_details(struct nl_object *arg, struct nl_dump_params *p)
 {
 	char x[32], y[32], z[32];
 	struct rtnl_neightbl *ntbl = (struct rtnl_neightbl *) arg;
 
-	int line = neightbl_dump_brief(arg, p);
+	neightbl_dump_line(arg, p);
 
 	if (ntbl->ce_mask & NEIGHTBL_ATTR_CONFIG) {
-		dp_new_line(p, line++);
-		dp_dump(p, "    key-len %u entry-size %u last-flush %s\n",
+		nl_dump_line(p, "    key-len %u entry-size %u last-flush %s\n",
 			ntbl->nt_config.ndtc_key_len,
 			ntbl->nt_config.ndtc_entry_size,
 			nl_msec2str(ntbl->nt_config.ndtc_last_flush,
 				      x, sizeof(x)));
 
-		dp_new_line(p, line++);
-		dp_dump(p, "    gc threshold %u/%u/%u interval %s " \
+		nl_dump_line(p, "    gc threshold %u/%u/%u interval %s " \
 			    "chain-position %u\n",
 			ntbl->nt_gc_thresh1, ntbl->nt_gc_thresh2,
 			ntbl->nt_gc_thresh3,
 			nl_msec2str(ntbl->nt_gc_interval, x, sizeof(x)),
 			ntbl->nt_config.ndtc_hash_chain_gc);
 
-		dp_new_line(p, line++);
-		dp_dump(p, "    hash-rand 0x%08X/0x%08X last-rand %s\n",
+		nl_dump_line(p, "    hash-rand 0x%08X/0x%08X last-rand %s\n",
 			ntbl->nt_config.ndtc_hash_rnd,
 			ntbl->nt_config.ndtc_hash_mask,
 			nl_msec2str(ntbl->nt_config.ndtc_last_rand,
@@ -302,49 +296,43 @@ static int neightbl_dump_full(struct nl_object *arg, struct nl_dump_params *p)
 	if (ntbl->ce_mask & NEIGHTBL_ATTR_PARMS) {
 		struct rtnl_neightbl_parms *pa = &ntbl->nt_parms;
 
-		dp_new_line(p, line++);
-		dp_dump(p, "    refcnt %u pending-queue-limit %u " \
+		nl_dump_line(p, "    refcnt %u pending-queue-limit %u " \
 			    "proxy-delayed-queue-limit %u\n",
 			pa->ntp_refcnt,
 			pa->ntp_queue_len,
 			pa->ntp_proxy_qlen);
 
-		dp_new_line(p, line++);
-		dp_dump(p, "    num-userspace-probes %u num-unicast-probes " \
+		nl_dump_line(p, "    num-userspace-probes %u num-unicast-probes " \
 			    "%u num-multicast-probes %u\n",
 			pa->ntp_app_probes,
 			pa->ntp_ucast_probes,
 			pa->ntp_mcast_probes);
 
-		dp_new_line(p, line++);
-		dp_dump(p, "    min-age %s base-reachable-time %s " \
+		nl_dump_line(p, "    min-age %s base-reachable-time %s " \
 			    "stale-check-interval %s\n",
 			nl_msec2str(pa->ntp_locktime, x, sizeof(x)),
 			nl_msec2str(pa->ntp_base_reachable_time,
 				      y, sizeof(y)),
 			nl_msec2str(pa->ntp_gc_stale_time, z, sizeof(z)));
 
-		dp_new_line(p, line++);
-		dp_dump(p, "    initial-probe-delay %s answer-delay %s " \
+		nl_dump_line(p, "    initial-probe-delay %s answer-delay %s " \
 			    "proxy-answer-delay %s\n",
 			nl_msec2str(pa->ntp_probe_delay, x, sizeof(x)),
 			nl_msec2str(pa->ntp_anycast_delay, y, sizeof(y)),
 			nl_msec2str(pa->ntp_proxy_delay, z, sizeof(z)));
 	}
-
-	return line;
 }
 
-static int neightbl_dump_stats(struct nl_object *arg, struct nl_dump_params *p)
+static void neightbl_dump_stats(struct nl_object *arg, struct nl_dump_params *p)
 {
 	struct rtnl_neightbl *ntbl = (struct rtnl_neightbl *) arg;
-	int line = neightbl_dump_full(arg, p);
+
+	neightbl_dump_details(arg, p);
 
 	if (!(ntbl->ce_mask & NEIGHTBL_ATTR_STATS))
-		return line;
+		return;
 
-	dp_new_line(p, line++);
-	dp_dump(p, "    lookups %lld hits %lld failed %lld " \
+	nl_dump_line(p, "    lookups %lld hits %lld failed %lld " \
 		    "allocations %lld destroys %lld\n",
 		ntbl->nt_stats.ndts_lookups,
 		ntbl->nt_stats.ndts_hits,
@@ -352,18 +340,15 @@ static int neightbl_dump_stats(struct nl_object *arg, struct nl_dump_params *p)
 		ntbl->nt_stats.ndts_allocs,
 		ntbl->nt_stats.ndts_destroys);
 
-	dp_new_line(p, line++);
-	dp_dump(p, "    hash-grows %lld forced-gc-runs %lld " \
+	nl_dump_line(p, "    hash-grows %lld forced-gc-runs %lld " \
 		    "periodic-gc-runs %lld\n",
 		ntbl->nt_stats.ndts_hash_grows,
 		ntbl->nt_stats.ndts_forced_gc_runs,
 		ntbl->nt_stats.ndts_periodic_gc_runs);
 
-	dp_dump(p, "    rcv-unicast-probes %lld rcv-multicast-probes %lld\n",
+	nl_dump_line(p, "    rcv-unicast-probes %lld rcv-multicast-probes %lld\n",
 		ntbl->nt_stats.ndts_rcv_probes_ucast,
 		ntbl->nt_stats.ndts_rcv_probes_mcast);
-
-	return line;
 }
 
 /**
@@ -794,9 +779,11 @@ void rtnl_neightbl_set_locktime(struct rtnl_neightbl *ntbl, uint64_t ms)
 static struct nl_object_ops neightbl_obj_ops = {
 	.oo_name		= "route/neightbl",
 	.oo_size		= sizeof(struct rtnl_neightbl),
-	.oo_dump[NL_DUMP_BRIEF]	= neightbl_dump_brief,
-	.oo_dump[NL_DUMP_FULL]	= neightbl_dump_full,
-	.oo_dump[NL_DUMP_STATS]	= neightbl_dump_stats,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= neightbl_dump_line,
+	    [NL_DUMP_DETAILS]	= neightbl_dump_details,
+	    [NL_DUMP_STATS]	= neightbl_dump_stats,
+	},
 	.oo_compare		= neightbl_compare,
 };
 

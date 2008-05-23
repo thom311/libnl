@@ -160,21 +160,12 @@ static void netem_free_data(struct rtnl_qdisc *qdisc)
 	free (qdisc->q_subdata);
 }
 
-static int netem_dump_brief(struct rtnl_qdisc *qdisc, struct nl_dump_params *p,
-			    int line)
+static void netem_dump_line(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
 {
 	struct rtnl_netem *netem = netem_qdisc(qdisc);
 
 	if (netem)
-		dp_dump(p, "limit %d", netem->qnm_limit);
-
-	return line;
-}
-
-static int netem_dump_full(struct rtnl_qdisc *qdisc, struct nl_dump_params *p,
-			   int line)
-{
-	return line;
+		nl_dump(p, "limit %d", netem->qnm_limit);
 }
 
 int netem_build_msg(struct rtnl_qdisc *qdisc, struct nl_msg *msg)
@@ -930,8 +921,7 @@ static struct rtnl_qdisc_ops netem_ops = {
 	.qo_kind		= "netem",
 	.qo_msg_parser		= netem_msg_parser,
 	.qo_free_data		= netem_free_data,
-	.qo_dump[NL_DUMP_BRIEF]	= netem_dump_brief,
-	.qo_dump[NL_DUMP_FULL]	= netem_dump_full,
+	.qo_dump[NL_DUMP_LINE]	= netem_dump_line,
 	.qo_get_opts		= 0,
 	.qo_build_msg	= netem_build_msg
 };

@@ -77,55 +77,48 @@ static void prio_free_data(struct rtnl_qdisc *qdisc)
 	free(qdisc->q_subdata);
 }
 
-static int prio_dump_brief(struct rtnl_qdisc *qdisc,
-			   struct nl_dump_params *p, int line)
+static void prio_dump_line(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
 {
 	struct rtnl_prio *prio = prio_qdisc(qdisc);
 
 	if (prio)
-		dp_dump(p, " bands %u", prio->qp_bands);
-
-	return line;
+		nl_dump(p, " bands %u", prio->qp_bands);
 }
 
-static int prio_dump_full(struct rtnl_qdisc *qdisc,
-			  struct nl_dump_params *p, int line)
+static void prio_dump_details(struct rtnl_qdisc *qdisc,struct nl_dump_params *p)
 {
 	struct rtnl_prio *prio = prio_qdisc(qdisc);
 	int i, hp;
 
 	if (!prio)
-		goto ignore;
+		return;
 
-	dp_dump(p, "priomap [");
+	nl_dump(p, "priomap [");
 	
 	for (i = 0; i <= TC_PRIO_MAX; i++)
-		dp_dump(p, "%u%s", prio->qp_priomap[i],
+		nl_dump(p, "%u%s", prio->qp_priomap[i],
 			i < TC_PRIO_MAX ? " " : "");
 
-	dp_dump(p, "]\n");
-	dp_new_line(p, line++);
+	nl_dump(p, "]\n");
+	nl_new_line(p);
 
 	hp = (((TC_PRIO_MAX/2) + 1) & ~1);
 
 	for (i = 0; i < hp; i++) {
 		char a[32];
-		dp_dump(p, "    %18s => %u",
+		nl_dump(p, "    %18s => %u",
 			rtnl_prio2str(i, a, sizeof(a)),
 			prio->qp_priomap[i]);
 		if (hp+i <= TC_PRIO_MAX) {
-			dp_dump(p, " %18s => %u",
+			nl_dump(p, " %18s => %u",
 				rtnl_prio2str(hp+i, a, sizeof(a)),
 				prio->qp_priomap[hp+i]);
 			if (i < (hp - 1)) {
-				dp_dump(p, "\n");
-				dp_new_line(p, line++);
+				nl_dump(p, "\n");
+				nl_new_line(p);
 			}
 		}
 	}
-
-ignore:
-	return line;
 }
 
 static struct nl_msg *prio_get_opts(struct rtnl_qdisc *qdisc)
@@ -300,8 +293,10 @@ static struct rtnl_qdisc_ops prio_ops = {
 	.qo_kind		= "prio",
 	.qo_msg_parser		= prio_msg_parser,
 	.qo_free_data		= prio_free_data,
-	.qo_dump[NL_DUMP_BRIEF]	= prio_dump_brief,
-	.qo_dump[NL_DUMP_FULL]	= prio_dump_full,
+	.qo_dump = {
+	    [NL_DUMP_LINE]	= prio_dump_line,
+	    [NL_DUMP_DETAILS]	= prio_dump_details,
+	},
 	.qo_get_opts		= prio_get_opts,
 };
 
@@ -309,8 +304,10 @@ static struct rtnl_qdisc_ops pfifo_fast_ops = {
 	.qo_kind		= "pfifo_fast",
 	.qo_msg_parser		= prio_msg_parser,
 	.qo_free_data		= prio_free_data,
-	.qo_dump[NL_DUMP_BRIEF]	= prio_dump_brief,
-	.qo_dump[NL_DUMP_FULL]	= prio_dump_full,
+	.qo_dump = {
+	    [NL_DUMP_LINE]	= prio_dump_line,
+	    [NL_DUMP_DETAILS]	= prio_dump_details,
+	},
 	.qo_get_opts		= prio_get_opts,
 };
 

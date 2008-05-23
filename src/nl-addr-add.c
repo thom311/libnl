@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 	struct rtnl_addr *addr;
 	struct nl_cache *link_cache;
 	struct nl_dump_params dp = {
-		.dp_type = NL_DUMP_ONELINE,
+		.dp_type = NL_DUMP_LINE,
 		.dp_fd = stdout,
 	};
 	int err;

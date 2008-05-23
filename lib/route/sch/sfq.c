@@ -87,29 +87,22 @@ static void sfq_free_data(struct rtnl_qdisc *qdisc)
 	free(qdisc->q_subdata);
 }
 
-static int sfq_dump_brief(struct rtnl_qdisc *qdisc, struct nl_dump_params *p,
-			  int line)
+static void sfq_dump_line(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
 {
 	struct rtnl_sfq *sfq = sfq_qdisc(qdisc);
 
 	if (sfq)
-		dp_dump(p, " quantum %u perturb %us",
-			sfq->qs_quantum,
+		nl_dump(p, " quantum %u perturb %us", sfq->qs_quantum,
 			nl_ticks2us(sfq->qs_perturb * nl_get_hz()));
-
-	return line;
 }
 
-static int sfq_dump_full(struct rtnl_qdisc *qdisc, struct nl_dump_params *p,
-			 int line)
+static void sfq_dump_details(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
 {
 	struct rtnl_sfq *sfq = sfq_qdisc(qdisc);
 
 	if (sfq)
-		dp_dump(p, "limit %u divisor %u",
+		nl_dump(p, "limit %u divisor %u",
 			sfq->qs_limit, sfq->qs_divisor);
-
-	return line;
 }
 
 static struct nl_msg *sfq_get_opts(struct rtnl_qdisc *qdisc)
@@ -276,8 +269,10 @@ static struct rtnl_qdisc_ops sfq_ops = {
 	.qo_kind		= "sfq",
 	.qo_msg_parser		= sfq_msg_parser,
 	.qo_free_data		= sfq_free_data,
-	.qo_dump[NL_DUMP_BRIEF]	= sfq_dump_brief,
-	.qo_dump[NL_DUMP_FULL]	= sfq_dump_full,
+	.qo_dump = {
+	    [NL_DUMP_LINE]	= sfq_dump_line,
+	    [NL_DUMP_DETAILS]	= sfq_dump_details,
+	},
 	.qo_get_opts		= sfq_get_opts,
 };
 

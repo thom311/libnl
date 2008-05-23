@@ -84,10 +84,6 @@ struct trans_list {
 extern int __nl_read_num_str_file(const char *path,
 				  int (*cb)(long, const char *));
 
-/* backwards compat */
-#define dp_new_line(params, line)	nl_new_line(params)
-#define dp_dump(params, fmt, arg...)	nl_dump(params, fmt, ##arg)
-
 extern int __trans_list_add(int, const char *, struct nl_list_head *);
 extern void __trans_list_clear(struct nl_list_head *);
 

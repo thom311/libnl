@@ -90,9 +90,9 @@ struct nl_addr *nlt_addr_parse(const char *str, int family)
 int nlt_parse_dumptype(const char *str)
 {
 	if (!strcasecmp(str, "brief"))
-		return NL_DUMP_BRIEF;
+		return NL_DUMP_LINE;
 	else if (!strcasecmp(str, "details") || !strcasecmp(str, "detailed"))
-		return NL_DUMP_FULL;
+		return NL_DUMP_DETAILS;
 	else if (!strcasecmp(str, "stats"))
 		return NL_DUMP_STATS;
 	else if (!strcasecmp(str, "xml"))

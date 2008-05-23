@@ -104,7 +104,7 @@ int rtnl_route_nh_compare(struct rtnl_nexthop *a, struct rtnl_nexthop *b,
 	return diff;
 }
 
-static void nh_dump_oneline(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
+static void nh_dump_line(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 {
 	struct nl_cache *link_cache;
 	char buf[128];
@@ -205,8 +205,8 @@ static void nh_dump_env(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 void rtnl_route_nh_dump(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 {
 	switch (dp->dp_type) {
-	case NL_DUMP_ONELINE:
-		nh_dump_oneline(nh, dp);
+	case NL_DUMP_LINE:
+		nh_dump_line(nh, dp);
 		break;
 
 	case NL_DUMP_DETAILS:

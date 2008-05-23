@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 	struct nl_addr *addr;
 	struct nl_dump_params params = {
 		.dp_fd = stdout,
-		.dp_type = NL_DUMP_FULL,
+		.dp_type = NL_DUMP_DETAILS,
 	};
 	int table = RT_TABLE_UNSPEC, scope = RT_SCOPE_UNIVERSE;
 	int tos = 0, err = 1;

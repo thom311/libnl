@@ -19,7 +19,7 @@
  * @ingroup utils
  */
 enum nl_dump_type {
-	NL_DUMP_ONELINE,	/**< Dump object briefly on one line */
+	NL_DUMP_LINE,		/**< Dump object briefly on one line */
 	NL_DUMP_DETAILS,	/**< Dump all attributes but no statistics */
 	NL_DUMP_STATS,		/**< Dump all attributes including statistics */
 	NL_DUMP_XML,		/**< Dump all attribtes in XML format */
@@ -27,10 +27,6 @@ enum nl_dump_type {
 	__NL_DUMP_MAX,
 };
 #define NL_DUMP_MAX (__NL_DUMP_MAX - 1)
-
-/* backards compat */
-#define NL_DUMP_BRIEF NL_DUMP_ONELINE
-#define NL_DUMP_FULL NL_DUMP_DETAILS
 
 /**
  * Dumping parameters

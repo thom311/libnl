@@ -71,14 +71,12 @@ static int family_clone(struct nl_object *_dst, struct nl_object *_src)
 	return 0;
 }
 
-static int family_dump_brief(struct nl_object *obj, struct nl_dump_params *p)
+static void family_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct genl_family *family = (struct genl_family *) obj;
 
-	dp_dump(p, "0x%04x %s version %u\n",
+	nl_dump(p, "0x%04x %s version %u\n",
 		family->gf_id, family->gf_name, family->gf_version);
-
-	return 1;
 }
 
 static struct trans_tbl ops_flags[] = {
@@ -93,13 +91,12 @@ static char *ops_flags2str(int flags, char *buf, size_t len)
 	return __flags2str(flags, buf, len, ops_flags, ARRAY_SIZE(ops_flags));
 }
 
-static int family_dump_full(struct nl_object *obj, struct nl_dump_params *p)
+static void family_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct genl_family *family = (struct genl_family *) obj;
-	int line;
 
-	line = family_dump_brief(obj, p);
-	dp_dump_line(p, line++, "    hdrsize %u maxattr %u\n",
+	family_dump_line(obj, p);
+	nl_dump_line(p, "    hdrsize %u maxattr %u\n",
 		     family->gf_hdrsize, family->gf_maxattr);
 
 	if (family->ce_mask & FAMILY_ATTR_OPS) {
@@ -111,24 +108,21 @@ static int family_dump_full(struct nl_object *obj, struct nl_dump_params *p)
 
 			genl_op2name(family->gf_id, op->o_id, buf, sizeof(buf));
 
-			dp_dump_line(p, line++, "      op %s (0x%02x)",
-				     buf, op->o_id);
+			nl_dump_line(p, "      op %s (0x%02x)", buf, op->o_id);
 
 			if (op->o_flags)
-				dp_dump(p, " <%s>",
+				nl_dump(p, " <%s>",
 					ops_flags2str(op->o_flags, buf,
 						      sizeof(buf)));
 
-			dp_dump(p, "\n");
+			nl_dump(p, "\n");
 		}
 	}
-
-	return line;
 }
 
-static int family_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
+static void family_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 {
-	return family_dump_full(obj, p);
+	family_dump_details(obj, p);
 }
 
 static int family_compare(struct nl_object *_a, struct nl_object *_b,
@@ -270,13 +264,15 @@ struct nl_object_ops genl_family_ops = {
 	.oo_constructor		= family_constructor,
 	.oo_free_data		= family_free_data,
 	.oo_clone		= family_clone,
-	.oo_dump[NL_DUMP_BRIEF] = family_dump_brief,
-	.oo_dump[NL_DUMP_FULL]  = family_dump_full,
-	.oo_dump[NL_DUMP_STATS] = family_dump_stats,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= family_dump_line,
+	    [NL_DUMP_DETAILS]	= family_dump_details,
+	    [NL_DUMP_STATS]	= family_dump_stats,
 #if 0
 	.oo_dump[NL_DUMP_XML]	= addr_dump_xml,
 	.oo_dump[NL_DUMP_ENV]	= addr_dump_env,
 #endif
+	},
 	.oo_compare		= family_compare,
 	.oo_id_attrs		= FAMILY_ATTR_ID,
 };

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2005-2006 Petr Gotthard <petr.gotthard@siemens.com>
  * Copyright (c) 2005-2006 Siemens AG Oesterreich
  */
@@ -136,34 +136,31 @@ static void htb_class_free_data(struct rtnl_class *class)
 	free(class->c_subdata);
 }
 
-static int htb_qdisc_dump_brief(struct rtnl_qdisc *qdisc,
-				struct nl_dump_params *p, int line)
+static void htb_qdisc_dump_line(struct rtnl_qdisc *qdisc,
+				struct nl_dump_params *p)
 {
 	struct rtnl_htb_qdisc *d = (struct rtnl_htb_qdisc *) qdisc->q_subdata;
 
 	if (d == NULL)
-		goto ignore;
+		return;
 
 	if (d->qh_mask & SCH_HTB_HAS_RATE2QUANTUM)
-		dp_dump(p, " r2q %u", d->qh_rate2quantum);
+		nl_dump(p, " r2q %u", d->qh_rate2quantum);
 
 	if (d->qh_mask & SCH_HTB_HAS_DEFCLS) {
 		char buf[32];
-		dp_dump(p, " default %s",
+		nl_dump(p, " default %s",
 			rtnl_tc_handle2str(d->qh_defcls, buf, sizeof(buf)));
 	}
-
-ignore:
-	return line;
 }
 
-static int htb_class_dump_brief(struct rtnl_class *class,
-				struct nl_dump_params *p, int line)
+static void htb_class_dump_line(struct rtnl_class *class,
+				struct nl_dump_params *p)
 {
 	struct rtnl_htb_class *d = (struct rtnl_htb_class *) class->c_subdata;
 
 	if (d == NULL)
-		goto ignore;
+		return;
 
 	if (d->ch_mask & SCH_HTB_HAS_RATE) {
 		double r, rbit;
@@ -172,21 +169,18 @@ static int htb_class_dump_brief(struct rtnl_class *class,
 		r = nl_cancel_down_bytes(d->ch_rate.rs_rate, &ru);
 		rbit = nl_cancel_down_bits(d->ch_rate.rs_rate*8, &rubit);
 
-		dp_dump(p, " rate %.2f%s/s (%.0f%s) log %u",
+		nl_dump(p, " rate %.2f%s/s (%.0f%s) log %u",
 			r, ru, rbit, rubit, 1<<d->ch_rate.rs_cell_log);
 	}
-
-ignore:
-	return line;
 }
 
-static int htb_class_dump_full(struct rtnl_class *class,
-			       struct nl_dump_params *p, int line)
+static void htb_class_dump_details(struct rtnl_class *class,
+				   struct nl_dump_params *p)
 {
 	struct rtnl_htb_class *d = (struct rtnl_htb_class *) class->c_subdata;
 
 	if (d == NULL)
-		goto ignore;
+		return;
 
 	/* line 1 */
 	if (d->ch_mask & SCH_HTB_HAS_CEIL) {
@@ -196,22 +190,22 @@ static int htb_class_dump_full(struct rtnl_class *class,
 		r = nl_cancel_down_bytes(d->ch_ceil.rs_rate, &ru);
 		rbit = nl_cancel_down_bits(d->ch_ceil.rs_rate*8, &rubit);
 
-		dp_dump(p, "    ceil %.2f%s/s (%.0f%s) log %u",
+		nl_dump(p, "    ceil %.2f%s/s (%.0f%s) log %u",
 			r, ru, rbit, rubit, 1<<d->ch_ceil.rs_cell_log);
 	}
 
 	if (d->ch_mask & SCH_HTB_HAS_PRIO)
-		dp_dump(p, " prio %u", d->ch_prio);
+		nl_dump(p, " prio %u", d->ch_prio);
 
 	if (d->ch_mask & SCH_HTB_HAS_MTU)
-		dp_dump(p, " mtu %u", d->ch_mtu);
+		nl_dump(p, " mtu %u", d->ch_mtu);
 
 	if (d->ch_mask & SCH_HTB_HAS_RBUFFER) {
 		double b;
 		char *bu;
 
 		b = nl_cancel_down_bytes(d->ch_rbuffer, &bu);
-		dp_dump(p, " rbuffer %.2f%s", b, bu);
+		nl_dump(p, " rbuffer %.2f%s", b, bu);
 	}
 
 	if (d->ch_mask & SCH_HTB_HAS_CBUFFER) {
@@ -219,20 +213,17 @@ static int htb_class_dump_full(struct rtnl_class *class,
 		char *bu;
 
 		b = nl_cancel_down_bytes(d->ch_cbuffer, &bu);
-		dp_dump(p, " cbuffer %.2f%s", b, bu);
+		nl_dump(p, " cbuffer %.2f%s", b, bu);
 	}
 
 	if (d->ch_mask & SCH_HTB_HAS_QUANTUM)
-		dp_dump(p, " quantum %u", d->ch_quantum);
+		nl_dump(p, " quantum %u", d->ch_quantum);
 
 	if (d->ch_mask & SCH_HTB_HAS_OVERHEAD)
-		dp_dump(p, " overhead %u", d->ch_overhead);
+		nl_dump(p, " overhead %u", d->ch_overhead);
 
 	if (d->ch_mask & SCH_HTB_HAS_MPU)
-		dp_dump(p, " mpu %u", d->ch_mpu);
-
-ignore:
-	return line;
+		nl_dump(p, " mpu %u", d->ch_mpu);
 }
 
 static struct nl_msg *htb_qdisc_get_opts(struct rtnl_qdisc *qdisc)
@@ -525,7 +516,7 @@ static struct rtnl_qdisc_ops htb_qdisc_ops = {
 	.qo_kind		= "htb",
 	.qo_msg_parser		= htb_qdisc_msg_parser,
 	.qo_free_data		= htb_qdisc_free_data,
-	.qo_dump[NL_DUMP_BRIEF]	= htb_qdisc_dump_brief,
+	.qo_dump[NL_DUMP_LINE]	= htb_qdisc_dump_line,
 	.qo_get_opts		= htb_qdisc_get_opts,
 };
 
@@ -533,8 +524,10 @@ static struct rtnl_class_ops htb_class_ops = {
 	.co_kind		= "htb",
 	.co_msg_parser		= htb_class_msg_parser,
 	.co_free_data		= htb_class_free_data,
-	.co_dump[NL_DUMP_BRIEF]	= htb_class_dump_brief,
-	.co_dump[NL_DUMP_FULL]	= htb_class_dump_full,
+	.co_dump = {
+	    [NL_DUMP_LINE]	= htb_class_dump_line,
+	    [NL_DUMP_DETAILS]	= htb_class_dump_details,
+	},
 	.co_get_opts		= htb_class_get_opts,
 };
 

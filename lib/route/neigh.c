@@ -328,7 +328,7 @@ static int neigh_request_update(struct nl_cache *c, struct nl_sock *h)
 }
 
 
-static int neigh_dump_brief(struct nl_object *a, struct nl_dump_params *p)
+static void neigh_dump_line(struct nl_object *a, struct nl_dump_params *p)
 {
 	char dst[INET6_ADDRSTRLEN+5], lladdr[INET6_ADDRSTRLEN+5];
 	struct rtnl_neigh *n = (struct rtnl_neigh *) a;
@@ -337,72 +337,67 @@ static int neigh_dump_brief(struct nl_object *a, struct nl_dump_params *p)
 
 	link_cache = nl_cache_mngt_require("route/link");
 
-	dp_dump(p, "%s ", nl_addr2str(n->n_dst, dst, sizeof(dst)));
+	nl_dump_line(p, "%s ", nl_addr2str(n->n_dst, dst, sizeof(dst)));
 
 	if (link_cache)
-		dp_dump(p, "dev %s ",
+		nl_dump(p, "dev %s ",
 			rtnl_link_i2name(link_cache, n->n_ifindex,
 					 state, sizeof(state)));
 	else
-		dp_dump(p, "dev %d ", n->n_ifindex);
+		nl_dump(p, "dev %d ", n->n_ifindex);
 
 	if (n->ce_mask & NEIGH_ATTR_LLADDR)
-		dp_dump(p, "lladdr %s ",
+		nl_dump(p, "lladdr %s ",
 			nl_addr2str(n->n_lladdr, lladdr, sizeof(lladdr)));
 
 	rtnl_neigh_state2str(n->n_state, state, sizeof(state));
 	rtnl_neigh_flags2str(n->n_flags, flags, sizeof(flags));
 
 	if (state[0])
-		dp_dump(p, "<%s", state);
+		nl_dump(p, "<%s", state);
 	if (flags[0])
-		dp_dump(p, "%s%s", state[0] ? "," : "<", flags);
+		nl_dump(p, "%s%s", state[0] ? "," : "<", flags);
 	if (state[0] || flags[0])
-		dp_dump(p, ">");
-	dp_dump(p, "\n");
-
-	return 1;
+		nl_dump(p, ">");
+	nl_dump(p, "\n");
 }
 
-static int neigh_dump_full(struct nl_object *a, struct nl_dump_params *p)
+static void neigh_dump_details(struct nl_object *a, struct nl_dump_params *p)
 {
 	char rtn_type[32];
 	struct rtnl_neigh *n = (struct rtnl_neigh *) a;
 	int hz = nl_get_hz();
 
-	int line = neigh_dump_brief(a, p);
+	neigh_dump_line(a, p);
 
-	dp_dump_line(p, line++, "    refcnt %u type %s confirmed %u used "
+	nl_dump_line(p, "    refcnt %u type %s confirmed %u used "
 				"%u updated %u\n",
 		n->n_cacheinfo.nci_refcnt,
 		nl_rtntype2str(n->n_type, rtn_type, sizeof(rtn_type)),
 		n->n_cacheinfo.nci_confirmed/hz,
 		n->n_cacheinfo.nci_used/hz, n->n_cacheinfo.nci_updated/hz);
-
-	return line;
 }
 
-static int neigh_dump_stats(struct nl_object *a, struct nl_dump_params *p)
+static void neigh_dump_stats(struct nl_object *a, struct nl_dump_params *p)
 {
-	return neigh_dump_full(a, p);
+	neigh_dump_details(a, p);
 }
 
-static int neigh_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
+static void neigh_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_neigh *neigh = (struct rtnl_neigh *) obj;
 	char buf[128];
-	int line = 0;
 
-	dp_dump_line(p, line++, "<neighbour>\n");
-	dp_dump_line(p, line++, "  <family>%s</family>\n",
+	nl_dump_line(p, "<neighbour>\n");
+	nl_dump_line(p, "  <family>%s</family>\n",
 		     nl_af2str(neigh->n_family, buf, sizeof(buf)));
 
 	if (neigh->ce_mask & NEIGH_ATTR_LLADDR)
-		dp_dump_line(p, line++, "  <lladdr>%s</lladdr>\n",
+		nl_dump_line(p, "  <lladdr>%s</lladdr>\n",
 			     nl_addr2str(neigh->n_lladdr, buf, sizeof(buf)));
 
 	if (neigh->ce_mask & NEIGH_ATTR_DST)
-		dp_dump_line(p, line++, "  <dst>%s</dst>\n",
+		nl_dump_line(p, "  <dst>%s</dst>\n",
 			     nl_addr2str(neigh->n_dst, buf, sizeof(buf)));
 
 	if (neigh->ce_mask & NEIGH_ATTR_IFINDEX) {
@@ -411,88 +406,80 @@ static int neigh_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
 		link_cache = nl_cache_mngt_require("route/link");
 
 		if (link_cache)
-			dp_dump_line(p, line++, "  <device>%s</device>\n",
+			nl_dump_line(p, "  <device>%s</device>\n",
 				     rtnl_link_i2name(link_cache,
 						      neigh->n_ifindex,
 						      buf, sizeof(buf)));
 		else
-			dp_dump_line(p, line++, "  <device>%u</device>\n",
+			nl_dump_line(p, "  <device>%u</device>\n",
 				     neigh->n_ifindex);
 	}
 
 	if (neigh->ce_mask & NEIGH_ATTR_PROBES)
-		dp_dump_line(p, line++, "  <probes>%u</probes>\n",
-			     neigh->n_probes);
+		nl_dump_line(p, "  <probes>%u</probes>\n", neigh->n_probes);
 
 	if (neigh->ce_mask & NEIGH_ATTR_TYPE)
-		dp_dump_line(p, line++, "  <type>%s</type>\n",
+		nl_dump_line(p, "  <type>%s</type>\n",
 			     nl_rtntype2str(neigh->n_type, buf, sizeof(buf)));
 
 	rtnl_neigh_flags2str(neigh->n_flags, buf, sizeof(buf));
 	if (buf[0])
-		dp_dump_line(p, line++, "  <flags>%s</flags>\n", buf);
+		nl_dump_line(p, "  <flags>%s</flags>\n", buf);
 
 	rtnl_neigh_state2str(neigh->n_state, buf, sizeof(buf));
 	if (buf[0])
-		dp_dump_line(p, line++, "  <state>%s</state>\n", buf);
+		nl_dump_line(p, "  <state>%s</state>\n", buf);
 
-	dp_dump_line(p, line++, "</neighbour>\n");
+	nl_dump_line(p, "</neighbour>\n");
 
 #if 0
 	struct rtnl_ncacheinfo n_cacheinfo;
 #endif
-
-	return line;
 }
 
-static int neigh_dump_env(struct nl_object *obj, struct nl_dump_params *p)
+static void neigh_dump_env(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_neigh *neigh = (struct rtnl_neigh *) obj;
 	char buf[128];
-	int line = 0;
 
-	dp_dump_line(p, line++, "NEIGH_FAMILY=%s\n",
+	nl_dump_line(p, "NEIGH_FAMILY=%s\n",
 		     nl_af2str(neigh->n_family, buf, sizeof(buf)));
 
 	if (neigh->ce_mask & NEIGH_ATTR_LLADDR)
-		dp_dump_line(p, line++, "NEIGHT_LLADDR=%s\n",
+		nl_dump_line(p, "NEIGHT_LLADDR=%s\n",
 			     nl_addr2str(neigh->n_lladdr, buf, sizeof(buf)));
 
 	if (neigh->ce_mask & NEIGH_ATTR_DST)
-		dp_dump_line(p, line++, "NEIGH_DST=%s\n",
+		nl_dump_line(p, "NEIGH_DST=%s\n",
 			     nl_addr2str(neigh->n_dst, buf, sizeof(buf)));
 
 	if (neigh->ce_mask & NEIGH_ATTR_IFINDEX) {
 		struct nl_cache *link_cache;
 
-		dp_dump_line(p, line++, "NEIGH_IFINDEX=%u\n",
-			     neigh->n_ifindex);
+		nl_dump_line(p, "NEIGH_IFINDEX=%u\n", neigh->n_ifindex);
 
 		link_cache = nl_cache_mngt_require("route/link");
 		if (link_cache)
-			dp_dump_line(p, line++, "NEIGH_IFNAME=%s\n",
+			nl_dump_line(p, "NEIGH_IFNAME=%s\n",
 				     rtnl_link_i2name(link_cache,
 						      neigh->n_ifindex,
 						      buf, sizeof(buf)));
 	}
 
 	if (neigh->ce_mask & NEIGH_ATTR_PROBES)
-		dp_dump_line(p, line++, "NEIGH_PROBES=%u\n",
-			     neigh->n_probes);
+		nl_dump_line(p, "NEIGH_PROBES=%u\n", neigh->n_probes);
 
 	if (neigh->ce_mask & NEIGH_ATTR_TYPE)
-		dp_dump_line(p, line++, "NEIGH_TYPE=%s\n",
+		nl_dump_line(p, "NEIGH_TYPE=%s\n",
 			     nl_rtntype2str(neigh->n_type, buf, sizeof(buf)));
 
 	rtnl_neigh_flags2str(neigh->n_flags, buf, sizeof(buf));
 	if (buf[0])
-		dp_dump_line(p, line++, "NEIGH_FLAGS=%s\n", buf);
+		nl_dump_line(p, "NEIGH_FLAGS=%s\n", buf);
 
 	rtnl_neigh_state2str(neigh->n_state, buf, sizeof(buf));
 	if (buf[0])
-		dp_dump_line(p, line++, "NEIGH_STATE=%s\n", buf);
-
-	return line;
+		nl_dump_line(p, "NEIGH_STATE=%s\n", buf);
 }
 
 /**
@@ -909,11 +896,13 @@ static struct nl_object_ops neigh_obj_ops = {
 	.oo_size		= sizeof(struct rtnl_neigh),
 	.oo_free_data		= neigh_free_data,
 	.oo_clone		= neigh_clone,
-	.oo_dump[NL_DUMP_BRIEF]	= neigh_dump_brief,
-	.oo_dump[NL_DUMP_FULL]	= neigh_dump_full,
-	.oo_dump[NL_DUMP_STATS]	= neigh_dump_stats,
-	.oo_dump[NL_DUMP_XML]	= neigh_dump_xml,
-	.oo_dump[NL_DUMP_ENV]	= neigh_dump_env,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= neigh_dump_line,
+	    [NL_DUMP_DETAILS]	= neigh_dump_details,
+	    [NL_DUMP_STATS]	= neigh_dump_stats,
+	    [NL_DUMP_XML]	= neigh_dump_xml,
+	    [NL_DUMP_ENV]	= neigh_dump_env,
+	},
 	.oo_compare		= neigh_compare,
 	.oo_attrs2str		= neigh_attrs2str,
 	.oo_id_attrs		= (NEIGH_ATTR_DST | NEIGH_ATTR_FAMILY),

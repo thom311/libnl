@@ -169,185 +169,160 @@ static int rule_request_update(struct nl_cache *c, struct nl_sock *h)
 	return nl_rtgen_request(h, RTM_GETRULE, AF_UNSPEC, NLM_F_DUMP);
 }
 
-static int rule_dump_brief(struct nl_object *o, struct nl_dump_params *p)
+static void rule_dump_line(struct nl_object *o, struct nl_dump_params *p)
 {
 	struct rtnl_rule *r = (struct rtnl_rule *) o;
 	char buf[128];
 
-	dp_dump(p, "%8d ", (r->ce_mask & RULE_ATTR_PRIO) ? r->r_prio : 0);
-	dp_dump(p, "%s ", nl_af2str(r->r_family, buf, sizeof(buf)));
+	nl_dump_line(p, "%8d ", (r->ce_mask & RULE_ATTR_PRIO) ? r->r_prio : 0);
+	nl_dump(p, "%s ", nl_af2str(r->r_family, buf, sizeof(buf)));
 
 	if (r->ce_mask & RULE_ATTR_SRC)
-		dp_dump(p, "from %s ",
+		nl_dump(p, "from %s ",
 			nl_addr2str(r->r_src, buf, sizeof(buf)));
 	else if (r->ce_mask & RULE_ATTR_SRC_LEN && r->r_src_len)
-		dp_dump(p, "from 0/%d ", r->r_src_len);
+		nl_dump(p, "from 0/%d ", r->r_src_len);
 
 	if (r->ce_mask & RULE_ATTR_DST)
-		dp_dump(p, "to %s ",
+		nl_dump(p, "to %s ",
 			nl_addr2str(r->r_dst, buf, sizeof(buf)));
 	else if (r->ce_mask & RULE_ATTR_DST_LEN && r->r_dst_len)
-		dp_dump(p, "to 0/%d ", r->r_dst_len);
+		nl_dump(p, "to 0/%d ", r->r_dst_len);
 
 	if (r->ce_mask & RULE_ATTR_DSFIELD && r->r_dsfield)
-		dp_dump(p, "tos %d ", r->r_dsfield);
+		nl_dump(p, "tos %d ", r->r_dsfield);
 
 	if (r->ce_mask & RULE_ATTR_MARK)
-		dp_dump(p, "mark %" PRIx64 , r->r_mark);
+		nl_dump(p, "mark %" PRIx64 , r->r_mark);
 
 	if (r->ce_mask & RULE_ATTR_IIF)
-		dp_dump(p, "iif %s ", r->r_iif);
+		nl_dump(p, "iif %s ", r->r_iif);
 
 	if (r->ce_mask & RULE_ATTR_TABLE)
-		dp_dump(p, "lookup %s ",
+		nl_dump(p, "lookup %s ",
 			rtnl_route_table2str(r->r_table, buf, sizeof(buf)));
 
 	if (r->ce_mask & RULE_ATTR_REALMS)
-		dp_dump(p, "realms %s ",
+		nl_dump(p, "realms %s ",
 			rtnl_realms2str(r->r_realms, buf, sizeof(buf)));
 
-	dp_dump(p, "action %s\n",
+	nl_dump(p, "action %s\n",
 		nl_rtntype2str(r->r_type, buf, sizeof(buf)));
-
-	return 1;
 }
 
-static int rule_dump_full(struct nl_object *obj, struct nl_dump_params *p)
+static void rule_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_rule *rule = (struct rtnl_rule *) obj;
 	char buf[128];
-	int line;
 
-	line = rule_dump_brief(obj, p);
+	rule_dump_line(obj, p);
 
 	if (rule->ce_mask & RULE_ATTR_SRCMAP)
-		dp_dump_line(p, line++, "  srcmap %s\n",
+		nl_dump_line(p, "  srcmap %s\n",
 			nl_addr2str(rule->r_srcmap, buf, sizeof(buf)));
-
-	return line;
 }
 
-static int rule_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
+static void rule_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 {
-	return rule_dump_full(obj, p);
+	rule_dump_details(obj, p);
 }
 
-static int rule_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
+static void rule_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_rule *rule = (struct rtnl_rule *) obj;
 	char buf[128];
-	int line = 0;
 	
-	dp_dump_line(p, line++, "<rule>\n");
+	nl_dump_line(p, "<rule>\n");
 
-	dp_dump_line(p, line++, "  <priority>%u</priority>\n",
-		     rule->r_prio);
-	dp_dump_line(p, line++, "  <family>%s</family>\n",
+	nl_dump_line(p, "  <priority>%u</priority>\n", rule->r_prio);
+	nl_dump_line(p, "  <family>%s</family>\n",
 		     nl_af2str(rule->r_family, buf, sizeof(buf)));
 
 	if (rule->ce_mask & RULE_ATTR_DST)
-		dp_dump_line(p, line++, "  <dst>%s</dst>\n",
+		nl_dump_line(p, "  <dst>%s</dst>\n",
 			     nl_addr2str(rule->r_dst, buf, sizeof(buf)));
 
 	if (rule->ce_mask & RULE_ATTR_DST_LEN)
-		dp_dump_line(p, line++, "  <dstlen>%u</dstlen>\n",
-			     rule->r_dst_len);
+		nl_dump_line(p, "  <dstlen>%u</dstlen>\n", rule->r_dst_len);
 
 	if (rule->ce_mask & RULE_ATTR_SRC)
-		dp_dump_line(p, line++, "  <src>%s</src>\n",
+		nl_dump_line(p, "  <src>%s</src>\n",
 			     nl_addr2str(rule->r_src, buf, sizeof(buf)));
 
 	if (rule->ce_mask & RULE_ATTR_SRC_LEN)
-		dp_dump_line(p, line++, "  <srclen>%u</srclen>\n",
-			     rule->r_src_len);
+		nl_dump_line(p, "  <srclen>%u</srclen>\n", rule->r_src_len);
 
 	if (rule->ce_mask & RULE_ATTR_IIF)
-		dp_dump_line(p, line++, "  <iif>%s</iif>\n", rule->r_iif);
+		nl_dump_line(p, "  <iif>%s</iif>\n", rule->r_iif);
 
 	if (rule->ce_mask & RULE_ATTR_TABLE)
-		dp_dump_line(p, line++, "  <table>%u</table>\n",
-			     rule->r_table);
+		nl_dump_line(p, "  <table>%u</table>\n", rule->r_table);
 
 	if (rule->ce_mask & RULE_ATTR_REALMS)
-		dp_dump_line(p, line++, "  <realms>%u</realms>\n",
-			     rule->r_realms);
+		nl_dump_line(p, "  <realms>%u</realms>\n", rule->r_realms);
 
 	if (rule->ce_mask & RULE_ATTR_MARK)
-		dp_dump_line(p, line++, "  <mark>%" PRIx64 "</mark>\n",
-			     rule->r_mark);
+		nl_dump_line(p, "  <mark>%" PRIx64 "</mark>\n", rule->r_mark);
 
 	if (rule->ce_mask & RULE_ATTR_DSFIELD)
-		dp_dump_line(p, line++, "  <dsfield>%u</dsfield>\n",
-			     rule->r_dsfield);
+		nl_dump_line(p, "  <dsfield>%u</dsfield>\n", rule->r_dsfield);
 
 	if (rule->ce_mask & RULE_ATTR_TYPE)
-		dp_dump_line(p, line++, "<type>%s</type>\n",
+		nl_dump_line(p, "<type>%s</type>\n",
 			     nl_rtntype2str(rule->r_type, buf, sizeof(buf)));
 
 	if (rule->ce_mask & RULE_ATTR_SRCMAP)
-		dp_dump_line(p, line++, "<srcmap>%s</srcmap>\n",
+		nl_dump_line(p, "<srcmap>%s</srcmap>\n",
 			     nl_addr2str(rule->r_srcmap, buf, sizeof(buf)));
 
-	dp_dump_line(p, line++, "</rule>\n");
-
-	return line;
+	nl_dump_line(p, "</rule>\n");
 }
 
-static int rule_dump_env(struct nl_object *obj, struct nl_dump_params *p)
+static void rule_dump_env(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_rule *rule = (struct rtnl_rule *) obj;
 	char buf[128];
-	int line = 0;
 
-	dp_dump_line(p, line++, "RULE_PRIORITY=%u\n",
-		     rule->r_prio);
-	dp_dump_line(p, line++, "RULE_FAMILY=%s\n",
+	nl_dump_line(p, "RULE_PRIORITY=%u\n", rule->r_prio);
+	nl_dump_line(p, "RULE_FAMILY=%s\n",
 		     nl_af2str(rule->r_family, buf, sizeof(buf)));
 
 	if (rule->ce_mask & RULE_ATTR_DST)
-		dp_dump_line(p, line++, "RULE_DST=%s\n",
+		nl_dump_line(p, "RULE_DST=%s\n",
 			     nl_addr2str(rule->r_dst, buf, sizeof(buf)));
 
 	if (rule->ce_mask & RULE_ATTR_DST_LEN)
-		dp_dump_line(p, line++, "RULE_DSTLEN=%u\n",
-			     rule->r_dst_len);
+		nl_dump_line(p, "RULE_DSTLEN=%u\n", rule->r_dst_len);
 
 	if (rule->ce_mask & RULE_ATTR_SRC)
-		dp_dump_line(p, line++, "RULE_SRC=%s\n",
+		nl_dump_line(p, "RULE_SRC=%s\n",
 			     nl_addr2str(rule->r_src, buf, sizeof(buf)));
 
 	if (rule->ce_mask & RULE_ATTR_SRC_LEN)
-		dp_dump_line(p, line++, "RULE_SRCLEN=%u\n",
-			     rule->r_src_len);
+		nl_dump_line(p, "RULE_SRCLEN=%u\n", rule->r_src_len);
 
 	if (rule->ce_mask & RULE_ATTR_IIF)
-		dp_dump_line(p, line++, "RULE_IIF=%s\n", rule->r_iif);
+		nl_dump_line(p, "RULE_IIF=%s\n", rule->r_iif);
 
 	if (rule->ce_mask & RULE_ATTR_TABLE)
-		dp_dump_line(p, line++, "RULE_TABLE=%u\n",
-			     rule->r_table);
+		nl_dump_line(p, "RULE_TABLE=%u\n", rule->r_table);
 
 	if (rule->ce_mask & RULE_ATTR_REALMS)
-		dp_dump_line(p, line++, "RULE_REALM=%u\n",
-			     rule->r_realms);
+		nl_dump_line(p, "RULE_REALM=%u\n", rule->r_realms);
 
 	if (rule->ce_mask & RULE_ATTR_MARK)
-		dp_dump_line(p, line++, "RULE_MARK=0x%" PRIx64 "\n",
-			     rule->r_mark);
+		nl_dump_line(p, "RULE_MARK=0x%" PRIx64 "\n", rule->r_mark);
 
 	if (rule->ce_mask & RULE_ATTR_DSFIELD)
-		dp_dump_line(p, line++, "RULE_DSFIELD=%u\n",
-			     rule->r_dsfield);
+		nl_dump_line(p, "RULE_DSFIELD=%u\n", rule->r_dsfield);
 
 	if (rule->ce_mask & RULE_ATTR_TYPE)
-		dp_dump_line(p, line++, "RULE_TYPE=%s\n",
+		nl_dump_line(p, "RULE_TYPE=%s\n",
 			     nl_rtntype2str(rule->r_type, buf, sizeof(buf)));
 
 	if (rule->ce_mask & RULE_ATTR_SRCMAP)
-		dp_dump_line(p, line++, "RULE_SRCMAP=%s\n",
+		nl_dump_line(p, "RULE_SRCMAP=%s\n",
 			     nl_addr2str(rule->r_srcmap, buf, sizeof(buf)));
-
-	return line;
 }
 
 static int rule_compare(struct nl_object *_a, struct nl_object *_b,
@@ -834,11 +809,13 @@ static struct nl_object_ops rule_obj_ops = {
 	.oo_size		= sizeof(struct rtnl_rule),
 	.oo_free_data		= rule_free_data,
 	.oo_clone		= rule_clone,
-	.oo_dump[NL_DUMP_BRIEF]	= rule_dump_brief,
-	.oo_dump[NL_DUMP_FULL]	= rule_dump_full,
-	.oo_dump[NL_DUMP_STATS]	= rule_dump_stats,
-	.oo_dump[NL_DUMP_XML]	= rule_dump_xml,
-	.oo_dump[NL_DUMP_ENV]	= rule_dump_env,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= rule_dump_line,
+	    [NL_DUMP_DETAILS]	= rule_dump_details,
+	    [NL_DUMP_STATS]	= rule_dump_stats,
+	    [NL_DUMP_XML]	= rule_dump_xml,
+	    [NL_DUMP_ENV]	= rule_dump_env,
+	},
 	.oo_compare		= rule_compare,
 	.oo_attrs2str		= rule_attrs2str,
 	.oo_id_attrs		= ~0,

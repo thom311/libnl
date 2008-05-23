@@ -60,7 +60,7 @@ errout:
 	return err;
 }
 
-static int nfnl_queue_msg_dump(struct nl_object *a, struct nl_dump_params *p)
+static void nfnl_queue_msg_dump(struct nl_object *a, struct nl_dump_params *p)
 {
 	struct nfnl_queue_msg *msg = (struct nfnl_queue_msg *) a;
 	struct nl_cache *link_cache;
@@ -68,90 +68,90 @@ static int nfnl_queue_msg_dump(struct nl_object *a, struct nl_dump_params *p)
 
 	link_cache = nl_cache_mngt_require("route/link");
 
+	nl_new_line(p);
+
 	if (msg->ce_mask & QUEUE_MSG_ATTR_GROUP)
-		dp_dump(p, "GROUP=%u ", msg->queue_msg_group);
+		nl_dump(p, "GROUP=%u ", msg->queue_msg_group);
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_INDEV) {
 		if (link_cache)
-			dp_dump(p, "IN=%s ",
+			nl_dump(p, "IN=%s ",
 				rtnl_link_i2name(link_cache,
 						 msg->queue_msg_indev,
 						 buf, sizeof(buf)));
 		else
-			dp_dump(p, "IN=%d ", msg->queue_msg_indev);
+			nl_dump(p, "IN=%d ", msg->queue_msg_indev);
 	}
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_PHYSINDEV) {
 		if (link_cache)
-			dp_dump(p, "PHYSIN=%s ",
+			nl_dump(p, "PHYSIN=%s ",
 				rtnl_link_i2name(link_cache,
 						 msg->queue_msg_physindev,
 						 buf, sizeof(buf)));
 		else
-			dp_dump(p, "IN=%d ", msg->queue_msg_physindev);
+			nl_dump(p, "IN=%d ", msg->queue_msg_physindev);
 	}
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_OUTDEV) {
 		if (link_cache)
-			dp_dump(p, "OUT=%s ",
+			nl_dump(p, "OUT=%s ",
 				rtnl_link_i2name(link_cache,
 						 msg->queue_msg_outdev,
 						 buf, sizeof(buf)));
 		else
-			dp_dump(p, "OUT=%d ", msg->queue_msg_outdev);
+			nl_dump(p, "OUT=%d ", msg->queue_msg_outdev);
 	}
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_PHYSOUTDEV) {
 		if (link_cache)
-			dp_dump(p, "PHYSOUT=%s ",
+			nl_dump(p, "PHYSOUT=%s ",
 				rtnl_link_i2name(link_cache,
 						 msg->queue_msg_physoutdev,
 						 buf, sizeof(buf)));
 		else
-			dp_dump(p, "PHYSOUT=%d ", msg->queue_msg_physoutdev);
+			nl_dump(p, "PHYSOUT=%d ", msg->queue_msg_physoutdev);
 	}
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_HWADDR) {
 		int i;
 
-		dp_dump(p, "MAC");
+		nl_dump(p, "MAC");
 		for (i = 0; i < msg->queue_msg_hwaddr_len; i++)
-			dp_dump(p, "%c%02x", i?':':'=',
+			nl_dump(p, "%c%02x", i?':':'=',
 				msg->queue_msg_hwaddr[i]);
-		dp_dump(p, " ");
+		nl_dump(p, " ");
 	}
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_FAMILY)
-		dp_dump(p, "FAMILY=%s ",
+		nl_dump(p, "FAMILY=%s ",
 			nl_af2str(msg->queue_msg_family, buf, sizeof(buf)));
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_HWPROTO)
-		dp_dump(p, "HWPROTO=%s ",
+		nl_dump(p, "HWPROTO=%s ",
 			nl_ether_proto2str(ntohs(msg->queue_msg_hwproto),
 					   buf, sizeof(buf)));
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_HOOK)
-		dp_dump(p, "HOOK=%s ",
+		nl_dump(p, "HOOK=%s ",
 			nfnl_inet_hook2str(msg->queue_msg_hook,
 					   buf, sizeof(buf)));
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_MARK)
-		dp_dump(p, "MARK=%d ", msg->queue_msg_mark);
+		nl_dump(p, "MARK=%d ", msg->queue_msg_mark);
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_PAYLOAD)
-		dp_dump(p, "PAYLOADLEN=%d ", msg->queue_msg_payload_len);
+		nl_dump(p, "PAYLOADLEN=%d ", msg->queue_msg_payload_len);
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_PACKETID)
-		dp_dump(p, "PACKETID=%u ", msg->queue_msg_packetid);
+		nl_dump(p, "PACKETID=%u ", msg->queue_msg_packetid);
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_VERDICT)
-		dp_dump(p, "VERDICT=%s ",
+		nl_dump(p, "VERDICT=%s ",
 			nfnl_verdict2str(msg->queue_msg_verdict,
 					 buf, sizeof(buf)));
 
-	dp_dump(p, "\n");
-
-	return 1;
+	nl_dump(p, "\n");
 }
 
 /**
@@ -471,9 +471,11 @@ struct nl_object_ops queue_msg_obj_ops = {
 	.oo_size		= sizeof(struct nfnl_queue_msg),
 	.oo_free_data		= nfnl_queue_msg_free_data,
 	.oo_clone		= nfnl_queue_msg_clone,
-	.oo_dump[NL_DUMP_BRIEF]	= nfnl_queue_msg_dump,
-	.oo_dump[NL_DUMP_FULL]	= nfnl_queue_msg_dump,
-	.oo_dump[NL_DUMP_STATS]	= nfnl_queue_msg_dump,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= nfnl_queue_msg_dump,
+	    [NL_DUMP_DETAILS]	= nfnl_queue_msg_dump,
+	    [NL_DUMP_STATS]	= nfnl_queue_msg_dump,
+	},
 	.oo_attrs2str		= nfnl_queue_msg_attrs2str,
 };
 

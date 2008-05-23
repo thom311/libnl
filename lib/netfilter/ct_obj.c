@@ -171,10 +171,12 @@ static void ct_dump_tuples(struct nfnl_ct *ct, struct nl_dump_params *p)
 }
 
 /* Compatible with /proc/net/nf_conntrack */
-static int ct_dump(struct nl_object *a, struct nl_dump_params *p)
+static void ct_dump_line(struct nl_object *a, struct nl_dump_params *p)
 {
 	struct nfnl_ct *ct = (struct nfnl_ct *) a;
 	char buf[64];
+
+	nl_new_line(p);
 
 	if (nfnl_ct_test_proto(ct))
 		nl_dump(p, "%s ",
@@ -191,17 +193,15 @@ static int ct_dump(struct nl_object *a, struct nl_dump_params *p)
 		nl_dump(p, "mark %u ", nfnl_ct_get_mark(ct));
 
 	nl_dump(p, "\n");
-
-	return 1;
 }
 
-static int ct_dump_details(struct nl_object *a, struct nl_dump_params *p)
+static void ct_dump_details(struct nl_object *a, struct nl_dump_params *p)
 {
 	struct nfnl_ct *ct = (struct nfnl_ct *) a;
 	char buf[64];
 	int fp = 0;
 
-	ct_dump(a, p);
+	ct_dump_line(a, p);
 
 	nl_dump(p, "    id 0x%x ", ct->ct_id);
 	nl_dump_line(p, "family %s ",
@@ -249,28 +249,25 @@ static int ct_dump_details(struct nl_object *a, struct nl_dump_params *p)
 	if (ct->ct_status)
 		nl_dump(p, ">");
 	nl_dump(p, "\n");
-
-	return 0;
 }
 
-static int ct_dump_stats(struct nl_object *a, struct nl_dump_params *p)
+static void ct_dump_stats(struct nl_object *a, struct nl_dump_params *p)
 {
 	struct nfnl_ct *ct = (struct nfnl_ct *) a;
-	int line = ct_dump_details(a, p);
 	double res;
 	char *unit;
 
-	dp_dump_line(p, line++, "        # packets      volume\n");
+	ct_dump_details(a, p);
+
+	nl_dump_line(p, "        # packets      volume\n");
 
 	res = nl_cancel_down_bytes(nfnl_ct_get_bytes(ct, 1), &unit);
-	dp_dump_line(p, line++, "    rx %10llu %7.2f %s\n",
+	nl_dump_line(p, "    rx %10llu %7.2f %s\n",
 		nfnl_ct_get_packets(ct, 1), res, unit);
 
 	res = nl_cancel_down_bytes(nfnl_ct_get_bytes(ct, 0), &unit);
-	dp_dump_line(p, line++, "    tx %10llu %7.2f %s\n",
+	nl_dump_line(p, "    tx %10llu %7.2f %s\n",
 		nfnl_ct_get_packets(ct, 0), res, unit);
-
-	return line;
 }
 
 static int ct_compare(struct nl_object *_a, struct nl_object *_b,
@@ -776,9 +773,11 @@ struct nl_object_ops ct_obj_ops = {
 	.oo_size		= sizeof(struct nfnl_ct),
 	.oo_free_data		= ct_free_data,
 	.oo_clone		= ct_clone,
-	.oo_dump[NL_DUMP_BRIEF]	= ct_dump,
-	.oo_dump[NL_DUMP_FULL]	= ct_dump_details,
-	.oo_dump[NL_DUMP_STATS]	= ct_dump_stats,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= ct_dump_line,
+	    [NL_DUMP_DETAILS]	= ct_dump_details,
+	    [NL_DUMP_STATS]	= ct_dump_stats,
+	},
 	.oo_compare		= ct_compare,
 	.oo_attrs2str		= ct_attrs2str,
 };

@@ -93,34 +93,29 @@ static int tbf_msg_parser(struct rtnl_qdisc *q)
 	return 0;
 }
 
-static int tbf_dump_brief(struct rtnl_qdisc *qdisc, struct nl_dump_params *p,
-			  int line)
+static void tbf_dump_line(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
 {
 	double r, rbit, lim;
 	char *ru, *rubit, *limu;
 	struct rtnl_tbf *tbf = tbf_qdisc(qdisc);
 
 	if (!tbf)
-		goto ignore;
+		return;
 
 	r = nl_cancel_down_bytes(tbf->qt_rate.rs_rate, &ru);
 	rbit = nl_cancel_down_bits(tbf->qt_rate.rs_rate*8, &rubit);
 	lim = nl_cancel_down_bytes(tbf->qt_limit, &limu);
 
-	dp_dump(p, " rate %.2f%s/s (%.0f%s) limit %.2f%s",
+	nl_dump(p, " rate %.2f%s/s (%.0f%s) limit %.2f%s",
 		r, ru, rbit, rubit, lim, limu);
-
-ignore:
-	return line;
 }
 
-static int tbf_dump_full(struct rtnl_qdisc *qdisc, struct nl_dump_params *p,
-			 int line)
+static void tbf_dump_details(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
 {
 	struct rtnl_tbf *tbf = tbf_qdisc(qdisc);
 
 	if (!tbf)
-		goto ignore;
+		return;
 
 	if (1) {
 		char *bu, *cu;
@@ -128,7 +123,7 @@ static int tbf_dump_full(struct rtnl_qdisc *qdisc, struct nl_dump_params *p,
 		double cl = nl_cancel_down_bytes(1 << tbf->qt_rate.rs_cell_log,
 						 &cu);
 
-		dp_dump(p, "mpu %u rate-bucket-size %1.f%s "
+		nl_dump(p, "mpu %u rate-bucket-size %1.f%s "
 			   "rate-cell-size %.1f%s\n",
 			tbf->qt_mpu, bs, bu, cl, cu);
 
@@ -144,14 +139,11 @@ static int tbf_dump_full(struct rtnl_qdisc *qdisc, struct nl_dump_params *p,
 		cl = nl_cancel_down_bits(1 << tbf->qt_peakrate.rs_cell_log,
 					 &clu);
 
-		dp_dump_line(p, line++, "    peak-rate %.2f%s/s (%.0f%s) "
-					"bucket-size %.1f%s cell-size %.1f%s",
-					"latency %.1f%s",
+		nl_dump_line(p, "    peak-rate %.2f%s/s (%.0f%s) "
+				"bucket-size %.1f%s cell-size %.1f%s",
+				"latency %.1f%s",
 			     pr, pru, prb, prbu, bs, bsu, cl, clu);
 	}
-
-ignore:
-	return line;
 }
 
 static struct nl_msg *tbf_get_opts(struct rtnl_qdisc *qdisc)
@@ -521,8 +513,10 @@ int rtnl_qdisc_tbf_get_peakrate_cell(struct rtnl_qdisc *qdisc)
 static struct rtnl_qdisc_ops tbf_qdisc_ops = {
 	.qo_kind		= "tbf",
 	.qo_msg_parser		= tbf_msg_parser,
-	.qo_dump[NL_DUMP_BRIEF]	= tbf_dump_brief,
-	.qo_dump[NL_DUMP_FULL]	= tbf_dump_full,
+	.qo_dump = {
+	    [NL_DUMP_LINE]	= tbf_dump_line,
+	    [NL_DUMP_DETAILS]	= tbf_dump_details,
+	},
 	.qo_get_opts		= tbf_get_opts,
 };
 

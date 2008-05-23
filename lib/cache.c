@@ -746,7 +746,7 @@ void nl_cache_dump_filter(struct nl_cache *cache,
 			  struct nl_dump_params *params,
 			  struct nl_object *filter)
 {
-	int type = params ? params->dp_type : NL_DUMP_FULL;
+	int type = params ? params->dp_type : NL_DUMP_DETAILS;
 	struct nl_object_ops *ops;
 	struct nl_object *obj;
 

@@ -179,71 +179,60 @@ static void vlan_free(struct rtnl_link *link)
 	link->l_info = NULL;
 }
 
-static int vlan_dump_brief(struct rtnl_link *link, struct nl_dump_params *p,
-			   int line)
+static void vlan_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct vlan_info *vi = link->l_info;
 
-	dp_dump(p, "vlan-id %d", vi->vi_vlan_id);
-
-	return line;
+	nl_dump(p, "vlan-id %d", vi->vi_vlan_id);
 }
 
-static int vlan_dump_full(struct rtnl_link *link, struct nl_dump_params *p,
-			  int line)
+static void vlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct vlan_info *vi = link->l_info;
 	int i, printed;
 	char buf[64];
 
 	rtnl_link_vlan_flags2str(vi->vi_flags, buf, sizeof(buf));
-	dp_dump_line(p, line++, "    vlan-info id %d <%s>\n",
-		vi->vi_vlan_id, buf);
+	nl_dump_line(p, "    vlan-info id %d <%s>\n", vi->vi_vlan_id, buf);
 
 	if (vi->vi_mask & VLAN_HAS_INGRESS_QOS) {
-		dp_dump_line(p, line++,
+		nl_dump_line(p, 
 		"      ingress vlan prio -> qos/socket prio mapping:\n");
 		for (i = 0, printed = 0; i <= VLAN_PRIO_MAX; i++) {
 			if (vi->vi_ingress_qos[i]) {
-				if (printed == 0) {
-					dp_new_line(p, line);
-					dp_dump(p, "      ");
-				}
-				dp_dump(p, "%x -> %#08x, ",
+				if (printed == 0)
+					nl_dump_line(p, "      ");
+				nl_dump(p, "%x -> %#08x, ",
 					i, vi->vi_ingress_qos[i]);
 				if (printed++ == 3) {
-					dp_dump(p, "\n");
+					nl_dump(p, "\n");
 					printed = 0;
 				}
 			}
 		}
 
 		if (printed > 0 && printed != 4)
-			dp_dump(p, "\n");
+			nl_dump(p, "\n");
 	}
 
 	if (vi->vi_mask & VLAN_HAS_EGRESS_QOS) {
-		dp_dump_line(p, line++,
+		nl_dump_line(p, 
 		"      egress qos/socket prio -> vlan prio mapping:\n");
 		for (i = 0, printed = 0; i < vi->vi_negress; i++) {
-			if (printed == 0) {
-				dp_new_line(p, line);
-				dp_dump(p, "      ");
-			}
-			dp_dump(p, "%#08x -> %x, ",
+			if (printed == 0)
+				nl_dump_line(p, "      ");
+			nl_dump(p, "%#08x -> %x, ",
 				vi->vi_egress_qos[i].vm_from,
 				vi->vi_egress_qos[i].vm_to);
 			if (printed++ == 3) {
-				dp_dump(p, "\n");
+				nl_dump(p, "\n");
 				printed = 0;
 			}
 		}
 
 		if (printed > 0 && printed != 4)
-			dp_dump(p, "\n");
+			nl_dump(p, "\n");
 	}
-
-	return line;
 }
 
 static int vlan_clone(struct rtnl_link *dst, struct rtnl_link *src)
@@ -336,8 +325,10 @@ static struct rtnl_link_info_ops vlan_info_ops = {
 	.io_name		= "vlan",
 	.io_alloc		= vlan_alloc,
 	.io_parse		= vlan_parse,
-	.io_dump[NL_DUMP_BRIEF]	= vlan_dump_brief,
-	.io_dump[NL_DUMP_FULL]	= vlan_dump_full,
+	.io_dump = {
+	    [NL_DUMP_LINE]	= vlan_dump_line,
+	    [NL_DUMP_DETAILS]	= vlan_dump_details,
+	},
 	.io_clone		= vlan_clone,
 	.io_put_attrs		= vlan_put_attrs,
 	.io_free		= vlan_free,

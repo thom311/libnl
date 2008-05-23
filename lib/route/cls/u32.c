@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2005-2006 Petr Gotthard <petr.gotthard@siemens.com>
  * Copyright (c) 2005-2006 Siemens AG Oesterreich
  */
@@ -213,27 +213,23 @@ static int u32_clone(struct rtnl_cls *_dst, struct rtnl_cls *_src)
 	return 0;
 }
 
-static int u32_dump_brief(struct rtnl_cls *cls, struct nl_dump_params *p,
-			  int line)
+static void u32_dump_line(struct rtnl_cls *cls, struct nl_dump_params *p)
 {
 	struct rtnl_u32 *u = u32_cls(cls);
 	char buf[32];
 
 	if (!u)
-		goto ignore;
+		return;
 
 	if (u->cu_mask & U32_ATTR_DIVISOR)
-		dp_dump(p, " divisor %u", u->cu_divisor);
+		nl_dump(p, " divisor %u", u->cu_divisor);
 	else if (u->cu_mask & U32_ATTR_CLASSID)
-		dp_dump(p, " target %s",
+		nl_dump(p, " target %s",
 			rtnl_tc_handle2str(u->cu_classid, buf, sizeof(buf)));
-
-ignore:
-	return line;
 }
 
-static int print_selector(struct nl_dump_params *p, struct tc_u32_sel *sel,
-			  struct rtnl_cls *cls, struct rtnl_u32 *u, int line)
+static void print_selector(struct nl_dump_params *p, struct tc_u32_sel *sel,
+			   struct rtnl_cls *cls, struct rtnl_u32 *u)
 {
 	int i;
 	struct tc_u32_key *key;
@@ -243,23 +239,23 @@ static int print_selector(struct nl_dump_params *p, struct tc_u32_sel *sel,
 		 * exports the selector if no divisor is set but hash offset
 		 * and hash mask make only sense in hash filters with divisor
 		 * set */
-		dp_dump(p, " hash at %u & 0x%x", sel->hoff, sel->hmask);
+		nl_dump(p, " hash at %u & 0x%x", sel->hoff, sel->hmask);
 	}
 
 	if (sel->flags & (TC_U32_OFFSET | TC_U32_VAROFFSET)) {
-		dp_dump(p, " offset at %u", sel->off);
+		nl_dump(p, " offset at %u", sel->off);
 
 		if (sel->flags & TC_U32_VAROFFSET)
-			dp_dump(p, " variable (at %u & 0x%x) >> %u",
+			nl_dump(p, " variable (at %u & 0x%x) >> %u",
 				sel->offoff, ntohs(sel->offmask), sel->offshift);
 	}
 
 	if (sel->flags) {
 		int flags = sel->flags;
-		dp_dump(p, " <");
+		nl_dump(p, " <");
 
 #define PRINT_FLAG(f) if (flags & TC_U32_##f) { \
-	flags &= ~TC_U32_##f; dp_dump(p, #f "%s", flags ? "," : ""); }
+	flags &= ~TC_U32_##f; nl_dump(p, #f "%s", flags ? "," : ""); }
 
 		PRINT_FLAG(TERMINAL);
 		PRINT_FLAG(OFFSET);
@@ -267,66 +263,59 @@ static int print_selector(struct nl_dump_params *p, struct tc_u32_sel *sel,
 		PRINT_FLAG(EAT);
 #undef PRINT_FLAG
 
-		dp_dump(p, ">");
+		nl_dump(p, ">");
 	}
 		
 	
 	for (i = 0; i < sel->nkeys; i++) {
 		key = (struct tc_u32_key *) ((char *) sel + sizeof(*sel)) + i;
 
-		dp_dump(p, "\n");
-		dp_dump_line(p, line++, "      match key at %s%u ",
-		key->offmask ? "nexthdr+" : "", key->off);
+		nl_dump(p, "\n");
+		nl_dump_line(p, "      match key at %s%u ",
+			key->offmask ? "nexthdr+" : "", key->off);
 
 		if (key->offmask)
-			dp_dump(p, "[0x%u] ", key->offmask);
+			nl_dump(p, "[0x%u] ", key->offmask);
 
-		dp_dump(p, "& 0x%08x == 0x%08x", ntohl(key->mask), ntohl(key->val));
+		nl_dump(p, "& 0x%08x == 0x%08x", ntohl(key->mask), ntohl(key->val));
 
 		if (p->dp_type == NL_DUMP_STATS &&
 		    (u->cu_mask & U32_ATTR_PCNT)) {
 			struct tc_u32_pcnt *pcnt = u->cu_pcnt->d_data;
-			dp_dump(p, " successful %" PRIu64, pcnt->kcnts[i]);
+			nl_dump(p, " successful %" PRIu64, pcnt->kcnts[i]);
 		}
 	}
-
-	return line;
 }
 
-
-static int u32_dump_full(struct rtnl_cls *cls, struct nl_dump_params *p,
-			 int line)
+static void u32_dump_details(struct rtnl_cls *cls, struct nl_dump_params *p)
 {
 	struct rtnl_u32 *u = u32_cls(cls);
 	struct tc_u32_sel *s;
 
 	if (!u)
-		goto ignore;
+		return;
 
 	if (!(u->cu_mask & U32_ATTR_SELECTOR)) {
-		dp_dump(p, "no-selector\n");
-		return line;
+		nl_dump(p, "no-selector\n");
+		return;
 	}
 	
 	s = u->cu_selector->d_data;
 
-	dp_dump(p, "nkeys %u ", s->nkeys);
+	nl_dump(p, "nkeys %u ", s->nkeys);
 
 	if (u->cu_mask & U32_ATTR_HASH)
-		dp_dump(p, "ht key 0x%x hash 0x%u",
+		nl_dump(p, "ht key 0x%x hash 0x%u",
 			TC_U32_USERHTID(u->cu_hash), TC_U32_HASH(u->cu_hash));
 
 	if (u->cu_mask & U32_ATTR_LINK)
-		dp_dump(p, "link %u ", u->cu_link);
+		nl_dump(p, "link %u ", u->cu_link);
 
 	if (u->cu_mask & U32_ATTR_INDEV)
-		dp_dump(p, "indev %s ", u->cu_indev);
+		nl_dump(p, "indev %s ", u->cu_indev);
 
-	line = print_selector(p, s, cls, u, line);
-	dp_dump(p, "\n");
-
-ignore:
-	return line;
+	print_selector(p, s, cls, u);
+	nl_dump(p, "\n");
 
 #if 0	
 #define U32_ATTR_ACTION       0x040
@@ -337,24 +326,20 @@ ignore:
 #endif
 }
 
-static int u32_dump_stats(struct rtnl_cls *cls, struct nl_dump_params *p,
-			  int line)
+static void u32_dump_stats(struct rtnl_cls *cls, struct nl_dump_params *p)
 {
 	struct rtnl_u32 *u = u32_cls(cls);
 
 	if (!u)
-		goto ignore;
+		return;
 
 	if (u->cu_mask & U32_ATTR_PCNT) {
 		struct tc_u32_pcnt *pc = u->cu_pcnt->d_data;
-		dp_dump(p, "\n");
-		dp_dump_line(p, line++, "%s         successful       hits\n");
-		dp_dump_line(p, line++, "%s           %8llu   %8llu\n",
+		nl_dump(p, "\n");
+		nl_dump_line(p, "%s         successful       hits\n");
+		nl_dump_line(p, "%s           %8llu   %8llu\n",
 			     pc->rhit, pc->rcnt);
 	}
-
-ignore:
-	return line;
 }
 
 static struct nl_msg *u32_get_opts(struct rtnl_cls *cls)
@@ -581,9 +566,11 @@ static struct rtnl_cls_ops u32_ops = {
 	.co_free_data		= u32_free_data,
 	.co_clone		= u32_clone,
 	.co_get_opts		= u32_get_opts,
-	.co_dump[NL_DUMP_BRIEF]	= u32_dump_brief,
-	.co_dump[NL_DUMP_FULL]	= u32_dump_full,
-	.co_dump[NL_DUMP_STATS]	= u32_dump_stats,
+	.co_dump = {
+	    [NL_DUMP_LINE]	= u32_dump_line,
+	    [NL_DUMP_DETAILS]	= u32_dump_details,
+	    [NL_DUMP_STATS]	= u32_dump_stats,
+	},
 };
 
 static void __init u32_init(void)

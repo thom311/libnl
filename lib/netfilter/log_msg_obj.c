@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
  */
@@ -70,7 +70,7 @@ errout:
 	return err;
 }
 
-static int log_msg_dump(struct nl_object *a, struct nl_dump_params *p)
+static void log_msg_dump(struct nl_object *a, struct nl_dump_params *p)
 {
 	struct nfnl_log_msg *msg = (struct nfnl_log_msg *) a;
 	struct nl_cache *link_cache;
@@ -78,95 +78,95 @@ static int log_msg_dump(struct nl_object *a, struct nl_dump_params *p)
 
 	link_cache = nl_cache_mngt_require("route/link");
 
+	nl_new_line(p);
+
 	if (msg->ce_mask & LOG_MSG_ATTR_PREFIX)
-		dp_dump(p, "%s", msg->log_msg_prefix);
+		nl_dump(p, "%s", msg->log_msg_prefix);
 
 	if (msg->ce_mask & LOG_MSG_ATTR_INDEV) {
 		if (link_cache)
-			dp_dump(p, "IN=%s ",
+			nl_dump(p, "IN=%s ",
 				rtnl_link_i2name(link_cache,
 						 msg->log_msg_indev,
 						 buf, sizeof(buf)));
 		else
-			dp_dump(p, "IN=%d ", msg->log_msg_indev);
+			nl_dump(p, "IN=%d ", msg->log_msg_indev);
 	}
 
 	if (msg->ce_mask & LOG_MSG_ATTR_PHYSINDEV) {
 		if (link_cache)
-			dp_dump(p, "PHYSIN=%s ",
+			nl_dump(p, "PHYSIN=%s ",
 				rtnl_link_i2name(link_cache,
 						 msg->log_msg_physindev,
 						 buf, sizeof(buf)));
 		else
-			dp_dump(p, "IN=%d ", msg->log_msg_physindev);
+			nl_dump(p, "IN=%d ", msg->log_msg_physindev);
 	}
 
 	if (msg->ce_mask & LOG_MSG_ATTR_OUTDEV) {
 		if (link_cache)
-			dp_dump(p, "OUT=%s ",
+			nl_dump(p, "OUT=%s ",
 				rtnl_link_i2name(link_cache,
 						 msg->log_msg_outdev,
 						 buf, sizeof(buf)));
 		else
-			dp_dump(p, "OUT=%d ", msg->log_msg_outdev);
+			nl_dump(p, "OUT=%d ", msg->log_msg_outdev);
 	}
 
 	if (msg->ce_mask & LOG_MSG_ATTR_PHYSOUTDEV) {
 		if (link_cache)
-			dp_dump(p, "PHYSOUT=%s ",
+			nl_dump(p, "PHYSOUT=%s ",
 				rtnl_link_i2name(link_cache,
 						 msg->log_msg_physoutdev,
 						 buf, sizeof(buf)));
 		else
-			dp_dump(p, "PHYSOUT=%d ", msg->log_msg_physoutdev);
+			nl_dump(p, "PHYSOUT=%d ", msg->log_msg_physoutdev);
 	}
 
 	if (msg->ce_mask & LOG_MSG_ATTR_HWADDR) {
 		int i;
 
-		dp_dump(p, "MAC");
+		nl_dump(p, "MAC");
 		for (i = 0; i < msg->log_msg_hwaddr_len; i++)
-			dp_dump(p, "%c%02x", i?':':'=', msg->log_msg_hwaddr[i]);
-		dp_dump(p, " ");
+			nl_dump(p, "%c%02x", i?':':'=', msg->log_msg_hwaddr[i]);
+		nl_dump(p, " ");
 	}
 
 	/* FIXME: parse the payload to get iptables LOG compatible format */
 
 	if (msg->ce_mask & LOG_MSG_ATTR_FAMILY)
-		dp_dump(p, "FAMILY=%s ",
+		nl_dump(p, "FAMILY=%s ",
 			nl_af2str(msg->log_msg_family, buf, sizeof(buf)));
 
 	if (msg->ce_mask & LOG_MSG_ATTR_HWPROTO)
-		dp_dump(p, "HWPROTO=%s ",
+		nl_dump(p, "HWPROTO=%s ",
 			nl_ether_proto2str(ntohs(msg->log_msg_hwproto),
 					   buf, sizeof(buf)));
 
 	if (msg->ce_mask & LOG_MSG_ATTR_HOOK)
-		dp_dump(p, "HOOK=%s ",
+		nl_dump(p, "HOOK=%s ",
 			nfnl_inet_hook2str(msg->log_msg_hook,
 					   buf, sizeof(buf)));
 
 	if (msg->ce_mask & LOG_MSG_ATTR_MARK)
-		dp_dump(p, "MARK=%u ", msg->log_msg_mark);
+		nl_dump(p, "MARK=%u ", msg->log_msg_mark);
 
 	if (msg->ce_mask & LOG_MSG_ATTR_PAYLOAD)
-		dp_dump(p, "PAYLOADLEN=%d ", msg->log_msg_payload_len);
+		nl_dump(p, "PAYLOADLEN=%d ", msg->log_msg_payload_len);
 
 	if (msg->ce_mask & LOG_MSG_ATTR_UID)
-		dp_dump(p, "UID=%u ", msg->log_msg_uid);
+		nl_dump(p, "UID=%u ", msg->log_msg_uid);
 
 	if (msg->ce_mask & LOG_MSG_ATTR_GID)
-		dp_dump(p, "GID=%u ", msg->log_msg_gid);
+		nl_dump(p, "GID=%u ", msg->log_msg_gid);
 
 	if (msg->ce_mask & LOG_MSG_ATTR_SEQ)
-		dp_dump(p, "SEQ=%d ", msg->log_msg_seq);
+		nl_dump(p, "SEQ=%d ", msg->log_msg_seq);
 
 	if (msg->ce_mask & LOG_MSG_ATTR_SEQ_GLOBAL)
-		dp_dump(p, "SEQGLOBAL=%d ", msg->log_msg_seq_global);
+		nl_dump(p, "SEQGLOBAL=%d ", msg->log_msg_seq_global);
 
-	dp_dump(p, "\n");
-
-	return 1;
+	nl_dump(p, "\n");
 }
 
 /**
@@ -448,9 +448,11 @@ struct nl_object_ops log_msg_obj_ops = {
 	.oo_size		= sizeof(struct nfnl_log_msg),
 	.oo_free_data		= log_msg_free_data,
 	.oo_clone		= log_msg_clone,
-	.oo_dump[NL_DUMP_BRIEF]	= log_msg_dump,
-	.oo_dump[NL_DUMP_FULL]	= log_msg_dump,
-	.oo_dump[NL_DUMP_STATS]	= log_msg_dump,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= log_msg_dump,
+	    [NL_DUMP_DETAILS]	= log_msg_dump,
+	    [NL_DUMP_STATS]	= log_msg_dump,
+	},
 };
 
 /** @} */

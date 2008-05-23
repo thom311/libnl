@@ -153,8 +153,7 @@ static int cbq_class_clone(struct rtnl_class *dst, struct rtnl_class *src)
 	return cbq_clone((struct rtnl_tca *) dst, (struct rtnl_tca *) src);
 }
 
-static int cbq_dump_brief(struct rtnl_tca *tca, struct nl_dump_params *p,
-			  int line)
+static void cbq_dump_line(struct rtnl_tca *tca, struct nl_dump_params *p)
 {
 	struct rtnl_cbq *cbq;
 	double r, rbit;
@@ -162,32 +161,28 @@ static int cbq_dump_brief(struct rtnl_tca *tca, struct nl_dump_params *p,
 
 	cbq = cbq_qdisc(tca);
 	if (!cbq)
-		goto ignore;
+		return;
 
 	r = nl_cancel_down_bytes(cbq->cbq_rate.rate, &ru);
 	rbit = nl_cancel_down_bits(cbq->cbq_rate.rate * 8, &rubit);
 
-	dp_dump(p, " rate %.2f%s/s (%.0f%s) prio %u",
+	nl_dump(p, " rate %.2f%s/s (%.0f%s) prio %u",
 		r, ru, rbit, rubit, cbq->cbq_wrr.priority);
-
-ignore:
-	return line;
 }
 
-static int cbq_qdisc_dump_brief(struct rtnl_qdisc *qdisc,
-				struct nl_dump_params *p, int line)
+static void cbq_qdisc_dump_line(struct rtnl_qdisc *qdisc,
+				struct nl_dump_params *p)
 {
-	return cbq_dump_brief((struct rtnl_tca *) qdisc, p, line);
+	cbq_dump_line((struct rtnl_tca *) qdisc, p);
 }
 
-static int cbq_class_dump_brief(struct rtnl_class *class,
-				struct nl_dump_params *p, int line)
+static void cbq_class_dump_line(struct rtnl_class *class,
+				struct nl_dump_params *p)
 {
-	return cbq_dump_brief((struct rtnl_tca *) class, p, line);
+	cbq_dump_line((struct rtnl_tca *) class, p);
 }
 
-static int cbq_dump_full(struct rtnl_tca *tca, struct nl_dump_params *p,
-			 int line)
+static void cbq_dump_details(struct rtnl_tca *tca, struct nl_dump_params *p)
 {
 	struct rtnl_cbq *cbq;
 	char *unit, buf[32];
@@ -196,18 +191,18 @@ static int cbq_dump_full(struct rtnl_tca *tca, struct nl_dump_params *p,
 
 	cbq = cbq_qdisc(tca);
 	if (!cbq)
-		goto ignore;
+		return;
 
 	w = nl_cancel_down_bits(cbq->cbq_wrr.weight * 8, &unit);
 
-	dp_dump(p, "avgpkt %u mpu %u cell %u allot %u weight %.0f%s\n",
+	nl_dump(p, "avgpkt %u mpu %u cell %u allot %u weight %.0f%s\n",
 		cbq->cbq_lss.avpkt,
 		cbq->cbq_rate.mpu,
 		1 << cbq->cbq_rate.cell_log,
 		cbq->cbq_wrr.allot, w, unit);
 
 	el = cbq->cbq_lss.ewma_log;
-	dp_dump_line(p, line++, "  minidle %uus maxidle %uus offtime "
+	nl_dump_line(p, "  minidle %uus maxidle %uus offtime "
 				"%uus level %u ewma_log %u\n",
 		nl_ticks2us(cbq->cbq_lss.minidle >> el),
 		nl_ticks2us(cbq->cbq_lss.maxidle >> el),
@@ -215,60 +210,53 @@ static int cbq_dump_full(struct rtnl_tca *tca, struct nl_dump_params *p,
 		cbq->cbq_lss.level,
 		cbq->cbq_lss.ewma_log);
 
-	dp_dump_line(p, line++, "  penalty %uus strategy %s ",
+	nl_dump_line(p, "  penalty %uus strategy %s ",
 		nl_ticks2us(cbq->cbq_ovl.penalty),
 		nl_ovl_strategy2str(cbq->cbq_ovl.strategy, buf, sizeof(buf)));
 
-	dp_dump(p, "split %s defmap 0x%08x ",
+	nl_dump(p, "split %s defmap 0x%08x ",
 		rtnl_tc_handle2str(cbq->cbq_fopt.split, buf, sizeof(buf)),
 		cbq->cbq_fopt.defmap);
 	
-	dp_dump(p, "police %s",
+	nl_dump(p, "police %s",
 		nl_police2str(cbq->cbq_police.police, buf, sizeof(buf)));
-
-ignore:
-	return line;
 }
 
-static int cbq_qdisc_dump_full(struct rtnl_qdisc *qdisc,
-			       struct nl_dump_params *p, int line)
+static void cbq_qdisc_dump_details(struct rtnl_qdisc *qdisc,
+				   struct nl_dump_params *p)
 {
-	return cbq_dump_full((struct rtnl_tca *) qdisc, p, line);
+	cbq_dump_details((struct rtnl_tca *) qdisc, p);
 }
 
-static int cbq_class_dump_full(struct rtnl_class *class,
-			       struct nl_dump_params *p, int line)
+static void cbq_class_dump_details(struct rtnl_class *class,
+				   struct nl_dump_params *p)
 {
-	return cbq_dump_full((struct rtnl_tca *) class, p, line);
+	cbq_dump_details((struct rtnl_tca *) class, p);
 }
 
-static int cbq_dump_with_stats(struct rtnl_tca *tca, struct nl_dump_params *p,
-			       int line)
+static void cbq_dump_stats(struct rtnl_tca *tca, struct nl_dump_params *p)
 {
 	struct tc_cbq_xstats *x = tca_xstats(tca);
 
 	if (!x)
-		goto ignore;
+		return;
 
-	dp_dump_line(p, line++, "            borrows    overact  "
-				"  avgidle  undertime\n");
-	dp_dump_line(p, line++, "         %10u %10u %10u %10u\n",
+	nl_dump_line(p, "            borrows    overact  "
+			"  avgidle  undertime\n");
+	nl_dump_line(p, "         %10u %10u %10u %10u\n",
 		     x->borrows, x->overactions, x->avgidle, x->undertime);
-
-ignore:
-	return line;
 }
 
-static int cbq_qdisc_dump_with_stats(struct rtnl_qdisc *qdisc,
-				     struct nl_dump_params *p, int line)
+static void cbq_qdisc_dump_stats(struct rtnl_qdisc *qdisc,
+				 struct nl_dump_params *p)
 {
-	return cbq_dump_with_stats((struct rtnl_tca *) qdisc, p, line);
+	cbq_dump_stats((struct rtnl_tca *) qdisc, p);
 }
 
-static int cbq_class_dump_with_stats(struct rtnl_class *class,
-				     struct nl_dump_params *p, int line)
+static void cbq_class_dump_stats(struct rtnl_class *class,
+				 struct nl_dump_params *p)
 {
-	return cbq_dump_with_stats((struct rtnl_tca *) class, p, line);
+	cbq_dump_stats((struct rtnl_tca *) class, p);
 }
 
 static struct rtnl_qdisc_ops cbq_qdisc_ops = {
@@ -276,9 +264,11 @@ static struct rtnl_qdisc_ops cbq_qdisc_ops = {
 	.qo_msg_parser		= cbq_qdisc_msg_parser,
 	.qo_free_data		= cbq_qdisc_free_data,
 	.qo_clone		= cbq_qdisc_clone,
-	.qo_dump[NL_DUMP_BRIEF]	= cbq_qdisc_dump_brief,
-	.qo_dump[NL_DUMP_FULL]	= cbq_qdisc_dump_full,
-	.qo_dump[NL_DUMP_STATS]	= cbq_qdisc_dump_with_stats,
+	.qo_dump = {
+	    [NL_DUMP_LINE]	= cbq_qdisc_dump_line,
+	    [NL_DUMP_DETAILS]	= cbq_qdisc_dump_details,
+	    [NL_DUMP_STATS]	= cbq_qdisc_dump_stats,
+	},
 };
 
 static struct rtnl_class_ops cbq_class_ops = {
@@ -286,9 +276,11 @@ static struct rtnl_class_ops cbq_class_ops = {
 	.co_msg_parser		= cbq_class_msg_parser,
 	.co_free_data		= cbq_class_free_data,
 	.co_clone		= cbq_class_clone,
-	.co_dump[NL_DUMP_BRIEF]	= cbq_class_dump_brief,
-	.co_dump[NL_DUMP_FULL]	= cbq_class_dump_full,
-	.co_dump[NL_DUMP_STATS]	= cbq_class_dump_with_stats,
+	.co_dump = {
+	    [NL_DUMP_LINE]	= cbq_class_dump_line,
+	    [NL_DUMP_DETAILS]	= cbq_class_dump_details,
+	    [NL_DUMP_STATS]	= cbq_class_dump_stats,
+	},
 };
 
 static void __init cbq_init(void)

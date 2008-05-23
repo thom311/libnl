@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	struct rtnl_route *route;
 	struct nl_dump_params params = {
 		.dp_fd = stdout,
-		.dp_type = NL_DUMP_BRIEF
+		.dp_type = NL_DUMP_LINE,
 	};
 	int print_cache = 0;
 

@@ -41,7 +41,7 @@ static void delete_cb(struct nl_object *obj, void *arg)
 {
 	struct rtnl_neigh *neigh = nl_object_priv(obj);
 	struct nl_dump_params params = {
-		.dp_type = NL_DUMP_ONELINE,
+		.dp_type = NL_DUMP_LINE,
 		.dp_fd = stdout,
 	};
 	int err;

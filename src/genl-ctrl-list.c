@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 	struct nl_sock *sock;
 	struct nl_cache *family_cache;
 	struct nl_dump_params params = {
-		.dp_type = NL_DUMP_ONELINE,
+		.dp_type = NL_DUMP_LINE,
 		.dp_fd = stdout,
 	};
  

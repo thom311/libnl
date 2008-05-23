@@ -127,48 +127,32 @@ static int fw_clone(struct rtnl_cls *_dst, struct rtnl_cls *_src)
 	return 0;
 }
 
-static int fw_dump_brief(struct rtnl_cls *cls, struct nl_dump_params *p,
-			  int line)
+static void fw_dump_line(struct rtnl_cls *cls, struct nl_dump_params *p)
 {
 	struct rtnl_fw *f = fw_cls(cls);
 	char buf[32];
 
 	if (!f)
-		goto ignore;
+		return;
 
 	if (f->cf_mask & FW_ATTR_CLASSID)
-		dp_dump(p, " target %s",
+		nl_dump(p, " target %s",
 			rtnl_tc_handle2str(f->cf_classid, buf, sizeof(buf)));
-
-ignore:
-	return line;
 }
 
-static int fw_dump_full(struct rtnl_cls *cls, struct nl_dump_params *p,
-			 int line)
+static void fw_dump_details(struct rtnl_cls *cls, struct nl_dump_params *p)
 {
 	struct rtnl_fw *f = fw_cls(cls);
 
 	if (!f)
-		goto ignore;
+		return;
 
 	if (f->cf_mask & FW_ATTR_INDEV)
-		dp_dump(p, "indev %s ", f->cf_indev);
-
-ignore:
-	return line;
+		nl_dump(p, "indev %s ", f->cf_indev);
 }
 
-static int fw_dump_stats(struct rtnl_cls *cls, struct nl_dump_params *p,
-			  int line)
+static void fw_dump_stats(struct rtnl_cls *cls, struct nl_dump_params *p)
 {
-	struct rtnl_fw *f = fw_cls(cls);
-
-	if (!f)
-		goto ignore;
-
-ignore:
-	return line;
 }
 
 static struct nl_msg *fw_get_opts(struct rtnl_cls *cls)
@@ -226,9 +210,11 @@ static struct rtnl_cls_ops fw_ops = {
 	.co_free_data		= fw_free_data,
 	.co_clone		= fw_clone,
 	.co_get_opts		= fw_get_opts,
-	.co_dump[NL_DUMP_BRIEF]	= fw_dump_brief,
-	.co_dump[NL_DUMP_FULL]	= fw_dump_full,
-	.co_dump[NL_DUMP_STATS]	= fw_dump_stats,
+	.co_dump = {
+	    [NL_DUMP_LINE]	= fw_dump_line,
+	    [NL_DUMP_DETAILS]	= fw_dump_details,
+	    [NL_DUMP_STATS]	= fw_dump_stats,
+	},
 };
 
 static void __init fw_init(void)

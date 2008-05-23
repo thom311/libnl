@@ -32,8 +32,8 @@ struct rtnl_class_ops
 	/**
 	 * Dump callbacks
 	 */
-	int (*co_dump[NL_DUMP_MAX+1])(struct rtnl_class *,
-				      struct nl_dump_params *, int);
+	void (*co_dump[NL_DUMP_MAX+1])(struct rtnl_class *,
+				       struct nl_dump_params *);
 
 	/**
 	 * Must return the contents supposed to be in TCA_OPTIONS

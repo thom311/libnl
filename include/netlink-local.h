@@ -96,8 +96,6 @@ extern int __list_str2type(const char *, struct nl_list_head *);
 extern char *__flags2str(int, char *, size_t, struct trans_tbl *, size_t);
 extern int __str2flags(const char *, struct trans_tbl *, size_t);
 
-#define dp_dump_line(params, line, fmt, arg...)	nl_dump_line(params, fmt, ##arg)
-
 extern void dump_from_ops(struct nl_object *, struct nl_dump_params *);
 
 static inline struct nl_cache *dp_cache(struct nl_object *obj)

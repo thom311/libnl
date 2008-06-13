@@ -1023,6 +1023,11 @@ char *nla_get_string(struct nlattr *nla)
 	return (char *) nla_data(nla);
 }
 
+char *nla_strdup(struct nlattr *nla)
+{
+	return strdup(nla_get_string(nla));
+}
+
 /** @} */
 
 /**

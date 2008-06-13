@@ -109,6 +109,7 @@ extern int		nla_put_u64(struct nl_msg *, int, uint64_t);
 
 /* String attribute */
 extern char *		nla_get_string(struct nlattr *);
+extern char *		nla_strdup(struct nlattr *);
 extern int		nla_put_string(struct nl_msg *, int, const char *);
 
 /* Flag attribute */

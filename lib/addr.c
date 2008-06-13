@@ -832,9 +832,12 @@ char *nl_addr2str(struct nl_addr *addr, char *buf, size_t size)
 	int i;
 	char tmp[16];
 
-	if (!addr->a_len) {
+	if (!addr || !addr->a_len) {
 		snprintf(buf, size, "none");
-		goto prefix;
+		if (addr)
+			goto prefix;
+		else
+			return buf;
 	}
 
 	switch (addr->a_family) {

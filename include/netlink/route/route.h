@@ -18,6 +18,7 @@
 #include <netlink/data.h>
 #include <netlink/route/nexthop.h>
 #include <netlink/route/rtnl.h>
+#include <linux/in_route.h>
 
 #ifdef __cplusplus
 extern "C" {

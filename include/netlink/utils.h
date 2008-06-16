@@ -51,6 +51,7 @@ extern long	nl_prob2int(const char *);
 extern int	nl_get_hz(void);
 extern uint32_t	nl_us2ticks(uint32_t);
 extern uint32_t	nl_ticks2us(uint32_t);
+extern int	nl_str2msec(const char *, uint64_t *);
 extern char *	nl_msec2str(uint64_t, char *, size_t);
 
 /* link layer protocol translations */

@@ -356,25 +356,40 @@ uint32_t nl_ticks2us(uint32_t ticks)
 	return ticks / ticks_per_usec;
 }
 
-long nl_time2int(const char *str)
+int nl_str2msec(const char *str, uint64_t *result)
 {
+	uint64_t total = 0, l;
+	int plen;
 	char *p;
-	long l = strtol(str, &p, 0);
-	if (p == str)
-		return -NLE_INVAL;
 
-	if (*p) {
-		if (!strcasecmp(p, "min") == 0 || !strcasecmp(p, "m"))
-			l *= 60;
-		else if (!strcasecmp(p, "hour") || !strcasecmp(p, "h"))
-			l *= 60*60;
-		else if (!strcasecmp(p, "day") || !strcasecmp(p, "d"))
-			l *= 60*60*24;
-		else if (strcasecmp(p, "s") != 0)
+	do {
+		l = strtoul(str, &p, 0);
+		if (p == str)
 			return -NLE_INVAL;
-	}
+		else if (*p) {
+			plen = strcspn(p, " \t");
 
-	return l;
+			if (!plen)
+				total += l;
+			else if (!strncasecmp(p, "sec", plen))
+				total += (l * 1000);
+			else if (!strncasecmp(p, "min", plen))
+				total += (l * 1000*60);
+			else if (!strncasecmp(p, "hour", plen))
+				total += (l * 1000*60*60);
+			else if (!strncasecmp(p, "day", plen))
+				total += (l * 1000*60*60*24);
+			else
+				return -NLE_INVAL;
+
+			str = p + plen;
+		} else
+			total += l;
+	} while (*str && *p);
+
+	*result = total;
+
+	return 0;
 }
 
 /**

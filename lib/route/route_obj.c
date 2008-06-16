@@ -126,11 +126,18 @@ static void route_dump_line(struct nl_object *a, struct nl_dump_params *p)
 {
 	struct rtnl_route *r = (struct rtnl_route *) a;
 	struct nl_cache *link_cache;
+	int cache = 0, flags;
 	char buf[64];
 
 	link_cache = nl_cache_mngt_require("route/link");
 
+	if (r->rt_flags & RTM_F_CLONED)
+		cache = 1;
+
 	nl_dump_line(p, "%s ", nl_af2str(r->rt_family, buf, sizeof(buf)));
+
+	if (cache)
+		nl_dump(p, "cache ");
 
 	if (!(r->ce_mask & ROUTE_ATTR_DST) ||
 	    nl_addr_get_len(r->rt_dst) == 0)
@@ -138,7 +145,7 @@ static void route_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	else
 		nl_dump(p, "%s ", nl_addr2str(r->rt_dst, buf, sizeof(buf)));
 
-	if (r->ce_mask & ROUTE_ATTR_TABLE)
+	if (r->ce_mask & ROUTE_ATTR_TABLE && !cache)
 		nl_dump(p, "table %s ",
 			rtnl_route_table2str(r->rt_table, buf, sizeof(buf)));
 
@@ -158,11 +165,11 @@ static void route_dump_line(struct nl_object *a, struct nl_dump_params *p)
 		}
 	}
 
-	if (r->ce_mask & ROUTE_ATTR_FLAGS && r->rt_flags) {
-		int flags = r->rt_flags;
+	flags = r->rt_flags & ~(RTM_F_CLONED);
+	if (r->ce_mask & ROUTE_ATTR_FLAGS && flags) {
 
 		nl_dump(p, "<");
-		
+
 #define PRINT_FLAG(f) if (flags & RTNH_F_##f) { \
 		flags &= ~RTNH_F_##f; nl_dump(p, #f "%s", flags ? "," : ""); }
 		PRINT_FLAG(DEAD);
@@ -173,9 +180,20 @@ static void route_dump_line(struct nl_object *a, struct nl_dump_params *p)
 #define PRINT_FLAG(f) if (flags & RTM_F_##f) { \
 		flags &= ~RTM_F_##f; nl_dump(p, #f "%s", flags ? "," : ""); }
 		PRINT_FLAG(NOTIFY);
-		PRINT_FLAG(CLONED);
 		PRINT_FLAG(EQUALIZE);
 		PRINT_FLAG(PREFIX);
+#undef PRINT_FLAG
+
+#define PRINT_FLAG(f) if (flags & RTCF_##f) { \
+		flags &= ~RTCF_##f; nl_dump(p, #f "%s", flags ? "," : ""); }
+		PRINT_FLAG(NOTIFY);
+		PRINT_FLAG(REDIRECTED);
+		PRINT_FLAG(DOREDIRECT);
+		PRINT_FLAG(DIRECTSRC);
+		PRINT_FLAG(DNAT);
+		PRINT_FLAG(BROADCAST);
+		PRINT_FLAG(MULTICAST);
+		PRINT_FLAG(LOCAL);
 #undef PRINT_FLAG
 
 		nl_dump(p, ">");

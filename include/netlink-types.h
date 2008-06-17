@@ -95,15 +95,6 @@ struct nl_cache_mngr
 
 struct nl_parser_param;
 
-struct genl_info
-{
-	struct sockaddr_nl *	who;
-	struct nlmsghdr *	nlh;
-	struct genlmsghdr *	genlhdr;
-	void *			userhdr;
-	struct nlattr **	attrs;
-};
-
 #define LOOSE_COMPARISON	1
 
 #define NL_OBJ_MARK		1

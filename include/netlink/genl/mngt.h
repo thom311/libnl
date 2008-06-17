@@ -22,6 +22,15 @@ extern "C" {
 
 struct nl_cache_ops;
 
+struct genl_info
+{
+	struct sockaddr_nl *    who;
+	struct nlmsghdr *       nlh;
+	struct genlmsghdr *     genlhdr;
+	void *                  userhdr;
+	struct nlattr **        attrs;
+};
+
 /**
  * @ingroup genl_mngt
  * Generic Netlink Command

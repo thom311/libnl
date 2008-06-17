@@ -12,6 +12,7 @@
 #include "utils.h"
 
 #include <stdlib.h>
+#include <stdarg.h>
 
 uint32_t parse_u32(const char *arg)
 {

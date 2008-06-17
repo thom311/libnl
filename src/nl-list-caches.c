@@ -10,6 +10,7 @@
  */
 
 #include "utils.h"
+#include <netlink-local.h>
 
 static void print_usage(void)
 {

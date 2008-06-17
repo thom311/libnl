@@ -23,7 +23,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#include <netlink-local.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/addr.h>

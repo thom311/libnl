@@ -20,6 +20,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <netdb.h>
 #include <netlink/netlink-compat.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>

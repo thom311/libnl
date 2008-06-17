@@ -15,21 +15,24 @@ static int quiet = 0;
 static void print_usage(void)
 {
 	printf(
-	"Usage: nl-addr-add [OPTION]... [ADDRESS]\n"
-	"\n"
-	"Options\n"
-	" -q, --quiet		Do not print informal notifications\n"
-	" -h, --help            Show this help\n"
-	" -v, --version		Show versioning information\n"
-	"\n"
-	"Address Options\n"
-	" -a, --local=ADDR	local address, e.g. 10.0.0.1\n"
-	" -d, --dev=DEV		device the address is on\n"
-	"     --family=FAMILY   address family\n"
-	"     --label=STRING    address label\n"
-	"     --peer=ADDR       peer address\n"
-	"     --scope=SCOPE	address scope\n"
-	"     --broadcast=ADDR  broadcast address\n"
+"Usage: nl-addr-add [OPTION]... [ADDRESS]\n"
+"\n"
+"Options\n"
+"     --replace             Replace the address if it exists.\n"
+" -q, --quiet               Do not print informal notifications.\n"
+" -h, --help                Show this help.\n"
+" -v, --version             Show versioning information.\n"
+"\n"
+"Address Options\n"
+" -a, --local=ADDR          Address to be considered local.\n"
+" -d, --dev=DEV             Device the address should be assigned to.\n"
+"     --family=FAMILY       Address family (normally autodetected).\n"
+"     --broadcast=ADDR      Broadcast address of network (IPv4).\n"
+"     --peer=ADDR           Peer address (IPv4).\n"
+"     --label=STRING        Additional address label (IPv4).\n"
+"     --scope=SCOPE         Scope of local address (IPv4).\n"
+"     --preferred=TIME      Preferred lifetime (IPv6).\n"
+"     --valid=TIME          Valid lifetime (IPv6).\n"
 	);
 
 	exit(0);
@@ -44,7 +47,7 @@ int main(int argc, char *argv[])
 		.dp_type = NL_DUMP_LINE,
 		.dp_fd = stdout,
 	};
-	int err;
+	int err, nlflags = NLM_F_CREATE;
  
 	sock = nlt_alloc_socket();
 	nlt_connect(sock, NETLINK_ROUTE);
@@ -59,8 +62,12 @@ int main(int argc, char *argv[])
 			ARG_PEER,
 			ARG_SCOPE,
 			ARG_BROADCAST,
+			ARG_REPLACE,
+			ARG_PREFERRED,
+			ARG_VALID,
 		};
 		static struct option long_opts[] = {
+			{ "replace", 0, 0, ARG_REPLACE },
 			{ "quiet", 0, 0, 'q' },
 			{ "help", 0, 0, 'h' },
 			{ "version", 0, 0, 'v' },
@@ -71,6 +78,8 @@ int main(int argc, char *argv[])
 			{ "peer", 1, 0, ARG_PEER },
 			{ "scope", 1, 0, ARG_SCOPE },
 			{ "broadcast", 1, 0, ARG_BROADCAST },
+			{ "preferred", 1, 0, ARG_PREFERRED },
+			{ "valid", 1, 0, ARG_VALID },
 			{ 0, 0, 0, 0 }
 		};
 	
@@ -79,6 +88,8 @@ int main(int argc, char *argv[])
 			break;
 
 		switch (c) {
+		case '?': exit(NLE_INVAL);
+		case ARG_REPLACE: nlflags |= NLM_F_REPLACE; break;
 		case 'q': quiet = 1; break;
 		case 'h': print_usage(); break;
 		case 'v': nlt_print_version(); break;
@@ -89,11 +100,13 @@ int main(int argc, char *argv[])
 		case ARG_PEER: parse_peer(addr, optarg); break;
 		case ARG_SCOPE: parse_scope(addr, optarg); break;
 		case ARG_BROADCAST: parse_broadcast(addr, optarg); break;
+		case ARG_PREFERRED: parse_preferred(addr, optarg); break;
+		case ARG_VALID: parse_valid(addr, optarg); break;
 		}
  	}
 
-	if ((err = rtnl_addr_add(sock, addr, 0)) < 0)
-		fatal(err, "Unable to add address: %s\n", nl_geterror(err));
+	if ((err = rtnl_addr_add(sock, addr, nlflags)) < 0)
+		fatal(err, "Unable to add address: %s", nl_geterror(err));
 
 	if (!quiet) {
 		printf("Added ");

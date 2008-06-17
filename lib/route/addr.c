@@ -131,6 +131,13 @@ static struct nl_cache_ops rtnl_addr_ops;
 static struct nl_object_ops addr_obj_ops;
 /** @endcond */
 
+static void addr_constructor(struct nl_object *obj)
+{
+	struct rtnl_addr *addr = nl_object_priv(obj);
+
+	addr->a_scope = RT_SCOPE_NOWHERE;
+}
+
 static void addr_free_data(struct nl_object *obj)
 {
 	struct rtnl_addr *addr = nl_object_priv(obj);
@@ -383,28 +390,16 @@ static void addr_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
 	nl_dump_line(p, "  <family>%s</family>\n",
 		     nl_af2str(addr->a_family, buf, sizeof(buf)));
 
-	if (addr->ce_mask & ADDR_ATTR_LOCAL)
-		nl_dump_line(p, "  <local>%s</local>\n",
-			     nl_addr2str(addr->a_local, buf, sizeof(buf)));
+	nl_dump_line(p, "  <local>%s</local>\n",
+		     nl_addr2str(addr->a_local, buf, sizeof(buf)));
+	nl_dump_line(p, "  <peer>%s</peer>\n",
+		     nl_addr2str(addr->a_peer, buf, sizeof(buf)));
+	nl_dump_line(p, "  <broadcast>%s</broadcast>\n",
+		     nl_addr2str(addr->a_bcast, buf, sizeof(buf)));
+	nl_dump_line(p, "  <multicast>%s</multicast>\n",
+		     nl_addr2str(addr->a_multicast, buf, sizeof(buf)));
 
-	if (addr->ce_mask & ADDR_ATTR_PEER)
-		nl_dump_line(p, "  <peer>%s</peer>\n",
-			     nl_addr2str(addr->a_peer, buf, sizeof(buf)));
-
-	if (addr->ce_mask & ADDR_ATTR_BROADCAST)
-		nl_dump_line(p, "  <broadcast>%s</broadcast>\n",
-			     nl_addr2str(addr->a_bcast, buf, sizeof(buf)));
-
-	if (addr->ce_mask & ADDR_ATTR_MULTICAST)
-		nl_dump_line(p, "  <multicast>%s</multicast>\n",
-			     nl_addr2str(addr->a_multicast, buf,
-					   sizeof(buf)));
-
-	if (addr->ce_mask & ADDR_ATTR_PREFIXLEN)
-		nl_dump_line(p, "  <prefixlen>%u</prefixlen>\n",
-			     addr->a_prefixlen);
 	link_cache = nl_cache_mngt_require("route/link");
-
 	if (link_cache)
 		nl_dump_line(p, "  <device>%s</device>\n",
 			     rtnl_link_i2name(link_cache, addr->a_ifindex,
@@ -412,12 +407,10 @@ static void addr_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
 	else
 		nl_dump_line(p, "  <device>%u</device>\n", addr->a_ifindex);
 
-	if (addr->ce_mask & ADDR_ATTR_SCOPE)
-		nl_dump_line(p, "  <scope>%s</scope>\n",
-			     rtnl_scope2str(addr->a_scope, buf, sizeof(buf)));
+	nl_dump_line(p, "  <scope>%s</scope>\n",
+		     rtnl_scope2str(addr->a_scope, buf, sizeof(buf)));
 
-	if (addr->ce_mask & ADDR_ATTR_LABEL)
-		nl_dump_line(p, "  <label>%s</label>\n", addr->a_label);
+	nl_dump_line(p, "  <label>%s</label>\n", addr->a_label);
 
 	rtnl_addr_flags2str(addr->a_flags, buf, sizeof(buf));
 	if (buf[0])
@@ -427,99 +420,28 @@ static void addr_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
 		struct rtnl_addr_cacheinfo *ci = &addr->a_cacheinfo;
 
 		nl_dump_line(p, "  <cacheinfo>\n");
-		nl_dump_line(p, "    <valid>%s</valid>\n",
-			     ci->aci_valid == 0xFFFFFFFFU ? "forever" :
-			     nl_msec2str(ci->aci_valid * 1000,
-					   buf, sizeof(buf)));
+		if (ci->aci_valid == 0xFFFFFFFFU)
+			nl_dump_line(p, "    <valid>forever</valid>\n");
+		else
+			nl_dump_line(p, "    <valid>%u</valid>\n",
+				     ci->aci_valid);
 
-		nl_dump_line(p, "    <prefered>%s</prefered>\n",
-			     ci->aci_prefered == 0xFFFFFFFFU ? "forever" :
-			     nl_msec2str(ci->aci_prefered * 1000,
-					 buf, sizeof(buf)));
+		if (ci->aci_prefered == 0xFFFFFFFFU)
+			nl_dump_line(p, "    <preferred>forever</preferred>\n");
+		else
+			nl_dump_line(p, "    <preferred>%s</preferred>\n",
+				     ci->aci_prefered);
 
-		nl_dump_line(p, "    <created>%s</created>\n",
-			     nl_msec2str(addr->a_cacheinfo.aci_cstamp * 10,
-					 buf, sizeof(buf)));
+		nl_dump_line(p, "    <created>%u</created>\n",
+			     addr->a_cacheinfo.aci_cstamp);
 
-		nl_dump_line(p, "    <last-update>%s</last-update>\n",
-			     nl_msec2str(addr->a_cacheinfo.aci_tstamp * 10,
-					 buf, sizeof(buf)));
+		nl_dump_line(p, "    <last-update>%u</last-update>\n",
+			     addr->a_cacheinfo.aci_tstamp);
 
 		nl_dump_line(p, "  </cacheinfo>\n");
 	}
 
 	nl_dump_line(p, "</address>\n");
-}
-
-static void addr_dump_env(struct nl_object *obj, struct nl_dump_params *p)
-{
-	struct rtnl_addr *addr = (struct rtnl_addr *) obj;
-	struct nl_cache *link_cache;
-	char buf[128];
-
-	nl_dump_line(p, "ADDR_FAMILY=%s\n",
-		     nl_af2str(addr->a_family, buf, sizeof(buf)));
-
-	if (addr->ce_mask & ADDR_ATTR_LOCAL)
-		nl_dump_line(p, "ADDR_LOCAL=%s\n",
-			     nl_addr2str(addr->a_local, buf, sizeof(buf)));
-
-	if (addr->ce_mask & ADDR_ATTR_PEER)
-		nl_dump_line(p, "ADDR_PEER=%s\n",
-			     nl_addr2str(addr->a_peer, buf, sizeof(buf)));
-
-	if (addr->ce_mask & ADDR_ATTR_BROADCAST)
-		nl_dump_line(p, "ADDR_BROADCAST=%s\n",
-			     nl_addr2str(addr->a_bcast, buf, sizeof(buf)));
-
-	if (addr->ce_mask & ADDR_ATTR_MULTICAST)
-		nl_dump_line(p, "ADDR_MULTICAST=%s\n",
-			     nl_addr2str(addr->a_multicast, buf,
-					   sizeof(buf)));
-
-	if (addr->ce_mask & ADDR_ATTR_PREFIXLEN)
-		nl_dump_line(p, "ADDR_PREFIXLEN=%u\n",
-			     addr->a_prefixlen);
-	link_cache = nl_cache_mngt_require("route/link");
-
-	nl_dump_line(p, "ADDR_IFINDEX=%u\n", addr->a_ifindex);
-	if (link_cache)
-		nl_dump_line(p, "ADDR_IFNAME=%s\n",
-			     rtnl_link_i2name(link_cache, addr->a_ifindex,
-			     		      buf, sizeof(buf)));
-
-	if (addr->ce_mask & ADDR_ATTR_SCOPE)
-		nl_dump_line(p, "ADDR_SCOPE=%s\n",
-			     rtnl_scope2str(addr->a_scope, buf, sizeof(buf)));
-
-	if (addr->ce_mask & ADDR_ATTR_LABEL)
-		nl_dump_line(p, "ADDR_LABEL=%s\n", addr->a_label);
-
-	rtnl_addr_flags2str(addr->a_flags, buf, sizeof(buf));
-	if (buf[0])
-		nl_dump_line(p, "ADDR_FLAGS=%s\n", buf);
-
-	if (addr->ce_mask & ADDR_ATTR_CACHEINFO) {
-		struct rtnl_addr_cacheinfo *ci = &addr->a_cacheinfo;
-
-		nl_dump_line(p, "ADDR_CACHEINFO_VALID=%s\n",
-			     ci->aci_valid == 0xFFFFFFFFU ? "forever" :
-			     nl_msec2str(ci->aci_valid * 1000,
-					   buf, sizeof(buf)));
-
-		nl_dump_line(p, "ADDR_CACHEINFO_PREFERED=%s\n",
-			     ci->aci_prefered == 0xFFFFFFFFU ? "forever" :
-			     nl_msec2str(ci->aci_prefered * 1000,
-					 buf, sizeof(buf)));
-
-		nl_dump_line(p, "ADDR_CACHEINFO_CREATED=%s\n",
-			     nl_msec2str(addr->a_cacheinfo.aci_cstamp * 10,
-					 buf, sizeof(buf)));
-
-		nl_dump_line(p, "ADDR_CACHEINFO_LASTUPDATE=%s\n",
-			     nl_msec2str(addr->a_cacheinfo.aci_tstamp * 10,
-					 buf, sizeof(buf)));
-	}
 }
 
 static int addr_compare(struct nl_object *_a, struct nl_object *_b,
@@ -643,6 +565,16 @@ static int build_addr_msg(struct rtnl_addr *tmpl, int cmd, int flags,
 
 	if (tmpl->ce_mask & ADDR_ATTR_BROADCAST)
 		NLA_PUT_ADDR(msg, IFA_BROADCAST, tmpl->a_bcast);
+
+	if (tmpl->ce_mask & ADDR_ATTR_CACHEINFO) {
+		struct ifa_cacheinfo ca = {
+			.ifa_valid = tmpl->a_cacheinfo.aci_valid,
+			.ifa_prefered = tmpl->a_cacheinfo.aci_prefered,
+		};
+
+		NLA_PUT(msg, IFA_CACHEINFO, sizeof(ca), &ca);
+	}
+
 
 	*result = msg;
 	return 0;
@@ -849,10 +781,7 @@ void rtnl_addr_set_prefixlen(struct rtnl_addr *addr, int prefix)
 
 int rtnl_addr_get_prefixlen(struct rtnl_addr *addr)
 {
-	if (addr->ce_mask & ADDR_ATTR_PREFIXLEN)
-		return addr->a_prefixlen;
-	else
-		return -1;
+	return addr->a_prefixlen;
 }
 
 void rtnl_addr_set_scope(struct rtnl_addr *addr, int scope)
@@ -863,10 +792,7 @@ void rtnl_addr_set_scope(struct rtnl_addr *addr, int scope)
 
 int rtnl_addr_get_scope(struct rtnl_addr *addr)
 {
-	if (addr->ce_mask & ADDR_ATTR_SCOPE)
-		return addr->a_scope;
-	else
-		return -1;
+	return addr->a_scope;
 }
 
 void rtnl_addr_set_flags(struct rtnl_addr *addr, unsigned int flags)
@@ -924,10 +850,7 @@ int rtnl_addr_set_local(struct rtnl_addr *addr, struct nl_addr *local)
 
 struct nl_addr *rtnl_addr_get_local(struct rtnl_addr *addr)
 {
-	if (addr->ce_mask & ADDR_ATTR_LOCAL)
-		return addr->a_local;
-	else
-		return NULL;
+	return addr->a_local;
 }
 
 int rtnl_addr_set_peer(struct rtnl_addr *addr, struct nl_addr *peer)
@@ -942,10 +865,7 @@ int rtnl_addr_set_peer(struct rtnl_addr *addr, struct nl_addr *peer)
 
 struct nl_addr *rtnl_addr_get_peer(struct rtnl_addr *addr)
 {
-	if (addr->ce_mask & ADDR_ATTR_PEER)
-		return addr->a_peer;
-	else
-		return NULL;
+	return addr->a_peer;
 }
 
 int rtnl_addr_set_broadcast(struct rtnl_addr *addr, struct nl_addr *bcast)
@@ -955,10 +875,7 @@ int rtnl_addr_set_broadcast(struct rtnl_addr *addr, struct nl_addr *bcast)
 
 struct nl_addr *rtnl_addr_get_broadcast(struct rtnl_addr *addr)
 {
-	if (addr->ce_mask & ADDR_ATTR_BROADCAST)
-		return addr->a_bcast;
-	else
-		return NULL;
+	return addr->a_bcast;
 }
 
 int rtnl_addr_set_multicast(struct rtnl_addr *addr, struct nl_addr *multicast)
@@ -969,10 +886,45 @@ int rtnl_addr_set_multicast(struct rtnl_addr *addr, struct nl_addr *multicast)
 
 struct nl_addr *rtnl_addr_get_multicast(struct rtnl_addr *addr)
 {
-	if (addr->ce_mask & ADDR_ATTR_MULTICAST)
-		return addr->a_multicast;
+	return addr->a_multicast;
+}
+
+uint32_t rtnl_addr_get_valid_lifetime(struct rtnl_addr *addr)
+{
+	if (addr->ce_mask & ADDR_ATTR_CACHEINFO)
+		return addr->a_cacheinfo.aci_valid;
 	else
-		return NULL;
+		return 0xFFFFFFFFU;
+}
+
+void rtnl_addr_set_valid_lifetime(struct rtnl_addr *addr, uint32_t lifetime)
+{
+	addr->a_cacheinfo.aci_valid = lifetime;
+	addr->ce_mask |= ADDR_ATTR_CACHEINFO;
+}
+
+uint32_t rtnl_addr_get_preferred_lifetime(struct rtnl_addr *addr)
+{
+	if (addr->ce_mask & ADDR_ATTR_CACHEINFO)
+		return addr->a_cacheinfo.aci_prefered;
+	else
+		return 0xFFFFFFFFU;
+}
+
+void rtnl_addr_set_preferred_lifetime(struct rtnl_addr *addr, uint32_t lifetime)
+{
+	addr->a_cacheinfo.aci_prefered = lifetime;
+	addr->ce_mask |= ADDR_ATTR_CACHEINFO;
+}
+
+uint32_t rtnl_addr_get_create_time(struct rtnl_addr *addr)
+{
+	return addr->a_cacheinfo.aci_cstamp;
+}
+
+uint32_t rtnl_addr_get_last_update_time(struct rtnl_addr *addr)
+{
+	return addr->a_cacheinfo.aci_tstamp;
 }
 
 /** @} */
@@ -984,6 +936,9 @@ struct nl_addr *rtnl_addr_get_multicast(struct rtnl_addr *addr)
 
 static struct trans_tbl addr_flags[] = {
 	__ADD(IFA_F_SECONDARY, secondary)
+	__ADD(IFA_F_NODAD, nodad)
+	__ADD(IFA_F_OPTIMISTIC, optimistic)
+	__ADD(IFA_F_HOMEADDRESS, homeaddress)
 	__ADD(IFA_F_DEPRECATED, deprecated)
 	__ADD(IFA_F_TENTATIVE, tentative)
 	__ADD(IFA_F_PERMANENT, permanent)
@@ -1005,6 +960,7 @@ int rtnl_addr_str2flags(const char *name)
 static struct nl_object_ops addr_obj_ops = {
 	.oo_name		= "route/addr",
 	.oo_size		= sizeof(struct rtnl_addr),
+	.oo_constructor		= addr_constructor,
 	.oo_free_data		= addr_free_data,
 	.oo_clone		= addr_clone,
 	.oo_dump = {
@@ -1012,7 +968,6 @@ static struct nl_object_ops addr_obj_ops = {
 	    [NL_DUMP_DETAILS]	= addr_dump_details,
 	    [NL_DUMP_STATS]	= addr_dump_stats,
 	    [NL_DUMP_XML]	= addr_dump_xml,
-	    [NL_DUMP_ENV]	= addr_dump_env,
 	},
 	.oo_compare		= addr_compare,
 	.oo_attrs2str		= addr_attrs2str,

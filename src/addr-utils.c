@@ -96,3 +96,27 @@ void parse_broadcast(struct rtnl_addr *addr, char *arg)
 	nl_addr_put(a);
 }
 
+static uint32_t parse_lifetime(const char *arg)
+{
+	uint64_t msecs;
+	int err;
+
+	if (!strcasecmp(arg, "forever"))
+		return 0xFFFFFFFFU;
+
+	if ((err = nl_str2msec(arg, &msecs)) < 0)
+		fatal(err, "Unable to parse time string \"%s\": %s",
+		      arg, nl_geterror(err));
+
+	return (msecs / 1000);
+}
+
+void parse_preferred(struct rtnl_addr *addr, char *arg)
+{
+	rtnl_addr_set_preferred_lifetime(addr, parse_lifetime(arg));
+}
+
+void parse_valid(struct rtnl_addr *addr, char *arg)
+{
+	rtnl_addr_set_valid_lifetime(addr, parse_lifetime(arg));
+}

@@ -17,23 +17,26 @@ static int deleted = 0;
 static void print_usage(void)
 {
 	printf(
-	"Usage: nl-addr-delete [OPTION]... [ADDRESS]\n"
-	"\n"
-	"Options\n"
-	" -i, --interactive     Run interactively\n"
-	"     --yes             Set default answer to yes\n"
-	" -q, --quiet           Do not print informal notifications\n"
-	" -h, --help            Show this help\n"
-	" -v, --version         Show versioning information\n"
-	"\n"
-	"Address Options\n"
-	" -a, --local=ADDR      local address, e.g. 10.0.0.1\n"
-	" -d, --dev=DEV         device the address is on\n"
-	"     --family=FAMILY   address family\n"
-	"     --label=STRING    address label\n"
-	"     --peer=ADDR       peer address\n"
-	"     --scope=SCOPE     address scope\n"
-	"     --broadcast=ADDR  broadcast address\n"
+"Usage: nl-addr-delete [OPTION]... [ADDRESS]\n"
+"\n"
+"Options\n"
+" -i, --interactive         Run interactively.\n"
+"     --yes                 Set default answer to yes.\n"
+" -q, --quiet               Do not print informal notifications.\n"
+" -h, --help                Show this help.\n"
+" -v, --version             Show versioning information.\n"
+"\n"
+"Address Options\n"
+" -a, --local=ADDR          Local address.\n"
+" -d, --dev=DEV             Associated network device.\n"
+"     --family=FAMILY       Family of local address.\n"
+"     --label=STRING        Address label (IPv4).\n"
+"     --peer=ADDR           Peer address (IPv4).\n"
+"     --scope=SCOPE         Address scope (IPv4).\n"
+"     --broadcast=ADDR      Broadcast address of network (IPv4).\n"
+"     --valid-lifetime=TS   Valid lifetime before route expires (IPv6).\n"
+"     --preferred=TIME      Preferred lifetime (IPv6).\n"
+"     --valid=TIME          Valid lifetime (IPv6).\n"
 	);
 
 	exit(0);
@@ -82,6 +85,8 @@ int main(int argc, char *argv[])
 			ARG_PEER,
 			ARG_SCOPE,
 			ARG_BROADCAST,
+			ARG_PREFERRED,
+			ARG_VALID,
 		};
 		static struct option long_opts[] = {
 			{ "interactive", 0, 0, 'i' },
@@ -96,6 +101,8 @@ int main(int argc, char *argv[])
 			{ "peer", 1, 0, ARG_PEER },
 			{ "scope", 1, 0, ARG_SCOPE },
 			{ "broadcast", 1, 0, ARG_BROADCAST },
+			{ "preferred", 1, 0, ARG_PREFERRED },
+			{ "valid", 1, 0, ARG_VALID },
 			{ 0, 0, 0, 0 }
 		};
 	
@@ -116,6 +123,8 @@ int main(int argc, char *argv[])
 		case ARG_PEER: parse_peer(addr, optarg); break;
 		case ARG_SCOPE: parse_scope(addr, optarg); break;
 		case ARG_BROADCAST: parse_broadcast(addr, optarg); break;
+		case ARG_PREFERRED: parse_preferred(addr, optarg); break;
+		case ARG_VALID: parse_valid(addr, optarg); break;
 		}
  	}
 

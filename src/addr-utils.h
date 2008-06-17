@@ -22,5 +22,7 @@ extern void parse_label(struct rtnl_addr *, char *);
 extern void parse_peer(struct rtnl_addr *, char *);
 extern void parse_scope(struct rtnl_addr *, char *);
 extern void parse_broadcast(struct rtnl_addr *, char *);
+extern void parse_preferred(struct rtnl_addr *, char *);
+extern void parse_valid(struct rtnl_addr *, char *);
 
 #endif

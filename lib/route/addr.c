@@ -380,70 +380,6 @@ static void addr_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	addr_dump_details(obj, p);
 }
 
-static void addr_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
-{
-	struct rtnl_addr *addr = (struct rtnl_addr *) obj;
-	struct nl_cache *link_cache;
-	char buf[128];
-
-	nl_dump_line(p, "<address>\n");
-	nl_dump_line(p, "  <family>%s</family>\n",
-		     nl_af2str(addr->a_family, buf, sizeof(buf)));
-
-	nl_dump_line(p, "  <local>%s</local>\n",
-		     nl_addr2str(addr->a_local, buf, sizeof(buf)));
-	nl_dump_line(p, "  <peer>%s</peer>\n",
-		     nl_addr2str(addr->a_peer, buf, sizeof(buf)));
-	nl_dump_line(p, "  <broadcast>%s</broadcast>\n",
-		     nl_addr2str(addr->a_bcast, buf, sizeof(buf)));
-	nl_dump_line(p, "  <multicast>%s</multicast>\n",
-		     nl_addr2str(addr->a_multicast, buf, sizeof(buf)));
-
-	link_cache = nl_cache_mngt_require("route/link");
-	if (link_cache)
-		nl_dump_line(p, "  <device>%s</device>\n",
-			     rtnl_link_i2name(link_cache, addr->a_ifindex,
-			     		      buf, sizeof(buf)));
-	else
-		nl_dump_line(p, "  <device>%u</device>\n", addr->a_ifindex);
-
-	nl_dump_line(p, "  <scope>%s</scope>\n",
-		     rtnl_scope2str(addr->a_scope, buf, sizeof(buf)));
-
-	nl_dump_line(p, "  <label>%s</label>\n", addr->a_label);
-
-	rtnl_addr_flags2str(addr->a_flags, buf, sizeof(buf));
-	if (buf[0])
-		nl_dump_line(p, "  <flags>%s</flags>\n", buf);
-
-	if (addr->ce_mask & ADDR_ATTR_CACHEINFO) {
-		struct rtnl_addr_cacheinfo *ci = &addr->a_cacheinfo;
-
-		nl_dump_line(p, "  <cacheinfo>\n");
-		if (ci->aci_valid == 0xFFFFFFFFU)
-			nl_dump_line(p, "    <valid>forever</valid>\n");
-		else
-			nl_dump_line(p, "    <valid>%u</valid>\n",
-				     ci->aci_valid);
-
-		if (ci->aci_prefered == 0xFFFFFFFFU)
-			nl_dump_line(p, "    <preferred>forever</preferred>\n");
-		else
-			nl_dump_line(p, "    <preferred>%s</preferred>\n",
-				     ci->aci_prefered);
-
-		nl_dump_line(p, "    <created>%u</created>\n",
-			     addr->a_cacheinfo.aci_cstamp);
-
-		nl_dump_line(p, "    <last-update>%u</last-update>\n",
-			     addr->a_cacheinfo.aci_tstamp);
-
-		nl_dump_line(p, "  </cacheinfo>\n");
-	}
-
-	nl_dump_line(p, "</address>\n");
-}
-
 static int addr_compare(struct nl_object *_a, struct nl_object *_b,
 			uint32_t attrs, int flags)
 {
@@ -967,7 +903,6 @@ static struct nl_object_ops addr_obj_ops = {
 	    [NL_DUMP_LINE] 	= addr_dump_line,
 	    [NL_DUMP_DETAILS]	= addr_dump_details,
 	    [NL_DUMP_STATS]	= addr_dump_stats,
-	    [NL_DUMP_XML]	= addr_dump_xml,
 	},
 	.oo_compare		= addr_compare,
 	.oo_attrs2str		= addr_attrs2str,

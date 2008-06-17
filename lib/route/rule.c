@@ -227,57 +227,6 @@ static void rule_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	rule_dump_details(obj, p);
 }
 
-static void rule_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
-{
-	struct rtnl_rule *rule = (struct rtnl_rule *) obj;
-	char buf[128];
-	
-	nl_dump_line(p, "<rule>\n");
-
-	nl_dump_line(p, "  <priority>%u</priority>\n", rule->r_prio);
-	nl_dump_line(p, "  <family>%s</family>\n",
-		     nl_af2str(rule->r_family, buf, sizeof(buf)));
-
-	if (rule->ce_mask & RULE_ATTR_DST)
-		nl_dump_line(p, "  <dst>%s</dst>\n",
-			     nl_addr2str(rule->r_dst, buf, sizeof(buf)));
-
-	if (rule->ce_mask & RULE_ATTR_DST_LEN)
-		nl_dump_line(p, "  <dstlen>%u</dstlen>\n", rule->r_dst_len);
-
-	if (rule->ce_mask & RULE_ATTR_SRC)
-		nl_dump_line(p, "  <src>%s</src>\n",
-			     nl_addr2str(rule->r_src, buf, sizeof(buf)));
-
-	if (rule->ce_mask & RULE_ATTR_SRC_LEN)
-		nl_dump_line(p, "  <srclen>%u</srclen>\n", rule->r_src_len);
-
-	if (rule->ce_mask & RULE_ATTR_IIF)
-		nl_dump_line(p, "  <iif>%s</iif>\n", rule->r_iif);
-
-	if (rule->ce_mask & RULE_ATTR_TABLE)
-		nl_dump_line(p, "  <table>%u</table>\n", rule->r_table);
-
-	if (rule->ce_mask & RULE_ATTR_REALMS)
-		nl_dump_line(p, "  <realms>%u</realms>\n", rule->r_realms);
-
-	if (rule->ce_mask & RULE_ATTR_MARK)
-		nl_dump_line(p, "  <mark>%" PRIx64 "</mark>\n", rule->r_mark);
-
-	if (rule->ce_mask & RULE_ATTR_DSFIELD)
-		nl_dump_line(p, "  <dsfield>%u</dsfield>\n", rule->r_dsfield);
-
-	if (rule->ce_mask & RULE_ATTR_TYPE)
-		nl_dump_line(p, "<type>%s</type>\n",
-			     nl_rtntype2str(rule->r_type, buf, sizeof(buf)));
-
-	if (rule->ce_mask & RULE_ATTR_SRCMAP)
-		nl_dump_line(p, "<srcmap>%s</srcmap>\n",
-			     nl_addr2str(rule->r_srcmap, buf, sizeof(buf)));
-
-	nl_dump_line(p, "</rule>\n");
-}
-
 static void rule_dump_env(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_rule *rule = (struct rtnl_rule *) obj;
@@ -813,7 +762,6 @@ static struct nl_object_ops rule_obj_ops = {
 	    [NL_DUMP_LINE]	= rule_dump_line,
 	    [NL_DUMP_DETAILS]	= rule_dump_details,
 	    [NL_DUMP_STATS]	= rule_dump_stats,
-	    [NL_DUMP_XML]	= rule_dump_xml,
 	    [NL_DUMP_ENV]	= rule_dump_env,
 	},
 	.oo_compare		= rule_compare,

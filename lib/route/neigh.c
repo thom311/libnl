@@ -383,60 +383,6 @@ static void neigh_dump_stats(struct nl_object *a, struct nl_dump_params *p)
 	neigh_dump_details(a, p);
 }
 
-static void neigh_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
-{
-	struct rtnl_neigh *neigh = (struct rtnl_neigh *) obj;
-	char buf[128];
-
-	nl_dump_line(p, "<neighbour>\n");
-	nl_dump_line(p, "  <family>%s</family>\n",
-		     nl_af2str(neigh->n_family, buf, sizeof(buf)));
-
-	if (neigh->ce_mask & NEIGH_ATTR_LLADDR)
-		nl_dump_line(p, "  <lladdr>%s</lladdr>\n",
-			     nl_addr2str(neigh->n_lladdr, buf, sizeof(buf)));
-
-	if (neigh->ce_mask & NEIGH_ATTR_DST)
-		nl_dump_line(p, "  <dst>%s</dst>\n",
-			     nl_addr2str(neigh->n_dst, buf, sizeof(buf)));
-
-	if (neigh->ce_mask & NEIGH_ATTR_IFINDEX) {
-		struct nl_cache *link_cache;
-	
-		link_cache = nl_cache_mngt_require("route/link");
-
-		if (link_cache)
-			nl_dump_line(p, "  <device>%s</device>\n",
-				     rtnl_link_i2name(link_cache,
-						      neigh->n_ifindex,
-						      buf, sizeof(buf)));
-		else
-			nl_dump_line(p, "  <device>%u</device>\n",
-				     neigh->n_ifindex);
-	}
-
-	if (neigh->ce_mask & NEIGH_ATTR_PROBES)
-		nl_dump_line(p, "  <probes>%u</probes>\n", neigh->n_probes);
-
-	if (neigh->ce_mask & NEIGH_ATTR_TYPE)
-		nl_dump_line(p, "  <type>%s</type>\n",
-			     nl_rtntype2str(neigh->n_type, buf, sizeof(buf)));
-
-	rtnl_neigh_flags2str(neigh->n_flags, buf, sizeof(buf));
-	if (buf[0])
-		nl_dump_line(p, "  <flags>%s</flags>\n", buf);
-
-	rtnl_neigh_state2str(neigh->n_state, buf, sizeof(buf));
-	if (buf[0])
-		nl_dump_line(p, "  <state>%s</state>\n", buf);
-
-	nl_dump_line(p, "</neighbour>\n");
-
-#if 0
-	struct rtnl_ncacheinfo n_cacheinfo;
-#endif
-}
-
 static void neigh_dump_env(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_neigh *neigh = (struct rtnl_neigh *) obj;
@@ -900,7 +846,6 @@ static struct nl_object_ops neigh_obj_ops = {
 	    [NL_DUMP_LINE]	= neigh_dump_line,
 	    [NL_DUMP_DETAILS]	= neigh_dump_details,
 	    [NL_DUMP_STATS]	= neigh_dump_stats,
-	    [NL_DUMP_XML]	= neigh_dump_xml,
 	    [NL_DUMP_ENV]	= neigh_dump_env,
 	},
 	.oo_compare		= neigh_compare,

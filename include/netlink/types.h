@@ -22,7 +22,6 @@ enum nl_dump_type {
 	NL_DUMP_LINE,		/**< Dump object briefly on one line */
 	NL_DUMP_DETAILS,	/**< Dump all attributes but no statistics */
 	NL_DUMP_STATS,		/**< Dump all attributes including statistics */
-	NL_DUMP_XML,		/**< Dump all attribtes in XML format */
 	NL_DUMP_ENV,		/**< Dump all attribtues as env variables */
 	__NL_DUMP_MAX,
 };

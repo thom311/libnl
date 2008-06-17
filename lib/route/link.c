@@ -566,76 +566,6 @@ static void link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 		link->l_info_ops->io_dump[NL_DUMP_STATS](link, p);
 }
 
-static void link_dump_xml(struct nl_object *obj, struct nl_dump_params *p)
-{
-	struct rtnl_link *link = (struct rtnl_link *) obj;
-	struct nl_cache *cache = dp_cache(obj);
-	char buf[128];
-	int i;
-
-	nl_dump_line(p, "<link name=\"%s\" index=\"%u\">\n",
-		     link->l_name, link->l_index);
-	nl_dump_line(p, "  <family>%s</family>\n",
-		     nl_af2str(link->l_family, buf, sizeof(buf)));
-	nl_dump_line(p, "  <arptype>%s</arptype>\n",
-		     nl_llproto2str(link->l_arptype, buf, sizeof(buf)));
-	nl_dump_line(p, "  <address>%s</address>\n",
-		     nl_addr2str(link->l_addr, buf, sizeof(buf)));
-	nl_dump_line(p, "  <mtu>%u</mtu>\n", link->l_mtu);
-	nl_dump_line(p, "  <txqlen>%u</txqlen>\n", link->l_txqlen);
-	nl_dump_line(p, "  <weight>%u</weight>\n", link->l_weight);
-
-	rtnl_link_flags2str(link->l_flags, buf, sizeof(buf));
-	if (buf[0])
-		nl_dump_line(p, "  <flags>%s</flags>\n", buf);
-
-	if (link->ce_mask & LINK_ATTR_QDISC)
-		nl_dump_line(p, "  <qdisc>%s</qdisc>\n", link->l_qdisc);
-
-	if (link->ce_mask & LINK_ATTR_LINK) {
-		struct rtnl_link *ll = rtnl_link_get(cache, link->l_link);
-		nl_dump_line(p, "  <link>%s</link>\n",
-			     ll ? ll->l_name : "none");
-		if (ll)
-			rtnl_link_put(ll);
-	}
-
-	if (link->ce_mask & LINK_ATTR_MASTER) {
-		struct rtnl_link *master = rtnl_link_get(cache, link->l_master);
-		nl_dump_line(p, "  <master>%s</master>\n",
-			     master ? master->l_name : "none");
-		if (master)
-			rtnl_link_put(master);
-	}
-
-	if (link->ce_mask & LINK_ATTR_BRD)
-		nl_dump_line(p, "  <broadcast>%s</broadcast>\n",
-			     nl_addr2str(link->l_bcast, buf, sizeof(buf)));
-
-	if (link->ce_mask & LINK_ATTR_STATS) {
-		nl_dump_line(p, "  <stats>\n");
-		for (i = 0; i <= RTNL_LINK_STATS_MAX; i++) {
-			rtnl_link_stat2str(i, buf, sizeof(buf));
-			nl_dump_line(p, "    <%s>%" PRIu64 "</%s>\n",
-				     buf, link->l_stats[i], buf);
-		}
-		nl_dump_line(p, "  </stats>\n");
-	}
-
-	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_XML]) {
-		nl_dump_line(p, "  <info>\n");
-		link->l_info_ops->io_dump[NL_DUMP_XML](link, p);
-		nl_dump_line(p, "  </info>\n");
-	}
-
-	nl_dump_line(p, "</link>\n");
-
-#if 0
-	uint32_t	l_change;	/**< Change mask */
-	struct rtnl_lifmap l_map;	/**< Interface device mapping */
-#endif
-}
-
 static void link_dump_env(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_link *link = (struct rtnl_link *) obj;
@@ -1500,7 +1430,6 @@ static struct nl_object_ops link_obj_ops = {
 	    [NL_DUMP_LINE]	= link_dump_line,
 	    [NL_DUMP_DETAILS]	= link_dump_details,
 	    [NL_DUMP_STATS]	= link_dump_stats,
-	    [NL_DUMP_XML]	= link_dump_xml,
 	    [NL_DUMP_ENV]	= link_dump_env,
 	},
 	.oo_compare		= link_compare,

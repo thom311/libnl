@@ -268,10 +268,6 @@ struct nl_object_ops genl_family_ops = {
 	    [NL_DUMP_LINE]	= family_dump_line,
 	    [NL_DUMP_DETAILS]	= family_dump_details,
 	    [NL_DUMP_STATS]	= family_dump_stats,
-#if 0
-	.oo_dump[NL_DUMP_XML]	= addr_dump_xml,
-	.oo_dump[NL_DUMP_ENV]	= addr_dump_env,
-#endif
 	},
 	.oo_compare		= family_compare,
 	.oo_id_attrs		= FAMILY_ATTR_ID,

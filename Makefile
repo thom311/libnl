@@ -37,7 +37,7 @@ install: Makefile.opts
 		echo "Entering $$dir" && cd $$dir && $(MAKE) install && cd ..; \
 	done
 	mkdir -p $(DESTDIR)$(libdir)/pkgconfig/
-	install -m 0644 libnl-1.pc $(DESTDIR)$(libdir)/pkgconfig/
+	install -m 0644 libnl-2.0.pc $(DESTDIR)$(libdir)/pkgconfig/
 
 gendoc:
 	$(MAKE) -C doc gendoc

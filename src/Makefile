@@ -48,7 +48,7 @@ genl-%: genl-%.c
 
 nf-%: nf-%.c
 	@echo "  LD $@"; \
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lnl-nf
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lnl-nf -lnl-route
 
 clean:
 	@echo "  CLEAN src"; \

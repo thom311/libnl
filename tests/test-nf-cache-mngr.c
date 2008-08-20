@@ -12,7 +12,7 @@ static void change_cb(struct nl_cache *cache, struct nl_object *obj,
 	if (!nl_addr_cmp(hack, nfnl_ct_get_src(ct, 1)) ||
 	    !nl_addr_cmp(hack, nfnl_ct_get_dst(ct, 1))) {
 		struct nl_dump_params dp = {
-			.dp_type = NL_DUMP_BRIEF,
+			.dp_type = NL_DUMP_LINE,
 			.dp_fd = stdout,
 		};
 
@@ -24,14 +24,12 @@ static void change_cb(struct nl_cache *cache, struct nl_object *obj,
 int main(int argc, char *argv[])
 {
 	struct nl_cache_mngr *mngr;
-	struct nl_handle *handle;
+	struct nl_sock *sock;
 	struct nl_cache *ct;
 
-	nltool_init(argc, argv);
+	sock = nlt_socket_alloc();
 
-	handle = nltool_alloc_handle();
-
-	mngr = nl_cache_mngr_alloc(handle, NETLINK_NETFILTER, NL_AUTO_PROVIDE);
+	mngr = nl_cache_mngr_alloc(sock, NETLINK_NETFILTER, NL_AUTO_PROVIDE);
 	if (!mngr) {
 		nl_perror("nl_cache_mngr_alloc");
 		return -1;

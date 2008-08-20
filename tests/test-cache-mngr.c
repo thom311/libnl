@@ -7,7 +7,7 @@ static void change_cb(struct nl_cache *cache, struct nl_object *obj,
 		      int action)
 {
 	struct nl_dump_params dp = {
-		.dp_type = NL_DUMP_BRIEF,
+		.dp_type = NL_DUMP_LINE,
 		.dp_fd = stdout,
 	};
 
@@ -30,55 +30,42 @@ int main(int argc, char *argv[])
 {
 	struct nl_cache_mngr *mngr;
 	struct nl_cache *lc, *nc, *ac, *rc;
-	struct nl_handle *handle;
+	struct nl_sock *sock;
+	int err;
 
 	signal(SIGINT, sigint);
 
-	nltool_init(argc, argv);
+	sock = nlt_alloc_socket();
+	err = nl_cache_mngr_alloc(sock, NETLINK_ROUTE, NL_AUTO_PROVIDE, &mngr);
+	if (err < 0)
+		fatal(err, "Unable to allocate cache manager: %s",
+		      nl_geterror(err));
 
-	handle = nltool_alloc_handle();
+	if ((err = nl_cache_mngr_add(mngr, "route/link", &change_cb, &lc)) < 0)
+		fatal(err, "Unable to add cache route/link: %s",
+		      nl_geterror(err));
 
-	mngr = nl_cache_mngr_alloc(handle, NETLINK_ROUTE, NL_AUTO_PROVIDE);
-	if (!mngr) {
-		nl_perror("nl_cache_mngr_alloc");
-		return -1;
-	}
+	if ((err = nl_cache_mngr_add(mngr, "route/neigh", &change_cb, &nc)) < 0)
+		fatal(err, "Unable to add cache route/neigh: %s",
+		      nl_geterror(err));
 
-	lc = nl_cache_mngr_add(mngr, "route/link", &change_cb);
-	if (lc == NULL) {
-		nl_perror("nl_cache_mngr_add(route/link");
-		return -1;
-	}
+	if ((err = nl_cache_mngr_add(mngr, "route/addr", &change_cb, &ac)) < 0)
+		fatal(err, "Unable to add cache route/addr: %s",
+		      nl_geterror(err));
 
-	nc = nl_cache_mngr_add(mngr, "route/neigh", &change_cb);
-	if (nc == NULL) {
-		nl_perror("nl_cache_mngr_add(route/neigh");
-		return -1;
-	}
-
-	ac = nl_cache_mngr_add(mngr, "route/addr", &change_cb);
-	if (ac == NULL) {
-		nl_perror("nl_cache_mngr_add(route/addr");
-		return -1;
-	}
-
-	rc = nl_cache_mngr_add(mngr, "route/route", &change_cb);
-	if (rc == NULL) {
-		nl_perror("nl_cache_mngr_add(route/route");
-		return -1;
-	}
+	if ((err = nl_cache_mngr_add(mngr, "route/route", &change_cb, &rc)) < 0)
+		fatal(err, "Unable to add cache route/route: %s",
+		      nl_geterror(err));
 
 	while (!quit) {
 		int err = nl_cache_mngr_poll(mngr, 5000);
-		if (err < 0 && err != -EINTR) {
-			nl_perror("nl_cache_mngr_poll()");
-			return -1;
-		}
+		if (err < 0 && err != -NLE_INTR)
+			fatal(err, "Polling failed: %s", nl_geterror(err));
 
 	}
 
 	nl_cache_mngr_free(mngr);
-	nl_handle_destroy(handle);
+	nl_socket_free(sock);
 
 	return 0;
 }

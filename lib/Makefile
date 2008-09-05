@@ -93,6 +93,10 @@ distclean:
 install:
 	mkdir -p $(DESTDIR)$(libdir)/
 	install -m 0644 $(LIBS_V) $(DESTDIR)$(libdir)
+	$(LN) -sf $(CORE_LIB:%.so=%.so.$(PACKAGE_VERSION)) $(DESTDIR)$(libdir)/$(CORE_LIB)
+	$(LN) -sf $(ROUTE_LIB:%.so=%.so.$(PACKAGE_VERSION)) $(DESTDIR)$(libdir)/$(ROUTE_LIB)
+	$(LN) -sf $(GENL_LIB:%.so=%.so.$(PACKAGE_VERSION)) $(DESTDIR)$(libdir)/$(GENL_LIB)
+	$(LN) -sf $(NF_LIB:%.so=%.so.$(PACKAGE_VERSION)) $(DESTDIR)$(libdir)/$(NF_LIB)
 
 $(DEPS): ../Makefile.opts
 

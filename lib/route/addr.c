@@ -493,7 +493,7 @@ static int build_addr_msg(struct rtnl_addr *tmpl, int cmd, int flags,
 
 	if (tmpl->ce_mask & ADDR_ATTR_PEER)
 		NLA_PUT_ADDR(msg, IFA_ADDRESS, tmpl->a_peer);
-	else
+	else if (tmpl->ce_mask & ADDR_ATTR_LOCAL)
 		NLA_PUT_ADDR(msg, IFA_ADDRESS, tmpl->a_local);
 
 	if (tmpl->ce_mask & ADDR_ATTR_LABEL)

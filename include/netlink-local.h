@@ -26,6 +26,7 @@
 #include <sys/socket.h>
 #include <inttypes.h>
 #include <assert.h>
+#include <limits.h>
 
 #include <arpa/inet.h>
 #include <netdb.h>

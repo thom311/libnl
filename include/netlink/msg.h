@@ -81,6 +81,7 @@ extern int		  nlmsg_expand(struct nl_msg *, size_t);
 extern struct nlmsghdr *  nlmsg_put(struct nl_msg *, uint32_t, uint32_t,
 				    int, int, int);
 extern struct nlmsghdr *  nlmsg_hdr(struct nl_msg *);
+extern void		  nlmsg_get(struct nl_msg *);
 extern void		  nlmsg_free(struct nl_msg *);
 
 /* attribute modification */

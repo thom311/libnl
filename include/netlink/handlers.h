@@ -65,24 +65,6 @@ enum nl_cb_action {
 };
 
 /**
- * Callback action modifiers
- * @ingroup cb
- *
- * These should be ORed to the callback actions defined by enum
- * nl_cb_action.
- */
-enum nl_cb_action_mods {
-	/** Callee keeps the message, don't free */
-	NL_KEEP_MSG = 0x1000,
-#define NL_KEEP_MSG NL_KEEP_MSG	/* for config testing */
-};
-
-
-/* backwards compatibility */
-#define NL_PROCEED NL_OK
-#define NL_EXIT NL_STOP
-
-/**
  * Callback kinds
  * @ingroup cb
  */

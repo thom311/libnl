@@ -372,6 +372,8 @@ static struct nl_msg *__nlmsg_alloc(size_t len)
 	if (!nm)
 		goto errout;
 
+	nm->nm_refcnt = 1;
+
 	nm->nm_nlh = malloc(len);
 	if (!nm->nm_nlh)
 		goto errout;
@@ -645,21 +647,39 @@ struct nlmsghdr *nlmsg_hdr(struct nl_msg *n)
 }
 
 /**
- * Free a netlink message
- * @arg n		netlink message
- *
- * Destroys a netlink message and frees up all used memory.
- *
- * @pre The message must be unused.
+ * Acquire a reference on a netlink message
+ * @arg msg		message to acquire reference from
  */
-void nlmsg_free(struct nl_msg *n)
+void nlmsg_get(struct nl_msg *msg)
 {
-	if (!n)
+	msg->nm_refcnt++;
+	NL_DBG(4, "New reference to message %p, total %d\n",
+	       msg, msg->nm_refcnt);
+}
+
+/**
+ * Release a reference from an netlink message
+ * @arg msg		message to release reference from
+ *
+ * Frees memory after the last reference has been released.
+ */
+void nlmsg_free(struct nl_msg *msg)
+{
+	if (!msg)
 		return;
 
-	free(n->nm_nlh);
-	free(n);
-	NL_DBG(2, "msg %p: Freed\n", n);
+	msg->nm_refcnt--;
+	NL_DBG(4, "Returned message reference %p, %d remaining\n",
+	       msg, msg->nm_refcnt);
+
+	if (msg->nm_refcnt < 0)
+		BUG();
+
+	if (msg->nm_refcnt <= 0) {
+		free(msg->nm_nlh);
+		free(msg);
+		NL_DBG(2, "msg %p: Freed\n", msg);
+	}
 }
 
 /** @} */

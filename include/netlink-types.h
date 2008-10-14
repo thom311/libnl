@@ -129,6 +129,7 @@ struct nl_msg
 	struct ucred		nm_creds;
 	struct nlmsghdr *	nm_nlh;
 	size_t			nm_size;
+	int			nm_refcnt;
 };
 
 struct rtnl_link_map

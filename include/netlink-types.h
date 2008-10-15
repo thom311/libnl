@@ -475,8 +475,8 @@ struct rtnl_class
 struct rtnl_cls
 {
 	NL_TCA_GENERIC(c);
-	uint32_t	c_prio;
-	uint32_t	c_protocol;
+	uint16_t	c_prio;
+	uint16_t	c_protocol;
 	struct rtnl_cls_ops	*c_ops;
 };
 

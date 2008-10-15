@@ -149,13 +149,13 @@ void rtnl_cls_set_kind(struct rtnl_cls *f, const char *kind)
 	f->c_ops = __rtnl_cls_lookup_ops(kind);
 }
 
-void rtnl_cls_set_prio(struct rtnl_cls *cls, int prio)
+void rtnl_cls_set_prio(struct rtnl_cls *cls, uint16_t prio)
 {
 	cls->c_prio = prio;
 	cls->ce_mask |= CLS_ATTR_PRIO;
 }
 
-int rtnl_cls_get_prio(struct rtnl_cls *cls)
+uint16_t rtnl_cls_get_prio(struct rtnl_cls *cls)
 {
 	if (cls->ce_mask & CLS_ATTR_PRIO)
 		return cls->c_prio;
@@ -163,13 +163,13 @@ int rtnl_cls_get_prio(struct rtnl_cls *cls)
 		return 0;
 }
 
-void rtnl_cls_set_protocol(struct rtnl_cls *cls, int protocol)
+void rtnl_cls_set_protocol(struct rtnl_cls *cls, uint16_t protocol)
 {
 	cls->c_protocol = protocol;
 	cls->ce_mask |= CLS_ATTR_PROTOCOL;
 }
 
-int rtnl_cls_get_protocol(struct rtnl_cls *cls)
+uint16_t rtnl_cls_get_protocol(struct rtnl_cls *cls)
 {
 	if (cls->ce_mask & CLS_ATTR_PROTOCOL)
 		return cls->c_protocol;

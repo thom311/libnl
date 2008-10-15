@@ -44,11 +44,11 @@ extern void rtnl_cls_set_handle(struct rtnl_cls *, uint32_t);
 extern void rtnl_cls_set_parent(struct rtnl_cls *, uint32_t);
 extern void rtnl_cls_set_kind(struct rtnl_cls *, const char *);
 
-extern void rtnl_cls_set_prio(struct rtnl_cls *, int);
-extern int  rtnl_cls_get_prio(struct rtnl_cls *);
+extern void rtnl_cls_set_prio(struct rtnl_cls *, uint16_t);
+extern uint16_t rtnl_cls_get_prio(struct rtnl_cls *);
 
-extern void rtnl_cls_set_protocol(struct rtnl_cls *, int);
-extern int  rtnl_cls_get_protocol(struct rtnl_cls *);
+extern void rtnl_cls_set_protocol(struct rtnl_cls *, uint16_t);
+extern uint16_t rtnl_cls_get_protocol(struct rtnl_cls *);
 
 #ifdef __cplusplus
 }

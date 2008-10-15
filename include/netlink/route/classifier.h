@@ -42,7 +42,8 @@ extern int	rtnl_cls_delete(struct nl_sock *, struct rtnl_cls *, int);
 extern void rtnl_cls_set_ifindex(struct rtnl_cls *, int);
 extern void rtnl_cls_set_handle(struct rtnl_cls *, uint32_t);
 extern void rtnl_cls_set_parent(struct rtnl_cls *, uint32_t);
-extern void rtnl_cls_set_kind(struct rtnl_cls *, const char *);
+extern int rtnl_cls_set_kind(struct rtnl_cls *, const char *);
+extern struct rtnl_cls_ops *rtnl_cls_get_ops(struct rtnl_cls *);
 
 extern void rtnl_cls_set_prio(struct rtnl_cls *, uint16_t);
 extern uint16_t rtnl_cls_get_prio(struct rtnl_cls *);

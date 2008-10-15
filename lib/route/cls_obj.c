@@ -143,10 +143,20 @@ void rtnl_cls_set_parent(struct rtnl_cls *f, uint32_t parent)
 	tca_set_parent((struct rtnl_tca *) f, parent);
 }
 
-void rtnl_cls_set_kind(struct rtnl_cls *f, const char *kind)
+int rtnl_cls_set_kind(struct rtnl_cls *f, const char *kind)
 {
 	tca_set_kind((struct rtnl_tca *) f, kind);
+
 	f->c_ops = __rtnl_cls_lookup_ops(kind);
+	if (f->c_ops == NULL)
+		return -NLE_OBJ_NOTFOUND;
+	
+	return 0;
+}
+
+struct rtnl_cls_ops *rtnl_cls_get_ops(struct rtnl_cls *cls)
+{
+	return cls->c_ops;
 }
 
 void rtnl_cls_set_prio(struct rtnl_cls *cls, uint16_t prio)

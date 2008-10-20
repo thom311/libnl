@@ -203,7 +203,7 @@ int nfnl_queue_msg_send_verdict(struct nl_sock *nlh,
 	nlmsg_free(nlmsg);
 	if (err < 0)
 		return err;
-	return nl_wait_for_ack(nlh);
+	return wait_for_ack(nlh);
 }
 
 #define NFNLMSG_QUEUE_TYPE(type) NFNLMSG_TYPE(NFNL_SUBSYS_QUEUE, (type))

@@ -33,7 +33,7 @@ static int send_queue_request(struct nl_sock *sk, struct nl_msg *msg)
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /**

@@ -172,4 +172,12 @@ static inline char *nl_cache_name(struct nl_cache *cache)
 		END_OF_MSGTYPES_LIST, \
 	}
 
+static inline int wait_for_ack(struct nl_sock *sk)
+{
+	if (sk->s_flags & NL_NO_AUTO_ACK)
+		return 0;
+	else
+		return nl_wait_for_ack(sk);
+}
+
 #endif

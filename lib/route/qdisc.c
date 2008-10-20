@@ -233,7 +233,7 @@ int rtnl_qdisc_add(struct nl_sock *sk, struct rtnl_qdisc *qdisc,
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /** @} */
@@ -289,7 +289,7 @@ int rtnl_qdisc_change(struct nl_sock *sk, struct rtnl_qdisc *qdisc,
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /** @} */
@@ -362,7 +362,7 @@ int rtnl_qdisc_delete(struct nl_sock *sk, struct rtnl_qdisc *qdisc)
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /** @} */

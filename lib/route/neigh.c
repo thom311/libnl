@@ -589,7 +589,7 @@ int rtnl_neigh_add(struct nl_sock *sk, struct rtnl_neigh *tmpl, int flags)
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /** @} */
@@ -645,7 +645,7 @@ int rtnl_neigh_delete(struct nl_sock *sk, struct rtnl_neigh *neigh,
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /** @} */

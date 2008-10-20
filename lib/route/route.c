@@ -138,7 +138,7 @@ int rtnl_route_add(struct nl_sock *sk, struct rtnl_route *route, int flags)
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 int rtnl_route_build_del_request(struct rtnl_route *tmpl, int flags,
@@ -160,7 +160,7 @@ int rtnl_route_delete(struct nl_sock *sk, struct rtnl_route *route, int flags)
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /** @} */

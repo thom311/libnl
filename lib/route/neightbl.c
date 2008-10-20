@@ -576,7 +576,7 @@ int rtnl_neightbl_change(struct nl_sock *sk, struct rtnl_neightbl *old,
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /** @} */

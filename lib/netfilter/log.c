@@ -63,7 +63,7 @@ static int send_log_request(struct nl_sock *sk, struct nl_msg *msg)
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 int nfnl_log_build_pf_bind(uint8_t pf, struct nl_msg **result)

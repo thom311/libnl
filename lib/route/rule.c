@@ -490,7 +490,7 @@ int rtnl_rule_add(struct nl_sock *sk, struct rtnl_rule *tmpl, int flags)
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /** @} */
@@ -544,7 +544,7 @@ int rtnl_rule_delete(struct nl_sock *sk, struct rtnl_rule *rule, int flags)
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /** @} */

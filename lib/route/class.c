@@ -154,7 +154,7 @@ int rtnl_class_add(struct nl_sock *sk, struct rtnl_class *class, int flags)
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /** @} */

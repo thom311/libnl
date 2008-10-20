@@ -488,7 +488,7 @@ int nfnl_ct_add(struct nl_sock *sk, const struct nfnl_ct *ct, int flags)
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 int nfnl_ct_build_delete_request(const struct nfnl_ct *ct, int flags,
@@ -510,7 +510,7 @@ int nfnl_ct_del(struct nl_sock *sk, const struct nfnl_ct *ct, int flags)
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 int nfnl_ct_build_query_request(const struct nfnl_ct *ct, int flags,
@@ -532,7 +532,7 @@ int nfnl_ct_query(struct nl_sock *sk, const struct nfnl_ct *ct, int flags)
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /**

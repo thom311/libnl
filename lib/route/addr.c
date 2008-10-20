@@ -586,7 +586,7 @@ int rtnl_addr_add(struct nl_sock *sk, struct rtnl_addr *addr, int flags)
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /** @} */
@@ -658,7 +658,7 @@ int rtnl_addr_delete(struct nl_sock *sk, struct rtnl_addr *addr, int flags)
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /** @} */

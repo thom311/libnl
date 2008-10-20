@@ -956,7 +956,7 @@ int rtnl_link_change(struct nl_sock *sk, struct rtnl_link *old,
 	if (err < 0)
 		return err;
 
-	return nl_wait_for_ack(sk);
+	return wait_for_ack(sk);
 }
 
 /** @} */

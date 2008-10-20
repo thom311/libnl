@@ -56,6 +56,8 @@ extern int			nl_socket_recv_pktinfo(struct nl_sock *, int);
 
 extern void			nl_disable_sequence_check(struct nl_sock *);
 extern unsigned int		nl_socket_use_seq(struct nl_sock *);
+extern void			nl_socket_disable_auto_ack(struct nl_sock *);
+extern void			nl_socket_enable_auto_ack(struct nl_sock *);
 
 extern int			nl_socket_get_fd(struct nl_sock *);
 extern int			nl_socket_set_nonblocking(struct nl_sock *);

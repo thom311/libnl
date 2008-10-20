@@ -126,7 +126,7 @@
  * // and message flags all the time. nl_send_auto_complete() automatically
  * // extends your message header as needed with an appropriate sequence
  * // number, the netlink pid stored in the netlink socket and the message
- * // flags NLM_F_REQUEST and NLM_F_ACK
+ * // flags NLM_F_REQUEST and NLM_F_ACK (if not disabled in the socket)
  * nl_send_auto_complete(sk, nlmsg_hdr(msg));
  *
  * // Simple protocols don't require the complex message construction interface
@@ -385,7 +385,10 @@ int nl_send_auto_complete(struct nl_sock *sk, struct nl_msg *msg)
 	if (msg->nm_protocol == -1)
 		msg->nm_protocol = sk->s_proto;
 	
-	nlh->nlmsg_flags |= (NLM_F_REQUEST | NLM_F_ACK);
+	nlh->nlmsg_flags |= NLM_F_REQUEST;
+
+	if (!(sk->s_flags & NL_NO_AUTO_ACK))
+		nlh->nlmsg_flags |= NLM_F_ACK;
 
 	if (cb->cb_send_ow)
 		return cb->cb_send_ow(sk, msg);

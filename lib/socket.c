@@ -276,6 +276,33 @@ unsigned int nl_socket_use_seq(struct nl_sock *sk)
 	return sk->s_seq_next++;
 }
 
+/**
+ * Disable automatic request for ACK
+ * @arg sk		Netlink socket.
+ *
+ * The default behaviour of a socket is to request an ACK for
+ * each message sent to allow for the caller to synchronize to
+ * the completion of the netlink operation. This function
+ * disables this behaviour and will result in requests being
+ * sent which will not have the NLM_F_ACK flag set automatically.
+ * However, it is still possible for the caller to set the
+ * NLM_F_ACK flag explicitely.
+ */
+void nl_socket_disable_auto_ack(struct nl_sock *sk)
+{
+	sk->s_flags |= NL_NO_AUTO_ACK;
+}
+
+/**
+ * Enable automatic request for ACK (default)
+ * @arg sk		Netlink socket.
+ * @see nl_socket_disable_auto_ack
+ */
+void nl_socket_enable_auto_ack(struct nl_sock *sk)
+{
+	sk->s_flags &= ~NL_NO_AUTO_ACK;
+}
+
 /** @} */
 
 /**

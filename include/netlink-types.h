@@ -22,6 +22,7 @@
 #define NL_SOCK_PASSCRED	(1<<1)
 #define NL_OWN_PORT		(1<<2)
 #define NL_MSG_PEEK		(1<<3)
+#define NL_NO_AUTO_ACK		(1<<4)
 
 #define NL_MSG_CRED_PRESENT 1
 

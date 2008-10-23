@@ -24,6 +24,16 @@
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/queue.h>
 
+struct nl_sock *nfnl_queue_socket_alloc(void)
+{
+	struct nl_sock *nlsk;
+
+	nlsk = nl_socket_alloc();
+	if (nlsk)
+		nl_socket_disable_auto_ack(nlsk);
+	return nlsk;
+}
+
 static int send_queue_request(struct nl_sock *sk, struct nl_msg *msg)
 {
 	int err;

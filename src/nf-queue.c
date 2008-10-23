@@ -47,7 +47,10 @@ int main(int argc, char *argv[])
 	int err = 1;
 	int family;
 
-	nf_sock = nlt_alloc_socket();
+	nf_sock = nfnl_queue_socket_alloc();
+	if (nf_sock == NULL)
+		fatal(ENOBUFS, "Unable to allocate netlink socket");
+
 	nl_disable_sequence_check(nf_sock);
 	nl_socket_modify_cb(nf_sock, NL_CB_VALID, NL_CB_CUSTOM, event_input, NULL);
 

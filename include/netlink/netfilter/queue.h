@@ -31,6 +31,8 @@ enum nfnl_queue_copy_mode {
 };
 
 /* General */
+extern struct nl_sock *		nfnl_queue_socket_alloc(void);
+
 extern struct nfnl_queue *	nfnl_queue_alloc(void);
 
 extern void			nfnl_queue_get(struct nfnl_queue *);

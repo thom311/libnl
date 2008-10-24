@@ -83,6 +83,7 @@ int nl_syserr2nlerr(int error)
 	switch (error) {
 	case EBADF:		return NLE_BAD_SOCK;
 	case EADDRINUSE:	return NLE_EXIST;
+	case EEXIST:		return NLE_EXIST;
 	case EADDRNOTAVAIL:	return NLE_NOADDR;
 	case ENOENT:		return NLE_OBJ_NOTFOUND;
 	case EINTR:		return NLE_INTR;
@@ -98,6 +99,7 @@ int nl_syserr2nlerr(int error)
 	case EPROTONOSUPPORT:	return NLE_PROTO_MISMATCH;
 	case EOPNOTSUPP:	return NLE_OPNOTSUPP;
 	case EPERM:		return NLE_PERM;
+	case EBUSY:		return NLE_BUSY;
 	default:		return NLE_FAILURE;
 	}
 }

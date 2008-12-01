@@ -30,11 +30,19 @@ extern uint32_t			nl_socket_get_local_port(struct nl_sock *);
 extern void			nl_socket_set_local_port(struct nl_sock *,
 							 uint32_t);
 
-extern int			nl_socket_add_membership(struct nl_sock *,
-							 int);
-extern int			nl_socket_drop_membership(struct nl_sock *,
-							  int);
+extern int			nl_socket_add_memberships(struct nl_sock *,
+							 int, ...);
+extern int			nl_socket_drop_memberships(struct nl_sock *,
+							  int, ...);
 extern void			nl_join_groups(struct nl_sock *, int);
+
+static inline int nl_socket_add_membership(struct nl_sock *sk, int group) {
+	return nl_socket_add_memberships(sk, group, 0);
+}
+
+static inline int nl_socket_drop_membership(struct nl_sock *sk, int group) {
+	return nl_socket_drop_memberships(sk, group, 0);
+}
 
 extern uint32_t			nl_socket_get_peer_port(struct nl_sock *);
 extern void			nl_socket_set_peer_port(struct nl_sock *,

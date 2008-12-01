@@ -345,13 +345,14 @@ void nl_socket_set_local_port(struct nl_sock *sk, uint32_t port)
  */
 
 /**
- * Join a group
+ * Join groups
  * @arg sk		Netlink socket
  * @arg group		Group identifier
  *
- * Joins the specified group using the modern socket option which
+ * Joins the specified groups using the modern socket option which
  * is available since kernel version 2.6.14. It allows joining an
- * almost arbitary number of groups without limitation.
+ * almost arbitary number of groups without limitation.  The list
+ * of groups has to be terminated by 0 (%NFNLGRP_NONE).
  *
  * Make sure to use the correct group definitions as the older
  * bitmask definitions for nl_join_groups() are likely to still
@@ -359,43 +360,68 @@ void nl_socket_set_local_port(struct nl_sock *sk, uint32_t port)
  *
  * @return 0 on sucess or a negative error code.
  */
-int nl_socket_add_membership(struct nl_sock *sk, int group)
+int nl_socket_add_memberships(struct nl_sock *sk, int group, ...)
 {
 	int err;
+	va_list ap;
 
 	if (sk->s_fd == -1)
 		return -NLE_BAD_SOCK;
 
-	err = setsockopt(sk->s_fd, SOL_NETLINK, NETLINK_ADD_MEMBERSHIP,
-			 &group, sizeof(group));
-	if (err < 0)
-		return -nl_syserr2nlerr(errno);
+	va_start(ap, group);
+
+	while (group != 0) {
+		if (group < 0)
+			return -NLE_INVAL;
+
+		err = setsockopt(sk->s_fd, SOL_NETLINK, NETLINK_ADD_MEMBERSHIP,
+						 &group, sizeof(group));
+		if (err < 0)
+			return -nl_syserr2nlerr(errno);
+
+		group = va_arg(ap, int);
+	}
+
+	va_end(ap);
 
 	return 0;
 }
 
 /**
- * Leave a group
+ * Leave groups
  * @arg sk		Netlink socket
  * @arg group		Group identifier
  *
- * Leaves the specified group using the modern socket option
- * which is available since kernel version 2.6.14.
+ * Leaves the specified groups using the modern socket option
+ * which is available since kernel version 2.6.14. The list of groups
+ * has to terminated by 0 (%NFNLGRP_NONE).
  *
  * @see nl_socket_add_membership
  * @return 0 on success or a negative error code.
  */
-int nl_socket_drop_membership(struct nl_sock *sk, int group)
+int nl_socket_drop_memberships(struct nl_sock *sk, int group, ...)
 {
 	int err;
+	va_list ap;
 
 	if (sk->s_fd == -1)
 		return -NLE_BAD_SOCK;
 
-	err = setsockopt(sk->s_fd, SOL_NETLINK, NETLINK_DROP_MEMBERSHIP,
-			 &group, sizeof(group));
-	if (err < 0)
-		return -nl_syserr2nlerr(errno);
+	va_start(ap, group);
+
+	while (group != 0) {
+		if (group < 0)
+			return -NLE_INVAL;
+
+		err = setsockopt(sk->s_fd, SOL_NETLINK, NETLINK_DROP_MEMBERSHIP,
+						 &group, sizeof(group));
+		if (err < 0)
+			return -nl_syserr2nlerr(errno);
+
+		group = va_arg(ap, int);
+	}
+
+	va_end(ap);
 
 	return 0;
 }

@@ -12,58 +12,8 @@
 /**
  * @ingroup nl
  * @defgroup cb Callbacks/Customization
- * @brief
  *
- * Callbacks and overwriting capabilities are provided to take influence
- * in various control flows inside the library. All callbacks are packed
- * together in struct nl_cb which is then attached to a netlink socket or
- * passed on to the respective functions directly.
- *
- * Callbacks can control the flow of the underlying layer by returning
- * the appropriate error codes:
- * @code
- * Action ID        | Description
- * -----------------+-------------------------------------------------------
- * NL_OK       | Proceed with whatever comes next.
- * NL_SKIP          | Skip message currently being processed and continue
- *                  | with next message.
- * NL_STOP          | Stop parsing and discard all remaining messages in
- *                  | this set of messages.
- * @endcode
- *
- * All callbacks are optional and a default action is performed if no 
- * application specific implementation is provided:
- *
- * @code
- * Callback ID       | Default Return Value
- * ------------------+----------------------
- * NL_CB_VALID       | NL_OK
- * NL_CB_FINISH      | NL_STOP
- * NL_CB_OVERRUN     | NL_STOP
- * NL_CB_SKIPPED     | NL_SKIP
- * NL_CB_ACK         | NL_STOP
- * NL_CB_MSG_IN      | NL_OK
- * NL_CB_MSG_OUT     | NL_OK
- * NL_CB_INVALID     | NL_STOP
- * NL_CB_SEQ_CHECK   | NL_OK
- * NL_CB_SEND_ACK    | NL_OK
- *                   |
- * Error Callback    | NL_STOP
- * @endcode
- *
- * In order to simplify typical usages of the library, different sets of
- * default callback implementations exist:
- * @code
- * NL_CB_DEFAULT: No additional actions
- * NL_CB_VERBOSE: Automatically print warning and error messages to a file
- *                descriptor as appropriate. This is useful for CLI based
- *                applications.
- * NL_CB_DEBUG:   Print informal debugging information for each message
- *                received. This will result in every message beint sent or
- *                received to be printed to the screen in a decoded,
- *                human-readable format.
- * @endcode
- *
+ * @details
  * @par 1) Setting up a callback set
  * @code
  * // Allocate a callback set and initialize it to the verbose default set

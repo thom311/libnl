@@ -172,7 +172,7 @@ int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 			    event_input, mngr);
 
 	/* Required to receive async event notifications */
-	nl_disable_sequence_check(mngr->cm_handle);
+	nl_socket_disable_seq_check(mngr->cm_handle);
 
 	if ((err = nl_connect(mngr->cm_handle, protocol) < 0))
 		goto errout;

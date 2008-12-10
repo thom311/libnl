@@ -19,9 +19,6 @@
 extern "C" {
 #endif
 
-/* backwards compatibility for now */
-#define nl_handle	nl_sock
-
 extern struct nl_sock *	nl_socket_alloc(void);
 extern struct nl_sock *	nl_socket_alloc_cb(struct nl_cb *);
 extern void		nl_socket_free(struct nl_sock *);

@@ -125,7 +125,7 @@ usage:
 
 int main(int argc, char *argv[])
 {
-	struct nl_handle *nlh;
+	struct nl_sock *nlh;
 	struct rtnl_qdisc *qdisc;
 	uint32_t handle, parent;
 	int err = 1;

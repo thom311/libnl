@@ -108,7 +108,7 @@ static void env_dump(struct nl_object *obj, void *arg)
 
 int main(int argc, char *argv[])
 {
-	struct nl_handle *sock;
+	struct nl_sock *sock;
 	struct rtnl_addr *addr;
 	struct nl_cache *link_cache, *addr_cache;
 	struct nl_dump_params params = {

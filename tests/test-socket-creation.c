@@ -2,7 +2,7 @@
 
 int main(int argc, char *argv[])
 {
-	struct nl_handle *h[1025];
+	struct nl_sock *h[1025];
 	int i;
 
 	h[0] = nl_handle_alloc();

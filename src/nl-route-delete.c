@@ -13,7 +13,7 @@
 
 static int interactive = 0, default_yes = 0, quiet = 0;
 static int deleted = 0;
-static struct nl_handle *sock;
+static struct nl_sock *sock;
 
 static void print_version(void)
 {

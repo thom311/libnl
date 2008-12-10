@@ -25,7 +25,7 @@ static void print_usage(void)
 
 int main(int argc, char *argv[])
 {
-	struct nl_handle *nlh;
+	struct nl_sock *nlh;
 	struct nl_cache *result;
 	struct flnl_request *request;
 	struct nl_addr *addr;

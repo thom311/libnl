@@ -49,7 +49,7 @@ static void print_usage(void)
 
 int main(int argc, char *argv[])
 {
-	struct nl_handle *sock;
+	struct nl_sock *sock;
 	struct rtnl_route *route;
 	struct nl_dump_params dp = {
 		.dp_type = NL_DUMP_LINE,

@@ -10,7 +10,7 @@
 
 #include "addr-utils.h"
 
-static struct nl_handle *sock;
+static struct nl_sock *sock;
 static int interactive = 0, default_yes = 0, quiet = 0;
 static int deleted = 0;
 

@@ -185,7 +185,7 @@ static int noop_seq_check(struct nl_msg *msg, void *arg)
  * @note This function modifies the NL_CB_SEQ_CHECK configuration in
  * the callback handle associated with the socket.
  */
-void nl_disable_sequence_check(struct nl_sock *sk)
+void nl_socket_disable_seq_check(struct nl_sock *sk)
 {
 	nl_cb_set(sk->s_cb, NL_CB_SEQ_CHECK,
 		  NL_CB_CUSTOM, noop_seq_check, NULL);
@@ -316,6 +316,11 @@ int nl_socket_add_memberships(struct nl_sock *sk, int group, ...)
 	return 0;
 }
 
+int nl_socket_add_membership(struct nl_sock *sk, int group)
+{
+	return nl_socket_add_memberships(sk, group, 0);
+}
+
 /**
  * Leave groups
  * @arg sk		Netlink socket
@@ -354,6 +359,12 @@ int nl_socket_drop_memberships(struct nl_sock *sk, int group, ...)
 
 	return 0;
 }
+
+int nl_socket_drop_membership(struct nl_sock *sk, int group)
+{
+	return nl_socket_drop_memberships(sk, group, 0);
+}
+
 
 /**
  * Join multicast groups (deprecated)
@@ -489,7 +500,7 @@ int nl_socket_modify_cb(struct nl_sock *sk, enum nl_cb_type type,
  * @note It is not required to call this function prior to nl_connect().
  * @return 0 on sucess or a negative error code.
  */
-int nl_set_buffer_size(struct nl_sock *sk, int rxbuf, int txbuf)
+int nl_socket_set_buffer_size(struct nl_sock *sk, int rxbuf, int txbuf)
 {
 	int err;
 
@@ -524,7 +535,7 @@ int nl_set_buffer_size(struct nl_sock *sk, int rxbuf, int txbuf)
  *
  * @return 0 on success or a negative error code
  */
-int nl_set_passcred(struct nl_sock *sk, int state)
+int nl_socket_set_passcred(struct nl_sock *sk, int state)
 {
 	int err;
 

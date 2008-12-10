@@ -10,8 +10,7 @@
  */
 
 /**
- * @ingroup nlfam
- * @defgroup rtnl Routing Netlink
+ * @defgroup rtnl Routing Family
  * @{
  */
 

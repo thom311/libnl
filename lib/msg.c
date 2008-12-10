@@ -10,7 +10,7 @@
  */
 
 /**
- * @ingroup nl
+ * @ingroup core
  * @defgroup msg Messages
  * Netlink Message Construction/Parsing Interface
  * 

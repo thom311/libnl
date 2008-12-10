@@ -10,7 +10,7 @@
  */
 
 /**
- * @ingroup utils
+ * @ingroup core
  * @defgroup addr Abstract Address
  *
  * @par 1) Transform character string to abstract address

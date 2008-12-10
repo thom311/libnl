@@ -10,7 +10,7 @@
  */
 
 /**
- * @defgroup nl Core Netlink API
+ * @defgroup core Core
  *
  * @details
  * @par 1) Connecting the socket

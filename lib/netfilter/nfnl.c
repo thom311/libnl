@@ -12,7 +12,6 @@
  */
 
 /**
- * @ingroup nlfam
  * @defgroup nfnl Netfilter Netlink
  *
  * @par Message Format

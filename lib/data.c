@@ -10,7 +10,7 @@
  */
 
 /**
- * @ingroup utils
+ * @ingroup core
  * @defgroup data Abstract Data
  * @{
  */

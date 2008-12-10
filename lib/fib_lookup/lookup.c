@@ -10,7 +10,6 @@
  */
 
 /**
- * @ingroup nlfam
  * @defgroup fib_lookup FIB Lookup
  * @brief
  * @{

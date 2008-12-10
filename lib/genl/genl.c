@@ -10,7 +10,6 @@
  */
 
 /**
- * @ingroup nlfam
  * @defgroup genl Generic Netlink
  *
  * @par Message Format

@@ -10,7 +10,7 @@
  */
 
 /**
- * @ingroup nl
+ * @ingroup core
  * @defgroup socket Socket
  * @{
  */

@@ -10,6 +10,7 @@
  */
 
 /**
+ * @ingroup core
  * @defgroup cache_mngt Caching
  * @{
  */

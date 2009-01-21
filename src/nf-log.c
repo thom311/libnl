@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 	int family;
 
 	nf_sock = nlt_alloc_socket();
-	nl_disable_sequence_check(nf_sock);
+	nl_socket_disable_seq_check(nf_sock);
 	nl_socket_modify_cb(nf_sock, NL_CB_VALID, NL_CB_CUSTOM, event_input, NULL);
 
 	if ((argc > 1 && !strcasecmp(argv[1], "-h")) || argc < 3) {

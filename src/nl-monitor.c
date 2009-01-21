@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 	};
 
 	sock = nlt_alloc_socket();
-	nl_disable_sequence_check(sock);
+	nl_socket_disable_seq_check(sock);
 	nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM, event_input, NULL);
 
 	if (argc > 1 && !strcasecmp(argv[1], "-h")) {

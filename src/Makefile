@@ -38,15 +38,15 @@ nf-ct-list: ct-utils.o
 nf-log: log-utils.o rtnl-utils.o
 nf-queue: queue-utils.o rtnl-utils.o
 
-nl-%: nl-%.c
+nl-%: nl-%.o
 	@echo "  LD $@"; \
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lnl-route
 
-genl-%: genl-%.c
+genl-%: genl-%.o
 	@echo "  LD $@"; \
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lnl-genl
 
-nf-%: nf-%.c
+nf-%: nf-%.o
 	@echo "  LD $@"; \
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lnl-nf -lnl-route
 

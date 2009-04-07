@@ -84,7 +84,7 @@ $(NF_LIB): $(NF_LIB).$(PACKAGE_VERSION)
 
 clean:
 	@echo "  CLEAN lib"; \
-	$(RM) -f $(ALL_OBJ) $(LIBS) $(DEPS)
+	$(RM) -f $(ALL_OBJ) $(LIBS) $(DEPS) *.so.*
 
 distclean:
 	@echo "  DISTCLEAN lib"; \

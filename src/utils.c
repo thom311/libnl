@@ -13,6 +13,7 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <limits.h>
 
 uint32_t parse_u32(const char *arg)
 {

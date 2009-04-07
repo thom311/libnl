@@ -375,11 +375,6 @@ struct nl_cache *nl_object_get_cache(struct nl_object *obj)
 	return obj->ce_cache;
 }
 
-inline void *nl_object_priv(struct nl_object *obj)
-{
-	return obj;
-}
-
 /** @} */
 
 /** @} */

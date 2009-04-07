@@ -56,7 +56,11 @@ extern int			nl_object_is_marked(struct nl_object *);
 /* Access Functions */
 extern int			nl_object_get_refcnt(struct nl_object *);
 extern struct nl_cache *	nl_object_get_cache(struct nl_object *);
-extern inline void *		nl_object_priv(struct nl_object *);
+static inline void *		nl_object_priv(struct nl_object *obj)
+{
+	return obj;
+}
+
 
 #ifdef __cplusplus
 }

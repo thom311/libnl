@@ -10,28 +10,26 @@
 #
 
 AC_INIT(libnl, 2.0, tgraf@suug.ch)
-AC_CONFIG_HEADER(lib/defs.h)
-
-save_CFLAGS="${CFLAGS}"
-save_LDFLAGS="${LDFLAGS}"
-save_CPPFLAGS="${CPPFLAGS}"
+AC_CONFIG_HEADERS([lib/defs.h])
+AC_CONFIG_MACRO_DIR([m4])
+AM_INIT_AUTOMAKE([-Wall foreign subdir-objects])
 
 AC_PROG_CC
+AM_PROG_CC_C_O
 AC_PROG_INSTALL
+AM_PROG_LIBTOOL
 
 AC_C_CONST
 AC_C_INLINE
 
-AC_CHECK_LIB(m, pow,
-[
-  LIBM="-lm"
-],[
-    echo
-    echo "*** Error: libm required ***"
-    echo
-])
+AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
+	[Path to the pkgconfig directory [[LIBDIR/pkgconfig]]]),
+	[pkgconfigdir="$withval"], [pkgconfigdir='${libdir}/pkgconfig'])
+AC_SUBST([pkgconfigdir])
 
-LIBNL_LIB="$LIBM"
-AC_SUBST(LIBNL_LIB)
+AC_CHECK_LIB([m], [pow], [], AC_MSG_ERROR([libm is required]))
 
-AC_OUTPUT([Makefile.opts libnl-2.0.pc doc/Doxyfile include/netlink/version.h])
+AC_CONFIG_FILES([Makefile doc/Doxyfile doc/Makefile lib/Makefile
+	include/Makefile src/Makefile libnl-2.0.pc \
+	include/netlink/version.h])
+AC_OUTPUT

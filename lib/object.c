@@ -108,6 +108,7 @@ struct nl_object *nl_object_clone(struct nl_object *obj)
 
 	new->ce_ops = obj->ce_ops;
 	new->ce_msgtype = obj->ce_msgtype;
+	new->ce_mask = obj->ce_mask;
 
 	if (size)
 		memcpy((void *)new + doff, (void *)obj + doff, size);

@@ -36,6 +36,8 @@
 extern "C" {
 #endif
 
+struct ucred;
+
 extern int nl_debug;
 extern struct nl_dump_params nl_debug_dp;
 

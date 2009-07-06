@@ -25,6 +25,7 @@ extern "C" {
 struct nl_cb;
 struct nl_sock;
 struct nl_msg;
+struct ucred;
 
 /**
  * @name Callback Typedefs

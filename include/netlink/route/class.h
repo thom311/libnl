@@ -28,6 +28,7 @@ extern struct rtnl_class *	rtnl_class_alloc(void);
 extern void		rtnl_class_put(struct rtnl_class *);
 extern int		rtnl_class_alloc_cache(struct nl_sock *, int,
 					       struct nl_cache **);
+extern struct rtnl_class *rtnl_class_get(struct nl_cache *, int, uint32_t);
 
 /* leaf qdisc access */
 extern struct rtnl_qdisc *	rtnl_class_leaf_qdisc(struct rtnl_class *,
@@ -37,6 +38,10 @@ extern int		rtnl_class_build_add_request(struct rtnl_class *, int,
 						     struct nl_msg **);
 extern int		rtnl_class_add(struct nl_sock *, struct rtnl_class *,
 				       int);
+
+extern int	rtnl_class_build_delete_request(struct rtnl_class *,
+											struct nl_msg **);
+extern int	rtnl_class_delete(struct nl_sock *, struct rtnl_class *);
 
 extern void		rtnl_class_set_ifindex(struct rtnl_class *, int);
 extern int		rtnl_class_get_ifindex(struct rtnl_class *);

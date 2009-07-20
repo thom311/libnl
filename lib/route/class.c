@@ -157,6 +157,60 @@ int rtnl_class_add(struct nl_sock *sk, struct rtnl_class *class, int flags)
 	return wait_for_ack(sk);
 }
 
+int rtnl_class_build_delete_request(struct rtnl_class *class,
+									struct nl_msg **result)
+{
+	struct nl_msg *msg;
+	struct tcmsg tchdr;
+	int required = TCA_ATTR_IFINDEX | TCA_ATTR_PARENT;
+
+	if ((class->ce_mask & required) != required)
+		BUG();
+
+	msg = nlmsg_alloc_simple(RTM_DELTCLASS, 0);
+	if (!msg)
+		return -NLE_NOMEM;
+
+	tchdr.tcm_family = AF_UNSPEC;
+	tchdr.tcm_handle = class->c_handle;
+	tchdr.tcm_parent = class->c_parent;
+	tchdr.tcm_ifindex = class->c_ifindex;
+	if (nlmsg_append(msg, &tchdr, sizeof(tchdr), NLMSG_ALIGNTO) < 0) {
+		nlmsg_free(msg);
+		return -NLE_MSGSIZE;
+	}
+
+	*result = msg;
+	return 0;
+}
+
+/**
+ * Delete a class
+ * @arg sk		Netlink socket.
+ * @arg class		class to delete
+ *
+ * Builds a netlink message by calling rtnl_class_build_delete_request(),
+ * sends the request to the kernel and waits for the ACK to be
+ * received and thus blocks until the request has been processed.
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_class_delete(struct nl_sock *sk, struct rtnl_class *class)
+{
+	struct nl_msg *msg;
+	int err;
+
+	if ((err = rtnl_class_build_delete_request(class, &msg)) < 0)
+		return err;
+
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
+		return err;
+
+	return wait_for_ack(sk);
+}
+
 /** @} */
 
 /**
@@ -194,6 +248,30 @@ int rtnl_class_alloc_cache(struct nl_sock *sk, int ifindex,
 
 	*result = cache;
 	return 0;
+}
+
+/**
+ * Look up class by its handle in the provided cache
+ * @arg cache		class cache
+ * @arg ifindex		interface the class is attached to
+ * @arg handle		class handle
+ * @return pointer to class inside the cache or NULL if no match was found.
+ */
+struct rtnl_class *rtnl_class_get(struct nl_cache *cache, int ifindex,
+								  uint32_t handle)
+{
+	struct rtnl_class *class;
+	
+	if (cache->c_ops != &rtnl_class_ops)
+		return NULL;
+
+	nl_list_for_each_entry(class, &cache->c_items, ce_list) {
+		if (class->c_handle == handle && class->c_ifindex == ifindex) {
+			nl_object_get((struct nl_object *) class);
+			return class;
+		}
+	}
+	return NULL;
 }
 
 /** @} */

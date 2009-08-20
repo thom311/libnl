@@ -907,8 +907,7 @@ static struct nl_object_ops addr_obj_ops = {
 	.oo_compare		= addr_compare,
 	.oo_attrs2str		= addr_attrs2str,
 	.oo_id_attrs		= (ADDR_ATTR_FAMILY | ADDR_ATTR_IFINDEX |
-				   ADDR_ATTR_LOCAL | ADDR_ATTR_PREFIXLEN |
-				   ADDR_ATTR_PEER),
+				   ADDR_ATTR_LOCAL | ADDR_ATTR_PREFIXLEN),
 };
 
 static struct nl_af_group addr_groups[] = {

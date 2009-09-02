@@ -39,6 +39,8 @@ static void cls_free_data(struct nl_object *obj)
 	cops = rtnl_cls_lookup_ops(cls);
 	if (cops && cops->co_free_data)
 		cops->co_free_data(cls);
+
+	nl_data_free(cls->c_subdata);
 }
 
 static int cls_clone(struct nl_object *_dst, struct nl_object *_src)
@@ -51,6 +53,13 @@ static int cls_clone(struct nl_object *_dst, struct nl_object *_src)
 	err = tca_clone((struct rtnl_tca *) dst, (struct rtnl_tca *) src);
 	if (err < 0)
 		goto errout;
+
+	if (src->c_subdata) {
+		if (!(dst->c_subdata = nl_data_clone(src->c_subdata))) {
+			err = -NLE_NOMEM;
+			goto errout;
+		}
+	}
 
 	cops = rtnl_cls_lookup_ops(src);
 	if (cops && cops->co_clone)
@@ -133,6 +142,11 @@ void rtnl_cls_set_ifindex(struct rtnl_cls *f, int ifindex)
 	tca_set_ifindex((struct rtnl_tca *) f, ifindex);
 }
 
+int rtnl_cls_get_ifindex(struct rtnl_cls *cls)
+{
+	return cls->c_ifindex;
+}
+
 void rtnl_cls_set_handle(struct rtnl_cls *f, uint32_t handle)
 {
 	tca_set_handle((struct rtnl_tca *) f, handle);
@@ -143,14 +157,21 @@ void rtnl_cls_set_parent(struct rtnl_cls *f, uint32_t parent)
 	tca_set_parent((struct rtnl_tca *) f, parent);
 }
 
-int rtnl_cls_set_kind(struct rtnl_cls *f, const char *kind)
+uint32_t rtnl_cls_get_parent(struct rtnl_cls *cls)
 {
-	tca_set_kind((struct rtnl_tca *) f, kind);
+	return cls->c_parent;
+}
 
-	f->c_ops = __rtnl_cls_lookup_ops(kind);
-	if (f->c_ops == NULL)
-		return -NLE_OBJ_NOTFOUND;
-	
+int rtnl_cls_set_kind(struct rtnl_cls *cls, const char *kind)
+{
+	if (cls->ce_mask & TCA_ATTR_KIND)
+		return -NLE_EXIST;
+
+	tca_set_kind((struct rtnl_tca *) cls, kind);
+
+	/* Force allocation of data */
+	rtnl_cls_data(cls);
+
 	return 0;
 }
 
@@ -185,6 +206,32 @@ uint16_t rtnl_cls_get_protocol(struct rtnl_cls *cls)
 		return cls->c_protocol;
 	else
 		return ETH_P_ALL;
+}
+
+void *rtnl_cls_data(struct rtnl_cls *cls)
+{
+	if (!cls->c_subdata) {
+		struct rtnl_cls_ops *ops = cls->c_ops;
+
+		if (!ops) {
+			if (!cls->c_kind[0])
+				BUG();
+
+			ops = __rtnl_cls_lookup_ops(cls->c_kind);
+			if (ops == NULL)
+				return NULL;
+
+			cls->c_ops = ops;
+		}
+
+		if (!ops->co_size)
+			BUG();
+
+		if (!(cls->c_subdata = nl_data_alloc(NULL, ops->co_size)))
+			return NULL;
+	}
+
+	return nl_data_get(cls->c_subdata);
 }
 
 /** @} */

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -38,9 +38,9 @@ static struct nl_cache_ops rtnl_cls_ops;
 static int cls_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			  struct nlmsghdr *nlh, struct nl_parser_param *pp)
 {
-	int err;
-	struct rtnl_cls *cls;
 	struct rtnl_cls_ops *cops;
+	struct rtnl_cls *cls;
+	int err;
 
 	cls = rtnl_cls_alloc();
 	if (!cls) {
@@ -57,11 +57,8 @@ static int cls_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	cls->c_protocol = ntohs(TC_H_MIN(cls->c_info));
 
 	cops = rtnl_cls_lookup_ops(cls);
-	if (cops && cops->co_msg_parser) {
-		err = cops->co_msg_parser(cls);
-		if (err < 0)
-			goto errout_free;
-	}
+	if (cops && cops->co_msg_parser && (err = cops->co_msg_parser(cls)) < 0)
+		goto errout_free;
 
 	err = pp->pp_cb((struct nl_object *) cls, pp);
 errout_free:
@@ -97,19 +94,23 @@ static int cls_build(struct rtnl_cls *cls, int type, int flags,
 	tchdr = nlmsg_data(nlmsg_hdr(*result));
 	prio = rtnl_cls_get_prio(cls);
 	proto = rtnl_cls_get_protocol(cls);
-	tchdr->tcm_info = TC_H_MAKE(prio << 16, htons(proto)),
+	tchdr->tcm_info = TC_H_MAKE(prio << 16, htons(proto));
 
 	cops = rtnl_cls_lookup_ops(cls);
 	if (cops && cops->co_get_opts) {
 		struct nl_msg *opts;
-		
-		opts = cops->co_get_opts(cls);
-		if (opts) {
-			err = nla_put_nested(*result, TCA_OPTIONS, opts);
-			nlmsg_free(opts);
-			if (err < 0)
-				goto errout;
+
+		if (!(opts = nlmsg_alloc())) {
+			err = -NLE_NOMEM;
+			goto errout;
 		}
+
+		if (!(err = cops->co_get_opts(cls, opts)))
+			err = nla_put_nested(*result, TCA_OPTIONS, opts);
+
+		nlmsg_free(opts);
+		if (err < 0)
+			goto errout;
 	}
 
 	return 0;

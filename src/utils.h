@@ -36,12 +36,21 @@
 #include <netlink/route/qdisc.h>
 #include <netlink/route/class.h>
 #include <netlink/route/classifier.h>
+#include <netlink/route/cls/ematch.h>
 #include <netlink/fib_lookup/lookup.h>
 #include <netlink/fib_lookup/request.h>
 #include <netlink/genl/genl.h>
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/mngt.h>
 #include <netlink/netfilter/ct.h>
+
+#ifndef __init
+#define __init __attribute__((constructor))
+#endif
+
+#ifndef __exit
+#define __exit __attribute__((destructor))
+#endif
 
 extern uint32_t parse_u32(const char *);
 

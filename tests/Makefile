@@ -23,7 +23,7 @@ $(TOOLS): ../src/utils.o
 
 test-%: test-%.c
 	@echo "  LD $@"; \
-	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) -lnl-genl
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) -lnl-genl -lnl-route
 
 clean:
 	@echo "  CLEAN src"; \

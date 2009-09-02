@@ -232,6 +232,16 @@ extern int		nla_parse_nested(struct nlattr **, int, struct nlattr *,
 	NLA_PUT(msg, attrtype, nl_addr_get_len(addr), \
 		nl_addr_get_binary_addr(addr))
 
+/**
+ * Add abstract data attribute to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ * @arg data		Abstract data object.
+ */
+#define NLA_PUT_DATA(msg, attrtype, data) \
+	NLA_PUT(msg, attrtype, nl_data_get_size(data), \
+		nl_data_get(data))
+
 /** @} */
 
 /**

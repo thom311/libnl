@@ -9,8 +9,8 @@
  * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "utils.h"
 #include <netlink-local.h>
+#include "utils.h"
 
 static void print_usage(void)
 {

@@ -18,6 +18,7 @@ CORE_OBJ  := $(CORE_C:%.c=%.o)
 
 ROUTE_C   := $(wildcard route/*.c)
 ROUTE_C   += $(wildcard route/cls/*.c)
+ROUTE_C   += $(wildcard route/cls/ematch/*.c)
 ROUTE_C   += $(wildcard route/sch/*.c)
 ROUTE_C   += $(wildcard route/link/*.c)
 ROUTE_C   += $(wildcard fib_lookup/*.c)

@@ -18,6 +18,11 @@ struct nl_list_head
 	struct nl_list_head *	prev;
 };
 
+static inline void NL_INIT_LIST_HEAD(struct nl_list_head *list)
+{
+	list->next = list;
+	list->prev = list;
+}
 
 static inline void __nl_list_add(struct nl_list_head *obj,
 				 struct nl_list_head *prev,

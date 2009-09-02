@@ -453,7 +453,7 @@ struct rtnl_tstats
 	struct nl_data *	pre ##_opts;		\
 	uint64_t		pre ##_stats[RTNL_TC_STATS_MAX+1]; \
 	struct nl_data *	pre ##_xstats;		\
-	void *			pre ##_subdata;		\
+	struct nl_data *	pre ##_subdata;		\
 
 
 struct rtnl_tca
@@ -476,8 +476,8 @@ struct rtnl_class
 struct rtnl_cls
 {
 	NL_TCA_GENERIC(c);
-	uint16_t	c_prio;
-	uint16_t	c_protocol;
+	uint16_t		c_prio;
+	uint16_t		c_protocol;
 	struct rtnl_cls_ops	*c_ops;
 };
 
@@ -495,6 +495,12 @@ struct rtnl_u32
 	int			cu_mask;
 };
 
+struct rtnl_cgroup
+{
+	struct rtnl_ematch_tree *cg_ematch;
+	int			cg_mask;
+};
+
 struct rtnl_fw
 {
 	uint32_t		cf_classid;
@@ -502,6 +508,26 @@ struct rtnl_fw
 	struct nl_data *	cf_police;
 	char			cf_indev[IFNAMSIZ];
 	int			cf_mask;
+};
+
+struct rtnl_ematch
+{
+	uint16_t		e_id;
+	uint16_t		e_kind;
+	uint16_t		e_flags;
+
+	struct nl_list_head	e_childs;
+	struct nl_list_head	e_list;
+	struct rtnl_ematch_ops *e_ops;
+
+	char			e_data[0];
+};
+
+struct rtnl_ematch_tree
+{
+	uint16_t		et_progid;
+	struct nl_list_head	et_list;
+
 };
 
 struct rtnl_dsmark_qdisc

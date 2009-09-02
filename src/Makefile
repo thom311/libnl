@@ -17,6 +17,9 @@ LDFLAGS	+= -L../lib -lnl
 CIN 	:= $(wildcard nl-*.c) $(wildcard genl-*.c) $(wildcard nf-*.c)
 TOOLS	:= $(CIN:%.c=%)
 
+CLS     := $(wildcard cls/*.c)
+CLS_OBJ := $(CLS:%.c=%.o)
+
 all: $(TOOLS)
 
 $(TOOLS): utils.o
@@ -31,6 +34,7 @@ nl-rule-list: rule-utils.o rtnl-utils.o
 nl-neightbl-list: rtnl-utils.o
 nl-monitor: rtnl-utils.o
 nl-tctree-list: rtnl-utils.o
+nl-cls-add nl-cls-delete nl-cls-list: rtnl-utils.o cls/utils.o $(CLS_OBJ)
 
 genl-ctrl-list: ctrl-utils.o
 

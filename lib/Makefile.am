@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 
-AM_CFLAGS = -Wall -I${top_srcdir}/include
+AM_CFLAGS  = -Wall -I${top_srcdir}/include -D_GNU_SOURCE
 
 lib_LTLIBRARIES = \
 	libnl.la libnl-genl.la libnl-nf.la libnl-route.la
@@ -27,7 +27,7 @@ libnl_route_la_LDFLAGS = -version-info 2:0:0
 libnl_route_la_LIBADD  = libnl.la
 libnl_route_la_SOURCES = \
 	route/addr.c route/class.c route/class_api.c route/class_obj.c \
-	route/classifier.c route/cls_api.c route/cls_obj.c route/link.c \
+	route/cls.c route/cls_api.c route/cls_obj.c route/link.c \
 	route/neigh.c route/neightbl.c route/nexthop.c route/qdisc.c \
 	route/qdisc_api.c route/qdisc_obj.c route/route.c route/route_obj.c \
 	route/route_utils.c route/rtnl.c route/rule.c route/tc.c \

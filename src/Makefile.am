@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 
-AM_CFLAGS  = -Wall -I${top_srcdir}/include
+AM_CFLAGS  = -Wall -I${top_srcdir}/include -D_GNU_SOURCE
 AM_LDFLAGS = -L${top_builddir}/lib
 
 noinst_PROGRAMS = \

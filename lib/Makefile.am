@@ -3,7 +3,7 @@
 AM_CFLAGS  = -Wall -I${top_srcdir}/include -D_GNU_SOURCE
 
 lib_LTLIBRARIES = \
-	libnl.la libnl-genl.la libnl-nf.la libnl-route.la
+	libnl.la libnl-genl.la libnl-route.la libnl-nf.la
 
 libnl_la_LDFLAGS = -version-info 2:0:0
 libnl_la_SOURCES = \

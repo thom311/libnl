@@ -5,7 +5,7 @@ AM_LDFLAGS = -L${top_builddir}/lib
 
 noinst_PROGRAMS = \
 	genl-ctrl-list \
-	nf-ct-list nf-log nf-queue \
+	nf-ct-list nf-log nf-queue nf-monitor \
 	nl-addr-add nl-addr-delete nl-addr-list \
 	nl-link-list nl-link-set nl-link-stats \
 	nl-link-ifindex2name nl-link-name2ifindex \
@@ -15,7 +15,10 @@ noinst_PROGRAMS = \
 	nl-neightbl-list \
 	nl-monitor \
 	nl-tctree-list \
-	nl-route-add nl-route-delete nl-route-get nl-route-list
+	nl-route-add nl-route-delete nl-route-get nl-route-list \
+	nl-fib-lookup \
+	nl-list-caches nl-list-sockets \
+	nl-util-addr
 
 rtnl_utils_c = rtnl-utils.c utils.c
 
@@ -28,6 +31,8 @@ nf_log_SOURCES = nf-log.c log-utils.c ${rtnl_utils_c}
 nf_log_LDADD = -lnl-nf
 nf_queue_SOURCES = nf-queue.c queue-utils.c ${rtnl_utils_c}
 nf_queue_LDADD = -lnl-nf
+nf_monitor_SOURCES = nf-monitor.c utils.c
+nf_monitor_LDADD = -lnl-nf
 
 addr_c = addr-utils.c ${rtnl_utils_c}
 nl_addr_add_SOURCES = nl-addr-add.c ${addr_c}
@@ -84,3 +89,14 @@ nl_rule_list_LDADD = -lnl-route
 
 nl_tctree_list_SOURCES = nl-tctree-list.c ${rtnl_utils_c}
 nl_tctree_list_LDADD = -lnl-route
+
+nl_fib_lookup_SOURCES = nl-fib-lookup.c ${rtnl_utils_c}
+nl_fib_lookup_LDADD = -lnl-route
+
+nl_list_caches_SOURCES = nl-list-caches.c ${rtnl_utils_c}
+nl_list_caches_LDADD = -lnl-route
+nl_list_sockets_SOURCES = nl-list-sockets.c ${rtnl_utils_c}
+nl_list_sockets_LDADD = -lnl-route
+
+nl_util_addr_SOURCES = nl-util-addr.c ${rtnl_utils_c}
+nl_util_addr_LDADD = -lnl-route

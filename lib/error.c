@@ -100,6 +100,7 @@ int nl_syserr2nlerr(int error)
 	case EOPNOTSUPP:	return NLE_OPNOTSUPP;
 	case EPERM:		return NLE_PERM;
 	case EBUSY:		return NLE_BUSY;
+	case ERANGE:		return NLE_RANGE;
 	default:		return NLE_FAILURE;
 	}
 }

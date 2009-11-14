@@ -296,8 +296,7 @@ static void u32_dump_stats(struct rtnl_cls *cls, struct nl_dump_params *p)
 	if (u->cu_mask & U32_ATTR_PCNT) {
 		struct tc_u32_pcnt *pc = u->cu_pcnt->d_data;
 		nl_dump(p, "\n");
-		nl_dump_line(p, "%s         successful       hits\n");
-		nl_dump_line(p, "%s           %8llu   %8llu\n",
+		nl_dump_line(p, "    hit %8llu count %8llu\n",
 			     pc->rhit, pc->rcnt);
 	}
 }

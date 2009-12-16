@@ -6,10 +6,11 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/cli/link.h>
 
 static void print_usage(void)
 {
@@ -27,14 +28,15 @@ int main(int argc, char *argv[])
 	if (argc < 2)
 		print_usage();
 
-	sock = nlt_alloc_socket();
-	nlt_connect(sock, NETLINK_ROUTE);
-	link_cache = nlt_alloc_link_cache(sock);
+	sock = nl_cli_alloc_socket();
+	nl_cli_connect(sock, NETLINK_ROUTE);
+	link_cache = nl_cli_link_alloc_cache(sock);
 
-	ifindex = parse_u32(argv[1]);
+	ifindex = nl_cli_parse_u32(argv[1]);
 
 	if (!rtnl_link_i2name(link_cache, ifindex, name, sizeof(name)))
-		fatal(ENOENT, "Interface index %d does not exist", ifindex);
+		nl_cli_fatal(ENOENT, "Interface index %d does not exist",
+			     ifindex);
 
 	printf("%s\n", name);
 

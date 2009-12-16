@@ -5,10 +5,12 @@
  *	modify it under the terms of the GNU General Public License as
  *	published by the Free Software Foundation version 2 of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "addr-utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/cli/addr.h>
+#include <netlink/cli/link.h>
 
 static struct nl_sock *sock;
 static int interactive = 0, default_yes = 0, quiet = 0;
@@ -51,11 +53,12 @@ static void delete_cb(struct nl_object *obj, void *arg)
 	};
 	int err;
 
-	if (interactive && !nlt_confirm(obj, &params, default_yes))
+	if (interactive && !nl_cli_confirm(obj, &params, default_yes))
 		return;
 
 	if ((err = rtnl_addr_delete(sock, addr, 0)) < 0)
-		fatal(err, "Unable to delete address: %s\n", nl_geterror(err));
+		nl_cli_fatal(err, "Unable to delete address: %s\n",
+			     nl_geterror(err));
 
 	if (!quiet) {
 		printf("Deleted ");
@@ -70,11 +73,11 @@ int main(int argc, char *argv[])
 	struct rtnl_addr *addr;
 	struct nl_cache *link_cache, *addr_cache;
 
-	sock = nlt_alloc_socket();
-	nlt_connect(sock, NETLINK_ROUTE);
-	link_cache = nlt_alloc_link_cache(sock);
-	addr_cache = nlt_alloc_addr_cache(sock);
-	addr = nlt_alloc_addr();
+	sock = nl_cli_alloc_socket();
+	nl_cli_connect(sock, NETLINK_ROUTE);
+	link_cache = nl_cli_link_alloc_cache(sock);
+	addr_cache = nl_cli_addr_alloc_cache(sock);
+	addr = nl_cli_addr_alloc();
 
 	for (;;) {
 		int c, optidx = 0;
@@ -115,16 +118,16 @@ int main(int argc, char *argv[])
 		case ARG_YES: default_yes = 1; break;
 		case 'q': quiet = 1; break;
 		case 'h': print_usage(); break;
-		case 'v': nlt_print_version(); break;
-		case 'a': parse_local(addr, optarg); break;
-		case 'd': parse_dev(addr, link_cache, optarg); break;
-		case ARG_FAMILY: parse_family(addr, optarg); break;
-		case ARG_LABEL: parse_label(addr, optarg); break;
-		case ARG_PEER: parse_peer(addr, optarg); break;
-		case ARG_SCOPE: parse_scope(addr, optarg); break;
-		case ARG_BROADCAST: parse_broadcast(addr, optarg); break;
-		case ARG_PREFERRED: parse_preferred(addr, optarg); break;
-		case ARG_VALID: parse_valid(addr, optarg); break;
+		case 'v': nl_cli_print_version(); break;
+		case 'a': nl_cli_addr_parse_local(addr, optarg); break;
+		case 'd': nl_cli_addr_parse_dev(addr, link_cache, optarg); break;
+		case ARG_FAMILY: nl_cli_addr_parse_family(addr, optarg); break;
+		case ARG_LABEL: nl_cli_addr_parse_label(addr, optarg); break;
+		case ARG_PEER: nl_cli_addr_parse_peer(addr, optarg); break;
+		case ARG_SCOPE: nl_cli_addr_parse_scope(addr, optarg); break;
+		case ARG_BROADCAST: nl_cli_addr_parse_broadcast(addr, optarg); break;
+		case ARG_PREFERRED: nl_cli_addr_parse_preferred(addr, optarg); break;
+		case ARG_VALID: nl_cli_addr_parse_valid(addr, optarg); break;
 		}
  	}
 

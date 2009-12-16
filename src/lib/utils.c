@@ -6,32 +6,35 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "utils.h"
+/**
+ * @defgroup cli Command Line Interface API
+ *
+ * @{
+ */
 
-#include <stdlib.h>
-#include <stdarg.h>
-#include <limits.h>
+#include <netlink/cli/utils.h>
 
-uint32_t parse_u32(const char *arg)
+uint32_t nl_cli_parse_u32(const char *arg)
 {
 	unsigned long lval;
 	char *endptr;
 
 	lval = strtoul(arg, &endptr, 0);
 	if (endptr == arg || lval == ULONG_MAX)
-		fatal(EINVAL, "Unable to parse \"%s\", not a number.", arg);
+		nl_cli_fatal(EINVAL, "Unable to parse \"%s\", not a number.",
+			     arg);
 
 	return (uint32_t) lval;
 }
 
-void nlt_print_version(void)
+void nl_cli_print_version(void)
 {
 	printf("libnl tools version %s\n", LIBNL_VERSION);
 	printf(
-	"Copyright (C) 2003-2008 Thomas Graf\n"
+	"Copyright (C) 2003-2009 Thomas Graf <tgraf@redhat.com>\n"
 	"\n"
 	"This program comes with ABSOLUTELY NO WARRANTY. This is free \n"
 	"software, and you are welcome to redistribute it under certain\n"
@@ -41,55 +44,57 @@ void nlt_print_version(void)
 	exit(0);
 }
 
-void fatal(int err, const char *fmt, ...)
+void nl_cli_fatal(int err, const char *fmt, ...)
 {
 	va_list ap;
 
 	fprintf(stderr, "Error: ");
 
-	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-
-	fprintf(stderr, "\n");
+	if (fmt) {
+		va_start(ap, fmt);
+		vfprintf(stderr, fmt, ap);
+		va_end(ap);
+		fprintf(stderr, "\n");
+	} else
+		fprintf(stderr, "%s\n", strerror(err));
 
 	exit(abs(err));
 }
 
-int nlt_connect(struct nl_sock *sk, int protocol)
+int nl_cli_connect(struct nl_sock *sk, int protocol)
 {
 	int err;
 
 	if ((err = nl_connect(sk, protocol)) < 0)
-		fatal(err, "Unable to connect netlink socket: %s",
-			nl_geterror(err));
+		nl_cli_fatal(err, "Unable to connect netlink socket: %s",
+			     nl_geterror(err));
 
 	return err;
 }
 
-struct nl_sock *nlt_alloc_socket(void)
+struct nl_sock *nl_cli_alloc_socket(void)
 {
 	struct nl_sock *sock;
 
 	if (!(sock = nl_socket_alloc()))
-		fatal(ENOBUFS, "Unable to allocate netlink socket");
+		nl_cli_fatal(ENOBUFS, "Unable to allocate netlink socket");
 
 	return sock;
 }
 
-struct nl_addr *nlt_addr_parse(const char *str, int family)
+struct nl_addr *nl_cli_addr_parse(const char *str, int family)
 {
 	struct nl_addr *addr;
 	int err;
 
 	if ((err = nl_addr_parse(str, family, &addr)) < 0)
-		fatal(err, "Unable to parse address \"%s\": %s",
-		      str, nl_geterror(err));
+		nl_cli_fatal(err, "Unable to parse address \"%s\": %s",
+			     str, nl_geterror(err));
 
 	return addr;
 }
 
-int nlt_parse_dumptype(const char *str)
+int nl_cli_parse_dumptype(const char *str)
 {
 	if (!strcasecmp(str, "brief"))
 		return NL_DUMP_LINE;
@@ -100,13 +105,13 @@ int nlt_parse_dumptype(const char *str)
 	else if (!strcasecmp(str, "env"))
 		return NL_DUMP_ENV;
 	else
-		fatal(EINVAL, "Invalid dump type \"%s\".\n", str);
+		nl_cli_fatal(EINVAL, "Invalid dump type \"%s\".\n", str);
 
 	return 0;
 }
 
-int nlt_confirm(struct nl_object *obj, struct nl_dump_params *params,
-		int default_yes)
+int nl_cli_confirm(struct nl_object *obj, struct nl_dump_params *params,
+		   int default_yes)
 {
 	int answer;
 
@@ -124,18 +129,19 @@ int nlt_confirm(struct nl_object *obj, struct nl_dump_params *params,
 	return answer == 'y';
 }
 
-struct nl_cache *alloc_cache(struct nl_sock *sock, const char *name,
-			     int (*ac)(struct nl_sock *, struct nl_cache **))
+struct nl_cache *nl_cli_alloc_cache(struct nl_sock *sock, const char *name,
+			    int (*ac)(struct nl_sock *, struct nl_cache **))
 {
 	struct nl_cache *cache;
 	int err;
 
 	if ((err = ac(sock, &cache)) < 0)
-		fatal(err, "Unable to allocate %s cache: %s",
-		      name, nl_geterror(err));
+		nl_cli_fatal(err, "Unable to allocate %s cache: %s",
+			     name, nl_geterror(err));
 
 	nl_cache_mngt_provide(cache);
 
 	return cache;
 }
 
+/** @} */

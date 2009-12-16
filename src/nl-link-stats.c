@@ -6,10 +6,11 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "link-utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/cli/link.h>
 
 static void print_usage(void)
 {
@@ -81,10 +82,10 @@ int main(int argc, char *argv[])
 	struct nl_cache *link_cache;
 	struct rtnl_link *link;
 
-	sock = nlt_alloc_socket();
-	nlt_connect(sock, NETLINK_ROUTE);
-	link_cache = nlt_alloc_link_cache(sock);
-	link = nlt_alloc_link();
+	sock = nl_cli_alloc_socket();
+	nl_cli_connect(sock, NETLINK_ROUTE);
+	link_cache = nl_cli_link_alloc_cache(sock);
+	link = nl_cli_link_alloc();
 
 	for (;;) {
 		int c, optidx = 0;
@@ -104,9 +105,9 @@ int main(int argc, char *argv[])
 		switch (c) {
 		case 'l': list_stat_names(); break;
 		case 'h': print_usage(); break;
-		case 'v': nlt_print_version(); break;
-		case 'n': parse_name(link, optarg); break;
-		case 'i': parse_ifindex(link, optarg); break;
+		case 'v': nl_cli_print_version(); break;
+		case 'n': nl_cli_link_parse_name(link, optarg); break;
+		case 'i': nl_cli_link_parse_ifindex(link, optarg); break;
 		}
 	}
 

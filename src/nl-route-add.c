@@ -6,10 +6,12 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "route-utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/cli/route.h>
+#include <netlink/cli/link.h>
 
 static int quiet = 0;
 static struct nl_cache *link_cache, *route_cache;
@@ -57,11 +59,11 @@ int main(int argc, char *argv[])
 	};
 	int err = 1;
 
-	sock = nlt_alloc_socket();
-	nlt_connect(sock, NETLINK_ROUTE);
-	link_cache = nlt_alloc_link_cache(sock);
-	route_cache = nlt_alloc_route_cache(sock, 0);
-	route = nlt_alloc_route();
+	sock = nl_cli_alloc_socket();
+	nl_cli_connect(sock, NETLINK_ROUTE);
+	link_cache = nl_cli_link_alloc_cache(sock);
+	route_cache = nl_cli_route_alloc_cache(sock, 0);
+	route = nl_cli_route_alloc();
 
 	for (;;) {
 		int c, optidx = 0;
@@ -102,24 +104,24 @@ int main(int argc, char *argv[])
 		switch (c) {
 		case 'q': quiet = 1; break;
 		case 'h': print_usage(); break;
-		case 'v': nlt_print_version(); break;
-		case 'd': parse_dst(route, optarg); break;
-		case 'n': parse_nexthop(route, optarg, link_cache); break;
-		case 't': parse_table(route, optarg); break;
-		case ARG_FAMILY: parse_family(route, optarg); break;
-		case ARG_SRC: parse_src(route, optarg); break;
-		case ARG_IIF: parse_iif(route, optarg, link_cache); break;
-		case ARG_PREF_SRC: parse_pref_src(route, optarg); break;
-		case ARG_METRICS: parse_metric(route, optarg); break;
-		case ARG_PRIORITY: parse_prio(route, optarg); break;
-		case ARG_SCOPE: parse_scope(route, optarg); break;
-		case ARG_PROTOCOL: parse_protocol(route, optarg); break;
-		case ARG_TYPE: parse_type(route, optarg); break;
+		case 'v': nl_cli_print_version(); break;
+		case 'd': nl_cli_route_parse_dst(route, optarg); break;
+		case 'n': nl_cli_route_parse_nexthop(route, optarg, link_cache); break;
+		case 't': nl_cli_route_parse_table(route, optarg); break;
+		case ARG_FAMILY: nl_cli_route_parse_family(route, optarg); break;
+		case ARG_SRC: nl_cli_route_parse_src(route, optarg); break;
+		case ARG_IIF: nl_cli_route_parse_iif(route, optarg, link_cache); break;
+		case ARG_PREF_SRC: nl_cli_route_parse_pref_src(route, optarg); break;
+		case ARG_METRICS: nl_cli_route_parse_metric(route, optarg); break;
+		case ARG_PRIORITY: nl_cli_route_parse_prio(route, optarg); break;
+		case ARG_SCOPE: nl_cli_route_parse_scope(route, optarg); break;
+		case ARG_PROTOCOL: nl_cli_route_parse_protocol(route, optarg); break;
+		case ARG_TYPE: nl_cli_route_parse_type(route, optarg); break;
 		}
 	}
 
 	if ((err = rtnl_route_add(sock, route, 0)) < 0)
-		fatal(err, "Unable to add route: %s", nl_geterror(err));
+		nl_cli_fatal(err, "Unable to add route: %s", nl_geterror(err));
 
 	if (!quiet) {
 		printf("Added ");

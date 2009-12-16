@@ -6,10 +6,12 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "route-utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/cli/route.h>
+#include <netlink/cli/link.h>
 
 static int interactive = 0, default_yes = 0, quiet = 0;
 static int deleted = 0;
@@ -65,11 +67,11 @@ static void delete_cb(struct nl_object *obj, void *arg)
 	};
 	int err;
 
-	if (interactive && !nlt_confirm(obj, &params, default_yes))
+	if (interactive && !nl_cli_confirm(obj, &params, default_yes))
 		return;
 
 	if ((err = rtnl_route_delete(sock, route, 0)) < 0)
-		fatal(err, "Unable to delete route: %s", nl_geterror(err));
+		nl_cli_fatal(err, "Unable to delete route: %s", nl_geterror(err));
 
 	if (!quiet) {
 		printf("Deleted ");
@@ -85,11 +87,11 @@ int main(int argc, char *argv[])
 	struct rtnl_route *route;
 	int nf = 0;
 
-	sock = nlt_alloc_socket();
-	nlt_connect(sock, NETLINK_ROUTE);
-	link_cache = nlt_alloc_link_cache(sock);
-	route_cache = nlt_alloc_route_cache(sock, 0);
-	route = nlt_alloc_route();
+	sock = nl_cli_alloc_socket();
+	nl_cli_connect(sock, NETLINK_ROUTE);
+	link_cache = nl_cli_link_alloc_cache(sock);
+	route_cache = nl_cli_route_alloc_cache(sock, 0);
+	route = nl_cli_route_alloc();
 
 	for (;;) {
 		int c, optidx = 0;
@@ -136,18 +138,18 @@ int main(int argc, char *argv[])
 		case 'q': quiet = 1; break;
 		case 'h': print_usage(); break;
 		case 'v': print_version(); break;
-		case 'd': nf++; parse_dst(route, optarg); break;
-		case 'n': nf++; parse_nexthop(route, optarg, link_cache); break;
-		case 't': nf++; parse_table(route, optarg); break;
-		case ARG_FAMILY: nf++; parse_family(route, optarg); break;
-		case ARG_SRC: nf++; parse_src(route, optarg); break;
-		case ARG_IIF: nf++; parse_iif(route, optarg, link_cache); break;
-		case ARG_PREF_SRC: nf++; parse_pref_src(route, optarg); break;
-		case ARG_METRICS: nf++; parse_metric(route, optarg); break;
-		case ARG_PRIORITY: nf++; parse_prio(route, optarg); break;
-		case ARG_SCOPE: nf++; parse_scope(route, optarg); break;
-		case ARG_PROTOCOL: nf++; parse_protocol(route, optarg); break;
-		case ARG_TYPE: nf++; parse_type(route, optarg); break;
+		case 'd': nf++; nl_cli_route_parse_dst(route, optarg); break;
+		case 'n': nf++; nl_cli_route_parse_nexthop(route, optarg, link_cache); break;
+		case 't': nf++; nl_cli_route_parse_table(route, optarg); break;
+		case ARG_FAMILY: nf++; nl_cli_route_parse_family(route, optarg); break;
+		case ARG_SRC: nf++; nl_cli_route_parse_src(route, optarg); break;
+		case ARG_IIF: nf++; nl_cli_route_parse_iif(route, optarg, link_cache); break;
+		case ARG_PREF_SRC: nf++; nl_cli_route_parse_pref_src(route, optarg); break;
+		case ARG_METRICS: nf++; nl_cli_route_parse_metric(route, optarg); break;
+		case ARG_PRIORITY: nf++; nl_cli_route_parse_prio(route, optarg); break;
+		case ARG_SCOPE: nf++; nl_cli_route_parse_scope(route, optarg); break;
+		case ARG_PROTOCOL: nf++; nl_cli_route_parse_protocol(route, optarg); break;
+		case ARG_TYPE: nf++; nl_cli_route_parse_type(route, optarg); break;
 		}
 	}
 

@@ -6,10 +6,10 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "utils.h"
+#include <netlink/cli/utils.h>
 
 static void print_usage(void)
 {
@@ -73,19 +73,19 @@ int main(int argc, char *argv[])
 	if (optind >= argc)
 		print_usage();
 
-	nlh = nlt_alloc_socket();
+	nlh = nl_cli_alloc_socket();
 
 	if ((err = nl_addr_parse(argv[optind], AF_INET, &addr)) < 0)
-		fatal(err, "Unable to parse address \"%s\": %s\n",
+		nl_cli_fatal(err, "Unable to parse address \"%s\": %s\n",
 			argv[optind], nl_geterror(err));
 
 	result = flnl_result_alloc_cache();
 	if (!result)
-		fatal(ENOMEM, "Unable to allocate cache");
+		nl_cli_fatal(ENOMEM, "Unable to allocate cache");
 
 	request = flnl_request_alloc();
 	if (!request)
-		fatal(ENOMEM, "Unable to allocate request");
+		nl_cli_fatal(ENOMEM, "Unable to allocate request");
 
 	flnl_request_set_table(request, table);
 	flnl_request_set_fwmark(request, fwmark);
@@ -95,13 +95,13 @@ int main(int argc, char *argv[])
 	err = flnl_request_set_addr(request, addr);
 	nl_addr_put(addr);
 	if (err < 0)
-		fatal(err, "Unable to send request: %s", nl_geterror(err));
+		nl_cli_fatal(err, "Unable to send request: %s", nl_geterror(err));
 
-	nlt_connect(nlh, NETLINK_FIB_LOOKUP);
+	nl_cli_connect(nlh, NETLINK_FIB_LOOKUP);
 
 	err = flnl_lookup(nlh, request, result);
 	if (err < 0)
-		fatal(err, "Unable to lookup: %s\n", nl_geterror(err));
+		nl_cli_fatal(err, "Unable to lookup: %s\n", nl_geterror(err));
 
 	nl_cache_dump(result, &params);
 

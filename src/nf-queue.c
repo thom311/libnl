@@ -10,9 +10,27 @@
  */
 
 
-#include "queue-utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/cli/link.h>
+#include <linux/netfilter.h>
+#include <linux/netfilter/nfnetlink_queue.h>
+#include <netlink/netfilter/nfnl.h>
+#include <netlink/netfilter/queue.h>
+#include <netlink/netfilter/queue_msg.h>
 
 static struct nl_sock *nf_sock;
+
+static struct nfnl_queue *alloc_queue(void)
+{
+	struct nfnl_queue *queue;
+
+	queue = nfnl_queue_alloc();
+	if (!queue)
+		nl_cli_fatal(ENOMEM, "Unable to allocate queue object");
+
+	return queue;
+}
+
 
 static void obj_input(struct nl_object *obj, void *arg)
 {
@@ -49,7 +67,7 @@ int main(int argc, char *argv[])
 
 	nf_sock = nfnl_queue_socket_alloc();
 	if (nf_sock == NULL)
-		fatal(ENOBUFS, "Unable to allocate netlink socket");
+		nl_cli_fatal(ENOBUFS, "Unable to allocate netlink socket");
 
 	nl_socket_disable_seq_check(nf_sock);
 	nl_socket_modify_cb(nf_sock, NL_CB_VALID, NL_CB_CUSTOM, event_input, NULL);
@@ -60,24 +78,26 @@ int main(int argc, char *argv[])
 		return 2;
 	}
 
-	nlt_connect(nf_sock, NETLINK_NETFILTER);
+	nl_cli_connect(nf_sock, NETLINK_NETFILTER);
 
 	if ((family = nl_str2af(argv[1])) == AF_UNSPEC)
-		fatal(NLE_INVAL, "Unknown family \"%s\"", argv[1]);
+		nl_cli_fatal(NLE_INVAL, "Unknown family \"%s\"", argv[1]);
 
 	nfnl_queue_pf_unbind(nf_sock, family);
 	if ((err = nfnl_queue_pf_bind(nf_sock, family)) < 0)
-		fatal(err, "Unable to bind logger: %s", nl_geterror(err));
+		nl_cli_fatal(err, "Unable to bind logger: %s",
+			     nl_geterror(err));
 
-	queue = nlt_alloc_queue();
+	queue = alloc_queue();
 	nfnl_queue_set_group(queue, atoi(argv[2]));
 
 	copy_mode = NFNL_QUEUE_COPY_PACKET;
 	if (argc > 3) {
 		copy_mode = nfnl_queue_str2copy_mode(argv[3]);
 		if (copy_mode < 0)
-			fatal(copy_mode, "Unable to parse copy mode \"%s\": %s",
-			      argv[3], nl_geterror(copy_mode));
+			nl_cli_fatal(copy_mode,
+				     "Unable to parse copy mode \"%s\": %s",
+				     argv[3], nl_geterror(copy_mode));
 	}
 	nfnl_queue_set_copy_mode(queue, copy_mode);
 
@@ -87,11 +107,11 @@ int main(int argc, char *argv[])
 	nfnl_queue_set_copy_range(queue, copy_range);
 
 	if ((err = nfnl_queue_create(nf_sock, queue)) < 0)
-		fatal(err, "Unable to bind queue: %s", nl_geterror(err));
+		nl_cli_fatal(err, "Unable to bind queue: %s", nl_geterror(err));
 
-	rt_sock = nlt_alloc_socket();
-	nlt_connect(rt_sock, NETLINK_ROUTE);
-	link_cache = nlt_alloc_link_cache(rt_sock);
+	rt_sock = nl_cli_alloc_socket();
+	nl_cli_connect(rt_sock, NETLINK_ROUTE);
+	link_cache = nl_cli_link_alloc_cache(rt_sock);
 
 	while (1) {
 		fd_set rfds;

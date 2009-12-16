@@ -6,10 +6,12 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "neigh-utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/cli/neigh.h>
+#include <netlink/cli/link.h>
 
 static int quiet = 0, default_yes = 0, deleted = 0, interactive = 0;
 struct nl_sock *sock;
@@ -46,11 +48,12 @@ static void delete_cb(struct nl_object *obj, void *arg)
 	};
 	int err;
 
-	if (interactive && !nlt_confirm(obj, &params, default_yes))
+	if (interactive && !nl_cli_confirm(obj, &params, default_yes))
 		return;
 
 	if ((err = rtnl_neigh_delete(sock, neigh, 0)) < 0)
-		fatal(err, "Unable to delete neighbour: %s\n", nl_geterror(err));
+		nl_cli_fatal(err, "Unable to delete neighbour: %s\n",
+			     nl_geterror(err));
 
 	if (!quiet) {
 		printf("Deleted ");
@@ -65,11 +68,11 @@ int main(int argc, char *argv[])
 	struct rtnl_neigh *neigh;
 	struct nl_cache *link_cache, *neigh_cache;
  
-	sock = nlt_alloc_socket();
-	nlt_connect(sock, NETLINK_ROUTE);
-	link_cache = nlt_alloc_link_cache(sock);
-	neigh_cache = nlt_alloc_neigh_cache(sock);
- 	neigh = nlt_alloc_neigh();
+	sock = nl_cli_alloc_socket();
+	nl_cli_connect(sock, NETLINK_ROUTE);
+	link_cache = nl_cli_link_alloc_cache(sock);
+	neigh_cache = nl_cli_neigh_alloc_cache(sock);
+ 	neigh = nl_cli_neigh_alloc();
  
 	for (;;) {
 		int c, optidx = 0;
@@ -101,12 +104,12 @@ int main(int argc, char *argv[])
 		case ARG_YES: default_yes = 1; break;
 		case 'q': quiet = 1; break;
 		case 'h': print_usage(); break;
-		case 'v': nlt_print_version(); break;
-		case 'a': parse_dst(neigh, optarg); break;
-		case 'l': parse_lladdr(neigh, optarg); break;
-		case 'd': parse_dev(neigh, link_cache, optarg); break;
-		case ARG_FAMILY: parse_family(neigh, optarg); break;
-		case ARG_STATE: parse_state(neigh, optarg); break;
+		case 'v': nl_cli_print_version(); break;
+		case 'a': nl_cli_neigh_parse_dst(neigh, optarg); break;
+		case 'l': nl_cli_neigh_parse_lladdr(neigh, optarg); break;
+		case 'd': nl_cli_neigh_parse_dev(neigh, link_cache, optarg); break;
+		case ARG_FAMILY: nl_cli_neigh_parse_family(neigh, optarg); break;
+		case ARG_STATE: nl_cli_neigh_parse_state(neigh, optarg); break;
 		}
  	}
 

@@ -6,10 +6,12 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "rule-utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/cli/rule.h>
+#include <netlink/cli/link.h>
 
 static void print_usage(void)
 {
@@ -38,11 +40,11 @@ int main(int argc, char *argv[])
 		.dp_type = NL_DUMP_LINE,
 	};
 
-	sock = nlt_alloc_socket();
-	nlt_connect(sock, NETLINK_ROUTE);
-	link_cache = nlt_alloc_link_cache(sock);
-	rule_cache = nlt_alloc_rule_cache(sock);
-	rule = nlt_alloc_rule();
+	sock = nl_cli_alloc_socket();
+	nl_cli_connect(sock, NETLINK_ROUTE);
+	link_cache = nl_cli_link_alloc_cache(sock);
+	rule_cache = nl_cli_rule_alloc_cache(sock);
+	rule = nl_cli_rule_alloc();
 
 	for (;;) {
 		int c, optidx = 0;
@@ -62,10 +64,10 @@ int main(int argc, char *argv[])
 			break;
 
 		switch (c) {
-		case 'f': params.dp_type = nlt_parse_dumptype(optarg); break;
+		case 'f': params.dp_type = nl_cli_parse_dumptype(optarg); break;
 		case 'h': print_usage(); break;
-		case 'v': nlt_print_version(); break;
-		case ARG_FAMILY: parse_family(rule, optarg); break;
+		case 'v': nl_cli_print_version(); break;
+		case ARG_FAMILY: nl_cli_rule_parse_family(rule, optarg); break;
 		}
 	}
 

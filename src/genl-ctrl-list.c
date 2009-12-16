@@ -6,10 +6,16 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "ctrl-utils.h"
+#include <netlink/cli/utils.h>
+
+static struct nl_cache *alloc_genl_family_cache(struct nl_sock *sk)
+{
+	return nl_cli_alloc_cache(sk, "generic netlink family",
+			   genl_ctrl_alloc_cache);
+}
 
 static void print_usage(void)
 {
@@ -33,9 +39,9 @@ int main(int argc, char *argv[])
 		.dp_fd = stdout,
 	};
  
-	sock = nlt_alloc_socket();
-	nlt_connect(sock, NETLINK_GENERIC);
-	family_cache = nlt_alloc_genl_family_cache(sock);
+	sock = nl_cli_alloc_socket();
+	nl_cli_connect(sock, NETLINK_GENERIC);
+	family_cache = alloc_genl_family_cache(sock);
  
 	for (;;) {
 		int c, optidx = 0;
@@ -51,9 +57,9 @@ int main(int argc, char *argv[])
 			break;
 
 		switch (c) {
-		case 'f': params.dp_type = nlt_parse_dumptype(optarg); break;
+		case 'f': params.dp_type = nl_cli_parse_dumptype(optarg); break;
 		case 'h': print_usage(); break;
-		case 'v': nlt_print_version(); break;
+		case 'v': nl_cli_print_version(); break;
 		}
  	}
 

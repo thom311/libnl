@@ -11,7 +11,7 @@
  * Copyright (c) 2007 Secure Computing Corporation
  */
 
-#include "utils.h"
+#include <netlink/cli/utils.h>
 #include <netlink/netfilter/nfnl.h>
 
 static void obj_input(struct nl_object *obj, void *arg)
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 		{ NFNLGRP_NONE, NULL }
 	};
 
-	sock = nlt_alloc_socket();
+	sock = nl_cli_alloc_socket();
 	nl_socket_disable_seq_check(sock);
 	nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM, event_input, NULL);
 
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 		return 2;
 	}
 
-	nlt_connect(sock, NETLINK_NETFILTER);
+	nl_cli_connect(sock, NETLINK_NETFILTER);
 
 	for (idx = 1; argc > idx; idx++) {
 		for (i = 0; groups[i].gr_id != NFNLGRP_NONE; i++) {
@@ -73,14 +73,15 @@ int main(int argc, char *argv[])
 
 			err = nl_socket_add_membership(sock, groups[i].gr_id);
 			if (err < 0)
-				fatal(err, "Unable to add membership: %s",
-				      nl_geterror(err));
+				nl_cli_fatal(err,
+					     "Unable to add membership: %s",
+					     nl_geterror(err));
 			break;
 		}
 
 		if (groups[i].gr_id == NFNLGRP_NONE)
-			fatal(NLE_OBJ_NOTFOUND, "Unknown group: \"%s\"",
-			      argv[idx]);
+			nl_cli_fatal(NLE_OBJ_NOTFOUND, "Unknown group: \"%s\"",
+				     argv[idx]);
 	}
 
 	while (1) {

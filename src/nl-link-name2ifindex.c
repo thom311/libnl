@@ -9,7 +9,8 @@
  * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/cli/link.h>
 
 static void print_usage(void)
 {
@@ -26,12 +27,13 @@ int main(int argc, char *argv[])
 	if (argc < 2)
 		print_usage();
 
-	sock = nlt_alloc_socket();
-	nlt_connect(sock, NETLINK_ROUTE);
-	link_cache = nlt_alloc_link_cache(sock);
+	sock = nl_cli_alloc_socket();
+	nl_cli_connect(sock, NETLINK_ROUTE);
+	link_cache = nl_cli_link_alloc_cache(sock);
 
 	if (!(ifindex = rtnl_link_name2i(link_cache, argv[1])))
-		fatal(ENOENT, "Interface \"%s\" does not exist", argv[1]);
+		nl_cli_fatal(ENOENT, "Interface \"%s\" does not exist",
+			     argv[1]);
 
 	printf("%u\n", ifindex);
 

@@ -6,12 +6,13 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
  */
 
-#include "ct-utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/cli/ct.h>
 
 static void print_usage(void)
 {
@@ -54,7 +55,7 @@ int main(int argc, char *argv[])
 		.dp_fd = stdout,
 	};
  
- 	ct = nlt_alloc_ct();
+ 	ct = nl_cli_ct_alloc();
  
 	for (;;) {
 		int c, optidx = 0;
@@ -103,31 +104,31 @@ int main(int argc, char *argv[])
 		case '?': exit(NLE_INVAL);
 		case '4': nfnl_ct_set_family(ct, AF_INET); break;
 		case '6': nfnl_ct_set_family(ct, AF_INET6); break;
-		case 'f': params.dp_type = nlt_parse_dumptype(optarg); break;
+		case 'f': params.dp_type = nl_cli_parse_dumptype(optarg); break;
 		case 'h': print_usage(); break;
-		case 'v': nlt_print_version(); break;
-		case 'i': parse_id(ct, optarg); break;
-		case 'p': parse_protocol(ct, optarg); break;
-		case ARG_TCP_STATE: parse_tcp_state(ct, optarg); break;
-		case ARG_ORIG_SRC: parse_src(ct, 0, optarg); break;
-		case ARG_ORIG_SPORT: parse_src_port(ct, 0, optarg); break;
-		case ARG_ORIG_DST: parse_dst(ct, 0, optarg); break;
-		case ARG_ORIG_DPORT: parse_dst_port(ct, 0, optarg); break;
-		case ARG_REPLY_SRC: parse_src(ct, 1, optarg); break;
-		case ARG_REPLY_SPORT: parse_src_port(ct, 1, optarg); break;
-		case ARG_REPLY_DST: parse_dst(ct, 1, optarg); break;
-		case ARG_REPLY_DPORT: parse_dst_port(ct, 1, optarg); break;
-		case 'F': parse_family(ct, optarg); break;
-		case ARG_MARK: parse_mark(ct, optarg); break;
-		case ARG_TIMEOUT: parse_timeout(ct, optarg); break;
-		case ARG_REFCNT: parse_use(ct, optarg); break;
-		case ARG_FLAGS: parse_status(ct, optarg); break;
+		case 'v': nl_cli_print_version(); break;
+		case 'i': nl_cli_ct_parse_id(ct, optarg); break;
+		case 'p': nl_cli_ct_parse_protocol(ct, optarg); break;
+		case ARG_TCP_STATE: nl_cli_ct_parse_tcp_state(ct, optarg); break;
+		case ARG_ORIG_SRC: nl_cli_ct_parse_src(ct, 0, optarg); break;
+		case ARG_ORIG_SPORT: nl_cli_ct_parse_src_port(ct, 0, optarg); break;
+		case ARG_ORIG_DST: nl_cli_ct_parse_dst(ct, 0, optarg); break;
+		case ARG_ORIG_DPORT: nl_cli_ct_parse_dst_port(ct, 0, optarg); break;
+		case ARG_REPLY_SRC: nl_cli_ct_parse_src(ct, 1, optarg); break;
+		case ARG_REPLY_SPORT: nl_cli_ct_parse_src_port(ct, 1, optarg); break;
+		case ARG_REPLY_DST: nl_cli_ct_parse_dst(ct, 1, optarg); break;
+		case ARG_REPLY_DPORT: nl_cli_ct_parse_dst_port(ct, 1, optarg); break;
+		case 'F': nl_cli_ct_parse_family(ct, optarg); break;
+		case ARG_MARK: nl_cli_ct_parse_mark(ct, optarg); break;
+		case ARG_TIMEOUT: nl_cli_ct_parse_timeout(ct, optarg); break;
+		case ARG_REFCNT: nl_cli_ct_parse_use(ct, optarg); break;
+		case ARG_FLAGS: nl_cli_ct_parse_status(ct, optarg); break;
 		}
  	}
 
-	sock = nlt_alloc_socket();
-	nlt_connect(sock, NETLINK_NETFILTER);
-	ct_cache = nlt_alloc_ct_cache(sock);
+	sock = nl_cli_alloc_socket();
+	nl_cli_connect(sock, NETLINK_NETFILTER);
+	ct_cache = nl_cli_ct_alloc_cache(sock);
 
 	nl_cache_dump_filter(ct_cache, &params, OBJ_CAST(ct));
 

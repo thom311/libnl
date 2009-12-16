@@ -6,12 +6,11 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "utils.h"
-#include <netlink/route/link.h>
-#include <netlink/route/addr.h>
+#include <netlink/cli/utils.h>
+#include <netlink/cli/link.h>
 
 static void obj_input(struct nl_object *obj, void *arg)
 {
@@ -61,7 +60,7 @@ int main(int argc, char *argv[])
 		{ RTNLGRP_NONE, NULL }
 	};
 
-	sock = nlt_alloc_socket();
+	sock = nl_cli_alloc_socket();
 	nl_socket_disable_seq_check(sock);
 	nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM, event_input, NULL);
 
@@ -75,14 +74,15 @@ int main(int argc, char *argv[])
 		return 2;
 	}
 
-	nlt_connect(sock, NETLINK_ROUTE);
+	nl_cli_connect(sock, NETLINK_ROUTE);
 
 	for (idx = 1; argc > idx; idx++) {
 		for (i = 0; known_groups[i].gr_id != RTNLGRP_NONE; i++) {
 			if (!strcmp(argv[idx], known_groups[i].gr_name)) {
 
 				if ((err = nl_socket_add_membership(sock, known_groups[i].gr_id)) < 0) {
-					fatal(err, "%s: %s\n", argv[idx], nl_geterror(err));
+					nl_cli_fatal(err, "%s: %s\n", argv[idx],
+						     nl_geterror(err));
 				}
 
 				break;
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Warning: Unknown group: %s\n", argv[idx]);
 	}
 
-	link_cache = nlt_alloc_link_cache(sock);
+	link_cache = nl_cli_link_alloc_cache(sock);
 
 	while (1) {
 		fd_set rfds;

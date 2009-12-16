@@ -11,7 +11,22 @@
  * Copyright (c) 2007 Secure Computing Corporation
  */
 
-#include "log-utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/cli/link.h>
+#include <linux/netfilter/nfnetlink_log.h>
+#include <netlink/netfilter/nfnl.h>
+#include <netlink/netfilter/log.h>
+
+static struct nfnl_log *alloc_log(void)
+{
+	struct nfnl_log *log;
+
+	log = nfnl_log_alloc();
+	if (!log)
+		nl_cli_fatal(ENOMEM, "Unable to allocate log object");
+
+	return log;
+}
 
 static void obj_input(struct nl_object *obj, void *arg)
 {
@@ -44,7 +59,7 @@ int main(int argc, char *argv[])
 	int err;
 	int family;
 
-	nf_sock = nlt_alloc_socket();
+	nf_sock = nl_cli_alloc_socket();
 	nl_socket_disable_seq_check(nf_sock);
 	nl_socket_modify_cb(nf_sock, NL_CB_VALID, NL_CB_CUSTOM, event_input, NULL);
 
@@ -54,26 +69,28 @@ int main(int argc, char *argv[])
 		return 2;
 	}
 
-	nlt_connect(nf_sock, NETLINK_NETFILTER);
+	nl_cli_connect(nf_sock, NETLINK_NETFILTER);
 
 	family = nl_str2af(argv[1]);
 	if (family == AF_UNSPEC)
-		fatal(NLE_INVAL, "Unknown family \"%s\": %s",
-		      argv[1], nl_geterror(family));
+		nl_cli_fatal(NLE_INVAL, "Unknown family \"%s\": %s",
+			     argv[1], nl_geterror(family));
 
 	nfnl_log_pf_unbind(nf_sock, family);
 	if ((err = nfnl_log_pf_bind(nf_sock, family)) < 0)
-		fatal(err, "Unable to bind logger: %s", nl_geterror(err));
+		nl_cli_fatal(err, "Unable to bind logger: %s",
+			     nl_geterror(err));
 
-	log = nlt_alloc_log();
+	log = alloc_log();
 	nfnl_log_set_group(log, atoi(argv[2]));
 
 	copy_mode = NFNL_LOG_COPY_META;
 	if (argc > 3) {
 		copy_mode = nfnl_log_str2copy_mode(argv[3]);
 		if (copy_mode < 0)
-			fatal(copy_mode, "Unable to parse copy mode \"%s\": %s",
-			      argv[3], nl_geterror(copy_mode));
+			nl_cli_fatal(copy_mode,
+				     "Unable to parse copy mode \"%s\": %s",
+				     argv[3], nl_geterror(copy_mode));
 	}
 	nfnl_log_set_copy_mode(log, copy_mode);
 
@@ -83,7 +100,8 @@ int main(int argc, char *argv[])
 	nfnl_log_set_copy_range(log, copy_range);
 
 	if ((err = nfnl_log_create(nf_sock, log)) < 0)
-		fatal(err, "Unable to bind instance: %s", nl_geterror(err));
+		nl_cli_fatal(err, "Unable to bind instance: %s",
+			     nl_geterror(err));
 
 	{
 		struct nl_dump_params dp = {
@@ -96,9 +114,9 @@ int main(int argc, char *argv[])
 		nl_object_dump((struct nl_object *) log, &dp);
 	}
 
-	rt_sock = nlt_alloc_socket();
-	nlt_connect(rt_sock, NETLINK_ROUTE);
-	link_cache = nlt_alloc_link_cache(rt_sock);
+	rt_sock = nl_cli_alloc_socket();
+	nl_cli_connect(rt_sock, NETLINK_ROUTE);
+	link_cache = nl_cli_link_alloc_cache(rt_sock);
 
 	while (1) {
 		fd_set rfds;

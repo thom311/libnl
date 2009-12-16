@@ -6,10 +6,11 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/cli/link.h>
 
 static void print_usage(void)
 {
@@ -33,10 +34,11 @@ int main(int argc, char *argv[])
 		.dp_fd = stdout,
 	};
  
-	sock = nlt_alloc_socket();
-	nlt_connect(sock, NETLINK_ROUTE);
-	link_cache = nlt_alloc_link_cache(sock);
-	neightbl_cache = nlt_alloc_neightbl_cache(sock);
+	sock = nl_cli_alloc_socket();
+	nl_cli_connect(sock, NETLINK_ROUTE);
+	link_cache = nl_cli_link_alloc_cache(sock);
+	neightbl_cache = nl_cli_alloc_cache(sock, "neighbour table",
+					    rtnl_neightbl_alloc_cache);
  
 	for (;;) {
 		int c, optidx = 0;
@@ -52,9 +54,9 @@ int main(int argc, char *argv[])
 			break;
 
 		switch (c) {
-		case 'f': params.dp_type = nlt_parse_dumptype(optarg); break;
+		case 'f': params.dp_type = nl_cli_parse_dumptype(optarg); break;
 		case 'h': print_usage(); break;
-		case 'v': nlt_print_version(); break;
+		case 'v': nl_cli_print_version(); break;
 		}
  	}
 

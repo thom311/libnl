@@ -5,10 +5,12 @@
  *	modify it under the terms of the GNU General Public License as
  *	published by the Free Software Foundation version 2 of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "addr-utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/cli/addr.h>
+#include <netlink/cli/link.h>
 
 static int quiet = 0;
 
@@ -49,10 +51,10 @@ int main(int argc, char *argv[])
 	};
 	int err, nlflags = NLM_F_CREATE;
  
-	sock = nlt_alloc_socket();
-	nlt_connect(sock, NETLINK_ROUTE);
-	link_cache = nlt_alloc_link_cache(sock);
- 	addr = nlt_alloc_addr();
+	sock = nl_cli_alloc_socket();
+	nl_cli_connect(sock, NETLINK_ROUTE);
+	link_cache = nl_cli_link_alloc_cache(sock);
+ 	addr = nl_cli_addr_alloc();
  
 	for (;;) {
 		int c, optidx = 0;
@@ -92,21 +94,22 @@ int main(int argc, char *argv[])
 		case ARG_REPLACE: nlflags |= NLM_F_REPLACE; break;
 		case 'q': quiet = 1; break;
 		case 'h': print_usage(); break;
-		case 'v': nlt_print_version(); break;
-		case 'a': parse_local(addr, optarg); break;
-		case 'd': parse_dev(addr, link_cache, optarg); break;
-		case ARG_FAMILY: parse_family(addr, optarg); break;
-		case ARG_LABEL: parse_label(addr, optarg); break;
-		case ARG_PEER: parse_peer(addr, optarg); break;
-		case ARG_SCOPE: parse_scope(addr, optarg); break;
-		case ARG_BROADCAST: parse_broadcast(addr, optarg); break;
-		case ARG_PREFERRED: parse_preferred(addr, optarg); break;
-		case ARG_VALID: parse_valid(addr, optarg); break;
+		case 'v': nl_cli_print_version(); break;
+		case 'a': nl_cli_addr_parse_local(addr, optarg); break;
+		case 'd': nl_cli_addr_parse_dev(addr, link_cache, optarg); break;
+		case ARG_FAMILY: nl_cli_addr_parse_family(addr, optarg); break;
+		case ARG_LABEL: nl_cli_addr_parse_label(addr, optarg); break;
+		case ARG_PEER: nl_cli_addr_parse_peer(addr, optarg); break;
+		case ARG_SCOPE: nl_cli_addr_parse_scope(addr, optarg); break;
+		case ARG_BROADCAST: nl_cli_addr_parse_broadcast(addr, optarg); break;
+		case ARG_PREFERRED: nl_cli_addr_parse_preferred(addr, optarg); break;
+		case ARG_VALID: nl_cli_addr_parse_valid(addr, optarg); break;
 		}
  	}
 
 	if ((err = rtnl_addr_add(sock, addr, nlflags)) < 0)
-		fatal(err, "Unable to add address: %s", nl_geterror(err));
+		nl_cli_fatal(err, "Unable to add address: %s",
+			     nl_geterror(err));
 
 	if (!quiet) {
 		printf("Added ");

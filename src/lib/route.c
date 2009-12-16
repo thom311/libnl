@@ -1,28 +1,50 @@
 /*
- * src/route-utils.c     Route Helpers
+ * src/lib/route.c     CLI Route Helpers
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2008-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "route-utils.h"
+/**
+ * @ingroup cli
+ * @defgroup cli_route Routing
+ *
+ * @{
+ */
 
-struct rtnl_route *nlt_alloc_route(void)
+#include <netlink/cli/utils.h>
+#include <netlink/cli/route.h>
+
+struct rtnl_route *nl_cli_route_alloc(void)
 {
 	struct rtnl_route *route;
 
 	route = rtnl_route_alloc();
 	if (!route)
-		fatal(ENOMEM, "Unable to allocate route object");
+		nl_cli_fatal(ENOMEM, "Unable to allocate route object");
 
 	return route;
 }
 
-void parse_family(struct rtnl_route *route, char *arg)
+struct nl_cache *nl_cli_route_alloc_cache(struct nl_sock *sk, int flags)
+{
+	struct nl_cache *cache;
+	int err;
+
+	if ((err = rtnl_route_alloc_cache(sk, AF_UNSPEC, flags, &cache)) < 0)
+		nl_cli_fatal(err, "Unable to allocate route cache: %s\n",
+			     nl_geterror(err));
+
+	nl_cache_mngt_provide(cache);
+
+	return cache;
+}
+
+void nl_cli_route_parse_family(struct rtnl_route *route, char *arg)
 {
 	int family;
 
@@ -30,46 +52,46 @@ void parse_family(struct rtnl_route *route, char *arg)
 		rtnl_route_set_family(route, family);
 }
 
-void parse_dst(struct rtnl_route *route, char *arg)
+void nl_cli_route_parse_dst(struct rtnl_route *route, char *arg)
 {
 	struct nl_addr *addr;
 	int err;
 
-	addr = nlt_addr_parse(arg, rtnl_route_get_family(route));
+	addr = nl_cli_addr_parse(arg, rtnl_route_get_family(route));
 	if ((err = rtnl_route_set_dst(route, addr)) < 0)
-		fatal(err, "Unable to set destination address: %s",
+		nl_cli_fatal(err, "Unable to set destination address: %s",
 		      nl_geterror(err));
 
 	nl_addr_put(addr);
 }
 
-void parse_src(struct rtnl_route *route, char *arg)
+void nl_cli_route_parse_src(struct rtnl_route *route, char *arg)
 {
 	struct nl_addr *addr;
 	int err;
 
-	addr = nlt_addr_parse(arg, rtnl_route_get_family(route));
+	addr = nl_cli_addr_parse(arg, rtnl_route_get_family(route));
 	if ((err = rtnl_route_set_src(route, addr)) < 0)
-		fatal(err, "Unable to set source address: %s",
+		nl_cli_fatal(err, "Unable to set source address: %s",
 		      nl_geterror(err));
 
 	nl_addr_put(addr);
 }
 
-void parse_pref_src(struct rtnl_route *route, char *arg)
+void nl_cli_route_parse_pref_src(struct rtnl_route *route, char *arg)
 {
 	struct nl_addr *addr;
 	int err;
 
-	addr = nlt_addr_parse(arg, rtnl_route_get_family(route));
+	addr = nl_cli_addr_parse(arg, rtnl_route_get_family(route));
 	if ((err = rtnl_route_set_pref_src(route, addr)) < 0)
-		fatal(err, "Unable to set preferred source address: %s",
+		nl_cli_fatal(err, "Unable to set preferred source address: %s",
 		      nl_geterror(err));
 
 	nl_addr_put(addr);
 }
 
-void parse_metric(struct rtnl_route *route, char *subopts)
+void nl_cli_route_parse_metric(struct rtnl_route *route, char *subopts)
 {
 	/* strict equal order to RTAX_* */
 	static char *const tokens[] = {
@@ -94,25 +116,25 @@ void parse_metric(struct rtnl_route *route, char *subopts)
 	while (*subopts != '\0') {
 		int ret = getsubopt(&subopts, tokens, &arg);
 		if (ret == -1)
-			fatal(EINVAL, "Unknown metric token \"%s\"", arg);
+			nl_cli_fatal(EINVAL, "Unknown metric token \"%s\"", arg);
 
 		if (ret == 0)
-			fatal(EINVAL, "Invalid metric \"%s\"", tokens[ret]);
+			nl_cli_fatal(EINVAL, "Invalid metric \"%s\"", tokens[ret]);
 
 		if (arg == NULL)
-			fatal(EINVAL, "Metric \"%s\", no value given", tokens[ret]);
+			nl_cli_fatal(EINVAL, "Metric \"%s\", no value given", tokens[ret]);
 
 		lval = strtoul(arg, &endptr, 0);
 		if (endptr == arg)
-			fatal(EINVAL, "Metric \"%s\", value not numeric", tokens[ret]);
+			nl_cli_fatal(EINVAL, "Metric \"%s\", value not numeric", tokens[ret]);
 
 		if ((ret = rtnl_route_set_metric(route, ret, lval)) < 0)
-			fatal(ret, "Unable to set metric: %s",
+			nl_cli_fatal(ret, "Unable to set metric: %s",
 			      nl_geterror(ret));
 	}
 }
 
-void parse_nexthop(struct rtnl_route *route, char *subopts,
+void nl_cli_route_parse_nexthop(struct rtnl_route *route, char *subopts,
 		   struct nl_cache *link_cache)
 {
 	enum {
@@ -133,27 +155,27 @@ void parse_nexthop(struct rtnl_route *route, char *subopts,
 	char *arg, *endptr;
 
 	if (!(nh = rtnl_route_nh_alloc()))
-		fatal(ENOMEM, "Out of memory");
+		nl_cli_fatal(ENOMEM, "Out of memory");
 
 	while (*subopts != '\0') {
 		int ret = getsubopt(&subopts, tokens, &arg);
 		if (ret == -1)
-			fatal(EINVAL, "Unknown nexthop token \"%s\"", arg);
+			nl_cli_fatal(EINVAL, "Unknown nexthop token \"%s\"", arg);
 
 		if (arg == NULL)
-			fatal(EINVAL, "Missing argument to option \"%s\"\n",
+			nl_cli_fatal(EINVAL, "Missing argument to option \"%s\"\n",
 				tokens[ret]);
 
 		switch (ret) {
 		case NH_DEV:
 			if (!(ival = rtnl_link_name2i(link_cache, arg)))
-				fatal(ENOENT,"Link \"%s\" does not exist", arg);
+				nl_cli_fatal(ENOENT,"Link \"%s\" does not exist", arg);
 
 			rtnl_route_nh_set_ifindex(nh, ival);
 			break;
 
 		case NH_VIA:
-			addr = nlt_addr_parse(arg,rtnl_route_get_family(route));
+			addr = nl_cli_addr_parse(arg,rtnl_route_get_family(route));
 			rtnl_route_nh_set_gateway(nh, addr);
 			nl_addr_put(addr);
 			break;
@@ -161,7 +183,9 @@ void parse_nexthop(struct rtnl_route *route, char *subopts,
 		case NH_WEIGHT:
 			lval = strtoul(arg, &endptr, 0);
 			if (endptr == arg)
-				fatal(EINVAL, "Invalid weight \"%s\", not numeric", arg);
+				nl_cli_fatal(EINVAL,
+					     "Invalid weight \"%s\", not numeric",
+					     arg);
 			rtnl_route_nh_set_weight(nh, lval);
 			break;
 		}
@@ -170,7 +194,7 @@ void parse_nexthop(struct rtnl_route *route, char *subopts,
 	rtnl_route_add_nexthop(route, nh);
 }
 
-void parse_table(struct rtnl_route *route, char *arg)
+void nl_cli_route_parse_table(struct rtnl_route *route, char *arg)
 {
 	unsigned long lval;
 	char *endptr;
@@ -178,34 +202,34 @@ void parse_table(struct rtnl_route *route, char *arg)
 	lval = strtoul(arg, &endptr, 0);
 	if (endptr == arg) {
 		if ((lval = rtnl_route_str2table(arg)) < 0)
-			fatal(EINVAL, "Unknown table name \"%s\"", arg);
+			nl_cli_fatal(EINVAL, "Unknown table name \"%s\"", arg);
 	}
 
 	rtnl_route_set_table(route, lval);
 }
 
-void parse_prio(struct rtnl_route *route, char *arg)
+void nl_cli_route_parse_prio(struct rtnl_route *route, char *arg)
 {
 	unsigned long lval;
 	char *endptr;
 
 	lval = strtoul(arg, &endptr, 0);
 	if (endptr == arg)
-		fatal(EINVAL, "Invalid priority value, not numeric");
+		nl_cli_fatal(EINVAL, "Invalid priority value, not numeric");
 	rtnl_route_set_priority(route, lval);
 }
 
-void parse_scope(struct rtnl_route *route, char *arg)
+void nl_cli_route_parse_scope(struct rtnl_route *route, char *arg)
 {
 	int ival;
 
 	if ((ival = rtnl_str2scope(arg)) < 0)
-		fatal(EINVAL, "Unknown routing scope \"%s\"", arg);
+		nl_cli_fatal(EINVAL, "Unknown routing scope \"%s\"", arg);
 
 	rtnl_route_set_scope(route, ival);
 }
 
-void parse_protocol(struct rtnl_route *route, char *arg)
+void nl_cli_route_parse_protocol(struct rtnl_route *route, char *arg)
 {
 	unsigned long lval;
 	char *endptr;
@@ -213,31 +237,34 @@ void parse_protocol(struct rtnl_route *route, char *arg)
 	lval = strtoul(arg, &endptr, 0);
 	if (endptr == arg) {
 		if ((lval = rtnl_route_str2proto(arg)) < 0)
-			fatal(EINVAL, "Unknown routing protocol name \"%s\"",
-				arg);
+			nl_cli_fatal(EINVAL,
+				     "Unknown routing protocol name \"%s\"",
+				     arg);
 	}
 
 	rtnl_route_set_protocol(route, lval);
 }
 
-void parse_type(struct rtnl_route *route, char *arg)
+void nl_cli_route_parse_type(struct rtnl_route *route, char *arg)
 {
 	int ival;
 
 	if ((ival = nl_str2rtntype(arg)) < 0)
-		fatal(EINVAL, "Unknown routing type \"%s\"", arg);
+		nl_cli_fatal(EINVAL, "Unknown routing type \"%s\"", arg);
 
 	if ((ival = rtnl_route_set_type(route, ival)) < 0)
-		fatal(ival, "Unable to set routing type: %s",
+		nl_cli_fatal(ival, "Unable to set routing type: %s",
 		      nl_geterror(ival));
 }
 
-void parse_iif(struct rtnl_route *route, char *arg, struct nl_cache *link_cache)
+void nl_cli_route_parse_iif(struct rtnl_route *route, char *arg, struct nl_cache *link_cache)
 {
 	int ival;
 
 	if (!(ival = rtnl_link_name2i(link_cache, arg)))
-		fatal(ENOENT, "Link \"%s\" does not exist", arg);
+		nl_cli_fatal(ENOENT, "Link \"%s\" does not exist", arg);
 
 	rtnl_route_set_iif(route, ival);
 }
+
+/** @} */

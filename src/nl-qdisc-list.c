@@ -6,10 +6,12 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "qdisc-utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/cli/qdisc.h>
+#include <netlink/cli/link.h>
 
 static int quiet = 0;
 
@@ -42,11 +44,11 @@ int main(int argc, char *argv[])
 		.dp_fd = stdout,
 	};
  
-	sock = nlt_alloc_socket();
-	nlt_connect(sock, NETLINK_ROUTE);
-	link_cache = nlt_alloc_link_cache(sock);
-	qdisc_cache = nlt_alloc_qdisc_cache(sock);
- 	qdisc = nlt_alloc_qdisc();
+	sock = nl_cli_alloc_socket();
+	nl_cli_connect(sock, NETLINK_ROUTE);
+	link_cache = nl_cli_link_alloc_cache(sock);
+	qdisc_cache = nl_cli_qdisc_alloc_cache(sock);
+ 	qdisc = nl_cli_qdisc_alloc();
  
 	for (;;) {
 		int c, optidx = 0;
@@ -71,14 +73,14 @@ int main(int argc, char *argv[])
 			break;
 
 		switch (c) {
-		case 'f': params.dp_type = nlt_parse_dumptype(optarg); break;
+		case 'f': params.dp_type = nl_cli_parse_dumptype(optarg); break;
 		case 'q': quiet = 1; break;
 		case 'h': print_usage(); break;
-		case 'v': nlt_print_version(); break;
-		case 'd': parse_dev(qdisc, link_cache, optarg); break;
-		case 'p': parse_parent(qdisc, optarg); break;
-		case 'H': parse_handle(qdisc, optarg); break;
-		case 'k': parse_kind(qdisc, optarg); break;
+		case 'v': nl_cli_print_version(); break;
+		case 'd': nl_cli_qdisc_parse_dev(qdisc, link_cache, optarg); break;
+		case 'p': nl_cli_qdisc_parse_parent(qdisc, optarg); break;
+		case 'H': nl_cli_qdisc_parse_handle(qdisc, optarg); break;
+		case 'k': nl_cli_qdisc_parse_kind(qdisc, optarg); break;
 		}
  	}
 

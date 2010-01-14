@@ -285,7 +285,7 @@ static void __init get_psched_settings(void)
 {
 	char name[FILENAME_MAX];
 	FILE *fd;
-	int got_hz = 0, got_tick = 0;
+	int got_hz = 0;
 
 	if (getenv("HZ")) {
 		long hz = strtol(getenv("HZ"), NULL, 0);
@@ -301,28 +301,25 @@ static void __init get_psched_settings(void)
 
 	if (getenv("TICKS_PER_USEC")) {
 		double t = strtod(getenv("TICKS_PER_USEC"), NULL);
-
 		ticks_per_usec = t;
-		got_tick = 1;
 	}
+	else {
+		if (getenv("PROC_NET_PSCHED"))
+			snprintf(name, sizeof(name), "%s", getenv("PROC_NET_PSCHED"));
+		else if (getenv("PROC_ROOT"))
+			snprintf(name, sizeof(name), "%s/net/psched",
+				 getenv("PROC_ROOT"));
+		else
+			strncpy(name, "/proc/net/psched", sizeof(name) - 1);
 		
-
-	if (getenv("PROC_NET_PSCHED"))
-		snprintf(name, sizeof(name), "%s", getenv("PROC_NET_PSCHED"));
-	else if (getenv("PROC_ROOT"))
-		snprintf(name, sizeof(name), "%s/net/psched",
-			 getenv("PROC_ROOT"));
-	else
-		strncpy(name, "/proc/net/psched", sizeof(name) - 1);
-
-	if ((fd = fopen(name, "r"))) {
-		uint32_t tick, us, nom;
-		int r = fscanf(fd, "%08x%08x%08x%*08x", &tick, &us, &nom);
-
-		if (4 == r && nom == 1000000 && !got_tick)
+		if ((fd = fopen(name, "r"))) {
+			uint32_t tick, us;
+			/* the file contains 4 hexadecimals, but we just use
+			   the first two of them */
+			int r = fscanf(fd, "%08x %08x", &tick, &us);
 			ticks_per_usec = (double)tick/(double)us;
-			
-		fclose(fd);
+			fclose(fd);
+		}
 	}
 }
 

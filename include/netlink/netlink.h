@@ -50,6 +50,10 @@ extern int			nl_sendto(struct nl_sock *, void *, size_t);
 extern int			nl_sendmsg(struct nl_sock *, struct nl_msg *,
 					   struct msghdr *);
 extern int			nl_send(struct nl_sock *, struct nl_msg *);
+extern int			nl_send_iovec(struct nl_sock *, struct nl_msg *,
+					      const struct iovec *, unsigned);
+extern void			nl_auto_complete(struct nl_sock *,
+						      struct nl_msg *);
 extern int			nl_send_auto_complete(struct nl_sock *,
 						      struct nl_msg *);
 extern int			nl_send_simple(struct nl_sock *, int, int,

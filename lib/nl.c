@@ -207,14 +207,6 @@ int nl_sendmsg(struct nl_sock *sk, struct nl_msg *msg, struct msghdr *hdr)
 	struct nl_cb *cb;
 	int ret;
 
-	struct iovec iov = {
-		.iov_base = (void *) nlmsg_hdr(msg),
-		.iov_len = nlmsg_hdr(msg)->nlmsg_len,
-	};
-
-	hdr->msg_iov = &iov;
-	hdr->msg_iovlen = 1;
-
 	nlmsg_set_src(msg, &sk->s_local);
 
 	cb = sk->s_cb;
@@ -226,6 +218,7 @@ int nl_sendmsg(struct nl_sock *sk, struct nl_msg *msg, struct msghdr *hdr)
 	if (ret < 0)
 		return -nl_syserr2nlerr(errno);
 
+	NL_DBG(4, "sent %d bytes\n", ret);
 	return ret;
 }
 
@@ -234,17 +227,20 @@ int nl_sendmsg(struct nl_sock *sk, struct nl_msg *msg, struct msghdr *hdr)
  * Send netlink message.
  * @arg sk		Netlink socket.
  * @arg msg		Netlink message to be sent.
+ * @arg iov		iovec to be sent.
+ * @arg iovlen		number of struct iovec to be sent.
  * @see nl_sendmsg()
  * @return Number of characters sent on success or a negative error code.
  */
-int nl_send(struct nl_sock *sk, struct nl_msg *msg)
+int nl_send_iovec(struct nl_sock *sk, struct nl_msg *msg, const struct iovec *iov, unsigned iovlen)
 {
 	struct sockaddr_nl *dst;
 	struct ucred *creds;
-	
 	struct msghdr hdr = {
 		.msg_name = (void *) &sk->s_peer,
 		.msg_namelen = sizeof(struct sockaddr_nl),
+		.msg_iov = iov,
+		.msg_iovlen = iovlen,
 	};
 
 	/* Overwrite destination if specified in the message itself, defaults
@@ -273,6 +269,45 @@ int nl_send(struct nl_sock *sk, struct nl_msg *msg)
 	return nl_sendmsg(sk, msg, &hdr);
 }
 
+
+
+/**
+* Send netlink message.
+* @arg sk		Netlink socket.
+* @arg msg		Netlink message to be sent.
+* @see nl_sendmsg()
+* @return Number of characters sent on success or a negative error code.
+*/
+int nl_send(struct nl_sock *sk, struct nl_msg *msg)
+{
+	struct iovec iov = {
+		.iov_base = (void *) nlmsg_hdr(msg),
+		.iov_len = nlmsg_hdr(msg)->nlmsg_len,
+	};
+
+	return nl_send_iovec(sk, msg, &iov, 1);
+}
+
+void nl_auto_complete(struct nl_sock *sk, struct nl_msg *msg)
+{
+	struct nlmsghdr *nlh;
+
+	nlh = nlmsg_hdr(msg);
+	if (nlh->nlmsg_pid == 0)
+		nlh->nlmsg_pid = sk->s_local.nl_pid;
+
+	if (nlh->nlmsg_seq == 0)
+		nlh->nlmsg_seq = sk->s_seq_next++;
+
+	if (msg->nm_protocol == -1)
+		msg->nm_protocol = sk->s_proto;
+
+	nlh->nlmsg_flags |= NLM_F_REQUEST;
+
+	if (!(sk->s_flags & NL_NO_AUTO_ACK))
+		nlh->nlmsg_flags |= NLM_F_ACK;
+}
+
 /**
  * Send netlink message and check & extend header values as needed.
  * @arg sk		Netlink socket.
@@ -287,23 +322,9 @@ int nl_send(struct nl_sock *sk, struct nl_msg *msg)
  */
 int nl_send_auto_complete(struct nl_sock *sk, struct nl_msg *msg)
 {
-	struct nlmsghdr *nlh;
 	struct nl_cb *cb = sk->s_cb;
 
-	nlh = nlmsg_hdr(msg);
-	if (nlh->nlmsg_pid == 0)
-		nlh->nlmsg_pid = sk->s_local.nl_pid;
-
-	if (nlh->nlmsg_seq == 0)
-		nlh->nlmsg_seq = sk->s_seq_next++;
-
-	if (msg->nm_protocol == -1)
-		msg->nm_protocol = sk->s_proto;
-	
-	nlh->nlmsg_flags |= NLM_F_REQUEST;
-
-	if (!(sk->s_flags & NL_NO_AUTO_ACK))
-		nlh->nlmsg_flags |= NLM_F_ACK;
+	nl_auto_complete(sk, msg);
 
 	if (cb->cb_send_ow)
 		return cb->cb_send_ow(sk, msg);

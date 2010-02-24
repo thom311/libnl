@@ -7,6 +7,7 @@
  *	of the License.
  *
  * Copyright (c) 2007, 2008 Patrick McHardy <kaber@trash.net>
+ * Copyright (c) 2010       Karl Hiramoto <karl@hiramoto.org>
  */
 
 /**
@@ -189,6 +190,12 @@ nla_put_failure:
 	return NULL;
 }
 
+/**
+* Send a message verdict/mark
+* @arg nlh            netlink messsage header
+* @arg msg            queue msg
+* @return 0 on OK or error code
+*/
 int nfnl_queue_msg_send_verdict(struct nl_sock *nlh,
 				const struct nfnl_queue_msg *msg)
 {
@@ -200,6 +207,51 @@ int nfnl_queue_msg_send_verdict(struct nl_sock *nlh,
 		return -NLE_NOMEM;
 
 	err = nl_send_auto_complete(nlh, nlmsg);
+	nlmsg_free(nlmsg);
+	if (err < 0)
+		return err;
+	return wait_for_ack(nlh);
+}
+
+/**
+* Send a message verdict including the payload
+* @arg nlh            netlink messsage header
+* @arg msg            queue msg
+* @arg payload_data   packet payload data
+* @arg payload_len    payload length
+* @return 0 on OK or error code
+*/
+int nfnl_queue_msg_send_verdict_payload(struct nl_sock *nlh,
+				const struct nfnl_queue_msg *msg,
+				const void *payload_data, unsigned payload_len)
+{
+	struct nl_msg *nlmsg;
+	int err;
+	struct iovec iov[3];
+	struct nlattr nla;
+
+	nlmsg = nfnl_queue_msg_build_verdict(msg);
+	if (nlmsg == NULL)
+		return -NLE_NOMEM;
+
+	memset(iov, 0, sizeof(iov));
+
+	iov[0].iov_base = (void *) nlmsg_hdr(nlmsg);
+	iov[0].iov_len = nlmsg_hdr(nlmsg)->nlmsg_len;
+
+	nla.nla_type = NFQA_PAYLOAD;
+	nla.nla_len = payload_len + sizeof(nla);
+	nlmsg_hdr(nlmsg)->nlmsg_len += nla.nla_len;
+
+	iov[1].iov_base = (void *) &nla;
+	iov[1].iov_len = sizeof(nla);
+
+	iov[2].iov_base = (void *) payload_data;
+	iov[2].iov_len = NLA_ALIGN(payload_len);
+
+	nl_auto_complete(nlh, nlmsg);
+	err = nl_send_iovec(nlh, nlmsg, iov, 3);
+
 	nlmsg_free(nlmsg);
 	if (err < 0)
 		return err;

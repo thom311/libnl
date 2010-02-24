@@ -197,6 +197,11 @@ uint16_t nfnl_queue_msg_get_group(const struct nfnl_queue_msg *msg)
 	return msg->queue_msg_group;
 }
 
+/**
+* Set the protocol family
+* @arg msg         NF queue message
+* @arg family      AF_XXX  address family  example: AF_INET, AF_UNIX, etc
+*/
 void nfnl_queue_msg_set_family(struct nfnl_queue_msg *msg, uint8_t family)
 {
 	msg->queue_msg_family = family;
@@ -424,6 +429,11 @@ const void *nfnl_queue_msg_get_payload(const struct nfnl_queue_msg *msg, int *le
 	return msg->queue_msg_payload;
 }
 
+/**
+* Return the number of items matching a filter in the cache
+* @arg msg        queue msg
+* @arg verdict    NF_DROP, NF_ACCEPT, NF_REPEAT, etc
+*/
 void nfnl_queue_msg_set_verdict(struct nfnl_queue_msg *msg,
 				unsigned int verdict)
 {

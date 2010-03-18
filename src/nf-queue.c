@@ -1,5 +1,5 @@
 /*
- * src/nf-log.c     Monitor netfilter queue events
+ * src/nf-queue.c     Monitor netfilter queue events
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -7,6 +7,7 @@
  *	of the License.
  *
  * Copyright (c) 2007, 2008 Patrick McHardy <kaber@trash.net>
+ * Copyright (c) 2010  Karl Hiramoto <karl@hiramoto.org>
  */
 
 
@@ -40,7 +41,31 @@ static void obj_input(struct nl_object *obj, void *arg)
 		.dp_fd = stdout,
 		.dp_dump_msgtype = 1,
 	};
+	uint32_t packet_id = nfnl_queue_msg_get_packetid(msg);
+	static uint32_t next_packet_id = 0;
+	struct nfnl_queue_msg *lost_msg = NULL;
+	uint8_t family;
+	uint16_t group;
 
+	if (packet_id > next_packet_id) {
+		printf("Warning: %d Out of order packets.  Queue or socket overload \n", packet_id - next_packet_id);
+		group = nfnl_queue_msg_get_group(msg);
+		family = nfnl_queue_msg_get_family(msg);
+		lost_msg = nfnl_queue_msg_alloc();
+
+		do {
+			nfnl_queue_msg_set_group(lost_msg, group);
+			nfnl_queue_msg_set_family(lost_msg, family);
+			nfnl_queue_msg_set_packetid(lost_msg, next_packet_id);
+			nfnl_queue_msg_set_verdict(lost_msg, NF_ACCEPT);
+			nfnl_queue_msg_send_verdict(nf_sock, lost_msg);
+			next_packet_id++;
+		} while (packet_id > next_packet_id);
+
+		nfnl_queue_msg_put(lost_msg);
+	}
+
+	next_packet_id = packet_id + 1;
 	nfnl_queue_msg_set_verdict(msg, NF_ACCEPT);
 	nl_object_dump(obj, &dp);
 	nfnl_queue_msg_send_verdict(nf_sock, msg);
@@ -75,6 +100,9 @@ int main(int argc, char *argv[])
 	if ((argc > 1 && !strcasecmp(argv[1], "-h")) || argc < 3) {
 		printf("Usage: nf-queue family group [ copy_mode ] "
 		       "[ copy_range ]\n");
+		printf("family: [ inet | inet6 | ... ] \n");
+		printf("group: the --queue-num arg that you gave to iptables\n");
+		printf("copy_mode: [ none | meta | packet ] \n");
 		return 2;
 	}
 
@@ -112,6 +140,8 @@ int main(int argc, char *argv[])
 	rt_sock = nl_cli_alloc_socket();
 	nl_cli_connect(rt_sock, NETLINK_ROUTE);
 	link_cache = nl_cli_link_alloc_cache(rt_sock);
+
+	nl_socket_set_buffer_size(nf_sock, 1024*127, 1024*127);
 
 	while (1) {
 		fd_set rfds;

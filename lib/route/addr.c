@@ -400,6 +400,81 @@ static void addr_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	addr_dump_details(obj, p);
 }
 
+static void addr_dump_env(struct nl_object *obj, struct nl_dump_params *p)
+{
+	struct rtnl_addr *addr = (struct rtnl_addr *) obj;
+	struct nl_cache *link_cache;
+	char buf[128];
+
+	nl_dump_line(p, "ADDR_FAMILY=%s\n",
+		     nl_af2str(addr->a_family, buf, sizeof(buf)));
+
+	if (addr->ce_mask & ADDR_ATTR_LOCAL)
+		nl_dump_line(p, "ADDR_LOCAL=%s\n",
+			     nl_addr2str(addr->a_local, buf, sizeof(buf)));
+
+	if (addr->ce_mask & ADDR_ATTR_PEER)
+		nl_dump_line(p, "ADDR_PEER=%s\n",
+			     nl_addr2str(addr->a_peer, buf, sizeof(buf)));
+
+	if (addr->ce_mask & ADDR_ATTR_BROADCAST)
+		nl_dump_line(p, "ADDR_BROADCAST=%s\n",
+			     nl_addr2str(addr->a_bcast, buf, sizeof(buf)));
+
+	if (addr->ce_mask & ADDR_ATTR_ANYCAST)
+		nl_dump_line(p, "ADDR_ANYCAST=%s\n",
+			     nl_addr2str(addr->a_anycast, buf, sizeof(buf)));
+
+	if (addr->ce_mask & ADDR_ATTR_MULTICAST)
+		nl_dump_line(p, "ADDR_MULTICAST=%s\n",
+			     nl_addr2str(addr->a_multicast, buf,
+					   sizeof(buf)));
+
+	if (addr->ce_mask & ADDR_ATTR_PREFIXLEN)
+		nl_dump_line(p, "ADDR_PREFIXLEN=%u\n",
+			     addr->a_prefixlen);
+	link_cache = nl_cache_mngt_require("route/link");
+
+	nl_dump_line(p, "ADDR_IFINDEX=%u\n", addr->a_ifindex);
+	if (link_cache)
+		nl_dump_line(p, "ADDR_IFNAME=%s\n",
+			     rtnl_link_i2name(link_cache, addr->a_ifindex,
+					      buf, sizeof(buf)));
+
+	if (addr->ce_mask & ADDR_ATTR_SCOPE)
+		nl_dump_line(p, "ADDR_SCOPE=%s\n",
+			     rtnl_scope2str(addr->a_scope, buf, sizeof(buf)));
+
+	if (addr->ce_mask & ADDR_ATTR_LABEL)
+		nl_dump_line(p, "ADDR_LABEL=%s\n", addr->a_label);
+
+	rtnl_addr_flags2str(addr->a_flags, buf, sizeof(buf));
+	if (buf[0])
+		nl_dump_line(p, "ADDR_FLAGS=%s\n", buf);
+
+	if (addr->ce_mask & ADDR_ATTR_CACHEINFO) {
+		struct rtnl_addr_cacheinfo *ci = &addr->a_cacheinfo;
+
+		nl_dump_line(p, "ADDR_CACHEINFO_VALID=%s\n",
+			     ci->aci_valid == 0xFFFFFFFFU ? "forever" :
+			     nl_msec2str(ci->aci_valid * 1000,
+					   buf, sizeof(buf)));
+
+		nl_dump_line(p, "ADDR_CACHEINFO_PREFERED=%s\n",
+			     ci->aci_prefered == 0xFFFFFFFFU ? "forever" :
+			     nl_msec2str(ci->aci_prefered * 1000,
+					 buf, sizeof(buf)));
+
+		nl_dump_line(p, "ADDR_CACHEINFO_CREATED=%s\n",
+			     nl_msec2str(addr->a_cacheinfo.aci_cstamp * 10,
+					 buf, sizeof(buf)));
+
+		nl_dump_line(p, "ADDR_CACHEINFO_LASTUPDATE=%s\n",
+			     nl_msec2str(addr->a_cacheinfo.aci_tstamp * 10,
+					 buf, sizeof(buf)));
+	}
+}
+
 static int addr_compare(struct nl_object *_a, struct nl_object *_b,
 			uint32_t attrs, int flags)
 {
@@ -935,6 +1010,7 @@ static struct nl_object_ops addr_obj_ops = {
 	    [NL_DUMP_LINE] 	= addr_dump_line,
 	    [NL_DUMP_DETAILS]	= addr_dump_details,
 	    [NL_DUMP_STATS]	= addr_dump_stats,
+	    [NL_DUMP_ENV]	= addr_dump_env,
 	},
 	.oo_compare		= addr_compare,
 	.oo_attrs2str		= addr_attrs2str,

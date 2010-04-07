@@ -198,7 +198,18 @@ extern "C" {
  *
  * @return True if the attribute is available, otherwise false is returned.
  */
-#define AVAILABLE(A, B, ATTR)	(((A)->ce_mask & (B)->ce_mask) & (ATTR))
+#define AVAILABLE(A, B, ATTR)		(((A)->ce_mask & (B)->ce_mask) & (ATTR))
+
+/**
+ * Return true if attribute is available in only one of both objects
+ * @arg A		an object
+ * @arg B		another object
+ * @arg ATTR		attribute bit
+ *
+ * @return True if the attribute is available in only one of both objects,
+ * otherwise false is returned.
+ */
+#define AVAILABLE_MISMATCH(A, B, ATTR)	(((A)->ce_mask ^ (B)->ce_mask) & (ATTR))
 
 /**
  * Return true if attributes mismatch
@@ -215,7 +226,8 @@ extern "C" {
  *
  * @return True if the attribute mismatch, or false if they match.
  */
-#define ATTR_MISMATCH(A, B, ATTR, EXPR)	(!AVAILABLE(A, B, ATTR) || (EXPR))
+#define ATTR_MISMATCH(A, B, ATTR, EXPR)	(AVAILABLE_MISMATCH(A, B, ATTR) || \
+					 (AVAILABLE(A, B, ATTR) && (EXPR)))
 
 /**
  * Return attribute bit if attribute does not match

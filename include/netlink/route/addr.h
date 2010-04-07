@@ -74,6 +74,9 @@ extern struct nl_addr *rtnl_addr_get_broadcast(struct rtnl_addr *);
 extern int	rtnl_addr_set_multicast(struct rtnl_addr *, struct nl_addr *);
 extern struct nl_addr *rtnl_addr_get_multicast(struct rtnl_addr *);
 
+extern int	rtnl_addr_set_anycast(struct rtnl_addr *, struct nl_addr *);
+extern struct nl_addr *rtnl_addr_get_anycast(struct rtnl_addr *);
+
 extern uint32_t rtnl_addr_get_valid_lifetime(struct rtnl_addr *);
 extern void	rtnl_addr_set_valid_lifetime(struct rtnl_addr *, uint32_t);
 extern uint32_t rtnl_addr_get_preferred_lifetime(struct rtnl_addr *);

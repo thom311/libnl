@@ -126,6 +126,7 @@
 #define ADDR_ATTR_LOCAL		0x0100
 #define ADDR_ATTR_BROADCAST	0x0200
 #define ADDR_ATTR_MULTICAST	0x0400
+#define ADDR_ATTR_ANYCAST	0x0800
 
 static struct nl_cache_ops rtnl_addr_ops;
 static struct nl_object_ops addr_obj_ops;
@@ -149,6 +150,7 @@ static void addr_free_data(struct nl_object *obj)
 	nl_addr_put(addr->a_local);
 	nl_addr_put(addr->a_bcast);
 	nl_addr_put(addr->a_multicast);
+	nl_addr_put(addr->a_anycast);
 }
 
 static int addr_clone(struct nl_object *_dst, struct nl_object *_src)
@@ -170,6 +172,10 @@ static int addr_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	if (src->a_multicast)
 		if (!(dst->a_multicast = nl_addr_clone(src->a_multicast)))
+			return -NLE_NOMEM;
+
+	if (src->a_anycast)
+		if (!(dst->a_anycast = nl_addr_clone(src->a_anycast)))
 			return -NLE_NOMEM;
 
 	return 0;
@@ -273,6 +279,15 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		addr->ce_mask |= ADDR_ATTR_MULTICAST;
 	}
 
+	if (tb[IFA_ANYCAST]) {
+		addr->a_anycast = nl_addr_alloc_attr(tb[IFA_ANYCAST],
+						       family);
+		if (!addr->a_anycast)
+			goto errout_nomem;
+
+		addr->ce_mask |= ADDR_ATTR_ANYCAST;
+	}
+
 	err = pp->pp_cb((struct nl_object *) addr, pp);
 errout:
 	rtnl_addr_put(addr);
@@ -349,6 +364,11 @@ static void addr_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 				nl_addr2str(addr->a_multicast, buf,
 					      sizeof(buf)));
 
+		if (addr->ce_mask & ADDR_ATTR_ANYCAST)
+			nl_dump(p, " anycast %s",
+				nl_addr2str(addr->a_anycast, buf,
+					      sizeof(buf)));
+
 		nl_dump(p, "\n");
 	}
 
@@ -398,6 +418,7 @@ static int addr_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= ADDR_DIFF(MULTICAST,	nl_addr_cmp(a->a_multicast,
 						    b->a_multicast));
 	diff |= ADDR_DIFF(BROADCAST,	nl_addr_cmp(a->a_bcast, b->a_bcast));
+	diff |= ADDR_DIFF(ANYCAST,	nl_addr_cmp(a->a_anycast, b->a_anycast));
 
 	if (flags & LOOSE_COMPARISON)
 		diff |= ADDR_DIFF(FLAGS,
@@ -823,6 +844,17 @@ int rtnl_addr_set_multicast(struct rtnl_addr *addr, struct nl_addr *multicast)
 struct nl_addr *rtnl_addr_get_multicast(struct rtnl_addr *addr)
 {
 	return addr->a_multicast;
+}
+
+int rtnl_addr_set_anycast(struct rtnl_addr *addr, struct nl_addr *anycast)
+{
+	return __assign_addr(addr, &addr->a_anycast, anycast,
+			     ADDR_ATTR_ANYCAST);
+}
+
+struct nl_addr *rtnl_addr_get_anycast(struct rtnl_addr *addr)
+{
+	return addr->a_anycast;
 }
 
 uint32_t rtnl_addr_get_valid_lifetime(struct rtnl_addr *addr)

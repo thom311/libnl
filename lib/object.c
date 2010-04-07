@@ -265,6 +265,8 @@ int nl_object_identical(struct nl_object *a, struct nl_object *b)
 		return 0;
 
 	req_attrs = ops->oo_id_attrs;
+	if (req_attrs == ~0)
+		req_attrs = a->ce_mask & b->ce_mask;
 
 	/* Both objects must provide all required attributes to uniquely
 	 * identify an object */

@@ -605,9 +605,15 @@ int nl_cache_resync(struct nl_sock *sk, struct nl_cache *cache,
 	if (err < 0)
 		goto errout;
 
-	nl_list_for_each_entry_safe(obj, next, &cache->c_items, ce_list)
-		if (nl_object_is_marked(obj))
+	nl_list_for_each_entry_safe(obj, next, &cache->c_items, ce_list) {
+		if (nl_object_is_marked(obj)) {
+			nl_object_get(obj);
 			nl_cache_remove(obj);
+			if (change_cb)
+				change_cb(cache, obj, NL_ACT_DEL);
+			nl_object_put(obj);
+		}
+	}
 
 	NL_DBG(1, "Finished resyncing %p <%s>\n", cache, nl_cache_name(cache));
 

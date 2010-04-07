@@ -850,7 +850,7 @@ static struct nl_object_ops neigh_obj_ops = {
 	},
 	.oo_compare		= neigh_compare,
 	.oo_attrs2str		= neigh_attrs2str,
-	.oo_id_attrs		= (NEIGH_ATTR_DST | NEIGH_ATTR_FAMILY),
+	.oo_id_attrs		= (NEIGH_ATTR_IFINDEX | NEIGH_ATTR_DST | NEIGH_ATTR_FAMILY),
 };
 
 static struct nl_af_group neigh_groups[] = {

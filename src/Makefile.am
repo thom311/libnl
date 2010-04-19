@@ -2,7 +2,7 @@
 
 SUBDIRS = lib
 
-AM_CFLAGS  = -Wall -I${top_srcdir}/include -D_GNU_SOURCE
+AM_CPPFLAGS  = -Wall -I${top_srcdir}/include -D_GNU_SOURCE
 AM_LDFLAGS = -L${top_builddir}/lib -L${top_builddir}/src/lib -lnl-cli
 
 noinst_PROGRAMS = \

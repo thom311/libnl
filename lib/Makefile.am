@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 
-AM_CFLAGS  = -Wall -I${top_srcdir}/include -D_GNU_SOURCE -DSYSCONFDIR=\"$(sysconfdir)/libnl\"
+AM_CPPFLAGS  = -Wall -I${top_srcdir}/include -D_GNU_SOURCE -DSYSCONFDIR=\"$(sysconfdir)/libnl\"
 
 lib_LTLIBRARIES = \
 	libnl.la libnl-genl.la libnl-route.la libnl-nf.la

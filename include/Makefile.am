@@ -60,8 +60,4 @@ nobase_include_HEADERS = \
 	netlink/socket.h \
 	netlink/types.h \
 	netlink/utils.h \
-	netlink/version.h \
-	netlink-generic.h \
-	netlink-local.h \
-	netlink-tc.h \
-	netlink-types.h
+	netlink/version.h

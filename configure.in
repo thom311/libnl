@@ -29,6 +29,11 @@ AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
 	[pkgconfigdir="$withval"], [pkgconfigdir='${libdir}/pkgconfig'])
 AC_SUBST([pkgconfigdir])
 
+AC_ARG_ENABLE([cli],
+	AS_HELP_STRING([--disable-cli], [Do not build command line interface utils]),
+	[enable_cli="$enableval"], [enable_cli="yes"])
+AM_CONDITIONAL([ENABLE_CLI], [test "$enable_cli" = "yes"])
+
 AC_CHECK_LIB([m], [pow], [], AC_MSG_ERROR([libm is required]))
 
 AC_CONFIG_FILES([Makefile doc/Doxyfile doc/Makefile lib/Makefile

@@ -42,6 +42,7 @@ static const char *errmsg[NLE_MAX+1] = {
 [NLE_PROTO_MISMATCH]	= "Protocol mismatch",
 [NLE_NOACCESS]		= "No Access",
 [NLE_PERM]		= "Operation not permitted",
+[NLE_PKTLOC_FILE]	= "Unable to open packet location file",
 };
 
 /**

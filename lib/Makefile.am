@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 
-AM_CFLAGS  = -Wall -I${top_srcdir}/include -D_GNU_SOURCE
+AM_CFLAGS  = -Wall -I${top_srcdir}/include -D_GNU_SOURCE -DSYSCONFDIR=\"$(sysconfdir)/libnl\"
 
 lib_LTLIBRARIES = \
 	libnl.la libnl-genl.la libnl-route.la libnl-nf.la
@@ -23,6 +23,19 @@ libnl_nf_la_SOURCES = \
 	netfilter/netfilter.c netfilter/nfnl.c netfilter/queue.c \
 	netfilter/queue_msg.c netfilter/queue_msg_obj.c netfilter/queue_obj.c
 
+BUILT_SOURCES = route/pktloc_syntax.h
+CLEANFILES = \
+	route/pktloc_grammar.c route/pktloc_grammar.h \
+	route/pktloc_syntax.c route/pktloc_syntax.h
+
+# Hack to avoid using ylwrap. It does not function correctly in combination
+# with --header-file=
+route/pktloc_grammar.c: route/pktloc_grammar.l
+	$(LEX) --header-file=route/pktloc_grammar.h $(LFLAGS) -o $@ $^
+
+route/pktloc_syntax.c: route/pktloc_syntax.y
+	$(YACC) -d $(YFLAGS) -o $@ $^
+
 libnl_route_la_LDFLAGS = -version-info 2:0:0
 libnl_route_la_LIBADD  = libnl.la
 libnl_route_la_SOURCES = \
@@ -40,4 +53,6 @@ libnl_route_la_SOURCES = \
 	route/sch/fifo.c route/sch/htb.c route/sch/netem.c route/sch/prio.c \
 	route/sch/red.c route/sch/sfq.c route/sch/tbf.c \
 	\
-	fib_lookup/lookup.c fib_lookup/request.c
+	fib_lookup/lookup.c fib_lookup/request.c \
+	\
+	route/pktloc_syntax.c route/pktloc_grammar.c route/pktloc.c

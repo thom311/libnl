@@ -23,6 +23,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
 #include <inttypes.h>
 #include <assert.h>

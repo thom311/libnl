@@ -20,7 +20,8 @@ noinst_PROGRAMS = \
 	nl-route-add nl-route-delete nl-route-get nl-route-list \
 	nl-fib-lookup \
 	nl-list-caches nl-list-sockets \
-	nl-util-addr
+	nl-util-addr \
+	nl-pktloc-lookup
 
 genl_ctrl_list_SOURCES = genl-ctrl-list.c 
 genl_ctrl_list_LDADD = -lnl-genl -lnl-route
@@ -95,3 +96,6 @@ nl_list_sockets_LDADD = -lnl-route
 
 nl_util_addr_SOURCES = nl-util-addr.c
 nl_util_addr_LDADD = -lnl-route
+
+nl_pktloc_lookup_SOURCES = nl-pktloc-lookup.c
+nl_pktloc_lookup_LDADD = -lnl-route

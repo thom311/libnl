@@ -5,6 +5,7 @@
 *.la
 *.lo
 *.o
+*.swp
 Makefile
 /lib/stamp-h1
 

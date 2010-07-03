@@ -316,7 +316,7 @@ static void __init get_psched_settings(void)
 			uint32_t tick, us;
 			/* the file contains 4 hexadecimals, but we just use
 			   the first two of them */
-			int r = fscanf(fd, "%08x %08x", &tick, &us);
+			fscanf(fd, "%08x %08x", &tick, &us);
 			ticks_per_usec = (double)tick/(double)us;
 			fclose(fd);
 		}

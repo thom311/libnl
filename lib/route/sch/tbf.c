@@ -93,6 +93,11 @@ static int tbf_msg_parser(struct rtnl_qdisc *q)
 	return 0;
 }
 
+static void tbf_free_data(struct rtnl_qdisc *qdisc)
+{
+	free(qdisc->q_subdata);
+}
+
 static void tbf_dump_line(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
 {
 	double r, rbit, lim;
@@ -517,6 +522,7 @@ static struct rtnl_qdisc_ops tbf_qdisc_ops = {
 	    [NL_DUMP_LINE]	= tbf_dump_line,
 	    [NL_DUMP_DETAILS]	= tbf_dump_details,
 	},
+	.qo_free_data		= tbf_free_data,
 	.qo_get_opts		= tbf_get_opts,
 };
 

@@ -95,7 +95,7 @@ static int include_cb(struct nl_object *obj, struct nl_parser_param *p)
 	if (nl_debug >= 4)
 		nl_object_dump(obj, &nl_debug_dp);
 #endif
-	return nl_cache_include(ca->ca_cache, obj, ca->ca_change);
+	return nl_cache_include(ca->ca_cache, obj, ca->ca_change, ca->ca_change_data);
 }
 
 static int event_input(struct nl_msg *msg, void *arg)
@@ -207,7 +207,7 @@ errout:
  * @return 0 on success or a negative error code.
  */
 int nl_cache_mngr_add(struct nl_cache_mngr *mngr, const char *name,
-		      change_func_t cb, struct nl_cache **result)
+		      change_func_t cb, void *data, struct nl_cache **result)
 {
 	struct nl_cache_ops *ops;
 	struct nl_cache *cache;
@@ -264,6 +264,7 @@ retry:
 
 	mngr->cm_assocs[i].ca_cache = cache;
 	mngr->cm_assocs[i].ca_change = cb;
+	mngr->cm_assocs[i].ca_change_data = data;
 
 	if (mngr->cm_flags & NL_AUTO_PROVIDE)
 		nl_cache_mngt_provide(cache);

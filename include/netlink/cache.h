@@ -24,7 +24,7 @@ extern "C" {
 
 struct nl_cache;
 
-typedef void (*change_func_t)(struct nl_cache *, struct nl_object *, int);
+typedef void (*change_func_t)(struct nl_cache *, struct nl_object *, int, void *);
 
 /* Access Functions */
 extern int			nl_cache_nitems(struct nl_cache *);
@@ -59,10 +59,12 @@ extern int			nl_cache_pickup(struct nl_sock *,
 						struct nl_cache *);
 extern int			nl_cache_resync(struct nl_sock *,
 						struct nl_cache *,
-						change_func_t);
+						change_func_t,
+						void *);
 extern int			nl_cache_include(struct nl_cache *,
 						 struct nl_object *,
-						 change_func_t);
+						 change_func_t,
+						 void *);
 
 /* General */
 extern int			nl_cache_is_empty(struct nl_cache *);
@@ -112,6 +114,7 @@ extern int			nl_cache_mngr_alloc(struct nl_sock *,
 extern int			nl_cache_mngr_add(struct nl_cache_mngr *,
 						  const char *,
 						  change_func_t,
+						  void *,
 						  struct nl_cache **);
 extern int			nl_cache_mngr_get_fd(struct nl_cache_mngr *);
 extern int			nl_cache_mngr_poll(struct nl_cache_mngr *,

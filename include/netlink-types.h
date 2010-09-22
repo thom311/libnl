@@ -83,6 +83,7 @@ struct nl_cache_assoc
 {
 	struct nl_cache *	ca_cache;
 	change_func_t		ca_change;
+	void *			ca_change_data;
 };
 
 struct nl_cache_mngr

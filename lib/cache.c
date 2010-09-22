@@ -517,7 +517,7 @@ int nl_cache_pickup(struct nl_sock *sk, struct nl_cache *cache)
 }
 
 static int cache_include(struct nl_cache *cache, struct nl_object *obj,
-			 struct nl_msgtype *type, change_func_t cb)
+			 struct nl_msgtype *type, change_func_t cb, void *data)
 {
 	struct nl_object *old;
 
@@ -529,7 +529,7 @@ static int cache_include(struct nl_cache *cache, struct nl_object *obj,
 			nl_cache_remove(old);
 			if (type->mt_act == NL_ACT_DEL) {
 				if (cb)
-					cb(cache, old, NL_ACT_DEL);
+					cb(cache, old, NL_ACT_DEL, data);
 				nl_object_put(old);
 			}
 		}
@@ -537,10 +537,10 @@ static int cache_include(struct nl_cache *cache, struct nl_object *obj,
 		if (type->mt_act == NL_ACT_NEW) {
 			nl_cache_move(cache, obj);
 			if (old == NULL && cb)
-				cb(cache, obj, NL_ACT_NEW);
+				cb(cache, obj, NL_ACT_NEW, data);
 			else if (old) {
 				if (nl_object_diff(old, obj) && cb)
-					cb(cache, obj, NL_ACT_CHANGE);
+					cb(cache, obj, NL_ACT_CHANGE, data);
 
 				nl_object_put(old);
 			}
@@ -555,7 +555,7 @@ static int cache_include(struct nl_cache *cache, struct nl_object *obj,
 }
 
 int nl_cache_include(struct nl_cache *cache, struct nl_object *obj,
-		     change_func_t change_cb)
+		     change_func_t change_cb, void *data)
 {
 	struct nl_cache_ops *ops = cache->c_ops;
 	int i;
@@ -566,7 +566,7 @@ int nl_cache_include(struct nl_cache *cache, struct nl_object *obj,
 	for (i = 0; ops->co_msgtypes[i].mt_id >= 0; i++)
 		if (ops->co_msgtypes[i].mt_id == obj->ce_msgtype)
 			return cache_include(cache, obj, &ops->co_msgtypes[i],
-					     change_cb);
+					     change_cb, data);
 
 	return -NLE_MSGTYPE_NOSUPPORT;
 }
@@ -575,16 +575,17 @@ static int resync_cb(struct nl_object *c, struct nl_parser_param *p)
 {
 	struct nl_cache_assoc *ca = p->pp_arg;
 
-	return nl_cache_include(ca->ca_cache, c, ca->ca_change);
+	return nl_cache_include(ca->ca_cache, c, ca->ca_change, ca->ca_change_data);
 }
 
 int nl_cache_resync(struct nl_sock *sk, struct nl_cache *cache,
-		    change_func_t change_cb)
+		    change_func_t change_cb, void *data)
 {
 	struct nl_object *obj, *next;
 	struct nl_cache_assoc ca = {
 		.ca_cache = cache,
 		.ca_change = change_cb,
+		.ca_change_data = data,
 	};
 	struct nl_parser_param p = {
 		.pp_cb = resync_cb,
@@ -610,7 +611,7 @@ int nl_cache_resync(struct nl_sock *sk, struct nl_cache *cache,
 			nl_object_get(obj);
 			nl_cache_remove(obj);
 			if (change_cb)
-				change_cb(cache, obj, NL_ACT_DEL);
+				change_cb(cache, obj, NL_ACT_DEL, data);
 			nl_object_put(obj);
 		}
 	}

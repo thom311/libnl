@@ -42,6 +42,9 @@ extern void			genl_family_set_maxattr(struct genl_family *,
 
 extern int			genl_family_add_op(struct genl_family *,
 						   int, int);
+extern int 			genl_family_add_grp(struct genl_family *,
+					uint32_t , const char *);
+
 
 #ifdef __cplusplus
 }

@@ -398,6 +398,18 @@ void nl_socket_set_peer_port(struct nl_sock *sk, uint32_t port)
 	sk->s_peer.nl_pid = port;
 }
 
+uint32_t nl_socket_get_peer_groups(struct nl_sock *sk)
+{
+	return sk->s_peer.nl_groups;
+}
+
+void nl_socket_set_peer_groups(struct nl_sock *sk, uint32_t groups)
+{
+	sk->s_peer.nl_groups = groups;
+}
+
+
+
 /** @} */
 
 /**

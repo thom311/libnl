@@ -21,7 +21,6 @@ extern "C" {
 #endif
 
 extern int		genl_connect(struct nl_sock *);
-
 extern int		genl_send_simple(struct nl_sock *, int, int,
 					 int, int);
 

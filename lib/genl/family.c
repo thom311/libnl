@@ -39,12 +39,14 @@ static void family_constructor(struct nl_object *c)
 	struct genl_family *family = (struct genl_family *) c;
 
 	nl_init_list_head(&family->gf_ops);
+	nl_init_list_head(&family->gf_mc_grps);
 }
 
 static void family_free_data(struct nl_object *c)
 {
 	struct genl_family *family = (struct genl_family *) c;
 	struct genl_family_op *ops, *tmp;
+	struct genl_family_grp *grp, *t_grp;
 
 	if (family == NULL)
 		return;
@@ -53,6 +55,12 @@ static void family_free_data(struct nl_object *c)
 		nl_list_del(&ops->o_list);
 		free(ops);
 	}
+
+	nl_list_for_each_entry_safe(grp, t_grp, &family->gf_mc_grps, list) {
+		nl_list_del(&grp->list);
+		free(grp);
+	}
+
 }
 
 static int family_clone(struct nl_object *_dst, struct nl_object *_src)
@@ -60,6 +68,7 @@ static int family_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct genl_family *dst = nl_object_priv(_dst);
 	struct genl_family *src = nl_object_priv(_src);
 	struct genl_family_op *ops;
+	struct genl_family_grp *grp;
 	int err;
 
 	nl_list_for_each_entry(ops, &src->gf_ops, o_list) {
@@ -67,6 +76,13 @@ static int family_clone(struct nl_object *_dst, struct nl_object *_src)
 		if (err < 0)
 			return err;
 	}
+
+	nl_list_for_each_entry(grp, &src->gf_mc_grps, list) {
+		err = genl_family_add_grp(dst, grp->id, grp->name);
+		if (err < 0)
+			return err;
+	}
+
 	
 	return 0;
 }
@@ -93,6 +109,7 @@ static char *ops_flags2str(int flags, char *buf, size_t len)
 
 static void family_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 {
+	struct genl_family_grp *grp;
 	struct genl_family *family = (struct genl_family *) obj;
 
 	family_dump_line(obj, p);
@@ -118,6 +135,11 @@ static void family_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 			nl_dump(p, "\n");
 		}
 	}
+
+	nl_list_for_each_entry(grp, &family->gf_mc_grps, list) {
+		nl_dump_line(p, "      grp %s (0x%02x)\n", grp->name, grp->id);
+	}
+
 }
 
 static void family_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
@@ -251,6 +273,23 @@ int genl_family_add_op(struct genl_family *family, int id, int flags)
 
 	nl_list_add_tail(&op->o_list, &family->gf_ops);
 	family->ce_mask |= FAMILY_ATTR_OPS;
+
+	return 0;
+}
+
+int genl_family_add_grp(struct genl_family *family, uint32_t id,
+	       		const char *name)
+{
+	struct genl_family_grp *grp;  
+
+	grp = calloc(1, sizeof(*grp));
+	if (grp == NULL)
+		return -NLE_NOMEM;
+
+	grp->id = id;
+	strncpy(grp->name, name, GENL_NAMSIZ - 1);
+
+	nl_list_add_tail(&grp->list, &family->gf_mc_grps);
 
 	return 0;
 }

@@ -37,7 +37,8 @@ extern void		nl_join_groups(struct nl_sock *, int);
 extern uint32_t		nl_socket_get_peer_port(struct nl_sock *);
 extern void		nl_socket_set_peer_port(struct nl_sock *,
 							uint32_t);
-
+extern uint32_t 	nl_socket_get_peer_groups(struct nl_sock *sk);
+extern void 		nl_socket_set_peer_groups(struct nl_sock *sk, uint32_t groups);
 extern struct nl_cb *	nl_socket_get_cb(struct nl_sock *);
 extern void		nl_socket_set_cb(struct nl_sock *,
 						 struct nl_cb *);

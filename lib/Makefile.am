@@ -23,7 +23,6 @@ libnl_nf_la_SOURCES = \
 	netfilter/netfilter.c netfilter/nfnl.c netfilter/queue.c \
 	netfilter/queue_msg.c netfilter/queue_msg_obj.c netfilter/queue_obj.c
 
-BUILT_SOURCES = route/pktloc_syntax.h
 CLEANFILES = \
 	route/pktloc_grammar.c route/pktloc_grammar.h \
 	route/pktloc_syntax.c route/pktloc_syntax.h

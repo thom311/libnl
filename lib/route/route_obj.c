@@ -1108,7 +1108,8 @@ int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)
 	 * required to allow more than 256 tables. */
 	NLA_PUT_U32(msg, RTA_TABLE, route->rt_table);
 
-	NLA_PUT_ADDR(msg, RTA_DST, route->rt_dst);
+	if (nl_addr_get_len(route->rt_dst))
+		NLA_PUT_ADDR(msg, RTA_DST, route->rt_dst);
 	NLA_PUT_U32(msg, RTA_PRIORITY, route->rt_prio);
 
 	if (route->ce_mask & ROUTE_ATTR_SRC)

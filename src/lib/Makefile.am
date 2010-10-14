@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 
 AM_CPPFLAGS  = -Wall -I${top_srcdir}/include -I${top_builddir}/include -D_GNU_SOURCE -DPKGLIBDIR=\"$(pkglibdir)\" -DSYSCONFDIR=\"$(sysconfdir)\" -rdynamic
-AM_LDFLAGS = -L${top_builddir}/lib -ldl
+AM_LDFLAGS = -L${top_builddir}/lib -ldl -version-info 3:0:0
 
 #nobase_pkglib_LTLIBRARIES = cls/basic.la cls/ematch/cmp.la
 #cls_basic_la_LDFLAGS = -module -version-info 2:0:0
@@ -27,8 +27,6 @@ AM_LDFLAGS = -L${top_builddir}/lib -ldl
 
 lib_LTLIBRARIES = \
 	libnl-cli.la
-
-libnl_cli_la_LDFLAGS = -version-info 2:0:0
 
 libnl_cli_la_LIBADD  = ${top_builddir}/lib/libnl.la \
 		       ${top_builddir}/lib/libnl-route.la \

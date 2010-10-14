@@ -1,21 +1,19 @@
 # -*- Makefile -*-
 
 AM_CPPFLAGS  = -Wall -I${top_srcdir}/include -I${top_builddir}/include -D_GNU_SOURCE -DSYSCONFDIR=\"$(sysconfdir)/libnl\"
+AM_LDFLAGS = -version-info 3:0:0
 
 lib_LTLIBRARIES = \
 	libnl.la libnl-genl.la libnl-route.la libnl-nf.la
 
-libnl_la_LDFLAGS = -version-info 2:0:0
 libnl_la_SOURCES = \
 	addr.c attr.c cache.c cache_mngr.c cache_mngt.c data.c doc.c \
 	error.c handlers.c msg.c nl.c object.c socket.c utils.c
 
-libnl_genl_la_LDFLAGS = -version-info 2:0:0
 libnl_genl_la_LIBADD  = libnl.la
 libnl_genl_la_SOURCES = \
 	genl/ctrl.c genl/family.c genl/genl.c genl/mngt.c
 
-libnl_nf_la_LDFLAGS = -version-info 2:0:0
 libnl_nf_la_LIBADD  = libnl-route.la
 libnl_nf_la_SOURCES = \
 	netfilter/ct.c netfilter/ct_obj.c netfilter/log.c \
@@ -35,7 +33,6 @@ route/pktloc_grammar.c: route/pktloc_grammar.l
 route/pktloc_syntax.c: route/pktloc_syntax.y
 	$(YACC) -d $(YFLAGS) -o $@ $^
 
-libnl_route_la_LDFLAGS = -version-info 2:0:0
 libnl_route_la_LIBADD  = libnl.la
 libnl_route_la_SOURCES = \
 	route/addr.c route/class.c route/class_api.c route/class_obj.c \

@@ -5,6 +5,9 @@ SUBDIRS = lib
 AM_CPPFLAGS  = -Wall -I${top_srcdir}/include -I${top_builddir}/include -D_GNU_SOURCE
 AM_LDFLAGS = -L${top_builddir}/lib -L${top_builddir}/src/lib -lnl-cli
 
+sbin_PROGRAMS = \
+	nl-qdisc-add
+
 noinst_PROGRAMS = \
 	genl-ctrl-list \
 	nf-ct-list nf-log nf-queue nf-monitor \
@@ -66,6 +69,8 @@ nl_neigh_list_LDADD = -lnl-route
 nl_neightbl_list_SOURCES = nl-neightbl-list.c
 nl_neightbl_list_LDADD = -lnl-route
 
+nl_qdisc_add_SOURCES = nl-qdisc-add.c
+nl_qdisc_add_LDADD = -lnl-route
 nl_qdisc_delete_SOURCES = nl-qdisc-delete.c
 nl_qdisc_delete_LDADD = -lnl-route
 nl_qdisc_list_SOURCES = nl-qdisc-list.c

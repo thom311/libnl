@@ -13,10 +13,23 @@
 #define __NETLINK_CLI_QDISC_H_
 
 #include <netlink/route/qdisc.h>
+#include <netlink/route/qdisc-modules.h>
 
 #define nl_cli_qdisc_alloc_cache(sk) \
 		nl_cli_alloc_cache((sk), "queueing disciplines", \
 				   rtnl_qdisc_alloc_cache)
+
+struct nl_cli_qdisc_module
+{
+	const char *		qm_name;
+	struct rtnl_qdisc_ops *	qm_ops;
+	void		      (*qm_parse_argv)(struct rtnl_qdisc *, int, char **);
+	struct nl_list_head	qm_list;
+};
+
+extern struct nl_cli_qdisc_module *nl_cli_qdisc_lookup(struct rtnl_qdisc_ops *);
+extern void nl_cli_qdisc_register(struct nl_cli_qdisc_module *);
+extern void nl_cli_qdisc_unregister(struct nl_cli_qdisc_module *);
 
 extern struct rtnl_qdisc *nl_cli_qdisc_alloc(void);
 

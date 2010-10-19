@@ -13,10 +13,25 @@
  * @defgroup cli Command Line Interface API
  *
  * @{
+ *
+ * These modules provide an interface for text based applications. The
+ * functions provided are wrappers for their libnl equivalent with
+ * added error handling. The functions check for allocation failures,
+ * invalid input, and unknown types and will print error messages
+ * accordingly via nl_cli_fatal().
  */
 
 #include <netlink/cli/utils.h>
 
+/**
+ * Parse a text based 32 bit unsigned integer argument
+ * @arg arg		Integer in text form.
+ *
+ * Tries to convert the number provided in arg to a uint32_t. Will call
+ * nl_cli_fatal() if the conversion fails.
+ *
+ * @return 32bit unsigned integer.
+ */
 uint32_t nl_cli_parse_u32(const char *arg)
 {
 	unsigned long lval;
@@ -34,7 +49,7 @@ void nl_cli_print_version(void)
 {
 	printf("libnl tools version %s\n", LIBNL_VERSION);
 	printf(
-	"Copyright (C) 2003-2009 Thomas Graf <tgraf@redhat.com>\n"
+	"Copyright (C) 2003-2010 Thomas Graf <tgraf@redhat.com>\n"
 	"\n"
 	"This program comes with ABSOLUTELY NO WARRANTY. This is free \n"
 	"software, and you are welcome to redistribute it under certain\n"
@@ -44,6 +59,14 @@ void nl_cli_print_version(void)
 	exit(0);
 }
 
+/**
+ * Print error message and quit application
+ * @arg err		Error code.
+ * @arg fmt		Error message.
+ *
+ * Prints the formatted error message to stderr and quits the application
+ * using the provided error code.
+ */
 void nl_cli_fatal(int err, const char *fmt, ...)
 {
 	va_list ap;
@@ -142,6 +165,19 @@ struct nl_cache *nl_cli_alloc_cache(struct nl_sock *sock, const char *name,
 	nl_cache_mngt_provide(cache);
 
 	return cache;
+}
+
+void nl_cli_load_module(const char *prefix, const char *name)
+{
+	char path[FILENAME_MAX+1];
+	void *handle;
+
+	snprintf(path, sizeof(path), "%s/%s/%s.so",
+		 PKGLIBDIR, prefix, name);
+
+	if (!(handle = dlopen(path, RTLD_NOW)))
+		nl_cli_fatal(ENOENT, "Unable to load module \"%s\": %s\n",
+			path, dlerror());
 }
 
 /** @} */

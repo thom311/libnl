@@ -73,6 +73,8 @@ extern int		nl_cli_confirm(struct nl_object *,
 extern struct nl_cache *nl_cli_alloc_cache(struct nl_sock *, const char *,
 			     int (*ac)(struct nl_sock *, struct nl_cache **));
 
+extern void		nl_cli_load_module(const char *, const char *);
+
 #ifdef __cplusplus
 }
 #endif

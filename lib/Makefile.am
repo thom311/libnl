@@ -52,3 +52,13 @@ libnl_route_la_SOURCES = \
 	fib_lookup/lookup.c fib_lookup/request.c \
 	\
 	route/pktloc_syntax.c route/pktloc_grammar.c route/pktloc.c
+
+
+if ENABLE_CLI
+nobase_pkglib_LTLIBRARIES = \
+	cli/qdisc/htb.la \
+	cli/qdisc/blackhole.la
+
+cli_qdisc_htb_la_LDFLAGS = -module -version-info 0:0:0
+cli_qdisc_blackhole_la_LDFLAGS = -module -version-info 0:0:0
+endif

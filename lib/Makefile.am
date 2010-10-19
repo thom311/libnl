@@ -57,8 +57,12 @@ libnl_route_la_SOURCES = \
 if ENABLE_CLI
 nobase_pkglib_LTLIBRARIES = \
 	cli/qdisc/htb.la \
-	cli/qdisc/blackhole.la
+	cli/qdisc/blackhole.la \
+	cli/qdisc/pfifo.la \
+	cli/qdisc/bfifo.la
 
 cli_qdisc_htb_la_LDFLAGS = -module -version-info 0:0:0
 cli_qdisc_blackhole_la_LDFLAGS = -module -version-info 0:0:0
+cli_qdisc_pfifo_la_LDFLAGS = -module -version-info 0:0:0
+cli_qdisc_bfifo_la_LDFLAGS = -module -version-info 0:0:0
 endif

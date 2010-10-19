@@ -37,6 +37,6 @@ AM_CONDITIONAL([ENABLE_CLI], [test "$enable_cli" = "yes"])
 AC_CHECK_LIB([m], [pow], [], AC_MSG_ERROR([libm is required]))
 
 AC_CONFIG_FILES([Makefile doc/Doxyfile doc/Makefile lib/Makefile
-	include/Makefile src/Makefile src/lib/Makefile \
+	include/Makefile src/Makefile src/lib/Makefile man/Makefile
 	libnl-2.1.pc include/netlink/version.h])
 AC_OUTPUT

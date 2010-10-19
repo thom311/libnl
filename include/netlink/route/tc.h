@@ -53,6 +53,7 @@ extern int rtnl_tc_build_rate_table(uint32_t *, uint8_t, uint8_t, int, int);
 
 
 /* TC Handle Translations */
+extern int		rtnl_tc_read_classid_file(void);
 extern char *		rtnl_tc_handle2str(uint32_t, char *, size_t);
 extern int		rtnl_tc_str2handle(const char *, uint32_t *);
 

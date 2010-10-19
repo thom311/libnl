@@ -6,7 +6,8 @@ AM_CPPFLAGS  = -Wall -I${top_srcdir}/include -I${top_builddir}/include -D_GNU_SO
 AM_LDFLAGS = -L${top_builddir}/lib -L${top_builddir}/src/lib -lnl-cli
 
 sbin_PROGRAMS = \
-	nl-qdisc-add
+	nl-qdisc-add \
+	nl-classid-lookup
 
 noinst_PROGRAMS = \
 	genl-ctrl-list \
@@ -104,3 +105,6 @@ nl_util_addr_LDADD = -lnl-route
 
 nl_pktloc_lookup_SOURCES = nl-pktloc-lookup.c
 nl_pktloc_lookup_LDADD = -lnl-route
+
+nl_classid_lookup_SOURCES = nl-classid-lookup.c
+nl_classid_lookup_LDADD = -lnl-route

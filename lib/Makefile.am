@@ -39,7 +39,7 @@ libnl_route_la_SOURCES = \
 	route/cls.c route/cls_api.c route/cls_obj.c route/link.c \
 	route/neigh.c route/neightbl.c route/nexthop.c route/qdisc.c \
 	route/qdisc_api.c route/qdisc_obj.c route/route.c route/route_obj.c \
-	route/route_utils.c route/rtnl.c route/rule.c route/tc.c \
+	route/route_utils.c route/rtnl.c route/rule.c route/tc.c route/classid.c \
 	\
 	route/cls/fw.c route/cls/police.c route/cls/u32.c \
 	\

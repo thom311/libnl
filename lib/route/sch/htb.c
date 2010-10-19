@@ -232,20 +232,20 @@ static struct nl_msg *htb_qdisc_get_opts(struct rtnl_qdisc *qdisc)
 	struct tc_htb_glob opts;
 	struct nl_msg *msg;
 
-	if (d == NULL)
-		return NULL;
-
 	msg = nlmsg_alloc();
 	if (msg == NULL)
 		return NULL;
 
 	memset(&opts, 0, sizeof(opts));
 	opts.version = TC_HTB_PROTOVER;
+	opts.rate2quantum = 10;
 
-	if (d->qh_mask & SCH_HTB_HAS_RATE2QUANTUM)
-		opts.rate2quantum = d->qh_rate2quantum;
-	if (d->qh_mask & SCH_HTB_HAS_DEFCLS)
-		opts.defcls = d->qh_defcls;
+	if (d) {
+		if (d->qh_mask & SCH_HTB_HAS_RATE2QUANTUM)
+			opts.rate2quantum = d->qh_rate2quantum;
+		if (d->qh_mask & SCH_HTB_HAS_DEFCLS)
+			opts.defcls = d->qh_defcls;
+	}
 
 	nla_put(msg, TCA_HTB_INIT, sizeof(opts), &opts);
 

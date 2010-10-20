@@ -6,7 +6,7 @@ AM_CPPFLAGS  = -Wall -I${top_srcdir}/include -I${top_builddir}/include -D_GNU_SO
 AM_LDFLAGS = -L${top_builddir}/lib -L${top_builddir}/src/lib -lnl-cli
 
 sbin_PROGRAMS = \
-	nl-qdisc-add \
+	nl-qdisc-add nl-qdisc-list \
 	nl-class-add \
 	nl-classid-lookup
 
@@ -17,7 +17,7 @@ noinst_PROGRAMS = \
 	nl-link-list nl-link-set nl-link-stats \
 	nl-link-ifindex2name nl-link-name2ifindex \
 	nl-neigh-add nl-neigh-delete nl-neigh-list \
-	nl-qdisc-delete nl-qdisc-list \
+	nl-qdisc-delete \
 	nl-rule-list \
 	nl-neightbl-list \
 	nl-monitor \

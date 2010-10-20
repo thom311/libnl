@@ -23,6 +23,7 @@ nl-qdisc-delete
 nl-qdisc-list
 nl-class-add
 nl-class-delete
+nl-class-list
 nl-route-add
 nl-route-delete
 nl-route-list

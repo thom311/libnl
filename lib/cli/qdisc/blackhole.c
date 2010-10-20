@@ -48,8 +48,8 @@ static void blackhole_parse_argv(struct rtnl_qdisc *qdisc, int argc, char **argv
 
 static struct nl_cli_qdisc_module blackhole_module =
 {
-	.qm_name	= "blackhole",
-	.qm_parse_argv	= blackhole_parse_argv,
+	.qm_name		= "blackhole",
+	.qm_parse_qdisc_argv	= blackhole_parse_argv,
 };
 
 static void __init blackhole_init(void)

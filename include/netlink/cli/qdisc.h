@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2008-2009 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2008-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef __NETLINK_CLI_QDISC_H_
@@ -23,11 +23,14 @@ struct nl_cli_qdisc_module
 {
 	const char *		qm_name;
 	struct rtnl_qdisc_ops *	qm_ops;
-	void		      (*qm_parse_argv)(struct rtnl_qdisc *, int, char **);
+	struct rtnl_class_ops *	qm_class_ops;
+	void		      (*qm_parse_qdisc_argv)(struct rtnl_qdisc *, int, char **);
+	void		      (*qm_parse_class_argv)(struct rtnl_class *, int, char **);
 	struct nl_list_head	qm_list;
 };
 
 extern struct nl_cli_qdisc_module *nl_cli_qdisc_lookup(struct rtnl_qdisc_ops *);
+extern struct nl_cli_qdisc_module *nl_cli_qdisc_lookup_by_class(struct rtnl_class_ops *);
 extern void nl_cli_qdisc_register(struct nl_cli_qdisc_module *);
 extern void nl_cli_qdisc_unregister(struct nl_cli_qdisc_module *);
 

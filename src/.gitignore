@@ -21,6 +21,7 @@ nl-neightbl-list
 nl-qdisc-add
 nl-qdisc-delete
 nl-qdisc-list
+nl-class-add
 nl-route-add
 nl-route-delete
 nl-route-list

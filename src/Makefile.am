@@ -7,6 +7,7 @@ AM_LDFLAGS = -L${top_builddir}/lib -L${top_builddir}/src/lib -lnl-cli
 
 sbin_PROGRAMS = \
 	nl-qdisc-add \
+	nl-class-add \
 	nl-classid-lookup
 
 noinst_PROGRAMS = \
@@ -76,6 +77,9 @@ nl_qdisc_delete_SOURCES = nl-qdisc-delete.c
 nl_qdisc_delete_LDADD = -lnl-route
 nl_qdisc_list_SOURCES = nl-qdisc-list.c
 nl_qdisc_list_LDADD = -lnl-route
+
+nl_class_add_SOURCES = nl-class-add.c
+nl_class_add_LDADD = -lnl-route
 
 nl_route_add_SOURCES = nl-route-add.c
 nl_route_add_LDADD = -lnl-route

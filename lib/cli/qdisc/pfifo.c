@@ -59,8 +59,8 @@ static void pfifo_parse_argv(struct rtnl_qdisc *qdisc, int argc, char **argv)
 
 static struct nl_cli_qdisc_module pfifo_module =
 {
-	.qm_name	= "pfifo",
-	.qm_parse_argv	= pfifo_parse_argv,
+	.qm_name		= "pfifo",
+	.qm_parse_qdisc_argv	= pfifo_parse_argv,
 };
 
 static void __init pfifo_init(void)

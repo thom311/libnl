@@ -66,8 +66,8 @@ static void bfifo_parse_argv(struct rtnl_qdisc *qdisc, int argc, char **argv)
 
 static struct nl_cli_qdisc_module bfifo_module =
 {
-	.qm_name	= "bfifo",
-	.qm_parse_argv	= bfifo_parse_argv,
+	.qm_name		= "bfifo",
+	.qm_parse_qdisc_argv	= bfifo_parse_argv,
 };
 
 static void __init bfifo_init(void)

@@ -1,5 +1,5 @@
 /*
- * src/nl-qdisc-add.c     Add Queueing Discipline
+ * src/nl-class-add.c     Add/Update/Replace Traffic Class
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -11,6 +11,7 @@
 
 #include <netlink/cli/utils.h>
 #include <netlink/cli/qdisc.h>
+#include <netlink/cli/class.h>
 #include <netlink/cli/link.h>
 
 static int quiet = 0;
@@ -18,25 +19,23 @@ static int quiet = 0;
 static void print_usage(void)
 {
 	printf(
-"Usage: nl-qdisc-add [OPTIONS]... QDISC [CONFIGURATION]...\n"
+"Usage: nl-class-add [OPTIONS]... class [CONFIGURATION]...\n"
 "\n"
 "OPTIONS\n"
 " -q, --quiet               Do not print informal notifications.\n"
 " -h, --help                Show this help text.\n"
 " -v, --version             Show versioning information.\n"
-"     --update              Update qdisc if it exists.\n"
-"     --replace             Replace or update qdisc if it exists.\n"
-"     --update-only         Only update qdisc, never create it.\n"
-"     --replace-only        Only replace or update qdisc, never create it.\n"
-" -d, --dev=DEV             Network device the qdisc should be attached to.\n"
-" -i, --id=ID               ID of new qdisc (default: auto-generated)r\n"
-" -p, --parent=ID           ID of parent { root | ingress | QDISC-ID }\n"
+"     --update              Update class if it exists.\n"
+"     --update-only         Only update class, never create it.\n"
+" -d, --dev=DEV             Network device the class should be attached to.\n"
+" -i, --id=ID               ID of new class (default: auto-generated)r\n"
+" -p, --parent=ID           ID of parent { root | ingress | class-ID }\n"
 "\n"
 "CONFIGURATION\n"
-" -h, --help                Show help text of qdisc specific options.\n"
+" -h, --help                Show help text of class specific options.\n"
 "\n"
 "EXAMPLE\n"
-"   $ nl-qdisc-add --dev=eth1 --parent=root htb --rate=100mbit\n"
+"   $ nl-class-add --dev=eth1 --parent=root htb --rate=100mbit\n"
 "\n"
 	);
 	exit(0);
@@ -45,14 +44,14 @@ static void print_usage(void)
 int main(int argc, char *argv[])
 {
 	struct nl_sock *sock;
-	struct rtnl_qdisc *qdisc;
+	struct rtnl_class *class;
 	struct nl_cache *link_cache;
 	struct nl_dump_params dp = {
 		.dp_type = NL_DUMP_DETAILS,
 		.dp_fd = stdout,
 	};
 	struct nl_cli_qdisc_module *qm;
-	struct rtnl_qdisc_ops *ops;
+	struct rtnl_class_ops *ops;
 	int err, flags = NLM_F_CREATE | NLM_F_EXCL;
 	char *kind;
  
@@ -61,15 +60,13 @@ int main(int argc, char *argv[])
 
 	link_cache = nl_cli_link_alloc_cache(sock);
 
- 	qdisc = nl_cli_qdisc_alloc();
+ 	class = nl_cli_class_alloc();
  
 	for (;;) {
 		int c, optidx = 0;
 		enum {
-			ARG_REPLACE = 257,
-			ARG_UPDATE = 258,
-			ARG_REPLACE_ONLY,
-			ARG_UPDATE_ONLY,
+			ARG_UPDATE = 257,
+			ARG_UPDATE_ONLY = 258,
 		};
 		static struct option long_opts[] = {
 			{ "quiet", 0, 0, 'q' },
@@ -78,9 +75,7 @@ int main(int argc, char *argv[])
 			{ "dev", 1, 0, 'd' },
 			{ "parent", 1, 0, 'p' },
 			{ "id", 1, 0, 'i' },
-			{ "replace", 0, 0, ARG_REPLACE },
 			{ "update", 0, 0, ARG_UPDATE },
-			{ "replace-only", 0, 0, ARG_REPLACE_ONLY },
 			{ "update-only", 0, 0, ARG_UPDATE_ONLY },
 			{ 0, 0, 0, 0 }
 		};
@@ -94,43 +89,41 @@ int main(int argc, char *argv[])
 		case 'q': quiet = 1; break;
 		case 'h': print_usage(); break;
 		case 'v': nl_cli_print_version(); break;
-		case 'd': nl_cli_qdisc_parse_dev(qdisc, link_cache, optarg); break;
-		case 'p': nl_cli_qdisc_parse_parent(qdisc, optarg); break;
-		case 'i': nl_cli_qdisc_parse_handle(qdisc, optarg); break;
+		case 'd': nl_cli_class_parse_dev(class, link_cache, optarg); break;
+		case 'p': nl_cli_class_parse_parent(class, optarg); break;
+		case 'i': nl_cli_class_parse_handle(class, optarg); break;
 		case ARG_UPDATE: flags = NLM_F_CREATE; break;
-		case ARG_REPLACE: flags = NLM_F_CREATE | NLM_F_REPLACE; break;
 		case ARG_UPDATE_ONLY: flags = 0; break;
-		case ARG_REPLACE_ONLY: flags = NLM_F_REPLACE; break;
 		}
  	}
 
 	if (optind >= argc)
 		print_usage();
 
-	if (!rtnl_qdisc_get_ifindex(qdisc))
+	if (!rtnl_class_get_ifindex(class))
 		nl_cli_fatal(EINVAL, "You must specify a network device (--dev=XXX)");
 
-	if (!rtnl_qdisc_get_parent(qdisc))
-		nl_cli_fatal(EINVAL, "You must specify a parent");
+	if (!rtnl_class_get_parent(class))
+		nl_cli_fatal(EINVAL, "You must specify a parent (--parent=XXX)");
 
 	kind = argv[optind++];
-	rtnl_qdisc_set_kind(qdisc, kind);
+	rtnl_class_set_kind(class, kind);
 
-	if (!(ops = rtnl_qdisc_lookup_ops(qdisc)))
-		nl_cli_fatal(ENOENT, "Unknown qdisc \"%s\"", kind);
+	if (!(ops = rtnl_class_lookup_ops(class)))
+		nl_cli_fatal(ENOENT, "Unknown class \"%s\"", kind);
 
-	if (!(qm = nl_cli_qdisc_lookup(ops)))
-		nl_cli_fatal(ENOTSUP, "Qdisc type \"%s\" not supported.", kind);
+	if (!(qm = nl_cli_qdisc_lookup_by_class(ops)))
+		nl_cli_fatal(ENOTSUP, "class type \"%s\" not supported.", kind);
 
-	qm->qm_parse_qdisc_argv(qdisc, argc, argv);
+	qm->qm_parse_class_argv(class, argc, argv);
 
 	if (!quiet) {
 		printf("Adding ");
-		nl_object_dump(OBJ_CAST(qdisc), &dp);
+		nl_object_dump(OBJ_CAST(class), &dp);
  	}
 
-	if ((err = rtnl_qdisc_add(sock, qdisc, flags)) < 0)
-		nl_cli_fatal(EINVAL, "Unable to add qdisc: %s", nl_geterror(err));
+	if ((err = rtnl_class_add(sock, class, flags)) < 0)
+		nl_cli_fatal(EINVAL, "Unable to add class: %s", nl_geterror(err));
 
 	return 0;
 }

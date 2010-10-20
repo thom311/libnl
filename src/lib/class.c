@@ -29,6 +29,20 @@ struct rtnl_class *nl_cli_class_alloc(void)
 	return class;
 }
 
+struct nl_cache *nl_cli_class_alloc_cache(struct nl_sock *sock, int ifindex)
+{
+	struct nl_cache *cache;
+	int err;
+
+	if ((err = rtnl_class_alloc_cache(sock, ifindex, &cache)) < 0)
+		nl_cli_fatal(err, "Unable to allocate class cache: %s",
+			     nl_geterror(err));
+
+	nl_cache_mngt_provide(cache);
+
+	return cache;
+}
+
 void nl_cli_class_parse_dev(struct rtnl_class *class, struct nl_cache *link_cache, char *arg)
 {
 	int ival;

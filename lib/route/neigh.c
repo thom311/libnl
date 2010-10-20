@@ -383,51 +383,6 @@ static void neigh_dump_stats(struct nl_object *a, struct nl_dump_params *p)
 	neigh_dump_details(a, p);
 }
 
-static void neigh_dump_env(struct nl_object *obj, struct nl_dump_params *p)
-{
-	struct rtnl_neigh *neigh = (struct rtnl_neigh *) obj;
-	char buf[128];
-
-	nl_dump_line(p, "NEIGH_FAMILY=%s\n",
-		     nl_af2str(neigh->n_family, buf, sizeof(buf)));
-
-	if (neigh->ce_mask & NEIGH_ATTR_LLADDR)
-		nl_dump_line(p, "NEIGHT_LLADDR=%s\n",
-			     nl_addr2str(neigh->n_lladdr, buf, sizeof(buf)));
-
-	if (neigh->ce_mask & NEIGH_ATTR_DST)
-		nl_dump_line(p, "NEIGH_DST=%s\n",
-			     nl_addr2str(neigh->n_dst, buf, sizeof(buf)));
-
-	if (neigh->ce_mask & NEIGH_ATTR_IFINDEX) {
-		struct nl_cache *link_cache;
-
-		nl_dump_line(p, "NEIGH_IFINDEX=%u\n", neigh->n_ifindex);
-
-		link_cache = nl_cache_mngt_require("route/link");
-		if (link_cache)
-			nl_dump_line(p, "NEIGH_IFNAME=%s\n",
-				     rtnl_link_i2name(link_cache,
-						      neigh->n_ifindex,
-						      buf, sizeof(buf)));
-	}
-
-	if (neigh->ce_mask & NEIGH_ATTR_PROBES)
-		nl_dump_line(p, "NEIGH_PROBES=%u\n", neigh->n_probes);
-
-	if (neigh->ce_mask & NEIGH_ATTR_TYPE)
-		nl_dump_line(p, "NEIGH_TYPE=%s\n",
-			     nl_rtntype2str(neigh->n_type, buf, sizeof(buf)));
-
-	rtnl_neigh_flags2str(neigh->n_flags, buf, sizeof(buf));
-	if (buf[0])
-		nl_dump_line(p, "NEIGH_FLAGS=%s\n", buf);
-
-	rtnl_neigh_state2str(neigh->n_state, buf, sizeof(buf));
-	if (buf[0])
-		nl_dump_line(p, "NEIGH_STATE=%s\n", buf);
-}
-
 /**
  * @name Neighbour Object Allocation/Freeage
  * @{
@@ -846,7 +801,6 @@ static struct nl_object_ops neigh_obj_ops = {
 	    [NL_DUMP_LINE]	= neigh_dump_line,
 	    [NL_DUMP_DETAILS]	= neigh_dump_details,
 	    [NL_DUMP_STATS]	= neigh_dump_stats,
-	    [NL_DUMP_ENV]	= neigh_dump_env,
 	},
 	.oo_compare		= neigh_compare,
 	.oo_attrs2str		= neigh_attrs2str,

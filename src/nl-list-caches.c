@@ -48,7 +48,6 @@ static void print(struct nl_cache_ops *ops, void *arg)
 			"brief",
 			"detailed",
 			"stats",
-			"env",
 		};
 		int i;
 

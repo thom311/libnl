@@ -227,53 +227,6 @@ static void rule_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	rule_dump_details(obj, p);
 }
 
-static void rule_dump_env(struct nl_object *obj, struct nl_dump_params *p)
-{
-	struct rtnl_rule *rule = (struct rtnl_rule *) obj;
-	char buf[128];
-
-	nl_dump_line(p, "RULE_PRIORITY=%u\n", rule->r_prio);
-	nl_dump_line(p, "RULE_FAMILY=%s\n",
-		     nl_af2str(rule->r_family, buf, sizeof(buf)));
-
-	if (rule->ce_mask & RULE_ATTR_DST)
-		nl_dump_line(p, "RULE_DST=%s\n",
-			     nl_addr2str(rule->r_dst, buf, sizeof(buf)));
-
-	if (rule->ce_mask & RULE_ATTR_DST_LEN)
-		nl_dump_line(p, "RULE_DSTLEN=%u\n", rule->r_dst_len);
-
-	if (rule->ce_mask & RULE_ATTR_SRC)
-		nl_dump_line(p, "RULE_SRC=%s\n",
-			     nl_addr2str(rule->r_src, buf, sizeof(buf)));
-
-	if (rule->ce_mask & RULE_ATTR_SRC_LEN)
-		nl_dump_line(p, "RULE_SRCLEN=%u\n", rule->r_src_len);
-
-	if (rule->ce_mask & RULE_ATTR_IIF)
-		nl_dump_line(p, "RULE_IIF=%s\n", rule->r_iif);
-
-	if (rule->ce_mask & RULE_ATTR_TABLE)
-		nl_dump_line(p, "RULE_TABLE=%u\n", rule->r_table);
-
-	if (rule->ce_mask & RULE_ATTR_REALMS)
-		nl_dump_line(p, "RULE_REALM=%u\n", rule->r_realms);
-
-	if (rule->ce_mask & RULE_ATTR_MARK)
-		nl_dump_line(p, "RULE_MARK=0x%" PRIx64 "\n", rule->r_mark);
-
-	if (rule->ce_mask & RULE_ATTR_DSFIELD)
-		nl_dump_line(p, "RULE_DSFIELD=%u\n", rule->r_dsfield);
-
-	if (rule->ce_mask & RULE_ATTR_TYPE)
-		nl_dump_line(p, "RULE_TYPE=%s\n",
-			     nl_rtntype2str(rule->r_type, buf, sizeof(buf)));
-
-	if (rule->ce_mask & RULE_ATTR_SRCMAP)
-		nl_dump_line(p, "RULE_SRCMAP=%s\n",
-			     nl_addr2str(rule->r_srcmap, buf, sizeof(buf)));
-}
-
 static int rule_compare(struct nl_object *_a, struct nl_object *_b,
 			uint32_t attrs, int flags)
 {
@@ -762,7 +715,6 @@ static struct nl_object_ops rule_obj_ops = {
 	    [NL_DUMP_LINE]	= rule_dump_line,
 	    [NL_DUMP_DETAILS]	= rule_dump_details,
 	    [NL_DUMP_STATS]	= rule_dump_stats,
-	    [NL_DUMP_ENV]	= rule_dump_env,
 	},
 	.oo_compare		= rule_compare,
 	.oo_attrs2str		= rule_attrs2str,

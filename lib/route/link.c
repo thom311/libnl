@@ -566,73 +566,6 @@ static void link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 		link->l_info_ops->io_dump[NL_DUMP_STATS](link, p);
 }
 
-static void link_dump_env(struct nl_object *obj, struct nl_dump_params *p)
-{
-	struct rtnl_link *link = (struct rtnl_link *) obj;
-	struct nl_cache *cache = dp_cache(obj);
-	char buf[128];
-	int i;
-
-	nl_dump_line(p, "LINK_NAME=%s\n", link->l_name);
-	nl_dump_line(p, "LINK_IFINDEX=%u\n", link->l_index);
-	nl_dump_line(p, "LINK_FAMILY=%s\n",
-		     nl_af2str(link->l_family, buf, sizeof(buf)));
-	nl_dump_line(p, "LINK_TYPE=%s\n",
-		     nl_llproto2str(link->l_arptype, buf, sizeof(buf)));
-	if (link->ce_mask & LINK_ATTR_ADDR)
-		nl_dump_line(p, "LINK_ADDRESS=%s\n",
-			     nl_addr2str(link->l_addr, buf, sizeof(buf)));
-	nl_dump_line(p, "LINK_MTU=%u\n", link->l_mtu);
-	nl_dump_line(p, "LINK_TXQUEUELEN=%u\n", link->l_txqlen);
-	nl_dump_line(p, "LINK_WEIGHT=%u\n", link->l_weight);
-
-	rtnl_link_flags2str(link->l_flags & ~IFF_RUNNING, buf, sizeof(buf));
-	if (buf[0])
-		nl_dump_line(p, "LINK_FLAGS=%s\n", buf);
-
-	if (link->ce_mask & LINK_ATTR_QDISC)
-		nl_dump_line(p, "LINK_QDISC=%s\n", link->l_qdisc);
-
-	if (link->ce_mask & LINK_ATTR_LINK) {
-		struct rtnl_link *ll = rtnl_link_get(cache, link->l_link);
-
-		nl_dump_line(p, "LINK_LINK_IFINDEX=%d\n", link->l_link);
-		if (ll) {
-			nl_dump_line(p, "LINK_LINK_IFNAME=%s\n", ll->l_name);
-			rtnl_link_put(ll);
-		}
-	}
-
-	if (link->ce_mask & LINK_ATTR_MASTER) {
-		struct rtnl_link *master = rtnl_link_get(cache, link->l_master);
-		nl_dump_line(p, "LINK_MASTER=%s\n",
-			     master ? master->l_name : "none");
-		if (master)
-			rtnl_link_put(master);
-	}
-
-	if (link->ce_mask & LINK_ATTR_BRD)
-		nl_dump_line(p, "LINK_BROADCAST=%s\n",
-			     nl_addr2str(link->l_bcast, buf, sizeof(buf)));
-
-	if (link->ce_mask & LINK_ATTR_STATS) {
-		for (i = 0; i <= RTNL_LINK_STATS_MAX; i++) {
-			char *c = buf;
-
-			sprintf(buf, "LINK_");
-			rtnl_link_stat2str(i, buf + 5, sizeof(buf) - 5);
-			while (*c) {
-				*c = toupper(*c);
-				c++;
-			}
-			nl_dump_line(p, "%s=%" PRIu64 "\n", buf, link->l_stats[i]);
-		}
-	}
-
-	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_ENV])
-		link->l_info_ops->io_dump[NL_DUMP_ENV](link, p);
-}
-
 #if 0
 static int link_handle_event(struct nl_object *a, struct rtnl_link_event_cb *cb)
 {
@@ -1430,7 +1363,6 @@ static struct nl_object_ops link_obj_ops = {
 	    [NL_DUMP_LINE]	= link_dump_line,
 	    [NL_DUMP_DETAILS]	= link_dump_details,
 	    [NL_DUMP_STATS]	= link_dump_stats,
-	    [NL_DUMP_ENV]	= link_dump_env,
 	},
 	.oo_compare		= link_compare,
 	.oo_attrs2str		= link_attrs2str,

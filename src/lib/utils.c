@@ -125,8 +125,6 @@ int nl_cli_parse_dumptype(const char *str)
 		return NL_DUMP_DETAILS;
 	else if (!strcasecmp(str, "stats"))
 		return NL_DUMP_STATS;
-	else if (!strcasecmp(str, "env"))
-		return NL_DUMP_ENV;
 	else
 		nl_cli_fatal(EINVAL, "Invalid dump type \"%s\".\n", str);
 

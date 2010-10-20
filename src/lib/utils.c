@@ -134,20 +134,34 @@ int nl_cli_parse_dumptype(const char *str)
 int nl_cli_confirm(struct nl_object *obj, struct nl_dump_params *params,
 		   int default_yes)
 {
-	int answer;
-
 	nl_object_dump(obj, params);
-	printf("Delete? (%c/%c) ",
-		default_yes ? 'Y' : 'y',
-		default_yes ? 'n' : 'N');
 
-	do {
-		answer = tolower(getchar());
-		if (answer == '\n')
+	for (;;) {
+		char buf[32] = { 0 };
+		int answer;
+
+		printf("Delete? (%c/%c) ",
+			default_yes ? 'Y' : 'y',
+			default_yes ? 'n' : 'N');
+
+		if (!fgets(buf, sizeof(buf), stdin)) {
+			fprintf(stderr, "Error while reading\n.");
+			continue;
+		}
+
+		switch ((answer = tolower(buf[0]))) {
+		case '\n':
 			answer = default_yes ? 'y' : 'n';
-	} while (answer != 'y' && answer != 'n');
+		case 'y':
+		case 'n':
+			return answer == 'y';
+		}
 
-	return answer == 'y';
+		fprintf(stderr, "Invalid input, try again.\n");
+	}
+
+	return 0;
+
 }
 
 struct nl_cache *nl_cli_alloc_cache(struct nl_sock *sock, const char *name,

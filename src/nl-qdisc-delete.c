@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 #include <netlink/cli/utils.h>
@@ -21,17 +21,16 @@ static void print_usage(void)
 	printf(
 	"Usage: nl-qdisc-delete [OPTION]... [QDISC]\n"
 	"\n"
-	"Options\n"
-	" -i, --interactive     Run interactively\n"
-	"     --yes             Set default answer to yes\n"
-	" -q, --quiet           Do not print informal notifications\n"
-	" -h, --help            Show this help\n"
-	" -v, --version         Show versioning information\n"
+	"OPTIONS\n"
+	"     --interactive     Run interactively.\n"
+	"     --yes             Set default answer to yes.\n"
+	" -q, --quiet           Do not print informal notifications.\n"
+	" -h, --help            Show this help text and exit.\n"
+	" -v, --version         Show versioning information and exit.\n"
 	"\n"
-	"QDisc Options\n"
-	" -d, --dev=DEV         Device the qdisc is attached to\n"
-	" -p, --parent=HANDLE   Identifier of parent qdisc\n"
-	" -H, --handle=HANDLE   Identifier\n"
+	" -d, --dev=DEV         Device the qdisc is attached to.\n"
+	" -p, --parent=ID       Identifier of parent qdisc/class.\n"
+	" -i, --id=ID           Identifier\n"
 	" -k, --kind=NAME       Kind of qdisc (e.g. pfifo_fast)\n"
 	);
 
@@ -65,6 +64,7 @@ int main(int argc, char *argv[])
 {
 	struct rtnl_qdisc *qdisc;
 	struct nl_cache *link_cache, *qdisc_cache;
+	int nfilter = 0;
  
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
@@ -76,36 +76,57 @@ int main(int argc, char *argv[])
 		int c, optidx = 0;
 		enum {
 			ARG_YES = 257,
+			ARG_INTERACTIVE = 258,
 		};
 		static struct option long_opts[] = {
-			{ "interactive", 0, 0, 'i' },
+			{ "interactive", 0, 0, ARG_INTERACTIVE },
 			{ "yes", 0, 0, ARG_YES },
 			{ "quiet", 0, 0, 'q' },
 			{ "help", 0, 0, 'h' },
 			{ "version", 0, 0, 'v' },
 			{ "dev", 1, 0, 'd' },
 			{ "parent", 1, 0, 'p' },
-			{ "handle", 1, 0, 'H' },
+			{ "id", 1, 0, 'i' },
 			{ "kind", 1, 0, 'k' },
 			{ 0, 0, 0, 0 }
 		};
 	
-		c = getopt_long(argc, argv, "iqhvd:p:H:k:", long_opts, &optidx);
+		c = getopt_long(argc, argv, "qhvd:p:i:k:", long_opts, &optidx);
 		if (c == -1)
 			break;
 
 		switch (c) {
-		case 'i': interactive = 1; break;
+		case '?': nl_cli_fatal(EINVAL, "Invalid options");
+		case ARG_INTERACTIVE: interactive = 1; break;
 		case ARG_YES: default_yes = 1; break;
 		case 'q': quiet = 1; break;
 		case 'h': print_usage(); break;
 		case 'v': nl_cli_print_version(); break;
-		case 'd': nl_cli_qdisc_parse_dev(qdisc, link_cache, optarg); break;
-		case 'p': nl_cli_qdisc_parse_parent(qdisc, optarg); break;
-		case 'H': nl_cli_qdisc_parse_handle(qdisc, optarg); break;
-		case 'k': nl_cli_qdisc_parse_kind(qdisc, optarg); break;
+		case 'd':
+			nfilter++;
+			nl_cli_qdisc_parse_dev(qdisc, link_cache, optarg);
+			break;
+		case 'p':
+			nfilter++;
+			nl_cli_qdisc_parse_parent(qdisc, optarg);
+			break;
+		case 'i':
+			nfilter++;
+			nl_cli_qdisc_parse_handle(qdisc, optarg);
+			break;
+		case 'k':
+			nfilter++;
+			nl_cli_qdisc_parse_kind(qdisc, optarg);
+			break;
 		}
  	}
+
+	if (nfilter == 0 && !interactive && !default_yes) {
+		nl_cli_fatal(EINVAL,
+			"You are attempting to delete all qdiscs on all devices.\n"
+			"If you want to proceed, run nl-qdisc-delete --yes.\n"
+			"Aborting...");
+	}
 
 	nl_cache_foreach_filter(qdisc_cache, OBJ_CAST(qdisc), delete_cb, NULL);
 

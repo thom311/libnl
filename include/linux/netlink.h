@@ -27,16 +27,16 @@
 
 #define MAX_LINKS 32		
 
-struct sockaddr_nl
-{
+struct net;
+
+struct sockaddr_nl {
 	sa_family_t	nl_family;	/* AF_NETLINK	*/
 	unsigned short	nl_pad;		/* zero		*/
 	__u32		nl_pid;		/* port ID	*/
        	__u32		nl_groups;	/* multicast groups mask */
 };
 
-struct nlmsghdr
-{
+struct nlmsghdr {
 	__u32		nlmsg_len;	/* Length of message including header */
 	__u16		nlmsg_type;	/* Message content */
 	__u16		nlmsg_flags;	/* Additional flags */
@@ -92,8 +92,7 @@ struct nlmsghdr
 
 #define NLMSG_MIN_TYPE		0x10	/* < 0x10: reserved control messages */
 
-struct nlmsgerr
-{
+struct nlmsgerr {
 	int		error;
 	struct nlmsghdr msg;
 };
@@ -101,9 +100,10 @@ struct nlmsgerr
 #define NETLINK_ADD_MEMBERSHIP	1
 #define NETLINK_DROP_MEMBERSHIP	2
 #define NETLINK_PKTINFO		3
+#define NETLINK_BROADCAST_ERROR	4
+#define NETLINK_NO_ENOBUFS	5
 
-struct nl_pktinfo
-{
+struct nl_pktinfo {
 	__u32	group;
 };
 
@@ -123,8 +123,7 @@ enum {
  *  <-------------- nlattr->nla_len -------------->
  */
 
-struct nlattr
-{
+struct nlattr {
 	__u16           nla_len;
 	__u16           nla_type;
 };

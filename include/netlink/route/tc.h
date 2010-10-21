@@ -49,7 +49,7 @@ extern int rtnl_tc_calc_cell_log(int);
  */
 #define RTNL_TC_RTABLE_SIZE	256
 
-extern int rtnl_tc_build_rate_table(uint32_t *, uint8_t, uint8_t, int, int);
+extern int rtnl_tc_build_rate_table(uint32_t *, uint8_t, int, int);
 
 
 /* TC Handle Translations */

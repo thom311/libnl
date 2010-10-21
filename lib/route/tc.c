@@ -191,7 +191,7 @@ void tca_dump_line(struct rtnl_tca *g, const char *type,
 	
 	link_cache = nl_cache_mngt_require("route/link");
 
-	nl_dump_line(p, "%s %s ", g->tc_kind, type);
+	nl_dump_line(p, "%s %s ", type, g->tc_kind);
 
 	if (link_cache) {
 		char buf[32];
@@ -201,7 +201,7 @@ void tca_dump_line(struct rtnl_tca *g, const char *type,
 	} else
 		nl_dump(p, "dev %u ", g->tc_ifindex);
 	
-	nl_dump(p, "handle %s parent %s",
+	nl_dump(p, "id %s parent %s",
 		rtnl_tc_handle2str(g->tc_handle, handle, sizeof(handle)),
 		rtnl_tc_handle2str(g->tc_parent, parent, sizeof(parent)));
 }
@@ -432,7 +432,6 @@ int rtnl_tc_calc_cell_log(int cell_size)
  * Compute a transmission time lookup table
  * @arg dst	 Destination buffer of RTNL_TC_RTABLE_SIZE uint32_t[].
  * @arg mpu	 Minimal size of a packet at all times.
- * @arg overhead Overhead to be added to each packet.
  * @arg cell	 Size of cell, i.e. size of step between entries in bytes.
  * @arg rate	 Rate in bytes per second.
  *
@@ -443,8 +442,7 @@ int rtnl_tc_calc_cell_log(int cell_size)
  * txtime = table[pktsize >> log2(cell)];
  * @endcode
  */
-int rtnl_tc_build_rate_table(uint32_t *dst, uint8_t mpu, uint8_t overhead,
-			     int cell, int rate)
+int rtnl_tc_build_rate_table(uint32_t *dst, uint8_t mpu, int cell, int rate)
 {
 	int i, size, cell_log;
 
@@ -453,7 +451,7 @@ int rtnl_tc_build_rate_table(uint32_t *dst, uint8_t mpu, uint8_t overhead,
 		return cell_log;
 
 	for (i = 0; i < RTNL_TC_RTABLE_SIZE; i++) {
-		size = (i << cell_log) + overhead;
+		size = (i << cell_log);
 		if (size < mpu)
 			size = mpu;
 

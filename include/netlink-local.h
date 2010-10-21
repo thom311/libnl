@@ -147,8 +147,8 @@ static inline void rtnl_copy_ratespec(struct rtnl_ratespec *dst,
 				      struct tc_ratespec *src)
 {
 	dst->rs_cell_log = src->cell_log;
-	dst->rs_feature = src->feature;
-	dst->rs_addend = src->addend;
+	dst->rs_overhead = src->overhead;
+	dst->rs_cell_align = src->cell_align;
 	dst->rs_mpu = src->mpu;
 	dst->rs_rate = src->rate;
 }
@@ -157,8 +157,8 @@ static inline void rtnl_rcopy_ratespec(struct tc_ratespec *dst,
 				       struct rtnl_ratespec *src)
 {
 	dst->cell_log = src->rs_cell_log;
-	dst->feature = src->rs_feature;
-	dst->addend = src->rs_addend;
+	dst->overhead = src->rs_overhead;
+	dst->cell_align = src->rs_cell_align;
 	dst->mpu = src->rs_mpu;
 	dst->rate = src->rs_rate;
 }

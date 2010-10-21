@@ -23,6 +23,8 @@
 #ifndef _LINUX_IF_ARP_H
 #define _LINUX_IF_ARP_H
 
+#include <linux/netdevice.h>
+
 /* ARP protocol HARDWARE identifiers. */
 #define ARPHRD_NETROM	0		/* from KA9Q: NET/ROM pseudo	*/
 #define ARPHRD_ETHER 	1		/* Ethernet 10Mbps		*/
@@ -50,6 +52,7 @@
 #define ARPHRD_ROSE	270
 #define ARPHRD_X25	271		/* CCITT X.25			*/
 #define ARPHRD_HWX25	272		/* Boards with X.25 in firmware	*/
+#define ARPHRD_CAN	280		/* Controller Area Network      */
 #define ARPHRD_PPP	512
 #define ARPHRD_CISCO	513		/* Cisco HDLC	 		*/
 #define ARPHRD_HDLC	ARPHRD_CISCO
@@ -83,6 +86,11 @@
 #define ARPHRD_IEEE80211 801		/* IEEE 802.11			*/
 #define ARPHRD_IEEE80211_PRISM 802	/* IEEE 802.11 + Prism2 header  */
 #define ARPHRD_IEEE80211_RADIOTAP 803	/* IEEE 802.11 + radiotap header */
+#define ARPHRD_IEEE802154	  804
+
+#define ARPHRD_PHONET	820		/* PhoNet media type		*/
+#define ARPHRD_PHONET_PIPE 821		/* PhoNet pipe header		*/
+#define ARPHRD_CAIF	822		/* CAIF media type		*/
 
 #define ARPHRD_VOID	  0xFFFF	/* Void type, nothing is known */
 #define ARPHRD_NONE	  0xFFFE	/* zero header length */
@@ -126,13 +134,12 @@ struct arpreq_old {
  *	This structure defines an ethernet arp header.
  */
 
-struct arphdr
-{
-	unsigned short	ar_hrd;		/* format of hardware address	*/
-	unsigned short	ar_pro;		/* format of protocol address	*/
+struct arphdr {
+	__be16		ar_hrd;		/* format of hardware address	*/
+	__be16		ar_pro;		/* format of protocol address	*/
 	unsigned char	ar_hln;		/* length of hardware address	*/
 	unsigned char	ar_pln;		/* length of protocol address	*/
-	unsigned short	ar_op;		/* ARP opcode (command)		*/
+	__be16		ar_op;		/* ARP opcode (command)		*/
 
 #if 0
 	 /*

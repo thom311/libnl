@@ -1,6 +1,8 @@
 #ifndef __LINUX_PKT_SCHED_H
 #define __LINUX_PKT_SCHED_H
 
+#include <linux/types.h>
+
 /* Logical priority bands not depending on specific packet scheduler.
    Every scheduler will map them to real traffic classes, if it has
    no more precise mechanism to classify packets.
@@ -27,8 +29,7 @@
    Particular schedulers may have also their private records.
  */
 
-struct tc_stats
-{
+struct tc_stats {
 	__u64	bytes;			/* NUmber of enqueues bytes */
 	__u32	packets;		/* Number of enqueued packets	*/
 	__u32	drops;			/* Packets dropped because of lack of resources */
@@ -40,8 +41,7 @@ struct tc_stats
 	__u32	backlog;
 };
 
-struct tc_estimator
-{
+struct tc_estimator {
 	signed char	interval;
 	unsigned char	ewma_log;
 };
@@ -73,20 +73,40 @@ struct tc_estimator
 #define TC_H_ROOT	(0xFFFFFFFFU)
 #define TC_H_INGRESS    (0xFFFFFFF1U)
 
-struct tc_ratespec
-{
+struct tc_ratespec {
 	unsigned char	cell_log;
 	unsigned char	__reserved;
-	unsigned short	feature;
-	short		addend;
+	unsigned short	overhead;
+	short		cell_align;
 	unsigned short	mpu;
 	__u32		rate;
 };
 
+#define TC_RTAB_SIZE	1024
+
+struct tc_sizespec {
+	unsigned char	cell_log;
+	unsigned char	size_log;
+	short		cell_align;
+	int		overhead;
+	unsigned int	linklayer;
+	unsigned int	mpu;
+	unsigned int	mtu;
+	unsigned int	tsize;
+};
+
+enum {
+	TCA_STAB_UNSPEC,
+	TCA_STAB_BASE,
+	TCA_STAB_DATA,
+	__TCA_STAB_MAX
+};
+
+#define TCA_STAB_MAX (__TCA_STAB_MAX - 1)
+
 /* FIFO section */
 
-struct tc_fifo_qopt
-{
+struct tc_fifo_qopt {
 	__u32	limit;	/* Queue length: bytes for bfifo, packets for pfifo */
 };
 
@@ -95,25 +115,21 @@ struct tc_fifo_qopt
 #define TCQ_PRIO_BANDS	16
 #define TCQ_MIN_PRIO_BANDS 2
 
-struct tc_prio_qopt
-{
+struct tc_prio_qopt {
 	int	bands;			/* Number of bands */
 	__u8	priomap[TC_PRIO_MAX+1];	/* Map: logical priority -> PRIO band */
 };
 
-enum
-{
-	TCA_PRIO_UNSPEC,
-	TCA_PRIO_MQ,
-	__TCA_PRIO_MAX
-};
+/* MULTIQ section */
 
-#define TCA_PRIO_MAX    (__TCA_PRIO_MAX - 1)
+struct tc_multiq_qopt {
+	__u16	bands;			/* Number of bands */
+	__u16	max_bands;		/* Maximum number of queues */
+};
 
 /* TBF section */
 
-struct tc_tbf_qopt
-{
+struct tc_tbf_qopt {
 	struct tc_ratespec rate;
 	struct tc_ratespec peakrate;
 	__u32		limit;
@@ -121,8 +137,7 @@ struct tc_tbf_qopt
 	__u32		mtu;
 };
 
-enum
-{
+enum {
 	TCA_TBF_UNSPEC,
 	TCA_TBF_PARMS,
 	TCA_TBF_RTAB,
@@ -139,13 +154,16 @@ enum
 
 /* SFQ section */
 
-struct tc_sfq_qopt
-{
+struct tc_sfq_qopt {
 	unsigned	quantum;	/* Bytes per round allocated to flow */
 	int		perturb_period;	/* Period of hash perturbation */
 	__u32		limit;		/* Maximal packets in queue */
 	unsigned	divisor;	/* Hash divisor  */
 	unsigned	flows;		/* Maximal number of flows  */
+};
+
+struct tc_sfq_xstats {
+	__s32		allot;
 };
 
 /*
@@ -159,8 +177,7 @@ struct tc_sfq_qopt
 
 /* RED section */
 
-enum
-{
+enum {
 	TCA_RED_UNSPEC,
 	TCA_RED_PARMS,
 	TCA_RED_STAB,
@@ -169,8 +186,7 @@ enum
 
 #define TCA_RED_MAX (__TCA_RED_MAX - 1)
 
-struct tc_red_qopt
-{
+struct tc_red_qopt {
 	__u32		limit;		/* HARD maximal queue length (bytes)	*/
 	__u32		qth_min;	/* Min average length threshold (bytes) */
 	__u32		qth_max;	/* Max average length threshold (bytes) */
@@ -182,8 +198,7 @@ struct tc_red_qopt
 #define TC_RED_HARDDROP	2
 };
 
-struct tc_red_xstats
-{
+struct tc_red_xstats {
 	__u32           early;          /* Early drops */
 	__u32           pdrop;          /* Drops due to queue limits */
 	__u32           other;          /* Drops due to drop() calls */
@@ -194,8 +209,7 @@ struct tc_red_xstats
 
 #define MAX_DPs 16
 
-enum
-{
+enum {
        TCA_GRED_UNSPEC,
        TCA_GRED_PARMS,
        TCA_GRED_STAB,
@@ -205,8 +219,7 @@ enum
 
 #define TCA_GRED_MAX (__TCA_GRED_MAX - 1)
 
-struct tc_gred_qopt
-{
+struct tc_gred_qopt {
 	__u32		limit;        /* HARD maximal queue length (bytes)    */
 	__u32		qth_min;      /* Min average length threshold (bytes) */
 	__u32		qth_max;      /* Max average length threshold (bytes) */
@@ -226,8 +239,7 @@ struct tc_gred_qopt
 };
 
 /* gred setup */
-struct tc_gred_sopt
-{
+struct tc_gred_sopt {
 	__u32		DPs;
 	__u32		def_DP;
 	__u8		grio;
@@ -240,8 +252,7 @@ struct tc_gred_sopt
 #define TC_HTB_MAXDEPTH		8
 #define TC_HTB_PROTOVER		3 /* the same as HTB and TC's major */
 
-struct tc_htb_opt
-{
+struct tc_htb_opt {
 	struct tc_ratespec 	rate;
 	struct tc_ratespec 	ceil;
 	__u32	buffer;
@@ -250,8 +261,7 @@ struct tc_htb_opt
 	__u32	level;		/* out only */
 	__u32	prio;
 };
-struct tc_htb_glob
-{
+struct tc_htb_glob {
 	__u32 version;		/* to match HTB/TC */
     	__u32 rate2quantum;	/* bps->quantum divisor */
     	__u32 defcls;		/* default class number */
@@ -260,8 +270,7 @@ struct tc_htb_glob
 	/* stats */
 	__u32 direct_pkts; /* count of non shapped packets */
 };
-enum
-{
+enum {
 	TCA_HTB_UNSPEC,
 	TCA_HTB_PARMS,
 	TCA_HTB_INIT,
@@ -272,8 +281,7 @@ enum
 
 #define TCA_HTB_MAX (__TCA_HTB_MAX - 1)
 
-struct tc_htb_xstats
-{
+struct tc_htb_xstats {
 	__u32 lends;
 	__u32 borrows;
 	__u32 giants;	/* too big packets (rate will not be accurate) */
@@ -283,28 +291,24 @@ struct tc_htb_xstats
 
 /* HFSC section */
 
-struct tc_hfsc_qopt
-{
+struct tc_hfsc_qopt {
 	__u16	defcls;		/* default class */
 };
 
-struct tc_service_curve
-{
+struct tc_service_curve {
 	__u32	m1;		/* slope of the first segment in bps */
 	__u32	d;		/* x-projection of the first segment in us */
 	__u32	m2;		/* slope of the second segment in bps */
 };
 
-struct tc_hfsc_stats
-{
+struct tc_hfsc_stats {
 	__u64	work;		/* total work done */
 	__u64	rtwork;		/* work done by real-time criteria */
 	__u32	period;		/* current period */
 	__u32	level;		/* class level in hierarchy */
 };
 
-enum
-{
+enum {
 	TCA_HFSC_UNSPEC,
 	TCA_HFSC_RSC,
 	TCA_HFSC_FSC,
@@ -321,8 +325,7 @@ enum
 #define TC_CBQ_MAXLEVEL		8
 #define TC_CBQ_DEF_EWMA		5
 
-struct tc_cbq_lssopt
-{
+struct tc_cbq_lssopt {
 	unsigned char	change;
 	unsigned char	flags;
 #define TCF_CBQ_LSS_BOUNDED	1
@@ -341,8 +344,7 @@ struct tc_cbq_lssopt
 	__u32		avpkt;
 };
 
-struct tc_cbq_wrropt
-{
+struct tc_cbq_wrropt {
 	unsigned char	flags;
 	unsigned char	priority;
 	unsigned char	cpriority;
@@ -351,8 +353,7 @@ struct tc_cbq_wrropt
 	__u32		weight;
 };
 
-struct tc_cbq_ovl
-{
+struct tc_cbq_ovl {
 	unsigned char	strategy;
 #define	TC_CBQ_OVL_CLASSIC	0
 #define	TC_CBQ_OVL_DELAY	1
@@ -364,30 +365,26 @@ struct tc_cbq_ovl
 	__u32		penalty;
 };
 
-struct tc_cbq_police
-{
+struct tc_cbq_police {
 	unsigned char	police;
 	unsigned char	__res1;
 	unsigned short	__res2;
 };
 
-struct tc_cbq_fopt
-{
+struct tc_cbq_fopt {
 	__u32		split;
 	__u32		defmap;
 	__u32		defchange;
 };
 
-struct tc_cbq_xstats
-{
+struct tc_cbq_xstats {
 	__u32		borrows;
 	__u32		overactions;
 	__s32		avgidle;
 	__s32		undertime;
 };
 
-enum
-{
+enum {
 	TCA_CBQ_UNSPEC,
 	TCA_CBQ_LSSOPT,
 	TCA_CBQ_WRROPT,
@@ -432,8 +429,7 @@ enum {
 
 /* Network emulator */
 
-enum
-{
+enum {
 	TCA_NETEM_UNSPEC,
 	TCA_NETEM_CORR,
 	TCA_NETEM_DELAY_DIST,
@@ -444,8 +440,7 @@ enum
 
 #define TCA_NETEM_MAX (__TCA_NETEM_MAX - 1)
 
-struct tc_netem_qopt
-{
+struct tc_netem_qopt {
 	__u32	latency;	/* added delay (us) */
 	__u32   limit;		/* fifo limit (packets) */
 	__u32	loss;		/* random packet loss (0=none ~0=100%) */
@@ -454,25 +449,36 @@ struct tc_netem_qopt
 	__u32	jitter;		/* random jitter in latency (us) */
 };
 
-struct tc_netem_corr
-{
+struct tc_netem_corr {
 	__u32	delay_corr;	/* delay correlation */
 	__u32	loss_corr;	/* packet loss correlation */
 	__u32	dup_corr;	/* duplicate correlation  */
 };
 
-struct tc_netem_reorder
-{
+struct tc_netem_reorder {
 	__u32	probability;
 	__u32	correlation;
 };
 
-struct tc_netem_corrupt
-{
+struct tc_netem_corrupt {
 	__u32	probability;
 	__u32	correlation;
 };
 
 #define NETEM_DIST_SCALE	8192
+
+/* DRR */
+
+enum {
+	TCA_DRR_UNSPEC,
+	TCA_DRR_QUANTUM,
+	__TCA_DRR_MAX
+};
+
+#define TCA_DRR_MAX	(__TCA_DRR_MAX - 1)
+
+struct tc_drr_stats {
+	__u32	deficit;
+};
 
 #endif

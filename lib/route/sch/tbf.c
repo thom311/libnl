@@ -174,7 +174,7 @@ static struct nl_msg *tbf_get_opts(struct rtnl_qdisc *qdisc)
 	tbf->qt_rate.rs_mpu = tbf->qt_mpu;
 	rtnl_rcopy_ratespec(&opts.rate, &tbf->qt_rate);
 
-	rtnl_tc_build_rate_table(rtab, tbf->qt_mpu & 0xff, tbf->qt_mpu >> 8,
+	rtnl_tc_build_rate_table(rtab, tbf->qt_mpu & 0xff, 
 				 1 << tbf->qt_rate.rs_cell_log,
 				 tbf->qt_rate.rs_rate);
 
@@ -184,7 +184,6 @@ static struct nl_msg *tbf_get_opts(struct rtnl_qdisc *qdisc)
 		rtnl_rcopy_ratespec(&opts.peakrate, &tbf->qt_peakrate);
 
 		rtnl_tc_build_rate_table(ptab, tbf->qt_mpu & 0xff,
-					 tbf->qt_mpu >> 8,
 					 1 << tbf->qt_peakrate.rs_cell_log,
 					 tbf->qt_peakrate.rs_rate);
 	}

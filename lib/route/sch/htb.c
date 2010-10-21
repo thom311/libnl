@@ -119,8 +119,6 @@ static int htb_class_msg_parser(struct rtnl_class *class)
 		d->ch_rbuffer = rtnl_tc_calc_bufsize(opts.buffer, opts.rate.rate);
 		d->ch_cbuffer = rtnl_tc_calc_bufsize(opts.cbuffer, opts.ceil.rate);
 		d->ch_quantum = opts.quantum;
-		d->ch_overhead = (opts.rate.mpu >> 8) & 0xff;
-		d->ch_mpu = opts.rate.mpu & 0xff;
 
 		d->ch_mask = (SCH_HTB_HAS_PRIO | SCH_HTB_HAS_RATE |
 			SCH_HTB_HAS_CEIL | SCH_HTB_HAS_RBUFFER |
@@ -220,10 +218,10 @@ static void htb_class_dump_details(struct rtnl_class *class,
 		nl_dump(p, " quantum %u", d->ch_quantum);
 
 	if (d->ch_mask & SCH_HTB_HAS_OVERHEAD)
-		nl_dump(p, " overhead %u", d->ch_overhead);
+		nl_dump(p, " overhead %u", d->ch_rate.rs_overhead);
 
 	if (d->ch_mask & SCH_HTB_HAS_MPU)
-		nl_dump(p, " mpu %u", d->ch_mpu);
+		nl_dump(p, " mpu %u", d->ch_rate.rs_mpu);
 }
 
 static struct nl_msg *htb_qdisc_get_opts(struct rtnl_qdisc *qdisc)
@@ -270,7 +268,6 @@ static struct nl_msg *htb_class_get_opts(struct rtnl_class *class)
 	struct tc_htb_opt opts;
 	struct nl_msg *msg;
 	int buffer, cbuffer;
-	uint8_t overhead = 0, mpu = 0;
 
 	if (d == NULL)
 		return NULL;
@@ -321,23 +318,14 @@ static struct nl_msg *htb_class_get_opts(struct rtnl_class *class)
 	if (d->ch_mask & SCH_HTB_HAS_QUANTUM)
 		opts.quantum = d->ch_quantum;
 
-	if (d->ch_mask & SCH_HTB_HAS_OVERHEAD)
-		overhead = d->ch_overhead;
-
-	if (d->ch_mask & SCH_HTB_HAS_MPU)
-		mpu = d->ch_mpu;
-	
-	opts.rate.mpu = mpu | (overhead << 8);
-	opts.ceil.mpu = mpu | (overhead << 8);
-
 	nla_put(msg, TCA_HTB_PARMS, sizeof(opts), &opts);
 
-	rtnl_tc_build_rate_table(rtable, mpu, overhead,
+	rtnl_tc_build_rate_table(rtable, d->ch_rate.rs_mpu,
 				 1 << opts.rate.cell_log,
 				 opts.rate.rate);
 	nla_put(msg, TCA_HTB_RTAB, sizeof(rtable), &rtable);
 
-	rtnl_tc_build_rate_table(ctable, mpu, overhead,
+	rtnl_tc_build_rate_table(ctable, d->ch_ceil.rs_mpu,
 				 1 << opts.ceil.cell_log,
 				 opts.ceil.rate);
 	nla_put(msg, TCA_HTB_CTAB, sizeof(ctable), &ctable);
@@ -491,7 +479,8 @@ void rtnl_htb_set_overhead(struct rtnl_class *class, uint8_t overhead)
 	if (d == NULL)
 		return;
 
-	d->ch_overhead = overhead;
+	d->ch_rate.rs_overhead = overhead;
+	d->ch_ceil.rs_overhead = overhead;
 	d->ch_mask |= SCH_HTB_HAS_OVERHEAD;
 }
 
@@ -506,7 +495,8 @@ void rtnl_htb_set_mpu(struct rtnl_class *class, uint8_t mpu)
 	if (d == NULL)
 		return;
 
-	d->ch_mpu = mpu;
+	d->ch_rate.rs_mpu = mpu;
+	d->ch_ceil.rs_mpu = mpu;
 	d->ch_mask |= SCH_HTB_HAS_MPU;
 }
 

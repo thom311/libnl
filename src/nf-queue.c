@@ -41,31 +41,7 @@ static void obj_input(struct nl_object *obj, void *arg)
 		.dp_fd = stdout,
 		.dp_dump_msgtype = 1,
 	};
-	uint32_t packet_id = nfnl_queue_msg_get_packetid(msg);
-	static uint32_t next_packet_id = 0;
-	struct nfnl_queue_msg *lost_msg = NULL;
-	uint8_t family;
-	uint16_t group;
 
-	if (packet_id > next_packet_id) {
-		printf("Warning: %d Out of order packets.  Queue or socket overload \n", packet_id - next_packet_id);
-		group = nfnl_queue_msg_get_group(msg);
-		family = nfnl_queue_msg_get_family(msg);
-		lost_msg = nfnl_queue_msg_alloc();
-
-		do {
-			nfnl_queue_msg_set_group(lost_msg, group);
-			nfnl_queue_msg_set_family(lost_msg, family);
-			nfnl_queue_msg_set_packetid(lost_msg, next_packet_id);
-			nfnl_queue_msg_set_verdict(lost_msg, NF_ACCEPT);
-			nfnl_queue_msg_send_verdict(nf_sock, lost_msg);
-			next_packet_id++;
-		} while (packet_id > next_packet_id);
-
-		nfnl_queue_msg_put(lost_msg);
-	}
-
-	next_packet_id = packet_id + 1;
 	nfnl_queue_msg_set_verdict(msg, NF_ACCEPT);
 	nl_object_dump(obj, &dp);
 	nfnl_queue_msg_send_verdict(nf_sock, msg);

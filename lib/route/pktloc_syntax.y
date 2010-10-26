@@ -22,15 +22,14 @@
 
 %{
 extern int pktloc_lex(YYSTYPE *, YYLTYPE *, void *);
-extern void rtnl_pktloc_add(struct rtnl_pktloc *);
 
 static void yyerror(YYLTYPE *locp, void *scanner, const char *msg)
 {
-	/* FIXME */
+	NL_DBG(1, "Error while parsing packet location file: %s\n", msg);
 }
 %}
 
-%token <i> ERROR NUMBER LAYER
+%token <i> ERROR NUMBER LAYER ALIGN
 %token <s> NAME
 
 %type <i> mask layer
@@ -43,51 +42,31 @@ static void yyerror(YYLTYPE *locp, void *scanner, const char *msg)
 %%
 
 input:
-	def
-		{ }
-	;
-
-def:
 	/* empty */
-		{ }
-	| location def
-		{ }
+	| location input
 	;
 
 location:
-	NAME NAME layer NUMBER mask
+	NAME ALIGN layer NUMBER mask
 		{
 			struct rtnl_pktloc *loc;
 
 			if (!(loc = calloc(1, sizeof(*loc)))) {
-				/* FIXME */
+				NL_DBG(1, "Allocating a packet location "
+					  "object failed.\n");
+				YYABORT;
 			}
-
-			if (!strcasecmp($2, "u8"))
-				loc->align = TCF_EM_ALIGN_U8;
-			else if (!strcasecmp($2, "h8")) {
-				loc->align = TCF_EM_ALIGN_U8;
-				loc->flags = TCF_EM_CMP_TRANS;
-			} else if (!strcasecmp($2, "u16"))
-				loc->align = TCF_EM_ALIGN_U16;
-			else if (!strcasecmp($2, "h16")) {
-				loc->align = TCF_EM_ALIGN_U16;
-				loc->flags = TCF_EM_CMP_TRANS;
-			} else if (!strcasecmp($2, "u32"))
-				loc->align = TCF_EM_ALIGN_U32;
-			else if (!strcasecmp($2, "h32")) {
-				loc->align = TCF_EM_ALIGN_U32;
-				loc->flags = TCF_EM_CMP_TRANS;
-			}
-			
-			free($2);
 
 			loc->name = $1;
+			loc->align = $2;
 			loc->layer = $3;
 			loc->offset = $4;
 			loc->mask = $5;
 
-			rtnl_pktloc_add(loc);
+			if (rtnl_pktloc_add(loc) < 0) {
+				NL_DBG(1, "Duplicate packet location entry "
+					  "\"%s\"\n", $1);
+			}
 
 			$$ = loc;
 		}

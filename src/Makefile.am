@@ -9,7 +9,8 @@ sbin_PROGRAMS = \
 	nl-qdisc-add nl-qdisc-list nl-qdisc-delete \
 	nl-class-add nl-class-list nl-class-delete \
 	nl-cls-add nl-cls-list nl-cls-delete \
-	nl-classid-lookup
+	nl-classid-lookup \
+	nl-pktloc-lookup
 
 noinst_PROGRAMS = \
 	genl-ctrl-list \
@@ -25,8 +26,7 @@ noinst_PROGRAMS = \
 	nl-route-add nl-route-delete nl-route-get nl-route-list \
 	nl-fib-lookup \
 	nl-list-caches nl-list-sockets \
-	nl-util-addr \
-	nl-pktloc-lookup
+	nl-util-addr
 
 genl_ctrl_list_SOURCES = genl-ctrl-list.c 
 genl_ctrl_list_LDADD = -lnl-genl -lnl-route

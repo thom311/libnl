@@ -36,3 +36,4 @@ nl-tctree-list
 nl-util-addr
 nf-queue
 nl-classid-lookup
+nl-pktloc-lookup

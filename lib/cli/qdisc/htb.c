@@ -73,9 +73,6 @@ static void print_class_usage(void)
 "     --rate=RATE           Rate limit.\n"
 "     --ceil=RATE           Rate limit while borrowing (default: equal to --rate).\n"
 "     --prio=PRIO           Priority, lower is served first (default: 0).\n"
-"     --mtu=MTU             Maximum packet size on the link (default: 1600).\n"
-"     --mpu=MPU             Minimum packet size on the link (default: 0).\n"
-"     --overhead=OVERHEAD   Overhead in bytes per packet (default: 0).\n"
 "     --quantum=SIZE        Amount of bytes to serve at once (default: rate/r2q).\n"
 "     --burst=SIZE          Max charge size of rate burst buffer (default: auto).\n"
 "     --cburst=SIZE         Max charge size of ceil rate burst buffer (default: auto)\n"
@@ -96,9 +93,6 @@ static void htb_parse_class_argv(struct rtnl_class *class, int argc, char **argv
 			ARG_QUANTUM = 258,
 			ARG_CEIL,
 			ARG_PRIO,
-			ARG_MTU,
-			ARG_MPU,
-			ARG_OVERHEAD,
 			ARG_BURST,
 			ARG_CBURST,
 		};
@@ -108,9 +102,6 @@ static void htb_parse_class_argv(struct rtnl_class *class, int argc, char **argv
 			{ "quantum", 1, 0, ARG_QUANTUM },
 			{ "ceil", 1, 0, ARG_CEIL },
 			{ "prio", 1, 0, ARG_PRIO },
-			{ "mtu", 1, 0, ARG_MTU },
-			{ "mpu", 1, 0, ARG_MPU },
-			{ "overhead", 1, 0, ARG_OVERHEAD },
 			{ "burst", 1, 0, ARG_BURST },
 			{ "cburst", 1, 0, ARG_CBURST },
 			{ 0, 0, 0, 0 }
@@ -143,18 +134,6 @@ static void htb_parse_class_argv(struct rtnl_class *class, int argc, char **argv
 			}
 
 			rtnl_htb_set_ceil(class, rate);
-			break;
-
-		case ARG_MTU:
-			rtnl_htb_set_mtu(class, nl_cli_parse_u32(optarg));
-			break;
-
-		case ARG_MPU:
-			rtnl_htb_set_mpu(class, nl_cli_parse_u32(optarg));
-			break;
-
-		case ARG_OVERHEAD:
-			rtnl_htb_set_overhead(class, nl_cli_parse_u32(optarg));
 			break;
 
 		case ARG_PRIO:

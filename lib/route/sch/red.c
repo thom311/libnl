@@ -61,7 +61,7 @@ static int red_msg_parser(struct rtnl_qdisc *qdisc)
 	if (!(qdisc->ce_mask & TCA_ATTR_OPTS))
 		return 0;
 
-	err = tca_parse(tb, TCA_RED_MAX, (struct rtnl_tca *) qdisc, red_policy);
+	err = tca_parse(tb, TCA_RED_MAX, (struct rtnl_tc *) qdisc, red_policy);
 	if (err < 0)
 		return err;
 

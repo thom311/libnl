@@ -70,7 +70,7 @@ static int u32_msg_parser(struct rtnl_cls *cls)
 	struct nlattr *tb[TCA_U32_MAX + 1];
 	int err;
 
-	err = tca_parse(tb, TCA_U32_MAX, (struct rtnl_tca *) cls, u32_policy);
+	err = tca_parse(tb, TCA_U32_MAX, (struct rtnl_tc *) cls, u32_policy);
 	if (err < 0)
 		return err;
 
@@ -345,7 +345,7 @@ void rtnl_u32_set_handle(struct rtnl_cls *cls, int htid, int hash,
 {
 	uint32_t handle = (htid << 20) | (hash << 12) | nodeid;
 
-	tca_set_handle((struct rtnl_tca *) cls, handle );
+	rtnl_tc_set_handle((struct rtnl_tc *) cls, handle );
 }
  
 int rtnl_u32_set_classid(struct rtnl_cls *cls, uint32_t classid)

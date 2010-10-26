@@ -41,7 +41,7 @@ static void print_class(struct nl_object *obj, void *arg)
 	struct rtnl_qdisc *leaf;
 	struct rtnl_class *class = (struct rtnl_class *) obj;
 	struct nl_cache *cls_cache;
-	uint32_t parent = rtnl_class_get_handle(class);
+	uint32_t parent = rtnl_tc_get_handle((struct rtnl_tc *) class);
 
 	params.dp_prefix = (int)(long) arg;
 	nl_object_dump(obj, &params);
@@ -64,7 +64,7 @@ static void print_qdisc(struct nl_object *obj, void *arg)
 {
 	struct rtnl_qdisc *qdisc = (struct rtnl_qdisc *) obj;
 	struct nl_cache *cls_cache;
-	uint32_t parent = rtnl_qdisc_get_handle(qdisc);
+	uint32_t parent = rtnl_tc_get_handle((struct rtnl_tc *) qdisc);
 
 	params.dp_prefix = (int)(long) arg;
 	nl_object_dump(obj, &params);

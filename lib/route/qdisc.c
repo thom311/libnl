@@ -110,7 +110,7 @@ static int qdisc_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	qdisc->ce_msgtype = n->nlmsg_type;
 
-	err = tca_msg_parser(n, (struct rtnl_tca *) qdisc);
+	err = tca_msg_parser(n, (struct rtnl_tc *) qdisc);
 	if (err < 0)
 		goto errout_free;
 
@@ -150,7 +150,7 @@ static int qdisc_build(struct rtnl_qdisc *qdisc, int type, int flags,
 	struct rtnl_qdisc_ops *qops;
 	int err;
 
-	err = tca_build_msg((struct rtnl_tca *) qdisc, type, flags, result);
+	err = tca_build_msg((struct rtnl_tc *) qdisc, type, flags, result);
 	if (err < 0)
 		return err;
 

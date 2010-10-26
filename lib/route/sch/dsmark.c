@@ -63,7 +63,7 @@ static int dsmark_qdisc_msg_parser(struct rtnl_qdisc *qdisc)
 	struct nlattr *tb[TCA_DSMARK_MAX + 1];
 	struct rtnl_dsmark_qdisc *dsmark;
 
-	err = tca_parse(tb, TCA_DSMARK_MAX, (struct rtnl_tca *) qdisc,
+	err = tca_parse(tb, TCA_DSMARK_MAX, (struct rtnl_tc *) qdisc,
 			dsmark_policy);
 	if (err < 0)
 		return err;
@@ -111,7 +111,7 @@ static int dsmark_class_msg_parser(struct rtnl_class *class)
 	struct nlattr *tb[TCA_DSMARK_MAX + 1];
 	struct rtnl_dsmark_class *dsmark;
 
-	err = tca_parse(tb, TCA_DSMARK_MAX, (struct rtnl_tca *) class,
+	err = tca_parse(tb, TCA_DSMARK_MAX, (struct rtnl_tc *) class,
 			dsmark_policy);
 	if (err < 0)
 		return err;

@@ -6,13 +6,12 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
  * @ingroup rtnl
  * @defgroup tc Traffic Control
- * @brief
  * @{
  */
 
@@ -33,7 +32,7 @@ static struct nla_policy tc_policy[TCA_MAX+1] = {
 	[TCA_STATS2]	= { .type = NLA_NESTED },
 };
 
-int tca_parse(struct nlattr **tb, int maxattr, struct rtnl_tca *g,
+int tca_parse(struct nlattr **tb, int maxattr, struct rtnl_tc *g,
 	      struct nla_policy *policy)
 {
 	
@@ -55,7 +54,7 @@ static struct nla_policy tc_stats2_policy[TCA_STATS_MAX+1] = {
 	[TCA_STATS_QUEUE]    = { .minlen = sizeof(struct gnet_stats_queue) },
 };
 
-int tca_msg_parser(struct nlmsghdr *n, struct rtnl_tca *g)
+int tca_msg_parser(struct nlmsghdr *n, struct rtnl_tc *g)
 {
 	struct nlattr *tb[TCA_MAX + 1];
 	struct tcmsg *tm;
@@ -160,14 +159,22 @@ compat_xstats:
 	return 0;
 }
 
-void tca_free_data(struct rtnl_tca *tca)
+void tca_free_data(struct rtnl_tc *tca)
 {
+	rtnl_link_put(tca->tc_link);
 	nl_data_free(tca->tc_opts);
 	nl_data_free(tca->tc_xstats);
 }
 
-int tca_clone(struct rtnl_tca *dst, struct rtnl_tca *src)
+int tca_clone(struct rtnl_tc *dst, struct rtnl_tc *src)
 {
+	if (src->tc_link) {
+		dst->tc_link = (struct rtnl_link *)
+					nl_object_clone(OBJ_CAST(src->tc_link));
+		if (!dst->tc_link)
+			return -NLE_NOMEM;
+	}
+
 	if (src->tc_opts) {
 		dst->tc_opts = nl_data_clone(src->tc_opts);
 		if (!dst->tc_opts)
@@ -183,7 +190,7 @@ int tca_clone(struct rtnl_tca *dst, struct rtnl_tca *src)
 	return 0;
 }
 
-void tca_dump_line(struct rtnl_tca *g, const char *type,
+void tca_dump_line(struct rtnl_tc *g, const char *type,
 		   struct nl_dump_params *p)
 {
 	char handle[32], parent[32];
@@ -206,12 +213,21 @@ void tca_dump_line(struct rtnl_tca *g, const char *type,
 		rtnl_tc_handle2str(g->tc_parent, parent, sizeof(parent)));
 }
 
-void tca_dump_details(struct rtnl_tca *g, struct nl_dump_params *p)
+void tca_dump_details(struct rtnl_tc *tc, struct nl_dump_params *p)
 {
 	nl_dump_line(p, "  ");
+
+	if (tc->ce_mask & TCA_ATTR_MTU)
+		nl_dump(p, " mtu %u", tc->tc_mtu);
+
+	if (tc->ce_mask & TCA_ATTR_MPU)
+		nl_dump(p, " mput %u", tc->tc_mpu);
+
+	if (tc->ce_mask & TCA_ATTR_OVERHEAD)
+		nl_dump(p, " overhead %u", tc->tc_overhead);
 }
 
-void tca_dump_stats(struct rtnl_tca *g, struct nl_dump_params *p)
+void tca_dump_stats(struct rtnl_tc *g, struct nl_dump_params *p)
 {
 	char *unit, fmt[64];
 	float res;
@@ -245,8 +261,8 @@ void tca_dump_stats(struct rtnl_tca *g, struct nl_dump_params *p)
 int tca_compare(struct nl_object *_a, struct nl_object *_b,
 		uint32_t attrs, int flags)
 {
-	struct rtnl_tca *a = (struct rtnl_tca *) _a;
-	struct rtnl_tca *b = (struct rtnl_tca *) _b;
+	struct rtnl_tc *a = (struct rtnl_tc *) _a;
+	struct rtnl_tc *b = (struct rtnl_tc *) _b;
 	int diff = 0;
 
 #define TC_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, TCA_ATTR_##ATTR, a, b, EXPR)
@@ -261,68 +277,7 @@ int tca_compare(struct nl_object *_a, struct nl_object *_b,
 	return diff;
 }
 
-void tca_set_ifindex(struct rtnl_tca *t, int ifindex)
-{
-	t->tc_ifindex = ifindex;
-	t->ce_mask |= TCA_ATTR_IFINDEX;
-}
-
-int tca_get_ifindex(struct rtnl_tca *t)
-{
-	return t->tc_ifindex;
-}
-
-void tca_set_handle(struct rtnl_tca *t, uint32_t handle)
-{
-	t->tc_handle = handle;
-	t->ce_mask |= TCA_ATTR_HANDLE;
-}
-
-uint32_t tca_get_handle(struct rtnl_tca *t)
-{
-	if (t->ce_mask & TCA_ATTR_HANDLE)
-		return t->tc_handle;
-	else
-		return 0;
-}
-
-void tca_set_parent(struct rtnl_tca *t, uint32_t parent)
-{
-	t->tc_parent = parent;
-	t->ce_mask |= TCA_ATTR_PARENT;
-}
-
-uint32_t tca_get_parent(struct rtnl_tca *t)
-{
-	if (t->ce_mask & TCA_ATTR_PARENT)
-		return t->tc_parent;
-	else
-		return 0;
-}
-
-void tca_set_kind(struct rtnl_tca *t, const char *kind)
-{
-	strncpy(t->tc_kind, kind, sizeof(t->tc_kind) - 1);
-	t->ce_mask |= TCA_ATTR_KIND;
-}
-
-char *tca_get_kind(struct rtnl_tca *t)
-{
-	if (t->ce_mask & TCA_ATTR_KIND)
-		return t->tc_kind;
-	else
-		return NULL;
-}
-
-uint64_t tca_get_stat(struct rtnl_tca *t, int id)
-{
-	if (id < 0 || id > RTNL_TC_STATS_MAX)
-		return 0;
-
-	return t->tc_stats[id];
-}
-
-int tca_build_msg(struct rtnl_tca *tca, int type, int flags,
+int tca_build_msg(struct rtnl_tc *tca, int type, int flags,
 		  struct nl_msg **result)
 {
 	struct nl_msg *msg;
@@ -351,7 +306,276 @@ nla_put_failure:
 	return -NLE_MSGSIZE;
 }
 
+void tca_set_kind(struct rtnl_tc *t, const char *kind)
+{
+	strncpy(t->tc_kind, kind, sizeof(t->tc_kind) - 1);
+	t->ce_mask |= TCA_ATTR_KIND;
+}
+
+
 /** @endcond */
+
+/**
+ * @name Attributes
+ * @{
+ */
+
+/**
+ * Set interface index of traffic control object
+ * @arg tc		traffic control object
+ * @arg ifindex		interface index.
+ *
+ * Sets the interface index of a traffic control object. The interface
+ * index defines the network device which this tc object is attached to.
+ * This function will overwrite any network device assigned with previous
+ * calls to rtnl_tc_set_ifindex() or rtnl_tc_set_link().
+ */
+void rtnl_tc_set_ifindex(struct rtnl_tc *tc, int ifindex)
+{
+	/* Obsolete possible old link reference */
+	rtnl_link_put(tc->tc_link);
+	tc->tc_link = NULL;
+	tc->ce_mask &= ~TCA_ATTR_LINK;
+
+	tc->tc_ifindex = ifindex;
+	tc->ce_mask |= TCA_ATTR_IFINDEX;
+}
+
+/**
+ * Return interface index of traffic control object
+ * @arg tc		traffic control object
+ */
+int rtnl_tc_get_ifindex(struct rtnl_tc *tc)
+{
+	return tc->tc_ifindex;
+}
+
+/**
+ * Set link of traffic control object
+ * @arg tc		traffic control object
+ * @arg link		link object
+ *
+ * Sets the link of a traffic control object. This function serves
+ * the same purpose as rtnl_tc_set_ifindex() but due to the continued
+ * allowed access to the link object it gives it the possibility to
+ * retrieve sane default values for the the MTU and the linktype.
+ * Always prefer this function over rtnl_tc_set_ifindex() if you can
+ * spare to have an additional link object around.
+ */
+void rtnl_tc_set_link(struct rtnl_tc *tc, struct rtnl_link *link)
+{
+	rtnl_link_put(tc->tc_link);
+
+	if (!link)
+		return;
+
+	nl_object_get(OBJ_CAST(link));
+	tc->tc_link = link;
+	tc->tc_ifindex = link->l_index;
+	tc->ce_mask |= TCA_ATTR_LINK | TCA_ATTR_IFINDEX;
+}
+
+/**
+ * Set the Maximum Transmission Unit (MTU) of traffic control object
+ * @arg tc		traffic control object
+ * @arg mtu		largest packet size expected
+ *
+ * Sets the MTU of a traffic control object. Not all traffic control
+ * objects will make use of this but it helps while calculating rate
+ * tables. This value is typically derived directly from the link
+ * the tc object is attached to if the link has been assigned via
+ * rtnl_tc_set_link(). It is usually not necessary to set the MTU
+ * manually, this function is provided to allow overwriting the derived
+ * value.
+ */
+void rtnl_tc_set_mtu(struct rtnl_tc *tc, uint32_t mtu)
+{
+	tc->tc_mtu = mtu;
+	tc->ce_mask |= TCA_ATTR_MTU;
+}
+
+/**
+ * Return the MTU of traffic control object
+ * @arg tc		traffic control object
+ *
+ * Returns the MTU of a traffic control object which has been set via:
+ * -# User specified value set via rtnl_tc_set_mtu()
+ * -# Dervied from link set via rtnl_tc_set_link()
+ * -# Fall back to default: ethernet = 1600
+ */
+uint32_t rtnl_tc_get_mtu(struct rtnl_tc *tc)
+{
+	if (tc->ce_mask & TCA_ATTR_MTU)
+		return tc->tc_mtu;
+	else if (tc->ce_mask & TCA_ATTR_LINK)
+		return tc->tc_link->l_mtu;
+	else
+		return 1600; /* default to ethernet */
+}
+
+/**
+ * Set the Minimum Packet Unit (MPU) of a traffic control object
+ * @arg tc		traffic control object
+ * @arg mpu		minimum packet size expected
+ *
+ * Sets the MPU of a traffic contorl object. It specifies the minimum
+ * packet size to ever hit this traffic control object. Not all traffic
+ * control objects will make use of this but it helps while calculating
+ * rate tables.
+ */
+void rtnl_tc_set_mpu(struct rtnl_tc *tc, uint32_t mpu)
+{
+	tc->tc_mpu = mpu;
+	tc->ce_mask |= TCA_ATTR_MPU;
+}
+
+/**
+ * Return the Minimum Packet Unit (MPU) of a traffic control object
+ * @arg tc		traffic control object
+ *
+ * @return The MPU previously set via rtnl_tc_set_mpu() or 0.
+ */
+uint32_t rtnl_tc_get_mpu(struct rtnl_tc *tc)
+{
+	return tc->tc_mpu;
+}
+
+/**
+ * Set per packet overhead of a traffic control object
+ * @arg tc		traffic control object
+ * @arg overhead	overhead per packet in bytes
+ *
+ * Sets the per packet overhead in bytes occuring on the link not seen
+ * by the kernel. This value can be used to correct size calculations
+ * if the packet size on the wire does not match the packet sizes seen
+ * in the network stack. Not all traffic control objects will make use
+ * this but it helps while calculating accurate packet sizes in the
+ * kernel.
+ */
+void rtnl_tc_set_overhead(struct rtnl_tc *tc, uint32_t overhead)
+{
+	tc->tc_overhead = overhead;
+	tc->ce_mask |= TCA_ATTR_OVERHEAD;
+}
+
+/**
+ * Return per packet overhead of a traffic control object
+ * @arg tc		traffic control object
+ *
+ * @return The overhead previously set by rtnl_tc_set_overhead() or 0.
+ */
+uint32_t rtnl_tc_get_overhead(struct rtnl_tc *tc)
+{
+	return tc->tc_overhead;
+}
+
+/**
+ * Set the linktype of a traffic control object
+ * @arg tc		traffic control object
+ * @arg type		type of link (e.g. ARPHRD_ATM, ARPHRD_ETHER)
+ *
+ * Overwrites the type of link this traffic control object is attached to.
+ * This value is typically derived from the link this tc object is attached
+ * if the link has been assigned via rtnl_tc_set_link(). It is usually not
+ * necessary to set the linktype manually. This function is provided to
+ * allow overwriting the linktype.
+ */
+void rtnl_tc_set_linktype(struct rtnl_tc *tc, uint32_t type)
+{
+	tc->tc_linktype = type;
+	tc->ce_mask |= TCA_ATTR_LINKTYPE;
+}
+
+/**
+ * Return the linktype of a traffic control object
+ * @arg tc		traffic control object
+ *
+ * Returns the linktype of the link the traffic control object is attached to:
+ * -# User specified value via rtnl_tc_set_linktype()
+ * -# Value derived from link set via rtnl_tc_set_link()
+ * -# Default fall-back: ARPHRD_ETHER
+ */
+uint32_t rtnl_tc_get_linktype(struct rtnl_tc *tc)
+{
+	if (tc->ce_mask & TCA_ATTR_LINKTYPE)
+		return tc->tc_linktype;
+	else if (tc->ce_mask & TCA_ATTR_LINK)
+		return tc->tc_link->l_arptype;
+	else
+		return ARPHRD_ETHER; /* default to ethernet */
+}
+
+/**
+ * Set identifier of traffic control object
+ * @arg tc		traffic control object
+ * @arg id		unique identifier
+ */
+void rtnl_tc_set_handle(struct rtnl_tc *tc, uint32_t id)
+{
+	tc->tc_handle = id;
+	tc->ce_mask |= TCA_ATTR_HANDLE;
+}
+
+/**
+ * Return identifier of a traffic control object
+ * @arg tc		traffic control object
+ */
+uint32_t rtnl_tc_get_handle(struct rtnl_tc *tc)
+{
+	return tc->tc_handle;
+}
+
+/**
+ * Set the parent identifier of a traffic control object
+ * @arg tc		traffic control object
+ * @arg parent		identifier of parent traffif control object
+ *
+ */
+void rtnl_tc_set_parent(struct rtnl_tc *tc, uint32_t parent)
+{
+	tc->tc_parent = parent;
+	tc->ce_mask |= TCA_ATTR_PARENT;
+}
+
+/**
+ * Return parent identifier of a traffic control object
+ * @arg tc		traffic control object
+ */
+uint32_t rtnl_tc_get_parent(struct rtnl_tc *tc)
+{
+	return tc->tc_parent;
+}
+
+/**
+ * Return kind of traffic control object
+ * @arg tc		traffic control object
+ *
+ * @return Kind of traffic control object or NULL if not set.
+ */
+char *rtnl_tc_get_kind(struct rtnl_tc *tc)
+{
+	if (tc->ce_mask & TCA_ATTR_KIND)
+		return tc->tc_kind;
+	else
+		return NULL;
+}
+
+/**
+ * Return value of a statistical counter of a traffic control object
+ * @arg tc		traffic control object
+ * @arg id		identifier of statistical counter
+ *
+ * @return Value of requested statistic counter or 0.
+ */
+uint64_t rtnl_tc_get_stat(struct rtnl_tc *tc, int id)
+{
+	if (id < 0 || id > RTNL_TC_STATS_MAX)
+		return 0;
+
+	return tc->tc_stats[id];
+}
+
+/** @} */
 
 /**
  * @name Utilities
@@ -428,35 +652,93 @@ int rtnl_tc_calc_cell_log(int cell_size)
  * @{
  */
 
+/*
+ * COPYRIGHT NOTE:
+ * align_to_atm() and adjust_size() derived/coped from iproute2 source.
+ */
+
+/*
+ * The align to ATM cells is used for determining the (ATM) SAR
+ * alignment overhead at the ATM layer. (SAR = Segmentation And
+ * Reassembly).  This is for example needed when scheduling packet on
+ * an ADSL connection.  Note that the extra ATM-AAL overhead is _not_
+ * included in this calculation. This overhead is added in the kernel
+ * before doing the rate table lookup, as this gives better precision
+ * (as the table will always be aligned for 48 bytes).
+ *  --Hawk, d.7/11-2004. <hawk@diku.dk>
+ */
+static unsigned int align_to_atm(unsigned int size)
+{
+	int linksize, cells;
+	cells = size / ATM_CELL_PAYLOAD;
+	if ((size % ATM_CELL_PAYLOAD) > 0)
+		cells++;
+
+	linksize = cells * ATM_CELL_SIZE; /* Use full cell size to add ATM tax */
+	return linksize;
+}
+
+static unsigned int adjust_size(unsigned int size, unsigned int mpu,
+				uint32_t linktype)
+{
+	if (size < mpu)
+		size = mpu;
+
+	switch (linktype) {
+	case ARPHRD_ATM:
+		return align_to_atm(size);
+
+	case ARPHRD_ETHER:
+	default:
+		return size;
+	}
+}
+
 /**
  * Compute a transmission time lookup table
- * @arg dst	 Destination buffer of RTNL_TC_RTABLE_SIZE uint32_t[].
- * @arg mpu	 Minimal size of a packet at all times.
- * @arg cell	 Size of cell, i.e. size of step between entries in bytes.
- * @arg rate	 Rate in bytes per second.
+ * @arg tc		traffic control object
+ * @arg spec		Rate specification
+ * @arg dst		Destination buffer of RTNL_TC_RTABLE_SIZE uint32_t[].
  *
  * Computes a table of RTNL_TC_RTABLE_SIZE entries specyfing the
  * transmission times for various packet sizes, e.g. the transmission
  * time for a packet of size \c pktsize could be looked up:
  * @code
- * txtime = table[pktsize >> log2(cell)];
+ * txtime = table[pktsize >> log2(mtu)];
  * @endcode
  */
-int rtnl_tc_build_rate_table(uint32_t *dst, uint8_t mpu, int cell, int rate)
+int rtnl_tc_build_rate_table(struct rtnl_tc *tc, struct rtnl_ratespec *spec,
+			     uint32_t *dst)
 {
-	int i, size, cell_log;
+	uint32_t mtu = rtnl_tc_get_mtu(tc);
+	uint32_t linktype = rtnl_tc_get_linktype(tc);
+	uint8_t cell_log = spec->rs_cell_log;
+	unsigned int size, i;
 
-	cell_log = rtnl_tc_calc_cell_log(cell);
-	if (cell_log < 0)
-		return cell_log;
+	spec->rs_mpu = rtnl_tc_get_mpu(tc);
+	spec->rs_overhead = rtnl_tc_get_overhead(tc);
+
+	if (mtu == 0)
+		mtu = 2047;
+
+	if (cell_log == UINT8_MAX) {
+		/*
+		 * cell_log not specified, calculate it. It has to specify the
+		 * minimum number of rshifts required to break the MTU to below
+		 * RTNL_TC_RTABLE_SIZE.
+		 */
+		cell_log = 0;
+		while ((mtu >> cell_log) >= RTNL_TC_RTABLE_SIZE)
+			cell_log++;
+	}
 
 	for (i = 0; i < RTNL_TC_RTABLE_SIZE; i++) {
-		size = (i << cell_log);
-		if (size < mpu)
-			size = mpu;
-
-		dst[i] = rtnl_tc_calc_txtime(size, rate);
+		size = adjust_size((i + 1) << cell_log, spec->rs_mpu, linktype);
+		dst[i] = rtnl_tc_calc_txtime(size, spec->rs_rate);
 	}
+
+	spec->rs_cell_align = -1;
+	spec->rs_cell_log = cell_log;
 
 	return 0;
 }

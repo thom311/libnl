@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -32,7 +32,6 @@
 #define TBF_ATTR_LIMIT			0x01
 #define TBF_ATTR_RATE			0x02
 #define TBF_ATTR_PEAKRATE		0x10
-#define TBF_ATTR_MPU			0x80
 /** @endcond */
 
 static inline struct rtnl_tbf *tbf_qdisc(struct rtnl_qdisc *qdisc)
@@ -58,7 +57,7 @@ static int tbf_msg_parser(struct rtnl_qdisc *q)
 	struct nlattr *tb[TCA_TBF_MAX + 1];
 	struct rtnl_tbf *tbf;
 
-	err = tca_parse(tb, TCA_TBF_MAX, (struct rtnl_tca *) q, tbf_policy);
+	err = tca_parse(tb, TCA_TBF_MAX, (struct rtnl_tc *) q, tbf_policy);
 	if (err < 0)
 		return err;
 	
@@ -72,7 +71,6 @@ static int tbf_msg_parser(struct rtnl_qdisc *q)
 
 		nla_memcpy(&opts, tb[TCA_TBF_PARMS], sizeof(opts));
 		tbf->qt_limit = opts.limit;
-		tbf->qt_mpu = opts.rate.mpu;
 	
 		rtnl_copy_ratespec(&tbf->qt_rate, &opts.rate);
 		tbf->qt_rate_txtime = opts.buffer;
@@ -86,8 +84,10 @@ static int tbf_msg_parser(struct rtnl_qdisc *q)
 					       opts.peakrate.rate);
 		tbf->qt_peakrate_bucket = bufsize;
 
-		tbf->qt_mask = (TBF_ATTR_LIMIT | TBF_ATTR_MPU | TBF_ATTR_RATE |
-				TBF_ATTR_PEAKRATE);
+		rtnl_tc_set_mpu((struct rtnl_tc *) q, tbf->qt_rate.rs_mpu);
+		rtnl_tc_set_overhead((struct rtnl_tc *) q, tbf->qt_rate.rs_overhead);
+
+		tbf->qt_mask = (TBF_ATTR_LIMIT | TBF_ATTR_RATE | TBF_ATTR_PEAKRATE);
 	}
 
 	return 0;
@@ -128,9 +128,9 @@ static void tbf_dump_details(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
 		double cl = nl_cancel_down_bytes(1 << tbf->qt_rate.rs_cell_log,
 						 &cu);
 
-		nl_dump(p, "mpu %u rate-bucket-size %1.f%s "
+		nl_dump(p, "rate-bucket-size %1.f%s "
 			   "rate-cell-size %.1f%s\n",
-			tbf->qt_mpu, bs, bu, cl, cu);
+			bs, bu, cl, cu);
 
 	}
 
@@ -156,8 +156,7 @@ static struct nl_msg *tbf_get_opts(struct rtnl_qdisc *qdisc)
 	struct tc_tbf_qopt opts;
 	struct rtnl_tbf *tbf;
 	struct nl_msg *msg;
-	uint32_t rtab[RTNL_TC_RTABLE_SIZE];
-	uint32_t ptab[RTNL_TC_RTABLE_SIZE];
+	uint32_t rtab[RTNL_TC_RTABLE_SIZE], ptab[RTNL_TC_RTABLE_SIZE];
 	int required = TBF_ATTR_RATE | TBF_ATTR_LIMIT;
 
 	memset(&opts, 0, sizeof(opts));
@@ -171,21 +170,15 @@ static struct nl_msg *tbf_get_opts(struct rtnl_qdisc *qdisc)
 
 	opts.limit = tbf->qt_limit;
 	opts.buffer = tbf->qt_rate_txtime;
-	tbf->qt_rate.rs_mpu = tbf->qt_mpu;
-	rtnl_rcopy_ratespec(&opts.rate, &tbf->qt_rate);
 
-	rtnl_tc_build_rate_table(rtab, tbf->qt_mpu & 0xff, 
-				 1 << tbf->qt_rate.rs_cell_log,
-				 tbf->qt_rate.rs_rate);
+	rtnl_tc_build_rate_table((struct rtnl_tc *) qdisc, &tbf->qt_rate, rtab);
+	rtnl_rcopy_ratespec(&opts.rate, &tbf->qt_rate);
 
 	if (tbf->qt_mask & TBF_ATTR_PEAKRATE) {
 		opts.mtu = tbf->qt_peakrate_txtime;
-		tbf->qt_peakrate.rs_mpu = tbf->qt_mpu;
+		rtnl_tc_build_rate_table((struct rtnl_tc *) qdisc, &tbf->qt_peakrate, ptab);
 		rtnl_rcopy_ratespec(&opts.peakrate, &tbf->qt_peakrate);
 
-		rtnl_tc_build_rate_table(ptab, tbf->qt_mpu & 0xff,
-					 1 << tbf->qt_peakrate.rs_cell_log,
-					 tbf->qt_peakrate.rs_rate);
 	}
 
 	msg = nlmsg_alloc();
@@ -300,56 +293,9 @@ int rtnl_qdisc_tbf_get_limit(struct rtnl_qdisc *qdisc)
 		return -NLE_NOATTR;
 }
 
-/**
- * Set MPU of TBF qdisc.
- * @arg qdisc		TBF qdisc to be modified.
- * @arg mpu		New MPU in bytes.
- * @return 0 on success or a negative error code.
- */
-int rtnl_qdisc_tbf_set_mpu(struct rtnl_qdisc *qdisc, int mpu)
-{
-	struct rtnl_tbf *tbf;
-	
-	tbf = tbf_alloc(qdisc);
-	if (!tbf)
-		return -NLE_NOMEM;
-
-	tbf->qt_mpu = mpu;
-	tbf->qt_mask |= TBF_ATTR_MPU;
-
-	return 0;
-}
-
-/**
- * Get MPU of TBF qdisc.
- * @arg qdisc		TBF qdisc.
- * @return MPU in bytes or a negative error code.
- */
-int rtnl_qdisc_tbf_get_mpu(struct rtnl_qdisc *qdisc)
-{
-	struct rtnl_tbf *tbf;
-	
-	tbf = tbf_qdisc(qdisc);
-	if (tbf && (tbf->qt_mask & TBF_ATTR_MPU))
-		return tbf->qt_mpu;
-	else
-		return -NLE_NOATTR;
-}
-
 static inline int calc_cell_log(int cell, int bucket)
 {
-	if (cell > 0)
 		cell = rtnl_tc_calc_cell_log(cell);
-	else {
-		cell = 0;
-
-		if (!bucket)
-			bucket = 2047; /* defaults to cell_log=3 */
-
-		while ((bucket >> cell) > 255)
-			cell++;
-	}
-
 	return cell;
 }
 
@@ -371,9 +317,10 @@ int rtnl_qdisc_tbf_set_rate(struct rtnl_qdisc *qdisc, int rate, int bucket,
 	if (!tbf)
 		return -NLE_NOMEM;
 
-	cell_log = calc_cell_log(cell, bucket);
-	if (cell_log < 0)
-		return cell_log;
+	if (!cell)
+		cell_log = UINT8_MAX;
+	else
+		cell_log = rtnl_tc_calc_cell_log(cell);
 
 	tbf->qt_rate.rs_rate = rate;
 	tbf->qt_rate_bucket = bucket;

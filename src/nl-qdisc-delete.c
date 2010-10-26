@@ -10,6 +10,7 @@
  */
 
 #include <netlink/cli/utils.h>
+#include <netlink/cli/tc.h>
 #include <netlink/cli/qdisc.h>
 #include <netlink/cli/link.h>
 
@@ -63,6 +64,7 @@ static void delete_cb(struct nl_object *obj, void *arg)
 int main(int argc, char *argv[])
 {
 	struct rtnl_qdisc *qdisc;
+	struct rtnl_tc *tc;
 	struct nl_cache *link_cache, *qdisc_cache;
 	int nfilter = 0;
  
@@ -71,6 +73,7 @@ int main(int argc, char *argv[])
 	link_cache = nl_cli_link_alloc_cache(sock);
 	qdisc_cache = nl_cli_qdisc_alloc_cache(sock);
  	qdisc = nl_cli_qdisc_alloc();
+	tc = (struct rtnl_tc *) qdisc;
  
 	for (;;) {
 		int c, optidx = 0;
@@ -104,15 +107,15 @@ int main(int argc, char *argv[])
 		case 'v': nl_cli_print_version(); break;
 		case 'd':
 			nfilter++;
-			nl_cli_qdisc_parse_dev(qdisc, link_cache, optarg);
+			nl_cli_tc_parse_dev(tc, link_cache, optarg);
 			break;
 		case 'p':
 			nfilter++;
-			nl_cli_qdisc_parse_parent(qdisc, optarg);
+			nl_cli_tc_parse_parent(tc, optarg);
 			break;
 		case 'i':
 			nfilter++;
-			nl_cli_qdisc_parse_handle(qdisc, optarg);
+			nl_cli_tc_parse_handle(tc, optarg);
 			break;
 		case 'k':
 			nfilter++;

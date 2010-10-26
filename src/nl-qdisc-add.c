@@ -10,6 +10,7 @@
  */
 
 #include <netlink/cli/utils.h>
+#include <netlink/cli/tc.h>
 #include <netlink/cli/qdisc.h>
 #include <netlink/cli/link.h>
 
@@ -46,6 +47,7 @@ int main(int argc, char *argv[])
 {
 	struct nl_sock *sock;
 	struct rtnl_qdisc *qdisc;
+	struct rtnl_tc *tc;
 	struct nl_cache *link_cache;
 	struct nl_dump_params dp = {
 		.dp_type = NL_DUMP_DETAILS,
@@ -62,6 +64,7 @@ int main(int argc, char *argv[])
 	link_cache = nl_cli_link_alloc_cache(sock);
 
  	qdisc = nl_cli_qdisc_alloc();
+	tc = (struct rtnl_tc *) qdisc;
  
 	for (;;) {
 		int c, optidx = 0;
@@ -94,9 +97,9 @@ int main(int argc, char *argv[])
 		case 'q': quiet = 1; break;
 		case 'h': print_usage(); break;
 		case 'v': nl_cli_print_version(); break;
-		case 'd': nl_cli_qdisc_parse_dev(qdisc, link_cache, optarg); break;
-		case 'p': nl_cli_qdisc_parse_parent(qdisc, optarg); break;
-		case 'i': nl_cli_qdisc_parse_handle(qdisc, optarg); break;
+		case 'd': nl_cli_tc_parse_dev(tc, link_cache, optarg); break;
+		case 'p': nl_cli_tc_parse_parent(tc, optarg); break;
+		case 'i': nl_cli_tc_parse_handle(tc, optarg); break;
 		case ARG_UPDATE: flags = NLM_F_CREATE; break;
 		case ARG_REPLACE: flags = NLM_F_CREATE | NLM_F_REPLACE; break;
 		case ARG_UPDATE_ONLY: flags = 0; break;
@@ -107,10 +110,10 @@ int main(int argc, char *argv[])
 	if (optind >= argc)
 		print_usage();
 
-	if (!rtnl_qdisc_get_ifindex(qdisc))
+	if (!rtnl_tc_get_ifindex(tc))
 		nl_cli_fatal(EINVAL, "You must specify a network device (--dev=XXX)");
 
-	if (!rtnl_qdisc_get_parent(qdisc))
+	if (!rtnl_tc_get_parent(tc))
 		nl_cli_fatal(EINVAL, "You must specify a parent");
 
 	kind = argv[optind++];

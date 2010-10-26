@@ -10,6 +10,7 @@
  */
 
 #include <netlink/cli/utils.h>
+#include <netlink/cli/tc.h>
 #include <netlink/cli/qdisc.h>
 #include <netlink/cli/class.h>
 #include <netlink/cli/link.h>
@@ -28,8 +29,12 @@ static void print_usage(void)
 "     --update              Update class if it exists.\n"
 "     --update-only         Only update class, never create it.\n"
 " -d, --dev=DEV             Network device the class should be attached to.\n"
-" -i, --id=ID               ID of new class (default: auto-generated)r\n"
+" -i, --id=ID               ID of new class (default: auto-generated)\n"
 " -p, --parent=ID           ID of parent { root | ingress | class-ID }\n"
+"     --mtu=SIZE            Overwrite MTU (default: MTU of network device)\n"
+"     --mpu=SIZE            Minimum packet size on the link (default: 0).\n"
+"     --overhead=SIZE       Overhead in bytes per packet (default: 0).\n"
+"     --linktype=TYPE       Overwrite linktype (default: type of network device)\n"
 "\n"
 "CONFIGURATION\n"
 " -h, --help                Show help text of class specific options.\n"
@@ -45,6 +50,7 @@ int main(int argc, char *argv[])
 {
 	struct nl_sock *sock;
 	struct rtnl_class *class;
+	struct rtnl_tc *tc;
 	struct nl_cache *link_cache;
 	struct nl_dump_params dp = {
 		.dp_type = NL_DUMP_DETAILS,
@@ -61,12 +67,17 @@ int main(int argc, char *argv[])
 	link_cache = nl_cli_link_alloc_cache(sock);
 
  	class = nl_cli_class_alloc();
+	tc = (struct rtnl_tc *) class;
  
 	for (;;) {
 		int c, optidx = 0;
 		enum {
 			ARG_UPDATE = 257,
 			ARG_UPDATE_ONLY = 258,
+			ARG_MTU,
+			ARG_MPU,
+			ARG_OVERHEAD,
+			ARG_LINKTYPE,
 		};
 		static struct option long_opts[] = {
 			{ "quiet", 0, 0, 'q' },
@@ -77,6 +88,10 @@ int main(int argc, char *argv[])
 			{ "id", 1, 0, 'i' },
 			{ "update", 0, 0, ARG_UPDATE },
 			{ "update-only", 0, 0, ARG_UPDATE_ONLY },
+			{ "mtu", 1, 0, ARG_MTU },
+			{ "mpu", 1, 0, ARG_MPU },
+			{ "overhead", 1, 0, ARG_OVERHEAD },
+			{ "linktype", 1, 0, ARG_LINKTYPE },
 			{ 0, 0, 0, 0 }
 		};
 	
@@ -89,21 +104,25 @@ int main(int argc, char *argv[])
 		case 'q': quiet = 1; break;
 		case 'h': print_usage(); break;
 		case 'v': nl_cli_print_version(); break;
-		case 'd': nl_cli_class_parse_dev(class, link_cache, optarg); break;
-		case 'p': nl_cli_class_parse_parent(class, optarg); break;
-		case 'i': nl_cli_class_parse_handle(class, optarg); break;
+		case 'd': nl_cli_tc_parse_dev(tc, link_cache, optarg); break;
+		case 'p': nl_cli_tc_parse_parent(tc, optarg); break;
+		case 'i': nl_cli_tc_parse_handle(tc, optarg); break;
 		case ARG_UPDATE: flags = NLM_F_CREATE; break;
 		case ARG_UPDATE_ONLY: flags = 0; break;
+		case ARG_MTU: nl_cli_tc_parse_mtu(tc, optarg); break;
+		case ARG_MPU: nl_cli_tc_parse_mpu(tc, optarg); break;
+		case ARG_OVERHEAD: nl_cli_tc_parse_overhead(tc, optarg); break;
+		case ARG_LINKTYPE: nl_cli_tc_parse_linktype(tc, optarg); break;
 		}
  	}
 
 	if (optind >= argc)
 		print_usage();
 
-	if (!rtnl_class_get_ifindex(class))
+	if (!rtnl_tc_get_ifindex(tc))
 		nl_cli_fatal(EINVAL, "You must specify a network device (--dev=XXX)");
 
-	if (!rtnl_class_get_parent(class))
+	if (!rtnl_tc_get_parent(tc))
 		nl_cli_fatal(EINVAL, "You must specify a parent (--parent=XXX)");
 
 	kind = argv[optind++];

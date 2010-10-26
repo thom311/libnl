@@ -67,7 +67,7 @@ static int basic_msg_parser(struct rtnl_cls *cls)
 	struct rtnl_basic *basic = rtnl_cls_data(cls);
 	int err;
 
-	err = tca_parse(tb, TCA_BASIC_MAX, (struct rtnl_tca *) cls, basic_policy);
+	err = tca_parse(tb, TCA_BASIC_MAX, (struct rtnl_tc *) cls, basic_policy);
 	if (err < 0)
 		return err;
 

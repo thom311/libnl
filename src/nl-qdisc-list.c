@@ -10,6 +10,7 @@
  */
 
 #include <netlink/cli/utils.h>
+#include <netlink/cli/tc.h>
 #include <netlink/cli/qdisc.h>
 #include <netlink/cli/link.h>
 
@@ -41,6 +42,7 @@ int main(int argc, char *argv[])
 {
 	struct nl_sock *sock;
 	struct rtnl_qdisc *qdisc;
+	struct rtnl_tc *tc;
 	struct nl_cache *link_cache, *qdisc_cache;
 	struct nl_dump_params params = {
 		.dp_type = NL_DUMP_LINE,
@@ -52,6 +54,7 @@ int main(int argc, char *argv[])
 	link_cache = nl_cli_link_alloc_cache(sock);
 	qdisc_cache = nl_cli_qdisc_alloc_cache(sock);
  	qdisc = nl_cli_qdisc_alloc();
+	tc = (struct rtnl_tc *) qdisc;
  
 	for (;;) {
 		int c, optidx = 0;
@@ -80,9 +83,9 @@ int main(int argc, char *argv[])
 		case ARG_STATS: params.dp_type = NL_DUMP_STATS; break;
 		case 'h': print_usage(); break;
 		case 'v': nl_cli_print_version(); break;
-		case 'd': nl_cli_qdisc_parse_dev(qdisc, link_cache, optarg); break;
-		case 'p': nl_cli_qdisc_parse_parent(qdisc, optarg); break;
-		case 'i': nl_cli_qdisc_parse_handle(qdisc, optarg); break;
+		case 'd': nl_cli_tc_parse_dev(tc, link_cache, optarg); break;
+		case 'p': nl_cli_tc_parse_parent(tc, optarg); break;
+		case 'i': nl_cli_tc_parse_handle(tc, optarg); break;
 		case 'k': nl_cli_qdisc_parse_kind(qdisc, optarg); break;
 		}
  	}

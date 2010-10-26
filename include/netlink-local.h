@@ -47,6 +47,7 @@
 #include <linux/pkt_cls.h>
 #include <linux/gen_stats.h>
 #include <linux/ip_mp_alg.h>
+#include <linux/atm.h>
 
 #include <netlink/netlink.h>
 #include <netlink/handlers.h>

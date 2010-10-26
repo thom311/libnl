@@ -31,7 +31,7 @@ static void qdisc_free_data(struct nl_object *obj)
 	struct rtnl_qdisc *qdisc = (struct rtnl_qdisc *) obj;
 	struct rtnl_qdisc_ops *qops;
 
-	tca_free_data((struct rtnl_tca *) qdisc);
+	tca_free_data((struct rtnl_tc *) qdisc);
 
 	qops = rtnl_qdisc_lookup_ops(qdisc);
 	if (qops && qops->qo_free_data)
@@ -45,7 +45,7 @@ static int qdisc_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct rtnl_qdisc_ops *qops;
 	int err;
 
-	err = tca_clone((struct rtnl_tca *) dst, (struct rtnl_tca *) src);
+	err = tca_clone((struct rtnl_tc *) dst, (struct rtnl_tc *) src);
 	if (err < 0)
 		goto errout;
 
@@ -61,7 +61,7 @@ static void qdisc_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 	struct rtnl_qdisc *qdisc = (struct rtnl_qdisc *) obj;
 	struct rtnl_qdisc_ops *qops;
 	
-	tca_dump_line((struct rtnl_tca *) qdisc, "qdisc", p);
+	tca_dump_line((struct rtnl_tc *) qdisc, "qdisc", p);
 
 	qops = rtnl_qdisc_lookup_ops(qdisc);
 	if (qops && qops->qo_dump[NL_DUMP_LINE])
@@ -77,7 +77,7 @@ static void qdisc_dump_details(struct nl_object *arg, struct nl_dump_params *p)
 
 	qdisc_dump_line(arg, p);
 
-	tca_dump_details((struct rtnl_tca *) qdisc, p);
+	tca_dump_details((struct rtnl_tc *) qdisc, p);
 	nl_dump(p, "refcnt %u ", qdisc->q_info);
 
 	qops = rtnl_qdisc_lookup_ops(qdisc);
@@ -93,7 +93,7 @@ static void qdisc_dump_stats(struct nl_object *arg, struct nl_dump_params *p)
 	struct rtnl_qdisc_ops *qops;
 
 	qdisc_dump_details(arg, p);
-	tca_dump_stats((struct rtnl_tca *) qdisc, p);
+	tca_dump_stats((struct rtnl_tc *) qdisc, p);
 	nl_dump(p, "\n");
 
 	qops = rtnl_qdisc_lookup_ops(qdisc);
@@ -140,8 +140,8 @@ void rtnl_qdisc_foreach_child(struct rtnl_qdisc *qdisc, struct nl_cache *cache,
 	if (!filter)
 		return;
 
-	rtnl_class_set_parent(filter, qdisc->q_handle);
-	rtnl_class_set_ifindex(filter, qdisc->q_ifindex);
+	rtnl_tc_set_parent((struct rtnl_tc *) filter, qdisc->q_handle);
+	rtnl_tc_set_ifindex((struct rtnl_tc *) filter, qdisc->q_ifindex);
 	rtnl_class_set_kind(filter, qdisc->q_kind);
 
 	nl_cache_foreach_filter(cache, (struct nl_object *) filter, cb, arg);
@@ -166,8 +166,8 @@ void rtnl_qdisc_foreach_cls(struct rtnl_qdisc *qdisc, struct nl_cache *cache,
 	if (!filter)
 		return;
 
-	rtnl_cls_set_ifindex(filter, qdisc->q_ifindex);
-	rtnl_cls_set_parent(filter, qdisc->q_parent);
+	rtnl_tc_set_ifindex((struct rtnl_tc *) filter, qdisc->q_ifindex);
+	rtnl_tc_set_parent((struct rtnl_tc *) filter, qdisc->q_parent);
 
 	nl_cache_foreach_filter(cache, (struct nl_object *) filter, cb, arg);
 	rtnl_cls_put(filter);
@@ -180,51 +180,10 @@ void rtnl_qdisc_foreach_cls(struct rtnl_qdisc *qdisc, struct nl_cache *cache,
  * @{
  */
 
-void rtnl_qdisc_set_ifindex(struct rtnl_qdisc *qdisc, int ifindex)
-{
-	tca_set_ifindex((struct rtnl_tca *) qdisc, ifindex);
-}
-
-int rtnl_qdisc_get_ifindex(struct rtnl_qdisc *qdisc)
-{
-	return tca_get_ifindex((struct rtnl_tca *) qdisc);
-}
-
-void rtnl_qdisc_set_handle(struct rtnl_qdisc *qdisc, uint32_t handle)
-{
-	tca_set_handle((struct rtnl_tca *) qdisc, handle);
-}
-
-uint32_t rtnl_qdisc_get_handle(struct rtnl_qdisc *qdisc)
-{
-	return tca_get_handle((struct rtnl_tca *) qdisc);
-}
-
-void rtnl_qdisc_set_parent(struct rtnl_qdisc *qdisc, uint32_t parent)
-{
-	tca_set_parent((struct rtnl_tca *) qdisc, parent);
-}
-
-uint32_t rtnl_qdisc_get_parent(struct rtnl_qdisc *qdisc)
-{
-	return tca_get_parent((struct rtnl_tca *) qdisc);
-}
-
 void rtnl_qdisc_set_kind(struct rtnl_qdisc *qdisc, const char *name)
 {
-	tca_set_kind((struct rtnl_tca *) qdisc, name);
+	tca_set_kind((struct rtnl_tc *) qdisc, name);
 	qdisc->q_ops = __rtnl_qdisc_lookup_ops(name);
-}
-
-char *rtnl_qdisc_get_kind(struct rtnl_qdisc *qdisc)
-{
-	return tca_get_kind((struct rtnl_tca *) qdisc);
-}
-
-uint64_t rtnl_qdisc_get_stat(struct rtnl_qdisc *qdisc,
-			     enum rtnl_tc_stats_id id)
-{
-	return tca_get_stat((struct rtnl_tca *) qdisc, id);
 }
 
 /** @} */

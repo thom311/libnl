@@ -46,15 +46,7 @@ extern int	rtnl_qdisc_build_delete_request(struct rtnl_qdisc *,
 						struct nl_msg **);
 extern int	rtnl_qdisc_delete(struct nl_sock *, struct rtnl_qdisc *);
 
-extern void	rtnl_qdisc_set_ifindex(struct rtnl_qdisc *, int);
-extern int	rtnl_qdisc_get_ifindex(struct rtnl_qdisc *);
-extern void	rtnl_qdisc_set_handle(struct rtnl_qdisc *, uint32_t);
-extern uint32_t	rtnl_qdisc_get_handle(struct rtnl_qdisc *);
-extern void	rtnl_qdisc_set_parent(struct rtnl_qdisc *, uint32_t);
-extern uint32_t	rtnl_qdisc_get_parent(struct rtnl_qdisc *);
 extern void	rtnl_qdisc_set_kind(struct rtnl_qdisc *, const char *);
-extern char *	rtnl_qdisc_get_kind(struct rtnl_qdisc *);
-extern uint64_t	rtnl_qdisc_get_stat(struct rtnl_qdisc *, enum rtnl_tc_stats_id);
 
 extern void	rtnl_qdisc_foreach_child(struct rtnl_qdisc *, struct nl_cache *,
 					 void (*cb)(struct nl_object *, void *),

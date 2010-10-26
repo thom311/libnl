@@ -10,6 +10,7 @@
  */
 
 #include <netlink/cli/utils.h>
+#include <netlink/cli/tc.h>
 #include <netlink/cli/class.h>
 #include <netlink/cli/link.h>
 
@@ -61,6 +62,7 @@ static void dump_class(struct nl_object *obj, void *arg)
 int main(int argc, char *argv[])
 {
 	struct rtnl_class *class;
+	struct rtnl_tc *tc;
 	struct nl_cache *link_cache;
 	int ifindex;
  
@@ -68,6 +70,7 @@ int main(int argc, char *argv[])
 	nl_cli_connect(sock, NETLINK_ROUTE);
 	link_cache = nl_cli_link_alloc_cache(sock);
  	class = nl_cli_class_alloc();
+	tc = (struct rtnl_tc *) class;
 
 	params.dp_fd = stdout;
  
@@ -98,14 +101,14 @@ int main(int argc, char *argv[])
 		case ARG_STATS: params.dp_type = NL_DUMP_STATS; break;
 		case 'h': print_usage(); break;
 		case 'v': nl_cli_print_version(); break;
-		case 'd': nl_cli_class_parse_dev(class, link_cache, optarg); break;
-		case 'p': nl_cli_class_parse_parent(class, optarg); break;
-		case 'i': nl_cli_class_parse_handle(class, optarg); break;
+		case 'd': nl_cli_tc_parse_dev(tc, link_cache, optarg); break;
+		case 'p': nl_cli_tc_parse_parent(tc, optarg); break;
+		case 'i': nl_cli_tc_parse_handle(tc, optarg); break;
 		case 'k': nl_cli_class_parse_kind(class, optarg); break;
 		}
  	}
 
-	if ((ifindex = rtnl_class_get_ifindex(class)))
+	if ((ifindex = rtnl_tc_get_ifindex(tc)))
 		__dump_class(ifindex, class);
 	 else
 		nl_cache_foreach(link_cache, dump_class, class);

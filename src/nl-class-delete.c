@@ -68,12 +68,14 @@ static void delete_cb(struct nl_object *obj, void *arg)
 int main(int argc, char *argv[])
 {
 	struct rtnl_class *class;
+	struct rtnl_tc *tc;
 	struct nl_cache *link_cache, *class_cache;
  
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
 	link_cache = nl_cli_link_alloc_cache(sock);
  	class = nl_cli_class_alloc();
+	tc = (struct rtnl_tc *) class;
  
 	for (;;) {
 		int c, optidx = 0;
@@ -105,25 +107,17 @@ int main(int argc, char *argv[])
 		case 'q': quiet = 1; break;
 		case 'h': print_usage(); break;
 		case 'v': nl_cli_print_version(); break;
-		case 'd':
-			nl_cli_class_parse_dev(class, link_cache, optarg);
-			break;
-		case 'p':
-			nl_cli_class_parse_parent(class, optarg);
-			break;
-		case 'i':
-			nl_cli_class_parse_handle(class, optarg);
-			break;
-		case 'k':
-			nl_cli_class_parse_kind(class, optarg);
-			break;
+		case 'd': nl_cli_tc_parse_dev(tc, link_cache, optarg); break;
+		case 'p': nl_cli_tc_parse_parent(tc, optarg); break;
+		case 'i': nl_cli_tc_parse_handle(tc, optarg); break;
+		case 'k': nl_cli_class_parse_kind(class, optarg); break;
 		}
  	}
 
-	if (!rtnl_class_get_ifindex(class))
+	if (!rtnl_tc_get_ifindex(tc))
 		nl_cli_fatal(EINVAL, "You must specify a network device (--dev=XXX)");
 
-	class_cache = nl_cli_class_alloc_cache(sock, rtnl_class_get_ifindex(class));
+	class_cache = nl_cli_class_alloc_cache(sock, rtnl_tc_get_ifindex(tc));
 
 	nl_cache_foreach_filter(class_cache, OBJ_CAST(class), delete_cb, NULL);
 

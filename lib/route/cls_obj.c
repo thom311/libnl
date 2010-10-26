@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -34,7 +34,7 @@ static void cls_free_data(struct nl_object *obj)
 	struct rtnl_cls *cls = (struct rtnl_cls *) obj;
 	struct rtnl_cls_ops *cops;
 	
-	tca_free_data((struct rtnl_tca *) cls);
+	tca_free_data((struct rtnl_tc *) cls);
 
 	cops = rtnl_cls_lookup_ops(cls);
 	if (cops && cops->co_free_data)
@@ -50,7 +50,7 @@ static int cls_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct rtnl_cls_ops *cops;
 	int err;
 	
-	err = tca_clone((struct rtnl_tca *) dst, (struct rtnl_tca *) src);
+	err = tca_clone((struct rtnl_tc *) dst, (struct rtnl_tc *) src);
 	if (err < 0)
 		goto errout;
 
@@ -74,7 +74,7 @@ static void cls_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 	struct rtnl_cls *cls = (struct rtnl_cls *) obj;
 	struct rtnl_cls_ops *cops;
 
-	tca_dump_line((struct rtnl_tca *) cls, "cls", p);
+	tca_dump_line((struct rtnl_tc *) cls, "cls", p);
 
 	nl_dump(p, " prio %u protocol %s", cls->c_prio,
 		nl_ether_proto2str(cls->c_protocol, buf, sizeof(buf)));
@@ -91,7 +91,7 @@ static void cls_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 	struct rtnl_cls_ops *cops;
 
 	cls_dump_line(obj, p);
-	tca_dump_details((struct rtnl_tca *) cls, p);
+	tca_dump_details((struct rtnl_tc *) cls, p);
 
 	cops = rtnl_cls_lookup_ops(cls);
 	if (cops && cops->co_dump[NL_DUMP_DETAILS])
@@ -106,7 +106,7 @@ static void cls_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	struct rtnl_cls_ops *cops;
 
 	cls_dump_details(obj, p);
-	tca_dump_stats((struct rtnl_tca *) cls, p);
+	tca_dump_stats((struct rtnl_tc *) cls, p);
 	nl_dump(p, "\n");
 
 	cops = rtnl_cls_lookup_ops(cls);
@@ -137,37 +137,12 @@ void rtnl_cls_put(struct rtnl_cls *cls)
  * @{
  */
 
-void rtnl_cls_set_ifindex(struct rtnl_cls *f, int ifindex)
-{
-	tca_set_ifindex((struct rtnl_tca *) f, ifindex);
-}
-
-int rtnl_cls_get_ifindex(struct rtnl_cls *cls)
-{
-	return cls->c_ifindex;
-}
-
-void rtnl_cls_set_handle(struct rtnl_cls *f, uint32_t handle)
-{
-	tca_set_handle((struct rtnl_tca *) f, handle);
-}
-
-void rtnl_cls_set_parent(struct rtnl_cls *f, uint32_t parent)
-{
-	tca_set_parent((struct rtnl_tca *) f, parent);
-}
-
-uint32_t rtnl_cls_get_parent(struct rtnl_cls *cls)
-{
-	return cls->c_parent;
-}
-
 int rtnl_cls_set_kind(struct rtnl_cls *cls, const char *kind)
 {
 	if (cls->ce_mask & TCA_ATTR_KIND)
 		return -NLE_EXIST;
 
-	tca_set_kind((struct rtnl_tca *) cls, kind);
+	tca_set_kind((struct rtnl_tc *) cls, kind);
 
 	/* Force allocation of data */
 	rtnl_cls_data(cls);

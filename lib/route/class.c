@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -41,7 +41,7 @@ static int class_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	}
 	class->ce_msgtype = n->nlmsg_type;
 
-	err = tca_msg_parser(n, (struct rtnl_tca *) class);
+	err = tca_msg_parser(n, (struct rtnl_tc *) class);
 	if (err < 0)
 		goto errout_free;
 
@@ -81,7 +81,7 @@ static int class_build(struct rtnl_class *class, int type, int flags,
 	struct rtnl_class_ops *cops;
 	int err;
 
-	err = tca_build_msg((struct rtnl_tca *) class, type, flags, result);
+	err = tca_build_msg((struct rtnl_tc *) class, type, flags, result);
 	if (err < 0)
 		return err;
 

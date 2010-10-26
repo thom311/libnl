@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -30,7 +30,7 @@ static void class_free_data(struct nl_object *obj)
 	struct rtnl_class *class = (struct rtnl_class *) obj;
 	struct rtnl_class_ops *cops;
 	
-	tca_free_data((struct rtnl_tca *) class);
+	tca_free_data((struct rtnl_tc *) class);
 
 	cops = rtnl_class_lookup_ops(class);
 	if (cops && cops->co_free_data)
@@ -44,7 +44,7 @@ static int class_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct rtnl_class_ops *cops;
 	int err;
 
-	err = tca_clone((struct rtnl_tca *) dst, (struct rtnl_tca *) src);
+	err = tca_clone((struct rtnl_tc *) dst, (struct rtnl_tc *) src);
 	if (err < 0)
 		goto errout;
 
@@ -60,7 +60,7 @@ static void class_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 	struct rtnl_class *class = (struct rtnl_class *) obj;
 	struct rtnl_class_ops *cops;
 
-	tca_dump_line((struct rtnl_tca *) class, "class", p);
+	tca_dump_line((struct rtnl_tc *) class, "class", p);
 
 	cops = rtnl_class_lookup_ops(class);
 	if (cops && cops->co_dump[NL_DUMP_LINE])
@@ -74,7 +74,7 @@ static void class_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 	struct rtnl_class_ops *cops;
 
 	class_dump_line(obj, p);
-	tca_dump_details((struct rtnl_tca *) class, p);
+	tca_dump_details((struct rtnl_tc *) class, p);
 	
 	if (class->c_info) {
 		char buf[32];
@@ -97,7 +97,7 @@ static void class_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	struct rtnl_class_ops *cops;
 
 	class_dump_details(obj, p);
-	tca_dump_stats((struct rtnl_tca *) class, p);
+	tca_dump_stats((struct rtnl_tc *) class, p);
 	nl_dump(p, "\n");
 
 	cops = rtnl_class_lookup_ops(class);
@@ -175,8 +175,8 @@ void rtnl_class_foreach_child(struct rtnl_class *class, struct nl_cache *cache,
 	if (!filter)
 		return;
 
-	rtnl_class_set_parent(filter, class->c_handle);
-	rtnl_class_set_ifindex(filter, class->c_ifindex);
+	rtnl_tc_set_parent((struct rtnl_tc *) filter, class->c_handle);
+	rtnl_tc_set_ifindex((struct rtnl_tc *) filter, class->c_ifindex);
 	rtnl_class_set_kind(filter, class->c_kind);
 
 	nl_cache_foreach_filter(cache, (struct nl_object *) filter, cb, arg);
@@ -200,8 +200,8 @@ void rtnl_class_foreach_cls(struct rtnl_class *class, struct nl_cache *cache,
 	if (!filter)
 		return;
 
-	rtnl_cls_set_ifindex(filter, class->c_ifindex);
-	rtnl_cls_set_parent(filter, class->c_parent);
+	rtnl_tc_set_ifindex((struct rtnl_tc *) filter, class->c_ifindex);
+	rtnl_tc_set_parent((struct rtnl_tc *) filter, class->c_parent);
 
 	nl_cache_foreach_filter(cache, (struct nl_object *) filter, cb, arg);
 	rtnl_cls_put(filter);
@@ -215,51 +215,10 @@ void rtnl_class_foreach_cls(struct rtnl_class *class, struct nl_cache *cache,
  * @{
  */
 
-void rtnl_class_set_ifindex(struct rtnl_class *class, int ifindex)
-{
-	tca_set_ifindex((struct rtnl_tca *) class, ifindex);
-}
-
-int rtnl_class_get_ifindex(struct rtnl_class *class)
-{
-	return tca_get_ifindex((struct rtnl_tca *) class);
-}
-
-void rtnl_class_set_handle(struct rtnl_class *class, uint32_t handle)
-{
-	tca_set_handle((struct rtnl_tca *) class, handle);
-}
-
-uint32_t rtnl_class_get_handle(struct rtnl_class *class)
-{
-	return tca_get_handle((struct rtnl_tca *) class);
-}
-
-void rtnl_class_set_parent(struct rtnl_class *class, uint32_t parent)
-{
-	tca_set_parent((struct rtnl_tca *) class, parent);
-}
-
-uint32_t rtnl_class_get_parent(struct rtnl_class *class)
-{
-	return tca_get_parent((struct rtnl_tca *) class);
-}
-
 void rtnl_class_set_kind(struct rtnl_class *class, const char *name)
 {
-	tca_set_kind((struct rtnl_tca *) class, name);
+	tca_set_kind((struct rtnl_tc *) class, name);
 	class->c_ops = __rtnl_class_lookup_ops(name);
-}
-
-char *rtnl_class_get_kind(struct rtnl_class *class)
-{
-	return tca_get_kind((struct rtnl_tca *) class);
-}
-
-uint64_t rtnl_class_get_stat(struct rtnl_class *class,
-			     enum rtnl_tc_stats_id id)
-{
-	return tca_get_stat((struct rtnl_tca *) class, id);
 }
 
 /** @} */

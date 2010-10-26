@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_TC_H_
@@ -15,44 +15,54 @@
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/data.h>
+#include <netlink/route/link.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+struct rtnl_tc;
+
 /**
- * TC statistics identifiers
  * @ingroup tc
  */
 enum rtnl_tc_stats_id {
-	RTNL_TC_PACKETS,	/**< Packets seen */
-	RTNL_TC_BYTES,		/**< Bytes seen */
+	RTNL_TC_PACKETS,	/**< Number of packets seen */
+	RTNL_TC_BYTES,		/**< Total bytes seen */
 	RTNL_TC_RATE_BPS,	/**< Current bits/s (rate estimator) */
 	RTNL_TC_RATE_PPS,	/**< Current packet/s (rate estimator) */
-	RTNL_TC_QLEN,		/**< Queue length */
-	RTNL_TC_BACKLOG,	/**< Backlog length */
-	RTNL_TC_DROPS,		/**< Packets dropped */
-	RTNL_TC_REQUEUES,	/**< Number of requeues */
-	RTNL_TC_OVERLIMITS,	/**< Number of overlimits */
+	RTNL_TC_QLEN,		/**< Current queue length */
+	RTNL_TC_BACKLOG,	/**< Current backlog length */
+	RTNL_TC_DROPS,		/**< Total number of packets dropped */
+	RTNL_TC_REQUEUES,	/**< Total number of requeues */
+	RTNL_TC_OVERLIMITS,	/**< Total number of overlimits */
 	__RTNL_TC_STATS_MAX,
 };
 
 #define RTNL_TC_STATS_MAX (__RTNL_TC_STATS_MAX - 1)
 
-extern int rtnl_tc_calc_txtime(int, int);
-extern int rtnl_tc_calc_bufsize(int, int);
-extern int rtnl_tc_calc_cell_log(int);
+extern void		rtnl_tc_set_ifindex(struct rtnl_tc *, int);
+extern int		rtnl_tc_get_ifindex(struct rtnl_tc *);
+extern void		rtnl_tc_set_link(struct rtnl_tc *, struct rtnl_link *);
+extern void		rtnl_tc_set_mtu(struct rtnl_tc *, uint32_t);
+extern uint32_t		rtnl_tc_get_mtu(struct rtnl_tc *);
+extern void		rtnl_tc_set_mpu(struct rtnl_tc *, uint32_t);
+extern uint32_t		rtnl_tc_get_mpu(struct rtnl_tc *);
+extern void		rtnl_tc_set_overhead(struct rtnl_tc *, uint32_t);
+extern uint32_t		rtnl_tc_get_overhead(struct rtnl_tc *);
+extern void		rtnl_tc_set_linktype(struct rtnl_tc *, uint32_t);
+extern uint32_t		rtnl_tc_get_linktype(struct rtnl_tc *);
+extern void		rtnl_tc_set_handle(struct rtnl_tc *, uint32_t);
+extern uint32_t		rtnl_tc_get_handle(struct rtnl_tc *);
+extern void		rtnl_tc_set_parent(struct rtnl_tc *, uint32_t);
+extern uint32_t		rtnl_tc_get_parent(struct rtnl_tc *);
+extern char *		rtnl_tc_get_kind(struct rtnl_tc *);
+extern uint64_t		rtnl_tc_get_stat(struct rtnl_tc *, int );
 
-/**
- * Number of entries in a transmission time lookup table
- * @ingroup tc
- */
-#define RTNL_TC_RTABLE_SIZE	256
+extern int		rtnl_tc_calc_txtime(int, int);
+extern int		rtnl_tc_calc_bufsize(int, int);
+extern int		rtnl_tc_calc_cell_log(int);
 
-extern int rtnl_tc_build_rate_table(uint32_t *, uint8_t, int, int);
-
-
-/* TC Handle Translations */
 extern int		rtnl_tc_read_classid_file(void);
 extern char *		rtnl_tc_handle2str(uint32_t, char *, size_t);
 extern int		rtnl_tc_str2handle(const char *, uint32_t *);

@@ -14,13 +14,11 @@
 
 #include <netlink/route/class.h>
 #include <netlink/route/class-modules.h>
+#include <netlink/cli/tc.h>
 
 extern struct rtnl_class *nl_cli_class_alloc(void);
 extern struct nl_cache *nl_cli_class_alloc_cache(struct nl_sock *, int);
 
-extern void nl_cli_class_parse_dev(struct rtnl_class *, struct nl_cache *, char *);
-extern void nl_cli_class_parse_parent(struct rtnl_class *, char *);
-extern void nl_cli_class_parse_handle(struct rtnl_class *, char *);
 extern void nl_cli_class_parse_kind(struct rtnl_class *, char *);
 
 #endif

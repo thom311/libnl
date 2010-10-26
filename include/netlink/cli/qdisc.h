@@ -36,9 +36,6 @@ extern void nl_cli_qdisc_unregister(struct nl_cli_qdisc_module *);
 
 extern struct rtnl_qdisc *nl_cli_qdisc_alloc(void);
 
-extern void nl_cli_qdisc_parse_dev(struct rtnl_qdisc *, struct nl_cache *, char *);
-extern void nl_cli_qdisc_parse_parent(struct rtnl_qdisc *, char *);
-extern void nl_cli_qdisc_parse_handle(struct rtnl_qdisc *, char *);
 extern void nl_cli_qdisc_parse_kind(struct rtnl_qdisc *, char *);
 
 #endif

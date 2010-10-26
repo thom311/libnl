@@ -44,7 +44,7 @@ static int fw_msg_parser(struct rtnl_cls *cls)
 	struct nlattr *tb[TCA_FW_MAX + 1];
 	int err;
 
-	err = tca_parse(tb, TCA_FW_MAX, (struct rtnl_tca *) cls, fw_policy);
+	err = tca_parse(tb, TCA_FW_MAX, (struct rtnl_tc *) cls, fw_policy);
 	if (err < 0)
 		return err;
 

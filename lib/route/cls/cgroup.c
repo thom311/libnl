@@ -47,7 +47,7 @@ static int cgroup_msg_parser(struct rtnl_cls *cls)
 	struct nlattr *tb[TCA_CGROUP_MAX + 1];
 	int err;
 
-	err = tca_parse(tb, TCA_CGROUP_MAX, (struct rtnl_tca *) cls,
+	err = tca_parse(tb, TCA_CGROUP_MAX, (struct rtnl_tc *) cls,
 			cgroup_policy);
 	if (err < 0)
 		return err;

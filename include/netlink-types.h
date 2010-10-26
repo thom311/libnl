@@ -450,14 +450,18 @@ struct rtnl_tstats
 	uint32_t		pre ##_handle;		\
 	uint32_t		pre ##_parent;		\
 	uint32_t		pre ##_info;		\
+	uint32_t		pre ##_mtu;		\
+	uint32_t		pre ##_mpu;		\
+	uint32_t		pre ##_overhead;	\
+	uint32_t		pre ##_linktype;	\
 	char			pre ##_kind[TCKINDSIZ];	\
 	struct nl_data *	pre ##_opts;		\
 	uint64_t		pre ##_stats[RTNL_TC_STATS_MAX+1]; \
 	struct nl_data *	pre ##_xstats;		\
 	struct nl_data *	pre ##_subdata;		\
+	struct rtnl_link *	pre ##_link
 
-
-struct rtnl_tca
+struct rtnl_tc
 {
 	NL_TCA_GENERIC(tc);
 };
@@ -562,7 +566,6 @@ struct rtnl_prio
 struct rtnl_tbf
 {
 	uint32_t		qt_limit;
-	uint32_t		qt_mpu;
 	struct rtnl_ratespec	qt_rate;
 	uint32_t		qt_rate_bucket;
 	uint32_t		qt_rate_txtime;
@@ -632,7 +635,6 @@ struct rtnl_htb_qdisc
 struct rtnl_htb_class
 {
 	uint32_t		ch_prio;
-	uint32_t		ch_mtu;
 	struct rtnl_ratespec	ch_rate;
 	struct rtnl_ratespec	ch_ceil;
 	uint32_t		ch_rbuffer;

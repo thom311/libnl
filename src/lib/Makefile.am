@@ -34,6 +34,7 @@ libnl_cli_la_LIBADD  = ${top_builddir}/lib/libnl.la \
 		       ${top_builddir}/lib/libnl-genl.la
 
 libnl_cli_la_SOURCES = \
-	utils.c addr.c ct.c link.c neigh.c tc.c qdisc.c class.c rule.c route.c
+	utils.c addr.c ct.c link.c neigh.c rule.c route.c \
+	tc.c qdisc.c class.c cls.c
 #	cls/ematch_syntax.c cls/ematch_grammar.c cls/ematch.c
 #	cls/pktloc_syntax.c cls/pktloc_grammar.c cls/utils.c

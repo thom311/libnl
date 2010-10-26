@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2008-2009 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2008-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -28,12 +28,10 @@
 #include <netlink/route/classifier.h>
 #include <netlink/route/classifier-modules.h>
 #include <netlink/route/cls/basic.h>
-#include <netlink/route/cls/ematch.h>
 
 struct rtnl_basic
 {
 	uint32_t			b_classid;
-	struct rtnl_ematch_tree *	b_ematch;
 	int				b_mask;
 };
 
@@ -42,7 +40,7 @@ struct rtnl_basic
 #define BASIC_ATTR_EMATCH	0x002
 /** @endcond */
 
-static struct nla_policy basic_policy[TCA_FW_MAX+1] = {
+static struct nla_policy basic_policy[TCA_BASIC_MAX+1] = {
 	[TCA_BASIC_CLASSID]	= { .type = NLA_U32 },
 	[TCA_BASIC_EMATCHES]	= { .type = NLA_NESTED },
 	[TCA_BASIC_ACT]		= { .type = NLA_NESTED },
@@ -56,9 +54,11 @@ static int basic_clone(struct rtnl_cls *_dst, struct rtnl_cls *_src)
 
 static void basic_free_data(struct rtnl_cls *cls)
 {
+#if 0
 	struct rtnl_basic *basic = rtnl_cls_data(cls);
 
 	rtnl_ematch_tree_free(basic->b_ematch);
+#endif
 }
 
 static int basic_msg_parser(struct rtnl_cls *cls)
@@ -77,12 +77,14 @@ static int basic_msg_parser(struct rtnl_cls *cls)
 	}
 
 	if (tb[TCA_BASIC_EMATCHES]) {
+#if 0
 		if ((err = rtnl_ematch_parse(tb[TCA_BASIC_EMATCHES],
 					     &basic->b_ematch)) < 0)
 			return err;
 
 		if (basic->b_ematch)
 			basic->b_mask |= BASIC_ATTR_EMATCH;
+#endif
 	}
 
 	if (tb[TCA_BASIC_ACT]) {
@@ -101,18 +103,21 @@ static void basic_dump_line(struct rtnl_cls *cls, struct nl_dump_params *p)
 	struct rtnl_basic *b = rtnl_cls_data(cls);
 	char buf[32];
 
+#if 0
 	if (b->b_mask & BASIC_ATTR_EMATCH)
 		nl_dump(p, " ematch");
 	else
 		nl_dump(p, " match-all");
+#endif
 
 	if (b->b_mask & BASIC_ATTR_CLASSID)
-		nl_dump(p, " classify-to %s",
+		nl_dump(p, " target %s",
 			rtnl_tc_handle2str(b->b_classid, buf, sizeof(buf)));
 }
 
 static void basic_dump_details(struct rtnl_cls *cls, struct nl_dump_params *p)
 {
+#if 0
 	struct rtnl_basic *b = rtnl_cls_data(cls);
 
 	if (b->b_mask & BASIC_ATTR_EMATCH) {
@@ -120,6 +125,7 @@ static void basic_dump_details(struct rtnl_cls *cls, struct nl_dump_params *p)
 		nl_dump_line(p, "    ematch ");
 		rtnl_ematch_tree_dump(b->b_ematch, p);
 	} else
+#endif
 		nl_dump(p, "no options.\n");
 }
 
@@ -160,6 +166,7 @@ uint32_t rtnl_basic_get_classid(struct rtnl_cls *cls)
 	return b->b_classid;
 }
 
+#if 0
 int rtnl_basic_set_ematch(struct rtnl_cls *cls, struct rtnl_ematch_tree *tree)
 {
 	struct rtnl_basic *b = rtnl_cls_data(cls);
@@ -182,6 +189,7 @@ struct rtnl_ematch_tree *rtnl_basic_get_ematch(struct rtnl_cls *cls)
 	struct rtnl_basic *b = rtnl_cls_data(cls);
 	return b->b_ematch;
 }
+#endif
 
 /** @} */
 

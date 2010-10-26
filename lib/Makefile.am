@@ -41,7 +41,7 @@ libnl_route_la_SOURCES = \
 	route/qdisc_api.c route/qdisc_obj.c route/route.c route/route_obj.c \
 	route/route_utils.c route/rtnl.c route/rule.c route/tc.c route/classid.c \
 	\
-	route/cls/fw.c route/cls/police.c route/cls/u32.c \
+	route/cls/fw.c route/cls/police.c route/cls/u32.c route/cls/basic.c \
 	\
 	route/link/api.c route/link/vlan.c \
 	\
@@ -59,10 +59,12 @@ nobase_pkglib_LTLIBRARIES = \
 	cli/qdisc/htb.la \
 	cli/qdisc/blackhole.la \
 	cli/qdisc/pfifo.la \
-	cli/qdisc/bfifo.la
+	cli/qdisc/bfifo.la \
+	cli/cls/basic.la
 
 cli_qdisc_htb_la_LDFLAGS = -module -version-info 0:0:0
 cli_qdisc_blackhole_la_LDFLAGS = -module -version-info 0:0:0
 cli_qdisc_pfifo_la_LDFLAGS = -module -version-info 0:0:0
 cli_qdisc_bfifo_la_LDFLAGS = -module -version-info 0:0:0
+cli_cls_basic_la_LDFLAGS = -module -version-info 0:0:0
 endif

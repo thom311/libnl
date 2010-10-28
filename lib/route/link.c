@@ -244,6 +244,7 @@ static struct nla_policy link_policy[IFLA_MAX+1] = {
 	[IFLA_QDISC]	= { .type = NLA_STRING,
 			    .maxlen = IFQDISCSIZ },
 	[IFLA_STATS]	= { .minlen = sizeof(struct rtnl_link_stats) },
+	[IFLA_STATS64]	= { .minlen = sizeof(struct rtnl_link_stats64) },
 	[IFLA_MAP]	= { .minlen = sizeof(struct rtnl_link_ifmap) },
 };
 
@@ -292,29 +293,66 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	if (tb[IFLA_STATS]) {
 		struct rtnl_link_stats *st = nla_data(tb[IFLA_STATS]);
-		
+
 		link->l_stats[RTNL_LINK_RX_PACKETS]	= st->rx_packets;
-		link->l_stats[RTNL_LINK_RX_BYTES]	= st->rx_bytes;
-		link->l_stats[RTNL_LINK_RX_ERRORS]	= st->rx_errors;
-		link->l_stats[RTNL_LINK_RX_DROPPED]	= st->rx_dropped;
-		link->l_stats[RTNL_LINK_RX_COMPRESSED]	= st->rx_compressed;
-		link->l_stats[RTNL_LINK_RX_FIFO_ERR]	= st->rx_fifo_errors;
 		link->l_stats[RTNL_LINK_TX_PACKETS]	= st->tx_packets;
+		link->l_stats[RTNL_LINK_RX_BYTES]	= st->rx_bytes;
 		link->l_stats[RTNL_LINK_TX_BYTES]	= st->tx_bytes;
+		link->l_stats[RTNL_LINK_RX_ERRORS]	= st->rx_errors;
 		link->l_stats[RTNL_LINK_TX_ERRORS]	= st->tx_errors;
+		link->l_stats[RTNL_LINK_RX_DROPPED]	= st->rx_dropped;
 		link->l_stats[RTNL_LINK_TX_DROPPED]	= st->tx_dropped;
-		link->l_stats[RTNL_LINK_TX_COMPRESSED]	= st->tx_compressed;
-		link->l_stats[RTNL_LINK_TX_FIFO_ERR]	= st->tx_fifo_errors;
+		link->l_stats[RTNL_LINK_MULTICAST]	= st->multicast;
+		link->l_stats[RTNL_LINK_COLLISIONS]	= st->collisions;
+
 		link->l_stats[RTNL_LINK_RX_LEN_ERR]	= st->rx_length_errors;
 		link->l_stats[RTNL_LINK_RX_OVER_ERR]	= st->rx_over_errors;
 		link->l_stats[RTNL_LINK_RX_CRC_ERR]	= st->rx_crc_errors;
 		link->l_stats[RTNL_LINK_RX_FRAME_ERR]	= st->rx_frame_errors;
+		link->l_stats[RTNL_LINK_RX_FIFO_ERR]	= st->rx_fifo_errors;
 		link->l_stats[RTNL_LINK_RX_MISSED_ERR]	= st->rx_missed_errors;
+
 		link->l_stats[RTNL_LINK_TX_ABORT_ERR]	= st->tx_aborted_errors;
 		link->l_stats[RTNL_LINK_TX_CARRIER_ERR]	= st->tx_carrier_errors;
+		link->l_stats[RTNL_LINK_TX_FIFO_ERR]	= st->tx_fifo_errors;
 		link->l_stats[RTNL_LINK_TX_HBEAT_ERR]	= st->tx_heartbeat_errors;
 		link->l_stats[RTNL_LINK_TX_WIN_ERR]	= st->tx_window_errors;
+
+		link->l_stats[RTNL_LINK_RX_COMPRESSED]	= st->rx_compressed;
+		link->l_stats[RTNL_LINK_TX_COMPRESSED]	= st->tx_compressed;
+
+		link->ce_mask |= LINK_ATTR_STATS;
+	}
+
+	if (tb[IFLA_STATS64]) {
+		struct rtnl_link_stats64 *st = nla_data(tb[IFLA_STATS64]);
+		
+		link->l_stats[RTNL_LINK_RX_PACKETS]	= st->rx_packets;
+		link->l_stats[RTNL_LINK_TX_PACKETS]	= st->tx_packets;
+		link->l_stats[RTNL_LINK_RX_BYTES]	= st->rx_bytes;
+		link->l_stats[RTNL_LINK_TX_BYTES]	= st->tx_bytes;
+		link->l_stats[RTNL_LINK_RX_ERRORS]	= st->rx_errors;
+		link->l_stats[RTNL_LINK_TX_ERRORS]	= st->tx_errors;
+		link->l_stats[RTNL_LINK_RX_DROPPED]	= st->rx_dropped;
+		link->l_stats[RTNL_LINK_TX_DROPPED]	= st->tx_dropped;
 		link->l_stats[RTNL_LINK_MULTICAST]	= st->multicast;
+		link->l_stats[RTNL_LINK_COLLISIONS]	= st->collisions;
+
+		link->l_stats[RTNL_LINK_RX_LEN_ERR]	= st->rx_length_errors;
+		link->l_stats[RTNL_LINK_RX_OVER_ERR]	= st->rx_over_errors;
+		link->l_stats[RTNL_LINK_RX_CRC_ERR]	= st->rx_crc_errors;
+		link->l_stats[RTNL_LINK_RX_FRAME_ERR]	= st->rx_frame_errors;
+		link->l_stats[RTNL_LINK_RX_FIFO_ERR]	= st->rx_fifo_errors;
+		link->l_stats[RTNL_LINK_RX_MISSED_ERR]	= st->rx_missed_errors;
+
+		link->l_stats[RTNL_LINK_TX_ABORT_ERR]	= st->tx_aborted_errors;
+		link->l_stats[RTNL_LINK_TX_CARRIER_ERR]	= st->tx_carrier_errors;
+		link->l_stats[RTNL_LINK_TX_FIFO_ERR]	= st->tx_fifo_errors;
+		link->l_stats[RTNL_LINK_TX_HBEAT_ERR]	= st->tx_heartbeat_errors;
+		link->l_stats[RTNL_LINK_TX_WIN_ERR]	= st->tx_window_errors;
+
+		link->l_stats[RTNL_LINK_RX_COMPRESSED]	= st->rx_compressed;
+		link->l_stats[RTNL_LINK_TX_COMPRESSED]	= st->tx_compressed;
 
 		link->ce_mask |= LINK_ATTR_STATS;
 	}
@@ -560,7 +598,7 @@ static void link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 		link->l_stats[RTNL_LINK_TX_CARRIER_ERR],
 		link->l_stats[RTNL_LINK_TX_HBEAT_ERR],
 		link->l_stats[RTNL_LINK_TX_WIN_ERR],
-		link->l_stats[RTNL_LINK_TX_COLLISIONS]);
+		link->l_stats[RTNL_LINK_COLLISIONS]);
 
 	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_STATS])
 		link->l_info_ops->io_dump[NL_DUMP_STATS](link, p);
@@ -1015,7 +1053,7 @@ static struct trans_tbl link_stats[] = {
 	__ADD(RTNL_LINK_TX_CARRIER_ERR, tx_carrier_err)
 	__ADD(RTNL_LINK_TX_HBEAT_ERR, tx_hbeat_err)
 	__ADD(RTNL_LINK_TX_WIN_ERR, tx_win_err)
-	__ADD(RTNL_LINK_TX_COLLISIONS, tx_collision)
+	__ADD(RTNL_LINK_COLLISIONS, collisions)
 	__ADD(RTNL_LINK_MULTICAST, multicast)
 };
 

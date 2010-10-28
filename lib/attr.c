@@ -809,7 +809,8 @@ struct nlattr *nla_reserve(struct nl_msg *msg, int attrtype, int attrlen)
 	nla->nla_type = attrtype;
 	nla->nla_len = nla_attr_size(attrlen);
 
-	memset((unsigned char *) nla + nla->nla_len, 0, nla_padlen(attrlen));
+	if (attrlen)
+		memset((unsigned char *) nla + nla->nla_len, 0, nla_padlen(attrlen));
 	msg->nm_nlh->nlmsg_len = tlen;
 
 	NL_DBG(2, "msg %p: Reserved %d bytes at offset +%td for attr %d "
@@ -842,9 +843,11 @@ int nla_put(struct nl_msg *msg, int attrtype, int datalen, const void *data)
 	if (!nla)
 		return -NLE_NOMEM;
 
-	memcpy(nla_data(nla), data, datalen);
-	NL_DBG(2, "msg %p: Wrote %d bytes at offset +%td for attr %d\n",
-	       msg, datalen, (void *) nla - nlmsg_data(msg->nm_nlh), attrtype);
+	if (datalen > 0) {
+		memcpy(nla_data(nla), data, datalen);
+		NL_DBG(2, "msg %p: Wrote %d bytes at offset +%td for attr %d\n",
+		       msg, datalen, (void *) nla - nlmsg_data(msg->nm_nlh), attrtype);
+	}
 
 	return 0;
 }

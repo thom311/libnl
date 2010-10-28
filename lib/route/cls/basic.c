@@ -121,7 +121,11 @@ static int basic_get_opts(struct rtnl_cls *cls, struct nl_msg *msg)
 
 	NLA_PUT_U32(msg, TCA_BASIC_CLASSID, b->b_target);
 
-	return rtnl_ematch_fill_attr(msg, TCA_BASIC_EMATCHES, b->b_ematch);
+	if (b->b_mask & BASIC_ATTR_EMATCH &&
+	    rtnl_ematch_fill_attr(msg, TCA_BASIC_EMATCHES, b->b_ematch) < 0)
+		goto nla_put_failure;
+	
+	return 0;
 
 nla_put_failure:
 	return -NLE_NOMEM;

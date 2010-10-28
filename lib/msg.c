@@ -374,7 +374,7 @@ static struct nl_msg *__nlmsg_alloc(size_t len)
 
 	nm->nm_refcnt = 1;
 
-	nm->nm_nlh = malloc(len);
+	nm->nm_nlh = calloc(1, len);
 	if (!nm->nm_nlh)
 		goto errout;
 

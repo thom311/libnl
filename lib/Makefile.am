@@ -50,6 +50,7 @@ libnl_route_la_SOURCES = \
 	route/route_utils.c route/rtnl.c route/rule.c route/tc.c route/classid.c \
 	\
 	route/cls/fw.c route/cls/police.c route/cls/u32.c route/cls/basic.c \
+	route/cls/cgroup.c \
 	\
 	route/cls/ematch_syntax.c route/cls/ematch_grammar.c \
 	route/cls/ematch.c \
@@ -73,11 +74,13 @@ nobase_pkglib_LTLIBRARIES = \
 	cli/qdisc/blackhole.la \
 	cli/qdisc/pfifo.la \
 	cli/qdisc/bfifo.la \
-	cli/cls/basic.la
+	cli/cls/basic.la \
+	cli/cls/cgroup.la
 
 cli_qdisc_htb_la_LDFLAGS = -module -version-info 0:0:0
 cli_qdisc_blackhole_la_LDFLAGS = -module -version-info 0:0:0
 cli_qdisc_pfifo_la_LDFLAGS = -module -version-info 0:0:0
 cli_qdisc_bfifo_la_LDFLAGS = -module -version-info 0:0:0
 cli_cls_basic_la_LDFLAGS = -module -version-info 0:0:0
+cli_cls_cgroup_la_LDFLAGS = -module -version-info 0:0:0
 endif

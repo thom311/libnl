@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2009 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2009-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -34,16 +34,21 @@ static struct nla_policy cgroup_policy[TCA_CGROUP_MAX+1] = {
 	[TCA_CGROUP_EMATCHES]	= { .type = NLA_NESTED },
 };
 
+static int cgroup_clone(struct rtnl_cls *_dst, struct rtnl_cls *_src)
+{
+	return -NLE_OPNOTSUPP;
+}
+
 static void cgroup_free_data(struct rtnl_cls *cls)
 {
-	struct rtnl_cgroup *cg = rtnl_cls_data(cls);
+	struct rtnl_cgroup *c = rtnl_cls_data(cls);
 
-	rtnl_ematch_tree_free(cg->cg_ematch);
+	rtnl_ematch_tree_free(c->cg_ematch);
 }
 
 static int cgroup_msg_parser(struct rtnl_cls *cls)
 {
-	struct rtnl_cgroup *cg = rtnl_cls_data(cls);
+	struct rtnl_cgroup *c = rtnl_cls_data(cls);
 	struct nlattr *tb[TCA_CGROUP_MAX + 1];
 	int err;
 
@@ -53,10 +58,10 @@ static int cgroup_msg_parser(struct rtnl_cls *cls)
 		return err;
 
 	if (tb[TCA_CGROUP_EMATCHES]) {
-		if ((err = rtnl_ematch_parse(tb[TCA_CGROUP_EMATCHES],
-					     &cg->cg_ematch)) < 0)
+		if ((err = rtnl_ematch_parse_attr(tb[TCA_CGROUP_EMATCHES],
+						  &c->cg_ematch)) < 0)
 			return err;
-		cg->cg_mask |= CGROUP_ATTR_EMATCH;
+		c->cg_mask |= CGROUP_ATTR_EMATCH;
 	}
 
 #if 0
@@ -70,9 +75,9 @@ static int cgroup_msg_parser(struct rtnl_cls *cls)
 
 static void cgroup_dump_line(struct rtnl_cls *cls, struct nl_dump_params *p)
 {
-	struct rtnl_cgroup *cg = rtnl_cls_data(cls);
+	struct rtnl_cgroup *c = rtnl_cls_data(cls);
 
-	if (cg->cg_mask & CGROUP_ATTR_EMATCH)
+	if (c->cg_mask & CGROUP_ATTR_EMATCH)
 		nl_dump(p, " ematch");
 	else
 		nl_dump(p, " match-all");
@@ -80,48 +85,64 @@ static void cgroup_dump_line(struct rtnl_cls *cls, struct nl_dump_params *p)
 
 static void cgroup_dump_details(struct rtnl_cls *cls, struct nl_dump_params *p)
 {
-	struct rtnl_cgroup *cg = rtnl_cls_data(cls);
+	struct rtnl_cgroup *c = rtnl_cls_data(cls);
 
-	if (cg->cg_mask & CGROUP_ATTR_EMATCH) {
-		nl_dump(p, "\n");
+	if (c->cg_mask & CGROUP_ATTR_EMATCH) {
 		nl_dump_line(p, "    ematch ");
-		rtnl_ematch_tree_dump(cg->cg_ematch, p);
-	}
+		rtnl_ematch_tree_dump(c->cg_ematch, p);
+	} else
+		nl_dump(p, "no options.\n");
 }
+
+static int cgroup_get_opts(struct rtnl_cls *cls, struct nl_msg *msg)
+{
+	struct rtnl_cgroup *c = rtnl_cls_data(cls);
+
+	if (!(cls->ce_mask & TCA_ATTR_HANDLE))
+		return -NLE_MISSING_ATTR;
+
+	if (c->cg_mask & CGROUP_ATTR_EMATCH)
+		return rtnl_ematch_fill_attr(msg, TCA_CGROUP_EMATCHES,
+					     c->cg_ematch);
+
+	return 0;
+}
+
 
 /**
  * @name Attribute Modifications
  * @{
  */
 
-int rtnl_cgroup_set_ematch(struct rtnl_cls *cls, struct rtnl_ematch_tree *tree)
+void rtnl_cgroup_set_ematch(struct rtnl_cls *cls, struct rtnl_ematch_tree *tree)
 {
-	struct rtnl_cgroup *cg = rtnl_cls_data(cls);
+	struct rtnl_cgroup *c = rtnl_cls_data(cls);
 
-	if (cg->cg_ematch) {
-		rtnl_ematch_tree_free(cg->cg_ematch);
-		cg->cg_mask &= ~CGROUP_ATTR_EMATCH;
+	if (c->cg_ematch) {
+		rtnl_ematch_tree_free(c->cg_ematch);
+		c->cg_mask &= ~CGROUP_ATTR_EMATCH;
 	}
 
-	cg->cg_ematch = tree;
+	c->cg_ematch = tree;
 
 	if (tree)
-		cg->cg_mask |= CGROUP_ATTR_EMATCH;
-
-	return 0;
+		c->cg_mask |= CGROUP_ATTR_EMATCH;
 }
 
 struct rtnl_ematch_tree *rtnl_cgroup_get_ematch(struct rtnl_cls *cls)
 {
-	struct rtnl_cgroup *cg = rtnl_cls_data(cls);
-	return cg->cg_ematch;
+	return ((struct rtnl_cgroup *) rtnl_cls_data(cls))->cg_ematch;
 }
+
+/** @} */
 
 static struct rtnl_cls_ops cgroup_ops = {
 	.co_kind		= "cgroup",
 	.co_size		= sizeof(struct rtnl_cgroup),
+	.co_clone		= cgroup_clone,
 	.co_msg_parser		= cgroup_msg_parser,
 	.co_free_data		= cgroup_free_data,
+	.co_get_opts		= cgroup_get_opts,
 	.co_dump = {
 	    [NL_DUMP_LINE]	= cgroup_dump_line,
 	    [NL_DUMP_DETAILS]	= cgroup_dump_details,

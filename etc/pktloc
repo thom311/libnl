@@ -17,6 +17,18 @@ ip.chksum	u16		net+10
 ip.src		u32		net+12
 ip.dst		u32		net+16
 
+#
+# IP version 6
+#
+# name		alignment	offset		mask
+ip6.version	u8		net+0		0xF0
+ip6.tc		u16		net+0		0xFF0
+ip6.flowlabel	u32		net+0		0xFFFFF
+ip6.length	u16		net+4
+ip6.nexthdr	u8		net+6
+ip6.hoplimit	u8		net+7
+ip6.src		16		net+8
+ip6.dst		16		net+24
 
 #
 # Transmission Control Protocol (TCP)

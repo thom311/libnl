@@ -32,7 +32,7 @@ static void yyerror(YYLTYPE *locp, void *scanner, const char *msg)
 %token <i> ERROR NUMBER LAYER ALIGN
 %token <s> NAME
 
-%type <i> mask layer
+%type <i> mask layer align
 %type <l> location
 
 %destructor { free($$); } NAME
@@ -47,11 +47,11 @@ input:
 	;
 
 location:
-	NAME ALIGN layer NUMBER mask
+	NAME align layer NUMBER mask
 		{
 			struct rtnl_pktloc *loc;
 
-			if (!(loc = calloc(1, sizeof(*loc)))) {
+			if (!(loc = rtnl_pktloc_alloc())) {
 				NL_DBG(1, "Allocating a packet location "
 					  "object failed.\n");
 				YYABORT;
@@ -70,6 +70,13 @@ location:
 
 			$$ = loc;
 		}
+	;
+
+align:
+	ALIGN
+		{ $$ = $1; }
+	| NUMBER
+		{ $$ = $1; }
 	;
 
 layer:

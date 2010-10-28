@@ -52,6 +52,9 @@ static const char *layer_txt[] = {
 
 static void dump_u32_style(struct rtnl_pktloc *loc, uint32_t value)
 {
+	if (loc->align > 4)
+		nl_cli_fatal(EINVAL, "u32 only supports alignments u8|u16|u32.");
+
 	if (loc->layer == TCF_LAYER_LINK)
 		nl_cli_fatal(EINVAL, "u32 does not support link "
 				"layer locations.");
@@ -63,19 +66,30 @@ static void dump_u32_style(struct rtnl_pktloc *loc, uint32_t value)
 		loc->offset);
 }
 
+static char *get_align_txt(struct rtnl_pktloc *loc)
+{
+	static char buf[16];
+
+	if (loc->align <= 4)
+		strcpy(buf, align_txt[loc->align]);
+	else
+		snprintf(buf, sizeof(buf), "%u", loc->align);
+
+	return buf;
+}
+
 static void dump_loc(struct rtnl_pktloc *loc)
 {
 	printf("%s = %s at %s+%u %#x\n",
-		loc->name, align_txt[loc->align],
-		layer_txt[loc->layer], loc->offset, loc->mask);
+		loc->name, get_align_txt(loc), layer_txt[loc->layer],
+		loc->offset, loc->mask);
 }
 
 static void list_cb(struct rtnl_pktloc *loc, void *arg)
 {
 	printf("%-26s %-5s %3s+%-4u %#-10x %u\n",
-		loc->name, align_txt[loc->align],
-		layer_txt[loc->layer], loc->offset,
-		loc->mask, loc->refcnt);
+		loc->name, get_align_txt(loc), layer_txt[loc->layer],
+		loc->offset, loc->mask, loc->refcnt);
 }
 
 static void do_list(void)

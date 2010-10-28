@@ -177,6 +177,22 @@ int rtnl_pktloc_lookup(const char *name, struct rtnl_pktloc **result)
 }
 
 /**
+ * Allocate packet location object
+ */
+struct rtnl_pktloc *rtnl_pktloc_alloc(void)
+{
+	struct rtnl_pktloc *loc;
+
+	if (!(loc = calloc(1, sizeof(*loc))))
+		return NULL;
+
+	loc->refcnt = 1;
+	nl_init_list_head(&loc->list);
+
+	return loc;
+}
+
+/**
  * Return reference of a packet location
  * @arg loc		packet location object.
  */
@@ -204,8 +220,6 @@ int rtnl_pktloc_add(struct rtnl_pktloc *loc)
 		rtnl_pktloc_put(l);
 		return -NLE_EXIST;
 	}
-
-	loc->refcnt++;
 
 	NL_DBG(2, "New packet location entry \"%s\" align=%u layer=%u "
 		  "offset=%u mask=%#x refnt=%u\n", loc->name, loc->align,

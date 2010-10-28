@@ -17,6 +17,7 @@
 
 #include <netlink/cli/utils.h>
 #include <netlink/cli/cls.h>
+#include <netlink/route/cls/ematch.h>
 
 struct rtnl_cls *nl_cli_cls_alloc(void)
 {
@@ -55,6 +56,22 @@ void nl_cli_cls_parse_proto(struct rtnl_cls *cls, char *arg)
 		nl_cli_fatal(proto, "Unknown protocol \"%s\".", arg);
 
 	rtnl_cls_set_protocol(cls, proto);
+}
+
+struct rtnl_ematch_tree *nl_cli_cls_parse_ematch(struct rtnl_cls *cls, char *arg)
+{
+	struct rtnl_ematch_tree *tree;
+	char *errstr = NULL;
+	int err;
+
+	if ((err = rtnl_ematch_parse_expr(arg, &errstr, &tree)) < 0)
+		nl_cli_fatal(err, "Unable to parse ematch expression: %s",
+				  errstr);
+	
+	if (errstr)
+		free(errstr);
+
+	return tree;
 }
 
 static NL_LIST_HEAD(cls_modules);

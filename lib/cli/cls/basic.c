@@ -21,6 +21,7 @@ static void print_usage(void)
 "OPTIONS\n"
 " -h, --help                Show this help text.\n"
 " -t, --target=ID           Target class to send matching packets to\n"
+" -e, --ematch=EXPR         Ematch expression\n"
 "\n"
 "EXAMPLE"
 "    # Create a \"catch-all\" classifier, attached to \"q_root\", classyfing\n"
@@ -30,6 +31,7 @@ static void print_usage(void)
 
 static int parse_argv(struct rtnl_cls *cls, int argc, char **argv)
 {
+	struct rtnl_ematch_tree *tree;
 	uint32_t target;
 	int err;
 
@@ -42,10 +44,11 @@ static int parse_argv(struct rtnl_cls *cls, int argc, char **argv)
 		static struct option long_opts[] = {
 			{ "help", 0, 0, 'h' },
 			{ "target", 1, 0, 't' },
+			{ "ematch", 1, 0, 'e' },
 			{ 0, 0, 0, 0 }
 		};
 	
-		c = getopt_long(argc, argv, "ht:", long_opts, &optidx);
+		c = getopt_long(argc, argv, "ht:e:", long_opts, &optidx);
 		if (c == -1)
 			break;
 
@@ -59,7 +62,12 @@ static int parse_argv(struct rtnl_cls *cls, int argc, char **argv)
 				nl_cli_fatal(err, "Unable to parse target \"%s\":",
 					optarg, nl_geterror(err));
 
-			rtnl_basic_set_classid(cls, target);
+			rtnl_basic_set_target(cls, target);
+			break;
+
+		case 'e':
+			tree = nl_cli_cls_parse_ematch(cls, optarg);
+			rtnl_basic_set_ematch(cls, tree);
 			break;
 		}
  	}

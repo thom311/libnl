@@ -520,12 +520,14 @@ struct rtnl_ematch
 	uint16_t		e_id;
 	uint16_t		e_kind;
 	uint16_t		e_flags;
+	uint16_t		e_index;
+	size_t			e_datalen;
 
 	struct nl_list_head	e_childs;
 	struct nl_list_head	e_list;
 	struct rtnl_ematch_ops *e_ops;
 
-	char			e_data[0];
+	void *			e_data;
 };
 
 struct rtnl_ematch_tree
@@ -832,6 +834,12 @@ struct nfnl_queue_msg {
 	void *			queue_msg_payload;
 	int			queue_msg_payload_len;
 	uint32_t		queue_msg_verdict;
+};
+
+struct ematch_quoted {
+	char *	data;
+	size_t	len;
+	int	index;
 };
 
 #endif

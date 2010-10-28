@@ -23,7 +23,9 @@ libnl_nf_la_SOURCES = \
 
 CLEANFILES = \
 	route/pktloc_grammar.c route/pktloc_grammar.h \
-	route/pktloc_syntax.c route/pktloc_syntax.h
+	route/pktloc_syntax.c route/pktloc_syntax.h \
+	route/cls/ematch_grammar.c route/cls/ematch_grammar.h \
+	route/cls/ematch_syntax.c route/cls/ematch_syntax.h
 
 # Hack to avoid using ylwrap. It does not function correctly in combination
 # with --header-file=
@@ -31,6 +33,12 @@ route/pktloc_grammar.c: route/pktloc_grammar.l
 	$(LEX) --header-file=route/pktloc_grammar.h $(LFLAGS) -o $@ $^
 
 route/pktloc_syntax.c: route/pktloc_syntax.y
+	$(YACC) -d $(YFLAGS) -o $@ $^
+
+route/cls/ematch_grammar.c: route/cls/ematch_grammar.l
+	$(LEX) --header-file=route/cls/ematch_grammar.h $(LFLAGS) -o $@ $^
+
+route/cls/ematch_syntax.c: route/cls/ematch_syntax.y
 	$(YACC) -d $(YFLAGS) -o $@ $^
 
 libnl_route_la_LIBADD  = libnl.la
@@ -42,6 +50,11 @@ libnl_route_la_SOURCES = \
 	route/route_utils.c route/rtnl.c route/rule.c route/tc.c route/classid.c \
 	\
 	route/cls/fw.c route/cls/police.c route/cls/u32.c route/cls/basic.c \
+	\
+	route/cls/ematch_syntax.c route/cls/ematch_grammar.c \
+	route/cls/ematch.c \
+	route/cls/ematch/container.c route/cls/ematch/cmp.c \
+	route/cls/ematch/nbyte.c \
 	\
 	route/link/api.c route/link/vlan.c \
 	\

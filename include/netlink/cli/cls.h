@@ -29,6 +29,7 @@ extern struct nl_cache *	nl_cli_cls_alloc_cache(struct nl_sock *,
 						       int, uint32_t);
 extern void			nl_cli_cls_parse_kind(struct rtnl_cls *, char *);
 extern void			nl_cli_cls_parse_proto(struct rtnl_cls *, char *);
+extern struct rtnl_ematch_tree *nl_cli_cls_parse_ematch(struct rtnl_cls *, char *);
 
 extern struct nl_cli_cls_module *nl_cli_cls_lookup(struct rtnl_cls_ops *);
 extern void			nl_cli_cls_register(struct nl_cli_cls_module *);

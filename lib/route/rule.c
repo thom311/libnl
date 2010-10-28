@@ -72,9 +72,9 @@ static int rule_clone(struct nl_object *_dst, struct nl_object *_src)
 static struct nla_policy rule_policy[RTA_MAX+1] = {
 	[RTA_PRIORITY]	= { .type = NLA_U32 },
 	[RTA_FLOW]	= { .type = NLA_U32 },
-	[RTA_PROTOINFO]	= { .type = NLA_U32 },
 	[RTA_IIF]	= { .type = NLA_STRING,
 			    .maxlen = IFNAMSIZ, },
+	[RTA_MARK]	= { .type = NLA_U32 },
 };
 
 static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
@@ -127,11 +127,6 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		rule->ce_mask |= RULE_ATTR_DST;
 	}
 
-	if (tb[RTA_PROTOINFO]) {
-		rule->r_mark = nla_get_u32(tb[RTA_PROTOINFO]);
-		rule->ce_mask |= RULE_ATTR_MARK;
-	}
-
 	if (tb[RTA_IIF]) {
 		nla_strlcpy(rule->r_iif, tb[RTA_IIF], IFNAMSIZ);
 		rule->ce_mask |= RULE_ATTR_IIF;
@@ -153,6 +148,11 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
             rule->r_table = nla_get_u32(tb[RTA_TABLE]);
             rule->ce_mask |= RULE_ATTR_TABLE;
         }
+
+	if (tb[RTA_MARK]) {
+		rule->r_mark = nla_get_u32(tb[RTA_MARK]);
+		rule->ce_mask |= RULE_ATTR_MARK;
+	}
 
 	err = pp->pp_cb((struct nl_object *) rule, pp);
 errout:
@@ -193,7 +193,7 @@ static void rule_dump_line(struct nl_object *o, struct nl_dump_params *p)
 		nl_dump(p, "tos %d ", r->r_dsfield);
 
 	if (r->ce_mask & RULE_ATTR_MARK)
-		nl_dump(p, "mark %" PRIx64 , r->r_mark);
+		nl_dump(p, "mark %#x", r->r_mark);
 
 	if (r->ce_mask & RULE_ATTR_IIF)
 		nl_dump(p, "iif %s ", r->r_iif);
@@ -381,9 +381,6 @@ static int build_rule_msg(struct rtnl_rule *tmpl, int cmd, int flags,
 	if (tmpl->ce_mask & RULE_ATTR_PRIO)
 		NLA_PUT_U32(msg, RTA_PRIORITY, tmpl->r_prio);
 
-	if (tmpl->ce_mask & RULE_ATTR_MARK)
-		NLA_PUT_U32(msg, RTA_PROTOINFO, tmpl->r_mark);
-
 	if (tmpl->ce_mask & RULE_ATTR_REALMS)
 		NLA_PUT_U32(msg, RTA_FLOW, tmpl->r_realms);
 
@@ -535,18 +532,15 @@ int rtnl_rule_get_prio(struct rtnl_rule *rule)
 		return -1;
 }
 
-void rtnl_rule_set_mark(struct rtnl_rule *rule, uint64_t mark)
+void rtnl_rule_set_mark(struct rtnl_rule *rule, uint32_t mark)
 {
 	rule->r_mark = mark;
 	rule->ce_mask |= RULE_ATTR_MARK;
 }
 
-uint64_t rtnl_rule_get_mark(struct rtnl_rule *rule)
+uint32_t rtnl_rule_get_mark(struct rtnl_rule *rule)
 {
-	if (rule->ce_mask & RULE_ATTR_MARK)
-		return rule->r_mark;
-	else
-		return UINT_LEAST64_MAX;
+	return rule->r_mark;
 }
 
 void rtnl_rule_set_table(struct rtnl_rule *rule, int table)

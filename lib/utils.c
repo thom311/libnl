@@ -506,6 +506,7 @@ static struct trans_tbl llprotos[] = {
 #ifdef ARPHRD_HWX25
 	__ADD(ARPHRD_HWX25,hwx25)
 #endif
+	__ADD(ARPHRD_CAN,can)
 	__ADD(ARPHRD_PPP,ppp)
 	__ADD(ARPHRD_HDLC,hdlc)
 	__ADD(ARPHRD_LAPB,lapb)
@@ -545,6 +546,8 @@ static struct trans_tbl llprotos[] = {
 	__ADD(ARPHRD_FCFABRIC+12,fcfb_12)
 	__ADD(ARPHRD_IEEE802_TR,tr)
 	__ADD(ARPHRD_IEEE80211,ieee802.11)
+	__ADD(ARPHRD_PHONET,phonet)
+	__ADD(ARPHRD_CAIF, caif)
 #ifdef ARPHRD_IEEE80211_PRISM
 	__ADD(ARPHRD_IEEE80211_PRISM, ieee802.11_prism)
 #endif
@@ -589,6 +592,7 @@ static struct trans_tbl ether_protos[] = {
 	__ADD(ETH_P_DIAG,diag)
 	__ADD(ETH_P_CUST,cust)
 	__ADD(ETH_P_SCA,sca)
+	__ADD(ETH_P_TEB,teb)
 	__ADD(ETH_P_RARP,rarp)
 	__ADD(ETH_P_ATALK,atalk)
 	__ADD(ETH_P_AARP,aarp)
@@ -597,6 +601,8 @@ static struct trans_tbl ether_protos[] = {
 #endif
 	__ADD(ETH_P_IPX,ipx)
 	__ADD(ETH_P_IPV6,ipv6)
+	__ADD(ETH_P_PAUSE,pause)
+	__ADD(ETH_P_SLOW,slow)
 #ifdef ETH_P_WCCP
 	__ADD(ETH_P_WCCP,wccp)
 #endif
@@ -606,6 +612,13 @@ static struct trans_tbl ether_protos[] = {
 	__ADD(ETH_P_MPLS_MC,mpls_mc)
 	__ADD(ETH_P_ATMMPOA,atmmpoa)
 	__ADD(ETH_P_ATMFATE,atmfate)
+	__ADD(ETH_P_PAE,pae)
+	__ADD(ETH_P_AOE,aoe)
+	__ADD(ETH_P_TIPC,tipc)
+	__ADD(ETH_P_1588,ieee1588)
+	__ADD(ETH_P_FCOE,fcoe)
+	__ADD(ETH_P_FIP,fip)
+	__ADD(ETH_P_EDSA,edsa)
 	__ADD(ETH_P_EDP2,edp2)
 	__ADD(ETH_P_802_3,802.3)
 	__ADD(ETH_P_AX25,ax25)
@@ -616,6 +629,7 @@ static struct trans_tbl ether_protos[] = {
 	__ADD(ETH_P_WAN_PPP,wan_ppp)
 	__ADD(ETH_P_PPP_MP,ppp_mp)
 	__ADD(ETH_P_LOCALTALK,localtalk)
+	__ADD(ETH_P_CAN,can)
 	__ADD(ETH_P_PPPTALK,ppptalk)
 	__ADD(ETH_P_TR_802_2,tr_802.2)
 	__ADD(ETH_P_MOBITEX,mobitex)
@@ -623,6 +637,12 @@ static struct trans_tbl ether_protos[] = {
 	__ADD(ETH_P_IRDA,irda)
 	__ADD(ETH_P_ECONET,econet)
 	__ADD(ETH_P_HDLC,hdlc)
+	__ADD(ETH_P_ARCNET,arcnet)
+	__ADD(ETH_P_DSA,dsa)
+	__ADD(ETH_P_TRAILER,trailer)
+	__ADD(ETH_P_PHONET,phonet)
+	__ADD(ETH_P_IEEE802154,ieee802154)
+	__ADD(ETH_P_CAIF,caif)
 };
 
 char *nl_ether_proto2str(int eproto, char *buf, size_t len)

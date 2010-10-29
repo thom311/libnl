@@ -386,9 +386,6 @@ static int build_rule_msg(struct rtnl_rule *tmpl, int cmd, int flags,
 
 	if (tmpl->ce_mask & RULE_ATTR_IIF)
 		NLA_PUT_STRING(msg, RTA_IIF, tmpl->r_iif);
-	
-	if (tmpl->ce_mask & RULE_ATTR_MARK)
-		NLA_PUT_U32(msg, RTA_MARK, tmpl->r_mark);
 
 	*result = msg;
 	return 0;

@@ -1151,8 +1151,25 @@ struct nlattr *nla_nest_start(struct nl_msg *msg, int attrtype)
  */
 int nla_nest_end(struct nl_msg *msg, struct nlattr *start)
 {
+	size_t pad;
+
 	start->nla_len = (unsigned char *) nlmsg_tail(msg->nm_nlh) -
 				(unsigned char *) start;
+
+	pad = NLMSG_ALIGN(msg->nm_nlh->nlmsg_len) - msg->nm_nlh->nlmsg_len;
+	if (pad > 0) {
+		/*
+		 * Data inside attribute does not end at a alignment boundry.
+		 * Pad accordingly and accoun for the additional space in
+		 * the message. nlmsg_reserve() may never fail in this situation,
+		 * the allocate message buffer must be a multiple of NLMSG_ALIGNTO.
+		 */
+		if (!nlmsg_reserve(msg, pad, 0))
+			BUG();
+
+		NL_DBG(2, "msg %p: attr <%p> %d: added %zu bytes of padding\n",
+			msg, start, start->nla_type, pad);
+	}
 
 	NL_DBG(2, "msg %p: attr <%p> %d: closing nesting, len=%u\n",
 		msg, start, start->nla_type, start->nla_len);

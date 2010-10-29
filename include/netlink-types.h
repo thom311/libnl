@@ -282,7 +282,7 @@ struct rtnl_rule
 {
 	NLHDR_COMMON
 
-	uint32_t	r_mark;
+	uint64_t	r_mark;
 	uint32_t	r_prio;
 	uint32_t	r_realms;
 	uint32_t	r_table;

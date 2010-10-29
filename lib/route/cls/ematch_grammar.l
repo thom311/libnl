@@ -77,12 +77,15 @@ lt			|
 
 [cC][mM][pP]		{ yylval->i = TCF_EM_CMP; return EMATCH_CMP; }
 [pP][aA][tT][tT][eE][rR][nN] { yylval->i = TCF_EM_NBYTE; return EMATCH_NBYTE; }
+[tT][eE][xX][tT]	{ yylval->i = TCF_EM_TEXT; return EMATCH_TEXT; }
 
 "("			return KW_OPEN;
 ")"			return KW_CLOSE;
 [mM][aA][sS][kK]	return KW_MASK;
 [aA][tT]		return KW_AT;
 "+"			return KW_PLUS;
+[fF][rR][oO][mM]	return KW_FROM;
+[tT][oO]		return KW_TO;
 
 [uU]8			{ yylval->i = TCF_EM_ALIGN_U8; return ALIGN; }
 [uU]16			{ yylval->i = TCF_EM_ALIGN_U16; return ALIGN; }

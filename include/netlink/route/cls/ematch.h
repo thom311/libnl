@@ -84,6 +84,9 @@ extern void			rtnl_ematch_tree_dump(struct rtnl_ematch_tree *,
 extern int			rtnl_ematch_parse_expr(const char *, char **,
 						       struct rtnl_ematch_tree **);
 
+extern char *			rtnl_ematch_offset2txt(uint8_t, uint16_t,
+						       char *, size_t);
+
 #ifdef __cplusplus
 }
 #endif

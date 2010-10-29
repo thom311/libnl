@@ -667,4 +667,19 @@ errout:
 	return err;
 }
 
+static const char *layer_txt[] = {
+	[TCF_LAYER_LINK]	= "eth",
+	[TCF_LAYER_NETWORK]	= "ip",
+	[TCF_LAYER_TRANSPORT]	= "tcp",
+};
+
+char *rtnl_ematch_offset2txt(uint8_t layer, uint16_t offset, char *buf, size_t len)
+{
+	snprintf(buf, len, "%s+%u",
+		 (layer <= TCF_LAYER_MAX) ? layer_txt[layer] : "?",
+		 offset);
+
+	return buf;
+}
+
 /** @} */

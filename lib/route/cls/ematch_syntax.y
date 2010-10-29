@@ -18,6 +18,7 @@
 #include <netlink/route/cls/ematch.h>
 #include <netlink/route/cls/ematch/cmp.h>
 #include <netlink/route/cls/ematch/nbyte.h>
+#include <netlink/route/cls/ematch/text.h>
 %}
 
 %error-verbose
@@ -56,9 +57,12 @@ static void yyerror(void *scanner, char **errp, struct nl_list_head *root, const
 %token <i> KW_AT "at"
 %token <i> EMATCH_CMP "cmp"
 %token <i> EMATCH_NBYTE "pattern"
+%token <i> EMATCH_TEXT "text"
 %token <i> KW_EQ "="
 %token <i> KW_GT ">"
 %token <i> KW_LT "<"
+%token <i> KW_FROM "from"
+%token <i> KW_TO "to"
 
 %token <s> STR
 
@@ -67,7 +71,7 @@ static void yyerror(void *scanner, char **errp, struct nl_list_head *root, const
 %type <i> mask align operand
 %type <e> expr match ematch
 %type <cmp> cmp_expr cmp_match
-%type <loc> pktloc
+%type <loc> pktloc text_from text_to
 %type <q> pattern
 
 %destructor { free($$); NL_DBG(2, "string destructor\n"); } <s>
@@ -144,7 +148,35 @@ ematch:
 				BUG();
 
 			rtnl_ematch_nbyte_set_offset(e, $3->layer, $3->offset);
+			rtnl_pktloc_put($3);
 			rtnl_ematch_nbyte_set_pattern(e, (uint8_t *) $5.data, $5.index);
+
+			$$ = e;
+		}
+	| EMATCH_TEXT "(" STR QUOTED text_from text_to ")"
+		{
+			struct rtnl_ematch *e;
+
+			if (!(e = rtnl_ematch_alloc())) {
+				asprintf(errp, "Unable to allocate ematch object");
+				YYABORT;
+			}
+
+			if (rtnl_ematch_set_kind(e, TCF_EM_TEXT) < 0)
+				BUG();
+
+			rtnl_ematch_text_set_algo(e, $3);
+			rtnl_ematch_text_set_pattern(e, $4.data, $4.index);
+
+			if ($5) {
+				rtnl_ematch_text_set_from(e, $5->layer, $5->offset);
+				rtnl_pktloc_put($5);
+			}
+
+			if ($6) {
+				rtnl_ematch_text_set_to(e, $6->layer, $6->offset);
+				rtnl_pktloc_put($6);
+			}
 
 			$$ = e;
 		}
@@ -198,7 +230,23 @@ cmp_expr:
 			$$.layer = $1->layer;
 			$$.opnd = $2;
 			$$.val = $3;
+
+			rtnl_pktloc_put($1);
 		}
+	;
+
+text_from:
+	/* empty */
+		{ $$ = NULL; }
+	| "from" pktloc
+		{ $$ = $2; }
+	;
+
+text_to:
+	/* empty */
+		{ $$ = NULL; }
+	| "to" pktloc
+		{ $$ = $2; }
 	;
 
 /*
@@ -248,9 +296,15 @@ pktloc:
 
 			$$ = loc;
 		}
-	| align "at" LAYER "+" NUMBER mask
+	/* [u8|u16|u32|NUM at] LAYER + OFFSET [mask MASK] */
+	| align LAYER "+" NUMBER mask
 		{
 			struct rtnl_pktloc *loc;
+
+			if ($5 && (!$1 || $1 > TCF_EM_ALIGN_U32)) {
+				asprintf(errp, "mask only allowed for alignments u8|u16|u32");
+				YYABORT;
+			}
 
 			if (!(loc = rtnl_pktloc_alloc())) {
 				asprintf(errp, "Unable to allocate packet location object");
@@ -259,18 +313,20 @@ pktloc:
 
 			loc->name = strdup("<USER-DEFINED>");
 			loc->align = $1;
-			loc->layer = $3;
-			loc->offset = $5;
-			loc->mask = $6;
+			loc->layer = $2;
+			loc->offset = $4;
+			loc->mask = $5;
 
 			$$ = loc;
 		}
 	;
 
 align:
-	ALIGN
+	/* empty */
+		{ $$ = 0; }
+	| ALIGN "at"
 		{ $$ = $1; }
-	| NUMBER
+	| NUMBER "at"
 		{ $$ = $1; }
 	;
 

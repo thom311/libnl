@@ -281,20 +281,21 @@ struct rtnl_route
 struct rtnl_rule
 {
 	NLHDR_COMMON
-
-	uint64_t	r_mark;
-	uint32_t	r_prio;
-	uint32_t	r_realms;
-	uint32_t	r_table;
-	uint8_t		r_dsfield;
-	uint8_t		r_type;
 	uint8_t		r_family;
-	uint8_t		r_src_len;
-	uint8_t		r_dst_len;
-	char		r_iif[IFNAMSIZ];
+	uint8_t		r_action;
+	uint8_t		r_dsfield; /* ipv4 only */
+	uint8_t		r_unused;
+	uint32_t	r_table;
+	uint32_t	r_flags;
+	uint32_t	r_prio;
+	uint32_t	r_mark;
+	uint32_t	r_mask;
+	uint32_t	r_goto;
+	uint32_t	r_flow; /* ipv4 only */
 	struct nl_addr *r_src;
 	struct nl_addr *r_dst;
-	struct nl_addr *r_srcmap;
+	char		r_iifname[IFNAMSIZ];
+	char		r_oifname[IFNAMSIZ];
 };
 
 struct rtnl_neightbl_parms

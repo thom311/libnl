@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -25,18 +25,19 @@
 
 /** @cond SKIP */
 #define RULE_ATTR_FAMILY	0x0001
-#define RULE_ATTR_PRIO		0x0002
-#define RULE_ATTR_MARK		0x0004
-#define RULE_ATTR_IIF		0x0008
-#define RULE_ATTR_REALMS	0x0010
-#define RULE_ATTR_SRC		0x0020
-#define RULE_ATTR_DST		0x0040
-#define RULE_ATTR_DSFIELD	0x0080
-#define RULE_ATTR_TABLE		0x0100
-#define RULE_ATTR_TYPE		0x0200
-#define RULE_ATTR_SRC_LEN	0x0400
-#define RULE_ATTR_DST_LEN	0x0800
-#define RULE_ATTR_SRCMAP	0x1000
+#define RULE_ATTR_TABLE		0x0002
+#define RULE_ATTR_ACTION	0x0004
+#define RULE_ATTR_FLAGS		0x0008
+#define RULE_ATTR_IIFNAME	0x0010
+#define RULE_ATTR_OIFNAME	0x0020
+#define RULE_ATTR_PRIO		0x0040
+#define RULE_ATTR_MARK		0x0080
+#define RULE_ATTR_MASK		0x0100
+#define RULE_ATTR_GOTO		0x0200
+#define RULE_ATTR_SRC		0x0400
+#define RULE_ATTR_DST		0x0800
+#define RULE_ATTR_DSFIELD	0x1000
+#define RULE_ATTR_FLOW		0x2000
 
 static struct nl_cache_ops rtnl_rule_ops;
 static struct nl_object_ops rule_obj_ops;
@@ -69,20 +70,23 @@ static int rule_clone(struct nl_object *_dst, struct nl_object *_src)
 	return 0;
 }
 
-static struct nla_policy rule_policy[RTA_MAX+1] = {
-	[RTA_PRIORITY]	= { .type = NLA_U32 },
-	[RTA_FLOW]	= { .type = NLA_U32 },
-	[RTA_PROTOINFO]	= { .type = NLA_U32 },
-	[RTA_IIF]	= { .type = NLA_STRING,
-			    .maxlen = IFNAMSIZ, },
+static struct nla_policy rule_policy[FRA_MAX+1] = {
+	[FRA_TABLE]	= { .type = NLA_U32 },
+	[FRA_IIFNAME]	= { .type = NLA_STRING, .maxlen = IFNAMSIZ },
+	[FRA_OIFNAME]	= { .type = NLA_STRING, .maxlen = IFNAMSIZ },
+	[FRA_PRIORITY]	= { .type = NLA_U32 },
+	[FRA_FWMARK]	= { .type = NLA_U32 },
+	[FRA_FWMASK]	= { .type = NLA_U32 },
+	[FRA_GOTO]	= { .type = NLA_U32 },
+	[FRA_FLOW]	= { .type = NLA_U32 },
 };
 
 static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			   struct nlmsghdr *n, struct nl_parser_param *pp)
 {
 	struct rtnl_rule *rule;
-	struct rtmsg *r;
-	struct nlattr *tb[RTA_MAX+1];
+	struct fib_rule_hdr *frh;
+	struct nlattr *tb[FRA_MAX+1];
 	int err = 1, family;
 
 	rule = rtnl_rule_alloc();
@@ -92,67 +96,81 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	}
 
 	rule->ce_msgtype = n->nlmsg_type;
-	r = nlmsg_data(n);
+	frh = nlmsg_data(n);
 
-	err = nlmsg_parse(n, sizeof(*r), tb, RTA_MAX, rule_policy);
+	err = nlmsg_parse(n, sizeof(*frh), tb, FRA_MAX, rule_policy);
 	if (err < 0)
 		goto errout;
 
-	rule->r_family = family = r->rtm_family;
-	rule->r_type = r->rtm_type;
-	rule->r_dsfield = r->rtm_tos;
-	rule->r_src_len = r->rtm_src_len;
-	rule->r_dst_len = r->rtm_dst_len;
-	rule->r_table = r->rtm_table;
-	rule->ce_mask = (RULE_ATTR_FAMILY | RULE_ATTR_TYPE | RULE_ATTR_DSFIELD |
-			 RULE_ATTR_SRC_LEN | RULE_ATTR_DST_LEN |RULE_ATTR_TYPE |
-			 RULE_ATTR_TABLE);
+	rule->r_family = family = frh->family;
+	rule->r_table = frh->table;
+	rule->r_action = frh->action;
+	rule->r_flags = frh->flags;
 
-	if (tb[RTA_PRIORITY]) {
-		rule->r_prio = nla_get_u32(tb[RTA_PRIORITY]);
+	rule->ce_mask = (RULE_ATTR_FAMILY | RULE_ATTR_TABLE | RULE_ATTR_ACTION |
+			 RULE_ATTR_FLAGS);
+
+	/* ipv4 only */
+	if (frh->tos) {
+		rule->r_dsfield = frh->tos;
+		rule->ce_mask |= RULE_ATTR_DSFIELD;
+	}
+
+	if (tb[FRA_TABLE]) {
+		rule->r_table = nla_get_u32(tb[FRA_TABLE]);
+		rule->ce_mask |= RULE_ATTR_TABLE;
+	}
+
+	if (tb[FRA_IIFNAME]) {
+		nla_strlcpy(rule->r_iifname, tb[FRA_IIFNAME], IFNAMSIZ);
+		rule->ce_mask |= RULE_ATTR_IIFNAME;
+	}
+
+	if (tb[FRA_OIFNAME]) {
+		nla_strlcpy(rule->r_oifname, tb[FRA_OIFNAME], IFNAMSIZ);
+		rule->ce_mask |= RULE_ATTR_OIFNAME;
+	}
+
+	if (tb[FRA_PRIORITY]) {
+		rule->r_prio = nla_get_u32(tb[FRA_PRIORITY]);
 		rule->ce_mask |= RULE_ATTR_PRIO;
 	}
 
-	if (tb[RTA_SRC]) {
-		if (!(rule->r_src = nl_addr_alloc_attr(tb[RTA_SRC], family)))
-			goto errout_enomem;
-		nl_addr_set_prefixlen(rule->r_src, r->rtm_src_len);
-		rule->ce_mask |= RULE_ATTR_SRC;
-	}
-
-	if (tb[RTA_DST]) {
-		if (!(rule->r_dst = nl_addr_alloc_attr(tb[RTA_DST], family)))
-			goto errout_enomem;
-		nl_addr_set_prefixlen(rule->r_dst, r->rtm_dst_len);
-		rule->ce_mask |= RULE_ATTR_DST;
-	}
-
-	if (tb[RTA_PROTOINFO]) {
-		rule->r_mark = nla_get_u32(tb[RTA_PROTOINFO]);
+	if (tb[FRA_FWMARK]) {
+		rule->r_mark = nla_get_u32(tb[FRA_FWMARK]);
 		rule->ce_mask |= RULE_ATTR_MARK;
 	}
 
-	if (tb[RTA_IIF]) {
-		nla_strlcpy(rule->r_iif, tb[RTA_IIF], IFNAMSIZ);
-		rule->ce_mask |= RULE_ATTR_IIF;
+	if (tb[FRA_FWMASK]) {
+		rule->r_mask = nla_get_u32(tb[FRA_FWMASK]);
+		rule->ce_mask |= RULE_ATTR_MASK;
 	}
 
-	if (tb[RTA_FLOW]) {
-		rule->r_realms = nla_get_u32(tb[RTA_FLOW]);
-		rule->ce_mask |= RULE_ATTR_REALMS;
+	if (tb[FRA_GOTO]) {
+		rule->r_goto = nla_get_u32(tb[FRA_GOTO]);
+		rule->ce_mask |= RULE_ATTR_GOTO;
 	}
 
-	if (tb[RTA_GATEWAY]) {
-		rule->r_srcmap = nl_addr_alloc_attr(tb[RTA_GATEWAY], family);
-		if (!rule->r_srcmap)
+	if (tb[FRA_SRC]) {
+		if (!(rule->r_src = nl_addr_alloc_attr(tb[FRA_SRC], family)))
 			goto errout_enomem;
-		rule->ce_mask |= RULE_ATTR_SRCMAP;
+
+		nl_addr_set_prefixlen(rule->r_src, frh->src_len);
+		rule->ce_mask |= RULE_ATTR_SRC;
 	}
 
-	if (tb[RTA_TABLE]) {
-            rule->r_table = nla_get_u32(tb[RTA_TABLE]);
-            rule->ce_mask |= RULE_ATTR_TABLE;
-        }
+	if (tb[FRA_DST]) {
+		if (!(rule->r_dst = nl_addr_alloc_attr(tb[FRA_DST], family)))
+			goto errout_enomem;
+		nl_addr_set_prefixlen(rule->r_dst, frh->dst_len);
+		rule->ce_mask |= RULE_ATTR_DST;
+	}
+
+	/* ipv4 only */
+	if (tb[FRA_FLOW]) {
+		rule->r_flow = nla_get_u32(tb[FRA_FLOW]);
+		rule->ce_mask |= RULE_ATTR_FLOW;
+	}
 
 	err = pp->pp_cb((struct nl_object *) rule, pp);
 errout:
@@ -180,52 +198,52 @@ static void rule_dump_line(struct nl_object *o, struct nl_dump_params *p)
 	if (r->ce_mask & RULE_ATTR_SRC)
 		nl_dump(p, "from %s ",
 			nl_addr2str(r->r_src, buf, sizeof(buf)));
-	else if (r->ce_mask & RULE_ATTR_SRC_LEN && r->r_src_len)
-		nl_dump(p, "from 0/%d ", r->r_src_len);
 
 	if (r->ce_mask & RULE_ATTR_DST)
 		nl_dump(p, "to %s ",
 			nl_addr2str(r->r_dst, buf, sizeof(buf)));
-	else if (r->ce_mask & RULE_ATTR_DST_LEN && r->r_dst_len)
-		nl_dump(p, "to 0/%d ", r->r_dst_len);
 
-	if (r->ce_mask & RULE_ATTR_DSFIELD && r->r_dsfield)
-		nl_dump(p, "tos %d ", r->r_dsfield);
+	if (r->ce_mask & RULE_ATTR_DSFIELD)
+		nl_dump(p, "tos %u ", r->r_dsfield);
 
-	if (r->ce_mask & RULE_ATTR_MARK)
-		nl_dump(p, "mark %" PRIx64 , r->r_mark);
+	if (r->ce_mask & (RULE_ATTR_MARK | RULE_ATTR_MASK))
+		nl_dump(p, "mark %#x/%#x", r->r_mark, r->r_mask);
 
-	if (r->ce_mask & RULE_ATTR_IIF)
-		nl_dump(p, "iif %s ", r->r_iif);
+	if (r->ce_mask & RULE_ATTR_IIFNAME)
+		nl_dump(p, "iif %s ", r->r_iifname);
+
+	if (r->ce_mask & RULE_ATTR_OIFNAME)
+		nl_dump(p, "oif %s ", r->r_oifname);
 
 	if (r->ce_mask & RULE_ATTR_TABLE)
 		nl_dump(p, "lookup %s ",
 			rtnl_route_table2str(r->r_table, buf, sizeof(buf)));
 
-	if (r->ce_mask & RULE_ATTR_REALMS)
-		nl_dump(p, "realms %s ",
-			rtnl_realms2str(r->r_realms, buf, sizeof(buf)));
+	if (r->ce_mask & RULE_ATTR_FLOW)
+		nl_dump(p, "flow %s ",
+			rtnl_realms2str(r->r_flow, buf, sizeof(buf)));
 
-	nl_dump(p, "action %s\n",
-		nl_rtntype2str(r->r_type, buf, sizeof(buf)));
+	if (r->ce_mask & RULE_ATTR_GOTO)
+		nl_dump(p, "goto %u ", r->r_goto);
+
+	if (r->ce_mask & RULE_ATTR_ACTION)
+		nl_dump(p, "action %s",
+			nl_rtntype2str(r->r_action, buf, sizeof(buf)));
+
+	nl_dump(p, "\n");
 }
 
 static void rule_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 {
-	struct rtnl_rule *rule = (struct rtnl_rule *) obj;
-	char buf[128];
-
 	rule_dump_line(obj, p);
-
-	if (rule->ce_mask & RULE_ATTR_SRCMAP)
-		nl_dump_line(p, "  srcmap %s\n",
-			nl_addr2str(rule->r_srcmap, buf, sizeof(buf)));
 }
 
 static void rule_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 {
 	rule_dump_details(obj, p);
 }
+
+#define RULE_ATTR_FLAGS		0x0008
 
 static int rule_compare(struct nl_object *_a, struct nl_object *_b,
 			uint32_t attrs, int flags)
@@ -238,16 +256,17 @@ static int rule_compare(struct nl_object *_a, struct nl_object *_b,
 
 	diff |= RULE_DIFF(FAMILY,	a->r_family != b->r_family);
 	diff |= RULE_DIFF(TABLE,	a->r_table != b->r_table);
-	diff |= RULE_DIFF(REALMS,	a->r_realms != b->r_realms);
-	diff |= RULE_DIFF(DSFIELD,	a->r_dsfield != b->r_dsfield);
-	diff |= RULE_DIFF(TYPE,		a->r_type != b->r_type);
+	diff |= RULE_DIFF(ACTION,	a->r_action != b->r_action);
+	diff |= RULE_DIFF(IIFNAME,	strcmp(a->r_iifname, b->r_iifname));
+	diff |= RULE_DIFF(OIFNAME,	strcmp(a->r_oifname, b->r_oifname));
 	diff |= RULE_DIFF(PRIO,		a->r_prio != b->r_prio);
 	diff |= RULE_DIFF(MARK,		a->r_mark != b->r_mark);
-	diff |= RULE_DIFF(SRC_LEN,	a->r_src_len != b->r_src_len);
-	diff |= RULE_DIFF(DST_LEN,	a->r_dst_len != b->r_dst_len);
+	diff |= RULE_DIFF(MASK,		a->r_mask != b->r_mask);
+	diff |= RULE_DIFF(GOTO,		a->r_goto != b->r_goto);
 	diff |= RULE_DIFF(SRC,		nl_addr_cmp(a->r_src, b->r_src));
 	diff |= RULE_DIFF(DST,		nl_addr_cmp(a->r_dst, b->r_dst));
-	diff |= RULE_DIFF(IIF,		strcmp(a->r_iif, b->r_iif));
+	diff |= RULE_DIFF(DSFIELD,	a->r_dsfield != b->r_dsfield);
+	diff |= RULE_DIFF(FLOW,		a->r_flow != b->r_flow);
 	
 #undef RULE_DIFF
 
@@ -256,18 +275,18 @@ static int rule_compare(struct nl_object *_a, struct nl_object *_b,
 
 static struct trans_tbl rule_attrs[] = {
 	__ADD(RULE_ATTR_FAMILY, family)
+	__ADD(RULE_ATTR_TABLE, table)
+	__ADD(RULE_ATTR_ACTION, action)
+	__ADD(RULE_ATTR_IIFNAME, iifname)
+	__ADD(RULE_ATTR_OIFNAME, oifname)
 	__ADD(RULE_ATTR_PRIO, prio)
 	__ADD(RULE_ATTR_MARK, mark)
-	__ADD(RULE_ATTR_IIF, iif)
-	__ADD(RULE_ATTR_REALMS, realms)
+	__ADD(RULE_ATTR_MASK, mask)
+	__ADD(RULE_ATTR_GOTO, goto)
 	__ADD(RULE_ATTR_SRC, src)
 	__ADD(RULE_ATTR_DST, dst)
 	__ADD(RULE_ATTR_DSFIELD, dsfield)
-	__ADD(RULE_ATTR_TABLE, table)
-	__ADD(RULE_ATTR_TYPE, type)
-	__ADD(RULE_ATTR_SRC_LEN, src_len)
-	__ADD(RULE_ATTR_DST_LEN, dst_len)
-	__ADD(RULE_ATTR_SRCMAP, srcmap)
+	__ADD(RULE_ATTR_FLOW, flow)
 };
 
 static char *rule_attrs2str(int attrs, char *buf, size_t len)
@@ -340,55 +359,55 @@ static int build_rule_msg(struct rtnl_rule *tmpl, int cmd, int flags,
 			  struct nl_msg **result)
 {
 	struct nl_msg *msg;
-	struct rtmsg rtm = {
-		.rtm_type = RTN_UNSPEC
+	struct fib_rule_hdr frh = {
+		.family = tmpl->r_family,
+		.table = tmpl->r_table,
+		.action = tmpl->r_action,
+		.flags = tmpl->r_flags,
+		.tos = tmpl->r_dsfield,
 	};
 
-	if (cmd == RTM_NEWRULE)
-		rtm.rtm_type = RTN_UNICAST;
-		
-	if (tmpl->ce_mask & RULE_ATTR_FAMILY)
-		rtm.rtm_family = tmpl->r_family;
-
-	if (tmpl->ce_mask & RULE_ATTR_TABLE)
-		rtm.rtm_table = tmpl->r_table;
-
-	if (tmpl->ce_mask & RULE_ATTR_DSFIELD)
-		rtm.rtm_tos = tmpl->r_dsfield;
-
-	if (tmpl->ce_mask & RULE_ATTR_TYPE)
-		rtm.rtm_type = tmpl->r_type;
-
-	if (tmpl->ce_mask & RULE_ATTR_SRC_LEN)
-		rtm.rtm_src_len = tmpl->r_src_len;
-
-	if (tmpl->ce_mask & RULE_ATTR_DST_LEN)
-		rtm.rtm_dst_len = tmpl->r_dst_len;
+	if (!(tmpl->ce_mask & RULE_ATTR_FAMILY))
+		return -NLE_MISSING_ATTR;
 
 	msg = nlmsg_alloc_simple(cmd, flags);
 	if (!msg)
 		return -NLE_NOMEM;
 
-	if (nlmsg_append(msg, &rtm, sizeof(rtm), NLMSG_ALIGNTO) < 0)
+	if (nlmsg_append(msg, &frh, sizeof(frh), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
 
-	if (tmpl->ce_mask & RULE_ATTR_SRC)
-		NLA_PUT_ADDR(msg, RTA_SRC, tmpl->r_src);
+	if (tmpl->ce_mask & RULE_ATTR_SRC) {
+		frh.src_len = nl_addr_get_prefixlen(tmpl->r_src);
+		NLA_PUT_ADDR(msg, FRA_SRC, tmpl->r_src);
+	}
 
-	if (tmpl->ce_mask & RULE_ATTR_DST)
-		NLA_PUT_ADDR(msg, RTA_DST, tmpl->r_dst);
+	if (tmpl->ce_mask & RULE_ATTR_DST) {
+		frh.dst_len = nl_addr_get_prefixlen(tmpl->r_dst);
+		NLA_PUT_ADDR(msg, FRA_DST, tmpl->r_dst);
+	}
+
+	if (tmpl->ce_mask & RULE_ATTR_IIFNAME)
+		NLA_PUT_STRING(msg, FRA_IIFNAME, tmpl->r_iifname);
+
+	if (tmpl->ce_mask & RULE_ATTR_OIFNAME)
+		NLA_PUT_STRING(msg, FRA_OIFNAME, tmpl->r_oifname);
 
 	if (tmpl->ce_mask & RULE_ATTR_PRIO)
-		NLA_PUT_U32(msg, RTA_PRIORITY, tmpl->r_prio);
+		NLA_PUT_U32(msg, FRA_PRIORITY, tmpl->r_prio);
 
 	if (tmpl->ce_mask & RULE_ATTR_MARK)
-		NLA_PUT_U32(msg, RTA_PROTOINFO, tmpl->r_mark);
+		NLA_PUT_U32(msg, FRA_FWMARK, tmpl->r_mark);
 
-	if (tmpl->ce_mask & RULE_ATTR_REALMS)
-		NLA_PUT_U32(msg, RTA_FLOW, tmpl->r_realms);
+	if (tmpl->ce_mask & RULE_ATTR_MASK)
+		NLA_PUT_U32(msg, FRA_FWMASK, tmpl->r_mask);
 
-	if (tmpl->ce_mask & RULE_ATTR_IIF)
-		NLA_PUT_STRING(msg, RTA_IIF, tmpl->r_iif);
+	if (tmpl->ce_mask & RULE_ATTR_GOTO)
+		NLA_PUT_U32(msg, FRA_GOTO, tmpl->r_goto);
+
+	if (tmpl->ce_mask & RULE_ATTR_FLOW)
+		NLA_PUT_U32(msg, FRA_FLOW, tmpl->r_flow);
+
 
 	*result = msg;
 	return 0;
@@ -521,96 +540,63 @@ int rtnl_rule_get_family(struct rtnl_rule *rule)
 		return AF_UNSPEC;
 }
 
-void rtnl_rule_set_prio(struct rtnl_rule *rule, int prio)
+void rtnl_rule_set_prio(struct rtnl_rule *rule, uint32_t prio)
 {
 	rule->r_prio = prio;
 	rule->ce_mask |= RULE_ATTR_PRIO;
 }
 
-int rtnl_rule_get_prio(struct rtnl_rule *rule)
+uint32_t rtnl_rule_get_prio(struct rtnl_rule *rule)
 {
-	if (rule->ce_mask & RULE_ATTR_PRIO)
-		return rule->r_prio;
-	else
-		return -1;
+	return rule->r_prio;
 }
 
-void rtnl_rule_set_mark(struct rtnl_rule *rule, uint64_t mark)
+void rtnl_rule_set_mark(struct rtnl_rule *rule, uint32_t mark)
 {
 	rule->r_mark = mark;
 	rule->ce_mask |= RULE_ATTR_MARK;
 }
 
-uint64_t rtnl_rule_get_mark(struct rtnl_rule *rule)
+uint32_t rtnl_rule_get_mark(struct rtnl_rule *rule)
 {
-	if (rule->ce_mask & RULE_ATTR_MARK)
-		return rule->r_mark;
-	else
-		return UINT_LEAST64_MAX;
+	return rule->r_mark;
 }
 
-void rtnl_rule_set_table(struct rtnl_rule *rule, int table)
+void rtnl_rule_set_mask(struct rtnl_rule *rule, uint32_t mask)
+{
+	rule->r_mask = mask;
+	rule->ce_mask |= RULE_ATTR_MASK;
+}
+
+uint32_t rtnl_rule_get_mask(struct rtnl_rule *rule)
+{
+	return rule->r_mask;
+}
+
+void rtnl_rule_set_table(struct rtnl_rule *rule, uint32_t table)
 {
 	rule->r_table = table;
 	rule->ce_mask |= RULE_ATTR_TABLE;
 }
 
-int rtnl_rule_get_table(struct rtnl_rule *rule)
+uint32_t rtnl_rule_get_table(struct rtnl_rule *rule)
 {
-	if (rule->ce_mask & RULE_ATTR_TABLE)
-		return rule->r_table;
-	else
-		return -1;
+	return rule->r_table;
 }
 
-void rtnl_rule_set_dsfield(struct rtnl_rule *rule, int dsfield)
+void rtnl_rule_set_dsfield(struct rtnl_rule *rule, uint8_t dsfield)
 {
 	rule->r_dsfield = dsfield;
 	rule->ce_mask |= RULE_ATTR_DSFIELD;
 }
 
-int rtnl_rule_get_dsfield(struct rtnl_rule *rule)
+uint8_t rtnl_rule_get_dsfield(struct rtnl_rule *rule)
 {
-	if (rule->ce_mask & RULE_ATTR_DSFIELD)
-		return rule->r_dsfield;
-	else
-		return -1;
-}
-
-void rtnl_rule_set_src_len(struct rtnl_rule *rule, int len)
-{
-	rule->r_src_len = len;
-	if (rule->ce_mask & RULE_ATTR_SRC)
-		nl_addr_set_prefixlen(rule->r_src, len);
-	rule->ce_mask |= RULE_ATTR_SRC_LEN;
-}
-
-int rtnl_rule_get_src_len(struct rtnl_rule *rule)
-{
-	if (rule->ce_mask & RULE_ATTR_SRC_LEN)
-		return rule->r_src_len;
-	else
-		return -1;
-}
-
-void rtnl_rule_set_dst_len(struct rtnl_rule *rule, int len)
-{
-	rule->r_dst_len = len;
-	if (rule->ce_mask & RULE_ATTR_DST)
-		nl_addr_set_prefixlen(rule->r_dst, len);
-	rule->ce_mask |= RULE_ATTR_DST_LEN;
-}
-
-int rtnl_rule_get_dst_len(struct rtnl_rule *rule)
-{
-	if (rule->ce_mask & RULE_ATTR_DST_LEN)
-		return rule->r_dst_len;
-	else
-		return -1;
+	return rule->r_dsfield;
 }
 
 static inline int __assign_addr(struct rtnl_rule *rule, struct nl_addr **pos,
-			        struct nl_addr *new, uint8_t *len, int flag)
+			        struct nl_addr *new, int flag)
 {
 	if (rule->ce_mask & RULE_ATTR_FAMILY) {
 		if (new->a_family != rule->r_family)
@@ -623,7 +609,6 @@ static inline int __assign_addr(struct rtnl_rule *rule, struct nl_addr **pos,
 
 	nl_addr_get(new);
 	*pos = new;
-	*len = nl_addr_get_prefixlen(new);
 
 	rule->ce_mask |= (flag | RULE_ATTR_FAMILY);
 
@@ -632,30 +617,22 @@ static inline int __assign_addr(struct rtnl_rule *rule, struct nl_addr **pos,
 
 int rtnl_rule_set_src(struct rtnl_rule *rule, struct nl_addr *src)
 {
-	return __assign_addr(rule, &rule->r_src, src, &rule->r_src_len,
-			     RULE_ATTR_SRC | RULE_ATTR_SRC_LEN);
+	return __assign_addr(rule, &rule->r_src, src, RULE_ATTR_SRC);
 }
 
 struct nl_addr *rtnl_rule_get_src(struct rtnl_rule *rule)
 {
-	if (rule->ce_mask & RULE_ATTR_SRC)
-		return rule->r_src;
-	else
-		return NULL;
+	return rule->r_src;
 }
 
 int rtnl_rule_set_dst(struct rtnl_rule *rule, struct nl_addr *dst)
 {
-	return __assign_addr(rule, &rule->r_dst, dst, &rule->r_dst_len,
-			     RULE_ATTR_DST | RULE_ATTR_DST_LEN);
+	return __assign_addr(rule, &rule->r_dst, dst, RULE_ATTR_DST);
 }
 
 struct nl_addr *rtnl_rule_get_dst(struct rtnl_rule *rule)
 {
-	if (rule->ce_mask & RULE_ATTR_DST)
-		return rule->r_dst;
-	else
-		return NULL;
+	return rule->r_dst;
 }
 
 int rtnl_rule_set_iif(struct rtnl_rule *rule, const char *dev)
@@ -663,45 +640,68 @@ int rtnl_rule_set_iif(struct rtnl_rule *rule, const char *dev)
 	if (strlen(dev) > IFNAMSIZ-1)
 		return -NLE_RANGE;
 
-	strcpy(rule->r_iif, dev);
-	rule->ce_mask |= RULE_ATTR_IIF;
+	strcpy(rule->r_iifname, dev);
+	rule->ce_mask |= RULE_ATTR_IIFNAME;
 	return 0;
 }
 
 char *rtnl_rule_get_iif(struct rtnl_rule *rule)
 {
-	if (rule->ce_mask & RULE_ATTR_IIF)
-		return rule->r_iif;
+	if (rule->ce_mask & RULE_ATTR_IIFNAME)
+		return rule->r_iifname;
 	else
 		return NULL;
 }
 
-void rtnl_rule_set_action(struct rtnl_rule *rule, int type)
+int rtnl_rule_set_oif(struct rtnl_rule *rule, const char *dev)
 {
-	rule->r_type = type;
-	rule->ce_mask |= RULE_ATTR_TYPE;
+	if (strlen(dev) > IFNAMSIZ-1)
+		return -NLE_RANGE;
+
+	strcpy(rule->r_oifname, dev);
+	rule->ce_mask |= RULE_ATTR_OIFNAME;
+	return 0;
 }
 
-int rtnl_rule_get_action(struct rtnl_rule *rule)
+char *rtnl_rule_get_oif(struct rtnl_rule *rule)
 {
-	if (rule->ce_mask & RULE_ATTR_TYPE)
-		return rule->r_type;
+	if (rule->ce_mask & RULE_ATTR_OIFNAME)
+		return rule->r_oifname;
 	else
-		return -NLE_NOATTR;
+		return NULL;
+}
+
+void rtnl_rule_set_action(struct rtnl_rule *rule, uint8_t action)
+{
+	rule->r_action = action;
+	rule->ce_mask |= RULE_ATTR_ACTION;
+}
+
+uint8_t rtnl_rule_get_action(struct rtnl_rule *rule)
+{
+	return rule->r_action;
 }
 
 void rtnl_rule_set_realms(struct rtnl_rule *rule, uint32_t realms)
 {
-	rule->r_realms = realms;
-	rule->ce_mask |= RULE_ATTR_REALMS;
+	rule->r_flow = realms;
+	rule->ce_mask |= RULE_ATTR_FLOW;
 }
 
 uint32_t rtnl_rule_get_realms(struct rtnl_rule *rule)
 {
-	if (rule->ce_mask & RULE_ATTR_REALMS)
-		return rule->r_realms;
-	else
-		return 0;
+	return rule->r_flow;
+}
+
+void rtnl_rule_set_goto(struct rtnl_rule *rule, uint32_t ref)
+{
+	rule->r_goto = ref;
+	rule->ce_mask |= RULE_ATTR_GOTO;
+}
+
+uint32_t rtnl_rule_get_goto(struct rtnl_rule *rule)
+{
+	return rule->r_goto;
 }
 
 /** @} */
@@ -723,7 +723,7 @@ static struct nl_object_ops rule_obj_ops = {
 
 static struct nl_cache_ops rtnl_rule_ops = {
 	.co_name		= "route/rule",
-	.co_hdrsize		= sizeof(struct rtmsg),
+	.co_hdrsize		= sizeof(struct fib_rule_hdr),
 	.co_msgtypes		= {
 					{ RTM_NEWRULE, NL_ACT_NEW, "new" },
 					{ RTM_DELRULE, NL_ACT_DEL, "del" },

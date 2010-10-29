@@ -58,6 +58,7 @@ static int add_routing_table_name(long id, const char *name)
 static void __init init_routing_table_names(void)
 {
 	add_routing_table_name(RT_TABLE_UNSPEC, "unspec");
+	add_routing_table_name(RT_TABLE_COMPAT, "compat");
 	add_routing_table_name(RT_TABLE_DEFAULT, "default");
 	add_routing_table_name(RT_TABLE_MAIN, "main");
 	add_routing_table_name(RT_TABLE_LOCAL, "local");

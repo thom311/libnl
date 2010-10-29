@@ -813,10 +813,11 @@ struct nlattr *nla_reserve(struct nl_msg *msg, int attrtype, int attrlen)
 		memset((unsigned char *) nla + nla->nla_len, 0, nla_padlen(attrlen));
 	msg->nm_nlh->nlmsg_len = tlen;
 
-	NL_DBG(2, "msg %p: Reserved %d bytes at offset +%td for attr %d "
-		  "nlmsg_len=%d\n", msg, attrlen,
+	NL_DBG(2, "msg %p: attr <%p> %d: Reserved %d (%d) bytes at offset +%td "
+		  "nlmsg_len=%d\n", msg, nla, nla->nla_type,
+		  nla_total_size(attrlen), attrlen,
 		  (void *) nla - nlmsg_data(msg->nm_nlh),
-		  attrtype, msg->nm_nlh->nlmsg_len);
+		  msg->nm_nlh->nlmsg_len);
 
 	return nla;
 }
@@ -845,8 +846,9 @@ int nla_put(struct nl_msg *msg, int attrtype, int datalen, const void *data)
 
 	if (datalen > 0) {
 		memcpy(nla_data(nla), data, datalen);
-		NL_DBG(2, "msg %p: Wrote %d bytes at offset +%td for attr %d\n",
-		       msg, datalen, (void *) nla - nlmsg_data(msg->nm_nlh), attrtype);
+		NL_DBG(2, "msg %p: attr <%p> %d: Wrote %d bytes at offset +%td\n",
+		       msg, nla, nla->nla_type, datalen,
+		       (void *) nla - nlmsg_data(msg->nm_nlh));
 	}
 
 	return 0;
@@ -1110,6 +1112,9 @@ unsigned long nla_get_msecs(struct nlattr *nla)
  */
 int nla_put_nested(struct nl_msg *msg, int attrtype, struct nl_msg *nested)
 {
+	NL_DBG(2, "msg %p: attr <> %d: adding msg %p as nested attribute\n",
+		msg, attrtype, nested);
+
 	return nla_put(msg, attrtype, nlmsg_len(nested->nm_nlh),
 		       nlmsg_data(nested->nm_nlh));
 }
@@ -1129,6 +1134,9 @@ struct nlattr *nla_nest_start(struct nl_msg *msg, int attrtype)
 	if (nla_put(msg, attrtype, 0, NULL) < 0)
 		return NULL;
 
+	NL_DBG(2, "msg %p: attr <%p> %d: starting nesting\n",
+		msg, start, start->nla_type);
+
 	return start;
 }
 
@@ -1145,6 +1153,10 @@ int nla_nest_end(struct nl_msg *msg, struct nlattr *start)
 {
 	start->nla_len = (unsigned char *) nlmsg_tail(msg->nm_nlh) -
 				(unsigned char *) start;
+
+	NL_DBG(2, "msg %p: attr <%p> %d: closing nesting, len=%u\n",
+		msg, start, start->nla_type, start->nla_len);
+
 	return 0;
 }
 

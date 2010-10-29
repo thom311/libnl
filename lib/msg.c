@@ -529,8 +529,8 @@ void *nlmsg_reserve(struct nl_msg *n, size_t len, int pad)
 	if (tlen > len)
 		memset(buf + len, 0, tlen - len);
 
-	NL_DBG(2, "msg %p: Reserved %zu bytes, pad=%d, nlmsg_len=%d\n",
-		  n, len, pad, n->nm_nlh->nlmsg_len);
+	NL_DBG(2, "msg %p: Reserved %zu (%zu) bytes, pad=%d, nlmsg_len=%d\n",
+		  n, tlen, len, pad, n->nm_nlh->nlmsg_len);
 
 	return buf;
 }

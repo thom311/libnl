@@ -32,6 +32,7 @@
  *
  * @par Neighbour Flags
  * @code
+ * NTF_USE
  * NTF_PROXY
  * NTF_ROUTER
  * @endcode
@@ -640,6 +641,7 @@ int rtnl_neigh_str2state(const char *name)
  */
 
 static struct trans_tbl neigh_flags[] = {
+	__ADD(NTF_USE, use)
 	__ADD(NTF_PROXY, proxy)
 	__ADD(NTF_ROUTER, router)
 };

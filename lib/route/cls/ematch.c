@@ -682,4 +682,18 @@ char *rtnl_ematch_offset2txt(uint8_t layer, uint16_t offset, char *buf, size_t l
 	return buf;
 }
 
+static const char *operand_txt[] = {
+	[TCF_EM_OPND_EQ] = "=",
+	[TCF_EM_OPND_LT] = "<",
+	[TCF_EM_OPND_GT] = ">",
+};
+
+char *rtnl_ematch_opnd2txt(uint8_t opnd, char *buf, size_t len)
+{
+	snprintf(buf, len, "%s",
+		opnd <= ARRAY_SIZE(operand_txt) ? operand_txt[opnd] : "?");
+
+	return buf;
+}
+
 /** @} */

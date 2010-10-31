@@ -86,6 +86,7 @@ extern int			rtnl_ematch_parse_expr(const char *, char **,
 
 extern char *			rtnl_ematch_offset2txt(uint8_t, uint16_t,
 						       char *, size_t);
+extern char *			rtnl_ematch_opnd2txt(uint8_t, char *, size_t);
 
 #ifdef __cplusplus
 }

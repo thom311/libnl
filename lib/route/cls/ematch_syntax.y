@@ -19,6 +19,12 @@
 #include <netlink/route/cls/ematch/cmp.h>
 #include <netlink/route/cls/ematch/nbyte.h>
 #include <netlink/route/cls/ematch/text.h>
+#include <netlink/route/cls/ematch/meta.h>
+
+#define META_ALLOC rtnl_meta_value_alloc_id
+#define META_ID(name) TCF_META_ID_##name
+#define META_INT TCF_META_TYPE_INT
+#define META_VAR TCF_META_TYPE_VAR
 %}
 
 %error-verbose
@@ -35,7 +41,9 @@
 	struct ematch_quoted	q;
 	struct rtnl_ematch *	e;
 	struct rtnl_pktloc *	loc;
+	struct rtnl_meta_value *mv;
 	uint32_t		i;
+	uint64_t		i64;
 	char *			s;
 }
 
@@ -54,29 +62,82 @@ static void yyerror(void *scanner, char **errp, struct nl_list_head *root, const
 %token <i> KW_CLOSE ")"
 %token <i> KW_PLUS "+"
 %token <i> KW_MASK "mask"
+%token <i> KW_SHIFT ">>"
 %token <i> KW_AT "at"
 %token <i> EMATCH_CMP "cmp"
 %token <i> EMATCH_NBYTE "pattern"
 %token <i> EMATCH_TEXT "text"
+%token <i> EMATCH_META "meta"
 %token <i> KW_EQ "="
 %token <i> KW_GT ">"
 %token <i> KW_LT "<"
 %token <i> KW_FROM "from"
 %token <i> KW_TO "to"
 
+%token <i> META_RANDOM "random"
+%token <i> META_LOADAVG_0 "loadavg_0"
+%token <i> META_LOADAVG_1 "loadavg_1"
+%token <i> META_LOADAVG_2 "loadavg_2"
+%token <i> META_DEV "dev"
+%token <i> META_PRIO "prio"
+%token <i> META_PROTO "proto"
+%token <i> META_PKTTYPE "pkttype"
+%token <i> META_PKTLEN "pktlen"
+%token <i> META_DATALEN "datalen"
+%token <i> META_MACLEN "maclen"
+%token <i> META_MARK "mark"
+%token <i> META_TCINDEX "tcindex"
+%token <i> META_RTCLASSID "rtclassid"
+%token <i> META_RTIIF "rtiif"
+%token <i> META_SK_FAMILY "sk_family"
+%token <i> META_SK_STATE "sk_state"
+%token <i> META_SK_REUSE "sk_reuse"
+%token <i> META_SK_REFCNT "sk_refcnt"
+%token <i> META_SK_RCVBUF "sk_rcvbuf"
+%token <i> META_SK_SNDBUF "sk_sndbuf"
+%token <i> META_SK_SHUTDOWN "sk_shutdown"
+%token <i> META_SK_PROTO "sk_proto"
+%token <i> META_SK_TYPE "sk_type"
+%token <i> META_SK_RMEM_ALLOC "sk_rmem_alloc"
+%token <i> META_SK_WMEM_ALLOC "sk_wmem_alloc"
+%token <i> META_SK_WMEM_QUEUED "sk_wmem_queued"
+%token <i> META_SK_RCV_QLEN "sk_rcv_qlen"
+%token <i> META_SK_SND_QLEN "sk_snd_qlen"
+%token <i> META_SK_ERR_QLEN "sk_err_qlen"
+%token <i> META_SK_FORWARD_ALLOCS "sk_forward_allocs"
+%token <i> META_SK_ALLOCS "sk_allocs"
+%token <i> META_SK_ROUTE_CAPS "sk_route_caps"
+%token <i> META_SK_HASH "sk_hash"
+%token <i> META_SK_LINGERTIME "sk_lingertime"
+%token <i> META_SK_ACK_BACKLOG "sk_ack_backlog"
+%token <i> META_SK_MAX_ACK_BACKLOG "sk_max_ack_backlog"
+%token <i> META_SK_PRIO "sk_prio"
+%token <i> META_SK_RCVLOWAT "sk_rcvlowat"
+%token <i> META_SK_RCVTIMEO "sk_rcvtimeo"
+%token <i> META_SK_SNDTIMEO "sk_sndtimeo"
+%token <i> META_SK_SENDMSG_OFF "sk_sendmsg_off"
+%token <i> META_SK_WRITE_PENDING "sk_write_pending"
+%token <i> META_VLAN "vlan"
+%token <i> META_RXHASH "rxhash"
+%token <i> META_DEVNAME "devname"
+%token <i> META_SK_BOUND_IF "sk_bound_if"
+
 %token <s> STR
 
 %token <q> QUOTED
 
-%type <i> mask align operand
+%type <i> align operand shift meta_int_id meta_var_id
+%type <i64> mask
 %type <e> expr match ematch
 %type <cmp> cmp_expr cmp_match
 %type <loc> pktloc text_from text_to
 %type <q> pattern
+%type <mv> meta_value
 
 %destructor { free($$); NL_DBG(2, "string destructor\n"); } <s>
 %destructor { rtnl_pktloc_put($$); NL_DBG(2, "pktloc destructor\n"); } <loc>
 %destructor { free($$.data); NL_DBG(2, "quoted destructor\n"); } <q>
+%destructor { rtnl_meta_value_put($$); NL_DBG(2, "meta value destructor\n"); } <mv>
 
 %start input
 
@@ -180,6 +241,24 @@ ematch:
 
 			$$ = e;
 		}
+	| EMATCH_META "(" meta_value operand meta_value ")"
+		{
+			struct rtnl_ematch *e;
+
+			if (!(e = rtnl_ematch_alloc())) {
+				asprintf(errp, "Unable to allocate ematch object");
+				YYABORT;
+			}
+
+			if (rtnl_ematch_set_kind(e, TCF_EM_META) < 0)
+				BUG();
+
+			rtnl_ematch_meta_set_lvalue(e, $3);
+			rtnl_ematch_meta_set_rvalue(e, $5);
+			rtnl_ematch_meta_set_operand(e, $4);
+
+			$$ = e;
+		}
 	/* CONTAINER */
 	| "(" expr ")"
 		{
@@ -247,6 +326,70 @@ text_to:
 		{ $$ = NULL; }
 	| "to" pktloc
 		{ $$ = $2; }
+	;
+
+meta_value:
+	QUOTED
+		{ $$ = rtnl_meta_value_alloc_var($1.data, $1.len); }
+	| NUMBER
+		{ $$ = rtnl_meta_value_alloc_int($1); }
+	| meta_int_id shift mask
+		{ $$ = META_ALLOC(META_INT, $1, $2, $3); }
+	| meta_var_id shift
+		{ $$ = META_ALLOC(META_VAR, $1, $2, 0); }
+	;
+
+meta_int_id:
+	META_RANDOM			{ $$ = META_ID(RANDOM); }
+	|META_LOADAVG_0			{ $$ = META_ID(LOADAVG_0); }
+	|META_LOADAVG_1			{ $$ = META_ID(LOADAVG_1); }
+	|META_LOADAVG_2			{ $$ = META_ID(LOADAVG_2); }
+	| META_DEV			{ $$ = META_ID(DEV); }
+	| META_PRIO			{ $$ = META_ID(PRIORITY); }
+	| META_PROTO			{ $$ = META_ID(PROTOCOL); }
+	| META_PKTTYPE			{ $$ = META_ID(PKTTYPE); }
+	| META_PKTLEN			{ $$ = META_ID(PKTLEN); }
+	| META_DATALEN			{ $$ = META_ID(DATALEN); }
+	| META_MACLEN			{ $$ = META_ID(MACLEN); }
+	| META_MARK			{ $$ = META_ID(NFMARK); }
+	| META_TCINDEX			{ $$ = META_ID(TCINDEX); }
+	| META_RTCLASSID		{ $$ = META_ID(RTCLASSID); }
+	| META_RTIIF			{ $$ = META_ID(RTIIF); }
+	| META_SK_FAMILY		{ $$ = META_ID(SK_FAMILY); }
+	| META_SK_STATE			{ $$ = META_ID(SK_STATE); }
+	| META_SK_REUSE			{ $$ = META_ID(SK_REUSE); }
+	| META_SK_REFCNT		{ $$ = META_ID(SK_REFCNT); }
+	| META_SK_RCVBUF		{ $$ = META_ID(SK_RCVBUF); }
+	| META_SK_SNDBUF		{ $$ = META_ID(SK_SNDBUF); }
+	| META_SK_SHUTDOWN		{ $$ = META_ID(SK_SHUTDOWN); }
+	| META_SK_PROTO			{ $$ = META_ID(SK_PROTO); }
+	| META_SK_TYPE			{ $$ = META_ID(SK_TYPE); }
+	| META_SK_RMEM_ALLOC		{ $$ = META_ID(SK_RMEM_ALLOC); }
+	| META_SK_WMEM_ALLOC		{ $$ = META_ID(SK_WMEM_ALLOC); }
+	| META_SK_WMEM_QUEUED		{ $$ = META_ID(SK_WMEM_QUEUED); }
+	| META_SK_RCV_QLEN		{ $$ = META_ID(SK_RCV_QLEN); }
+	| META_SK_SND_QLEN		{ $$ = META_ID(SK_SND_QLEN); }
+	| META_SK_ERR_QLEN		{ $$ = META_ID(SK_ERR_QLEN); }
+	| META_SK_FORWARD_ALLOCS	{ $$ = META_ID(SK_FORWARD_ALLOCS); }
+	| META_SK_ALLOCS		{ $$ = META_ID(SK_ALLOCS); }
+	| META_SK_ROUTE_CAPS		{ $$ = META_ID(SK_ROUTE_CAPS); }
+	| META_SK_HASH			{ $$ = META_ID(SK_HASH); }
+	| META_SK_LINGERTIME		{ $$ = META_ID(SK_LINGERTIME); }
+	| META_SK_ACK_BACKLOG		{ $$ = META_ID(SK_ACK_BACKLOG); }
+	| META_SK_MAX_ACK_BACKLOG	{ $$ = META_ID(SK_MAX_ACK_BACKLOG); }
+	| META_SK_PRIO			{ $$ = META_ID(SK_PRIO); }
+	| META_SK_RCVLOWAT		{ $$ = META_ID(SK_RCVLOWAT); }
+	| META_SK_RCVTIMEO		{ $$ = META_ID(SK_RCVTIMEO); }
+	| META_SK_SNDTIMEO		{ $$ = META_ID(SK_SNDTIMEO); }
+	| META_SK_SENDMSG_OFF		{ $$ = META_ID(SK_SENDMSG_OFF); }
+	| META_SK_WRITE_PENDING		{ $$ = META_ID(SK_WRITE_PENDING); }
+	| META_VLAN			{ $$ = META_ID(VLAN_TAG); }
+	| META_RXHASH			{ $$ = META_ID(RXHASH); }
+	;
+
+meta_var_id:
+	META_DEVNAME		{ $$ = META_ID(DEV); }
+	| META_SK_BOUND_IF	{ $$ = META_ID(SK_BOUND_IF); }
 	;
 
 /*
@@ -333,7 +476,14 @@ align:
 mask:
 	/* empty */
 		{ $$ = 0; }
-	| "mask" NUMBER
+	| KW_MASK NUMBER
+		{ $$ = $2; }
+	;
+
+shift:
+	/* empty */
+		{ $$ = 0; }
+	| KW_SHIFT NUMBER
 		{ $$ = $2; }
 	;
 

@@ -78,10 +78,14 @@ lt			|
 [cC][mM][pP]		{ yylval->i = TCF_EM_CMP; return EMATCH_CMP; }
 [pP][aA][tT][tT][eE][rR][nN] { yylval->i = TCF_EM_NBYTE; return EMATCH_NBYTE; }
 [tT][eE][xX][tT]	{ yylval->i = TCF_EM_TEXT; return EMATCH_TEXT; }
+[mM][eE][tT][aA]	{ yylval->i = TCF_EM_META; return EMATCH_META; }
 
 "("			return KW_OPEN;
 ")"			return KW_CLOSE;
-[mM][aA][sS][kK]	return KW_MASK;
+[mM][aA][sS][kK]	|
+"&"			return KW_MASK;
+[sS][hH][iI][fF][tT]	|
+">>"			return KW_SHIFT;
 [aA][tT]		return KW_AT;
 "+"			return KW_PLUS;
 [fF][rR][oO][mM]	return KW_FROM;
@@ -98,6 +102,56 @@ lt			|
 [iI][pP]		{ yylval->i = TCF_LAYER_NETWORK; return LAYER; }
 [tT][rR][aA][nN][sS][pP][oO][rR][tT] |
 [tT][cC][pP]		{ yylval->i = TCF_LAYER_TRANSPORT; return LAYER; }
+
+random			return META_RANDOM;
+loadavg_0		return META_LOADAVG_0;
+loadavg_1		return META_LOADAVG_1;
+loadavg_2		return META_LOADAVG_2;
+dev			return META_DEV;
+prio			return META_PRIO;
+proto			return META_PROTO;
+pkttype			return META_PKTTYPE;
+pktlen			return META_PKTLEN;
+datalen			return META_DATALEN;
+maclen			return META_MACLEN;
+mark			return META_MARK;
+tcindex			return META_TCINDEX;
+rtclassid		return META_RTCLASSID;
+rtiif			return META_RTIIF;
+sk_family		return META_SK_FAMILY;
+sk_state		return META_SK_STATE;
+sk_reuse		return META_SK_REUSE;
+sk_refcnt		return META_SK_REFCNT;
+sk_rcvbuf		return META_SK_RCVBUF;
+sk_sndbuf		return META_SK_SNDBUF;
+sk_shutdown		return META_SK_SHUTDOWN;
+sk_proto		return META_SK_PROTO;
+sk_type			return META_SK_TYPE;
+sk_rmem_alloc		return META_SK_RMEM_ALLOC;
+sk_wmem_alloc		return META_SK_WMEM_ALLOC;
+sk_wmem_queued		return META_SK_WMEM_QUEUED;
+sk_rcv_qlen		return META_SK_RCV_QLEN;
+sk_snd_qlen		return META_SK_SND_QLEN;
+sk_err_qlen		return META_SK_ERR_QLEN;
+sk_forward_allocs	return META_SK_FORWARD_ALLOCS;
+sk_allocs		return META_SK_ALLOCS;
+sk_route_caps		return META_SK_ROUTE_CAPS;
+sk_hash			return META_SK_HASH;
+sk_lingertime		return META_SK_LINGERTIME;
+sk_ack_backlog		return META_SK_ACK_BACKLOG;
+sk_max_ack_backlog	return META_SK_MAX_ACK_BACKLOG;
+sk_prio			return META_SK_PRIO;
+sk_rcvlowat		return META_SK_RCVLOWAT;
+sk_rcvtimeo		return META_SK_RCVTIMEO;
+sk_sndtimeo		return META_SK_SNDTIMEO;
+sk_sendmsg_off		return META_SK_SENDMSG_OFF;
+sk_write_pending	return META_SK_WRITE_PENDING;
+vlan			return META_VLAN;
+rxhash			return META_RXHASH;
+
+devname			return META_DEVNAME;
+sk_bound_if		return META_SK_BOUND_IF;
+
 
 [^ \t\r\n+()=<>&|\"]+	{
 				yylval->s = strdup(yytext);

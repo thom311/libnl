@@ -56,6 +56,7 @@ libnl_route_la_SOURCES = \
 	route/cls/ematch.c \
 	route/cls/ematch/container.c route/cls/ematch/cmp.c \
 	route/cls/ematch/nbyte.c route/cls/ematch/text.c \
+	route/cls/ematch/meta.c \
 	\
 	route/link/api.c route/link/vlan.c \
 	\

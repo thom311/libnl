@@ -42,14 +42,21 @@ void nl_cli_tc_parse_parent(struct rtnl_tc *tc, char *arg)
 	rtnl_tc_set_parent(tc, parent);
 }
 
-void nl_cli_tc_parse_handle(struct rtnl_tc *tc, char *arg)
+void nl_cli_tc_parse_handle(struct rtnl_tc *tc, char *arg, int create)
 {
-	uint32_t handle;
+	uint32_t handle, parent;
 	int err;
 
-	if ((err = rtnl_tc_str2handle(arg, &handle)) < 0)
-		nl_cli_fatal(err, "Unable to parse handle \"%s\": %s",
-		      arg, nl_geterror(err));
+	parent = rtnl_tc_get_parent(tc);
+
+	if ((err = rtnl_tc_str2handle(arg, &handle)) < 0) {
+		if (err == -NLE_OBJ_NOTFOUND && create)
+			err = rtnl_classid_generate(arg, &handle, parent);
+
+		if (err < 0)
+			nl_cli_fatal(err, "Unable to parse handle \"%s\": %s",
+				     arg, nl_geterror(err));
+	}
 
 	rtnl_tc_set_handle(tc, handle);
 }

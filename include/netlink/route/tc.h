@@ -66,6 +66,8 @@ extern int		rtnl_tc_calc_cell_log(int);
 extern int		rtnl_tc_read_classid_file(void);
 extern char *		rtnl_tc_handle2str(uint32_t, char *, size_t);
 extern int		rtnl_tc_str2handle(const char *, uint32_t *);
+extern int		rtnl_classid_generate(const char *, uint32_t *,
+					      uint32_t);
 
 #ifdef __cplusplus
 }

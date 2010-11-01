@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 		case 'v': nl_cli_print_version(); break;
 		case 'd': nl_cli_tc_parse_dev(tc, link_cache, optarg); break;
 		case 'p': nl_cli_tc_parse_parent(tc, optarg); break;
-		case 'i': nl_cli_tc_parse_handle(tc, optarg); break;
+		case 'i': nl_cli_tc_parse_handle(tc, optarg, 0); break;
 		case 'k': nl_cli_qdisc_parse_kind(qdisc, optarg); break;
 		}
  	}

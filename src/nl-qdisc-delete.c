@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'i':
 			nfilter++;
-			nl_cli_tc_parse_handle(tc, optarg);
+			nl_cli_tc_parse_handle(tc, optarg, 0);
 			break;
 		case 'k':
 			nfilter++;

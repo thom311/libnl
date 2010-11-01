@@ -16,7 +16,7 @@
 
 extern void nl_cli_tc_parse_dev(struct rtnl_tc *, struct nl_cache *, char *);
 extern void nl_cli_tc_parse_parent(struct rtnl_tc *, char *);
-extern void nl_cli_tc_parse_handle(struct rtnl_tc *, char *);
+extern void nl_cli_tc_parse_handle(struct rtnl_tc *, char *, int);
 extern void nl_cli_tc_parse_mtu(struct rtnl_tc *, char *);
 extern void nl_cli_tc_parse_mpu(struct rtnl_tc *, char *);
 extern void nl_cli_tc_parse_overhead(struct rtnl_tc *, char *);

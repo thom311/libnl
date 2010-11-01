@@ -75,6 +75,20 @@ static int classid_lookup(const char *name, uint32_t *result)
 	return -NLE_OBJ_NOTFOUND;
 }
 
+static char *name_lookup(const uint32_t classid)
+{
+	void *res;
+	struct classid_map cm = {
+		.classid = classid,
+		.name = "search entry",
+	};
+
+	if ((res = tfind(&cm, &id_root, &compare_id)))
+		return (*(struct classid_map **) res)->name;
+
+	return NULL;
+}
+
 /**
  * @name Traffic Control Handle Translations
  * @{
@@ -101,14 +115,10 @@ char * rtnl_tc_handle2str(uint32_t handle, char *buf, size_t len)
 	else if (TC_H_INGRESS == handle)
 		snprintf(buf, len, "ingress");
 	else {
-		void *res;
-		struct classid_map cm = {
-			.classid = handle,
-			.name = "search entry",
-		};
+		char *name;
 
-		if ((res = tfind(&cm, &id_root, &compare_id)))
-			snprintf(buf, len, "%s", (*(struct classid_map **) res)->name);
+		if ((name = name_lookup(handle)))
+			snprintf(buf, len, "%s", name);
 		else if (0 == TC_H_MAJ(handle))
 			snprintf(buf, len, ":%02x", TC_H_MIN(handle));
 		else if (0 == TC_H_MIN(handle))
@@ -232,6 +242,15 @@ static void free_nothing(void *arg)
 {
 }
 
+static void classid_map_free(struct classid_map *map)
+{
+	if (!map)
+		return;
+
+	free(map->name);
+	free(map);
+}
+
 static void clear_hashtable(void)
 {
 	int i;
@@ -239,10 +258,8 @@ static void clear_hashtable(void)
 	for (i = 0; i < CLASSID_NAME_HT_SIZ; i++) {
 		struct classid_map *map, *n;
 
-		nl_list_for_each_entry_safe(map, n, &tbl_name[i], name_list) {
-			free(map->name);
-			free(map);
-		}
+		nl_list_for_each_entry_safe(map, n, &tbl_name[i], name_list)
+			classid_map_free(map);
 
 		nl_init_list_head(&tbl_name[i]);
 
@@ -252,6 +269,28 @@ static void clear_hashtable(void)
 		tdestroy(&id_root, &free_nothing);
 		id_root = NULL;
 	}
+}
+
+static int classid_map_add(uint32_t classid, const char *name)
+{
+	struct classid_map *map;
+	int n;
+
+	if (!(map = calloc(1, sizeof(*map))))
+		return -NLE_NOMEM;
+
+	map->classid = classid;
+	map->name = strdup(name);
+
+	n = classid_tbl_hash(map->name);
+	nl_list_add_tail(&map->name_list, &tbl_name[n]);
+
+	if (!tsearch((void *) map, &id_root, &compare_id)) {
+		classid_map_free(map);
+		return -NLE_NOMEM;
+	}
+
+	return 0;
 }
 
 /**
@@ -289,10 +328,8 @@ int rtnl_tc_read_classid_file(void)
 	clear_hashtable();
 
 	while (fgets(buf, sizeof(buf), fd)) {
-		struct classid_map *map;
 		uint32_t classid;
 		char *ptr, *tok;
-		int n;
 
 		/* ignore comments and empty lines */
 		if (*buf == '#' || *buf == '\n' || *buf == '\r')
@@ -312,21 +349,8 @@ int rtnl_tc_read_classid_file(void)
 			goto errout_close;
 		}
 
-		if (!(map = calloc(1, sizeof(*map)))) {
-			err = -NLE_NOMEM;
+		if ((err = classid_map_add(classid, tok)) < 0)
 			goto errout_close;
-		}
-
-		map->classid = classid;
-		map->name = strdup(tok);
-
-		n = classid_tbl_hash(map->name);
-		nl_list_add_tail(&map->name_list, &tbl_name[n]);
-
-		if (!tsearch((void *) map, &id_root, &compare_id)) {
-			err = -NLE_NOMEM;
-			goto errout_close;
-		}
 	}
 
 	err = 0;
@@ -339,6 +363,64 @@ errout:
 
 	return err;
 
+}
+
+int rtnl_classid_generate(const char *name, uint32_t *result, uint32_t parent)
+{
+	static uint32_t base = 0x4000 << 16;
+	uint32_t classid;
+	char *path;
+	FILE *fd;
+	int err = 0;
+
+	if (parent == TC_H_ROOT || parent == TC_H_INGRESS) {
+		do {
+			base += (1 << 16);
+			if (base == TC_H_MAJ(TC_H_ROOT))
+				base = 0x4000 << 16;
+		} while (name_lookup(base));
+
+		classid = base;
+	} else {
+		classid = TC_H_MAJ(parent);
+		do {
+			if (++classid == TC_H_MIN(TC_H_ROOT))
+				return -NLE_RANGE;
+		} while (name_lookup(base));
+	}
+
+	NL_DBG(2, "Generated new classid %#x\n", classid);
+
+	if (asprintf(&path, "%s/classid", SYSCONFDIR) < 0)
+		return -NLE_NOMEM;
+
+	if (!(fd = fopen(path, "a"))) {
+		err = -nl_syserr2nlerr(errno);
+		goto errout;
+	}
+
+	fprintf(fd, "%x:", TC_H_MAJ(classid) >> 16);
+	if (TC_H_MIN(classid))
+		fprintf(fd, "%x", TC_H_MIN(classid));
+	fprintf(fd, "\t\t\t%s\n", name);
+
+	fclose(fd);
+
+	if ((err = classid_map_add(classid, name)) < 0) {
+		/* 
+		 * Error adding classid map, re-read classid file is best
+		 * option here. It is likely to fail as well but better
+		 * than nothing, entry was added to the file already anyway.
+		 */
+		rtnl_tc_read_classid_file();
+	}
+
+	*result = classid;
+	err = 0;
+errout:
+	free(path);
+
+	return err;
 }
 
 /** @} */

@@ -32,5 +32,14 @@ ffff:ffff		root
 ffff:fff1		ingress
 
 #
-# List your classid definitions below:
+# List your classid definitions here:
 #
+
+
+
+###############################################################################
+# List of auto-generated classids
+#
+# DO NOT ADD CLASSID DEFINITIONS BELOW THIS LINE
+#
+# <CLASSID>		<NAME>

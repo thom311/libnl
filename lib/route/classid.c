@@ -170,6 +170,7 @@ int rtnl_tc_str2handle(const char *str, uint32_t *res)
 
 	/* MAJ is not a number */
 	if (colon == str) {
+not_a_number:
 		if (*colon == ':') {
 			/* :YYYY */
 			h = 0;
@@ -233,7 +234,7 @@ update:
 		/* XXXXYYYY */
 		*res = h;
 	} else
-		return -NLE_INVAL;
+		goto not_a_number;
 
 	return 0;
 }
@@ -384,9 +385,9 @@ int rtnl_classid_generate(const char *name, uint32_t *result, uint32_t parent)
 	} else {
 		classid = TC_H_MAJ(parent);
 		do {
-			if (++classid == TC_H_MIN(TC_H_ROOT))
+			if (TC_H_MIN(++classid) == TC_H_MIN(TC_H_ROOT))
 				return -NLE_RANGE;
-		} while (name_lookup(base));
+		} while (name_lookup(classid));
 	}
 
 	NL_DBG(2, "Generated new classid %#x\n", classid);

@@ -12,7 +12,17 @@
 #include <netlink/cli/utils.h>
 #include <netlink/cli/tc.h>
 #include <netlink/cli/qdisc.h>
+#include <netlink/cli/class.h>
+#include <netlink/cli/cls.h>
 #include <netlink/cli/link.h>
+
+#define NUM_INDENT 4
+
+static struct nl_sock *sock;
+static int recursive = 0;
+static struct nl_dump_params params = {
+	.dp_type = NL_DUMP_LINE,
+};
 
 static void print_usage(void)
 {
@@ -22,6 +32,7 @@ static void print_usage(void)
 	"OPTIONS\n"
 	"     --details         Show details\n"
 	"     --stats           Show statistics\n"
+	" -r, --recursive       Show recursive tree\n"
 	" -h, --help            Show this help\n"
 	" -v, --version         Show versioning information\n"
 	"\n"
@@ -38,17 +49,88 @@ static void print_usage(void)
 	exit(0);
 }
 
+static void list_classes(int ifindex, uint32_t parent);
+static void list_qdiscs(int ifindex, uint32_t parent);
+
+static void list_class(struct nl_object *obj, void *arg)
+{
+	struct rtnl_tc *tc = nl_object_priv(obj);
+	nl_object_dump(obj, &params);
+
+	list_classes(rtnl_tc_get_ifindex(tc), rtnl_tc_get_handle(tc));
+	list_qdiscs(rtnl_tc_get_ifindex(tc), rtnl_tc_get_handle(tc));
+}
+
+static void list_classes(int ifindex, uint32_t parent)
+{
+	struct nl_cache *class_cache;
+	struct rtnl_class *filter = nl_cli_class_alloc();
+
+	class_cache = nl_cli_class_alloc_cache(sock, ifindex);
+
+	rtnl_tc_set_parent((struct rtnl_tc *) filter, parent);
+	params.dp_prefix += NUM_INDENT;
+	nl_cache_foreach_filter(class_cache, OBJ_CAST(filter), list_class, NULL);
+	params.dp_prefix -= NUM_INDENT;
+
+	rtnl_class_put(filter);
+	nl_cache_free(class_cache);
+}
+
+static void list_cls(int ifindex, uint32_t parent)
+{
+	struct nl_cache *cls_cache;
+
+	cls_cache = nl_cli_cls_alloc_cache(sock, ifindex, parent);
+
+	params.dp_prefix += NUM_INDENT;
+	nl_cache_dump(cls_cache, &params);
+	params.dp_prefix -= NUM_INDENT;
+
+	nl_cache_free(cls_cache);
+}
+
+static void list_qdisc(struct nl_object *obj, void *arg)
+{
+	struct rtnl_qdisc *qdisc = nl_object_priv(obj);
+	struct rtnl_tc *tc = (struct rtnl_tc *) qdisc;
+
+	nl_object_dump(obj, &params);
+
+	list_cls(rtnl_tc_get_ifindex(tc), rtnl_tc_get_handle(tc));
+
+	if (rtnl_tc_get_parent(tc) == TC_H_ROOT) {
+		list_cls(rtnl_tc_get_ifindex(tc), TC_H_ROOT);
+		list_classes(rtnl_tc_get_ifindex(tc), TC_H_ROOT);
+	}
+
+	list_classes(rtnl_tc_get_ifindex(tc), rtnl_tc_get_handle(tc));
+}
+
+static void list_qdiscs(int ifindex, uint32_t parent)
+{
+	struct nl_cache *qdisc_cache;
+	struct rtnl_qdisc *filter = nl_cli_qdisc_alloc();
+
+	qdisc_cache = nl_cli_qdisc_alloc_cache(sock);
+
+	rtnl_tc_set_ifindex((struct rtnl_tc *) filter, ifindex);
+	rtnl_tc_set_parent((struct rtnl_tc *) filter, parent);
+	params.dp_prefix += NUM_INDENT;
+	nl_cache_foreach_filter(qdisc_cache, OBJ_CAST(filter), list_qdisc, NULL);
+	params.dp_prefix -= NUM_INDENT;
+
+	rtnl_qdisc_put(filter);
+	nl_cache_free(qdisc_cache);
+}
+
 int main(int argc, char *argv[])
 {
-	struct nl_sock *sock;
 	struct rtnl_qdisc *qdisc;
 	struct rtnl_tc *tc;
 	struct nl_cache *link_cache, *qdisc_cache;
-	struct nl_dump_params params = {
-		.dp_type = NL_DUMP_LINE,
-		.dp_fd = stdout,
-	};
  
+	params.dp_fd = stdout;
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
 	link_cache = nl_cli_link_alloc_cache(sock);
@@ -65,6 +147,7 @@ int main(int argc, char *argv[])
 		static struct option long_opts[] = {
 			{ "details", 0, 0, ARG_DETAILS },
 			{ "stats", 0, 0, ARG_STATS },
+			{ "recursive", 0, 0, 'r' },
 			{ "help", 0, 0, 'h' },
 			{ "version", 0, 0, 'v' },
 			{ "dev", 1, 0, 'd' },
@@ -74,13 +157,14 @@ int main(int argc, char *argv[])
 			{ 0, 0, 0, 0 }
 		};
 	
-		c = getopt_long(argc, argv, "hvd:p:i:k:", long_opts, &optidx);
+		c = getopt_long(argc, argv, "rhvd:p:i:k:", long_opts, &optidx);
 		if (c == -1)
 			break;
 
 		switch (c) {
 		case ARG_DETAILS: params.dp_type = NL_DUMP_DETAILS; break;
 		case ARG_STATS: params.dp_type = NL_DUMP_STATS; break;
+		case 'r': recursive = 1; break;
 		case 'h': print_usage(); break;
 		case 'v': nl_cli_print_version(); break;
 		case 'd': nl_cli_tc_parse_dev(tc, link_cache, optarg); break;
@@ -90,7 +174,10 @@ int main(int argc, char *argv[])
 		}
  	}
 
-	nl_cache_dump_filter(qdisc_cache, &params, OBJ_CAST(qdisc));
+	if (recursive)
+		nl_cache_foreach_filter(qdisc_cache, OBJ_CAST(qdisc), list_qdisc, NULL);
+	else
+		nl_cache_dump_filter(qdisc_cache, &params, OBJ_CAST(qdisc));
 
 	return 0;
 }

@@ -20,6 +20,7 @@ static void print_usage(void)
 " -h, --help                Show this help text.\n"
 " -v, --version             Show versioning information.\n"
 " -r, --reverse             Do a reverse lookup, i.e. classid to name.\n"
+"     --raw                 Print the raw classid, not pretty printed.\n"
 "\n"
 "EXAMPLE\n"
 "   $ nl-classid-lookup low_latency\n"
@@ -33,14 +34,18 @@ int main(int argc, char *argv[])
 {
 	uint32_t classid;
 	char *name;
-	int err, reverse = 0;
+	int err, reverse = 0, raw = 0;
 
 	for (;;) {
 		int c, optidx = 0;
+		enum {
+			ARG_RAW = 257,
+		};
 		static struct option long_opts[] = {
 			{ "help", 0, 0, 'h' },
 			{ "version", 0, 0, 'v' },
 			{ "reverse", 0, 0, 'r' },
+			{ "raw", 0, 0, ARG_RAW },
 			{ 0, 0, 0, 0 }
 		};
 	
@@ -52,6 +57,7 @@ int main(int argc, char *argv[])
 		case 'h': print_usage(); break;
 		case 'v': nl_cli_print_version(); break;
 		case 'r': reverse = 1; break;
+		case ARG_RAW: raw = 1; break;
 		}
  	}
 
@@ -72,7 +78,9 @@ int main(int argc, char *argv[])
 	if (reverse) {
 		char buf[64];
 		printf("%s\n", rtnl_tc_handle2str(classid, buf, sizeof(buf)));
-	} else
+	} else if (raw)
+		printf("%#x\n", classid);
+	else
 		printf("%x:%x\n", TC_H_MAJ(classid) >> 16, TC_H_MIN(classid));
 
 	return 0;

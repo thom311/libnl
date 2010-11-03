@@ -47,6 +47,10 @@ static void delete_cb(struct nl_object *obj, void *arg)
 	};
 	int err;
 
+	/* Ignore default qdiscs, unable to delete */
+	if (rtnl_tc_get_handle((struct rtnl_tc *) qdisc) == 0)
+		return;
+
 	if (interactive && !nl_cli_confirm(obj, &params, default_yes))
 		return;
 

@@ -400,6 +400,9 @@
  *             |- - - - - - - - - - - - - - - - - - - - v
  *             v                                 cb->cb_send_ow()
  *         nl_send(sk, msg)
+ *             |
+ *             v
+ *      nl_send_iovec()
  *             | [If available, add peer port and credentials]
  *             v
  *        nl_sendmsg(sk, msg, msghdr)

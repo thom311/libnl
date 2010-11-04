@@ -222,8 +222,9 @@ int rtnl_pktloc_add(struct rtnl_pktloc *loc)
 	}
 
 	NL_DBG(2, "New packet location entry \"%s\" align=%u layer=%u "
-		  "offset=%u mask=%#x refnt=%u\n", loc->name, loc->align,
-		  loc->layer, loc->offset, loc->mask, loc->refcnt);
+		  "offset=%u mask=%#x shift=%u refnt=%u\n",
+		  loc->name, loc->align, loc->layer, loc->offset,
+		  loc->mask, loc->shift, loc->refcnt);
 
 	nl_list_add_tail(&loc->list, &pktloc_name_ht[pktloc_hash(loc->name)]);
 

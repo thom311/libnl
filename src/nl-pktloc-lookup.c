@@ -59,6 +59,9 @@ static void dump_u32_style(struct rtnl_pktloc *loc, uint32_t value)
 		nl_cli_fatal(EINVAL, "u32 does not support link "
 				"layer locations.");
 
+	if (loc->shift > 0)
+		nl_cli_fatal(EINVAL, "u32 does not support shifting.");
+
 	printf("%s %x %x at %s%u\n",
 		align_txt[loc->align],
 		value, loc->mask ? loc->mask : align_mask[loc->align],
@@ -80,21 +83,22 @@ static char *get_align_txt(struct rtnl_pktloc *loc)
 
 static void dump_loc(struct rtnl_pktloc *loc)
 {
-	printf("%s = %s at %s+%u %#x\n",
+	printf("%s = %s at %s+%u & %#x >> %u\n",
 		loc->name, get_align_txt(loc), layer_txt[loc->layer],
-		loc->offset, loc->mask);
+		loc->offset, loc->mask, loc->shift);
 }
 
 static void list_cb(struct rtnl_pktloc *loc, void *arg)
 {
-	printf("%-26s %-5s %3s+%-4u %#-10x %u\n",
+	printf("%-26s %-5s %3s+%-4u %#-10x %-8u %u\n",
 		loc->name, get_align_txt(loc), layer_txt[loc->layer],
-		loc->offset, loc->mask, loc->refcnt);
+		loc->offset, loc->mask, loc->shift, loc->refcnt);
 }
 
 static void do_list(void)
 {
-	printf("name                      align  offset  mask     refcnt\n");
+	printf(
+"name                      align  offset  mask     shift    refcnt\n");
 	printf("---------------------------------------------------------\n");
 
 	rtnl_pktloc_foreach(&list_cb, NULL);

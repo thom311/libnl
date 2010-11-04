@@ -13,6 +13,7 @@
 
 %parse-param {void *scanner}
 %lex-param {void *scanner}
+%expect 1
 
 %union {
 	struct rtnl_pktloc *l;
@@ -32,7 +33,7 @@ static void yyerror(YYLTYPE *locp, void *scanner, const char *msg)
 %token <i> ERROR NUMBER LAYER ALIGN
 %token <s> NAME
 
-%type <i> mask layer align
+%type <i> mask layer align shift
 %type <l> location
 
 %destructor { free($$); } NAME
@@ -47,7 +48,7 @@ input:
 	;
 
 location:
-	NAME align layer NUMBER mask
+	NAME align layer NUMBER mask shift
 		{
 			struct rtnl_pktloc *loc;
 
@@ -62,6 +63,7 @@ location:
 			loc->layer = $3;
 			loc->offset = $4;
 			loc->mask = $5;
+			loc->shift = $6;
 
 			if (rtnl_pktloc_add(loc) < 0) {
 				NL_DBG(1, "Duplicate packet location entry "
@@ -87,6 +89,13 @@ layer:
 	;
 
 mask:
+	/* empty */
+		{ $$ = 0; }
+	| NUMBER
+		{ $$ = $1; }
+	;
+
+shift:
 	/* empty */
 		{ $$ = 0; }
 	| NUMBER

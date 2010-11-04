@@ -26,6 +26,7 @@ struct rtnl_pktloc
 {
 	char *			name;
 	uint8_t			layer;
+	uint8_t			shift;
 	uint16_t		offset;
 	uint16_t		align;
 	uint32_t		mask;

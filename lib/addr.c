@@ -921,7 +921,7 @@ char *nl_af2str(int family, char *buf, size_t size)
 int nl_str2af(const char *name)
 {
 	int fam = __str2type(name, afs, ARRAY_SIZE(afs));
-	return fam >= 0 ? fam : AF_UNSPEC;
+	return fam >= 0 ? fam : -EINVAL;
 }
 
 /** @} */

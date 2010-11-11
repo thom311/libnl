@@ -45,53 +45,106 @@
 #include <netlink/route/link.h>
 #include <netlink/route/link/api.h>
 
-static struct rtnl_link_info_ops *info_ops;
+static NL_LIST_HEAD(info_ops);
 
-struct rtnl_link_info_ops *rtnl_link_info_ops_lookup(const char *name)
+static struct rtnl_link_info_ops *__rtnl_link_info_ops_lookup(const char *name)
 {
 	struct rtnl_link_info_ops *ops;
 
-	for (ops = info_ops; ops; ops = ops->io_next)
+	nl_list_for_each_entry(ops, &info_ops, io_list)
 		if (!strcmp(ops->io_name, name))
 			return ops;
 
 	return NULL;
 }
 
+/**
+ * Return operations of a specific link info type
+ * @arg name		Name of link info type.
+ *
+ * @note The returned pointer must be given back using rtnl_link_info_ops_put()
+ *
+ * @return Pointer to operations or NULL if unavailable.
+ */
+struct rtnl_link_info_ops *rtnl_link_info_ops_lookup(const char *name)
+{
+	struct rtnl_link_info_ops *ops;
+
+	if ((ops = __rtnl_link_info_ops_lookup(name)))
+		ops->io_refcnt++;
+
+	return ops;
+}
+
+/**
+ * Give back reference to a set of operations.
+ * @arg ops		Link info operations.
+ */
+void rtnl_link_info_ops_put(struct rtnl_link_info_ops *ops)
+{
+	if (ops)
+		ops->io_refcnt--;
+}
+
+/**
+ * Register operations for a link info type
+ * @arg ops		Link info operations
+ *
+ * This function must be called by modules implementing a specific link
+ * info type. It will make the operations implemented by the module
+ * available for everyone else.
+ *
+ * @return 0 on success or a negative error code.
+ * @return -NLE_INVAL Link info name not specified.
+ * @return -NLE_EXIST Operations for address family already registered.
+ */
 int rtnl_link_register_info(struct rtnl_link_info_ops *ops)
 {
 	if (ops->io_name == NULL)
 		return -NLE_INVAL;
 
-	if (rtnl_link_info_ops_lookup(ops->io_name))
+	if (__rtnl_link_info_ops_lookup(ops->io_name))
 		return -NLE_EXIST;
 
 	NL_DBG(1, "Registered link info operations %s\n", ops->io_name);
 
-	ops->io_next = info_ops;
-	info_ops = ops;
+	nl_list_add_tail(&ops->io_list, &info_ops);
 
 	return 0;
 }
 
+/**
+ * Unregister operations for a link info type
+ * @arg ops		Link info operations
+ *
+ * This function must be called if a module implementing a specific link
+ * info type is unloaded or becomes unavailable. It must provide a
+ * set of operations which have previously been registered using
+ * rtnl_link_register_info().
+ *
+ * @return 0 on success or a negative error code
+ * @return _NLE_OPNOTSUPP Link info operations not registered.
+ * @return -NLE_BUSY Link info operations still in use.
+ */
 int rtnl_link_unregister_info(struct rtnl_link_info_ops *ops)
 {
-	struct rtnl_link_info_ops *t, **tp;
+	struct rtnl_link_info_ops *t;
 
-	for (tp = &info_ops; (t=*tp) != NULL; tp = &t->io_next)
-		if (t == ops)
-			break;
+	nl_list_for_each_entry(t, &info_ops, io_list) {
+		if (t == ops) {
+			if (t->io_refcnt > 0)
+				return -NLE_BUSY;
 
-	if (!t)
-		return -NLE_OPNOTSUPP;
+			nl_list_del(&t->io_list);
 
-	if (t->io_refcnt > 0)
-		return -NLE_BUSY;
+			NL_DBG(1, "Unregistered link info operations %s\n",
+				ops->io_name);
 
-	NL_DBG(1, "Unregistered link info perations %s\n", ops->io_name);
+			return 0;
+		}
+	}
 
-	*tp = t->io_next;
-	return 0;
+	return -NLE_OPNOTSUPP;
 }
 
 static struct rtnl_link_af_ops *af_ops[AF_MAX];

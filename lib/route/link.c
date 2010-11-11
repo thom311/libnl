@@ -266,8 +266,8 @@ static void release_link_info(struct rtnl_link *link)
 	struct rtnl_link_info_ops *io = link->l_info_ops;
 
 	if (io != NULL) {
-		io->io_refcnt--;
 		io->io_free(link);
+		rtnl_link_info_ops_put(io);
 		link->l_info_ops = NULL;
 	}
 }
@@ -562,7 +562,6 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			kind = nla_get_string(li[IFLA_INFO_KIND]);
 			ops = rtnl_link_info_ops_lookup(kind);
 			if (ops != NULL) {
-				ops->io_refcnt++;
 				link->l_info_ops = ops;
 				err = ops->io_parse(link, li[IFLA_INFO_DATA],
 						    li[IFLA_INFO_XSTATS]);

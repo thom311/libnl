@@ -60,11 +60,11 @@ struct rtnl_link_info_ops
 	 * in either io_alloc() or io_parse(). */
 	void	      (*io_free)(struct rtnl_link *);
 
-	struct rtnl_link_info_ops *	io_next;
+	struct nl_list_head		io_list;
 };
 
 extern struct rtnl_link_info_ops *rtnl_link_info_ops_lookup(const char *);
-
+extern void			rtnl_link_info_ops_put(struct rtnl_link_info_ops *);
 extern int			rtnl_link_register_info(struct rtnl_link_info_ops *);
 extern int			rtnl_link_unregister_info(struct rtnl_link_info_ops *);
 

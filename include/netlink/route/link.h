@@ -136,6 +136,8 @@ extern uint8_t	rtnl_link_get_linkmode(struct rtnl_link *);
 extern const char *	rtnl_link_get_ifalias(struct rtnl_link *);
 extern void		rtnl_link_set_ifalias(struct rtnl_link *, const char *);
 
+extern int		rtnl_link_get_num_vf(struct rtnl_link *, uint32_t *);
+
 extern uint64_t rtnl_link_get_stat(struct rtnl_link *, int);
 
 extern int	rtnl_link_set_info_type(struct rtnl_link *, const char *);

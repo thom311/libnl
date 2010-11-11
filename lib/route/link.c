@@ -177,6 +177,7 @@
 #define LINK_ATTR_LINKMODE  0x20000
 #define LINK_ATTR_LINKINFO  0x40000
 #define LINK_ATTR_IFALIAS   0x80000
+#define LINK_ATTR_NUM_VF   0x100000
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -254,6 +255,7 @@ static struct nla_policy link_policy[IFLA_MAX+1] = {
 	[IFLA_STATS64]	= { .minlen = sizeof(struct rtnl_link_stats64) },
 	[IFLA_MAP]	= { .minlen = sizeof(struct rtnl_link_ifmap) },
 	[IFLA_IFALIAS]	= { .type = NLA_STRING, .maxlen = IFALIASZ },
+	[IFLA_NUM_VF]	= { .type = NLA_U32 },
 };
 
 static struct nla_policy link_info_policy[IFLA_INFO_MAX+1] = {
@@ -443,6 +445,11 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		link->ce_mask |= LINK_ATTR_IFALIAS;
 	}
 
+	if (tb[IFLA_NUM_VF]) {
+		link->l_num_vf = nla_get_u32(tb[IFLA_NUM_VF]);
+		link->ce_mask |= LINK_ATTR_NUM_VF;
+	}
+
 	if (tb[IFLA_LINKINFO]) {
 		struct nlattr *li[IFLA_INFO_MAX+1];
 
@@ -554,6 +561,9 @@ static void link_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 		rtnl_link_operstate2str(link->l_operstate, buf, sizeof(buf));
 		nl_dump(p, "state %s ", buf);
 	}
+
+	if (link->ce_mask & LINK_ATTR_NUM_VF)
+		nl_dump(p, "num-vf %u ", link->l_num_vf);
 
 	nl_dump(p, "mode %s\n",
 		rtnl_link_mode2str(link->l_linkmode, buf, sizeof(buf)));
@@ -694,6 +704,7 @@ static int link_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= LINK_DIFF(ADDR,		nl_addr_cmp(a->l_addr, b->l_addr));
 	diff |= LINK_DIFF(BRD,		nl_addr_cmp(a->l_bcast, b->l_bcast));
 	diff |= LINK_DIFF(IFALIAS,	strcmp(a->l_ifalias, b->l_ifalias));
+	diff |= LINK_DIFF(NUM_VF,	a->l_num_vf != b->l_num_vf);
 
 	if (flags & LOOSE_COMPARISON)
 		diff |= LINK_DIFF(FLAGS,
@@ -726,6 +737,7 @@ static struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_OPERSTATE, operstate)
 	__ADD(LINK_ATTR_LINKMODE, linkmode)
 	__ADD(LINK_ATTR_IFALIAS, ifalias)
+	__ADD(LINK_ATTR_NUM_VF, num_vf)
 };
 
 static char *link_attrs2str(int attrs, char *buf, size_t len)
@@ -1392,6 +1404,22 @@ void rtnl_link_set_ifalias(struct rtnl_link *link, const char *alias)
 		link->l_ifalias = strdup(alias);
 		link->ce_mask |= LINK_ATTR_IFALIAS;
 	}
+}
+
+/**
+ * Retrieve number of PCI VFs of link
+ * @arg link		Link object
+ * @arg num_vf		Pointer to store number of VFs
+ *
+ * @return 0 if value is available or -NLE_OPNOTSUPP if not.
+ */
+int rtnl_link_get_num_vf(struct rtnl_link *link, uint32_t *num_vf)
+{
+	if (link->ce_mask & LINK_ATTR_NUM_VF) {
+		*num_vf = link->l_num_vf;
+		return 0;
+	} else
+		return -NLE_OPNOTSUPP;
 }
 
 uint64_t rtnl_link_get_stat(struct rtnl_link *link, int id)

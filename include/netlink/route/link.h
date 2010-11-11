@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_LINK_H_
@@ -132,6 +132,9 @@ extern uint8_t	rtnl_link_get_operstate(struct rtnl_link *);
 
 extern void	rtnl_link_set_linkmode(struct rtnl_link *, uint8_t);
 extern uint8_t	rtnl_link_get_linkmode(struct rtnl_link *);
+
+extern const char *	rtnl_link_get_ifalias(struct rtnl_link *);
+extern void		rtnl_link_set_ifalias(struct rtnl_link *, const char *);
 
 extern uint64_t rtnl_link_get_stat(struct rtnl_link *, int);
 

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -176,6 +176,7 @@
 #define LINK_ATTR_OPERSTATE 0x10000
 #define LINK_ATTR_LINKMODE  0x20000
 #define LINK_ATTR_LINKINFO  0x40000
+#define LINK_ATTR_IFALIAS   0x80000
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -204,6 +205,8 @@ static void link_free_data(struct nl_object *c)
 
 		nl_addr_put(link->l_addr);
 		nl_addr_put(link->l_bcast);
+
+		free(link->l_ifalias);
 	}
 }
 
@@ -219,6 +222,10 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	if (src->l_bcast)
 		if (!(dst->l_bcast = nl_addr_clone(src->l_bcast)))
+			return -NLE_NOMEM;
+
+	if (src->l_ifalias)
+		if (!(dst->l_ifalias = strdup(src->l_ifalias)))
 			return -NLE_NOMEM;
 
 	if (src->l_info_ops && src->l_info_ops->io_clone) {
@@ -246,6 +253,7 @@ static struct nla_policy link_policy[IFLA_MAX+1] = {
 	[IFLA_STATS]	= { .minlen = sizeof(struct rtnl_link_stats) },
 	[IFLA_STATS64]	= { .minlen = sizeof(struct rtnl_link_stats64) },
 	[IFLA_MAP]	= { .minlen = sizeof(struct rtnl_link_ifmap) },
+	[IFLA_IFALIAS]	= { .type = NLA_STRING, .maxlen = IFALIASZ },
 };
 
 static struct nla_policy link_info_policy[IFLA_INFO_MAX+1] = {
@@ -426,6 +434,15 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		link->ce_mask |= LINK_ATTR_LINKMODE;
 	}
 
+	if (tb[IFLA_IFALIAS]) {
+		link->l_ifalias = nla_strdup(tb[IFLA_IFALIAS]);
+		if (link->l_ifalias == NULL) {
+			err = -NLE_NOMEM;
+			goto errout;
+		}
+		link->ce_mask |= LINK_ATTR_IFALIAS;
+	}
+
 	if (tb[IFLA_LINKINFO]) {
 		struct nlattr *li[IFLA_INFO_MAX+1];
 
@@ -522,6 +539,10 @@ static void link_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 
 
 	nl_dump(p, "\n");
+
+	if (link->ce_mask & LINK_ATTR_IFALIAS)
+		nl_dump_line(p, "    alias %s\n", link->l_ifalias);
+
 	nl_dump_line(p, "    ");
 
 	if (link->ce_mask & LINK_ATTR_BRD)
@@ -672,6 +693,7 @@ static int link_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= LINK_DIFF(IFNAME,	strcmp(a->l_name, b->l_name));
 	diff |= LINK_DIFF(ADDR,		nl_addr_cmp(a->l_addr, b->l_addr));
 	diff |= LINK_DIFF(BRD,		nl_addr_cmp(a->l_bcast, b->l_bcast));
+	diff |= LINK_DIFF(IFALIAS,	strcmp(a->l_ifalias, b->l_ifalias));
 
 	if (flags & LOOSE_COMPARISON)
 		diff |= LINK_DIFF(FLAGS,
@@ -703,6 +725,7 @@ static struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_CHANGE, change)
 	__ADD(LINK_ATTR_OPERSTATE, operstate)
 	__ADD(LINK_ATTR_LINKMODE, linkmode)
+	__ADD(LINK_ATTR_IFALIAS, ifalias)
 };
 
 static char *link_attrs2str(int attrs, char *buf, size_t len)
@@ -874,6 +897,9 @@ int rtnl_link_build_change_request(struct rtnl_link *old,
 
 	if (tmpl->ce_mask & LINK_ATTR_LINKMODE)
 		NLA_PUT_U8(msg, IFLA_LINKMODE, tmpl->l_linkmode);
+
+	if (tmpl->ce_mask & LINK_ATTR_IFALIAS)
+		NLA_PUT_STRING(msg, IFLA_IFALIAS, tmpl->l_ifalias);
 
 	if ((tmpl->ce_mask & LINK_ATTR_LINKINFO) && tmpl->l_info_ops &&
 	    tmpl->l_info_ops->io_put_attrs) {
@@ -1335,6 +1361,37 @@ uint8_t rtnl_link_get_linkmode(struct rtnl_link *link)
 		return link->l_linkmode;
 	else
 		return IF_LINK_MODE_DEFAULT;
+}
+
+/**
+ * Return alias name of link (SNMP IfAlias)
+ * @arg link		Link object
+ *
+ * @return Alias name or NULL if not set.
+ */
+const char *rtnl_link_get_ifalias(struct rtnl_link *link)
+{
+	return link->l_ifalias;
+}
+
+/**
+ * Set alias name of link (SNMP IfAlias)
+ * @arg link		Link object
+ * @arg alias		Alias name or NULL to unset
+ *
+ * Sets the alias name of the link to the specified name. The alias
+ * name can be unset by specyfing NULL as the alias. The name will
+ * be strdup()ed, so no need to provide a persistent character string.
+ */
+void rtnl_link_set_ifalias(struct rtnl_link *link, const char *alias)
+{
+	free(link->l_ifalias);
+	link->ce_mask &= ~LINK_ATTR_IFALIAS;
+
+	if (alias) {
+		link->l_ifalias = strdup(alias);
+		link->ce_mask |= LINK_ATTR_IFALIAS;
+	}
 }
 
 uint64_t rtnl_link_get_stat(struct rtnl_link *link, int id)

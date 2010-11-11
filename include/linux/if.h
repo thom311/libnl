@@ -19,9 +19,8 @@
 #ifndef _LINUX_IF_H
 #define _LINUX_IF_H
 
-#include <linux/types.h>		/* for "__kernel_caddr_t" et al	*/
-
 #define	IFNAMSIZ	16
+#define	IFALIASZ	256
 
 /* Standard interface flags (netdevice->flags). */
 #define	IFF_UP		0x1		/* interface is up		*/
@@ -61,6 +60,18 @@
 #define IFF_BONDING	0x20		/* bonding master or slave	*/
 #define IFF_SLAVE_NEEDARP 0x40		/* need ARPs for validation	*/
 #define IFF_ISATAP	0x80		/* ISATAP interface (RFC4214)	*/
+#define IFF_MASTER_ARPMON 0x100		/* bonding master, ARP mon in use */
+#define IFF_WAN_HDLC	0x200		/* WAN HDLC device		*/
+#define IFF_XMIT_DST_RELEASE 0x400	/* dev_hard_start_xmit() is allowed to
+					 * release skb->dst
+					 */
+#define IFF_DONT_BRIDGE 0x800		/* disallow bridging this ether dev */
+#define IFF_IN_NETPOLL	0x1000		/* whether we are processing netpoll */
+#define IFF_DISABLE_NETPOLL	0x2000	/* disable netpoll at run-time */
+#define IFF_MACVLAN_PORT	0x4000	/* device used as macvlan port */
+#define IFF_BRIDGE_PORT	0x8000		/* device used as bridge port */
+#define IFF_OVS_DATAPATH	0x10000	/* device used as Open vSwitch
+					 * datapath port */
 
 #define IF_GET_IFACE	0x0001		/* for querying only */
 #define IF_GET_PROTO	0x0002
@@ -116,8 +127,7 @@ enum {
  *	being very small might be worth keeping for clean configuration.
  */
 
-struct ifmap 
-{
+struct ifmap {
 	unsigned long mem_start;
 	unsigned long mem_end;
 	unsigned short base_addr; 
@@ -126,6 +136,5 @@ struct ifmap
 	unsigned char port;
 	/* 3 bytes spare */
 };
-
 
 #endif /* _LINUX_IF_H */

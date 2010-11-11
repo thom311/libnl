@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 #include <netlink/cli/utils.h>
@@ -41,6 +41,7 @@ static void print_usage(void)
 	"     --mtu=NUM         MTU value\n"
 	"     --txqlen=NUM      TX queue length\n"
 	"     --weight=NUM      weight\n"
+	"     --ifalias=NAME    alias name (SNMP IfAlias)\n"
 	);
 	exit(0);
 }
@@ -84,6 +85,7 @@ int main(int argc, char *argv[])
 			ARG_MTU = 258,
 			ARG_TXQLEN,
 			ARG_WEIGHT,
+			ARG_IFALIAS,
 		};
 		static struct option long_opts[] = {
 			{ "quiet", 0, 0, 'q' },
@@ -95,6 +97,7 @@ int main(int argc, char *argv[])
 			{ "mtu", 1, 0, ARG_MTU },
 			{ "txqlen", 1, 0, ARG_TXQLEN },
 			{ "weight", 1, 0, ARG_WEIGHT },
+			{ "ifalias", 1, 0, ARG_IFALIAS },
 			{ 0, 0, 0, 0 }
 		};
 
@@ -109,9 +112,10 @@ int main(int argc, char *argv[])
 		case 'n': ok++; nl_cli_link_parse_name(link, optarg); break;
 		case 'i': ok++; nl_cli_link_parse_ifindex(link, optarg); break;
 		case ARG_RENAME: nl_cli_link_parse_name(change, optarg); break;
-		case ARG_MTU: nl_cli_link_parse_mtu(link, optarg); break;
-		case ARG_TXQLEN: nl_cli_link_parse_txqlen(link, optarg); break;
-		case ARG_WEIGHT: nl_cli_link_parse_weight(link, optarg); break;
+		case ARG_MTU: nl_cli_link_parse_mtu(change, optarg); break;
+		case ARG_TXQLEN: nl_cli_link_parse_txqlen(change, optarg); break;
+		case ARG_WEIGHT: nl_cli_link_parse_weight(change, optarg); break;
+		case ARG_IFALIAS: nl_cli_link_parse_ifalias(change, optarg); break;
 		}
 	}
 

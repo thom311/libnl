@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2008-2009 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2008-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef __NETLINK_CLI_LINK_H_
@@ -26,5 +26,6 @@ extern void nl_cli_link_parse_mtu(struct rtnl_link *, char *);
 extern void nl_cli_link_parse_ifindex(struct rtnl_link *, char *);
 extern void nl_cli_link_parse_txqlen(struct rtnl_link *, char *);
 extern void nl_cli_link_parse_weight(struct rtnl_link *, char *);
+extern void nl_cli_link_parse_ifalias(struct rtnl_link *, char *);
 
 #endif

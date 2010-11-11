@@ -173,6 +173,7 @@ struct rtnl_link
 	/* 2 byte hole */
 	struct rtnl_link_info_ops *l_info_ops;
 	void *		l_info;
+	char *		l_ifalias;
 };
 
 struct rtnl_ncacheinfo

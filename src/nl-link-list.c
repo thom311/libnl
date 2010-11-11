@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 #if 0
@@ -59,7 +59,6 @@ int main(int argc, char *argv[])
 
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
-	link_cache = nl_cli_link_alloc_cache(sock);
 	link = nl_cli_link_alloc();
 
 	for (;;) {
@@ -99,6 +98,9 @@ int main(int argc, char *argv[])
 		case ARG_WEIGHT: nl_cli_link_parse_weight(link, optarg); break;
 		}
 	}
+
+	link_cache = nl_cli_link_alloc_cache_family(sock,
+				rtnl_link_get_family(link));
 
 	nl_cache_dump_filter(link_cache, &params, OBJ_CAST(link));
 

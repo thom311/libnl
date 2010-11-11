@@ -46,6 +46,36 @@ enum rtnl_link_st {
 	RTNL_LINK_TX_WIN_ERR,
 	RTNL_LINK_COLLISIONS,
 	RTNL_LINK_MULTICAST,
+	RTNL_LINK_INPKTS,			/* InReceives */
+	RTNL_LINK_INHDRERRORS,			/* InHdrErrors */
+	RTNL_LINK_INTOOBIGERRORS,		/* InTooBigErrors */
+	RTNL_LINK_INNOROUTES,			/* InNoRoutes */
+	RTNL_LINK_INADDRERRORS,			/* InAddrErrors */
+	RTNL_LINK_INUNKNOWNPROTOS,		/* InUnknownProtos */
+	RTNL_LINK_INTRUNCATEDPKTS,		/* InTruncatedPkts */
+	RTNL_LINK_INDISCARDS,			/* InDiscards */
+	RTNL_LINK_INDELIVERS,			/* InDelivers */
+	RTNL_LINK_OUTFORWDATAGRAMS,		/* OutForwDatagrams */
+	RTNL_LINK_OUTPKTS,			/* OutRequests */
+	RTNL_LINK_OUTDISCARDS,			/* OutDiscards */
+	RTNL_LINK_OUTNOROUTES,			/* OutNoRoutes */
+	RTNL_LINK_REASMTIMEOUT,			/* ReasmTimeout */
+	RTNL_LINK_REASMREQDS,			/* ReasmReqds */
+	RTNL_LINK_REASMOKS,			/* ReasmOKs */
+	RTNL_LINK_REASMFAILS,			/* ReasmFails */
+	RTNL_LINK_FRAGOKS,			/* FragOKs */
+	RTNL_LINK_FRAGFAILS,			/* FragFails */
+	RTNL_LINK_FRAGCREATES,			/* FragCreates */
+	RTNL_LINK_INMCASTPKTS,			/* InMcastPkts */
+	RTNL_LINK_OUTMCASTPKTS,			/* OutMcastPkts */
+	RTNL_LINK_INBCASTPKTS,			/* InBcastPkts */
+	RTNL_LINK_OUTBCASTPKTS,			/* OutBcastPkts */
+	RTNL_LINK_INOCTETS,			/* InOctets */
+	RTNL_LINK_OUTOCTETS,			/* OutOctets */
+	RTNL_LINK_INMCASTOCTETS,		/* InMcastOctets */
+	RTNL_LINK_OUTMCASTOCTETS,		/* OutMcastOctets */
+	RTNL_LINK_INBCASTOCTETS,		/* InBcastOctets */
+	RTNL_LINK_OUTBCASTOCTETS,		/* OutBcastOctets */
 	__RTNL_LINK_STATS_MAX,
 };
 
@@ -57,7 +87,7 @@ extern void	rtnl_link_put(struct rtnl_link *);
 extern void	rtnl_link_free(struct rtnl_link *);
 
 /* link cache management */
-extern int	rtnl_link_alloc_cache(struct nl_sock *, struct nl_cache **);
+extern int	rtnl_link_alloc_cache(struct nl_sock *, int, struct nl_cache **);
 extern struct rtnl_link *rtnl_link_get(struct nl_cache *, int);
 extern struct rtnl_link *rtnl_link_get_by_name(struct nl_cache *, const char *);
 
@@ -139,6 +169,8 @@ extern void		rtnl_link_set_ifalias(struct rtnl_link *, const char *);
 extern int		rtnl_link_get_num_vf(struct rtnl_link *, uint32_t *);
 
 extern uint64_t rtnl_link_get_stat(struct rtnl_link *, int);
+extern int	rtnl_link_set_stat(struct rtnl_link *, const unsigned int,
+				   const uint64_t);
 
 extern int	rtnl_link_set_info_type(struct rtnl_link *, const char *);
 extern char *	rtnl_link_get_info_type(struct rtnl_link *);

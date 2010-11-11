@@ -15,10 +15,9 @@
 #include <netlink/route/link.h>
 #include <netlink/cli/utils.h>
 
-#define nl_cli_link_alloc_cache(sk) \
-		nl_cli_alloc_cache((sk), "link", rtnl_link_alloc_cache)
-
 extern struct rtnl_link *nl_cli_link_alloc(void);
+extern struct nl_cache *nl_cli_link_alloc_cache_family(struct nl_sock *, int);
+extern struct nl_cache *nl_cli_link_alloc_cache(struct nl_sock *);
 
 extern void nl_cli_link_parse_family(struct rtnl_link *, char *);
 extern void nl_cli_link_parse_name(struct rtnl_link *, char *);

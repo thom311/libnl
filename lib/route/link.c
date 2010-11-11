@@ -354,7 +354,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct ifinfomsg *ifi;
 	struct nlattr *tb[IFLA_MAX+1];
 	struct rtnl_link_af_ops *af_ops = NULL;
-	int err;
+	int err, family;
 
 	link = rtnl_link_alloc();
 	if (link == NULL) {
@@ -368,7 +368,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		return -NLE_MSG_TOOSHORT;
 
 	ifi = nlmsg_data(n);
-	link->l_family = ifi->ifi_family;
+	link->l_family = family = ifi->ifi_family;
 	link->l_arptype = ifi->ifi_type;
 	link->l_index = ifi->ifi_index;
 	link->l_flags = ifi->ifi_flags;
@@ -377,7 +377,15 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			  LINK_ATTR_ARPTYPE| LINK_ATTR_IFINDEX |
 			  LINK_ATTR_FLAGS | LINK_ATTR_CHANGE);
 
-	if ((af_ops = rtnl_link_af_ops_lookup(ifi->ifi_family))) {
+	if ((af_ops = rtnl_link_af_ops_lookup(family))) {
+		if (af_ops->ao_alloc) {
+			link->l_af_data[family] = af_ops->ao_alloc(link);
+			if (!link->l_af_data[family]) {
+				err = -NLE_NOMEM;
+				goto errout;
+			}
+		}
+
 		if (af_ops->ao_protinfo_policy) {
 			memcpy(&link_policy[IFLA_PROTINFO],
 			       af_ops->ao_protinfo_policy,
@@ -589,7 +597,9 @@ errout:
 
 static int link_request_update(struct nl_cache *cache, struct nl_sock *sk)
 {
-	return nl_rtgen_request(sk, RTM_GETLINK, AF_UNSPEC, NLM_F_DUMP);
+	int family = cache->c_iarg1;
+
+	return nl_rtgen_request(sk, RTM_GETLINK, family, NLM_F_DUMP);
 }
 
 static void link_dump_line(struct nl_object *obj, struct nl_dump_params *p)
@@ -881,6 +891,7 @@ void rtnl_link_put(struct rtnl_link *link)
 /**
  * Allocate link cache and fill in all configured links.
  * @arg sk		Netlink socket.
+ * @arg family		Link address family or AF_UNSPEC
  * @arg result		Pointer to store resulting cache.
  *
  * Allocates a new link cache, initializes it properly and updates it
@@ -888,9 +899,24 @@ void rtnl_link_put(struct rtnl_link *link)
  *
  * @return 0 on success or a negative error code.
  */
-int rtnl_link_alloc_cache(struct nl_sock *sk, struct nl_cache **result)
+int rtnl_link_alloc_cache(struct nl_sock *sk, int family, struct nl_cache **result)
 {
-	return nl_cache_alloc_and_fill(&rtnl_link_ops, sk, result);
+	struct nl_cache * cache;
+	int err;
+	
+	cache = nl_cache_alloc(&rtnl_link_ops);
+	if (!cache)
+		return -NLE_NOMEM;
+
+	cache->c_iarg1 = family;
+	
+	if (sk && (err = nl_cache_refill(sk, cache)) < 0) {
+		nl_cache_free(cache);
+		return err;
+	}
+
+	*result = cache;
+	return 0;
 }
 
 /**
@@ -1202,6 +1228,36 @@ static struct trans_tbl link_stats[] = {
 	__ADD(RTNL_LINK_TX_WIN_ERR, tx_win_err)
 	__ADD(RTNL_LINK_COLLISIONS, collisions)
 	__ADD(RTNL_LINK_MULTICAST, multicast)
+	__ADD(RTNL_LINK_INPKTS, InReceives)
+	__ADD(RTNL_LINK_INHDRERRORS, InHdrErrors)
+	__ADD(RTNL_LINK_INTOOBIGERRORS, InTooBigErrors)
+	__ADD(RTNL_LINK_INNOROUTES, InNoRoutes)
+	__ADD(RTNL_LINK_INADDRERRORS, InAddrErrors)
+	__ADD(RTNL_LINK_INUNKNOWNPROTOS, InUnknownProtos)
+	__ADD(RTNL_LINK_INTRUNCATEDPKTS, InTruncatedPkts)
+	__ADD(RTNL_LINK_INDISCARDS, InDiscards)
+	__ADD(RTNL_LINK_INDELIVERS, InDelivers)
+	__ADD(RTNL_LINK_OUTFORWDATAGRAMS, OutForwDatagrams)
+	__ADD(RTNL_LINK_OUTPKTS, OutRequests)
+	__ADD(RTNL_LINK_OUTDISCARDS, OutDiscards)
+	__ADD(RTNL_LINK_OUTNOROUTES, OutNoRoutes)
+	__ADD(RTNL_LINK_REASMTIMEOUT, ReasmTimeout)
+	__ADD(RTNL_LINK_REASMREQDS, ReasmReqds)
+	__ADD(RTNL_LINK_REASMOKS, ReasmOKs)
+	__ADD(RTNL_LINK_REASMFAILS, ReasmFails)
+	__ADD(RTNL_LINK_FRAGOKS, FragOKs)
+	__ADD(RTNL_LINK_FRAGFAILS, FragFails)
+	__ADD(RTNL_LINK_FRAGCREATES, FragCreates)
+	__ADD(RTNL_LINK_INMCASTPKTS, InMcastPkts)
+	__ADD(RTNL_LINK_OUTMCASTPKTS, OutMcastPkts)
+	__ADD(RTNL_LINK_INBCASTPKTS, InBcastPkts)
+	__ADD(RTNL_LINK_OUTBCASTPKTS, OutBcastPkts)
+	__ADD(RTNL_LINK_INOCTETS, InOctets)
+	__ADD(RTNL_LINK_OUTOCTETS, OutOctets)
+	__ADD(RTNL_LINK_INMCASTOCTETS, InMcastOctets)
+	__ADD(RTNL_LINK_OUTMCASTOCTETS, OutMcastOctets)
+	__ADD(RTNL_LINK_INBCASTOCTETS, InBcastOctets)
+	__ADD(RTNL_LINK_OUTBCASTOCTETS, OutBcastOctets)
 };
 
 char *rtnl_link_stat2str(int st, char *buf, size_t len)
@@ -1365,7 +1421,7 @@ void rtnl_link_set_family(struct rtnl_link *link, int family)
 
 int rtnl_link_get_family(struct rtnl_link *link)
 {
-	if (link->l_family & LINK_ATTR_FAMILY)
+	if (link->ce_mask & LINK_ATTR_FAMILY)
 		return link->l_family;
 	else
 		return AF_UNSPEC;
@@ -1537,6 +1593,25 @@ uint64_t rtnl_link_get_stat(struct rtnl_link *link, int id)
 		return 0;
 
 	return link->l_stats[id];
+}
+
+/**
+ * Set value of a link statistics counter
+ * @arg link		Link object
+ * @arg id		Counter ID
+ * @arg value		New value
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_set_stat(struct rtnl_link *link, const unsigned int id,
+		       const uint64_t value)
+{
+	if (id > RTNL_LINK_STATS_MAX)
+		return -NLE_INVAL;
+
+	link->l_stats[id] = value;
+
+	return 0;
 }
 
 /**

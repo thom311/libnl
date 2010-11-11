@@ -31,11 +31,30 @@ struct rtnl_link *nl_cli_link_alloc(void)
 	return link;
 }
 
+struct nl_cache *nl_cli_link_alloc_cache_family(struct nl_sock *sock, int family)
+{
+	struct nl_cache *cache;
+	int err;
+
+	if ((err = rtnl_link_alloc_cache(sock, family, &cache)) < 0)
+		nl_cli_fatal(err, "Unable to allocate link cache: %s",
+			     nl_geterror(err));
+
+	nl_cache_mngt_provide(cache);
+
+	return cache;
+}
+
+struct nl_cache *nl_cli_link_alloc_cache(struct nl_sock *sock)
+{
+	return nl_cli_link_alloc_cache_family(sock, AF_UNSPEC);
+}
+
 void nl_cli_link_parse_family(struct rtnl_link *link, char *arg)
 {
 	int family;
 
-	if ((family = nl_str2af(arg)) == AF_UNSPEC)
+	if ((family = nl_str2af(arg)) < 0)
 		nl_cli_fatal(EINVAL,
 			     "Unable to translate address family \"%s\"", arg);
 

@@ -49,6 +49,9 @@
 #include <linux/ip_mp_alg.h>
 #include <linux/atm.h>
 
+#include <linux/ipv6.h>
+#include <linux/snmp.h>
+
 #include <netlink/netlink.h>
 #include <netlink/handlers.h>
 #include <netlink/cache.h>

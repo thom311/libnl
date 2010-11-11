@@ -76,6 +76,10 @@ enum rtnl_link_st {
 	RTNL_LINK_OUTMCASTOCTETS,		/* OutMcastOctets */
 	RTNL_LINK_INBCASTOCTETS,		/* InBcastOctets */
 	RTNL_LINK_OUTBCASTOCTETS,		/* OutBcastOctets */
+	RTNL_LINK_ICMP6_INMSGS,			/* InMsgs */
+	RTNL_LINK_ICMP6_INERRORS,		/* InErrors */
+	RTNL_LINK_ICMP6_OUTMSGS,		/* OutMsgs */
+	RTNL_LINK_ICMP6_OUTERRORS,		/* OutErrors */
 	__RTNL_LINK_STATS_MAX,
 };
 

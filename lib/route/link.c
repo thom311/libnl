@@ -1258,6 +1258,10 @@ static struct trans_tbl link_stats[] = {
 	__ADD(RTNL_LINK_OUTMCASTOCTETS, OutMcastOctets)
 	__ADD(RTNL_LINK_INBCASTOCTETS, InBcastOctets)
 	__ADD(RTNL_LINK_OUTBCASTOCTETS, OutBcastOctets)
+	__ADD(RTNL_LINK_ICMP6_INMSGS, ICMP6_InMsgs)
+	__ADD(RTNL_LINK_ICMP6_INERRORS, ICMP6_InErrors)
+	__ADD(RTNL_LINK_ICMP6_OUTMSGS, ICMP6_OutMsgs)
+	__ADD(RTNL_LINK_ICMP6_OUTERRORS, ICMP6_OutErrors)
 };
 
 char *rtnl_link_stat2str(int st, char *buf, size_t len)

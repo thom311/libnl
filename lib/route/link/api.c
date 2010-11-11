@@ -121,7 +121,8 @@ struct rtnl_link_af_ops *rtnl_link_af_ops_lookup(const unsigned int family)
  */
 void rtnl_link_af_ops_put(struct rtnl_link_af_ops *ops)
 {
-	ops->ao_refcnt--;
+	if (ops)
+		ops->ao_refcnt--;
 }
 
 /**

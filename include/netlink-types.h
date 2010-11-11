@@ -150,31 +150,31 @@ struct rtnl_link
 {
 	NLHDR_COMMON
 
-	char		l_name[IFNAMSIZ];
-
-	uint32_t	l_family;
-	uint32_t	l_arptype;
-	uint32_t	l_index;
-	uint32_t	l_flags;
-	uint32_t	l_change;
-	uint32_t 	l_mtu;
-	uint32_t	l_link;
-	uint32_t	l_txqlen;
-	uint32_t	l_weight;
-	uint32_t	l_master;
-	struct nl_addr *l_addr;	
-	struct nl_addr *l_bcast;
-	char		l_qdisc[IFQDISCSIZ];
-	struct rtnl_link_map l_map;
-	uint64_t	l_stats[RTNL_LINK_STATS_MAX+1];
-	uint32_t	l_flag_mask;
-	uint32_t	l_num_vf;
-	uint8_t		l_operstate;
-	uint8_t		l_linkmode;
+	char				l_name[IFNAMSIZ];
+	uint32_t			l_family;
+	uint32_t			l_arptype;
+	uint32_t			l_index;
+	uint32_t			l_flags;
+	uint32_t			l_change;
+	uint32_t 			l_mtu;
+	uint32_t			l_link;
+	uint32_t			l_txqlen;
+	uint32_t			l_weight;
+	uint32_t			l_master;
+	struct nl_addr *		l_addr;	
+	struct nl_addr *		l_bcast;
+	char				l_qdisc[IFQDISCSIZ];
+	struct rtnl_link_map		l_map;
+	uint64_t			l_stats[RTNL_LINK_STATS_MAX+1];
+	uint32_t			l_flag_mask;
+	uint32_t			l_num_vf;
+	uint8_t				l_operstate;
+	uint8_t				l_linkmode;
 	/* 2 byte hole */
-	struct rtnl_link_info_ops *l_info_ops;
-	void *		l_info;
-	char *		l_ifalias;
+	struct rtnl_link_info_ops *	l_info_ops;
+	void *				l_af_data[AF_MAX];
+	void *				l_info;
+	char *				l_ifalias;
 };
 
 struct rtnl_ncacheinfo

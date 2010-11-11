@@ -43,7 +43,7 @@
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/link.h>
-#include <netlink/route/link/info-api.h>
+#include <netlink/route/link/api.h>
 
 static struct rtnl_link_info_ops *info_ops;
 
@@ -91,6 +91,98 @@ int rtnl_link_unregister_info(struct rtnl_link_info_ops *ops)
 	NL_DBG(1, "Unregistered link info perations %s\n", ops->io_name);
 
 	*tp = t->io_next;
+	return 0;
+}
+
+static struct rtnl_link_af_ops *af_ops[AF_MAX];
+
+/**
+ * Return operations of a specific link address family
+ * @arg family		Address family
+ *
+ * @note The returned pointer must be given back using rtnl_link_af_ops_put()
+ *
+ * @return Pointer to operations or NULL if unavailable.
+ */
+struct rtnl_link_af_ops *rtnl_link_af_ops_lookup(const unsigned int family)
+{
+	if (family == AF_UNSPEC || family >= AF_MAX)
+		return NULL;
+
+	if (af_ops[family])
+		af_ops[family]->ao_refcnt++;
+
+	return af_ops[family];
+}
+
+/**
+ * Give back reference to a set of operations.
+ * @arg ops		Address family operations.
+ */
+void rtnl_link_af_ops_put(struct rtnl_link_af_ops *ops)
+{
+	ops->ao_refcnt--;
+}
+
+/**
+ * Register operations for a link address family
+ * @arg ops		Address family operations
+ *
+ * This function must be called by modules implementing a specific link
+ * address family. It will make the operations implemented by the module
+ * available for everyone else.
+ *
+ * @return 0 on success or a negative error code.
+ * @return -NLE_INVAL Address family is out of range (0..AF_MAX)
+ * @return -NLE_EXIST Operations for address family already registered.
+ */
+int rtnl_link_af_register(struct rtnl_link_af_ops *ops)
+{
+	if (ops->ao_family == AF_UNSPEC || ops->ao_family >= AF_MAX)
+		return -NLE_INVAL;
+
+	if (af_ops[ops->ao_family])
+		return -NLE_EXIST;
+
+	ops->ao_refcnt = 0;
+	af_ops[ops->ao_family] = ops;
+
+	NL_DBG(1, "Registered link address family operations %u\n",
+		ops->ao_family);
+
+	return 0;
+}
+
+/**
+ * Unregister operations for a link address family
+ * @arg ops		Address family operations
+ *
+ * This function must be called if a module implementing a specific link
+ * address family is unloaded or becomes unavailable. It must provide a
+ * set of operations which have previously been registered using
+ * rtnl_link_af_register().
+ *
+ * @return 0 on success or a negative error code
+ * @return -NLE_INVAL ops is NULL
+ * @return -NLE_OBJ_NOTFOUND Address family operations not registered.
+ * @return -NLE_BUSY Address family operations still in use.
+ */
+int rtnl_link_af_unregister(struct rtnl_link_af_ops *ops)
+{
+	if (!ops)
+		return -NLE_INVAL;
+
+	if (!af_ops[ops->ao_family])
+		return -NLE_OBJ_NOTFOUND;
+
+	if (ops->ao_refcnt > 0)
+		return -NLE_BUSY;
+
+	af_ops[ops->ao_family] = NULL;
+
+	NL_DBG(1, "Unregistered link address family operations %u\n",
+		ops->ao_family);
+
 	return 0;
 }
 

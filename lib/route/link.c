@@ -154,7 +154,7 @@
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link.h>
-#include <netlink/route/link/info-api.h>
+#include <netlink/route/link/api.h>
 
 /** @cond SKIP */
 #define LINK_ATTR_MTU     0x0001
@@ -183,6 +183,84 @@ static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
 /** @endcond */
 
+static int af_free(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
+		    void *data, void *arg)
+{
+	if (ops->ao_free)
+		ops->ao_free(link, data);
+
+	rtnl_link_af_ops_put(ops);
+
+	return 0;
+}
+
+static int af_clone(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
+		    void *data, void *arg)
+{
+	struct rtnl_link *dst = arg;
+
+	if (ops->ao_clone &&
+	    !(dst->l_af_data[ops->ao_family] = ops->ao_clone(link, data)))
+		return -NLE_NOMEM;
+
+	return 0;
+}
+
+static int af_dump_line(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
+			 void *data, void *arg)
+{
+	struct nl_dump_params *p = arg;
+
+	if (ops->ao_dump[NL_DUMP_LINE])
+		ops->ao_dump[NL_DUMP_LINE](link, p, data);
+
+	return 0;
+}
+
+static int af_dump_details(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
+			   void *data, void *arg)
+{
+	struct nl_dump_params *p = arg;
+
+	if (ops->ao_dump[NL_DUMP_DETAILS])
+		ops->ao_dump[NL_DUMP_DETAILS](link, p, data);
+
+	return 0;
+}
+
+static int af_dump_stats(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
+			 void *data, void *arg)
+{
+	struct nl_dump_params *p = arg;
+
+	if (ops->ao_dump[NL_DUMP_STATS])
+		ops->ao_dump[NL_DUMP_STATS](link, p, data);
+
+	return 0;
+}
+
+static int do_foreach_af(struct rtnl_link *link,
+			 int (*cb)(struct rtnl_link *,
+			 	   struct rtnl_link_af_ops *, void *, void *),
+			 void *arg)
+{
+	int i, err;
+
+	for (i = 0; i < AF_MAX; i++) {
+		if (link->l_af_data[i]) {
+			struct rtnl_link_af_ops *ops;
+
+			if (!(ops = rtnl_link_af_ops_lookup(i)))
+				BUG();
+
+			if ((err = cb(link, ops, link->l_af_data[i], arg)) < 0)
+				return err;
+		}
+	}
+
+	return 0;
+}
+
 static void release_link_info(struct rtnl_link *link)
 {
 	struct rtnl_link_info_ops *io = link->l_info_ops;
@@ -208,6 +286,8 @@ static void link_free_data(struct nl_object *c)
 		nl_addr_put(link->l_bcast);
 
 		free(link->l_ifalias);
+
+		do_foreach_af(link, af_free, NULL);
 	}
 }
 
@@ -234,6 +314,9 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 		if (err < 0)
 			return err;
 	}
+
+	if ((err = do_foreach_af(src, af_clone, dst)) < 0)
+		return err;
 
 	return 0;
 }
@@ -270,6 +353,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct rtnl_link *link;
 	struct ifinfomsg *ifi;
 	struct nlattr *tb[IFLA_MAX+1];
+	struct rtnl_link_af_ops *af_ops = NULL;
 	int err;
 
 	link = rtnl_link_alloc();
@@ -279,6 +363,27 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	}
 		
 	link->ce_msgtype = n->nlmsg_type;
+
+	if (!nlmsg_valid_hdr(n, sizeof(*ifi)))
+		return -NLE_MSG_TOOSHORT;
+
+	ifi = nlmsg_data(n);
+	link->l_family = ifi->ifi_family;
+	link->l_arptype = ifi->ifi_type;
+	link->l_index = ifi->ifi_index;
+	link->l_flags = ifi->ifi_flags;
+	link->l_change = ifi->ifi_change;
+	link->ce_mask = (LINK_ATTR_IFNAME | LINK_ATTR_FAMILY |
+			  LINK_ATTR_ARPTYPE| LINK_ATTR_IFINDEX |
+			  LINK_ATTR_FLAGS | LINK_ATTR_CHANGE);
+
+	if ((af_ops = rtnl_link_af_ops_lookup(ifi->ifi_family))) {
+		if (af_ops->ao_protinfo_policy) {
+			memcpy(&link_policy[IFLA_PROTINFO],
+			       af_ops->ao_protinfo_policy,
+			       sizeof(struct nla_policy));
+		}
+	}
 
 	err = nlmsg_parse(n, sizeof(*ifi), tb, IFLA_MAX, link_policy);
 	if (err < 0)
@@ -291,15 +396,6 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	nla_strlcpy(link->l_name, tb[IFLA_IFNAME], IFNAMSIZ);
 
-	ifi = nlmsg_data(n);
-	link->l_family = ifi->ifi_family;
-	link->l_arptype = ifi->ifi_type;
-	link->l_index = ifi->ifi_index;
-	link->l_flags = ifi->ifi_flags;
-	link->l_change = ifi->ifi_change;
-	link->ce_mask = (LINK_ATTR_IFNAME | LINK_ATTR_FAMILY |
-			  LINK_ATTR_ARPTYPE| LINK_ATTR_IFINDEX |
-			  LINK_ATTR_FLAGS | LINK_ATTR_CHANGE);
 
 	if (tb[IFLA_STATS]) {
 		struct rtnl_link_stats *st = nla_data(tb[IFLA_STATS]);
@@ -478,8 +574,16 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		}
 	}
 
+	if (tb[IFLA_PROTINFO] && af_ops && af_ops->ao_parse_protinfo) {
+		err = af_ops->ao_parse_protinfo(link, tb[IFLA_PROTINFO],
+						link->l_af_data[link->l_family]);
+		if (err < 0)
+			goto errout;
+	}
+
 	err = pp->pp_cb((struct nl_object *) link, pp);
 errout:
+	rtnl_link_af_ops_put(af_ops);
 	rtnl_link_put(link);
 	return err;
 }
@@ -521,6 +625,8 @@ static void link_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 
 	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_LINE])
 		link->l_info_ops->io_dump[NL_DUMP_LINE](link, p);
+
+	do_foreach_af(link, af_dump_line, p);
 
 	nl_dump(p, "\n");
 }
@@ -570,6 +676,8 @@ static void link_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 
 	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_DETAILS])
 		link->l_info_ops->io_dump[NL_DUMP_DETAILS](link, p);
+
+	do_foreach_af(link, af_dump_details, p);
 }
 
 static void link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
@@ -633,6 +741,8 @@ static void link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 
 	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_STATS])
 		link->l_info_ops->io_dump[NL_DUMP_STATS](link, p);
+
+	do_foreach_af(link, af_dump_stats, p);
 }
 
 #if 0

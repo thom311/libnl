@@ -59,6 +59,7 @@ libnl_route_la_SOURCES = \
 	route/cls/ematch/meta.c \
 	\
 	route/link/api.c route/link/vlan.c \
+	route/link/bridge.c \
 	\
 	route/sch/blackhole.c route/sch/cbq.c route/sch/dsmark.c \
 	route/sch/fifo.c route/sch/htb.c route/sch/netem.c route/sch/prio.c \

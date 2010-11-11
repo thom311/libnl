@@ -9,14 +9,6 @@
  * Copyright (c) 2010 Thomas Graf <tgraf@suug.ch>
  */
 
-/**
- * @ingroup link
- * @defgroup link_bridge Bridge Specifics
- * @brief
- *
- * @{
- */
-
 #include <netlink-local.h>
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
@@ -89,5 +81,3 @@ static void __exit bridge_exit(void)
 {
 	rtnl_link_af_unregister(&bridge_ops);
 }
-
-/** @} */

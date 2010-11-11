@@ -19,16 +19,16 @@ extern "C" {
 #endif
 
 /**
- * @ingroup link_info
+ * @ingroup link_api
  *
- * Link info operations
+ * Available operations to modules implementing a link info type.
  */
 struct rtnl_link_info_ops
 {
-	/** Name of operations, must match name on kernel side */
+	/** Name of link info type, must match name on kernel side */
 	char *		io_name;
 
-	/** Reference count (internal, do not use) */
+	/** Reference count, DO NOT MODIFY */
 	int		io_refcnt;
 
 	/** Called to assign an info type to a link.
@@ -69,6 +69,11 @@ extern int			rtnl_link_register_info(struct rtnl_link_info_ops *);
 extern int			rtnl_link_unregister_info(struct rtnl_link_info_ops *);
 
 
+/**
+ * @ingroup link_api
+ *
+ * Available operations to modules implementing a link address family.
+ */
 struct rtnl_link_af_ops
 {
 	/** The address family this operations set implements */

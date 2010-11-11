@@ -11,8 +11,8 @@
 
 /**
  * @ingroup link
- * @defgroup link_info Link Info API
- * @brief
+ * @defgroup link_API Link Modules API
+ * @brief API for modules implementing specific link types/semantics.
  *
  * @par 1) Registering/Unregistering a new link info type
  * @code
@@ -57,6 +57,11 @@ static struct rtnl_link_info_ops *__rtnl_link_info_ops_lookup(const char *name)
 
 	return NULL;
 }
+
+/**
+ * @name Link Info Modules
+ * @{
+ */
 
 /**
  * Return operations of a specific link info type
@@ -146,6 +151,13 @@ int rtnl_link_unregister_info(struct rtnl_link_info_ops *ops)
 
 	return -NLE_OPNOTSUPP;
 }
+
+/** @} */
+
+/**
+ * @name Link Address Family Modules
+ * @{
+ */
 
 static struct rtnl_link_af_ops *af_ops[AF_MAX];
 
@@ -239,6 +251,8 @@ int rtnl_link_af_unregister(struct rtnl_link_af_ops *ops)
 
 	return 0;
 }
+
+/** @} */
 
 /** @} */
 

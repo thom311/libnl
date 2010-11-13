@@ -105,6 +105,11 @@ struct rtnl_link_af_ops
 	int		      (*ao_parse_protinfo)(struct rtnl_link *,
 						   struct nlattr *, void *);
 
+	/** Called if a IFLA_AF_SPEC attribute needs to be parsed. Typically
+	 * stores the parsed data in the address family specific buffer. */
+	int		      (*ao_parse_af)(struct rtnl_link *,
+					     struct nlattr *, void *);
+
 	/** Dump address family specific link attributes */
 	void		      (*ao_dump[NL_DUMP_MAX+1])(struct rtnl_link *,
 							struct nl_dump_params *,

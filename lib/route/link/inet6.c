@@ -311,6 +311,7 @@ static struct rtnl_link_af_ops inet6_ops = {
 	.ao_clone			= &inet6_clone,
 	.ao_free			= &inet6_free,
 	.ao_parse_protinfo		= &inet6_parse_protinfo,
+	.ao_parse_af			= &inet6_parse_protinfo,
 	.ao_dump[NL_DUMP_DETAILS]	= &inet6_dump_details,
 	.ao_dump[NL_DUMP_STATS]		= &inet6_dump_stats,
 	.ao_protinfo_policy		= &protinfo_policy,

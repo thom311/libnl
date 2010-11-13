@@ -183,6 +183,26 @@ static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
 /** @endcond */
 
+static struct rtnl_link_af_ops *af_lookup_and_alloc(struct rtnl_link *link,
+						    int family)
+{
+	struct rtnl_link_af_ops *af_ops;
+
+	af_ops = rtnl_link_af_ops_lookup(family);
+	if (!af_ops)
+		return NULL;
+
+	if (!link->l_af_data[family] && af_ops->ao_alloc) {
+		link->l_af_data[family] = af_ops->ao_alloc(link);
+		if (!link->l_af_data[family]) {
+			rtnl_link_af_ops_put(af_ops);
+			return NULL;
+		}
+	}
+
+	return af_ops;
+}
+
 static int af_free(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
 		    void *data, void *arg)
 {
@@ -339,6 +359,7 @@ static struct nla_policy link_policy[IFLA_MAX+1] = {
 	[IFLA_MAP]	= { .minlen = sizeof(struct rtnl_link_ifmap) },
 	[IFLA_IFALIAS]	= { .type = NLA_STRING, .maxlen = IFALIASZ },
 	[IFLA_NUM_VF]	= { .type = NLA_U32 },
+	[IFLA_AF_SPEC]	= { .type = NLA_NESTED },
 };
 
 static struct nla_policy link_info_policy[IFLA_INFO_MAX+1] = {
@@ -377,15 +398,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			  LINK_ATTR_ARPTYPE| LINK_ATTR_IFINDEX |
 			  LINK_ATTR_FLAGS | LINK_ATTR_CHANGE);
 
-	if ((af_ops = rtnl_link_af_ops_lookup(family))) {
-		if (af_ops->ao_alloc) {
-			link->l_af_data[family] = af_ops->ao_alloc(link);
-			if (!link->l_af_data[family]) {
-				err = -NLE_NOMEM;
-				goto errout;
-			}
-		}
-
+	if ((af_ops = af_lookup_and_alloc(link, family))) {
 		if (af_ops->ao_protinfo_policy) {
 			memcpy(&link_policy[IFLA_PROTINFO],
 			       af_ops->ao_protinfo_policy,
@@ -586,6 +599,26 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 						link->l_af_data[link->l_family]);
 		if (err < 0)
 			goto errout;
+	}
+
+	if (tb[IFLA_AF_SPEC]) {
+		struct nlattr *af_attr;
+		int remaining;
+
+		nla_for_each_nested(af_attr, tb[IFLA_AF_SPEC], remaining) {
+			af_ops = af_lookup_and_alloc(link, nla_type(af_attr));
+			if (af_ops && af_ops->ao_parse_af) {
+				char *af_data = link->l_af_data[nla_type(af_attr)];
+
+				err = af_ops->ao_parse_af(link, af_attr, af_data);
+
+				rtnl_link_af_ops_put(af_ops);
+
+				if (err < 0)
+					goto errout;
+			}
+
+		}
 	}
 
 	err = pp->pp_cb((struct nl_object *) link, pp);

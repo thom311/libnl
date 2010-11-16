@@ -1054,6 +1054,7 @@ int rtnl_link_build_change_request(struct rtnl_link *old,
 				   struct nl_msg **result)
 {
 	struct nl_msg *msg;
+	struct nlattr *af_spec;
 	struct ifinfomsg ifi = {
 		.ifi_family = old->l_family,
 		.ifi_index = old->l_index,
@@ -1113,8 +1114,13 @@ int rtnl_link_build_change_request(struct rtnl_link *old,
 		nla_nest_end(msg, info);
 	}
 
+	if (!(af_spec = nla_nest_start(msg, IFLA_AF_SPEC)))
+		goto nla_put_failure;
+
 	if (do_foreach_af(tmpl, af_fill, msg) < 0)
 		goto nla_put_failure;
+
+	nla_nest_end(msg, af_spec);
 
 	*result = msg;
 	return 0;

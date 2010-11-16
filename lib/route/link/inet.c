@@ -9,17 +9,67 @@
  * Copyright (c) 2010 Thomas Graf <tgraf@suug.ch>
  */
 
+/**
+ * @ingroup link_API
+ * @defgroup link_inet IPv4 Link Module
+ * @brief Implementation of IPv4 specific link attributes
+ *
+ *
+ *
+ * @par Example: Reading the value of IPV4_DEVCONF_FORWARDING
+ * @code
+ * struct nl_cache *cache;
+ * struct rtnl_link *link;
+ * uint32_t value;
+ *
+ * // Allocate a link cache
+ * rtnl_link_alloc_cache(sock, AF_UNSPEC, &cache);
+ *
+ * // Search for the link we wish to see the value from
+ * link = rtnl_link_get_by_name(cache, "eth0");
+ *
+ * // Read the value of the setting IPV4_DEVCONF_FORWARDING
+ * if (rtnl_link_inet_get_conf(link, IPV4_DEVCONF_FORWARDING, &value) < 0)
+ *         // Error: Unable to read config setting
+ *
+ * printf("forwarding is %s\n", value ? "enabled" : "disabled");
+ * @endcode
+ *
+ * @par Example: Changing the value of IPV4_DEVCONF_FOWARDING
+ * @code
+ * //
+ * // ... Continueing from the previous example ...
+ * //
+ *
+ * struct rtnl_link *new;
+ *
+ * // Allocate a new link to store the changes we wish to make.
+ * new = rtnl_link_alloc();
+ *
+ * // Set IPV4_DEVCONF_FORWARDING to '1'
+ * rtnl_link_inet_set_conf(new, IPV4_DEVCONF_FORWARDING, 1);
+ *
+ * // Send the change request to the kernel.
+ * rtnl_link_change(sock, link, new, 0);
+ * @endcode
+ *
+ * @{
+ */
+
+
 #include <netlink-local.h>
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/api.h>
 
+/** @cond SKIP */
 struct inet_data
 {
 	uint8_t			i_confset[IPV4_DEVCONF_MAX];
 	uint32_t		i_conf[IPV4_DEVCONF_MAX];
 };
+/** @endcond */
 
 static void *inet_alloc(struct rtnl_link *link)
 {
@@ -226,3 +276,5 @@ static void __exit inet_exit(void)
 {
 	rtnl_link_af_unregister(&inet_ops);
 }
+
+/** @} */

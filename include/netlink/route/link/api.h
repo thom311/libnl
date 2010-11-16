@@ -110,6 +110,11 @@ struct rtnl_link_af_ops
 	int		      (*ao_parse_af)(struct rtnl_link *,
 					     struct nlattr *, void *);
 
+	/** Called if a link message is sent to the kernel. Must append the
+	 * link address family specific attributes to the message. */
+	int		      (*ao_fill_af)(struct rtnl_link *,
+					    struct nl_msg *msg, void *);
+
 	/** Dump address family specific link attributes */
 	void		      (*ao_dump[NL_DUMP_MAX+1])(struct rtnl_link *,
 							struct nl_dump_params *,
@@ -118,6 +123,10 @@ struct rtnl_link_af_ops
 
 extern struct rtnl_link_af_ops *rtnl_link_af_ops_lookup(unsigned int);
 extern void			rtnl_link_af_ops_put(struct rtnl_link_af_ops *);
+extern void *			rtnl_link_af_alloc(struct rtnl_link *,
+						const struct rtnl_link_af_ops *);
+extern void *			rtnl_link_af_data(const struct rtnl_link *,
+						const struct rtnl_link_af_ops *);
 extern int			rtnl_link_af_register(struct rtnl_link_af_ops *);
 extern int			rtnl_link_af_unregister(struct rtnl_link_af_ops *);
 

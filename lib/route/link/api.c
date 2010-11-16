@@ -191,6 +191,64 @@ void rtnl_link_af_ops_put(struct rtnl_link_af_ops *ops)
 }
 
 /**
+ * Allocate and return data buffer for link address family modules
+ * @arg link		Link object
+ * @arg ops		Address family operations
+ *
+ * This function must be called by link address family modules in all
+ * cases where the API does not provide the data buffer as argument
+ * already. This typically includes set functions the module provides.
+ * Calling this function is strictly required to ensure proper allocation
+ * of the buffer upon first use. Link objects will NOT proactively
+ * allocate a data buffer for each registered link address family.
+ *
+ * @return Pointer to data buffer or NULL on error.
+ */
+void *rtnl_link_af_alloc(struct rtnl_link *link,
+			 const struct rtnl_link_af_ops *ops)
+{
+	int family;
+
+	if (!link || !ops)
+		BUG();
+
+	family = ops->ao_family;
+
+	if (!link->l_af_data[family]) {
+		if (!ops->ao_alloc)
+			BUG();
+		
+		link->l_af_data[family] = ops->ao_alloc(link);
+		if (!link->l_af_data[family])
+			return NULL;
+	}
+
+	return link->l_af_data[family];
+}
+
+/**
+ * Return data buffer for link address family modules
+ * @arg link		Link object
+ * @arg ops		Address family operations
+ *
+ * This function returns a pointer to the data buffer for the specified link
+ * address family module or NULL if the buffer was not allocated yet. This
+ * function is typically used by get functions of modules which are not
+ * interested in having the data buffer allocated if no values have been set
+ * yet.
+ *
+ * @return Pointer to data buffer or NULL on error.
+ */
+void *rtnl_link_af_data(const struct rtnl_link *link,
+			const struct rtnl_link_af_ops *ops)
+{
+	if (!link || !ops)
+		BUG();
+
+	return link->l_af_data[ops->ao_family];
+}
+
+/**
  * Register operations for a link address family
  * @arg ops		Address family operations
  *

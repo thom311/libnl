@@ -187,18 +187,14 @@ static struct rtnl_link_af_ops *af_lookup_and_alloc(struct rtnl_link *link,
 						    int family)
 {
 	struct rtnl_link_af_ops *af_ops;
+	void *data;
 
 	af_ops = rtnl_link_af_ops_lookup(family);
 	if (!af_ops)
 		return NULL;
 
-	if (!link->l_af_data[family] && af_ops->ao_alloc) {
-		link->l_af_data[family] = af_ops->ao_alloc(link);
-		if (!link->l_af_data[family]) {
-			rtnl_link_af_ops_put(af_ops);
-			return NULL;
-		}
-	}
+	if (!(data = rtnl_link_af_data(link, af_ops)))
+		return NULL;
 
 	return af_ops;
 }
@@ -222,6 +218,27 @@ static int af_clone(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
 	if (ops->ao_clone &&
 	    !(dst->l_af_data[ops->ao_family] = ops->ao_clone(link, data)))
 		return -NLE_NOMEM;
+
+	return 0;
+}
+
+static int af_fill(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
+		   void *data, void *arg)
+{
+	struct nl_msg *msg = arg;
+	struct nlattr *af_attr;
+	int err;
+
+	if (!ops->ao_fill_af)
+		return 0;
+
+	if (!(af_attr = nla_nest_start(msg, ops->ao_family)))
+		return -NLE_MSGSIZE;
+
+	if ((err = ops->ao_fill_af(link, arg, data)) < 0)
+		return err;
+
+	nla_nest_end(msg, af_attr);
 
 	return 0;
 }
@@ -1095,6 +1112,9 @@ int rtnl_link_build_change_request(struct rtnl_link *old,
 
 		nla_nest_end(msg, info);
 	}
+
+	if (do_foreach_af(tmpl, af_fill, msg) < 0)
+		goto nla_put_failure;
 
 	*result = msg;
 	return 0;

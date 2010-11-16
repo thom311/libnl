@@ -9,40 +9,26 @@
  * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
-#if 0
-static void print_usage(void)
-{
-	printf(
-	"Usage: nl-link-dump <mode> [<filter>]\n"
-	"  mode := { brief | detailed | stats | xml }\n"
-	"  filter := [dev DEV] [mtu MTU] [txqlen TXQLEN] [weight WEIGHT] [link LINK]\n"
-	"            [master MASTER] [qdisc QDISC] [addr ADDR] [broadcast BRD]\n"
-	"            [{ up | down }] [{ arp | noarp }] [{ promisc | nopromisc }]\n"
-	"            [{ dynamic | nodynamic }] [{ multicast | nomulticast }]\n"
-	"            [{ trailers | notrailers }] [{ allmulticast | noallmulticast }]\n");
-	exit(1);
-}
-#endif
-
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>
 
 static void print_usage(void)
 {
 	printf(
-	"Usage: nl-link-list [OPTION]... [Link]\n"
-	"\n"
-	"Options\n"
-	" -f, --format=TYPE     Output format { brief | details | stats }\n"
-	" -h, --help            Show this help\n"
-	" -v, --version         Show versioning information\n"
-	"\n"
-	"Link Options\n"
-	" -n, --name=NAME	link name\n"
-	" -i, --index           interface index\n"
-	"     --mtu=NUM         MTU value\n"
-	"     --txqlen=NUM      TX queue length\n"
-	"     --weight=NUM      weight\n"
+"Usage: nl-link-list [OPTIONS]... \n"
+"\n"
+"OPTIONS\n"
+"     --details             Show detailed information of each link\n"
+"     --stats               Show statistics, implies --details\n"
+" -h, --help                Show this help text.\n"
+" -v, --version             Show versioning information.\n"
+"\n"
+" -n, --name=NAME	    Name of link\n"
+" -i, --index               Interface index (unique identifier)\n"
+"     --family=NAME         Link address family\n"
+"     --mtu=NUM             MTU value\n"
+"     --txqlen=NUM          TX queue length\n"
+"     --weight=NUM          Weight\n"
 	);
 	exit(0);
 }
@@ -68,9 +54,12 @@ int main(int argc, char *argv[])
 			ARG_MTU = 258,
 			ARG_TXQLEN,
 			ARG_WEIGHT,
+			ARG_DETAILS,
+			ARG_STATS,
 		};
 		static struct option long_opts[] = {
-			{ "format", 1, 0, 'f' },
+			{ "details", 0, 0, ARG_DETAILS },
+			{ "stats", 0, 0, ARG_STATS },
 			{ "help", 0, 0, 'h' },
 			{ "version", 0, 0, 'v' },
 			{ "name", 1, 0, 'n' },
@@ -82,12 +71,13 @@ int main(int argc, char *argv[])
 			{ 0, 0, 0, 0 }
 		};
 
-		c = getopt_long(argc, argv, "f:hvn:i:", long_opts, &optidx);
+		c = getopt_long(argc, argv, "hvn:i:", long_opts, &optidx);
 		if (c == -1)
 			break;
 
 		switch (c) {
-		case 'f': params.dp_type = nl_cli_parse_dumptype(optarg); break;
+		case ARG_DETAILS: params.dp_type = NL_DUMP_DETAILS; break;
+		case ARG_STATS: params.dp_type = NL_DUMP_STATS; break;
 		case 'h': print_usage(); break;
 		case 'v': nl_cli_print_version(); break;
 		case 'n': nl_cli_link_parse_name(link, optarg); break;

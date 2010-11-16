@@ -10,13 +10,14 @@ sbin_PROGRAMS = \
 	nl-class-add nl-class-list nl-class-delete \
 	nl-cls-add nl-cls-list nl-cls-delete \
 	nl-classid-lookup \
-	nl-pktloc-lookup
+	nl-pktloc-lookup \
+	nl-link-list
 
 noinst_PROGRAMS = \
 	genl-ctrl-list \
 	nf-ct-list nf-log nf-queue nf-monitor \
 	nl-addr-add nl-addr-delete nl-addr-list \
-	nl-link-list nl-link-set nl-link-stats \
+	nl-link-set nl-link-stats \
 	nl-link-ifindex2name nl-link-name2ifindex \
 	nl-neigh-add nl-neigh-delete nl-neigh-list \
 	nl-rule-list \

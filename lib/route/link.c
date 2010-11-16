@@ -193,7 +193,7 @@ static struct rtnl_link_af_ops *af_lookup_and_alloc(struct rtnl_link *link,
 	if (!af_ops)
 		return NULL;
 
-	if (!(data = rtnl_link_af_data(link, af_ops)))
+	if (!(data = rtnl_link_af_alloc(link, af_ops)))
 		return NULL;
 
 	return af_ops;

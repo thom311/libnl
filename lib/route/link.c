@@ -1751,6 +1751,7 @@ static struct nl_cache_ops rtnl_link_ops = {
 					{ RTM_NEWLINK, NL_ACT_NEW, "new" },
 					{ RTM_DELLINK, NL_ACT_DEL, "del" },
 					{ RTM_GETLINK, NL_ACT_GET, "get" },
+					{ RTM_SETLINK, NL_ACT_CHANGE, "set" },
 					END_OF_MSGTYPES_LIST,
 				  },
 	.co_protocol		= NETLINK_ROUTE,

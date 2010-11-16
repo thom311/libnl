@@ -182,7 +182,7 @@ int rtnl_link_inet_get_conf(struct rtnl_link *link, const unsigned int cfgid,
 	if (!(id = rtnl_link_af_alloc(link, &inet_ops)))
 		return -NLE_NOATTR;
 
-	*res = id->i_conf[cfgid];
+	*res = id->i_conf[cfgid - 1];
 
 	return 0;
 }

@@ -182,16 +182,16 @@ static void inet_dump_details(struct rtnl_link *link,
 	nl_dump_line(p, "      ");
 
 	for (i = 0; i < IPV4_DEVCONF_MAX; i++) {
-		nl_dump_line(p, "%s %u",
+		nl_dump_line(p, "%-19s %3u",
 			rtnl_link_inet_devconf2str(i+1, buf, sizeof(buf)),
 			id->i_conf[i]);
 
-		if (++n == 4) {
+		if (++n == 3) {
 			nl_dump(p, "\n");
 			nl_dump_line(p, "      ");
 			n = 0;
 		} else
-			nl_dump(p, " ");
+			nl_dump(p, "  ");
 	}
 
 	if (n != 0)

@@ -155,30 +155,67 @@ static void inet6_dump_details(struct rtnl_link *link,
 				struct nl_dump_params *p, void *data)
 {
 	struct inet6_data *i6 = data;
-	char buf[64];
+	char buf[64], buf2[64];
 	int i, n = 0;
 
-	nl_dump_line(p, "    flags %s max-reasm-len %u timestamp %u "
-			"reachable-time %u retrans-time %u\n",
-		inet6_flags2str(i6->i6_flags, buf, sizeof(buf)),
-		i6->i6_cacheinfo.max_reasm_len,
-		i6->i6_cacheinfo.tstamp,
-		i6->i6_cacheinfo.reachable_time,
-		i6->i6_cacheinfo.retrans_time);
+	nl_dump_line(p, "    ipv6 max-reasm-len %s",
+		nl_size2str(i6->i6_cacheinfo.max_reasm_len, buf, sizeof(buf)));
 
-	nl_dump_line(p, "    ipv6 devconf:\n");
+	nl_dump(p, " <%s>\n",
+		inet6_flags2str(i6->i6_flags, buf, sizeof(buf)));
+
+
+	nl_dump_line(p, "      create-stamp %.2fs reachable-time %s",
+		(double) i6->i6_cacheinfo.tstamp / 100.,
+		nl_msec2str(i6->i6_cacheinfo.reachable_time, buf, sizeof(buf)));
+
+	nl_dump(p, " retrans-time %s\n",
+		nl_msec2str(i6->i6_cacheinfo.retrans_time, buf, sizeof(buf)));
+
+	nl_dump_line(p, "      devconf:\n");
 	nl_dump_line(p, "      ");
 
 	for (i = 0; i < DEVCONF_MAX; i++) {
-		nl_dump_line(p, "%s %u", 
-			inet6_devconf2str(i, buf, sizeof(buf)), i6->i6_conf[i]);
+		uint32_t value = i6->i6_conf[i];
+		int x, offset;
+
+		switch (i) {
+		case DEVCONF_TEMP_VALID_LFT:
+		case DEVCONF_TEMP_PREFERED_LFT:
+			nl_msec2str((uint64_t) value * 1000., buf2, sizeof(buf2));
+			break;
+
+		case DEVCONF_RTR_PROBE_INTERVAL:
+		case DEVCONF_RTR_SOLICIT_INTERVAL:
+		case DEVCONF_RTR_SOLICIT_DELAY:
+			nl_msec2str(value, buf2, sizeof(buf2));
+			break;
+
+		default:
+			snprintf(buf2, sizeof(buf2), "%u", value);
+			break;
+			
+		}
+
+		inet6_devconf2str(i, buf, sizeof(buf));
+
+		offset = 23 - strlen(buf2);
+		if (offset < 0)
+			offset = 0;
+
+		for (x = strlen(buf); x < offset; x++)
+			buf[x] = ' ';
+
+		strncpy(&buf[offset], buf2, strlen(buf2));
+
+		nl_dump_line(p, "%s", buf);
 
 		if (++n == 3) {
 			nl_dump(p, "\n");
 			nl_dump_line(p, "      ");
 			n = 0;
 		} else
-			nl_dump(p, " ");
+			nl_dump(p, "  ");
 	}
 
 	if (n != 0)

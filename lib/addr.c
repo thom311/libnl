@@ -881,7 +881,7 @@ prefix:
  * @{
  */
 
-static struct trans_tbl afs[] = {
+static const struct trans_tbl afs[] = {
 	__ADD(AF_UNSPEC,unspec)
 	__ADD(AF_UNIX,unix)
 	__ADD(AF_LOCAL,local)

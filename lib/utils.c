@@ -490,7 +490,7 @@ char * nl_msec2str(uint64_t msec, char *buf, size_t len)
  * @{
  */
 
-static struct trans_tbl nlfamilies[] = {
+static const struct trans_tbl nlfamilies[] = {
 	__ADD(NETLINK_ROUTE,route)
 	__ADD(NETLINK_USERSOCK,usersock)
 	__ADD(NETLINK_FIREWALL,firewall)
@@ -531,7 +531,7 @@ int nl_str2nlfamily(const char *name)
  * @{
  */
 
-static struct trans_tbl llprotos[] = {
+static const struct trans_tbl llprotos[] = {
 	{0, "generic"},
 	__ADD(ARPHRD_ETHER,ether)
 	__ADD(ARPHRD_EETHER,eether)
@@ -628,7 +628,7 @@ int nl_str2llproto(const char *name)
  * @{
  */
 
-static struct trans_tbl ether_protos[] = {
+static const struct trans_tbl ether_protos[] = {
 	__ADD(ETH_P_LOOP,loop)
 	__ADD(ETH_P_PUP,pup)
 	__ADD(ETH_P_PUPAT,pupat)
@@ -861,8 +861,8 @@ void __trans_list_clear(struct nl_list_head *head)
 	}
 }
 
-char *__type2str(int type, char *buf, size_t len, struct trans_tbl *tbl,
-		 size_t tbl_len)
+char *__type2str(int type, char *buf, size_t len,
+		 const struct trans_tbl *tbl, size_t tbl_len)
 {
 	int i;
 	for (i = 0; i < tbl_len; i++) {
@@ -893,7 +893,7 @@ char *__list_type2str(int type, char *buf, size_t len,
 }
 
 char *__flags2str(int flags, char *buf, size_t len,
-		  struct trans_tbl *tbl, size_t tbl_len)
+		  const struct trans_tbl *tbl, size_t tbl_len)
 {
 	int i;
 	int tmp = flags;
@@ -912,7 +912,7 @@ char *__flags2str(int flags, char *buf, size_t len,
 	return buf;
 }
 
-int __str2type(const char *buf, struct trans_tbl *tbl, size_t tbl_len)
+int __str2type(const char *buf, const struct trans_tbl *tbl, size_t tbl_len)
 {
 	unsigned long l;
 	char *end;
@@ -953,7 +953,7 @@ int __list_str2type(const char *buf, struct nl_list_head *head)
 	return (int) l;
 }
 
-int __str2flags(const char *buf, struct trans_tbl *tbl, size_t tbl_len)
+int __str2flags(const char *buf, const struct trans_tbl *tbl, size_t tbl_len)
 {
 	int i, flags = 0, len;
 	char *p = (char *) buf, *t;

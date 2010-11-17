@@ -94,14 +94,14 @@ extern int __nl_read_num_str_file(const char *path,
 extern int __trans_list_add(int, const char *, struct nl_list_head *);
 extern void __trans_list_clear(struct nl_list_head *);
 
-extern char *__type2str(int, char *, size_t, struct trans_tbl *, size_t);
-extern int __str2type(const char *, struct trans_tbl *, size_t);
+extern char *__type2str(int, char *, size_t, const struct trans_tbl *, size_t);
+extern int __str2type(const char *, const struct trans_tbl *, size_t);
 
 extern char *__list_type2str(int, char *, size_t, struct nl_list_head *);
 extern int __list_str2type(const char *, struct nl_list_head *);
 
-extern char *__flags2str(int, char *, size_t, struct trans_tbl *, size_t);
-extern int __str2flags(const char *, struct trans_tbl *, size_t);
+extern char *__flags2str(int, char *, size_t, const struct trans_tbl *, size_t);
+extern int __str2flags(const char *, const struct trans_tbl *, size_t);
 
 extern void dump_from_ops(struct nl_object *, struct nl_dump_params *);
 

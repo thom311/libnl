@@ -886,7 +886,7 @@ static int link_compare(struct nl_object *_a, struct nl_object *_b,
 	return diff;
 }
 
-static struct trans_tbl link_attrs[] = {
+static const struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_MTU, mtu)
 	__ADD(LINK_ATTR_LINK, link)
 	__ADD(LINK_ATTR_TXQLEN, txqlen)
@@ -1223,7 +1223,7 @@ int rtnl_link_name2i(struct nl_cache *cache, const char *name)
  * @{
  */
 
-static struct trans_tbl link_flags[] = {
+static const struct trans_tbl link_flags[] = {
 	__ADD(IFF_LOOPBACK, loopback)
 	__ADD(IFF_BROADCAST, broadcast)
 	__ADD(IFF_POINTOPOINT, pointopoint)
@@ -1263,7 +1263,7 @@ int rtnl_link_str2flags(const char *name)
  * @{
  */
 
-static struct trans_tbl link_stats[] = {
+static const struct trans_tbl link_stats[] = {
 	__ADD(RTNL_LINK_RX_PACKETS, rx_packets)
 	__ADD(RTNL_LINK_TX_PACKETS, tx_packets)
 	__ADD(RTNL_LINK_RX_BYTES, rx_bytes)
@@ -1340,7 +1340,7 @@ int rtnl_link_str2stat(const char *name)
  * @{
  */
 
-static struct trans_tbl link_operstates[] = {
+static const struct trans_tbl link_operstates[] = {
 	__ADD(IF_OPER_UNKNOWN, unknown)
 	__ADD(IF_OPER_NOTPRESENT, notpresent)
 	__ADD(IF_OPER_DOWN, down)
@@ -1369,7 +1369,7 @@ int rtnl_link_str2operstate(const char *name)
  * @{
  */
 
-static struct trans_tbl link_modes[] = {
+static const struct trans_tbl link_modes[] = {
 	__ADD(IF_LINK_MODE_DEFAULT, default)
 	__ADD(IF_LINK_MODE_DORMANT, dormant)
 };

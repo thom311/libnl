@@ -323,7 +323,7 @@ static int ct_compare(struct nl_object *_a, struct nl_object *_b,
 	return diff;
 }
 
-static struct trans_tbl ct_attrs[] = {
+static const struct trans_tbl ct_attrs[] = {
 	__ADD(CT_ATTR_FAMILY,		family)
 	__ADD(CT_ATTR_PROTO,		proto)
 	__ADD(CT_ATTR_TCP_STATE,	tcpstate)
@@ -430,7 +430,7 @@ uint8_t nfnl_ct_get_tcp_state(const struct nfnl_ct *ct)
 	return ct->ct_protoinfo.tcp.state;
 }
 
-static struct trans_tbl tcp_states[] = {
+static const struct trans_tbl tcp_states[] = {
 	__ADD(TCP_CONNTRACK_NONE,NONE)
 	__ADD(TCP_CONNTRACK_SYN_SENT,SYN_SENT)
 	__ADD(TCP_CONNTRACK_SYN_RECV,SYN_RECV)
@@ -472,7 +472,7 @@ uint32_t nfnl_ct_get_status(const struct nfnl_ct *ct)
 	return ct->ct_status;
 }
 
-static struct trans_tbl status_flags[] = {
+static const struct trans_tbl status_flags[] = {
 	__ADD(IPS_EXPECTED, expected)
 	__ADD(IPS_SEEN_REPLY, seen_reply)
 	__ADD(IPS_ASSURED, assured)

@@ -98,7 +98,7 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 #define IF_RS_SENT	0x10
 #define IF_READY	0x80000000
 
-static struct trans_tbl inet6_flags[] = {
+static const struct trans_tbl inet6_flags[] = {
 	__ADD(IF_RA_OTHERCONF, ra_otherconf)
 	__ADD(IF_RA_MANAGED, ra_managed)
 	__ADD(IF_RA_RCVD, ra_rcvd)
@@ -112,7 +112,7 @@ static char *inet6_flags2str(int flags, char *buf, size_t len)
 			   ARRAY_SIZE(inet6_flags));
 }
 
-static struct trans_tbl inet6_devconf[] = {
+static const struct trans_tbl inet6_devconf[] = {
 	__ADD(DEVCONF_FORWARDING, forwarding)
 	__ADD(DEVCONF_HOPLIMIT, hoplimit)
 	__ADD(DEVCONF_MTU6, mtu6)

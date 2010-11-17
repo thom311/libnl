@@ -28,7 +28,7 @@
  * @{
  */
 
-static struct trans_tbl ovl_strategies[] = {
+static const struct trans_tbl ovl_strategies[] = {
 	__ADD(TC_CBQ_OVL_CLASSIC,classic)
 	__ADD(TC_CBQ_OVL_DELAY,delay)
 	__ADD(TC_CBQ_OVL_LOWPRIO,lowprio)

@@ -390,7 +390,7 @@ nh_mismatch:
 #undef ROUTE_DIFF
 }
 
-static struct trans_tbl route_attrs[] = {
+static const struct trans_tbl route_attrs[] = {
 	__ADD(ROUTE_ATTR_FAMILY, family)
 	__ADD(ROUTE_ATTR_TOS, tos)
 	__ADD(ROUTE_ATTR_TABLE, table)

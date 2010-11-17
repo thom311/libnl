@@ -164,7 +164,7 @@ static int meta_parse(struct rtnl_ematch *e, void *data, size_t len)
 	return 0;
 }
 
-static struct trans_tbl meta_int[] = {
+static const struct trans_tbl meta_int[] = {
 	__ADD(TCF_META_ID_RANDOM, random)
 	__ADD(TCF_META_ID_LOADAVG_0, loadavg_0)
 	__ADD(TCF_META_ID_LOADAVG_1, loadavg_1)
@@ -217,7 +217,7 @@ static char *int_id2str(int id, char *buf, size_t size)
 	return __type2str(id, buf, size, meta_int, ARRAY_SIZE(meta_int));
 }
 
-static struct trans_tbl meta_var[] = {
+static const struct trans_tbl meta_var[] = {
 	__ADD(TCF_META_ID_DEV,devname)
 	__ADD(TCF_META_ID_SK_BOUND_IF,sk_bound_if)
 };

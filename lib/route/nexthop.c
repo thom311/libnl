@@ -269,7 +269,7 @@ uint32_t rtnl_route_nh_get_realms(struct rtnl_nexthop *nh)
  * @{
  */
 
-static struct trans_tbl nh_flags[] = {
+static const struct trans_tbl nh_flags[] = {
 	__ADD(RTNH_F_DEAD, dead)
 	__ADD(RTNH_F_PERVASIVE, pervasive)
 	__ADD(RTNH_F_ONLINK, onlink)

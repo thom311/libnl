@@ -431,7 +431,7 @@ static int addr_compare(struct nl_object *_a, struct nl_object *_b,
 	return diff;
 }
 
-static struct trans_tbl addr_attrs[] = {
+static const struct trans_tbl addr_attrs[] = {
 	__ADD(ADDR_ATTR_FAMILY, family)
 	__ADD(ADDR_ATTR_PREFIXLEN, prefixlen)
 	__ADD(ADDR_ATTR_FLAGS, flags)
@@ -902,7 +902,7 @@ uint32_t rtnl_addr_get_last_update_time(struct rtnl_addr *addr)
  * @{
  */
 
-static struct trans_tbl addr_flags[] = {
+static const struct trans_tbl addr_flags[] = {
 	__ADD(IFA_F_SECONDARY, secondary)
 	__ADD(IFA_F_NODAD, nodad)
 	__ADD(IFA_F_OPTIMISTIC, optimistic)

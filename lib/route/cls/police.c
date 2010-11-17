@@ -23,7 +23,7 @@
  * @{
  */
 
-static struct trans_tbl police_types[] = {
+static const struct trans_tbl police_types[] = {
 	__ADD(TC_POLICE_UNSPEC,unspec)
 	__ADD(TC_POLICE_OK,ok)
 	__ADD(TC_POLICE_RECLASSIFY,reclassify)

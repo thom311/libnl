@@ -451,7 +451,7 @@ unsigned int nfnl_queue_msg_get_verdict(const struct nfnl_queue_msg *msg)
 	return msg->queue_msg_verdict;
 }
 
-static struct trans_tbl nfnl_queue_msg_attrs[] = {
+static const struct trans_tbl nfnl_queue_msg_attrs[] = {
 	__ADD(QUEUE_MSG_ATTR_GROUP,		group)
 	__ADD(QUEUE_MSG_ATTR_FAMILY,		family)
 	__ADD(QUEUE_MSG_ATTR_PACKETID,		packetid)

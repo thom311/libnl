@@ -13,7 +13,7 @@
 #include <netlink/netfilter/netfilter.h>
 #include <linux/netfilter.h>
 
-static struct trans_tbl nfnl_verdicts[] = {
+static const struct trans_tbl nfnl_verdicts[] = {
 	__ADD(NF_DROP,		NF_DROP)
 	__ADD(NF_ACCEPT,	NF_ACCEPT)
 	__ADD(NF_STOLEN,	NF_STOLEN)
@@ -33,7 +33,7 @@ unsigned int nfnl_str2verdict(const char *name)
 	return __str2type(name, nfnl_verdicts, ARRAY_SIZE(nfnl_verdicts));
 }
 
-static struct trans_tbl nfnl_inet_hooks[] = {
+static const struct trans_tbl nfnl_inet_hooks[] = {
 	__ADD(NF_INET_PRE_ROUTING,	NF_INET_PREROUTING)
 	__ADD(NF_INET_LOCAL_IN,		NF_INET_LOCAL_IN)
 	__ADD(NF_INET_FORWARD,		NF_INET_FORWARD)

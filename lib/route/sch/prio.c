@@ -248,7 +248,7 @@ uint8_t *rtnl_qdisc_prio_get_priomap(struct rtnl_qdisc *qdisc)
  * @{
  */
 
-static struct trans_tbl prios[] = {
+static const struct trans_tbl prios[] = {
 	__ADD(TC_PRIO_BESTEFFORT,besteffort)
 	__ADD(TC_PRIO_FILLER,filler)
 	__ADD(TC_PRIO_BULK,bulk)

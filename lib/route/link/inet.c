@@ -132,7 +132,7 @@ nla_put_failure:
 	return -NLE_MSGSIZE;
 }
 
-static struct trans_tbl inet_devconf[] = {
+static const struct trans_tbl inet_devconf[] = {
 	__ADD(IPV4_DEVCONF_FORWARDING, forwarding)
 	__ADD(IPV4_DEVCONF_MC_FORWARDING, mc_forwarding)
 	__ADD(IPV4_DEVCONF_PROXY_ARP, proxy_arp)

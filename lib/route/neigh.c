@@ -227,7 +227,7 @@ static int neigh_compare(struct nl_object *_a, struct nl_object *_b,
 	return diff;
 }
 
-static struct trans_tbl neigh_attrs[] = {
+static const struct trans_tbl neigh_attrs[] = {
 	__ADD(NEIGH_ATTR_FLAGS, flags)
 	__ADD(NEIGH_ATTR_STATE, state)
 	__ADD(NEIGH_ATTR_LLADDR, lladdr)
@@ -611,7 +611,7 @@ int rtnl_neigh_delete(struct nl_sock *sk, struct rtnl_neigh *neigh,
  * @{
  */
 
-static struct trans_tbl neigh_states[] = {
+static const struct trans_tbl neigh_states[] = {
 	__ADD(NUD_INCOMPLETE, incomplete)
 	__ADD(NUD_REACHABLE, reachable)
 	__ADD(NUD_STALE, stale)
@@ -640,7 +640,7 @@ int rtnl_neigh_str2state(const char *name)
  * @{
  */
 
-static struct trans_tbl neigh_flags[] = {
+static const struct trans_tbl neigh_flags[] = {
 	__ADD(NTF_USE, use)
 	__ADD(NTF_PROXY, proxy)
 	__ADD(NTF_ROUTER, router)

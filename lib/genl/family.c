@@ -95,7 +95,7 @@ static void family_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 		family->gf_id, family->gf_name, family->gf_version);
 }
 
-static struct trans_tbl ops_flags[] = {
+static const struct trans_tbl ops_flags[] = {
 	__ADD(GENL_ADMIN_PERM, admin-perm)
 	__ADD(GENL_CMD_CAP_DO, has-doit)
 	__ADD(GENL_CMD_CAP_DUMP, has-dump)

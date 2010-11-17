@@ -273,7 +273,7 @@ static int rule_compare(struct nl_object *_a, struct nl_object *_b,
 	return diff;
 }
 
-static struct trans_tbl rule_attrs[] = {
+static const struct trans_tbl rule_attrs[] = {
 	__ADD(RULE_ATTR_FAMILY, family)
 	__ADD(RULE_ATTR_TABLE, table)
 	__ADD(RULE_ATTR_ACTION, action)

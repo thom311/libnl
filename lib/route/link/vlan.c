@@ -47,7 +47,7 @@ struct vlan_info
 };
 /** @endcond */
 
-static struct trans_tbl vlan_flags[] = {
+static const struct trans_tbl vlan_flags[] = {
 	__ADD(VLAN_FLAG_REORDER_HDR, reorder_hdr)
 };
 

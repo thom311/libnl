@@ -52,7 +52,7 @@ int nl_rtgen_request(struct nl_sock *sk, int type, int family, int flags)
  * @{
  */
 
-static struct trans_tbl rtntypes[] = {
+static const struct trans_tbl rtntypes[] = {
 	__ADD(RTN_UNSPEC,unspec)
 	__ADD(RTN_UNICAST,unicast)
 	__ADD(RTN_LOCAL,local)
@@ -84,7 +84,7 @@ int nl_str2rtntype(const char *name)
  * @{
  */
 
-static struct trans_tbl scopes[] = {
+static const struct trans_tbl scopes[] = {
 	__ADD(255,nowhere)
 	__ADD(254,host)
 	__ADD(253,link)

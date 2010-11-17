@@ -56,7 +56,7 @@ static void nfnl_log_dump(struct nl_object *a, struct nl_dump_params *p)
 	nl_dump(p, "\n");
 }
 
-static struct trans_tbl copy_modes[] = {
+static const struct trans_tbl copy_modes[] = {
 	__ADD(NFNL_LOG_COPY_NONE,	none)
 	__ADD(NFNL_LOG_COPY_META,	meta)
 	__ADD(NFNL_LOG_COPY_PACKET,	packet)
@@ -214,7 +214,7 @@ void nfnl_log_unset_flags(struct nfnl_log *log, unsigned int flags)
 	log->log_flag_mask |= flags;
 }
 
-static struct trans_tbl log_flags[] = {
+static const struct trans_tbl log_flags[] = {
 	__ADD(NFNL_LOG_FLAG_SEQ,	seq)
 	__ADD(NFNL_LOG_FLAG_SEQ_GLOBAL,	seq_global)
 };
@@ -254,7 +254,7 @@ static int nfnl_log_compare(struct nl_object *_a, struct nl_object *_b,
 	return diff;
 }
 
-static struct trans_tbl nfnl_log_attrs[] = {
+static const struct trans_tbl nfnl_log_attrs[] = {
 	__ADD(LOG_ATTR_GROUP,		group)
 	__ADD(LOG_ATTR_COPY_MODE,	copy_mode)
 	__ADD(LOG_ATTR_COPY_RANGE,	copy_range)

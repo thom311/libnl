@@ -139,7 +139,7 @@ int rtnl_route_str2proto(const char *name)
  * @{
  */
 
-static struct trans_tbl route_metrices[] = {
+static const struct trans_tbl route_metrices[] = {
 	__ADD(RTAX_UNSPEC, unspec)
 	__ADD(RTAX_LOCK, lock)
 	__ADD(RTAX_MTU, mtu)

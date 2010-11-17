@@ -744,7 +744,7 @@ struct ucred *nlmsg_get_creds(struct nl_msg *msg)
  * @{
  */
 
-static struct trans_tbl nl_msgtypes[] = {
+static const struct trans_tbl nl_msgtypes[] = {
 	__ADD(NLMSG_NOOP,NOOP)
 	__ADD(NLMSG_ERROR,ERROR)
 	__ADD(NLMSG_DONE,DONE)

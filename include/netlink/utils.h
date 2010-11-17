@@ -45,6 +45,7 @@ extern double	nl_cancel_down_us(uint32_t, char **);
 
 /* generic unit translations */
 extern long	nl_size2int(const char *);
+extern char *	nl_size2str(const size_t, char *, const size_t);
 extern long	nl_prob2int(const char *);
 
 /* time translations */

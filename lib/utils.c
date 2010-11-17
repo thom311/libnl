@@ -224,6 +224,56 @@ long nl_size2int(const char *str)
 	return l;
 }
 
+static const struct {
+	double limit;
+	const char *unit;
+} size_units[] = {
+	{ 1024. * 1024. * 1024. * 1024. * 1024., "EiB" },
+	{ 1024. * 1024. * 1024. * 1024., "TiB" },
+	{ 1024. * 1024. * 1024., "GiB" },
+	{ 1024. * 1024., "MiB" },
+	{ 1024., "KiB" },
+	{ 0., "B" },
+};
+
+/**
+ * Convert a size toa character string
+ * @arg size		Size in number of bytes
+ * @arg buf		Buffer to write character string to
+ * @arg len		Size of buf
+ *
+ * This function converts a value in bytes to a human readable representation
+ * of it. The function uses IEC prefixes:
+ *
+ * @code
+ * 1024 bytes => 1 KiB
+ * 1048576 bytes => 1 MiB
+ * @endcode
+ *
+ * The highest prefix is used which ensures a result of >= 1.0, the result
+ * is provided as floating point number with a maximum precision of 2 digits:
+ * @code
+ * 965176 bytes => 942.55 KiB
+ * @endcode
+ *
+ * @return pointer to buf
+ */
+char *nl_size2str(const size_t size, char *buf, const size_t len)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(size_units); i++) {
+		if (size >= size_units[i].limit) {
+			snprintf(buf, len, "%.2g%s",
+				(double) size / size_units[i].limit,
+				size_units[i].unit);
+			return buf;
+		}
+	}
+
+	BUG();
+}
+
 /**
  * Convert a character string to a probability
  * @arg str		probability encoded as character string

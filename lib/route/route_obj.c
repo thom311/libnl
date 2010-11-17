@@ -284,8 +284,8 @@ static void route_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 		nl_dump_line(p, "    used %u refcnt %u last-use %us "
 				"expires %us\n",
 			     ci->rtci_used, ci->rtci_clntref,
-			     ci->rtci_last_use / nl_get_hz(),
-			     ci->rtci_expires / nl_get_hz());
+			     ci->rtci_last_use / nl_get_user_hz(),
+			     ci->rtci_expires / nl_get_user_hz());
 	}
 }
 

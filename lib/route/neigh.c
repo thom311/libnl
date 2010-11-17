@@ -367,7 +367,7 @@ static void neigh_dump_details(struct nl_object *a, struct nl_dump_params *p)
 {
 	char rtn_type[32];
 	struct rtnl_neigh *n = (struct rtnl_neigh *) a;
-	int hz = nl_get_hz();
+	int hz = nl_get_user_hz();
 
 	neigh_dump_line(a, p);
 

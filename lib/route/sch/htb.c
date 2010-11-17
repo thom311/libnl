@@ -284,14 +284,14 @@ static struct nl_msg *htb_class_get_opts(struct rtnl_class *class)
 	if (d->ch_mask & SCH_HTB_HAS_RBUFFER)
 		buffer = d->ch_rbuffer;
 	else
-		buffer = opts.rate.rate / nl_get_hz() + mtu;
+		buffer = opts.rate.rate / nl_get_user_hz() + mtu; /* XXX */
 
 	opts.buffer = rtnl_tc_calc_txtime(buffer, opts.rate.rate);
 
 	if (d->ch_mask & SCH_HTB_HAS_CBUFFER)
 		cbuffer = d->ch_cbuffer;
 	else
-		cbuffer = opts.ceil.rate / nl_get_hz() + mtu;
+		cbuffer = opts.ceil.rate / nl_get_user_hz() + mtu; /* XXX */
 
 	opts.cbuffer = rtnl_tc_calc_txtime(cbuffer, opts.ceil.rate);
 

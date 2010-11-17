@@ -313,11 +313,15 @@ static void __init get_psched_settings(void)
 			strncpy(name, "/proc/net/psched", sizeof(name) - 1);
 		
 		if ((fd = fopen(name, "r"))) {
-			uint32_t tick, us;
+			uint32_t ns_per_usec, ns_per_tick;
 			/* the file contains 4 hexadecimals, but we just use
 			   the first two of them */
-			fscanf(fd, "%08x %08x", &tick, &us);
-			ticks_per_usec = (double)tick/(double)us;
+			fscanf(fd, "%08x %08x", &ns_per_usec, &ns_per_tick);
+
+			ticks_per_usec = (double) ns_per_usec / 
+					 (double) ns_per_tick;
+
+
 			fclose(fd);
 		}
 	}
@@ -327,7 +331,7 @@ static void __init get_psched_settings(void)
 /**
  * Return the value of HZ
  */
-int nl_get_hz(void)
+int nl_get_user_hz(void)
 {
 	return user_hz;
 }

@@ -93,7 +93,7 @@ static void sfq_dump_line(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
 
 	if (sfq)
 		nl_dump(p, " quantum %u perturb %us", sfq->qs_quantum,
-			nl_ticks2us(sfq->qs_perturb * nl_get_hz()));
+			sfq->qs_perturb);
 }
 
 static void sfq_dump_details(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)

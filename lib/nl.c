@@ -548,14 +548,18 @@ continue_reading:
 		/* Sequence number checking. The check may be done by
 		 * the user, otherwise a very simple check is applied
 		 * enforcing strict ordering */
-		if (cb->cb_set[NL_CB_SEQ_CHECK])
+		if (cb->cb_set[NL_CB_SEQ_CHECK]) {
 			NL_CB_CALL(cb, NL_CB_SEQ_CHECK, msg);
-		else if (hdr->nlmsg_seq != sk->s_seq_expect) {
-			if (cb->cb_set[NL_CB_INVALID])
-				NL_CB_CALL(cb, NL_CB_INVALID, msg);
-			else {
-				err = -NLE_SEQ_MISMATCH;
-				goto out;
+
+		/* Only do sequence checking if auto-ack mode is enabled */
+		} else if (!(sk->s_flags & NL_NO_AUTO_ACK)) {
+			if (hdr->nlmsg_seq != sk->s_seq_expect) {
+				if (cb->cb_set[NL_CB_INVALID])
+					NL_CB_CALL(cb, NL_CB_INVALID, msg);
+				else {
+					err = -NLE_SEQ_MISMATCH;
+					goto out;
+				}
 			}
 		}
 

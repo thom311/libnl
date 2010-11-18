@@ -249,7 +249,7 @@ int nfnl_queue_msg_send_verdict_payload(struct nl_sock *nlh,
 	iov[2].iov_base = (void *) payload_data;
 	iov[2].iov_len = NLA_ALIGN(payload_len);
 
-	nl_auto_complete(nlh, nlmsg);
+	nl_complete_msg(nlh, nlmsg);
 	err = nl_send_iovec(nlh, nlmsg, iov, 3);
 
 	nlmsg_free(nlmsg);

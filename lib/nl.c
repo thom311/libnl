@@ -288,7 +288,7 @@ int nl_send(struct nl_sock *sk, struct nl_msg *msg)
 	return nl_send_iovec(sk, msg, &iov, 1);
 }
 
-void nl_auto_complete(struct nl_sock *sk, struct nl_msg *msg)
+void nl_complete_msg(struct nl_sock *sk, struct nl_msg *msg)
 {
 	struct nlmsghdr *nlh;
 
@@ -308,10 +308,18 @@ void nl_auto_complete(struct nl_sock *sk, struct nl_msg *msg)
 		nlh->nlmsg_flags |= NLM_F_ACK;
 }
 
+void nl_auto_complete(struct nl_sock *sk, struct nl_msg *msg)
+{
+	nl_complete_msg(sk, msg);
+}
+
 /**
- * Send netlink message and check & extend header values as needed.
+ * Automatically complete and send a netlink message
  * @arg sk		Netlink socket.
  * @arg msg		Netlink message to be sent.
+ *
+ * This function takes a netlink message and passes it on to
+ * nl_auto_complete() for completion.
  *
  * Checks the netlink message \c nlh for completness and extends it
  * as required before sending it out. Checked fields include pid,
@@ -320,16 +328,21 @@ void nl_auto_complete(struct nl_sock *sk, struct nl_msg *msg)
  * @see nl_send()
  * @return Number of characters sent or a negative error code.
  */
-int nl_send_auto_complete(struct nl_sock *sk, struct nl_msg *msg)
+int nl_send_auto(struct nl_sock *sk, struct nl_msg *msg)
 {
 	struct nl_cb *cb = sk->s_cb;
 
-	nl_auto_complete(sk, msg);
+	nl_complete_msg(sk, msg);
 
 	if (cb->cb_send_ow)
 		return cb->cb_send_ow(sk, msg);
 	else
 		return nl_send(sk, msg);
+}
+
+int nl_send_auto_complete(struct nl_sock *sk, struct nl_msg *msg)
+{
+	return nl_send_auto(sk, msg);
 }
 
 /**

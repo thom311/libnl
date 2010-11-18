@@ -239,7 +239,7 @@ void nl_socket_enable_auto_ack(struct nl_sock *sk)
  * @{
  */
 
-uint32_t nl_socket_get_local_port(struct nl_sock *sk)
+uint32_t nl_socket_get_local_port(const struct nl_sock *sk)
 {
 	return sk->s_local.nl_pid;
 }
@@ -388,7 +388,7 @@ void nl_join_groups(struct nl_sock *sk, int groups)
  * @{
  */
 
-uint32_t nl_socket_get_peer_port(struct nl_sock *sk)
+uint32_t nl_socket_get_peer_port(const struct nl_sock *sk)
 {
 	return sk->s_peer.nl_pid;
 }
@@ -398,7 +398,7 @@ void nl_socket_set_peer_port(struct nl_sock *sk, uint32_t port)
 	sk->s_peer.nl_pid = port;
 }
 
-uint32_t nl_socket_get_peer_groups(struct nl_sock *sk)
+uint32_t nl_socket_get_peer_groups(const struct nl_sock *sk)
 {
 	return sk->s_peer.nl_groups;
 }
@@ -417,7 +417,7 @@ void nl_socket_set_peer_groups(struct nl_sock *sk, uint32_t groups)
  * @{
  */
 
-int nl_socket_get_fd(struct nl_sock *sk)
+int nl_socket_get_fd(const struct nl_sock *sk)
 {
 	return sk->s_fd;
 }
@@ -428,7 +428,7 @@ int nl_socket_get_fd(struct nl_sock *sk)
  *
  * @return 0 on success or a negative error code.
  */
-int nl_socket_set_nonblocking(struct nl_sock *sk)
+int nl_socket_set_nonblocking(const struct nl_sock *sk)
 {
 	if (sk->s_fd == -1)
 		return -NLE_BAD_SOCK;
@@ -464,7 +464,7 @@ void nl_socket_disable_msg_peek(struct nl_sock *sk)
  * @{
  */
 
-struct nl_cb *nl_socket_get_cb(struct nl_sock *sk)
+struct nl_cb *nl_socket_get_cb(const struct nl_sock *sk)
 {
 	return nl_cb_get(sk->s_cb);
 }

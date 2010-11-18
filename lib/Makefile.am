@@ -7,7 +7,7 @@ lib_LTLIBRARIES = \
 	libnl.la libnl-genl.la libnl-route.la libnl-nf.la
 
 libnl_la_SOURCES = \
-	addr.c attr.c cache.c cache_mngr.c cache_mngt.c data.c doc.c \
+	addr.c attr.c cache.c cache_mngr.c cache_mngt.c data.c \
 	error.c handlers.c msg.c nl.c object.c socket.c utils.c
 
 libnl_genl_la_LIBADD  = libnl.la

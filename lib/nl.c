@@ -211,8 +211,8 @@ int nl_sendmsg(struct nl_sock *sk, struct nl_msg *msg, struct msghdr *hdr)
 
 	cb = sk->s_cb;
 	if (cb->cb_set[NL_CB_MSG_OUT])
-		if (nl_cb_call(cb, NL_CB_MSG_OUT, msg) != NL_OK)
-			return 0;
+		if ((ret = nl_cb_call(cb, NL_CB_MSG_OUT, msg)) != NL_OK)
+			return ret;
 
 	ret = sendmsg(sk->s_fd, hdr, 0);
 	if (ret < 0)

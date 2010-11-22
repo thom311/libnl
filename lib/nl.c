@@ -427,6 +427,8 @@ int nl_recv(struct nl_sock *sk, struct sockaddr_nl *nla,
 	};
 	struct cmsghdr *cmsg;
 
+	memset(nla, 0, sizeof(*nla));
+
 	if (sk->s_flags & NL_MSG_PEEK)
 		flags |= MSG_PEEK;
 

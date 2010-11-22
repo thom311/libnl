@@ -485,8 +485,10 @@ retry:
 	for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
 		if (cmsg->cmsg_level == SOL_SOCKET &&
 		    cmsg->cmsg_type == SCM_CREDENTIALS) {
-			*creds = calloc(1, sizeof(struct ucred));
-			memcpy(*creds, CMSG_DATA(cmsg), sizeof(struct ucred));
+			if (creds) {
+				*creds = calloc(1, sizeof(struct ucred));
+				memcpy(*creds, CMSG_DATA(cmsg), sizeof(struct ucred));
+			}
 			break;
 		}
 	}

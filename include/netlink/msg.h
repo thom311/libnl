@@ -44,15 +44,13 @@ struct nl_msg;
 struct nl_tree;
 struct ucred;
 
-/* size calculations */
-extern int		  nlmsg_msg_size(int);
-extern int		  nlmsg_total_size(int);
-extern int		  nlmsg_padlen(int);
+extern int			nlmsg_size(int);
+extern int			nlmsg_total_size(int);
+extern int			nlmsg_padlen(int);
 
-/* payload access */
-extern void *		  nlmsg_data(const struct nlmsghdr *);
-extern int		  nlmsg_len(const struct nlmsghdr *);
-extern void *		  nlmsg_tail(const struct nlmsghdr *);
+extern void *			nlmsg_data(const struct nlmsghdr *);
+extern int			nlmsg_datalen(const struct nlmsghdr *);
+extern void *			nlmsg_tail(const struct nlmsghdr *);
 
 /* attribute access */
 extern struct nlattr *	  nlmsg_attrdata(const struct nlmsghdr *, int);

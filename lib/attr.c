@@ -1115,7 +1115,7 @@ int nla_put_nested(struct nl_msg *msg, int attrtype, struct nl_msg *nested)
 	NL_DBG(2, "msg %p: attr <> %d: adding msg %p as nested attribute\n",
 		msg, attrtype, nested);
 
-	return nla_put(msg, attrtype, nlmsg_len(nested->nm_nlh),
+	return nla_put(msg, attrtype, nlmsg_datalen(nested->nm_nlh),
 		       nlmsg_data(nested->nm_nlh));
 }
 

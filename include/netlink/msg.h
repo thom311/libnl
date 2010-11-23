@@ -126,12 +126,14 @@ extern void		nl_msg_dump(struct nl_msg *, FILE *);
  * @arg pos	loop counter, set to current message
  * @arg head	head of message stream
  * @arg len	length of message stream
- * @arg rem	initialized to len, holds bytes currently remaining in stream
  */
+#define nlmsg_for_each(pos, head, len) \
+	for (int rem = len, pos = head; \
+		nlmsg_ok(pos, rem); \
+		pos = nlmsg_next(pos, &rem))
+
 #define nlmsg_for_each_msg(pos, head, len, rem) \
-	for (pos = head, rem = len; \
-	     nlmsg_ok(pos, rem); \
-	     pos = nlmsg_next(pos, &(rem)))
+		nlmsg_for_each(pos, head, len)
 
 /** @} */
 

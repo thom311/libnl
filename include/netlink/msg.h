@@ -25,18 +25,21 @@ extern "C" {
 /**
  * @ingroup msg
  * @brief
- * Will cause the netlink pid to be set to the pid assigned to
- * the netlink handle (socket) just before sending the message off.
- * @note Requires the use of nl_send_auto_complete()!
+ * Will cause the netlink port to be set to the port assigned to
+ * the netlink icoket ust before sending the message off.
+ *
+ * @note Requires the use of nl_send_auto()!
  */
-#define NL_AUTO_PID	0
+#define NL_AUTO_PORT	0
+#define NL_AUTO_PID	NL_AUTO_PORT
 
 /**
  * @ingroup msg
  * @brief
  * May be used to refer to a sequence number which should be
  * automatically set just before sending the message off.
- * @note Requires the use of nl_send_auto_complete()!
+ *
+ * @note Requires the use of nl_send_auto()!
  */
 #define NL_AUTO_SEQ	0
 

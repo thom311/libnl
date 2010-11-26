@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -149,6 +149,17 @@ static inline int dnet_pton(const char *src, char *addrbuf)
 	*(uint16_t *)addrbuf = dn_ntohs((area << 10) | node);
 
 	return 1;
+}
+
+static void addr_destroy(struct nl_addr *addr)
+{
+	if (!addr)
+		return;
+
+	if (addr->a_refcnt != 1)
+		BUG();
+
+	free(addr);
 }
 
 /**
@@ -395,7 +406,7 @@ prefix:
 		char *p;
 		long pl = strtol(++prefix, &p, 0);
 		if (p == prefix) {
-			nl_addr_destroy(addr);
+			addr_destroy(addr);
 			err = -NLE_INVAL;
 			goto errout;
 		}
@@ -431,28 +442,6 @@ struct nl_addr *nl_addr_clone(struct nl_addr *addr)
 /** @} */
 
 /**
- * @name Destroying Abstract Addresses
- * @{
- */
-
-/**
- * Destroy abstract address object.
- * @arg addr		Abstract address object.
- */
-void nl_addr_destroy(struct nl_addr *addr)
-{
-	if (!addr)
-		return;
-
-	if (addr->a_refcnt != 1)
-		BUG();
-
-	free(addr);
-}
-
-/** @} */
-
-/**
  * @name Managing Usage References
  * @{
  */
@@ -470,7 +459,7 @@ void nl_addr_put(struct nl_addr *addr)
 		return;
 
 	if (addr->a_refcnt == 1)
-		nl_addr_destroy(addr);
+		addr_destroy(addr);
 	else
 		addr->a_refcnt--;
 }

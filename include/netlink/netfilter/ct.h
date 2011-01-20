@@ -44,7 +44,7 @@ extern int	nfnl_ct_add(struct nl_sock *, const struct nfnl_ct *, int);
 
 extern int	nfnl_ct_build_delete_request(const struct nfnl_ct *, int,
 					     struct nl_msg **);
-extern int	nfnl_ct_delete(struct nl_sock *, const struct nfnl_ct *, int);
+extern int	nfnl_ct_del(struct nl_sock *, const struct nfnl_ct *, int);
 
 extern int	nfnl_ct_build_query_request(const struct nfnl_ct *, int,
 					    struct nl_msg **);

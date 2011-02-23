@@ -112,7 +112,7 @@
  * // Two ways exist to commit this change request, the first one is to
  * // build the required netlink message and send it out in one single
  * // step:
- * rtnl_link_change(sk, old, request);
+ * rtnl_link_change(sk, old, request, 0);
  *
  * // An alternative way is to build the netlink message and send it
  * // out yourself using nl_send_auto_complete()

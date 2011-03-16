@@ -1,6 +1,14 @@
 #ifndef __NETLINK_KERNEL_H_
 #define __NETLINK_KERNEL_H_
 
+#if 0
+
+/*
+ * FIXME: Goal is to preseve the documentation but make it simple
+ * to keep linux/netlink.h in sync. Maybe use named documentation
+ * sections.
+ */
+
 /**
  * Netlink socket address
  * @ingroup nl
@@ -281,4 +289,5 @@ struct nlattr {
 
 /** @} */
 
+#endif
 #endif	/* __LINUX_NETLINK_H */

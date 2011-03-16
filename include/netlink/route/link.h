@@ -46,36 +46,36 @@ enum rtnl_link_st {
 	RTNL_LINK_TX_WIN_ERR,
 	RTNL_LINK_COLLISIONS,
 	RTNL_LINK_MULTICAST,
-	RTNL_LINK_INPKTS,			/* InReceives */
-	RTNL_LINK_INHDRERRORS,			/* InHdrErrors */
-	RTNL_LINK_INTOOBIGERRORS,		/* InTooBigErrors */
-	RTNL_LINK_INNOROUTES,			/* InNoRoutes */
-	RTNL_LINK_INADDRERRORS,			/* InAddrErrors */
-	RTNL_LINK_INUNKNOWNPROTOS,		/* InUnknownProtos */
-	RTNL_LINK_INTRUNCATEDPKTS,		/* InTruncatedPkts */
-	RTNL_LINK_INDISCARDS,			/* InDiscards */
-	RTNL_LINK_INDELIVERS,			/* InDelivers */
-	RTNL_LINK_OUTFORWDATAGRAMS,		/* OutForwDatagrams */
-	RTNL_LINK_OUTPKTS,			/* OutRequests */
-	RTNL_LINK_OUTDISCARDS,			/* OutDiscards */
-	RTNL_LINK_OUTNOROUTES,			/* OutNoRoutes */
-	RTNL_LINK_REASMTIMEOUT,			/* ReasmTimeout */
-	RTNL_LINK_REASMREQDS,			/* ReasmReqds */
-	RTNL_LINK_REASMOKS,			/* ReasmOKs */
-	RTNL_LINK_REASMFAILS,			/* ReasmFails */
-	RTNL_LINK_FRAGOKS,			/* FragOKs */
-	RTNL_LINK_FRAGFAILS,			/* FragFails */
-	RTNL_LINK_FRAGCREATES,			/* FragCreates */
-	RTNL_LINK_INMCASTPKTS,			/* InMcastPkts */
-	RTNL_LINK_OUTMCASTPKTS,			/* OutMcastPkts */
-	RTNL_LINK_INBCASTPKTS,			/* InBcastPkts */
-	RTNL_LINK_OUTBCASTPKTS,			/* OutBcastPkts */
-	RTNL_LINK_INOCTETS,			/* InOctets */
-	RTNL_LINK_OUTOCTETS,			/* OutOctets */
-	RTNL_LINK_INMCASTOCTETS,		/* InMcastOctets */
-	RTNL_LINK_OUTMCASTOCTETS,		/* OutMcastOctets */
-	RTNL_LINK_INBCASTOCTETS,		/* InBcastOctets */
-	RTNL_LINK_OUTBCASTOCTETS,		/* OutBcastOctets */
+	RTNL_LINK_IP6_INPKTS,			/* InReceives */
+	RTNL_LINK_IP6_INHDRERRORS,		/* InHdrErrors */
+	RTNL_LINK_IP6_INTOOBIGERRORS,		/* InTooBigErrors */
+	RTNL_LINK_IP6_INNOROUTES,		/* InNoRoutes */
+	RTNL_LINK_IP6_INADDRERRORS,		/* InAddrErrors */
+	RTNL_LINK_IP6_INUNKNOWNPROTOS,		/* InUnknownProtos */
+	RTNL_LINK_IP6_INTRUNCATEDPKTS,		/* InTruncatedPkts */
+	RTNL_LINK_IP6_INDISCARDS,		/* InDiscards */
+	RTNL_LINK_IP6_INDELIVERS,		/* InDelivers */
+	RTNL_LINK_IP6_OUTFORWDATAGRAMS,		/* OutForwDatagrams */
+	RTNL_LINK_IP6_OUTPKTS,			/* OutRequests */
+	RTNL_LINK_IP6_OUTDISCARDS,		/* OutDiscards */
+	RTNL_LINK_IP6_OUTNOROUTES,		/* OutNoRoutes */
+	RTNL_LINK_IP6_REASMTIMEOUT,		/* ReasmTimeout */
+	RTNL_LINK_IP6_REASMREQDS,		/* ReasmReqds */
+	RTNL_LINK_IP6_REASMOKS,			/* ReasmOKs */
+	RTNL_LINK_IP6_REASMFAILS,		/* ReasmFails */
+	RTNL_LINK_IP6_FRAGOKS,			/* FragOKs */
+	RTNL_LINK_IP6_FRAGFAILS,		/* FragFails */
+	RTNL_LINK_IP6_FRAGCREATES,		/* FragCreates */
+	RTNL_LINK_IP6_INMCASTPKTS,		/* InMcastPkts */
+	RTNL_LINK_IP6_OUTMCASTPKTS,		/* OutMcastPkts */
+	RTNL_LINK_IP6_INBCASTPKTS,		/* InBcastPkts */
+	RTNL_LINK_IP6_OUTBCASTPKTS,		/* OutBcastPkts */
+	RTNL_LINK_IP6_INOCTETS,			/* InOctets */
+	RTNL_LINK_IP6_OUTOCTETS,		/* OutOctets */
+	RTNL_LINK_IP6_INMCASTOCTETS,		/* InMcastOctets */
+	RTNL_LINK_IP6_OUTMCASTOCTETS,		/* OutMcastOctets */
+	RTNL_LINK_IP6_INBCASTOCTETS,		/* InBcastOctets */
+	RTNL_LINK_IP6_OUTBCASTOCTETS,		/* OutBcastOctets */
 	RTNL_LINK_ICMP6_INMSGS,			/* InMsgs */
 	RTNL_LINK_ICMP6_INERRORS,		/* InErrors */
 	RTNL_LINK_ICMP6_OUTMSGS,		/* OutMsgs */

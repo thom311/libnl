@@ -6,7 +6,7 @@
 #	License as published by the Free Software Foundation version 2.1
 #	of the License.
 #
-# Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
+# Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
 #
 
 AC_INIT(libnl, 2.1, tgraf@suug.ch)
@@ -14,6 +14,11 @@ AC_CONFIG_HEADERS([lib/defs.h])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall foreign subdir-objects])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES(yes)], [])
+
+MAJ_VERSION=2
+AC_SUBST([MAJ_VERSION])
+MIN_VERSION=1
+AC_SUBST([MIN_VERSION])
 
 AC_PROG_CC
 AM_PROG_CC_C_O

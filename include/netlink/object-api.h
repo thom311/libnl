@@ -190,6 +190,12 @@ extern "C" {
 	int			ce_flags;	\
 	uint32_t		ce_mask;
 
+struct nl_object
+{
+	NLHDR_COMMON
+};
+
+
 /**
  * Return true if attribute is available in both objects
  * @arg A		an object

@@ -101,11 +101,6 @@ struct nl_parser_param;
 
 #define NL_OBJ_MARK		1
 
-struct nl_object
-{
-	NLHDR_COMMON
-};
-
 struct nl_data
 {
 	size_t			d_size;

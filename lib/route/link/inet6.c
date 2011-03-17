@@ -76,7 +76,7 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 		uint64_t *cnt = nla_data(tb[IFLA_INET6_STATS]);
 		int i;
 
-		for (i = 1; i <= __IPSTATS_MIB_MAX; i++)
+		for (i = 1; i < __IPSTATS_MIB_MAX; i++)
 			rtnl_link_set_stat(link, RTNL_LINK_IP6_INPKTS + i - 1,
 					   cnt[i]);
 	}
@@ -85,7 +85,7 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 		uint64_t *cnt = nla_data(tb[IFLA_INET6_ICMP6STATS]);
 		int i;
 
-		for (i = 1; i <= __ICMP6_MIB_MAX; i++)
+		for (i = 1; i < __ICMP6_MIB_MAX; i++)
 			rtnl_link_set_stat(link, RTNL_LINK_ICMP6_INMSGS + i - 1,
 					   cnt[i]);
 	}

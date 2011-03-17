@@ -824,8 +824,15 @@ void nl_cache_foreach_filter(struct nl_cache *cache, struct nl_object *filter,
 	ops = cache->c_ops->co_obj_ops;
 
 	nl_list_for_each_entry_safe(obj, tmp, &cache->c_items, ce_list) {
-		if (filter && !nl_object_match_filter(obj, filter))
-			continue;
+		if (filter) {
+			int diff = nl_object_match_filter(obj, filter);
+
+			NL_DBG(3, "%p<->%p object difference: %x\n",
+				obj, filter, diff);
+
+			if (!diff)
+				continue;
+		}
 
 		cb(obj, arg);
 	}

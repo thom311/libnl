@@ -26,6 +26,7 @@ extern void rtnl_htb_set_defcls(struct rtnl_qdisc *, uint32_t);
 
 extern void rtnl_htb_set_prio(struct rtnl_class *, uint32_t);
 extern void rtnl_htb_set_rate(struct rtnl_class *, uint32_t);
+extern uint32_t rtnl_htb_get_rate(struct rtnl_class *);
 extern void rtnl_htb_set_ceil(struct rtnl_class *, uint32_t);
 extern void rtnl_htb_set_rbuffer(struct rtnl_class *, uint32_t);
 extern void rtnl_htb_set_cbuffer(struct rtnl_class *, uint32_t);

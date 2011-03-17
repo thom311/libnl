@@ -361,6 +361,15 @@ void rtnl_htb_set_rate(struct rtnl_class *class, uint32_t rate)
 	d->ch_mask |= SCH_HTB_HAS_RATE;
 }
 
+uint32_t rtnl_htb_get_rate(struct rtnl_class *class)
+{
+	struct rtnl_htb_class *d = htb_class(class);
+	if (d == NULL)
+		return 0;
+
+	return d->ch_rate.rs_rate;
+}
+
 /**
  * Set ceil of HTB class.
  * @arg class		HTB class to be modified.

@@ -834,7 +834,12 @@ void nl_cache_foreach_filter(struct nl_cache *cache, struct nl_object *filter,
 				continue;
 		}
 
+		/* Caller may hold obj for a long time */
+		nl_object_get(obj);
+
 		cb(obj, arg);
+
+		nl_object_put(obj);
 	}
 }
 

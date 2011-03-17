@@ -400,6 +400,9 @@ static struct nl_msg *__nlmsg_alloc(size_t len)
 {
 	struct nl_msg *nm;
 
+	if (len < sizeof(struct nlmsghdr))
+		len = sizeof(struct nlmsghdr);
+
 	nm = calloc(1, sizeof(*nm));
 	if (!nm)
 		goto errout;

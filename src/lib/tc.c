@@ -15,7 +15,7 @@
 
 /**
  * @ingroup cli
- * @defgroup cli_tc Queueing Disciplines
+ * @defgroup cli_tc Traffic Control
  * @{
  */
 void nl_cli_tc_parse_dev(struct rtnl_tc *tc, struct nl_cache *link_cache, char *name)

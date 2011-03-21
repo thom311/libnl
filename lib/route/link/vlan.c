@@ -10,7 +10,7 @@
  */
 
 /**
- * @ingroup link_api
+ * @ingroup link
  * @defgroup vlan VLAN
  * @brief
  *

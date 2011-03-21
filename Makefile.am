@@ -10,7 +10,7 @@ endif
 
 SUBDIRS = include lib doc man $(OPT_DIRS)
 
-pkgconfig_DATA = libnl-2.1.pc
+pkgconfig_DATA = libnl-3.0.pc
 
 sysconfdir = @sysconfdir@/libnl
 sysconf_DATA = etc/pktloc etc/classid

@@ -36,29 +36,12 @@ extern "C" {
 
 extern int tca_parse(struct nlattr **, int, struct rtnl_tc *,
 		     struct nla_policy *);
-extern int  tca_msg_parser(struct nlmsghdr *, struct rtnl_tc *);
-extern void tca_free_data(struct rtnl_tc *);
-extern int  tca_clone(struct rtnl_tc *, struct rtnl_tc *);
-extern void tca_dump_line(struct rtnl_tc *, const char *,
-			  struct nl_dump_params *);
-extern void tca_dump_details(struct rtnl_tc *, struct nl_dump_params *);
-extern void tca_dump_stats(struct rtnl_tc *, struct nl_dump_params *);
-extern int  tca_compare(struct nl_object *, struct nl_object *, uint32_t, int);
-
-extern void	tca_set_kind(struct rtnl_tc *, const char *);
-
-extern int tca_build_msg(struct rtnl_tc *, int, int, struct nl_msg **);
 
 #define RTNL_TC_RTABLE_SIZE	256
 
 extern int rtnl_tc_build_rate_table(struct rtnl_tc *tc, struct rtnl_ratespec *,
 				    uint32_t *);
 
-
-static inline void *tca_priv(struct rtnl_tc *tca)
-{
-	return tca->tc_subdata;
-}
 
 static inline void *tca_xstats(struct rtnl_tc *tca)
 {

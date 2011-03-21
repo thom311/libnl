@@ -6,33 +6,32 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
- * @ingroup qdisc_api
- * @defgroup blackhole Blackhole
+ * @ingroup qdisc
+ * @defgroup qdisc_blackhole Blackhole
  * @{
  */
 
 #include <netlink-local.h>
-#include <netlink-tc.h>
 #include <netlink/netlink.h>
-#include <netlink/route/qdisc.h>
-#include <netlink/route/qdisc-modules.h>
+#include <netlink/route/tc-api.h>
 
-static struct rtnl_qdisc_ops blackhole_ops = {
-	.qo_kind		= "blackhole",
+static struct rtnl_tc_ops blackhole_ops = {
+	.to_kind		= "blackhole",
+	.to_type		= RTNL_TC_TYPE_QDISC,
 };
 
 static void __init blackhole_init(void)
 {
-	rtnl_qdisc_register(&blackhole_ops);
+	rtnl_tc_register(&blackhole_ops);
 }
 
 static void __exit blackhole_exit(void)
 {
-	rtnl_qdisc_unregister(&blackhole_ops);
+	rtnl_tc_unregister(&blackhole_ops);
 }
 
 /** @} */

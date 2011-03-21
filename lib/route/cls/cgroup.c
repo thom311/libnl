@@ -6,12 +6,12 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2009-2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2009-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
- * @ingroup cls_api
- * @defgroup cgroup Control Groups Classifier
+ * @ingroup cls
+ * @defgroup cls_cgroup Control Groups Classifier
  *
  * @{
  */
@@ -21,8 +21,8 @@
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
+#include <netlink/route/tc-api.h>
 #include <netlink/route/classifier.h>
-#include <netlink/route/classifier-modules.h>
 #include <netlink/route/cls/cgroup.h>
 #include <netlink/route/cls/ematch.h>
 
@@ -34,26 +34,28 @@ static struct nla_policy cgroup_policy[TCA_CGROUP_MAX+1] = {
 	[TCA_CGROUP_EMATCHES]	= { .type = NLA_NESTED },
 };
 
-static int cgroup_clone(struct rtnl_cls *_dst, struct rtnl_cls *_src)
+static int cgroup_clone(void *dst, void *src)
 {
 	return -NLE_OPNOTSUPP;
 }
 
-static void cgroup_free_data(struct rtnl_cls *cls)
+static void cgroup_free_data(struct rtnl_tc *tc, void *data)
 {
-	struct rtnl_cgroup *c = rtnl_cls_data(cls);
+	struct rtnl_cgroup *c = data;
+
+	if (!c)
+		return;
 
 	rtnl_ematch_tree_free(c->cg_ematch);
 }
 
-static int cgroup_msg_parser(struct rtnl_cls *cls)
+static int cgroup_msg_parser(struct rtnl_tc *tc, void *data)
 {
-	struct rtnl_cgroup *c = rtnl_cls_data(cls);
 	struct nlattr *tb[TCA_CGROUP_MAX + 1];
+	struct rtnl_cgroup *c = data;
 	int err;
 
-	err = tca_parse(tb, TCA_CGROUP_MAX, (struct rtnl_tc *) cls,
-			cgroup_policy);
+	err = tca_parse(tb, TCA_CGROUP_MAX, tc, cgroup_policy);
 	if (err < 0)
 		return err;
 
@@ -73,9 +75,13 @@ static int cgroup_msg_parser(struct rtnl_cls *cls)
 	return 0;
 }
 
-static void cgroup_dump_line(struct rtnl_cls *cls, struct nl_dump_params *p)
+static void cgroup_dump_line(struct rtnl_tc *tc, void *data,
+			     struct nl_dump_params *p)
 {
-	struct rtnl_cgroup *c = rtnl_cls_data(cls);
+	struct rtnl_cgroup *c = data;
+
+	if (!c)
+		return;
 
 	if (c->cg_mask & CGROUP_ATTR_EMATCH)
 		nl_dump(p, " ematch");
@@ -83,22 +89,34 @@ static void cgroup_dump_line(struct rtnl_cls *cls, struct nl_dump_params *p)
 		nl_dump(p, " match-all");
 }
 
-static void cgroup_dump_details(struct rtnl_cls *cls, struct nl_dump_params *p)
+static void cgroup_dump_details(struct rtnl_tc *tc, void *data,
+				struct nl_dump_params *p)
 {
-	struct rtnl_cgroup *c = rtnl_cls_data(cls);
+	struct rtnl_cgroup *c = data;
+
+	if (!c)
+		return;
 
 	if (c->cg_mask & CGROUP_ATTR_EMATCH) {
 		nl_dump_line(p, "    ematch ");
-		rtnl_ematch_tree_dump(c->cg_ematch, p);
+
+		if (c->cg_ematch)
+			rtnl_ematch_tree_dump(c->cg_ematch, p);
+		else
+			nl_dump(p, "<no tree>");
 	} else
-		nl_dump(p, "no options.\n");
+		nl_dump(p, "no options");
 }
 
-static int cgroup_get_opts(struct rtnl_cls *cls, struct nl_msg *msg)
+static int cgroup_fill_msg(struct rtnl_tc *tc, void *data,
+			   struct nl_msg *msg)
 {
-	struct rtnl_cgroup *c = rtnl_cls_data(cls);
+	struct rtnl_cgroup *c = data;
 
-	if (!(cls->ce_mask & TCA_ATTR_HANDLE))
+	if (!c)
+		BUG();
+
+	if (!(tc->ce_mask & TCA_ATTR_HANDLE))
 		return -NLE_MISSING_ATTR;
 
 	if (c->cg_mask & CGROUP_ATTR_EMATCH)
@@ -116,7 +134,10 @@ static int cgroup_get_opts(struct rtnl_cls *cls, struct nl_msg *msg)
 
 void rtnl_cgroup_set_ematch(struct rtnl_cls *cls, struct rtnl_ematch_tree *tree)
 {
-	struct rtnl_cgroup *c = rtnl_cls_data(cls);
+	struct rtnl_cgroup *c;
+
+	if (!(c = rtnl_tc_data(TC_CAST(cls))))
+		BUG();
 
 	if (c->cg_ematch) {
 		rtnl_ematch_tree_free(c->cg_ematch);
@@ -131,19 +152,25 @@ void rtnl_cgroup_set_ematch(struct rtnl_cls *cls, struct rtnl_ematch_tree *tree)
 
 struct rtnl_ematch_tree *rtnl_cgroup_get_ematch(struct rtnl_cls *cls)
 {
-	return ((struct rtnl_cgroup *) rtnl_cls_data(cls))->cg_ematch;
+	struct rtnl_cgroup *c;
+
+	if (!(c = rtnl_tc_data(TC_CAST(cls))))
+		BUG();
+
+	return c->cg_ematch;
 }
 
 /** @} */
 
-static struct rtnl_cls_ops cgroup_ops = {
-	.co_kind		= "cgroup",
-	.co_size		= sizeof(struct rtnl_cgroup),
-	.co_clone		= cgroup_clone,
-	.co_msg_parser		= cgroup_msg_parser,
-	.co_free_data		= cgroup_free_data,
-	.co_get_opts		= cgroup_get_opts,
-	.co_dump = {
+static struct rtnl_tc_ops cgroup_ops = {
+	.to_kind		= "cgroup",
+	.to_type		= RTNL_TC_TYPE_CLS,
+	.to_size		= sizeof(struct rtnl_cgroup),
+	.to_clone		= cgroup_clone,
+	.to_msg_parser		= cgroup_msg_parser,
+	.to_free_data		= cgroup_free_data,
+	.to_msg_fill		= cgroup_fill_msg,
+	.to_dump = {
 	    [NL_DUMP_LINE]	= cgroup_dump_line,
 	    [NL_DUMP_DETAILS]	= cgroup_dump_details,
 	},
@@ -151,12 +178,12 @@ static struct rtnl_cls_ops cgroup_ops = {
 
 static void __init cgroup_init(void)
 {
-	rtnl_cls_register(&cgroup_ops);
+	rtnl_tc_register(&cgroup_ops);
 }
 
 static void __exit cgroup_exit(void)
 {
-	rtnl_cls_unregister(&cgroup_ops);
+	rtnl_tc_unregister(&cgroup_ops);
 }
 
 /** @} */

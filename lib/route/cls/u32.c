@@ -6,14 +6,14 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2005-2006 Petr Gotthard <petr.gotthard@siemens.com>
  * Copyright (c) 2005-2006 Siemens AG Oesterreich
  */
 
 /**
- * @ingroup cls_api
- * @defgroup u32 Universal 32-bit Classifier
+ * @ingroup cls
+ * @defgroup cls_u32 Universal 32-bit Classifier
  *
  * @{
  */
@@ -23,9 +23,8 @@
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
-#include <netlink/route/tc.h>
+#include <netlink/route/tc-api.h>
 #include <netlink/route/classifier.h>
-#include <netlink/route/classifier-modules.h>
 #include <netlink/route/cls/u32.h>
 
 /** @cond SKIP */
@@ -64,13 +63,13 @@ static struct nla_policy u32_policy[TCA_U32_MAX+1] = {
 	[TCA_U32_PCNT]		= { .minlen = sizeof(struct tc_u32_pcnt) },
 };
 
-static int u32_msg_parser(struct rtnl_cls *cls)
+static int u32_msg_parser(struct rtnl_tc *tc, void *data)
 {
-	struct rtnl_u32 *u = rtnl_cls_data(cls);
+	struct rtnl_u32 *u = data;
 	struct nlattr *tb[TCA_U32_MAX + 1];
 	int err;
 
-	err = tca_parse(tb, TCA_U32_MAX, (struct rtnl_tc *) cls, u32_policy);
+	err = tca_parse(tb, TCA_U32_MAX, tc, u32_policy);
 	if (err < 0)
 		return err;
 
@@ -151,9 +150,9 @@ errout:
 	return err;
 }
 
-static void u32_free_data(struct rtnl_cls *cls)
+static void u32_free_data(struct rtnl_tc *tc, void *data)
 {
-	struct rtnl_u32 *u = rtnl_cls_data(cls);
+	struct rtnl_u32 *u = data;
 
 	nl_data_free(u->cu_selector);
 	nl_data_free(u->cu_act);
@@ -161,10 +160,9 @@ static void u32_free_data(struct rtnl_cls *cls)
 	nl_data_free(u->cu_pcnt);
 }
 
-static int u32_clone(struct rtnl_cls *_dst, struct rtnl_cls *_src)
+static int u32_clone(void *_dst, void *_src)
 {
-	struct rtnl_u32 *dst = rtnl_cls_data(_dst);
-	struct rtnl_u32 *src = rtnl_cls_data(_src);
+	struct rtnl_u32 *dst = _dst, *src = _src;
 
 	if (src->cu_selector &&
 	    !(dst->cu_selector = nl_data_clone(src->cu_selector)))
@@ -182,10 +180,14 @@ static int u32_clone(struct rtnl_cls *_dst, struct rtnl_cls *_src)
 	return 0;
 }
 
-static void u32_dump_line(struct rtnl_cls *cls, struct nl_dump_params *p)
+static void u32_dump_line(struct rtnl_tc *tc, void *data,
+			  struct nl_dump_params *p)
 {
-	struct rtnl_u32 *u = rtnl_cls_data(cls);
+	struct rtnl_u32 *u = data;
 	char buf[32];
+	
+	if (!u)
+		return;
 
 	if (u->cu_mask & U32_ATTR_DIVISOR)
 		nl_dump(p, " divisor %u", u->cu_divisor);
@@ -195,7 +197,7 @@ static void u32_dump_line(struct rtnl_cls *cls, struct nl_dump_params *p)
 }
 
 static void print_selector(struct nl_dump_params *p, struct tc_u32_sel *sel,
-			   struct rtnl_cls *cls, struct rtnl_u32 *u)
+			   struct rtnl_u32 *u)
 {
 	int i;
 	struct tc_u32_key *key;
@@ -253,10 +255,14 @@ static void print_selector(struct nl_dump_params *p, struct tc_u32_sel *sel,
 	}
 }
 
-static void u32_dump_details(struct rtnl_cls *cls, struct nl_dump_params *p)
+static void u32_dump_details(struct rtnl_tc *tc, void *data,
+			     struct nl_dump_params *p)
 {
-	struct rtnl_u32 *u = rtnl_cls_data(cls);
+	struct rtnl_u32 *u = data;
 	struct tc_u32_sel *s;
+
+	if (!u)
+		return;
 
 	if (!(u->cu_mask & U32_ATTR_SELECTOR)) {
 		nl_dump(p, "no-selector\n");
@@ -277,7 +283,7 @@ static void u32_dump_details(struct rtnl_cls *cls, struct nl_dump_params *p)
 	if (u->cu_mask & U32_ATTR_INDEV)
 		nl_dump(p, "indev %s ", u->cu_indev);
 
-	print_selector(p, s, cls, u);
+	print_selector(p, s, u);
 	nl_dump(p, "\n");
 
 #if 0	
@@ -289,9 +295,13 @@ static void u32_dump_details(struct rtnl_cls *cls, struct nl_dump_params *p)
 #endif
 }
 
-static void u32_dump_stats(struct rtnl_cls *cls, struct nl_dump_params *p)
+static void u32_dump_stats(struct rtnl_tc *tc, void *data,
+			   struct nl_dump_params *p)
 {
-	struct rtnl_u32 *u = rtnl_cls_data(cls);
+	struct rtnl_u32 *u = data;
+
+	if (!u)
+		return;
 
 	if (u->cu_mask & U32_ATTR_PCNT) {
 		struct tc_u32_pcnt *pc = u->cu_pcnt->d_data;
@@ -301,9 +311,12 @@ static void u32_dump_stats(struct rtnl_cls *cls, struct nl_dump_params *p)
 	}
 }
 
-static int u32_get_opts(struct rtnl_cls *cls, struct nl_msg *msg)
+static int u32_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 {
-	struct rtnl_u32 *u = rtnl_cls_data(cls);
+	struct rtnl_u32 *u = data;
+
+	if (!u)
+		return 0;
 	
 	if (u->cu_mask & U32_ATTR_DIVISOR)
 		NLA_PUT_U32(msg, TCA_U32_DIVISOR, u->cu_divisor);
@@ -350,7 +363,10 @@ void rtnl_u32_set_handle(struct rtnl_cls *cls, int htid, int hash,
  
 int rtnl_u32_set_classid(struct rtnl_cls *cls, uint32_t classid)
 {
-	struct rtnl_u32 *u = rtnl_cls_data(cls);
+	struct rtnl_u32 *u;
+
+	if (!(u = rtnl_tc_data(TC_CAST(cls))))
+		return -NLE_NOMEM;
 	
 	u->cu_classid = classid;
 	u->cu_mask |= U32_ATTR_CLASSID;
@@ -368,7 +384,10 @@ int rtnl_u32_set_classid(struct rtnl_cls *cls, uint32_t classid)
 int rtnl_u32_set_flags(struct rtnl_cls *cls, int flags)
 {
 	struct tc_u32_sel *sel;
-	struct rtnl_u32 *u = rtnl_cls_data(cls);
+	struct rtnl_u32 *u;
+
+	if (!(u = rtnl_tc_data(TC_CAST(cls))))
+		return -NLE_NOMEM;
 
 	sel = u32_selector_alloc(u);
 	if (!sel)
@@ -398,8 +417,11 @@ int rtnl_u32_add_key(struct rtnl_cls *cls, uint32_t val, uint32_t mask,
 		     int off, int offmask)
 {
 	struct tc_u32_sel *sel;
-	struct rtnl_u32 *u = rtnl_cls_data(cls);
+	struct rtnl_u32 *u;
 	int err;
+
+	if (!(u = rtnl_tc_data(TC_CAST(cls))))
+		return -NLE_NOMEM;
 
 	sel = u32_selector_alloc(u);
 	if (!sel)
@@ -501,14 +523,15 @@ int rtnl_u32_add_key_in6_addr(struct rtnl_cls *cls, struct in6_addr *addr,
 
 /** @} */
 
-static struct rtnl_cls_ops u32_ops = {
-	.co_kind		= "u32",
-	.co_size		= sizeof(struct rtnl_u32),
-	.co_msg_parser		= u32_msg_parser,
-	.co_free_data		= u32_free_data,
-	.co_clone		= u32_clone,
-	.co_get_opts		= u32_get_opts,
-	.co_dump = {
+static struct rtnl_tc_ops u32_ops = {
+	.to_kind		= "u32",
+	.to_type		= RTNL_TC_TYPE_CLS,
+	.to_size		= sizeof(struct rtnl_u32),
+	.to_msg_parser		= u32_msg_parser,
+	.to_free_data		= u32_free_data,
+	.to_clone		= u32_clone,
+	.to_msg_fill		= u32_msg_fill,
+	.to_dump = {
 	    [NL_DUMP_LINE]	= u32_dump_line,
 	    [NL_DUMP_DETAILS]	= u32_dump_details,
 	    [NL_DUMP_STATS]	= u32_dump_stats,
@@ -517,12 +540,12 @@ static struct rtnl_cls_ops u32_ops = {
 
 static void __init u32_init(void)
 {
-	rtnl_cls_register(&u32_ops);
+	rtnl_tc_register(&u32_ops);
 }
 
 static void __exit u32_exit(void)
 {
-	rtnl_cls_unregister(&u32_ops);
+	rtnl_tc_unregister(&u32_ops);
 }
 
 /** @} */

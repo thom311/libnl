@@ -6,12 +6,12 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
- * @ingroup qdisc_api
- * @defgroup prio (Fast) Prio
+ * @ingroup qdisc
+ * @defgroup qdisc_prio (Fast) Prio
  * @brief
  *
  * @par 1) Typical PRIO configuration
@@ -30,8 +30,8 @@
 #include <netlink-tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
+#include <netlink/route/tc-api.h>
 #include <netlink/route/qdisc.h>
-#include <netlink/route/qdisc-modules.h>
 #include <netlink/route/sch/prio.h>
 
 /** @cond SKIP */
@@ -39,32 +39,15 @@
 #define SCH_PRIO_ATTR_PRIOMAP	2
 /** @endcond */
 
-static inline struct rtnl_prio *prio_qdisc(struct rtnl_qdisc *qdisc)
+static int prio_msg_parser(struct rtnl_tc *tc, void *data)
 {
-	return (struct rtnl_prio *) qdisc->q_subdata;
-}
-
-static inline struct rtnl_prio *prio_alloc(struct rtnl_qdisc *qdisc)
-{
-	if (!qdisc->q_subdata)
-		qdisc->q_subdata = calloc(1, sizeof(struct rtnl_prio));
-
-	return prio_qdisc(qdisc);
-}
-
-static int prio_msg_parser(struct rtnl_qdisc *qdisc)
-{
-	struct rtnl_prio *prio;
+	struct rtnl_prio *prio = data;
 	struct tc_prio_qopt *opt;
 
-	if (qdisc->q_opts->d_size < sizeof(*opt))
+	if (tc->tc_opts->d_size < sizeof(*opt))
 		return -NLE_INVAL;
 
-	prio = prio_alloc(qdisc);
-	if (!prio)
-		return -NLE_NOMEM;
-
-	opt = (struct tc_prio_qopt *) qdisc->q_opts->d_data;
+	opt = (struct tc_prio_qopt *) tc->tc_opts->d_data;
 	prio->qp_bands = opt->bands;
 	memcpy(prio->qp_priomap, opt->priomap, sizeof(prio->qp_priomap));
 	prio->qp_mask = (SCH_PRIO_ATTR_BANDS | SCH_PRIO_ATTR_PRIOMAP);
@@ -72,22 +55,19 @@ static int prio_msg_parser(struct rtnl_qdisc *qdisc)
 	return 0;
 }
 
-static void prio_free_data(struct rtnl_qdisc *qdisc)
+static void prio_dump_line(struct rtnl_tc *tc, void *data,
+			   struct nl_dump_params *p)
 {
-	free(qdisc->q_subdata);
-}
-
-static void prio_dump_line(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
-{
-	struct rtnl_prio *prio = prio_qdisc(qdisc);
+	struct rtnl_prio *prio = data;
 
 	if (prio)
 		nl_dump(p, " bands %u", prio->qp_bands);
 }
 
-static void prio_dump_details(struct rtnl_qdisc *qdisc,struct nl_dump_params *p)
+static void prio_dump_details(struct rtnl_tc *tc, void *data,
+			      struct nl_dump_params *p)
 {
-	struct rtnl_prio *prio = prio_qdisc(qdisc);
+	struct rtnl_prio *prio = data;
 	int i, hp;
 
 	if (!prio)
@@ -121,32 +101,18 @@ static void prio_dump_details(struct rtnl_qdisc *qdisc,struct nl_dump_params *p)
 	}
 }
 
-static struct nl_msg *prio_get_opts(struct rtnl_qdisc *qdisc)
+static int prio_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 {
-	struct rtnl_prio *prio;
+	struct rtnl_prio *prio = data;
 	struct tc_prio_qopt opts;
-	struct nl_msg *msg;
 
-	prio = prio_qdisc(qdisc);
-	if (!prio ||
-	    !(prio->qp_mask & SCH_PRIO_ATTR_PRIOMAP))
-		goto errout;
+	if (!prio || !(prio->qp_mask & SCH_PRIO_ATTR_PRIOMAP))
+		BUG();
 
 	opts.bands = prio->qp_bands;
 	memcpy(opts.priomap, prio->qp_priomap, sizeof(opts.priomap));
 
-	msg = nlmsg_alloc();
-	if (!msg)
-		goto errout;
-
-	if (nlmsg_append(msg, &opts, sizeof(opts), NL_DONTPAD) < 0) {
-		nlmsg_free(msg);
-		goto errout;
-	}
-
-	return msg;
-errout:
-	return NULL;
+	return nlmsg_append(msg, &opts, sizeof(opts), NL_DONTPAD);
 }
 
 /**
@@ -160,18 +126,15 @@ errout:
  * @arg bands		New number of bands.
  * @return 0 on success or a negative error code.
  */
-int rtnl_qdisc_prio_set_bands(struct rtnl_qdisc *qdisc, int bands)
+void rtnl_qdisc_prio_set_bands(struct rtnl_qdisc *qdisc, int bands)
 {
 	struct rtnl_prio *prio;
-	
-	prio = prio_alloc(qdisc);
-	if (!prio)
-		return -NLE_NOMEM;
+
+	if (!(prio = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
 
 	prio->qp_bands = bands;
 	prio->qp_mask |= SCH_PRIO_ATTR_BANDS;
-
-	return 0;
 }
 
 /**
@@ -183,8 +146,10 @@ int rtnl_qdisc_prio_get_bands(struct rtnl_qdisc *qdisc)
 {
 	struct rtnl_prio *prio;
 
-	prio = prio_qdisc(qdisc);
-	if (prio && prio->qp_mask & SCH_PRIO_ATTR_BANDS)
+	if (!(prio = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
+
+	if (prio->qp_mask & SCH_PRIO_ATTR_BANDS)
 		return prio->qp_bands;
 	else
 		return -NLE_NOMEM;
@@ -203,9 +168,8 @@ int rtnl_qdisc_prio_set_priomap(struct rtnl_qdisc *qdisc, uint8_t priomap[],
 	struct rtnl_prio *prio;
 	int i;
 
-	prio = prio_alloc(qdisc);
-	if (!prio)
-		return -NLE_NOMEM;
+	if (!(prio = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
 
 	if (!(prio->qp_mask & SCH_PRIO_ATTR_BANDS))
 		return -NLE_MISSING_ATTR;
@@ -234,8 +198,10 @@ uint8_t *rtnl_qdisc_prio_get_priomap(struct rtnl_qdisc *qdisc)
 {
 	struct rtnl_prio *prio;
 
-	prio = prio_qdisc(qdisc);
-	if (prio && prio->qp_mask & SCH_PRIO_ATTR_PRIOMAP)
+	if (!(prio = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
+
+	if (prio->qp_mask & SCH_PRIO_ATTR_PRIOMAP)
 		return prio->qp_priomap;
 	else
 		return NULL;
@@ -289,38 +255,40 @@ int rtnl_str2prio(const char *name)
 
 /** @} */
 
-static struct rtnl_qdisc_ops prio_ops = {
-	.qo_kind		= "prio",
-	.qo_msg_parser		= prio_msg_parser,
-	.qo_free_data		= prio_free_data,
-	.qo_dump = {
+static struct rtnl_tc_ops prio_ops = {
+	.to_kind		= "prio",
+	.to_type		= RTNL_TC_TYPE_QDISC,
+	.to_size		= sizeof(struct rtnl_prio),
+	.to_msg_parser		= prio_msg_parser,
+	.to_dump = {
 	    [NL_DUMP_LINE]	= prio_dump_line,
 	    [NL_DUMP_DETAILS]	= prio_dump_details,
 	},
-	.qo_get_opts		= prio_get_opts,
+	.to_msg_fill		= prio_msg_fill,
 };
 
-static struct rtnl_qdisc_ops pfifo_fast_ops = {
-	.qo_kind		= "pfifo_fast",
-	.qo_msg_parser		= prio_msg_parser,
-	.qo_free_data		= prio_free_data,
-	.qo_dump = {
+static struct rtnl_tc_ops pfifo_fast_ops = {
+	.to_kind		= "pfifo_fast",
+	.to_type		= RTNL_TC_TYPE_QDISC,
+	.to_size		= sizeof(struct rtnl_prio),
+	.to_msg_parser		= prio_msg_parser,
+	.to_dump = {
 	    [NL_DUMP_LINE]	= prio_dump_line,
 	    [NL_DUMP_DETAILS]	= prio_dump_details,
 	},
-	.qo_get_opts		= prio_get_opts,
+	.to_msg_fill		= prio_msg_fill,
 };
 
 static void __init prio_init(void)
 {
-	rtnl_qdisc_register(&prio_ops);
-	rtnl_qdisc_register(&pfifo_fast_ops);
+	rtnl_tc_register(&prio_ops);
+	rtnl_tc_register(&pfifo_fast_ops);
 }
 
 static void __exit prio_exit(void)
 {
-	rtnl_qdisc_unregister(&prio_ops);
-	rtnl_qdisc_unregister(&pfifo_fast_ops);
+	rtnl_tc_unregister(&prio_ops);
+	rtnl_tc_unregister(&pfifo_fast_ops);
 }
 
 /** @} */

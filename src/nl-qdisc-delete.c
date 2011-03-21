@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'k':
 			nfilter++;
-			nl_cli_qdisc_parse_kind(qdisc, optarg);
+			nl_cli_tc_parse_kind(tc, optarg);
 			break;
 		}
  	}

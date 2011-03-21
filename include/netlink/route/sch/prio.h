@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_PRIO_H_
@@ -38,7 +38,7 @@ extern "C" {
 
 /** @} */
 
-extern int  rtnl_qdisc_prio_set_bands(struct rtnl_qdisc *, int);
+extern void rtnl_qdisc_prio_set_bands(struct rtnl_qdisc *, int);
 extern int  rtnl_qdisc_prio_get_bands(struct rtnl_qdisc *);
 extern int  rtnl_qdisc_prio_set_priomap(struct rtnl_qdisc *, uint8_t[], int);
 extern uint8_t *rtnl_qdisc_prio_get_priomap(struct rtnl_qdisc *);

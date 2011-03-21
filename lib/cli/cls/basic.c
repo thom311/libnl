@@ -6,10 +6,11 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2010-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 #include <netlink/cli/utils.h>
+#include <netlink/cli/tc.h>
 #include <netlink/cli/cls.h>
 #include <netlink/route/cls/basic.h>
 
@@ -29,8 +30,9 @@ static void print_usage(void)
 "    nl-cls-add --dev=eth0 --parent=q_root basic --target=c_default\n");
 }
 
-static int parse_argv(struct rtnl_cls *cls, int argc, char **argv)
+static void parse_argv(struct rtnl_tc *tc, int argc, char **argv)
 {
+	struct rtnl_cls *cls = (struct rtnl_cls *) tc;
 	struct rtnl_ematch_tree *tree;
 	uint32_t target;
 	int err;
@@ -71,22 +73,21 @@ static int parse_argv(struct rtnl_cls *cls, int argc, char **argv)
 			break;
 		}
  	}
-
-	return 0;
 }
 
-static struct nl_cli_cls_module basic_module =
+static struct nl_cli_tc_module basic_module =
 {
-	.cm_name		= "basic",
-	.cm_parse_argv		= parse_argv,
+	.tm_name		= "basic",
+	.tm_type		= RTNL_TC_TYPE_CLS,
+	.tm_parse_argv		= parse_argv,
 };
 
 static void __init basic_init(void)
 {
-	nl_cli_cls_register(&basic_module);
+	nl_cli_tc_register(&basic_module);
 }
 
 static void __exit basic_exit(void)
 {
-	nl_cli_cls_unregister(&basic_module);
+	nl_cli_tc_unregister(&basic_module);
 }

@@ -18,44 +18,42 @@
 #include <netlink-local.h>
 #include <netlink-tc.h>
 #include <netlink/netlink.h>
-#include <netlink/route/tc.h>
+#include <netlink/route/tc-api.h>
 #include <netlink/route/class.h>
-#include <netlink/route/class-modules.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/classifier.h>
 #include <netlink/utils.h>
 
 static struct nl_cache_ops rtnl_class_ops;
+static struct nl_object_ops class_obj_ops;
+
+static void class_dump_details(struct rtnl_tc *tc, struct nl_dump_params *p)
+{
+	struct rtnl_class *class = (struct rtnl_class *) tc;
+	char buf[32];
+
+	if (class->c_info)
+		nl_dump(p, "child-qdisc %s ",
+			rtnl_tc_handle2str(class->c_info, buf, sizeof(buf)));
+}
+
 
 static int class_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
-			    struct nlmsghdr *n, struct nl_parser_param *pp)
+			    struct nlmsghdr *nlh, struct nl_parser_param *pp)
 {
-	int err;
 	struct rtnl_class *class;
-	struct rtnl_class_ops *cops;
+	int err;
 
-	class = rtnl_class_alloc();
-	if (!class) {
-		err = -NLE_NOMEM;
+	if (!(class = rtnl_class_alloc()))
+		return -NLE_NOMEM;
+
+	if ((err = rtnl_tc_msg_parse(nlh, TC_CAST(class))) < 0)
 		goto errout;
-	}
-	class->ce_msgtype = n->nlmsg_type;
 
-	err = tca_msg_parser(n, (struct rtnl_tc *) class);
-	if (err < 0)
-		goto errout_free;
-
-	cops = rtnl_class_lookup_ops(class);
-	if (cops && cops->co_msg_parser) {
-		err = cops->co_msg_parser(class);
-		if (err < 0)
-			goto errout_free;
-	}
-
-	err = pp->pp_cb((struct nl_object *) class, pp);
-errout_free:
-	rtnl_class_put(class);
+	err = pp->pp_cb(OBJ_CAST(class), pp);
 errout:
+	rtnl_class_put(class);
+
 	return err;
 }
 
@@ -78,30 +76,7 @@ static int class_request_update(struct nl_cache *cache, struct nl_sock *sk)
 static int class_build(struct rtnl_class *class, int type, int flags,
 		       struct nl_msg **result)
 {
-	struct rtnl_class_ops *cops;
-	int err;
-
-	err = tca_build_msg((struct rtnl_tc *) class, type, flags, result);
-	if (err < 0)
-		return err;
-
-	cops = rtnl_class_lookup_ops(class);
-	if (cops && cops->co_get_opts) {
-		struct nl_msg *opts;
-		
-		opts = cops->co_get_opts(class);
-		if (opts) {
-			err = nla_put_nested(*result, TCA_OPTIONS, opts);
-			nlmsg_free(opts);
-			if (err < 0)
-				goto errout;
-		}
-	}
-
-	return 0;
-errout:
-	nlmsg_free(*result);
-	return err;
+	return rtnl_tc_msg_build(TC_CAST(class), type, flags, result);
 }
 
 /**
@@ -214,6 +189,117 @@ int rtnl_class_delete(struct nl_sock *sk, struct rtnl_class *class)
 /** @} */
 
 /**
+ * @name Allocation/Freeing
+ * @{
+ */
+
+struct rtnl_class *rtnl_class_alloc(void)
+{
+	struct rtnl_tc *tc;
+
+	tc = TC_CAST(nl_object_alloc(&class_obj_ops));
+	if (tc)
+		tc->tc_type = RTNL_TC_TYPE_CLASS;
+
+	return (struct rtnl_class *) tc;
+}
+
+void rtnl_class_put(struct rtnl_class *class)
+{
+	nl_object_put((struct nl_object *) class);
+}
+
+/** @} */
+
+/**
+ * @name Leaf Qdisc
+ * @{
+ */
+
+/**
+ * Lookup the leaf qdisc of a class
+ * @arg class		the parent class
+ * @arg cache		a qdisc cache including at laest all qdiscs of the
+ *                      interface the specified class is attached to
+ * @return The qdisc from the cache or NULL if the class has no leaf qdisc
+ */
+struct rtnl_qdisc *rtnl_class_leaf_qdisc(struct rtnl_class *class,
+					 struct nl_cache *cache)
+{
+	struct rtnl_qdisc *leaf;
+
+	if (!class->c_info)
+		return NULL;
+
+	leaf = rtnl_qdisc_get_by_parent(cache, class->c_ifindex,
+					class->c_handle);
+	if (!leaf || leaf->q_handle != class->c_info)
+		return NULL;
+
+	return leaf;
+}
+
+/** @} */
+
+
+/**
+ * @name Iterators
+ * @{
+ */
+
+/**
+ * Call a callback for each child of a class
+ * @arg class		the parent class
+ * @arg cache		a class cache including all classes of the interface
+ *                      the specified class is attached to
+ * @arg cb              callback function
+ * @arg arg             argument to be passed to callback function
+ */
+void rtnl_class_foreach_child(struct rtnl_class *class, struct nl_cache *cache,
+			      void (*cb)(struct nl_object *, void *), void *arg)
+{
+	struct rtnl_class *filter;
+	
+	filter = rtnl_class_alloc();
+	if (!filter)
+		return;
+
+	rtnl_tc_set_parent(TC_CAST(filter), class->c_handle);
+	rtnl_tc_set_ifindex(TC_CAST(filter), class->c_ifindex);
+	rtnl_tc_set_kind(TC_CAST(filter), class->c_kind);
+
+	nl_cache_foreach_filter(cache, OBJ_CAST(filter), cb, arg);
+	rtnl_class_put(filter);
+}
+
+/**
+ * Call a callback for each classifier attached to the class
+ * @arg class		the parent class
+ * @arg cache		a filter cache including at least all the filters
+ *                      attached to the specified class
+ * @arg cb              callback function
+ * @arg arg             argument to be passed to callback function
+ */
+void rtnl_class_foreach_cls(struct rtnl_class *class, struct nl_cache *cache,
+			    void (*cb)(struct nl_object *, void *), void *arg)
+{
+	struct rtnl_cls *filter;
+
+	filter = rtnl_cls_alloc();
+	if (!filter)
+		return;
+
+	rtnl_tc_set_ifindex((struct rtnl_tc *) filter, class->c_ifindex);
+	rtnl_tc_set_parent((struct rtnl_tc *) filter, class->c_parent);
+
+	nl_cache_foreach_filter(cache, (struct nl_object *) filter, cb, arg);
+	rtnl_cls_put(filter);
+}
+
+/** @} */
+
+
+/**
  * @name Cache Management
  * @{
  */
@@ -276,6 +362,28 @@ struct rtnl_class *rtnl_class_get(struct nl_cache *cache, int ifindex,
 
 /** @} */
 
+static struct rtnl_tc_type_ops class_ops = {
+	.tt_type		= RTNL_TC_TYPE_CLASS,
+	.tt_dump_prefix		= "class",
+	.tt_dump = {
+	    [NL_DUMP_DETAILS]	= class_dump_details,
+	},
+};
+
+static struct nl_object_ops class_obj_ops = {
+	.oo_name		= "route/class",
+	.oo_size		= sizeof(struct rtnl_class),
+	.oo_free_data         	= rtnl_tc_free_data,
+	.oo_clone		= rtnl_tc_clone,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= rtnl_tc_dump_line,
+	    [NL_DUMP_DETAILS]	= rtnl_tc_dump_details,
+	    [NL_DUMP_STATS]	= rtnl_tc_dump_stats,
+	},
+	.oo_compare		= rtnl_tc_compare,
+	.oo_id_attrs		= (TCA_ATTR_IFINDEX | TCA_ATTR_HANDLE),
+};
+
 static struct nl_cache_ops rtnl_class_ops = {
 	.co_name		= "route/class",
 	.co_hdrsize		= sizeof(struct tcmsg),
@@ -293,12 +401,14 @@ static struct nl_cache_ops rtnl_class_ops = {
 
 static void __init class_init(void)
 {
+	rtnl_tc_type_register(&class_ops);
 	nl_cache_mngt_register(&rtnl_class_ops);
 }
 
 static void __exit class_exit(void)
 {
 	nl_cache_mngt_unregister(&rtnl_class_ops);
+	rtnl_tc_type_unregister(&class_ops);
 }
 
 /** @} */

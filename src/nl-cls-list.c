@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 		case 'd': nl_cli_tc_parse_dev(tc, link_cache, optarg); break;
 		case 'p': nl_cli_tc_parse_parent(tc, optarg); break;
 		case 'i': nl_cli_tc_parse_handle(tc, optarg, 0); break;
-		case 'k': nl_cli_cls_parse_kind(cls, optarg); break;
+		case 'k': nl_cli_tc_parse_kind(tc, optarg); break;
 		case ARG_PROTO: nl_cli_cls_parse_proto(cls, optarg); break;
 		case ARG_PRIO:
 			rtnl_cls_set_prio(cls, nl_cli_parse_u32(optarg));

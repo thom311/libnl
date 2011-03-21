@@ -13,12 +13,9 @@
 #define __NETLINK_CLI_CLASS_H_
 
 #include <netlink/route/class.h>
-#include <netlink/route/class-modules.h>
 #include <netlink/cli/tc.h>
 
 extern struct rtnl_class *nl_cli_class_alloc(void);
 extern struct nl_cache *nl_cli_class_alloc_cache(struct nl_sock *, int);
-
-extern void nl_cli_class_parse_kind(struct rtnl_class *, char *);
 
 #endif

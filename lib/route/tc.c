@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -22,8 +22,12 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link.h>
 #include <netlink/route/tc.h>
+#include <netlink/route/tc-api.h>
 
 /** @cond SKIP */
+
+static struct nl_list_head tc_ops_list[__RTNL_TC_TYPE_MAX];
+static struct rtnl_tc_type_ops *tc_type_ops[__RTNL_TC_TYPE_MAX];
 
 static struct nla_policy tc_policy[TCA_MAX+1] = {
 	[TCA_KIND]	= { .type = NLA_STRING,
@@ -54,11 +58,15 @@ static struct nla_policy tc_stats2_policy[TCA_STATS_MAX+1] = {
 	[TCA_STATS_QUEUE]    = { .minlen = sizeof(struct gnet_stats_queue) },
 };
 
-int tca_msg_parser(struct nlmsghdr *n, struct rtnl_tc *g)
+int rtnl_tc_msg_parse(struct nlmsghdr *n, struct rtnl_tc *tc)
 {
+	struct rtnl_tc_ops *ops;
 	struct nlattr *tb[TCA_MAX + 1];
+	char kind[TCKINDSIZ];
 	struct tcmsg *tm;
 	int err;
+
+	tc->ce_msgtype = n->nlmsg_type;
 
 	err = nlmsg_parse(n, sizeof(*tm), tb, TCA_MAX, tc_policy);
 	if (err < 0)
@@ -67,25 +75,25 @@ int tca_msg_parser(struct nlmsghdr *n, struct rtnl_tc *g)
 	if (tb[TCA_KIND] == NULL)
 		return -NLE_MISSING_ATTR;
 
-	nla_strlcpy(g->tc_kind, tb[TCA_KIND], TCKINDSIZ);
+	nla_strlcpy(kind, tb[TCA_KIND], sizeof(kind));
+	rtnl_tc_set_kind(tc, kind);
 
 	tm = nlmsg_data(n);
-	g->tc_family  = tm->tcm_family;
-	g->tc_ifindex = tm->tcm_ifindex;
-	g->tc_handle  = tm->tcm_handle;
-	g->tc_parent  = tm->tcm_parent;
-	g->tc_info    = tm->tcm_info;
+	tc->tc_family  = tm->tcm_family;
+	tc->tc_ifindex = tm->tcm_ifindex;
+	tc->tc_handle  = tm->tcm_handle;
+	tc->tc_parent  = tm->tcm_parent;
+	tc->tc_info    = tm->tcm_info;
 
-	g->ce_mask = (TCA_ATTR_FAMILY | TCA_ATTR_IFINDEX | TCA_ATTR_HANDLE |
-		      TCA_ATTR_PARENT | TCA_ATTR_INFO | TCA_ATTR_KIND);
+	tc->ce_mask |= (TCA_ATTR_FAMILY | TCA_ATTR_IFINDEX | TCA_ATTR_HANDLE|
+		        TCA_ATTR_PARENT | TCA_ATTR_INFO);
 
 	if (tb[TCA_OPTIONS]) {
-		g->tc_opts = nl_data_alloc_attr(tb[TCA_OPTIONS]);
-		if (!g->tc_opts)
+		tc->tc_opts = nl_data_alloc_attr(tb[TCA_OPTIONS]);
+		if (!tc->tc_opts)
 			return -NLE_NOMEM;
-		g->ce_mask |= TCA_ATTR_OPTS;
+		tc->ce_mask |= TCA_ATTR_OPTS;
 	}
-	
 
 	if (tb[TCA_STATS2]) {
 		struct nlattr *tbs[TCA_STATS_MAX + 1];
@@ -99,34 +107,34 @@ int tca_msg_parser(struct nlmsghdr *n, struct rtnl_tc *g)
 			struct gnet_stats_basic *bs;
 			
 			bs = nla_data(tbs[TCA_STATS_BASIC]);
-			g->tc_stats[RTNL_TC_BYTES]	= bs->bytes;
-			g->tc_stats[RTNL_TC_PACKETS]	= bs->packets;
+			tc->tc_stats[RTNL_TC_BYTES]	= bs->bytes;
+			tc->tc_stats[RTNL_TC_PACKETS]	= bs->packets;
 		}
 
 		if (tbs[TCA_STATS_RATE_EST]) {
 			struct gnet_stats_rate_est *re;
 
 			re = nla_data(tbs[TCA_STATS_RATE_EST]);
-			g->tc_stats[RTNL_TC_RATE_BPS]	= re->bps;
-			g->tc_stats[RTNL_TC_RATE_PPS]	= re->pps;
+			tc->tc_stats[RTNL_TC_RATE_BPS]	= re->bps;
+			tc->tc_stats[RTNL_TC_RATE_PPS]	= re->pps;
 		}
 		
 		if (tbs[TCA_STATS_QUEUE]) {
 			struct gnet_stats_queue *q;
 
 			q = nla_data(tbs[TCA_STATS_QUEUE]);
-			g->tc_stats[RTNL_TC_QLEN]	= q->qlen;
-			g->tc_stats[RTNL_TC_BACKLOG]	= q->backlog;
-			g->tc_stats[RTNL_TC_DROPS]	= q->drops;
-			g->tc_stats[RTNL_TC_REQUEUES]	= q->requeues;
-			g->tc_stats[RTNL_TC_OVERLIMITS]	= q->overlimits;
+			tc->tc_stats[RTNL_TC_QLEN]	= q->qlen;
+			tc->tc_stats[RTNL_TC_BACKLOG]	= q->backlog;
+			tc->tc_stats[RTNL_TC_DROPS]	= q->drops;
+			tc->tc_stats[RTNL_TC_REQUEUES]	= q->requeues;
+			tc->tc_stats[RTNL_TC_OVERLIMITS]	= q->overlimits;
 		}
 
-		g->ce_mask |= TCA_ATTR_STATS;
+		tc->ce_mask |= TCA_ATTR_STATS;
 		
 		if (tbs[TCA_STATS_APP]) {
-			g->tc_xstats = nl_data_alloc_attr(tbs[TCA_STATS_APP]);
-			if (g->tc_xstats == NULL)
+			tc->tc_xstats = nl_data_alloc_attr(tbs[TCA_STATS_APP]);
+			if (tc->tc_xstats == NULL)
 				return -NLE_NOMEM;
 		} else
 			goto compat_xstats;
@@ -134,159 +142,54 @@ int tca_msg_parser(struct nlmsghdr *n, struct rtnl_tc *g)
 		if (tb[TCA_STATS]) {
 			struct tc_stats *st = nla_data(tb[TCA_STATS]);
 
-			g->tc_stats[RTNL_TC_BYTES]	= st->bytes;
-			g->tc_stats[RTNL_TC_PACKETS]	= st->packets;
-			g->tc_stats[RTNL_TC_RATE_BPS]	= st->bps;
-			g->tc_stats[RTNL_TC_RATE_PPS]	= st->pps;
-			g->tc_stats[RTNL_TC_QLEN]	= st->qlen;
-			g->tc_stats[RTNL_TC_BACKLOG]	= st->backlog;
-			g->tc_stats[RTNL_TC_DROPS]	= st->drops;
-			g->tc_stats[RTNL_TC_OVERLIMITS]	= st->overlimits;
+			tc->tc_stats[RTNL_TC_BYTES]	= st->bytes;
+			tc->tc_stats[RTNL_TC_PACKETS]	= st->packets;
+			tc->tc_stats[RTNL_TC_RATE_BPS]	= st->bps;
+			tc->tc_stats[RTNL_TC_RATE_PPS]	= st->pps;
+			tc->tc_stats[RTNL_TC_QLEN]	= st->qlen;
+			tc->tc_stats[RTNL_TC_BACKLOG]	= st->backlog;
+			tc->tc_stats[RTNL_TC_DROPS]	= st->drops;
+			tc->tc_stats[RTNL_TC_OVERLIMITS]= st->overlimits;
 
-			g->ce_mask |= TCA_ATTR_STATS;
+			tc->ce_mask |= TCA_ATTR_STATS;
 		}
 
 compat_xstats:
 		if (tb[TCA_XSTATS]) {
-			g->tc_xstats = nl_data_alloc_attr(tb[TCA_XSTATS]);
-			if (g->tc_xstats == NULL)
+			tc->tc_xstats = nl_data_alloc_attr(tb[TCA_XSTATS]);
+			if (tc->tc_xstats == NULL)
 				return -NLE_NOMEM;
-			g->ce_mask |= TCA_ATTR_XSTATS;
+			tc->ce_mask |= TCA_ATTR_XSTATS;
 		}
 	}
 
+	ops = rtnl_tc_get_ops(tc);
+	if (ops && ops->to_msg_parser) {
+		void *data = rtnl_tc_data(tc);
 
-	return 0;
-}
-
-void tca_free_data(struct rtnl_tc *tca)
-{
-	rtnl_link_put(tca->tc_link);
-	nl_data_free(tca->tc_opts);
-	nl_data_free(tca->tc_xstats);
-}
-
-int tca_clone(struct rtnl_tc *dst, struct rtnl_tc *src)
-{
-	if (src->tc_link) {
-		dst->tc_link = (struct rtnl_link *)
-					nl_object_clone(OBJ_CAST(src->tc_link));
-		if (!dst->tc_link)
+		if (!data)
 			return -NLE_NOMEM;
-	}
 
-	if (src->tc_opts) {
-		dst->tc_opts = nl_data_clone(src->tc_opts);
-		if (!dst->tc_opts)
-			return -NLE_NOMEM;
-	}
-	
-	if (src->tc_xstats) {
-		dst->tc_xstats = nl_data_clone(src->tc_xstats);
-		if (!dst->tc_xstats)
-			return -NLE_NOMEM;
+		err = ops->to_msg_parser(tc, data);
+		if (err < 0)
+			return err;
 	}
 
 	return 0;
 }
 
-void tca_dump_line(struct rtnl_tc *g, const char *type,
-		   struct nl_dump_params *p)
-{
-	char handle[32], parent[32];
-	struct nl_cache *link_cache;
-	
-	link_cache = nl_cache_mngt_require("route/link");
-
-	nl_dump_line(p, "%s %s ", type, g->tc_kind);
-
-	if (link_cache) {
-		char buf[32];
-		nl_dump(p, "dev %s ",
-			rtnl_link_i2name(link_cache, g->tc_ifindex,
-					 buf, sizeof(buf)));
-	} else
-		nl_dump(p, "dev %u ", g->tc_ifindex);
-	
-	nl_dump(p, "id %s parent %s",
-		rtnl_tc_handle2str(g->tc_handle, handle, sizeof(handle)),
-		rtnl_tc_handle2str(g->tc_parent, parent, sizeof(parent)));
-}
-
-void tca_dump_details(struct rtnl_tc *tc, struct nl_dump_params *p)
-{
-	nl_dump_line(p, "  ");
-
-	if (tc->ce_mask & TCA_ATTR_MTU)
-		nl_dump(p, " mtu %u", tc->tc_mtu);
-
-	if (tc->ce_mask & TCA_ATTR_MPU)
-		nl_dump(p, " mput %u", tc->tc_mpu);
-
-	if (tc->ce_mask & TCA_ATTR_OVERHEAD)
-		nl_dump(p, " overhead %u", tc->tc_overhead);
-}
-
-void tca_dump_stats(struct rtnl_tc *g, struct nl_dump_params *p)
-{
-	char *unit, fmt[64];
-	float res;
-	strcpy(fmt, "        %7.2f %s %10u %10u %10u %10u %10u\n");
-
-	nl_dump_line(p, 
-		"    Stats:    bytes    packets      drops overlimits" \
-		"       qlen    backlog\n");
-
-	res = nl_cancel_down_bytes(g->tc_stats[RTNL_TC_BYTES], &unit);
-	if (*unit == 'B')
-		fmt[11] = '9';
-
-	nl_dump_line(p, fmt, res, unit,
-		g->tc_stats[RTNL_TC_PACKETS],
-		g->tc_stats[RTNL_TC_DROPS],
-		g->tc_stats[RTNL_TC_OVERLIMITS],
-		g->tc_stats[RTNL_TC_QLEN],
-		g->tc_stats[RTNL_TC_BACKLOG]);
-
-	res = nl_cancel_down_bytes(g->tc_stats[RTNL_TC_RATE_BPS], &unit);
-
-	strcpy(fmt, "        %7.2f %s/s%9u pps");
-
-	if (*unit == 'B')
-		fmt[11] = '9';
-
-	nl_dump_line(p, fmt, res, unit, g->tc_stats[RTNL_TC_RATE_PPS]);
-}
-
-int tca_compare(struct nl_object *_a, struct nl_object *_b,
-		uint32_t attrs, int flags)
-{
-	struct rtnl_tc *a = (struct rtnl_tc *) _a;
-	struct rtnl_tc *b = (struct rtnl_tc *) _b;
-	int diff = 0;
-
-#define TC_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, TCA_ATTR_##ATTR, a, b, EXPR)
-
-	diff |= TC_DIFF(HANDLE,		a->tc_handle != b->tc_handle);
-	diff |= TC_DIFF(PARENT,		a->tc_parent != b->tc_parent);
-	diff |= TC_DIFF(IFINDEX,	a->tc_ifindex != b->tc_ifindex);
-	diff |= TC_DIFF(KIND,		strcmp(a->tc_kind, b->tc_kind));
-
-#undef TC_DIFF
-
-	return diff;
-}
-
-int tca_build_msg(struct rtnl_tc *tca, int type, int flags,
-		  struct nl_msg **result)
+int rtnl_tc_msg_build(struct rtnl_tc *tc, int type, int flags,
+		      struct nl_msg **result)
 {
 	struct nl_msg *msg;
+	struct rtnl_tc_ops *ops;
 	struct tcmsg tchdr = {
 		.tcm_family = AF_UNSPEC,
-		.tcm_ifindex = tca->tc_ifindex,
-		.tcm_handle = tca->tc_handle,
-		.tcm_parent = tca->tc_parent,
+		.tcm_ifindex = tc->tc_ifindex,
+		.tcm_handle = tc->tc_handle,
+		.tcm_parent = tc->tc_parent,
 	};
+	int err = -NLE_MSGSIZE;
 
 	msg = nlmsg_alloc_simple(type, flags);
 	if (!msg)
@@ -295,15 +198,29 @@ int tca_build_msg(struct rtnl_tc *tca, int type, int flags,
 	if (nlmsg_append(msg, &tchdr, sizeof(tchdr), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
 
-	if (tca->ce_mask & TCA_ATTR_KIND)
-	    NLA_PUT_STRING(msg, TCA_KIND, tca->tc_kind);
+	if (tc->ce_mask & TCA_ATTR_KIND)
+	    NLA_PUT_STRING(msg, TCA_KIND, tc->tc_kind);
+
+	ops = rtnl_tc_get_ops(tc);
+	if (ops && ops->to_msg_fill) {
+		struct nlattr *opts;
+		void *data = rtnl_tc_data(tc);
+
+		if (!(opts = nla_nest_start(msg, TCA_OPTIONS)))
+			goto nla_put_failure;
+
+		if ((err = ops->to_msg_fill(tc, data, msg)) < 0)
+			goto nla_put_failure;
+
+		nla_nest_end(msg, opts);
+	}
 
 	*result = msg;
 	return 0;
 
 nla_put_failure:
 	nlmsg_free(msg);
-	return -NLE_MSGSIZE;
+	return err;
 }
 
 void tca_set_kind(struct rtnl_tc *t, const char *kind)
@@ -547,6 +464,27 @@ uint32_t rtnl_tc_get_parent(struct rtnl_tc *tc)
 }
 
 /**
+ * Define the type of traffic control object
+ * @arg tc		traffic control object
+ * @arg kind		name of the tc object type
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_tc_set_kind(struct rtnl_tc *tc, const char *kind)
+{
+	if (tc->ce_mask & TCA_ATTR_KIND)
+		return -NLE_EXIST;
+
+	strncpy(tc->tc_kind, kind, sizeof(tc->tc_kind) - 1);
+	tc->ce_mask |= TCA_ATTR_KIND;
+
+	/* Force allocation of data */
+	rtnl_tc_data(tc);
+
+	return 0;
+}
+
+/**
  * Return kind of traffic control object
  * @arg tc		traffic control object
  *
@@ -567,7 +505,7 @@ char *rtnl_tc_get_kind(struct rtnl_tc *tc)
  *
  * @return Value of requested statistic counter or 0.
  */
-uint64_t rtnl_tc_get_stat(struct rtnl_tc *tc, int id)
+uint64_t rtnl_tc_get_stat(struct rtnl_tc *tc, enum rtnl_tc_stat id)
 {
 	if (id < 0 || id > RTNL_TC_STATS_MAX)
 		return 0;
@@ -745,5 +683,312 @@ int rtnl_tc_build_rate_table(struct rtnl_tc *tc, struct rtnl_ratespec *spec,
 
 /** @} */
 
+/**
+ * @name TC implementation of cache functions
+ */
+
+void rtnl_tc_free_data(struct nl_object *obj)
+{
+	struct rtnl_tc *tc = TC_CAST(obj);
+	struct rtnl_tc_ops *ops;
+	
+	rtnl_link_put(tc->tc_link);
+	nl_data_free(tc->tc_opts);
+	nl_data_free(tc->tc_xstats);
+
+	if (tc->tc_subdata) {
+		ops = rtnl_tc_get_ops(tc);
+		if (ops && ops->to_free_data)
+			ops->to_free_data(tc, nl_data_get(tc->tc_subdata));
+
+		nl_data_free(tc->tc_subdata);
+	}
+}
+
+int rtnl_tc_clone(struct nl_object *dstobj, struct nl_object *srcobj)
+{
+	struct rtnl_tc *dst = TC_CAST(dstobj);
+	struct rtnl_tc *src = TC_CAST(srcobj);
+	struct rtnl_tc_ops *ops;
+
+	if (src->tc_link) {
+		dst->tc_link = (struct rtnl_link *)
+					nl_object_clone(OBJ_CAST(src->tc_link));
+		if (!dst->tc_link)
+			return -NLE_NOMEM;
+	}
+
+	if (src->tc_opts) {
+		dst->tc_opts = nl_data_clone(src->tc_opts);
+		if (!dst->tc_opts)
+			return -NLE_NOMEM;
+	}
+	
+	if (src->tc_xstats) {
+		dst->tc_xstats = nl_data_clone(src->tc_xstats);
+		if (!dst->tc_xstats)
+			return -NLE_NOMEM;
+	}
+
+	if (src->tc_subdata) {
+		if (!(dst->tc_subdata = nl_data_clone(src->tc_subdata))) {
+			return -NLE_NOMEM;
+		}
+	}
+
+	ops = rtnl_tc_get_ops(src);
+	if (ops && ops->to_clone) {
+		void *a = rtnl_tc_data(dst), *b = rtnl_tc_data(src);
+
+		if (!a)
+			return 0;
+		else if (!b)
+			return -NLE_NOMEM;
+
+		return ops->to_clone(a, b);
+	}
+
+	return 0;
+}
+
+static int tc_dump(struct rtnl_tc *tc, enum nl_dump_type type,
+		   struct nl_dump_params *p)
+{
+	struct rtnl_tc_type_ops *type_ops;
+	struct rtnl_tc_ops *ops;
+	void *data = rtnl_tc_data(tc);
+
+	type_ops = tc_type_ops[tc->tc_type];
+	if (type_ops && type_ops->tt_dump[type])
+		type_ops->tt_dump[type](tc, p);
+
+	ops = rtnl_tc_get_ops(tc);
+	if (ops && ops->to_dump[type]) {
+		ops->to_dump[type](tc, data, p);
+		return 1;
+	}
+
+	return 0;
+}
+
+void rtnl_tc_dump_line(struct nl_object *obj, struct nl_dump_params *p)
+{
+	struct rtnl_tc_type_ops *type_ops;
+	struct rtnl_tc *tc = TC_CAST(obj);
+	struct nl_cache *link_cache;
+	char buf[32];
+
+	nl_new_line(p);
+
+	type_ops = tc_type_ops[tc->tc_type];
+	if (type_ops && type_ops->tt_dump_prefix)
+		nl_dump(p, "%s ", type_ops->tt_dump_prefix);
+
+	nl_dump(p, "%s ", tc->tc_kind);
+
+	if ((link_cache = nl_cache_mngt_require("route/link"))) {
+		nl_dump(p, "dev %s ",
+			rtnl_link_i2name(link_cache, tc->tc_ifindex,
+					 buf, sizeof(buf)));
+	} else
+		nl_dump(p, "dev %u ", tc->tc_ifindex);
+	
+	nl_dump(p, "id %s ",
+		rtnl_tc_handle2str(tc->tc_handle, buf, sizeof(buf)));
+	
+	nl_dump(p, "parent %s",
+		rtnl_tc_handle2str(tc->tc_parent, buf, sizeof(buf)));
+
+	tc_dump(tc, NL_DUMP_LINE, p);
+	nl_dump(p, "\n");
+}
+
+void rtnl_tc_dump_details(struct nl_object *obj, struct nl_dump_params *p)
+{
+	struct rtnl_tc *tc = TC_CAST(obj);
+
+	rtnl_tc_dump_line(OBJ_CAST(tc), p);
+
+	nl_dump_line(p, "  ");
+
+	if (tc->ce_mask & TCA_ATTR_MTU)
+		nl_dump(p, " mtu %u", tc->tc_mtu);
+
+	if (tc->ce_mask & TCA_ATTR_MPU)
+		nl_dump(p, " mpu %u", tc->tc_mpu);
+
+	if (tc->ce_mask & TCA_ATTR_OVERHEAD)
+		nl_dump(p, " overhead %u", tc->tc_overhead);
+
+	if (!tc_dump(tc, NL_DUMP_DETAILS, p))
+		nl_dump(p, "no options");
+	nl_dump(p, "\n");
+}
+
+void rtnl_tc_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
+{
+	struct rtnl_tc *tc = TC_CAST(obj);
+	char *unit, fmt[64];
+	float res;
+
+	rtnl_tc_dump_details(OBJ_CAST(tc), p);
+
+	strcpy(fmt, "        %7.2f %s %10u %10u %10u %10u %10u\n");
+
+	nl_dump_line(p, 
+		"    Stats:    bytes    packets      drops overlimits" \
+		"       qlen    backlog\n");
+
+	res = nl_cancel_down_bytes(tc->tc_stats[RTNL_TC_BYTES], &unit);
+	if (*unit == 'B')
+		fmt[11] = '9';
+
+	nl_dump_line(p, fmt, res, unit,
+		tc->tc_stats[RTNL_TC_PACKETS],
+		tc->tc_stats[RTNL_TC_DROPS],
+		tc->tc_stats[RTNL_TC_OVERLIMITS],
+		tc->tc_stats[RTNL_TC_QLEN],
+		tc->tc_stats[RTNL_TC_BACKLOG]);
+
+	res = nl_cancel_down_bytes(tc->tc_stats[RTNL_TC_RATE_BPS], &unit);
+
+	strcpy(fmt, "        %7.2f %s/s%9u pps");
+
+	if (*unit == 'B')
+		fmt[11] = '9';
+
+	nl_dump_line(p, fmt, res, unit, tc->tc_stats[RTNL_TC_RATE_PPS]);
+
+	tc_dump(tc, NL_DUMP_LINE, p);
+	nl_dump(p, "\n");
+}
+
+int rtnl_tc_compare(struct nl_object *aobj, struct nl_object *bobj,
+		    uint32_t attrs, int flags)
+{
+	struct rtnl_tc *a = TC_CAST(aobj);
+	struct rtnl_tc *b = TC_CAST(bobj);
+	int diff = 0;
+
+#define TC_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, TCA_ATTR_##ATTR, a, b, EXPR)
+
+	diff |= TC_DIFF(HANDLE,		a->tc_handle != b->tc_handle);
+	diff |= TC_DIFF(PARENT,		a->tc_parent != b->tc_parent);
+	diff |= TC_DIFF(IFINDEX,	a->tc_ifindex != b->tc_ifindex);
+	diff |= TC_DIFF(KIND,		strcmp(a->tc_kind, b->tc_kind));
+
+#undef TC_DIFF
+
+	return diff;
+}
+
+/** @} */
+
+/**
+ * @name Modules API
+ */
+
+struct rtnl_tc_ops *rtnl_tc_lookup_ops(enum rtnl_tc_type type, const char *kind)
+{
+	struct rtnl_tc_ops *ops;
+
+	nl_list_for_each_entry(ops, &tc_ops_list[type], to_list)
+		if (!strcmp(kind, ops->to_kind))
+			return ops;
+
+	return NULL;
+}
+
+struct rtnl_tc_ops *rtnl_tc_get_ops(struct rtnl_tc *tc)
+{
+	if (!tc->tc_ops)
+		tc->tc_ops = rtnl_tc_lookup_ops(tc->tc_type, tc->tc_kind);
+
+	return tc->tc_ops;
+}
+
+/**
+ * Register a traffic control module
+ * @arg ops		traffic control module operations
+ */
+int rtnl_tc_register(struct rtnl_tc_ops *ops)
+{
+	static int init = 0;
+
+	/*
+	 * Initialiation hack, make sure list is initialized when
+	 * the first tc module registers. Putting this in a
+	 * separate __init would required correct ordering of init
+	 * functions
+	 */
+	if (!init) {
+		int i;
+
+		for (i = 0; i < __RTNL_TC_TYPE_MAX; i++)
+			nl_init_list_head(&tc_ops_list[i]);
+
+		init = 1;
+	}
+
+	if (!ops->to_kind || ops->to_type > RTNL_TC_TYPE_MAX)
+		BUG();
+
+	if (rtnl_tc_lookup_ops(ops->to_type, ops->to_kind))
+		return -NLE_EXIST;
+
+	nl_list_add_tail(&ops->to_list, &tc_ops_list[ops->to_type]);
+
+	return 0;
+}
+
+/**
+ * Unregister a traffic control module
+ * @arg ops		traffic control module operations
+ */
+void rtnl_tc_unregister(struct rtnl_tc_ops *ops)
+{
+	nl_list_del(&ops->to_list);
+}
+
+void *rtnl_tc_data(struct rtnl_tc *tc)
+{
+	if (!tc->tc_subdata) {
+		size_t size;
+
+		if (!tc->tc_ops) {
+			if (!tc->tc_kind)
+				BUG();
+
+			if (!rtnl_tc_get_ops(tc))
+				return NULL;
+		}
+
+		if (!(size = tc->tc_ops->to_size))
+			BUG();
+
+		if (!(tc->tc_subdata = nl_data_alloc(NULL, size)))
+			return NULL;
+	}
+
+	return nl_data_get(tc->tc_subdata);
+}
+
+void rtnl_tc_type_register(struct rtnl_tc_type_ops *ops)
+{
+	if (ops->tt_type > RTNL_TC_TYPE_MAX)
+		BUG();
+
+	tc_type_ops[ops->tt_type] = ops;
+}
+
+void rtnl_tc_type_unregister(struct rtnl_tc_type_ops *ops)
+{
+	if (ops->tt_type > RTNL_TC_TYPE_MAX)
+		BUG();
+
+	tc_type_ops[ops->tt_type] = NULL;
+}
+
+/** @} */
 
 /** @} */

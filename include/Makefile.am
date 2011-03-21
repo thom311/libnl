@@ -43,20 +43,18 @@ nobase_include_HEADERS = \
 	netlink/route/sch/sfq.h \
 	netlink/route/sch/tbf.h \
 	netlink/route/addr.h \
-	netlink/route/class-modules.h \
 	netlink/route/class.h \
-	netlink/route/classifier-modules.h \
 	netlink/route/classifier.h \
 	netlink/route/link.h \
 	netlink/route/neighbour.h \
 	netlink/route/neightbl.h \
 	netlink/route/nexthop.h \
-	netlink/route/qdisc-modules.h \
 	netlink/route/qdisc.h \
 	netlink/route/route.h \
 	netlink/route/rtnl.h \
 	netlink/route/rule.h \
 	netlink/route/tc.h \
+	netlink/route/tc-api.h \
 	netlink/socket.h \
 	netlink/types.h \
 	netlink/utils.h \

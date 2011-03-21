@@ -6,12 +6,12 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2008-2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2008-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
  * @ingroup cls
- * @defgroup basic Basic Classifier
+ * @defgroup cls_basic Basic Classifier
  *
  * @par Introduction
  * The basic classifier is the simplest form of a classifier. It does
@@ -25,8 +25,8 @@
 #include <netlink-local.h>
 #include <netlink-tc.h>
 #include <netlink/netlink.h>
+#include <netlink/route/tc-api.h>
 #include <netlink/route/classifier.h>
-#include <netlink/route/classifier-modules.h>
 #include <netlink/route/cls/basic.h>
 #include <netlink/route/cls/ematch.h>
 
@@ -47,49 +47,56 @@ static struct nla_policy basic_policy[TCA_BASIC_MAX+1] = {
 	[TCA_BASIC_EMATCHES]	= { .type = NLA_NESTED },
 };
 
-static int basic_clone(struct rtnl_cls *_dst, struct rtnl_cls *_src)
+static int basic_clone(void *_dst, void *_src)
 {
 	return -NLE_OPNOTSUPP;
 }
 
-static void basic_free_data(struct rtnl_cls *cls)
+static void basic_free_data(struct rtnl_tc *tc, void *data)
 {
-	struct rtnl_basic *basic = rtnl_cls_data(cls);
+	struct rtnl_basic *b = data;
 
-	rtnl_ematch_tree_free(basic->b_ematch);
+	if (!b)
+		return;
+
+	rtnl_ematch_tree_free(b->b_ematch);
 }
 
-static int basic_msg_parser(struct rtnl_cls *cls)
+static int basic_msg_parser(struct rtnl_tc *tc, void *data)
 {
 	struct nlattr *tb[TCA_BASIC_MAX + 1];
-	struct rtnl_basic *basic = rtnl_cls_data(cls);
+	struct rtnl_basic *b = data;
 	int err;
 
-	err = tca_parse(tb, TCA_BASIC_MAX, (struct rtnl_tc *) cls, basic_policy);
+	err = tca_parse(tb, TCA_BASIC_MAX, tc, basic_policy);
 	if (err < 0)
 		return err;
 
 	if (tb[TCA_BASIC_CLASSID]) {
-		basic->b_target = nla_get_u32(tb[TCA_BASIC_CLASSID]);
-		basic->b_mask |= BASIC_ATTR_TARGET;
+		b->b_target = nla_get_u32(tb[TCA_BASIC_CLASSID]);
+		b->b_mask |= BASIC_ATTR_TARGET;
 	}
 
 	if (tb[TCA_BASIC_EMATCHES]) {
 		if ((err = rtnl_ematch_parse_attr(tb[TCA_BASIC_EMATCHES],
-					     &basic->b_ematch)) < 0)
+					     &b->b_ematch)) < 0)
 			return err;
 
-		if (basic->b_ematch)
-			basic->b_mask |= BASIC_ATTR_EMATCH;
+		if (b->b_ematch)
+			b->b_mask |= BASIC_ATTR_EMATCH;
 	}
 
 	return 0;
 }
 
-static void basic_dump_line(struct rtnl_cls *cls, struct nl_dump_params *p)
+static void basic_dump_line(struct rtnl_tc *tc, void *data,
+			    struct nl_dump_params *p)
 {
-	struct rtnl_basic *b = rtnl_cls_data(cls);
+	struct rtnl_basic *b = data;
 	char buf[32];
+
+	if (!b)
+		return;
 
 	if (b->b_mask & BASIC_ATTR_EMATCH)
 		nl_dump(p, " ematch");
@@ -101,9 +108,13 @@ static void basic_dump_line(struct rtnl_cls *cls, struct nl_dump_params *p)
 			rtnl_tc_handle2str(b->b_target, buf, sizeof(buf)));
 }
 
-static void basic_dump_details(struct rtnl_cls *cls, struct nl_dump_params *p)
+static void basic_dump_details(struct rtnl_tc *tc, void *data,
+			       struct nl_dump_params *p)
 {
-	struct rtnl_basic *b = rtnl_cls_data(cls);
+	struct rtnl_basic *b = data;
+
+	if (!b)
+		return;
 
 	if (b->b_mask & BASIC_ATTR_EMATCH) {
 		nl_dump_line(p, "    ematch ");
@@ -112,9 +123,13 @@ static void basic_dump_details(struct rtnl_cls *cls, struct nl_dump_params *p)
 		nl_dump(p, "no options.\n");
 }
 
-static int basic_get_opts(struct rtnl_cls *cls, struct nl_msg *msg)
+static int basic_msg_fill(struct rtnl_tc *tc, void *data,
+			  struct nl_msg *msg)
 {
-	struct rtnl_basic *b = rtnl_cls_data(cls);
+	struct rtnl_basic *b = data;
+
+	if (!b)
+		return 0;
 
 	if (!(b->b_mask & BASIC_ATTR_TARGET))
 		return -NLE_MISSING_ATTR;
@@ -138,7 +153,10 @@ nla_put_failure:
 
 void rtnl_basic_set_target(struct rtnl_cls *cls, uint32_t target)
 {
-	struct rtnl_basic *b = rtnl_cls_data(cls);
+	struct rtnl_basic *b;
+
+	if (!(b = rtnl_tc_data(TC_CAST(cls))))
+		return;
 
 	b->b_target = target;
 	b->b_mask |= BASIC_ATTR_TARGET;
@@ -146,14 +164,20 @@ void rtnl_basic_set_target(struct rtnl_cls *cls, uint32_t target)
 
 uint32_t rtnl_basic_get_target(struct rtnl_cls *cls)
 {
-	struct rtnl_basic *b = rtnl_cls_data(cls);
+	struct rtnl_basic *b;
+
+	if (!(b = rtnl_tc_data(TC_CAST(cls))))
+		return 0;
 
 	return b->b_target;
 }
 
 void rtnl_basic_set_ematch(struct rtnl_cls *cls, struct rtnl_ematch_tree *tree)
 {
-	struct rtnl_basic *b = rtnl_cls_data(cls);
+	struct rtnl_basic *b;
+
+	if (!(b = rtnl_tc_data(TC_CAST(cls))))
+		return;
 
 	if (b->b_ematch) {
 		rtnl_ematch_tree_free(b->b_ematch);
@@ -168,19 +192,25 @@ void rtnl_basic_set_ematch(struct rtnl_cls *cls, struct rtnl_ematch_tree *tree)
 
 struct rtnl_ematch_tree *rtnl_basic_get_ematch(struct rtnl_cls *cls)
 {
-	return ((struct rtnl_basic *) rtnl_cls_data(cls))->b_ematch;
+	struct rtnl_basic *b;
+
+	if (!(b = rtnl_tc_data(TC_CAST(cls))))
+		return NULL;
+
+	return b->b_ematch;
 }
 
 /** @} */
 
-static struct rtnl_cls_ops basic_ops = {
-	.co_kind		= "basic",
-	.co_size		= sizeof(struct rtnl_basic),
-	.co_msg_parser		= basic_msg_parser,
-	.co_clone		= basic_clone,
-	.co_free_data		= basic_free_data,
-	.co_get_opts		= basic_get_opts,
-	.co_dump = {
+static struct rtnl_tc_ops basic_ops = {
+	.to_kind		= "basic",
+	.to_type		= RTNL_TC_TYPE_CLS,
+	.to_size		= sizeof(struct rtnl_basic),
+	.to_msg_parser		= basic_msg_parser,
+	.to_clone		= basic_clone,
+	.to_free_data		= basic_free_data,
+	.to_msg_fill		= basic_msg_fill,
+	.to_dump = {
 	    [NL_DUMP_LINE]	= basic_dump_line,
 	    [NL_DUMP_DETAILS]	= basic_dump_details,
 	},
@@ -188,12 +218,12 @@ static struct rtnl_cls_ops basic_ops = {
 
 static void __init basic_init(void)
 {
-	rtnl_cls_register(&basic_ops);
+	rtnl_tc_register(&basic_ops);
 }
 
 static void __exit basic_exit(void)
 {
-	rtnl_cls_unregister(&basic_ops);
+	rtnl_tc_unregister(&basic_ops);
 }
 
 /** @} */

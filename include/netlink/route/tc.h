@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_TC_H_
@@ -23,12 +23,31 @@
 extern "C" {
 #endif
 
+/**
+ * Traffic control object
+ * @ingroup tc
+ */
 struct rtnl_tc;
 
 /**
+ * Macro to cast qdisc/class/classifier to tc object
  * @ingroup tc
+ *
+ * @code
+ * rtnl_tc_set_mpu(TC_CAST(qdisc), 40);
+ * @endcode
  */
-enum rtnl_tc_stats_id {
+#define TC_CAST(ptr)		((struct rtnl_tc *) (ptr))
+
+/**
+ * Traffic control statistical identifier
+ * @ingroup tc
+ *
+ * @code
+ * uint64_t n = rtnl_tc_get_stat(TC_CAST(class), RTNL_TC_PACKETS);
+ * @endcode
+ */
+enum rtnl_tc_stat {
 	RTNL_TC_PACKETS,	/**< Number of packets seen */
 	RTNL_TC_BYTES,		/**< Total bytes seen */
 	RTNL_TC_RATE_BPS,	/**< Current bits/s (rate estimator) */
@@ -58,8 +77,9 @@ extern void		rtnl_tc_set_handle(struct rtnl_tc *, uint32_t);
 extern uint32_t		rtnl_tc_get_handle(struct rtnl_tc *);
 extern void		rtnl_tc_set_parent(struct rtnl_tc *, uint32_t);
 extern uint32_t		rtnl_tc_get_parent(struct rtnl_tc *);
+extern int		rtnl_tc_set_kind(struct rtnl_tc *, const char *);
 extern char *		rtnl_tc_get_kind(struct rtnl_tc *);
-extern uint64_t		rtnl_tc_get_stat(struct rtnl_tc *, int );
+extern uint64_t		rtnl_tc_get_stat(struct rtnl_tc *, enum rtnl_tc_stat);
 
 extern int		rtnl_tc_calc_txtime(int, int);
 extern int		rtnl_tc_calc_bufsize(int, int);

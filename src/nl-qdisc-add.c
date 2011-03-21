@@ -53,8 +53,8 @@ int main(int argc, char *argv[])
 		.dp_type = NL_DUMP_DETAILS,
 		.dp_fd = stdout,
 	};
-	struct nl_cli_qdisc_module *qm;
-	struct rtnl_qdisc_ops *ops;
+	struct nl_cli_tc_module *tm;
+	struct rtnl_tc_ops *ops;
 	int err, flags = NLM_F_CREATE | NLM_F_EXCL;
 	char *kind, *id = NULL;
  
@@ -122,15 +122,15 @@ int main(int argc, char *argv[])
 	}
 
 	kind = argv[optind++];
-	rtnl_qdisc_set_kind(qdisc, kind);
+	rtnl_tc_set_kind(tc, kind);
 
-	if (!(ops = rtnl_qdisc_lookup_ops(qdisc)))
+	if (!(ops = rtnl_tc_get_ops(tc)))
 		nl_cli_fatal(ENOENT, "Unknown qdisc \"%s\"", kind);
 
-	if (!(qm = nl_cli_qdisc_lookup(ops)))
+	if (!(tm = nl_cli_tc_lookup(ops)))
 		nl_cli_fatal(ENOTSUP, "Qdisc type \"%s\" not supported.", kind);
 
-	qm->qm_parse_qdisc_argv(qdisc, argc, argv);
+	tm->tm_parse_argv(tc, argc, argv);
 
 	if (!quiet) {
 		printf("Adding ");

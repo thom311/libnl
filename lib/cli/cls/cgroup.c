@@ -6,10 +6,11 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2010-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 #include <netlink/cli/utils.h>
+#include <netlink/cli/tc.h>
 #include <netlink/cli/cls.h>
 #include <netlink/route/cls/cgroup.h>
 
@@ -26,8 +27,9 @@ static void print_usage(void)
 "    nl-cls-add --dev=eth0 --parent=q_root cgroup\n");
 }
 
-static int parse_argv(struct rtnl_cls *cls, int argc, char **argv)
+static void parse_argv(struct rtnl_tc *tc, int argc, char **argv)
 {
+	struct rtnl_cls *cls = (struct rtnl_cls *) tc;
 	struct rtnl_ematch_tree *tree;
 
 	for (;;) {
@@ -53,22 +55,21 @@ static int parse_argv(struct rtnl_cls *cls, int argc, char **argv)
 			break;
 		}
  	}
-
-	return 0;
 }
 
-static struct nl_cli_cls_module cgroup_module =
+static struct nl_cli_tc_module cgroup_module =
 {
-	.cm_name		= "cgroup",
-	.cm_parse_argv		= parse_argv,
+	.tm_name		= "cgroup",
+	.tm_type		= RTNL_TC_TYPE_CLS,
+	.tm_parse_argv		= parse_argv,
 };
 
 static void __init cgroup_init(void)
 {
-	nl_cli_cls_register(&cgroup_module);
+	nl_cli_tc_register(&cgroup_module);
 }
 
 static void __exit cgroup_exit(void)
 {
-	nl_cli_cls_unregister(&cgroup_module);
+	nl_cli_tc_unregister(&cgroup_module);
 }

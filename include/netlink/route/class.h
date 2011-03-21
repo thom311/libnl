@@ -22,8 +22,6 @@ extern "C" {
 
 struct rtnl_class;
 
-extern struct nl_object_ops class_obj_ops;
-
 extern struct rtnl_class *	rtnl_class_alloc(void);
 extern void		rtnl_class_put(struct rtnl_class *);
 extern int		rtnl_class_alloc_cache(struct nl_sock *, int,

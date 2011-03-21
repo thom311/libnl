@@ -6,25 +6,24 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 #include <netlink-local.h>
 #include <netlink-tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
+#include <netlink/route/tc-api.h>
 #include <netlink/route/qdisc.h>
-#include <netlink/route/qdisc-modules.h>
 #include <netlink/route/class.h>
-#include <netlink/route/class-modules.h>
 #include <netlink/route/link.h>
 #include <netlink/route/sch/cbq.h>
 #include <netlink/route/cls/police.h>
 
 /**
- * @ingroup qdisc_api
- * @ingroup class_api
- * @defgroup cbq Class Based Queueing (CBQ)
+ * @ingroup qdisc
+ * @ingroup class
+ * @defgroup qdisc_cbq Class Based Queueing (CBQ)
  * @{
  */
 
@@ -73,33 +72,15 @@ static struct nla_policy cbq_policy[TCA_CBQ_MAX+1] = {
 	[TCA_CBQ_POLICE]	= { .minlen = sizeof(struct tc_cbq_police) },
 };
 
-static inline struct rtnl_cbq *cbq_qdisc(struct rtnl_tc *tca)
-{
-	return (struct rtnl_cbq *) tca->tc_subdata;
-}
-
-static inline struct rtnl_cbq *cbq_alloc(struct rtnl_tc *tca)
-{
-	if (!tca->tc_subdata)
-		tca->tc_subdata = calloc(1, sizeof(struct rtnl_qdisc));
-
-	return cbq_qdisc(tca);
-}
-
-
-static int cbq_msg_parser(struct rtnl_tc *tca)
+static int cbq_msg_parser(struct rtnl_tc *tc, void *data)
 {
 	struct nlattr *tb[TCA_CBQ_MAX + 1];
-	struct rtnl_cbq *cbq;
+	struct rtnl_cbq *cbq = data;
 	int err;
 
-	err = tca_parse(tb, TCA_CBQ_MAX, tca, cbq_policy);
+	err = tca_parse(tb, TCA_CBQ_MAX, tc, cbq_policy);
 	if (err < 0)
 		return err;
-
-	cbq = cbq_alloc(tca);
-	if (!cbq)
-		return -NLE_NOMEM;
 
 	nla_memcpy(&cbq->cbq_lss, tb[TCA_CBQ_LSSOPT], sizeof(cbq->cbq_lss));
 	nla_memcpy(&cbq->cbq_rate, tb[TCA_CBQ_RATE], sizeof(cbq->cbq_rate));
@@ -113,53 +94,13 @@ static int cbq_msg_parser(struct rtnl_tc *tca)
 	return 0;
 }
 
-static int cbq_qdisc_msg_parser(struct rtnl_qdisc *qdisc)
+static void cbq_dump_line(struct rtnl_tc *tc, void *data,
+			  struct nl_dump_params *p)
 {
-	return cbq_msg_parser((struct rtnl_tc *) qdisc);
-}
-
-static int cbq_class_msg_parser(struct rtnl_class *class)
-{
-	return cbq_msg_parser((struct rtnl_tc *) class);
-}
-
-static void cbq_qdisc_free_data(struct rtnl_qdisc *qdisc)
-{
-	free(qdisc->q_subdata);
-}
-
-static int cbq_clone(struct rtnl_tc *_dst, struct rtnl_tc *_src)
-{
-	struct rtnl_cbq *src = cbq_qdisc(_src);
-
-	if (src && !cbq_alloc(_dst))
-		return -NLE_NOMEM;
-	else
-		return 0;
-}
-
-static int cbq_qdisc_clone(struct rtnl_qdisc *dst, struct rtnl_qdisc *src)
-{
-	return cbq_clone((struct rtnl_tc *) dst, (struct rtnl_tc *) src);
-}
-
-static void cbq_class_free_data(struct rtnl_class *class)
-{
-	free(class->c_subdata);
-}
-
-static int cbq_class_clone(struct rtnl_class *dst, struct rtnl_class *src)
-{
-	return cbq_clone((struct rtnl_tc *) dst, (struct rtnl_tc *) src);
-}
-
-static void cbq_dump_line(struct rtnl_tc *tca, struct nl_dump_params *p)
-{
-	struct rtnl_cbq *cbq;
+	struct rtnl_cbq *cbq = data;
 	double r, rbit;
 	char *ru, *rubit;
 
-	cbq = cbq_qdisc(tca);
 	if (!cbq)
 		return;
 
@@ -170,26 +111,14 @@ static void cbq_dump_line(struct rtnl_tc *tca, struct nl_dump_params *p)
 		r, ru, rbit, rubit, cbq->cbq_wrr.priority);
 }
 
-static void cbq_qdisc_dump_line(struct rtnl_qdisc *qdisc,
-				struct nl_dump_params *p)
+static void cbq_dump_details(struct rtnl_tc *tc, void *data,
+			     struct nl_dump_params *p)
 {
-	cbq_dump_line((struct rtnl_tc *) qdisc, p);
-}
-
-static void cbq_class_dump_line(struct rtnl_class *class,
-				struct nl_dump_params *p)
-{
-	cbq_dump_line((struct rtnl_tc *) class, p);
-}
-
-static void cbq_dump_details(struct rtnl_tc *tca, struct nl_dump_params *p)
-{
-	struct rtnl_cbq *cbq;
+	struct rtnl_cbq *cbq = data;
 	char *unit, buf[32];
 	double w;
 	uint32_t el;
 
-	cbq = cbq_qdisc(tca);
 	if (!cbq)
 		return;
 
@@ -222,23 +151,12 @@ static void cbq_dump_details(struct rtnl_tc *tca, struct nl_dump_params *p)
 		nl_police2str(cbq->cbq_police.police, buf, sizeof(buf)));
 }
 
-static void cbq_qdisc_dump_details(struct rtnl_qdisc *qdisc,
-				   struct nl_dump_params *p)
+static void cbq_dump_stats(struct rtnl_tc *tc, void *data,
+			   struct nl_dump_params *p)
 {
-	cbq_dump_details((struct rtnl_tc *) qdisc, p);
-}
-
-static void cbq_class_dump_details(struct rtnl_class *class,
-				   struct nl_dump_params *p)
-{
-	cbq_dump_details((struct rtnl_tc *) class, p);
-}
-
-static void cbq_dump_stats(struct rtnl_tc *tca, struct nl_dump_params *p)
-{
-	struct tc_cbq_xstats *x = tca_xstats(tca);
-
-	if (!x)
+	struct tc_cbq_xstats *x;
+	
+	if (!(x = tca_xstats(tc)))
 		return;
 
 	nl_dump_line(p, "            borrows    overact  "
@@ -247,52 +165,40 @@ static void cbq_dump_stats(struct rtnl_tc *tca, struct nl_dump_params *p)
 		     x->borrows, x->overactions, x->avgidle, x->undertime);
 }
 
-static void cbq_qdisc_dump_stats(struct rtnl_qdisc *qdisc,
-				 struct nl_dump_params *p)
-{
-	cbq_dump_stats((struct rtnl_tc *) qdisc, p);
-}
-
-static void cbq_class_dump_stats(struct rtnl_class *class,
-				 struct nl_dump_params *p)
-{
-	cbq_dump_stats((struct rtnl_tc *) class, p);
-}
-
-static struct rtnl_qdisc_ops cbq_qdisc_ops = {
-	.qo_kind		= "cbq",
-	.qo_msg_parser		= cbq_qdisc_msg_parser,
-	.qo_free_data		= cbq_qdisc_free_data,
-	.qo_clone		= cbq_qdisc_clone,
-	.qo_dump = {
-	    [NL_DUMP_LINE]	= cbq_qdisc_dump_line,
-	    [NL_DUMP_DETAILS]	= cbq_qdisc_dump_details,
-	    [NL_DUMP_STATS]	= cbq_qdisc_dump_stats,
+static struct rtnl_tc_ops cbq_qdisc_ops = {
+	.to_kind		= "cbq",
+	.to_type		= RTNL_TC_TYPE_QDISC,
+	.to_size		= sizeof(struct rtnl_cbq),
+	.to_msg_parser		= cbq_msg_parser,
+	.to_dump = {
+	    [NL_DUMP_LINE]	= cbq_dump_line,
+	    [NL_DUMP_DETAILS]	= cbq_dump_details,
+	    [NL_DUMP_STATS]	= cbq_dump_stats,
 	},
 };
 
-static struct rtnl_class_ops cbq_class_ops = {
-	.co_kind		= "cbq",
-	.co_msg_parser		= cbq_class_msg_parser,
-	.co_free_data		= cbq_class_free_data,
-	.co_clone		= cbq_class_clone,
-	.co_dump = {
-	    [NL_DUMP_LINE]	= cbq_class_dump_line,
-	    [NL_DUMP_DETAILS]	= cbq_class_dump_details,
-	    [NL_DUMP_STATS]	= cbq_class_dump_stats,
+static struct rtnl_tc_ops cbq_class_ops = {
+	.to_kind		= "cbq",
+	.to_type		= RTNL_TC_TYPE_CLASS,
+	.to_size		= sizeof(struct rtnl_cbq),
+	.to_msg_parser		= cbq_msg_parser,
+	.to_dump = {
+	    [NL_DUMP_LINE]	= cbq_dump_line,
+	    [NL_DUMP_DETAILS]	= cbq_dump_details,
+	    [NL_DUMP_STATS]	= cbq_dump_stats,
 	},
 };
 
 static void __init cbq_init(void)
 {
-	rtnl_qdisc_register(&cbq_qdisc_ops);
-	rtnl_class_register(&cbq_class_ops);
+	rtnl_tc_register(&cbq_qdisc_ops);
+	rtnl_tc_register(&cbq_class_ops);
 }
 
 static void __exit cbq_exit(void)
 {
-	rtnl_qdisc_unregister(&cbq_qdisc_ops);
-	rtnl_class_unregister(&cbq_class_ops);
+	rtnl_tc_unregister(&cbq_qdisc_ops);
+	rtnl_tc_unregister(&cbq_class_ops);
 }
 
 /** @} */

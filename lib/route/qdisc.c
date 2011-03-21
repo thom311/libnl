@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -87,44 +87,29 @@
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/link.h>
-#include <netlink/route/tc.h>
+#include <netlink/route/tc-api.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/class.h>
 #include <netlink/route/classifier.h>
-#include <netlink/route/qdisc-modules.h>
 
 static struct nl_cache_ops rtnl_qdisc_ops;
 
 static int qdisc_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			    struct nlmsghdr *n, struct nl_parser_param *pp)
 {
-	int err;
 	struct rtnl_qdisc *qdisc;
-	struct rtnl_qdisc_ops *qops;
+	int err;
 
-	qdisc = rtnl_qdisc_alloc();
-	if (!qdisc) {
-		err = -NLE_NOMEM;
+	if (!(qdisc = rtnl_qdisc_alloc()))
+		return -NLE_NOMEM;
+
+	if ((err = rtnl_tc_msg_parse(n, TC_CAST(qdisc))) < 0)
 		goto errout;
-	}
 
-	qdisc->ce_msgtype = n->nlmsg_type;
-
-	err = tca_msg_parser(n, (struct rtnl_tc *) qdisc);
-	if (err < 0)
-		goto errout_free;
-
-	qops = rtnl_qdisc_lookup_ops(qdisc);
-	if (qops && qops->qo_msg_parser) {
-		err = qops->qo_msg_parser(qdisc);
-		if (err < 0)
-			goto errout_free;
-	}
-
-	err = pp->pp_cb((struct nl_object *) qdisc, pp);
-errout_free:
-	rtnl_qdisc_put(qdisc);
+	err = pp->pp_cb(OBJ_CAST(qdisc), pp);
 errout:
+	rtnl_qdisc_put(qdisc);
+
 	return err;
 }
 
@@ -147,25 +132,9 @@ static int qdisc_request_update(struct nl_cache *c, struct nl_sock *sk)
 static int qdisc_build(struct rtnl_qdisc *qdisc, int type, int flags,
 		       struct nl_msg **result)
 {
-	struct rtnl_qdisc_ops *qops;
-	int err;
+	return rtnl_tc_msg_build(TC_CAST(qdisc), type, flags, result);
 
-	err = tca_build_msg((struct rtnl_tc *) qdisc, type, flags, result);
-	if (err < 0)
-		return err;
-
-	qops = rtnl_qdisc_lookup_ops(qdisc);
-	if (qops && qops->qo_get_opts) {
-		struct nl_msg *opts;
-		
-		opts = qops->qo_get_opts(qdisc);
-		if (opts) {
-			err = nla_put_nested(*result, TCA_OPTIONS, opts);
-			nlmsg_free(opts);
-			if (err < 0)
-				goto errout;
-		}
-	}
+#if 0
 	/* Some qdiscs don't accept properly nested messages (e.g. netem). To
 	 * accomodate for this, they can complete the message themselves.
 	 */		
@@ -174,12 +143,7 @@ static int qdisc_build(struct rtnl_qdisc *qdisc, int type, int flags,
 		if (err < 0)
 			goto errout;
 	}
-
-	return 0;
-errout:
-	nlmsg_free(*result);
-
-	return err;
+#endif
 }
 
 /**
@@ -440,6 +404,101 @@ struct rtnl_qdisc * rtnl_qdisc_get(struct nl_cache *cache,
 
 /** @} */
 
+/**
+ * @name Allocation/Freeing
+ * @{
+ */
+
+struct rtnl_qdisc *rtnl_qdisc_alloc(void)
+{
+	struct rtnl_tc *tc;
+
+	tc = TC_CAST(nl_object_alloc(&qdisc_obj_ops));
+	if (tc)
+		tc->tc_type = RTNL_TC_TYPE_QDISC;
+
+	return (struct rtnl_qdisc *) tc;
+}
+
+void rtnl_qdisc_put(struct rtnl_qdisc *qdisc)
+{
+	nl_object_put((struct nl_object *) qdisc);
+}
+
+/** @} */
+
+/**
+ * @name Iterators
+ * @{
+ */
+
+/**
+ * Call a callback for each child class of a qdisc
+ * @arg qdisc		the parent qdisc
+ * @arg cache		a class cache including all classes of the interface
+ *                      the specified qdisc is attached to
+ * @arg cb              callback function
+ * @arg arg             argument to be passed to callback function
+ */
+void rtnl_qdisc_foreach_child(struct rtnl_qdisc *qdisc, struct nl_cache *cache,
+			      void (*cb)(struct nl_object *, void *), void *arg)
+{
+	struct rtnl_class *filter;
+	
+	filter = rtnl_class_alloc();
+	if (!filter)
+		return;
+
+	rtnl_tc_set_parent(TC_CAST(filter), qdisc->q_handle);
+	rtnl_tc_set_ifindex(TC_CAST(filter), qdisc->q_ifindex);
+	rtnl_tc_set_kind(TC_CAST(filter), qdisc->q_kind);
+
+	nl_cache_foreach_filter(cache, OBJ_CAST(filter), cb, arg);
+
+	rtnl_class_put(filter);
+}
+
+/**
+ * Call a callback for each filter attached to the qdisc
+ * @arg qdisc		the parent qdisc
+ * @arg cache		a filter cache including at least all the filters
+ *                      attached to the specified qdisc
+ * @arg cb              callback function
+ * @arg arg             argument to be passed to callback function
+ */
+void rtnl_qdisc_foreach_cls(struct rtnl_qdisc *qdisc, struct nl_cache *cache,
+			    void (*cb)(struct nl_object *, void *), void *arg)
+{
+	struct rtnl_cls *filter;
+
+	filter = rtnl_cls_alloc();
+	if (!filter)
+		return;
+
+	rtnl_tc_set_ifindex((struct rtnl_tc *) filter, qdisc->q_ifindex);
+	rtnl_tc_set_parent((struct rtnl_tc *) filter, qdisc->q_parent);
+
+	nl_cache_foreach_filter(cache, (struct nl_object *) filter, cb, arg);
+	rtnl_cls_put(filter);
+}
+
+/** @} */
+
+static void qdisc_dump_details(struct rtnl_tc *tc, struct nl_dump_params *p)
+{
+	struct rtnl_qdisc *qdisc = (struct rtnl_qdisc *) tc;
+
+	nl_dump(p, "refcnt %u ", qdisc->q_info);
+}
+
+static struct rtnl_tc_type_ops qdisc_ops = {
+	.tt_type		= RTNL_TC_TYPE_QDISC,
+	.tt_dump_prefix		= "qdisc",
+	.tt_dump = {
+	    [NL_DUMP_DETAILS]	= qdisc_dump_details,
+	},
+};
+
 static struct nl_cache_ops rtnl_qdisc_ops = {
 	.co_name		= "route/qdisc",
 	.co_hdrsize		= sizeof(struct tcmsg),
@@ -455,14 +514,30 @@ static struct nl_cache_ops rtnl_qdisc_ops = {
 	.co_obj_ops		= &qdisc_obj_ops,
 };
 
+struct nl_object_ops qdisc_obj_ops = {
+	.oo_name		= "route/qdisc",
+	.oo_size		= sizeof(struct rtnl_qdisc),
+	.oo_free_data		= rtnl_tc_free_data,
+	.oo_clone		= rtnl_tc_clone,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= rtnl_tc_dump_line,
+	    [NL_DUMP_DETAILS]	= rtnl_tc_dump_details,
+	    [NL_DUMP_STATS]	= rtnl_tc_dump_stats,
+	},
+	.oo_compare		= rtnl_tc_compare,
+	.oo_id_attrs		= (TCA_ATTR_IFINDEX | TCA_ATTR_HANDLE),
+};
+
 static void __init qdisc_init(void)
 {
+	rtnl_tc_type_register(&qdisc_ops);
 	nl_cache_mngt_register(&rtnl_qdisc_ops);
 }
 
 static void __exit qdisc_exit(void)
 {
 	nl_cache_mngt_unregister(&rtnl_qdisc_ops);
+	rtnl_tc_type_unregister(&qdisc_ops);
 }
 
 /** @} */

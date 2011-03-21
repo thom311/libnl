@@ -6,12 +6,12 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
- * @ingroup qdisc_api
- * @defgroup tbf Token Bucket Filter (TBF)
+ * @ingroup qdisc
+ * @defgroup qdisc_tbf Token Bucket Filter (TBF)
  * @{
  */
 
@@ -20,11 +20,9 @@
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/utils.h>
-#include <netlink/route/tc.h>
+#include <netlink/route/tc-api.h>
 #include <netlink/route/qdisc.h>
-#include <netlink/route/qdisc-modules.h>
 #include <netlink/route/class.h>
-#include <netlink/route/class-modules.h>
 #include <netlink/route/link.h>
 #include <netlink/route/sch/tbf.h>
 
@@ -34,37 +32,19 @@
 #define TBF_ATTR_PEAKRATE		0x10
 /** @endcond */
 
-static inline struct rtnl_tbf *tbf_qdisc(struct rtnl_qdisc *qdisc)
-{
-	return (struct rtnl_tbf *) qdisc->q_subdata;
-}
-
-static inline struct rtnl_tbf *tbf_alloc(struct rtnl_qdisc *qdisc)
-{
-	if (!qdisc->q_subdata)
-		qdisc->q_subdata = calloc(1, sizeof(struct rtnl_tbf));
-
-	return tbf_qdisc(qdisc);
-}
-
 static struct nla_policy tbf_policy[TCA_TBF_MAX+1] = {
 	[TCA_TBF_PARMS]	= { .minlen = sizeof(struct tc_tbf_qopt) },
 };
 
-static int tbf_msg_parser(struct rtnl_qdisc *q)
+static int tbf_msg_parser(struct rtnl_tc *tc, void *data)
 {
-	int err;
 	struct nlattr *tb[TCA_TBF_MAX + 1];
-	struct rtnl_tbf *tbf;
+	struct rtnl_tbf *tbf = data;
+	int err;
 
-	err = tca_parse(tb, TCA_TBF_MAX, (struct rtnl_tc *) q, tbf_policy);
-	if (err < 0)
+	if ((err = tca_parse(tb, TCA_TBF_MAX, tc, tbf_policy)) < 0)
 		return err;
 	
-	tbf = tbf_alloc(q);
-	if (!tbf)
-		return -NLE_NOMEM;
-
 	if (tb[TCA_TBF_PARMS]) {
 		struct tc_tbf_qopt opts;
 		int bufsize;
@@ -84,8 +64,8 @@ static int tbf_msg_parser(struct rtnl_qdisc *q)
 					       opts.peakrate.rate);
 		tbf->qt_peakrate_bucket = bufsize;
 
-		rtnl_tc_set_mpu((struct rtnl_tc *) q, tbf->qt_rate.rs_mpu);
-		rtnl_tc_set_overhead((struct rtnl_tc *) q, tbf->qt_rate.rs_overhead);
+		rtnl_tc_set_mpu(tc, tbf->qt_rate.rs_mpu);
+		rtnl_tc_set_overhead(tc, tbf->qt_rate.rs_overhead);
 
 		tbf->qt_mask = (TBF_ATTR_LIMIT | TBF_ATTR_RATE | TBF_ATTR_PEAKRATE);
 	}
@@ -93,16 +73,12 @@ static int tbf_msg_parser(struct rtnl_qdisc *q)
 	return 0;
 }
 
-static void tbf_free_data(struct rtnl_qdisc *qdisc)
-{
-	free(qdisc->q_subdata);
-}
-
-static void tbf_dump_line(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
+static void tbf_dump_line(struct rtnl_tc *tc, void *data,
+			  struct nl_dump_params *p)
 {
 	double r, rbit, lim;
 	char *ru, *rubit, *limu;
-	struct rtnl_tbf *tbf = tbf_qdisc(qdisc);
+	struct rtnl_tbf *tbf = data;
 
 	if (!tbf)
 		return;
@@ -115,9 +91,10 @@ static void tbf_dump_line(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
 		r, ru, rbit, rubit, lim, limu);
 }
 
-static void tbf_dump_details(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
+static void tbf_dump_details(struct rtnl_tc *tc, void *data,
+			     struct nl_dump_params *p)
 {
-	struct rtnl_tbf *tbf = tbf_qdisc(qdisc);
+	struct rtnl_tbf *tbf = data;
 
 	if (!tbf)
 		return;
@@ -151,39 +128,29 @@ static void tbf_dump_details(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
 	}
 }
 
-static struct nl_msg *tbf_get_opts(struct rtnl_qdisc *qdisc)
+static int tbf_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 {
-	struct tc_tbf_qopt opts;
-	struct rtnl_tbf *tbf;
-	struct nl_msg *msg;
 	uint32_t rtab[RTNL_TC_RTABLE_SIZE], ptab[RTNL_TC_RTABLE_SIZE];
+	struct tc_tbf_qopt opts;
+	struct rtnl_tbf *tbf = data;
 	int required = TBF_ATTR_RATE | TBF_ATTR_LIMIT;
 
-	memset(&opts, 0, sizeof(opts));
-
-	tbf = tbf_qdisc(qdisc);
-	if (!tbf)
-		return NULL;
-
 	if (!(tbf->qt_mask & required) != required)
-		return NULL;
+		return -NLE_MISSING_ATTR;
 
+	memset(&opts, 0, sizeof(opts));
 	opts.limit = tbf->qt_limit;
 	opts.buffer = tbf->qt_rate_txtime;
 
-	rtnl_tc_build_rate_table((struct rtnl_tc *) qdisc, &tbf->qt_rate, rtab);
+	rtnl_tc_build_rate_table(tc, &tbf->qt_rate, rtab);
 	rtnl_rcopy_ratespec(&opts.rate, &tbf->qt_rate);
 
 	if (tbf->qt_mask & TBF_ATTR_PEAKRATE) {
 		opts.mtu = tbf->qt_peakrate_txtime;
-		rtnl_tc_build_rate_table((struct rtnl_tc *) qdisc, &tbf->qt_peakrate, ptab);
+		rtnl_tc_build_rate_table(tc, &tbf->qt_peakrate, ptab);
 		rtnl_rcopy_ratespec(&opts.peakrate, &tbf->qt_peakrate);
 
 	}
-
-	msg = nlmsg_alloc();
-	if (!msg)
-		goto nla_put_failure;
 
 	NLA_PUT(msg, TCA_TBF_PARMS, sizeof(opts), &opts);
 	NLA_PUT(msg, TCA_TBF_RTAB, sizeof(rtab), rtab);
@@ -191,11 +158,10 @@ static struct nl_msg *tbf_get_opts(struct rtnl_qdisc *qdisc)
 	if (tbf->qt_mask & TBF_ATTR_PEAKRATE)
 		NLA_PUT(msg, TCA_TBF_PTAB, sizeof(ptab), ptab);
 
-	return msg;
+	return 0;
 
 nla_put_failure:
-	nlmsg_free(msg);
-	return NULL;
+	return -NLE_MSGSIZE;
 }
 
 /**
@@ -209,18 +175,15 @@ nla_put_failure:
  * @arg limit		New limit in bytes.
  * @return 0 on success or a negative error code.
  */
-int rtnl_qdisc_tbf_set_limit(struct rtnl_qdisc *qdisc, int limit)
+void rtnl_qdisc_tbf_set_limit(struct rtnl_qdisc *qdisc, int limit)
 {
 	struct rtnl_tbf *tbf;
 	
-	tbf = tbf_alloc(qdisc);
-	if (!tbf)
-		return -NLE_NOMEM;
+	if (!(tbf = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
 
 	tbf->qt_limit = limit;
 	tbf->qt_mask |= TBF_ATTR_LIMIT;
-
-	return 0;
 }
 
 static inline double calc_limit(struct rtnl_ratespec *spec, int latency,
@@ -257,9 +220,8 @@ int rtnl_qdisc_tbf_set_limit_by_latency(struct rtnl_qdisc *qdisc, int latency)
 	struct rtnl_tbf *tbf;
 	double limit, limit2;
 
-	tbf = tbf_alloc(qdisc);
-	if (!tbf)
-		return -NLE_NOMEM;
+	if (!(tbf = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
 
 	if (!(tbf->qt_mask & TBF_ATTR_RATE))
 		return -NLE_MISSING_ATTR;
@@ -274,7 +236,9 @@ int rtnl_qdisc_tbf_set_limit_by_latency(struct rtnl_qdisc *qdisc, int latency)
 			limit = limit2;
 	}
 
-	return rtnl_qdisc_tbf_set_limit(qdisc, (int) limit);
+	rtnl_qdisc_tbf_set_limit(qdisc, (int) limit);
+
+	return 0;
 }
 
 /**
@@ -286,8 +250,10 @@ int rtnl_qdisc_tbf_get_limit(struct rtnl_qdisc *qdisc)
 {
 	struct rtnl_tbf *tbf;
 	
-	tbf = tbf_qdisc(qdisc);
-	if (tbf && (tbf->qt_mask & TBF_ATTR_LIMIT))
+	if (!(tbf = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
+
+	if (tbf->qt_mask & TBF_ATTR_LIMIT)
 		return tbf->qt_limit;
 	else
 		return -NLE_NOATTR;
@@ -307,15 +273,14 @@ static inline int calc_cell_log(int cell, int bucket)
  * @arg cell		Size of a rate cell or 0 to get default value.
  * @return 0 on success or a negative error code.
  */
-int rtnl_qdisc_tbf_set_rate(struct rtnl_qdisc *qdisc, int rate, int bucket,
+void rtnl_qdisc_tbf_set_rate(struct rtnl_qdisc *qdisc, int rate, int bucket,
 			    int cell)
 {
 	struct rtnl_tbf *tbf;
 	int cell_log;
 	
-	tbf = tbf_alloc(qdisc);
-	if (!tbf)
-		return -NLE_NOMEM;
+	if (!(tbf = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
 
 	if (!cell)
 		cell_log = UINT8_MAX;
@@ -327,8 +292,6 @@ int rtnl_qdisc_tbf_set_rate(struct rtnl_qdisc *qdisc, int rate, int bucket,
 	tbf->qt_rate.rs_cell_log = cell_log;
 	tbf->qt_rate_txtime = rtnl_tc_calc_txtime(bucket, rate);
 	tbf->qt_mask |= TBF_ATTR_RATE;
-
-	return 0;
 }
 
 /**
@@ -340,8 +303,10 @@ int rtnl_qdisc_tbf_get_rate(struct rtnl_qdisc *qdisc)
 {
 	struct rtnl_tbf *tbf;
 
-	tbf = tbf_qdisc(qdisc);
-	if (tbf && (tbf->qt_mask & TBF_ATTR_RATE))
+	if (!(tbf = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
+
+	if (tbf->qt_mask & TBF_ATTR_RATE)
 		return tbf->qt_rate.rs_rate;
 	else
 		return -1;
@@ -356,8 +321,10 @@ int rtnl_qdisc_tbf_get_rate_bucket(struct rtnl_qdisc *qdisc)
 {
 	struct rtnl_tbf *tbf;
 
-	tbf = tbf_qdisc(qdisc);
-	if (tbf && (tbf->qt_mask & TBF_ATTR_RATE))
+	if (!(tbf = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
+
+	if (tbf->qt_mask & TBF_ATTR_RATE)
 		return tbf->qt_rate_bucket;
 	else
 		return -1;
@@ -372,8 +339,10 @@ int rtnl_qdisc_tbf_get_rate_cell(struct rtnl_qdisc *qdisc)
 {
 	struct rtnl_tbf *tbf;
 
-	tbf = tbf_qdisc(qdisc);
-	if (tbf && (tbf->qt_mask & TBF_ATTR_RATE))
+	if (!(tbf = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
+
+	if (tbf->qt_mask & TBF_ATTR_RATE)
 		return (1 << tbf->qt_rate.rs_cell_log);
 	else
 		return -1;
@@ -393,9 +362,8 @@ int rtnl_qdisc_tbf_set_peakrate(struct rtnl_qdisc *qdisc, int rate, int bucket,
 	struct rtnl_tbf *tbf;
 	int cell_log;
 	
-	tbf = tbf_alloc(qdisc);
-	if (!tbf)
-		return -NLE_NOMEM;
+	if (!(tbf = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
 
 	cell_log = calc_cell_log(cell, bucket);
 	if (cell_log < 0)
@@ -420,8 +388,10 @@ int rtnl_qdisc_tbf_get_peakrate(struct rtnl_qdisc *qdisc)
 {
 	struct rtnl_tbf *tbf;
 
-	tbf = tbf_qdisc(qdisc);
-	if (tbf && (tbf->qt_mask & TBF_ATTR_PEAKRATE))
+	if (!(tbf = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
+
+	if (tbf->qt_mask & TBF_ATTR_PEAKRATE)
 		return tbf->qt_peakrate.rs_rate;
 	else
 		return -1;
@@ -436,8 +406,10 @@ int rtnl_qdisc_tbf_get_peakrate_bucket(struct rtnl_qdisc *qdisc)
 {
 	struct rtnl_tbf *tbf;
 
-	tbf = tbf_qdisc(qdisc);
-	if (tbf && (tbf->qt_mask & TBF_ATTR_PEAKRATE))
+	if (!(tbf = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
+
+	if (tbf->qt_mask & TBF_ATTR_PEAKRATE)
 		return tbf->qt_peakrate_bucket;
 	else
 		return -1;
@@ -452,8 +424,10 @@ int rtnl_qdisc_tbf_get_peakrate_cell(struct rtnl_qdisc *qdisc)
 {
 	struct rtnl_tbf *tbf;
 
-	tbf = tbf_qdisc(qdisc);
-	if (tbf && (tbf->qt_mask & TBF_ATTR_PEAKRATE))
+	if (!(tbf = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
+
+	if (tbf->qt_mask & TBF_ATTR_PEAKRATE)
 		return (1 << tbf->qt_peakrate.rs_cell_log);
 	else
 		return -1;
@@ -461,25 +435,26 @@ int rtnl_qdisc_tbf_get_peakrate_cell(struct rtnl_qdisc *qdisc)
 
 /** @} */
 
-static struct rtnl_qdisc_ops tbf_qdisc_ops = {
-	.qo_kind		= "tbf",
-	.qo_msg_parser		= tbf_msg_parser,
-	.qo_dump = {
+static struct rtnl_tc_ops tbf_tc_ops = {
+	.to_kind		= "tbf",
+	.to_type		= RTNL_TC_TYPE_QDISC,
+	.to_size		= sizeof(struct rtnl_tbf),
+	.to_msg_parser		= tbf_msg_parser,
+	.to_dump = {
 	    [NL_DUMP_LINE]	= tbf_dump_line,
 	    [NL_DUMP_DETAILS]	= tbf_dump_details,
 	},
-	.qo_free_data		= tbf_free_data,
-	.qo_get_opts		= tbf_get_opts,
+	.to_msg_fill		= tbf_msg_fill,
 };
 
 static void __init tbf_init(void)
 {
-	rtnl_qdisc_register(&tbf_qdisc_ops);
+	rtnl_tc_register(&tbf_tc_ops);
 }
 
 static void __exit tbf_exit(void)
 {
-	rtnl_qdisc_unregister(&tbf_qdisc_ops);
+	rtnl_tc_unregister(&tbf_tc_ops);
 }
 
 /** @} */

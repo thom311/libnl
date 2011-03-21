@@ -5,7 +5,7 @@
  *	modify it under the terms of the GNU General Public License as
  *	published by the Free Software Foundation version 2 of the License.
  *
- * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 #include <netlink/cli/utils.h>
@@ -56,8 +56,8 @@ int main(int argc, char *argv[])
 		.dp_type = NL_DUMP_DETAILS,
 		.dp_fd = stdout,
 	};
-	struct nl_cli_cls_module *cm;
-	struct rtnl_cls_ops *ops;
+	struct nl_cli_tc_module *tm;
+	struct rtnl_tc_ops *ops;
 	int err, flags = NLM_F_CREATE | NLM_F_EXCL;
 	char *kind, *id = NULL;
  
@@ -139,16 +139,15 @@ int main(int argc, char *argv[])
 	}
 
 	kind = argv[optind++];
-	rtnl_cls_set_kind(cls, kind);
+	rtnl_tc_set_kind(tc, kind);
 
-	if (!(ops = rtnl_cls_lookup_ops(cls)))
+	if (!(ops = rtnl_tc_get_ops(tc)))
 		nl_cli_fatal(ENOENT, "Unknown classifier \"%s\".", kind);
 
-	if (!(cm = nl_cli_cls_lookup(ops)))
+	if (!(tm = nl_cli_tc_lookup(ops)))
 		nl_cli_fatal(ENOTSUP, "Classifier type \"%s\" not supported.", kind);
 
-	if ((err = cm->cm_parse_argv(cls, argc, argv)) < 0)
-		nl_cli_fatal(err, "Unable to parse classifier options");
+	tm->tm_parse_argv(tc, argc, argv);
 
 	if (!quiet) {
 		printf("Adding ");

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2010-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -22,8 +22,7 @@ struct rtnl_class *nl_cli_class_alloc(void)
 {
 	struct rtnl_class *class;
 
-	class = rtnl_class_alloc();
-	if (!class)
+	if (!(class = rtnl_class_alloc()))
 		nl_cli_fatal(ENOMEM, "Unable to allocate class object");
 
 	return class;
@@ -41,11 +40,6 @@ struct nl_cache *nl_cli_class_alloc_cache(struct nl_sock *sock, int ifindex)
 	nl_cache_mngt_provide(cache);
 
 	return cache;
-}
-
-void nl_cli_class_parse_kind(struct rtnl_class *class, char *arg)
-{
-	rtnl_class_set_kind(class, arg);
 }
 
 /** @} */

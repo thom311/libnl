@@ -6,11 +6,11 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2010-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 #include <netlink/cli/utils.h>
-#include <netlink/cli/qdisc.h>
+#include <netlink/cli/tc.h>
 
 static void print_usage(void)
 {
@@ -25,7 +25,7 @@ static void print_usage(void)
 "    nl-qdisc-add --dev=eth1 --parent=root blackhole\n");
 }
 
-static void blackhole_parse_argv(struct rtnl_qdisc *qdisc, int argc, char **argv)
+static void blackhole_parse_argv(struct rtnl_tc *tc, int argc, char **argv)
 {
 	for (;;) {
 		int c, optidx = 0;
@@ -46,18 +46,19 @@ static void blackhole_parse_argv(struct rtnl_qdisc *qdisc, int argc, char **argv
  	}
 }
 
-static struct nl_cli_qdisc_module blackhole_module =
+static struct nl_cli_tc_module blackhole_module =
 {
-	.qm_name		= "blackhole",
-	.qm_parse_qdisc_argv	= blackhole_parse_argv,
+	.tm_name		= "blackhole",
+	.tm_type		= RTNL_TC_TYPE_QDISC,
+	.tm_parse_argv		= blackhole_parse_argv,
 };
 
 static void __init blackhole_init(void)
 {
-	nl_cli_qdisc_register(&blackhole_module);
+	nl_cli_tc_register(&blackhole_module);
 }
 
 static void __exit blackhole_exit(void)
 {
-	nl_cli_qdisc_unregister(&blackhole_module);
+	nl_cli_tc_unregister(&blackhole_module);
 }

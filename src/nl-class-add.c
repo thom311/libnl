@@ -56,8 +56,8 @@ int main(int argc, char *argv[])
 		.dp_type = NL_DUMP_DETAILS,
 		.dp_fd = stdout,
 	};
-	struct nl_cli_qdisc_module *qm;
-	struct rtnl_class_ops *ops;
+	struct nl_cli_tc_module *tm;
+	struct rtnl_tc_ops *ops;
 	int err, flags = NLM_F_CREATE | NLM_F_EXCL;
 	char *kind, *id = NULL;
  
@@ -131,15 +131,15 @@ int main(int argc, char *argv[])
 	}
 
 	kind = argv[optind++];
-	rtnl_class_set_kind(class, kind);
+	rtnl_tc_set_kind(tc, kind);
 
-	if (!(ops = rtnl_class_lookup_ops(class)))
+	if (!(ops = rtnl_tc_get_ops(tc)))
 		nl_cli_fatal(ENOENT, "Unknown class \"%s\"", kind);
 
-	if (!(qm = nl_cli_qdisc_lookup_by_class(ops)))
+	if (!(tm = nl_cli_tc_lookup(ops)))
 		nl_cli_fatal(ENOTSUP, "class type \"%s\" not supported.", kind);
 
-	qm->qm_parse_class_argv(class, argc, argv);
+	tm->tm_parse_argv(tc, argc, argv);
 
 	if (!quiet) {
 		printf("Adding ");

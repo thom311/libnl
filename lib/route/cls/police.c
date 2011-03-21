@@ -13,9 +13,8 @@
 #include <netlink-tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
-#include <netlink/route/tc.h>
+#include <netlink/route/tc-api.h>
 #include <netlink/route/classifier.h>
-#include <netlink/route/classifier-modules.h>
 #include <netlink/route/cls/police.h>
 
 /**

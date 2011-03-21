@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_TBF_H_
@@ -19,11 +19,11 @@
 extern "C" {
 #endif
 
-extern int rtnl_qdisc_tbf_set_limit(struct rtnl_qdisc *, int);
+extern void rtnl_qdisc_tbf_set_limit(struct rtnl_qdisc *, int);
 extern int rtnl_qdisc_tbf_set_limit_by_latency(struct rtnl_qdisc *, int);
 extern int rtnl_qdisc_tbf_get_limit(struct rtnl_qdisc *);
 
-extern int rtnl_qdisc_tbf_set_rate(struct rtnl_qdisc *, int, int, int);
+extern void rtnl_qdisc_tbf_set_rate(struct rtnl_qdisc *, int, int, int);
 extern int rtnl_qdisc_tbf_get_rate(struct rtnl_qdisc *);
 extern int rtnl_qdisc_tbf_get_rate_bucket(struct rtnl_qdisc *);
 extern int rtnl_qdisc_tbf_get_rate_cell(struct rtnl_qdisc *);

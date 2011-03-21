@@ -6,12 +6,12 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
- * @ingroup qdisc_api
- * @defgroup sfq Stochastic Fairness Queueing (SFQ)
+ * @ingroup qdisc
+ * @defgroup qdisc_sfq Stochastic Fairness Queueing (SFQ)
  * @brief
  *
  * @par Parameter Description
@@ -27,8 +27,8 @@
 #include <netlink-tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
+#include <netlink/route/tc-api.h>
 #include <netlink/route/qdisc.h>
-#include <netlink/route/qdisc-modules.h>
 #include <netlink/route/sch/sfq.h>
 
 /** @cond SKIP */
@@ -39,35 +39,18 @@
 #define SCH_SFQ_ATTR_FLOWS	0x10
 /** @endcond */
 
-static inline struct rtnl_sfq *sfq_qdisc(struct rtnl_qdisc *qdisc)
+static int sfq_msg_parser(struct rtnl_tc *tc, void *data)
 {
-	return (struct rtnl_sfq *) qdisc->q_subdata;
-}
-
-static inline struct rtnl_sfq *sfq_alloc(struct rtnl_qdisc *qdisc)
-{
-	if (!qdisc->q_subdata)
-		qdisc->q_subdata = calloc(1, sizeof(struct rtnl_sfq));
-
-	return sfq_qdisc(qdisc);
-}
-
-static int sfq_msg_parser(struct rtnl_qdisc *qdisc)
-{
-	struct rtnl_sfq *sfq;
+	struct rtnl_sfq *sfq = data;
 	struct tc_sfq_qopt *opts;
 
-	if (!(qdisc->ce_mask & TCA_ATTR_OPTS))
+	if (!(tc->ce_mask & TCA_ATTR_OPTS))
 		return 0;
 
-	if (qdisc->q_opts->d_size < sizeof(*opts))
+	if (tc->tc_opts->d_size < sizeof(*opts))
 		return -NLE_INVAL;
 
-	sfq = sfq_alloc(qdisc);
-	if (!sfq)
-		return -NLE_NOMEM;
-
-	opts = (struct tc_sfq_qopt *) qdisc->q_opts->d_data;
+	opts = (struct tc_sfq_qopt *) tc->tc_opts->d_data;
 
 	sfq->qs_quantum = opts->quantum;
 	sfq->qs_perturb = opts->perturb_period;
@@ -82,55 +65,39 @@ static int sfq_msg_parser(struct rtnl_qdisc *qdisc)
 	return 0;
 }
 
-static void sfq_free_data(struct rtnl_qdisc *qdisc)
+static void sfq_dump_line(struct rtnl_tc *tc, void *data,
+			  struct nl_dump_params *p)
 {
-	free(qdisc->q_subdata);
-}
-
-static void sfq_dump_line(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
-{
-	struct rtnl_sfq *sfq = sfq_qdisc(qdisc);
+	struct rtnl_sfq *sfq = data;
 
 	if (sfq)
 		nl_dump(p, " quantum %u perturb %us", sfq->qs_quantum,
 			sfq->qs_perturb);
 }
 
-static void sfq_dump_details(struct rtnl_qdisc *qdisc, struct nl_dump_params *p)
+static void sfq_dump_details(struct rtnl_tc *tc, void *data,
+			     struct nl_dump_params *p)
 {
-	struct rtnl_sfq *sfq = sfq_qdisc(qdisc);
+	struct rtnl_sfq *sfq = data;
 
 	if (sfq)
 		nl_dump(p, "limit %u divisor %u",
 			sfq->qs_limit, sfq->qs_divisor);
 }
 
-static struct nl_msg *sfq_get_opts(struct rtnl_qdisc *qdisc)
+static int sfq_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 {
-	struct rtnl_sfq *sfq;
-	struct tc_sfq_qopt opts;
-	struct nl_msg *msg;
+	struct rtnl_sfq *sfq = data;
+	struct tc_sfq_qopt opts = {0};
 
-	sfq = sfq_qdisc(qdisc);
 	if (!sfq)
-		return NULL;
+		BUG();
 
-	msg = nlmsg_alloc();
-	if (!msg)
-		goto errout;
-
-	memset(&opts, 0, sizeof(opts));
 	opts.quantum = sfq->qs_quantum;
 	opts.perturb_period = sfq->qs_perturb;
 	opts.limit = sfq->qs_limit;
 
-	if (nlmsg_append(msg, &opts, sizeof(opts), NL_DONTPAD) < 0)
-		goto errout;
-
-	return msg;
-errout:
-	nlmsg_free(msg);
-	return NULL;
+	return nlmsg_append(msg, &opts, sizeof(opts), NL_DONTPAD);
 }
 
 /**
@@ -144,18 +111,15 @@ errout:
  * @arg quantum		New quantum in bytes.
  * @return 0 on success or a negative error code.
  */
-int rtnl_sfq_set_quantum(struct rtnl_qdisc *qdisc, int quantum)
+void rtnl_sfq_set_quantum(struct rtnl_qdisc *qdisc, int quantum)
 {
 	struct rtnl_sfq *sfq;
 	
-	sfq = sfq_alloc(qdisc);
-	if (!sfq)
-		return -NLE_NOMEM;
+	if (!(sfq = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
 
 	sfq->qs_quantum = quantum;
 	sfq->qs_mask |= SCH_SFQ_ATTR_QUANTUM;
-
-	return 0;
 }
 
 /**
@@ -166,9 +130,11 @@ int rtnl_sfq_set_quantum(struct rtnl_qdisc *qdisc, int quantum)
 int rtnl_sfq_get_quantum(struct rtnl_qdisc *qdisc)
 {
 	struct rtnl_sfq *sfq;
+	
+	if (!(sfq = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
 
-	sfq = sfq_qdisc(qdisc);
-	if (sfq && sfq->qs_mask & SCH_SFQ_ATTR_QUANTUM)
+	if (sfq->qs_mask & SCH_SFQ_ATTR_QUANTUM)
 		return sfq->qs_quantum;
 	else
 		return -NLE_NOATTR;
@@ -180,18 +146,15 @@ int rtnl_sfq_get_quantum(struct rtnl_qdisc *qdisc)
  * @arg limit		New limit in number of packets.
  * @return 0 on success or a negative error code.
  */
-int rtnl_sfq_set_limit(struct rtnl_qdisc *qdisc, int limit)
+void rtnl_sfq_set_limit(struct rtnl_qdisc *qdisc, int limit)
 {
 	struct rtnl_sfq *sfq;
-
-	sfq = sfq_alloc(qdisc);
-	if (!sfq)
-		return -NLE_NOMEM;
+	
+	if (!(sfq = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
 
 	sfq->qs_limit = limit;
 	sfq->qs_mask |= SCH_SFQ_ATTR_LIMIT;
-
-	return 0;
 }
 
 /**
@@ -202,9 +165,11 @@ int rtnl_sfq_set_limit(struct rtnl_qdisc *qdisc, int limit)
 int rtnl_sfq_get_limit(struct rtnl_qdisc *qdisc)
 {
 	struct rtnl_sfq *sfq;
+	
+	if (!(sfq = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
 
-	sfq = sfq_qdisc(qdisc);
-	if (sfq && sfq->qs_mask & SCH_SFQ_ATTR_LIMIT)
+	if (sfq->qs_mask & SCH_SFQ_ATTR_LIMIT)
 		return sfq->qs_limit;
 	else
 		return -NLE_NOATTR;
@@ -217,18 +182,15 @@ int rtnl_sfq_get_limit(struct rtnl_qdisc *qdisc)
  * @note A value of 0 disables perturbation altogether.
  * @return 0 on success or a negative error code.
  */
-int rtnl_sfq_set_perturb(struct rtnl_qdisc *qdisc, int perturb)
+void rtnl_sfq_set_perturb(struct rtnl_qdisc *qdisc, int perturb)
 {
 	struct rtnl_sfq *sfq;
-
-	sfq = sfq_alloc(qdisc);
-	if (!sfq)
-		return -NLE_NOMEM;
+	
+	if (!(sfq = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
 
 	sfq->qs_perturb = perturb;
 	sfq->qs_mask |= SCH_SFQ_ATTR_PERTURB;
-
-	return 0;
 }
 
 /**
@@ -239,9 +201,11 @@ int rtnl_sfq_set_perturb(struct rtnl_qdisc *qdisc, int perturb)
 int rtnl_sfq_get_perturb(struct rtnl_qdisc *qdisc)
 {
 	struct rtnl_sfq *sfq;
+	
+	if (!(sfq = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
 
-	sfq = sfq_qdisc(qdisc);
-	if (sfq && sfq->qs_mask & SCH_SFQ_ATTR_PERTURB)
+	if (sfq->qs_mask & SCH_SFQ_ATTR_PERTURB)
 		return sfq->qs_perturb;
 	else
 		return -NLE_NOATTR;
@@ -255,9 +219,11 @@ int rtnl_sfq_get_perturb(struct rtnl_qdisc *qdisc)
 int rtnl_sfq_get_divisor(struct rtnl_qdisc *qdisc)
 {
 	struct rtnl_sfq *sfq;
+	
+	if (!(sfq = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
 
-	sfq = sfq_qdisc(qdisc);
-	if (sfq && sfq->qs_mask & SCH_SFQ_ATTR_DIVISOR)
+	if (sfq->qs_mask & SCH_SFQ_ATTR_DIVISOR)
 		return sfq->qs_divisor;
 	else
 		return -NLE_NOATTR;
@@ -265,25 +231,26 @@ int rtnl_sfq_get_divisor(struct rtnl_qdisc *qdisc)
 
 /** @} */
 
-static struct rtnl_qdisc_ops sfq_ops = {
-	.qo_kind		= "sfq",
-	.qo_msg_parser		= sfq_msg_parser,
-	.qo_free_data		= sfq_free_data,
-	.qo_dump = {
+static struct rtnl_tc_ops sfq_ops = {
+	.to_kind		= "sfq",
+	.to_type		= RTNL_TC_TYPE_QDISC,
+	.to_size		= sizeof(struct rtnl_sfq),
+	.to_msg_parser		= sfq_msg_parser,
+	.to_dump = {
 	    [NL_DUMP_LINE]	= sfq_dump_line,
 	    [NL_DUMP_DETAILS]	= sfq_dump_details,
 	},
-	.qo_get_opts		= sfq_get_opts,
+	.to_msg_fill		= sfq_msg_fill,
 };
 
 static void __init sfq_init(void)
 {
-	rtnl_qdisc_register(&sfq_ops);
+	rtnl_tc_register(&sfq_ops);
 }
 
 static void __exit sfq_exit(void)
 {
-	rtnl_qdisc_unregister(&sfq_ops);
+	rtnl_tc_unregister(&sfq_ops);
 }
 
 /** @} */

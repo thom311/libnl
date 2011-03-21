@@ -28,66 +28,26 @@
 #include <netlink-tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
-#include <netlink/route/tc.h>
+#include <netlink/route/tc-api.h>
 #include <netlink/route/classifier.h>
-#include <netlink/route/classifier-modules.h>
 #include <netlink/route/link.h>
 
+/** @cond SKIP */
+#define CLS_ATTR_PRIO		(TCA_ATTR_MAX << 1)
+#define CLS_ATTR_PROTOCOL	(TCA_ATTR_MAX << 2)
+/** @endcond */
+
+static struct nl_object_ops cls_obj_ops;
 static struct nl_cache_ops rtnl_cls_ops;
-
-static int cls_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
-			  struct nlmsghdr *nlh, struct nl_parser_param *pp)
-{
-	struct rtnl_cls_ops *cops;
-	struct rtnl_cls *cls;
-	int err;
-
-	cls = rtnl_cls_alloc();
-	if (!cls) {
-		err = -NLE_NOMEM;
-		goto errout;
-	}
-	cls->ce_msgtype = nlh->nlmsg_type;
-
-	err = tca_msg_parser(nlh, (struct rtnl_tc *) cls);
-	if (err < 0)
-		goto errout_free;
-
-	cls->c_prio = TC_H_MAJ(cls->c_info) >> 16;
-	cls->c_protocol = ntohs(TC_H_MIN(cls->c_info));
-
-	cops = rtnl_cls_lookup_ops(cls);
-	if (cops && cops->co_msg_parser && (err = cops->co_msg_parser(cls)) < 0)
-		goto errout_free;
-
-	err = pp->pp_cb((struct nl_object *) cls, pp);
-errout_free:
-	rtnl_cls_put(cls);
-errout:
-	return err;
-}
-
-static int cls_request_update(struct nl_cache *cache, struct nl_sock *sk)
-{
-	struct tcmsg tchdr = {
-		.tcm_family = AF_UNSPEC,
-		.tcm_ifindex = cache->c_iarg1,
-		.tcm_parent = cache->c_iarg2,
-	};
-
-	return nl_send_simple(sk, RTM_GETTFILTER, NLM_F_DUMP, &tchdr,
-			      sizeof(tchdr));
-}
 
 
 static int cls_build(struct rtnl_cls *cls, int type, int flags,
 		     struct nl_msg **result)
 {
-	struct rtnl_cls_ops *cops;
 	int err, prio, proto;
 	struct tcmsg *tchdr;
 
-	err = tca_build_msg((struct rtnl_tc *) cls, type, flags, result);
+	err = rtnl_tc_msg_build(TC_CAST(cls), type, flags, result);
 	if (err < 0)
 		return err;
 
@@ -96,26 +56,67 @@ static int cls_build(struct rtnl_cls *cls, int type, int flags,
 	proto = rtnl_cls_get_protocol(cls);
 	tchdr->tcm_info = TC_H_MAKE(prio << 16, htons(proto));
 
-	cops = rtnl_cls_lookup_ops(cls);
-	if (cops && cops->co_get_opts) {
-		struct nlattr *opts;
-
-		if (!(opts = nla_nest_start(*result, TCA_OPTIONS))) {
-			err = -NLE_NOMEM;
-			goto errout;
-		}
-
-		if ((err = cops->co_get_opts(cls, *result)) < 0)
-			goto errout;
-
-		nla_nest_end(*result, opts);
-	}
-
 	return 0;
-errout:
-	nlmsg_free(*result);
-	return err;
 }
+
+/**
+ * @name Allocation/Freeing
+ * @{
+ */
+
+struct rtnl_cls *rtnl_cls_alloc(void)
+{
+	struct rtnl_tc *tc;
+
+	tc = TC_CAST(nl_object_alloc(&cls_obj_ops));
+	if (tc)
+		tc->tc_type = RTNL_TC_TYPE_CLS;
+
+	return (struct rtnl_cls *) tc;
+}
+
+void rtnl_cls_put(struct rtnl_cls *cls)
+{
+	nl_object_put((struct nl_object *) cls);
+}
+
+/** @} */
+
+/**
+ * @name Attributes
+ * @{
+ */
+
+void rtnl_cls_set_prio(struct rtnl_cls *cls, uint16_t prio)
+{
+	cls->c_prio = prio;
+	cls->ce_mask |= CLS_ATTR_PRIO;
+}
+
+uint16_t rtnl_cls_get_prio(struct rtnl_cls *cls)
+{
+	if (cls->ce_mask & CLS_ATTR_PRIO)
+		return cls->c_prio;
+	else
+		return 0;
+}
+
+void rtnl_cls_set_protocol(struct rtnl_cls *cls, uint16_t protocol)
+{
+	cls->c_protocol = protocol;
+	cls->ce_mask |= CLS_ATTR_PROTOCOL;
+}
+
+uint16_t rtnl_cls_get_protocol(struct rtnl_cls *cls)
+{
+	if (cls->ce_mask & CLS_ATTR_PROTOCOL)
+		return cls->c_protocol;
+	else
+		return ETH_P_ALL;
+}
+
+/** @} */
+
 
 /**
  * @name Classifier Addition/Modification/Deletion
@@ -311,6 +312,57 @@ int rtnl_cls_alloc_cache(struct nl_sock *sk, int ifindex, uint32_t parent,			 st
 
 /** @} */
 
+static void cls_dump_line(struct rtnl_tc *tc, struct nl_dump_params *p)
+{
+	struct rtnl_cls *cls = (struct rtnl_cls *) tc;
+	char buf[32];
+
+	nl_dump(p, " prio %u protocol %s", cls->c_prio,
+		nl_ether_proto2str(cls->c_protocol, buf, sizeof(buf)));
+}
+
+static int cls_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
+			  struct nlmsghdr *nlh, struct nl_parser_param *pp)
+{
+	struct rtnl_cls *cls;
+	int err;
+
+	if (!(cls = rtnl_cls_alloc()))
+		return -NLE_NOMEM;
+
+	if ((err = rtnl_tc_msg_parse(nlh, TC_CAST(cls))) < 0)
+		goto errout;
+
+	cls->c_prio = TC_H_MAJ(cls->c_info) >> 16;
+	cls->c_protocol = ntohs(TC_H_MIN(cls->c_info));
+
+	err = pp->pp_cb(OBJ_CAST(cls), pp);
+errout:
+	rtnl_cls_put(cls);
+
+	return err;
+}
+
+static int cls_request_update(struct nl_cache *cache, struct nl_sock *sk)
+{
+	struct tcmsg tchdr = {
+		.tcm_family = AF_UNSPEC,
+		.tcm_ifindex = cache->c_iarg1,
+		.tcm_parent = cache->c_iarg2,
+	};
+
+	return nl_send_simple(sk, RTM_GETTFILTER, NLM_F_DUMP, &tchdr,
+			      sizeof(tchdr));
+}
+
+static struct rtnl_tc_type_ops cls_ops = {
+	.tt_type		= RTNL_TC_TYPE_CLS,
+	.tt_dump_prefix		= "cls",
+	.tt_dump = {
+		[NL_DUMP_LINE]	= cls_dump_line,
+	},
+};
+
 static struct nl_cache_ops rtnl_cls_ops = {
 	.co_name		= "route/cls",
 	.co_hdrsize		= sizeof(struct tcmsg),
@@ -326,14 +378,30 @@ static struct nl_cache_ops rtnl_cls_ops = {
 	.co_obj_ops		= &cls_obj_ops,
 };
 
+static struct nl_object_ops cls_obj_ops = {
+	.oo_name		= "route/cls",
+	.oo_size		= sizeof(struct rtnl_cls),
+	.oo_free_data		= rtnl_tc_free_data,
+	.oo_clone		= rtnl_tc_clone,
+	.oo_dump = {
+	    [NL_DUMP_LINE]	= rtnl_tc_dump_line,
+	    [NL_DUMP_DETAILS]	= rtnl_tc_dump_details,
+	    [NL_DUMP_STATS]	= rtnl_tc_dump_stats,
+	},
+	.oo_compare		= rtnl_tc_compare,
+	.oo_id_attrs		= (TCA_ATTR_IFINDEX | TCA_ATTR_HANDLE),
+};
+
 static void __init cls_init(void)
 {
+	rtnl_tc_type_register(&cls_ops);
 	nl_cache_mngt_register(&rtnl_cls_ops);
 }
 
 static void __exit cls_exit(void)
 {
 	nl_cache_mngt_unregister(&rtnl_cls_ops);
+	rtnl_tc_type_unregister(&cls_ops);
 }
 
 /** @} */

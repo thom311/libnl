@@ -17,6 +17,7 @@
 #include <netlink/route/qdisc.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/route.h>
+#include <netlink/route/tc-api.h>
 
 #define NL_SOCK_BUFSIZE_SET	(1<<0)
 #define NL_SOCK_PASSCRED	(1<<1)
@@ -441,7 +442,7 @@ struct rtnl_tstats
 
 #define TCKINDSIZ	32
 
-#define NL_TCA_GENERIC(pre)				\
+#define NL_TC_GENERIC(pre)				\
 	NLHDR_COMMON					\
 	uint32_t		pre ##_family;		\
 	uint32_t		pre ##_ifindex;		\
@@ -457,31 +458,30 @@ struct rtnl_tstats
 	uint64_t		pre ##_stats[RTNL_TC_STATS_MAX+1]; \
 	struct nl_data *	pre ##_xstats;		\
 	struct nl_data *	pre ##_subdata;		\
-	struct rtnl_link *	pre ##_link
+	struct rtnl_link *	pre ##_link;		\
+	struct rtnl_tc_ops *	pre ##_ops;		\
+	enum rtnl_tc_type	pre ##_type
 
 struct rtnl_tc
 {
-	NL_TCA_GENERIC(tc);
+	NL_TC_GENERIC(tc);
 };
 
 struct rtnl_qdisc
 {
-	NL_TCA_GENERIC(q);
-	struct rtnl_qdisc_ops	*q_ops;
+	NL_TC_GENERIC(q);
 };
 
 struct rtnl_class
 {
-	NL_TCA_GENERIC(c);
-	struct rtnl_class_ops	*c_ops;
+	NL_TC_GENERIC(c);
 };
 
 struct rtnl_cls
 {
-	NL_TCA_GENERIC(c);
+	NL_TC_GENERIC(c);
 	uint16_t		c_prio;
 	uint16_t		c_protocol;
-	struct rtnl_cls_ops	*c_ops;
 };
 
 struct rtnl_u32

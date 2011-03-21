@@ -7,11 +7,11 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2010-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 #include <netlink/cli/utils.h>
-#include <netlink/cli/qdisc.h>
+#include <netlink/cli/tc.h>
 #include <netlink/route/sch/fifo.h>
 
 static void print_usage(void)
@@ -28,8 +28,10 @@ static void print_usage(void)
 "    nl-qdisc-add --dev=eth1 --parent=root pfifo --limit=32\n");
 }
 
-static void pfifo_parse_argv(struct rtnl_qdisc *qdisc, int argc, char **argv)
+static void pfifo_parse_argv(struct rtnl_tc *tc, int argc, char **argv)
 {
+	struct rtnl_qdisc *qdisc = (struct rtnl_qdisc *) tc;
+
 	for (;;) {
 		int c, optidx = 0;
 		enum {
@@ -57,18 +59,19 @@ static void pfifo_parse_argv(struct rtnl_qdisc *qdisc, int argc, char **argv)
  	}
 }
 
-static struct nl_cli_qdisc_module pfifo_module =
+static struct nl_cli_tc_module pfifo_module =
 {
-	.qm_name		= "pfifo",
-	.qm_parse_qdisc_argv	= pfifo_parse_argv,
+	.tm_name		= "pfifo",
+	.tm_type		= RTNL_TC_TYPE_QDISC,
+	.tm_parse_argv		= pfifo_parse_argv,
 };
 
 static void __init pfifo_init(void)
 {
-	nl_cli_qdisc_register(&pfifo_module);
+	nl_cli_tc_register(&pfifo_module);
 }
 
 static void __exit pfifo_exit(void)
 {
-	nl_cli_qdisc_unregister(&pfifo_module);
+	nl_cli_tc_unregister(&pfifo_module);
 }

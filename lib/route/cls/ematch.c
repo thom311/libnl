@@ -20,7 +20,6 @@
 #include <netlink-tc.h>
 #include <netlink/netlink.h>
 #include <netlink/route/classifier.h>
-#include <netlink/route/classifier-modules.h>
 #include <netlink/route/cls/ematch.h>
 #include <netlink/route/cls/ematch/cmp.h>
 
@@ -511,6 +510,9 @@ static void dump_ematch_sequence(struct nl_list_head *head,
 void rtnl_ematch_tree_dump(struct rtnl_ematch_tree *tree,
 			   struct nl_dump_params *p)
 {
+	if (!tree)
+		BUG();
+
 	dump_ematch_sequence(&tree->et_list, p);
 	nl_dump(p, "\n");
 }

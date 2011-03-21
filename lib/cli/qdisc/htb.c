@@ -6,11 +6,11 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2010-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 #include <netlink/cli/utils.h>
-#include <netlink/cli/qdisc.h>
+#include <netlink/cli/tc.h>
 #include <netlink/route/sch/htb.h>
 
 static void print_qdisc_usage(void)
@@ -28,8 +28,10 @@ static void print_qdisc_usage(void)
 "    nl-qdisc-add --dev=eth1 --parent=root --handle=1: htb --default=10\n");
 }
 
-static void htb_parse_qdisc_argv(struct rtnl_qdisc *qdisc, int argc, char **argv)
+static void htb_parse_qdisc_argv(struct rtnl_tc *tc, int argc, char **argv)
 {
+	struct rtnl_qdisc *qdisc = (struct rtnl_qdisc *) tc;
+
 	for (;;) {
 		int c, optidx = 0;
 		enum {
@@ -82,8 +84,9 @@ static void print_class_usage(void)
 "    nl-class-add --dev=eth1 --parent=1: --classid=1:1 htb --rate=20mbit\n");
 }
 
-static void htb_parse_class_argv(struct rtnl_class *class, int argc, char **argv)
+static void htb_parse_class_argv(struct rtnl_tc *tc, int argc, char **argv)
 {
+	struct rtnl_class *class = (struct rtnl_class *) tc;
 	long rate;
 
 	for (;;) {
@@ -173,19 +176,28 @@ static void htb_parse_class_argv(struct rtnl_class *class, int argc, char **argv
  	}
 }
 
-static struct nl_cli_qdisc_module htb_module =
+static struct nl_cli_tc_module htb_qdisc_module =
 {
-	.qm_name		= "htb",
-	.qm_parse_qdisc_argv	= htb_parse_qdisc_argv,
-	.qm_parse_class_argv	= htb_parse_class_argv,
+	.tm_name		= "htb",
+	.tm_type		= RTNL_TC_TYPE_QDISC,
+	.tm_parse_argv		= htb_parse_qdisc_argv,
+};
+
+static struct nl_cli_tc_module htb_class_module =
+{
+	.tm_name		= "htb",
+	.tm_type		= RTNL_TC_TYPE_CLASS,
+	.tm_parse_argv		= htb_parse_class_argv,
 };
 
 static void __init htb_init(void)
 {
-	nl_cli_qdisc_register(&htb_module);
+	nl_cli_tc_register(&htb_qdisc_module);
+	nl_cli_tc_register(&htb_class_module);
 }
 
 static void __exit htb_exit(void)
 {
-	nl_cli_qdisc_unregister(&htb_module);
+	nl_cli_tc_unregister(&htb_class_module);
+	nl_cli_tc_unregister(&htb_qdisc_module);
 }

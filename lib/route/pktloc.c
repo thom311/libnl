@@ -20,7 +20,7 @@
  * library and provides a well defined set of definitions for most common
  * protocol fields.
  *
- * @subsection pktloc_examples Examples
+ * @section pktloc_examples Examples
  * @par Example 1.1 Looking up a packet location
  * @code
  * struct rtnl_pktloc *loc;
@@ -151,6 +151,7 @@ errout:
 /**
  * Lookup packet location alias
  * @arg name		Name of packet location.
+ * @arg result		Result pointer
  *
  * Tries to find a matching packet location alias for the supplied
  * packet location name.

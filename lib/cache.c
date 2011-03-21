@@ -160,15 +160,18 @@ struct nl_object *nl_cache_get_prev(struct nl_object *obj)
 /** @} */
 
 /**
- * @name Cache Creation/Deletion
+ * @name Cache Allocation/Deletion
  * @{
  */
 
 /**
- * Allocate an empty cache
- * @arg ops		cache operations to base the cache on
- * 
- * @return A newly allocated and initialized cache.
+ * Allocate new cache
+ * @arg ops		Cache operations
+ *
+ * Allocate and initialize a new cache based on the cache operations
+ * provided.
+ *
+ * @return Allocated cache or NULL if allocation failed.
  */
 struct nl_cache *nl_cache_alloc(struct nl_cache_ops *ops)
 {
@@ -186,6 +189,22 @@ struct nl_cache *nl_cache_alloc(struct nl_cache_ops *ops)
 	return cache;
 }
 
+/**
+ * Allocate new cache and fill it
+ * @arg ops		Cache operations
+ * @arg sock		Netlink socket
+ * @arg result		Result pointer
+ *
+ * Allocate new cache and fill it. Equivalent to calling:
+ * @code
+ * cache = nl_cache_alloc(ops);
+ * nl_cache_refill(sock, cache);
+ * @endcode
+ *
+ * @see nl_cache_alloc
+ *
+ * @return 0 on success or a negative error code.
+ */
 int nl_cache_alloc_and_fill(struct nl_cache_ops *ops, struct nl_sock *sock,
 			    struct nl_cache **result)
 {
@@ -205,9 +224,17 @@ int nl_cache_alloc_and_fill(struct nl_cache_ops *ops, struct nl_sock *sock,
 }
 
 /**
- * Allocate an empty cache based on type name
+ * Allocate new cache based on type name
  * @arg kind		Name of cache type
- * @return A newly allocated and initialized cache.
+ * @arg result		Result pointer
+ *
+ * Lookup cache ops via nl_cache_ops_lookup() and allocate the cache
+ * by calling nl_cache_alloc(). Stores the allocated cache in the
+ * result pointer provided.
+ *
+ * @see nl_cache_alloc
+ *
+ * @return 0 on success or a negative error code.
  */
 int nl_cache_alloc_name(const char *kind, struct nl_cache **result)
 {
@@ -226,9 +253,18 @@ int nl_cache_alloc_name(const char *kind, struct nl_cache **result)
 }
 
 /**
- * Allocate a new cache containing a subset of a cache
- * @arg orig		Original cache to be based on
- * @arg filter		Filter defining the subset to be filled into new cache
+ * Allocate new cache containing a subset of an existing cache
+ * @arg orig		Original cache to base new cache on
+ * @arg filter		Filter defining the subset to be filled into the new cache
+ *
+ * Allocates a new cache matching the type of the cache specified by
+ * \p orig. Iterates over the \p orig cache applying the specified
+ * \p filter and copies all objects that match to the new cache.
+ *
+ * The copied objects are clones but do not contain a reference to each
+ * other. Later modifications to objects in the original cache will
+ * not affect objects in the new cache.
+ *
  * @return A newly allocated cache or NULL.
  */
 struct nl_cache *nl_cache_subset(struct nl_cache *orig,
@@ -258,10 +294,15 @@ struct nl_cache *nl_cache_subset(struct nl_cache *orig,
 }
 
 /**
- * Clear a cache.
- * @arg cache		cache to clear
+ * Remove all objects of a cache.
+ * @arg cache		Cache to clear
  *
- * Removes all elements of a cache.
+ * The objects are unliked/removed from the cache by calling
+ * nl_cache_remove() on each object in the cache. If any of the objects
+ * to not contain any further references to them, those objects will
+ * be freed.
+ *
+ * Unlike with nl_cache_free(), the cache is not freed just emptied.
  */
 void nl_cache_clear(struct nl_cache *cache)
 {
@@ -277,9 +318,10 @@ void nl_cache_clear(struct nl_cache *cache)
  * Free a cache.
  * @arg cache		Cache to free.
  *
- * Removes all elements of a cache and frees all memory.
+ * Calls nl_cache_clear() to remove all objects associated with the
+ * cache and frees the cache afterwards.
  *
- * @note Use this function if you are working with allocated caches.
+ * @see nl_cache_clear()
  */
 void nl_cache_free(struct nl_cache *cache)
 {
@@ -312,12 +354,24 @@ static int __cache_add(struct nl_cache *cache, struct nl_object *obj)
 }
 
 /**
- * Add object to a cache.
- * @arg cache		Cache to add object to
+ * Add object to cache.
+ * @arg cache		Cache
  * @arg obj		Object to be added to the cache
  *
- * Adds the given object to the specified cache. The object is cloned
- * if it has been added to another cache already.
+ * Adds the object \p obj to the specified \p cache. In case the object
+ * is already associated with another cache, the object is cloned before
+ * adding it to the cache. In this case, the sole reference to the object
+ * will be the one of the cache. Therefore clearing/freeing the cache
+ * will result in the object being freed again.
+ *
+ * If the object has not been associated with a cache yet, the reference
+ * counter of the object is incremented to account for the additional
+ * reference.
+ *
+ * The type of the object and cache must match, otherwise an error is
+ * returned (-NLE_OBJ_MISMATCH).
+ *
+ * @see nl_cache_move()
  *
  * @return 0 or a negative error code.
  */
@@ -345,8 +399,16 @@ int nl_cache_add(struct nl_cache *cache, struct nl_object *obj)
  * @arg cache		Cache to move object to.
  * @arg obj		Object subject to be moved
  *
- * Removes the given object from its associated cache if needed
- * and adds it to the new cache.
+ * Removes the the specified object \p obj from its associated cache
+ * and moves it to another cache.
+ *
+ * If the object is not associated with a cache, the function behaves
+ * just like nl_cache_add().
+ *
+ * The type of the object and cache must match, otherwise an error is
+ * returned (-NLE_OBJ_MISMATCH).
+ *
+ * @see nl_cache_add()
  *
  * @return 0 on success or a negative error code.
  */
@@ -368,12 +430,14 @@ int nl_cache_move(struct nl_cache *cache, struct nl_object *obj)
 }
 
 /**
- * Removes an object from a cache.
- * @arg obj		Object to remove from its cache
+ * Remove object from cache.
+ * @arg obj		Object to remove from cache
  *
- * Removes the object \c obj from the cache it is assigned to, since
- * an object can only be assigned to one cache at a time, the cache
- * must ne be passed along with it.
+ * Removes the object \c obj from the cache it is associated with. The
+ * reference counter of the object will be decremented. If the reference
+ * to the object was the only one remaining, the object will be freed.
+ *
+ * If no cache is associated with the object, this function is a NOP.
  */
 void nl_cache_remove(struct nl_object *obj)
 {
@@ -391,33 +455,6 @@ void nl_cache_remove(struct nl_object *obj)
 	       obj, cache, nl_cache_name(cache));
 }
 
-/**
- * Search for an object in a cache
- * @arg cache		Cache to search in.
- * @arg needle		Object to look for.
- *
- * Iterates over the cache and looks for an object with identical
- * identifiers as the needle.
- *
- * @return Reference to object or NULL if not found.
- * @note The returned object must be returned via nl_object_put().
- */
-struct nl_object *nl_cache_search(struct nl_cache *cache,
-				  struct nl_object *needle)
-{
-	struct nl_object *obj;
-
-	nl_list_for_each_entry(obj, &cache->c_items, ce_list) {
-		if (nl_object_identical(obj, needle)) {
-			nl_object_get(obj);
-			return obj;
-		}
-	}
-
-	return NULL;
-}
-
-
 /** @} */
 
 /**
@@ -426,15 +463,28 @@ struct nl_object *nl_cache_search(struct nl_cache *cache,
  */
 
 /**
- * Request a full dump from the kernel to fill a cache
+ * Invoke the request-update operation
  * @arg sk		Netlink socket.
- * @arg cache		Cache subjected to be filled.
+ * @arg cache		Cache
  *
- * Send a dumping request to the kernel causing it to dump all objects
- * related to the specified cache to the netlink socket.
+ * This function causes the \e request-update function of the cache
+ * operations to be invoked. This usually causes a dump request to
+ * be sent over the netlink socket which triggers the kernel to dump
+ * all objects of a specific type to be dumped onto the netlink
+ * socket for pickup.
  *
- * Use nl_cache_pickup() to read the objects from the socket and fill them
- * into a cache.
+ * The behaviour of this function depends on the implemenation of
+ * the \e request_update function of each individual type of cache.
+ *
+ * This function will not have any effects on the cache (unless the
+ * request_update implementation of the cache operations does so).
+ *
+ * Use nl_cache_pickup() to pick-up (read) the objects from the socket
+ * and fill them into the cache.
+ *
+ * @see nl_cache_pickup(), nl_cache_resync()
+ *
+ * @return 0 on success or a negative error code.
  */
 int nl_cache_request_full_dump(struct nl_sock *sk, struct nl_cache *cache)
 {
@@ -461,6 +511,12 @@ static int update_msg_parser(struct nl_msg *msg, void *arg)
 }
 /** @endcond */
 
+/**
+ * Pick-up a netlink request-update with your own parser
+ * @arg sk		Netlink socket
+ * @arg cache		Cache
+ * @arg param		Parser parameters
+ */
 int __cache_pickup(struct nl_sock *sk, struct nl_cache *cache,
 		   struct nl_parser_param *param)
 {
@@ -707,8 +763,41 @@ int nl_cache_refill(struct nl_sock *sk, struct nl_cache *cache)
  */
 
 /**
- * Mark all objects in a cache
- * @arg cache		Cache to mark all objects in
+ * Search object in cache
+ * @arg cache		Cache
+ * @arg needle		Object to look for.
+ *
+ * Searches the cache for an object which matches the object \p needle.
+ * The function nl_object_identical() is used to determine if the
+ * objects match. If a matching object is found, the reference counter
+ * is incremented and the object is returned.
+ * 
+ * Therefore, if an object is returned, the reference to the object
+ * must be returned by calling nl_object_put() after usage.
+ *
+ * @return Reference to object or NULL if not found.
+ */
+struct nl_object *nl_cache_search(struct nl_cache *cache,
+				  struct nl_object *needle)
+{
+	struct nl_object *obj;
+
+	nl_list_for_each_entry(obj, &cache->c_items, ce_list) {
+		if (nl_object_identical(obj, needle)) {
+			nl_object_get(obj);
+			return obj;
+		}
+	}
+
+	return NULL;
+}
+
+/**
+ * Mark all objects of a cache
+ * @arg cache		Cache
+ *
+ * Marks all objects of a cache by calling nl_object_mark() on each
+ * object associated with the cache.
  */
 void nl_cache_mark_all(struct nl_cache *cache)
 {

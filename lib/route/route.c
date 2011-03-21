@@ -64,13 +64,14 @@ static int route_request_update(struct nl_cache *c, struct nl_sock *h)
  * @arg sk		Netlink socket.
  * @arg family		Address family of routes to cover or AF_UNSPEC
  * @arg flags		Flags
+ * @arg result		Result pointer
  *
  * Allocates a new cache, initializes it properly and updates it to
  * contain all routes currently configured in the kernel.
  *
  * @note The caller is responsible for destroying and freeing the
  *       cache after using it.
- * @return The cache or NULL if an error has occured.
+ * @return 0 on success or a negative error code.
  */
 int rtnl_route_alloc_cache(struct nl_sock *sk, int family, int flags,
 			   struct nl_cache **result)

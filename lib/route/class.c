@@ -309,11 +309,12 @@ void rtnl_class_foreach_cls(struct rtnl_class *class, struct nl_cache *cache,
  * @arg sk		Netlink socket.
  * @arg ifindex		interface index of the link the classes are
  *                      attached to.
+ * @arg result		Result pointer
  *
  * Allocates a new cache, initializes it properly and updates it to
  * include all classes attached to the specified interface.
  *
- * @return The cache or NULL if an error has occured.
+ * @return 0 on success or a negative error code.
  */
 int rtnl_class_alloc_cache(struct nl_sock *sk, int ifindex,
 			   struct nl_cache **result)

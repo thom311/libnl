@@ -408,7 +408,7 @@ void rtnl_neigh_put(struct rtnl_neigh *neigh)
 
 /**
  * Build a neighbour cache including all neighbours currently configured in the kernel.
- * @arg sk		Netlink socket.
+ * @arg sock		Netlink socket.
  * @arg result		Pointer to store resulting cache.
  *
  * Allocates a new neighbour cache, initializes it properly and updates it

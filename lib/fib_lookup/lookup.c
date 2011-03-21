@@ -192,6 +192,7 @@ struct nl_cache *flnl_result_alloc_cache(void)
  * Builds a netlink request message to do a lookup
  * @arg req		Requested match.
  * @arg flags		additional netlink message flags
+ * @arg result		Result pointer
  *
  * Builds a new netlink message requesting a change of link attributes.
  * The netlink message header isn't fully equipped with all relevant
@@ -201,7 +202,7 @@ struct nl_cache *flnl_result_alloc_cache(void)
  * and \a tmpl must contain the attributes to be changed set via
  * \c rtnl_link_set_* functions.
  *
- * @return New netlink message
+ * @return 0 on success or a negative error code.
  * @note Not all attributes can be changed, see
  *       \ref link_changeable "Changeable Attributes" for more details.
  */

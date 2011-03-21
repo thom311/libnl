@@ -319,7 +319,7 @@ void rtnl_rule_put(struct rtnl_rule *rule)
 
 /**
  * Build a rule cache including all rules currently configured in the kernel.
- * @arg sk		Netlink socket.
+ * @arg sock		Netlink socket.
  * @arg family		Address family or AF_UNSPEC.
  * @arg result		Pointer to store resulting cache.
  *
@@ -421,6 +421,7 @@ nla_put_failure:
  * Build netlink request message to add a new rule
  * @arg tmpl		template with data of new rule
  * @arg flags		additional netlink message flags
+ * @arg result		Result pointer
  *
  * Builds a new netlink message requesting a addition of a new
  * rule. The netlink message header isn't fully equipped with
@@ -428,7 +429,7 @@ nla_put_failure:
  * or supplemented as needed. \a tmpl must contain the attributes of the new
  * address set via \c rtnl_rule_set_* functions.
  * 
- * @return The netlink message
+ * @return 0 on success or a negative error code.
  */
 int rtnl_rule_build_add_request(struct rtnl_rule *tmpl, int flags,
 				struct nl_msg **result)
@@ -476,6 +477,7 @@ int rtnl_rule_add(struct nl_sock *sk, struct rtnl_rule *tmpl, int flags)
  * Build a netlink request message to delete a rule
  * @arg rule		rule to delete
  * @arg flags		additional netlink message flags
+ * @arg result		Result pointer
  *
  * Builds a new netlink message requesting a deletion of a rule.
  * The netlink message header isn't fully equipped with all relevant
@@ -483,7 +485,7 @@ int rtnl_rule_add(struct nl_sock *sk, struct rtnl_rule *tmpl, int flags)
  * or supplemented as needed. \a rule must point to an existing
  * address.
  *
- * @return The netlink message
+ * @return 0 on success or a negative error code.
  */
 int rtnl_rule_build_delete_request(struct rtnl_rule *rule, int flags,
 				   struct nl_msg **result)

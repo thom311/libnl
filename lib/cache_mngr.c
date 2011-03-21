@@ -143,8 +143,9 @@ found:
  * @arg sk		Netlink socket.
  * @arg protocol	Netlink Protocol this manager is used for
  * @arg flags		Flags
+ * @arg result		Result pointer
  *
- * @return Newly allocated cache manager or NULL on failure.
+ * @return 0 on success or a negative error code.
  */
 int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 			struct nl_cache_mngr **result)
@@ -196,6 +197,7 @@ errout:
  * @arg mngr		Cache manager.
  * @arg name		Name of cache to keep track of
  * @arg cb		Function to be called upon changes.
+ * @arg data		Argument passed on to change callback
  * @arg result		Pointer to store added cache.
  *
  * Allocates a new cache of the specified type and adds it to the manager.

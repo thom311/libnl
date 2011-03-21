@@ -1036,6 +1036,7 @@ struct rtnl_link *rtnl_link_get_by_name(struct nl_cache *cache,
  * @arg old		link to be changed
  * @arg tmpl		template with requested changes
  * @arg flags		additional netlink message flags
+ * @arg result		Result pointer
  *
  * Builds a new netlink message requesting a change of link attributes.
  * The netlink message header isn't fully equipped with all relevant
@@ -1045,7 +1046,7 @@ struct rtnl_link *rtnl_link_get_by_name(struct nl_cache *cache,
  * and \a tmpl must contain the attributes to be changed set via
  * \c rtnl_link_set_* functions.
  *
- * @return New netlink message
+ * @return 0 on success or a negative error code.
  * @note Not all attributes can be changed, see
  *       \ref link_changeable "Changeable Attributes" for more details.
  */

@@ -63,9 +63,11 @@ struct nl_object *nl_object_alloc(struct nl_object_ops *ops)
 }
 
 /**
- * Allocate a new object of kind specified by the name
+ * Allocate new object of kind specified by the name
  * @arg kind		name of object type
- * @return The new object or nULL
+ * @arg result		Result pointer
+ *
+ * @return 0 on success or a negative error code.
  */
 int nl_object_alloc_name(const char *kind, struct nl_object **result)
 {

@@ -1,5 +1,5 @@
 /*
- * lib/route/sch/blackhole.c	Blackhole Qdisc
+ * lib/route/qdisc/blackhole.c	Blackhole Qdisc
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public

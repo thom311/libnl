@@ -1,5 +1,5 @@
 /*
- * lib/route/sch/red.c		RED Qdisc
+ * lib/route/qdisc/red.c		RED Qdisc
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,7 @@
 #include <netlink/utils.h>
 #include <netlink/route/tc-api.h>
 #include <netlink/route/qdisc.h>
-#include <netlink/route/sch/red.h>
+#include <netlink/route/qdisc/red.h>
 
 /** @cond SKIP */
 #define RED_ATTR_LIMIT		0x01

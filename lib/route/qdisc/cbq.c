@@ -1,5 +1,5 @@
 /*
- * lib/route/sch/cbq.c	Class Based Queueing
+ * lib/route/qdisc/cbq.c	Class Based Queueing
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,7 @@
 #include <netlink/route/qdisc.h>
 #include <netlink/route/class.h>
 #include <netlink/route/link.h>
-#include <netlink/route/sch/cbq.h>
+#include <netlink/route/qdisc/cbq.h>
 #include <netlink/route/cls/police.h>
 
 /**

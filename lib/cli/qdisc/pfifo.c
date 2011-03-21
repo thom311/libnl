@@ -12,7 +12,7 @@
 
 #include <netlink/cli/utils.h>
 #include <netlink/cli/tc.h>
-#include <netlink/route/sch/fifo.h>
+#include <netlink/route/qdisc/fifo.h>
 
 static void print_usage(void)
 {

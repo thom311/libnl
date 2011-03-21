@@ -1,5 +1,5 @@
 /*
- * lib/route/sch/sfq.c		SFQ Qdisc
+ * lib/route/qdisc/sfq.c		SFQ Qdisc
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -29,7 +29,7 @@
 #include <netlink/utils.h>
 #include <netlink/route/tc-api.h>
 #include <netlink/route/qdisc.h>
-#include <netlink/route/sch/sfq.h>
+#include <netlink/route/qdisc/sfq.h>
 
 /** @cond SKIP */
 #define SCH_SFQ_ATTR_QUANTUM	0x01

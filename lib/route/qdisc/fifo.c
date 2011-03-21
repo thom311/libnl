@@ -1,5 +1,5 @@
 /*
- * lib/route/sch/fifo.c		(p|b)fifo
+ * lib/route/qdisc/fifo.c		(p|b)fifo
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -34,7 +34,7 @@
 #include <netlink/netlink.h>
 #include <netlink/route/tc-api.h>
 #include <netlink/route/qdisc.h>
-#include <netlink/route/sch/fifo.h>
+#include <netlink/route/qdisc/fifo.h>
 #include <netlink/utils.h>
 
 /** @cond SKIP */

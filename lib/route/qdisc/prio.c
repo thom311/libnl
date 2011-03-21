@@ -1,5 +1,5 @@
 /*
- * lib/route/sch/prio.c		PRIO Qdisc/Class
+ * lib/route/qdisc/prio.c		PRIO Qdisc/Class
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,7 @@
 #include <netlink/utils.h>
 #include <netlink/route/tc-api.h>
 #include <netlink/route/qdisc.h>
-#include <netlink/route/sch/prio.h>
+#include <netlink/route/qdisc/prio.h>
 
 /** @cond SKIP */
 #define SCH_PRIO_ATTR_BANDS	1

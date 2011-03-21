@@ -1,5 +1,5 @@
 /*
- * lib/route/sch/dsmark.c	DSMARK
+ * lib/route/qdisc/dsmark.c	DSMARK
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@
 #include <netlink/route/qdisc.h>
 #include <netlink/route/tc-api.h>
 #include <netlink/route/class.h>
-#include <netlink/route/sch/dsmark.h>
+#include <netlink/route/qdisc/dsmark.h>
 
 /** @cond SKIP */
 #define SCH_DSMARK_ATTR_INDICES		0x1

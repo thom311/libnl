@@ -1,5 +1,5 @@
 /*
- * lib/route/sch/tbf.c		TBF Qdisc
+ * lib/route/qdisc/tbf.c		TBF Qdisc
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,7 @@
 #include <netlink/route/qdisc.h>
 #include <netlink/route/class.h>
 #include <netlink/route/link.h>
-#include <netlink/route/sch/tbf.h>
+#include <netlink/route/qdisc/tbf.h>
 
 /** @cond SKIP */
 #define TBF_ATTR_LIMIT			0x01

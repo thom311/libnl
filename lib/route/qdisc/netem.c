@@ -1,5 +1,5 @@
 /*
- * lib/route/sch/netem.c		Network Emulator Qdisc
+ * lib/route/qdisc/netem.c		Network Emulator Qdisc
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -24,7 +24,7 @@
 #include <netlink/utils.h>
 #include <netlink/route/tc-api.h>
 #include <netlink/route/qdisc.h>
-#include <netlink/route/sch/netem.h>
+#include <netlink/route/qdisc/netem.h>
 
 /** @cond SKIP */
 #define SCH_NETEM_ATTR_LATENCY		0x0001

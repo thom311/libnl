@@ -11,7 +11,7 @@
 
 #include <netlink/cli/utils.h>
 #include <netlink/cli/tc.h>
-#include <netlink/route/sch/htb.h>
+#include <netlink/route/qdisc/htb.h>
 
 static void print_qdisc_usage(void)
 {

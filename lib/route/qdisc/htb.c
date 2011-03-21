@@ -1,5 +1,5 @@
 /*
- * lib/route/sch/htb.c	HTB Qdisc
+ * lib/route/qdisc/htb.c	HTB Qdisc
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,7 @@
 #include <netlink/route/qdisc.h>
 #include <netlink/route/class.h>
 #include <netlink/route/link.h>
-#include <netlink/route/sch/htb.h>
+#include <netlink/route/qdisc/htb.h>
 
 /** @cond SKIP */
 #define SCH_HTB_HAS_RATE2QUANTUM	0x01

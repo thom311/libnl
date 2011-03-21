@@ -60,9 +60,10 @@ libnl_route_la_SOURCES = \
 	route/link/api.c route/link/vlan.c \
 	route/link/bridge.c route/link/inet6.c route/link/inet.c \
 	\
-	route/sch/blackhole.c route/sch/cbq.c route/sch/dsmark.c \
-	route/sch/fifo.c route/sch/htb.c route/sch/netem.c route/sch/prio.c \
-	route/sch/red.c route/sch/sfq.c route/sch/tbf.c \
+	route/qdisc/blackhole.c route/qdisc/cbq.c route/qdisc/dsmark.c \
+	route/qdisc/fifo.c route/qdisc/htb.c route/qdisc/netem.c \
+	route/qdisc/prio.c route/qdisc/red.c route/qdisc/sfq.c \
+	route/qdisc/tbf.c \
 	\
 	fib_lookup/lookup.c fib_lookup/request.c \
 	\

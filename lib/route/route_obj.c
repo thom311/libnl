@@ -687,18 +687,26 @@ void rtnl_route_add_nexthop(struct rtnl_route *route, struct rtnl_nexthop *nh)
 
 void rtnl_route_remove_nexthop(struct rtnl_route *route, struct rtnl_nexthop *nh)
 {
-	route->rt_nr_nh--;
-	nl_list_del(&nh->rtnh_list);
+	if (route->ce_mask & ROUTE_ATTR_MULTIPATH) {
+		route->rt_nr_nh--;
+		nl_list_del(&nh->rtnh_list);
+	}
 }
 
 struct nl_list_head *rtnl_route_get_nexthops(struct rtnl_route *route)
 {
-	return &route->rt_nexthops;
+	if (route->ce_mask & ROUTE_ATTR_MULTIPATH)
+		return &route->rt_nexthops;
+
+	return NULL;
 }
 
 int rtnl_route_get_nnexthops(struct rtnl_route *route)
 {
-	return route->rt_nr_nh;
+	if (route->ce_mask & ROUTE_ATTR_MULTIPATH)
+		return route->rt_nr_nh;
+
+	return 0;
 }
 
 void rtnl_route_foreach_nexthop(struct rtnl_route *r,

@@ -1,6 +1,17 @@
 # -*- Makefile -*-
 
 nobase_include_HEADERS = \
+	netlink/cli/addr.h \
+	netlink/cli/class.h \
+	netlink/cli/cls.h \
+	netlink/cli/ct.h \
+	netlink/cli/link.h \
+	netlink/cli/neigh.h \
+	netlink/cli/qdisc.h \
+	netlink/cli/route.h \
+	netlink/cli/rule.h \
+	netlink/cli/tc.h \
+	netlink/cli/utils.h \
 	netlink/fib_lookup/lookup.h \
 	netlink/fib_lookup/request.h \
 	netlink/genl/ctrl.h \
@@ -28,9 +39,17 @@ nobase_include_HEADERS = \
 	netlink/netlink.h \
 	netlink/object-api.h \
 	netlink/object.h \
+	netlink/route/cls/ematch/cmp.h \
+	netlink/route/cls/ematch/meta.h \
+	netlink/route/cls/ematch/nbyte.h \
+	netlink/route/cls/ematch/text.h \
+	netlink/route/cls/basic.h \
+	netlink/route/cls/cgroup.h \
+	netlink/route/cls/ematch.h \
 	netlink/route/cls/fw.h \
 	netlink/route/cls/police.h \
 	netlink/route/cls/u32.h \
+	netlink/route/link/api.h \
 	netlink/route/link/info-api.h \
 	netlink/route/link/vlan.h \
 	netlink/route/qdisc/cbq.h \
@@ -49,6 +68,7 @@ nobase_include_HEADERS = \
 	netlink/route/neighbour.h \
 	netlink/route/neightbl.h \
 	netlink/route/nexthop.h \
+	netlink/route/pktloc.h \
 	netlink/route/qdisc.h \
 	netlink/route/route.h \
 	netlink/route/rtnl.h \
@@ -59,3 +79,33 @@ nobase_include_HEADERS = \
 	netlink/types.h \
 	netlink/utils.h \
 	netlink/version.h
+
+noinst_HEADERS = \
+	linux/fib_rules.h \
+	linux/genetlink.h \
+	linux/gen_stats.h \
+	linux/if_addr.h \
+	linux/if_arp.h \
+	linux/if_ether.h \
+	linux/if.h \
+	linux/if_link.h \
+	linux/if_vlan.h \
+	linux/inetdevice.h \
+	linux/ip_mp_alg.h \
+	linux/ipv6.h \
+	linux/neighbour.h \
+	linux/netfilter.h \
+	linux/netfilter/nfnetlink_conntrack.h \
+	linux/netfilter/nfnetlink.h \
+	linux/netfilter/nfnetlink_log.h \
+	linux/netfilter/nfnetlink_queue.h \
+	linux/netlink.h \
+	linux/pkt_cls.h \
+	linux/pkt_sched.h \
+	linux/rtnetlink.h \
+	linux/snmp.h \
+	linux/tc_ematch/tc_em_meta.h \
+	netlink-generic.h \
+	netlink-local.h \
+	netlink-tc.h \
+	netlink-types.h

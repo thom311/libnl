@@ -15,6 +15,9 @@ pkgconfig_DATA = libnl-3.0.pc
 sysconfdir = @sysconfdir@/libnl
 sysconf_DATA = etc/pktloc etc/classid
 
+EXTRA_DIST = \
+	$(sysconf_DATA)
+
 .PHONY: cscope
 cscope:
 	cscope -b -q -R -Iinclude -slib -ssrc;

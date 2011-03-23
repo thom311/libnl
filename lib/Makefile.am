@@ -51,7 +51,6 @@ libnl_route_la_SOURCES = \
 	route/cls/fw.c route/cls/police.c route/cls/u32.c route/cls/basic.c \
 	route/cls/cgroup.c \
 	\
-	route/cls/ematch_syntax.c route/cls/ematch_grammar.c \
 	route/cls/ematch.c \
 	route/cls/ematch/container.c route/cls/ematch/cmp.c \
 	route/cls/ematch/nbyte.c route/cls/ematch/text.c \
@@ -67,8 +66,25 @@ libnl_route_la_SOURCES = \
 	\
 	fib_lookup/lookup.c fib_lookup/request.c \
 	\
-	route/pktloc_syntax.c route/pktloc_grammar.c route/pktloc.c
+	route/pktloc.c
 
+nodist_libnl_route_la_SOURCES = \
+	route/pktloc_syntax.c route/pktloc_syntax.h \
+	route/pktloc_grammar.c route/pktloc_grammar.h \
+	route/cls/ematch_syntax.c route/cls/ematch_syntax.h \
+	route/cls/ematch_grammar.c route/cls/ematch_grammar.h
+
+BUILT_SOURCES = \
+	route/cls/ematch_grammar.c \
+	route/cls/ematch_syntax.c \
+	route/pktloc_grammar.c \
+	route/pktloc_syntax.c
+
+EXTRA_DIST = \
+	route/pktloc_grammar.l \
+	route/pktloc_syntax.y \
+	route/cls/ematch_grammar.l \
+	route/cls/ematch_syntax.y
 
 if ENABLE_CLI
 nobase_pkglib_LTLIBRARIES = \

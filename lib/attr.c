@@ -1151,10 +1151,22 @@ struct nlattr *nla_nest_start(struct nl_msg *msg, int attrtype)
  */
 int nla_nest_end(struct nl_msg *msg, struct nlattr *start)
 {
-	size_t pad;
+	size_t pad, len;
 
-	start->nla_len = (unsigned char *) nlmsg_tail(msg->nm_nlh) -
-				(unsigned char *) start;
+	len = (void *) nlmsg_tail(msg->nm_nlh) - (void *) start;
+
+	if (len == NLA_HDRLEN) {
+		/*
+		 * Kernel can't handle empty nested attributes, trim the
+		 * attribute header again
+		 */
+		msg->nm_nlh->nlmsg_len -= NLA_HDRLEN;
+		memset(nlmsg_tail(msg->nm_nlh), 0, NLA_HDRLEN);
+
+		return 0;
+	}
+
+	start->nla_len = len;
 
 	pad = NLMSG_ALIGN(msg->nm_nlh->nlmsg_len) - msg->nm_nlh->nlmsg_len;
 	if (pad > 0) {

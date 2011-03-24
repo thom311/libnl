@@ -429,17 +429,15 @@ void rtnl_qdisc_put(struct rtnl_qdisc *qdisc)
 /** @} */
 
 /**
- * @name Iterators
+ * @name Deprecated Functions
  * @{
  */
 
 /**
- * Call a callback for each child class of a qdisc
- * @arg qdisc		the parent qdisc
- * @arg cache		a class cache including all classes of the interface
- *                      the specified qdisc is attached to
- * @arg cb              callback function
- * @arg arg             argument to be passed to callback function
+ * Call a callback for each child class of a qdisc (deprecated)
+ *
+ * @deprecated Use of this function is deprecated, it does not allow
+ *             to handle the out of memory situation that can occur.
  */
 void rtnl_qdisc_foreach_child(struct rtnl_qdisc *qdisc, struct nl_cache *cache,
 			      void (*cb)(struct nl_object *, void *), void *arg)
@@ -460,26 +458,23 @@ void rtnl_qdisc_foreach_child(struct rtnl_qdisc *qdisc, struct nl_cache *cache,
 }
 
 /**
- * Call a callback for each filter attached to the qdisc
- * @arg qdisc		the parent qdisc
- * @arg cache		a filter cache including at least all the filters
- *                      attached to the specified qdisc
- * @arg cb              callback function
- * @arg arg             argument to be passed to callback function
+ * Call a callback for each filter attached to the qdisc (deprecated)
+ *
+ * @deprecated Use of this function is deprecated, it does not allow
+ *             to handle the out of memory situation that can occur.
  */
 void rtnl_qdisc_foreach_cls(struct rtnl_qdisc *qdisc, struct nl_cache *cache,
 			    void (*cb)(struct nl_object *, void *), void *arg)
 {
 	struct rtnl_cls *filter;
 
-	filter = rtnl_cls_alloc();
-	if (!filter)
+	if (!(filter = rtnl_cls_alloc()))
 		return;
 
-	rtnl_tc_set_ifindex((struct rtnl_tc *) filter, qdisc->q_ifindex);
-	rtnl_tc_set_parent((struct rtnl_tc *) filter, qdisc->q_parent);
+	rtnl_tc_set_ifindex(TC_CAST(filter), qdisc->q_ifindex);
+	rtnl_tc_set_parent(TC_CAST(filter), qdisc->q_parent);
 
-	nl_cache_foreach_filter(cache, (struct nl_object *) filter, cb, arg);
+	nl_cache_foreach_filter(cache, OBJ_CAST(filter), cb, arg);
 	rtnl_cls_put(filter);
 }
 

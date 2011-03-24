@@ -48,13 +48,14 @@ extern int	rtnl_qdisc_build_delete_request(struct rtnl_qdisc *,
 						struct nl_msg **);
 extern int	rtnl_qdisc_delete(struct nl_sock *, struct rtnl_qdisc *);
 
+/* Deprecated functions */
 extern void	rtnl_qdisc_foreach_child(struct rtnl_qdisc *, struct nl_cache *,
 					 void (*cb)(struct nl_object *, void *),
-					 void *);
+					 void *) __attribute__ ((deprecated));
 
 extern void	rtnl_qdisc_foreach_cls(struct rtnl_qdisc *, struct nl_cache *,
 				       void (*cb)(struct nl_object *, void *),
-				       void *);
+				       void *) __attribute__ ((deprecated));
 
 #ifdef __cplusplus
 }

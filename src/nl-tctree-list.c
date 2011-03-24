@@ -12,6 +12,7 @@
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>
 #include <netlink/cli/qdisc.h>
+#include <netlink/cli/class.h>
 #include <linux/pkt_sched.h>
 
 static struct nl_sock *sock;
@@ -60,6 +61,21 @@ static void print_class(struct nl_object *obj, void *arg)
 	nl_cache_free(cls_cache);
 }
 
+static void print_qdisc_childs(struct rtnl_qdisc *qdisc, void *arg)
+{
+	struct rtnl_tc *tc = TC_CAST(qdisc);
+	struct rtnl_class *filter;
+
+	filter = nl_cli_class_alloc();
+
+	rtnl_tc_set_parent(TC_CAST(filter), rtnl_tc_get_handle(tc));
+	rtnl_tc_set_ifindex(TC_CAST(filter), rtnl_tc_get_ifindex(tc));
+
+	nl_cache_foreach_filter(class_cache, OBJ_CAST(filter), &print_class, arg);
+
+	rtnl_class_put(filter);
+}
+
 static void print_qdisc(struct nl_object *obj, void *arg)
 {
 	struct rtnl_qdisc *qdisc = (struct rtnl_qdisc *) obj;
@@ -69,7 +85,7 @@ static void print_qdisc(struct nl_object *obj, void *arg)
 	params.dp_prefix = (int)(long) arg;
 	nl_object_dump(obj, &params);
 
-	rtnl_qdisc_foreach_child(qdisc, class_cache, &print_class, arg + 2);
+	print_qdisc_childs(qdisc, arg + 2);
 
 	if (rtnl_cls_alloc_cache(sock, ifindex, parent, &cls_cache) < 0)
 		return;

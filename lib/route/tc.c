@@ -318,7 +318,7 @@ void rtnl_tc_set_mtu(struct rtnl_tc *tc, uint32_t mtu)
  * Returns the MTU of a traffic control object which has been set via:
  * -# User specified value set via rtnl_tc_set_mtu()
  * -# Dervied from link set via rtnl_tc_set_link()
- * -# Fall back to default: ethernet = 1600
+ * -# Fall back to default: ethernet = 1500
  */
 uint32_t rtnl_tc_get_mtu(struct rtnl_tc *tc)
 {
@@ -327,7 +327,7 @@ uint32_t rtnl_tc_get_mtu(struct rtnl_tc *tc)
 	else if (tc->ce_mask & TCA_ATTR_LINK)
 		return tc->tc_link->l_mtu;
 	else
-		return 1600; /* default to ethernet */
+		return 1500; /* default to ethernet */
 }
 
 /**

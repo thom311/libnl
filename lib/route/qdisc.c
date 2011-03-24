@@ -93,6 +93,7 @@
 #include <netlink/route/classifier.h>
 
 static struct nl_cache_ops rtnl_qdisc_ops;
+static struct nl_object_ops qdisc_obj_ops;
 
 static int qdisc_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			    struct nlmsghdr *n, struct nl_parser_param *pp)
@@ -514,7 +515,7 @@ static struct nl_cache_ops rtnl_qdisc_ops = {
 	.co_obj_ops		= &qdisc_obj_ops,
 };
 
-struct nl_object_ops qdisc_obj_ops = {
+static struct nl_object_ops qdisc_obj_ops = {
 	.oo_name		= "route/qdisc",
 	.oo_size		= sizeof(struct rtnl_qdisc),
 	.oo_free_data		= rtnl_tc_free_data,

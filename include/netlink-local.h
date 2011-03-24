@@ -186,4 +186,16 @@ static inline int wait_for_ack(struct nl_sock *sk)
 		return nl_wait_for_ack(sk);
 }
 
+static inline int build_sysconf_path(char **strp, const char *filename)
+{
+	char *sysconfdir;
+
+	sysconfdir = getenv("NLSYSCONFDIR");
+
+	if (!sysconfdir)
+		sysconfdir = SYSCONFDIR;
+
+	return asprintf(strp, "%s/%s", sysconfdir, filename);
+}
+
 #endif

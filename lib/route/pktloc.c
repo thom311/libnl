@@ -94,7 +94,8 @@ static int read_pktlocs(void)
 	int i, err;
 	FILE *fd;
 
-	asprintf(&path, "%s/pktloc", SYSCONFDIR);
+	if (build_sysconf_path(&path, "pktloc") < 0)
+		return -NLE_NOMEM;
 
 	/* if stat fails, just try to read the file */
 	if (stat(path, &st) == 0) {

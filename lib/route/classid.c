@@ -310,7 +310,8 @@ int rtnl_tc_read_classid_file(void)
 	FILE *fd;
 	int err;
 
-	asprintf(&path, "%s/classid", SYSCONFDIR);
+	if (build_sysconf_path(&path, "classid") < 0)
+		return -NLE_NOMEM;
 
 	/* if stat fails, just (re-)read the file */
 	if (stat(path, &st) == 0) {
@@ -392,7 +393,7 @@ int rtnl_classid_generate(const char *name, uint32_t *result, uint32_t parent)
 
 	NL_DBG(2, "Generated new classid %#x\n", classid);
 
-	if (asprintf(&path, "%s/classid", SYSCONFDIR) < 0)
+	if (build_sysconf_path(&path, "classid") < 0)
 		return -NLE_NOMEM;
 
 	if (!(fd = fopen(path, "a"))) {

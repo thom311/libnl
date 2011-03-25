@@ -59,6 +59,7 @@ extern void			nl_auto_complete(struct nl_sock *,
 extern int			nl_send_auto(struct nl_sock *, struct nl_msg *);
 extern int			nl_send_auto_complete(struct nl_sock *,
 						      struct nl_msg *);
+extern int			nl_send_sync(struct nl_sock *, struct nl_msg *);
 extern int			nl_send_simple(struct nl_sock *, int, int,
 					       void *, size_t);
 

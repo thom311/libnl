@@ -346,6 +346,37 @@ int nl_send_auto_complete(struct nl_sock *sk, struct nl_msg *msg)
 }
 
 /**
+ * Send netlink message and wait for response (sync request-response)
+ * @arg sk		Netlink socket
+ * @arg msg		Netlink message to be sent
+ *
+ * This function takes a netlink message and sends it using nl_send_auto().
+ * It will then wait for the response (ACK or error message) to be
+ * received. Threfore this function will block until the operation has
+ * been completed.
+ *
+ * @note Disabling auto-ack (nl_socket_disable_auto_ack()) will cause
+ *       this function to return immediately after sending. In this case,
+ *       it is the responsibility of the caller to handle any eventual
+ *       error messages returned.
+ *
+ * @see nl_send_auto().
+ *
+ * @return 0 on success or a negative error code.
+ */
+int nl_send_sync(struct nl_sock *sk, struct nl_msg *msg)
+{
+	int err;
+
+	err = nl_send_auto(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
+		return err;
+
+	return wait_for_ack(sk);
+}
+
+/**
  * Send simple netlink message using nl_send_auto_complete()
  * @arg sk		Netlink socket.
  * @arg type		Netlink message type.

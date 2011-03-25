@@ -189,11 +189,7 @@ int rtnl_tc_msg_build(struct rtnl_tc *tc, int type, int flags,
 		.tcm_handle = tc->tc_handle,
 		.tcm_parent = tc->tc_parent,
 	};
-	int req, err = -NLE_MSGSIZE;
-
-	req = (TCA_ATTR_IFINDEX | TCA_ATTR_PARENT | TCA_ATTR_KIND);
-	if ((tc->ce_mask & req) != req)
-		return -NLE_MISSING_ATTR;
+	int err = -NLE_MSGSIZE;
 
 	msg = nlmsg_alloc_simple(type, flags);
 	if (!msg)

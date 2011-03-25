@@ -38,24 +38,33 @@ extern int	rtnl_qdisc_build_add_request(struct rtnl_qdisc *, int,
 					     struct nl_msg **);
 extern int	rtnl_qdisc_add(struct nl_sock *, struct rtnl_qdisc *, int);
 
-extern int	rtnl_qdisc_build_change_request(struct rtnl_qdisc *,
+extern int	rtnl_qdisc_build_update_request(struct rtnl_qdisc *,
 						struct rtnl_qdisc *,
-						struct nl_msg **);
-extern int	rtnl_qdisc_change(struct nl_sock *, struct rtnl_qdisc *,
-				  struct rtnl_qdisc *);
+						int, struct nl_msg **);
+
+extern int	rtnl_qdisc_update(struct nl_sock *, struct rtnl_qdisc *,
+				  struct rtnl_qdisc *, int);
 
 extern int	rtnl_qdisc_build_delete_request(struct rtnl_qdisc *,
 						struct nl_msg **);
 extern int	rtnl_qdisc_delete(struct nl_sock *, struct rtnl_qdisc *);
 
 /* Deprecated functions */
-extern void	rtnl_qdisc_foreach_child(struct rtnl_qdisc *, struct nl_cache *,
-					 void (*cb)(struct nl_object *, void *),
-					 void *) __attribute__ ((deprecated));
+extern void rtnl_qdisc_foreach_child(struct rtnl_qdisc *, struct nl_cache *,
+				     void (*cb)(struct nl_object *, void *),
+				     void *) __attribute__ ((deprecated));
 
-extern void	rtnl_qdisc_foreach_cls(struct rtnl_qdisc *, struct nl_cache *,
-				       void (*cb)(struct nl_object *, void *),
-				       void *) __attribute__ ((deprecated));
+extern void rtnl_qdisc_foreach_cls(struct rtnl_qdisc *, struct nl_cache *,
+				   void (*cb)(struct nl_object *, void *),
+				   void *) __attribute__ ((deprecated));
+
+extern int rtnl_qdisc_build_change_request(struct rtnl_qdisc *,
+					   struct rtnl_qdisc *,
+					   struct nl_msg **)
+					   __attribute__ ((deprecated));
+
+extern int rtnl_qdisc_change(struct nl_sock *, struct rtnl_qdisc *,
+			     struct rtnl_qdisc *) __attribute__ ((deprecated));
 
 #ifdef __cplusplus
 }

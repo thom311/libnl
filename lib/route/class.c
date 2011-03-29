@@ -1,17 +1,17 @@
 /*
- * lib/route/class.c            Queueing Classes
+ * lib/route/class.c            Traffic Classes
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
  * @ingroup tc
- * @defgroup class Queueing Classes
+ * @defgroup class Traffic Classes
  * @{
  */
 
@@ -69,126 +69,6 @@ static int class_request_update(struct nl_cache *cache, struct nl_sock *sk)
 }
 
 /**
- * @name Addition/Modification
- * @{
- */
-
-static int class_build(struct rtnl_class *class, int type, int flags,
-		       struct nl_msg **result)
-{
-	return rtnl_tc_msg_build(TC_CAST(class), type, flags, result);
-}
-
-/**
- * Build a netlink message to add a new class
- * @arg class		class to add 
- * @arg flags		additional netlink message flags
- * @arg result		Pointer to store resulting message.
- *
- * Builds a new netlink message requesting an addition of a class.
- * The netlink message header isn't fully equipped with all relevant
- * fields and must be sent out via nl_send_auto_complete() or
- * supplemented as needed. 
- *
- * Common message flags
- *   - NLM_F_REPLACE - replace possibly existing classes
- *
- * @return 0 on success or a negative error code.
- */
-int rtnl_class_build_add_request(struct rtnl_class *class, int flags,
-				 struct nl_msg **result)
-{
-	return class_build(class, RTM_NEWTCLASS, NLM_F_CREATE | flags, result);
-}
-
-/**
- * Add a new class
- * @arg sk		Netlink socket.
- * @arg class		class to delete
- * @arg flags		additional netlink message flags
- *
- * Builds a netlink message by calling rtnl_qdisc_build_add_request(),
- * sends the request to the kernel and waits for the next ACK to be
- * received and thus blocks until the request has been processed.
- *
- * Common message flags
- *   - NLM_F_REPLACE - replace possibly existing classes
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_class_add(struct nl_sock *sk, struct rtnl_class *class, int flags)
-{
-	struct nl_msg *msg;
-	int err;
-
-	if ((err = rtnl_class_build_add_request(class, flags, &msg)) < 0)
-		return err;
-
-	err = nl_send_auto_complete(sk, msg);
-	nlmsg_free(msg);
-	if (err < 0)
-		return err;
-
-	return wait_for_ack(sk);
-}
-
-int rtnl_class_build_delete_request(struct rtnl_class *class,
-									struct nl_msg **result)
-{
-	struct nl_msg *msg;
-	struct tcmsg tchdr;
-	int required = TCA_ATTR_IFINDEX | TCA_ATTR_PARENT;
-
-	if ((class->ce_mask & required) != required)
-		BUG();
-
-	msg = nlmsg_alloc_simple(RTM_DELTCLASS, 0);
-	if (!msg)
-		return -NLE_NOMEM;
-
-	tchdr.tcm_family = AF_UNSPEC;
-	tchdr.tcm_handle = class->c_handle;
-	tchdr.tcm_parent = class->c_parent;
-	tchdr.tcm_ifindex = class->c_ifindex;
-	if (nlmsg_append(msg, &tchdr, sizeof(tchdr), NLMSG_ALIGNTO) < 0) {
-		nlmsg_free(msg);
-		return -NLE_MSGSIZE;
-	}
-
-	*result = msg;
-	return 0;
-}
-
-/**
- * Delete a class
- * @arg sk		Netlink socket.
- * @arg class		class to delete
- *
- * Builds a netlink message by calling rtnl_class_build_delete_request(),
- * sends the request to the kernel and waits for the ACK to be
- * received and thus blocks until the request has been processed.
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_class_delete(struct nl_sock *sk, struct rtnl_class *class)
-{
-	struct nl_msg *msg;
-	int err;
-
-	if ((err = rtnl_class_build_delete_request(class, &msg)) < 0)
-		return err;
-
-	err = nl_send_auto_complete(sk, msg);
-	nlmsg_free(msg);
-	if (err < 0)
-		return err;
-
-	return wait_for_ack(sk);
-}
-
-/** @} */
-
-/**
  * @name Allocation/Freeing
  * @{
  */
@@ -211,17 +91,188 @@ void rtnl_class_put(struct rtnl_class *class)
 
 /** @} */
 
+
+/**
+ * @name Addition/Modification/Deletion
+ * @{
+ */
+
+static int class_build(struct rtnl_class *class, int type, int flags,
+		       struct nl_msg **result)
+{
+	int needed = TCA_ATTR_PARENT | TCA_ATTR_HANDLE;
+
+	if ((class->ce_mask & needed) == needed &&
+	    TC_H_MAJ(class->c_parent) && TC_H_MAJ(class->c_handle) &&
+	    TC_H_MAJ(class->c_parent) != TC_H_MAJ(class->c_handle)) {
+		APPBUG("TC_H_MAJ(parent) must match TC_H_MAJ(handle)");
+		return -NLE_INVAL;
+	}
+
+	return rtnl_tc_msg_build(TC_CAST(class), type, flags, result);
+}
+
+/**
+ * Build a netlink message requesting the addition of a traffic class
+ * @arg class		Traffic class to add 
+ * @arg flags		Additional netlink message flags
+ * @arg result		Pointer to store resulting netlink message
+ *
+ * The behaviour of this function is identical to rtnl_class_add() with
+ * the exception that it will not send the message but return it int the
+ * provided return pointer instead.
+ *
+ * @see rtnl_class_add()
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_class_build_add_request(struct rtnl_class *class, int flags,
+				 struct nl_msg **result)
+{
+	return class_build(class, RTM_NEWTCLASS, flags, result);
+}
+
+/**
+ * Add/Update traffic class
+ * @arg sk		Netlink socket
+ * @arg class		Traffic class to add 
+ * @arg flags		Additional netlink message flags
+ *
+ * Builds a \c RTM_NEWTCLASS netlink message requesting the addition
+ * of a new traffic class and sends the message to the kernel. The
+ * configuration of the traffic class is derived from the attributes
+ * of the specified traffic class.
+ *
+ * The following flags may be specified:
+ *  - \c NLM_F_CREATE:  Create traffic class if it does not exist,
+ *                      otherwise -NLE_OBJ_NOTFOUND is returned.
+ *  - \c NLM_F_EXCL:    Return -NLE_EXISTS if a traffic class with
+ *                      matching handle exists already.
+ *
+ * Existing traffic classes with matching handles will be updated,
+ * unless the flag \c NLM_F_EXCL is specified. If no matching traffic
+ * class exists, it will be created if the flag \c NLM_F_CREATE is set,
+ * otherwise the error -NLE_OBJ_NOTFOUND is returned. 
+ *
+ * If the parent qdisc does not support classes, the error
+ * \c NLE_OPNOTSUPP is returned.
+ *
+ * After sending, the function will wait for the ACK or an eventual
+ * error message to be received and will therefore block until the
+ * operation has been completed.
+ *
+ * @note Disabling auto-ack (nl_socket_disable_auto_ack()) will cause
+ *       this function to return immediately after sending. In this case,
+ *       it is the responsibility of the caller to handle any error
+ *       messages returned.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_class_add(struct nl_sock *sk, struct rtnl_class *class, int flags)
+{
+	struct nl_msg *msg;
+	int err;
+
+	if ((err = rtnl_class_build_add_request(class, flags, &msg)) < 0)
+		return err;
+
+	return nl_send_sync(sk, msg);
+}
+
+/**
+ * Build netlink message requesting the deletion of a traffic class
+ * @arg class		Traffic class to delete
+ * @arg result		Pointer to store resulting netlink message
+ *
+ * The behaviour of this function is identical to rtnl_class_delete() with
+ * the exception that it will not send the message but return it in the
+ * provided return pointer instead.
+ *
+ * @see rtnl_class_delete()
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_class_build_delete_request(struct rtnl_class *class, struct nl_msg **result)
+{
+	struct nl_msg *msg;
+	struct tcmsg tchdr;
+	int required = TCA_ATTR_IFINDEX | TCA_ATTR_HANDLE;
+
+	if ((class->ce_mask & required) != required) {
+		APPBUG("ifindex and handle must be specified");
+		return -NLE_MISSING_ATTR;
+	}
+
+	if (!(msg = nlmsg_alloc_simple(RTM_DELTCLASS, 0)))
+		return -NLE_NOMEM;
+
+	memset(&tchdr, 0, sizeof(tchdr));
+	tchdr.tcm_family = AF_UNSPEC;
+	tchdr.tcm_ifindex = class->c_ifindex;
+	tchdr.tcm_handle = class->c_handle;
+
+	if (class->ce_mask & TCA_ATTR_PARENT)
+		tchdr.tcm_parent = class->c_parent;
+
+	if (nlmsg_append(msg, &tchdr, sizeof(tchdr), NLMSG_ALIGNTO) < 0) {
+		nlmsg_free(msg);
+		return -NLE_MSGSIZE;
+	}
+
+	*result = msg;
+	return 0;
+}
+
+/**
+ * Delete traffic class
+ * @arg sk		Netlink socket
+ * @arg class		Traffic class to delete
+ *
+ * Builds a \c RTM_DELTCLASS netlink message requesting the deletion
+ * of a traffic class and sends the message to the kernel.
+ *
+ * The message is constructed out of the following attributes:
+ * - \c ifindex and \c handle (required)
+ * - \c parent (optional, must match if provided)
+ *
+ * All other class attributes including all class type specific
+ * attributes are ignored.
+ *
+ * After sending, the function will wait for the ACK or an eventual
+ * error message to be received and will therefore block until the
+ * operation has been completed.
+ *
+ * @note Disabling auto-ack (nl_socket_disable_auto_ack()) will cause
+ *       this function to return immediately after sending. In this case,
+ *       it is the responsibility of the caller to handle any error
+ *       messages returned.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_class_delete(struct nl_sock *sk, struct rtnl_class *class)
+{
+	struct nl_msg *msg;
+	int err;
+
+	if ((err = rtnl_class_build_delete_request(class, &msg)) < 0)
+		return err;
+
+	return nl_send_sync(sk, msg);
+}
+
+/** @} */
+
 /**
  * @name Leaf Qdisc
  * @{
  */
 
 /**
- * Lookup the leaf qdisc of a class
- * @arg class		the parent class
- * @arg cache		a qdisc cache including at laest all qdiscs of the
- *                      interface the specified class is attached to
- * @return The qdisc from the cache or NULL if the class has no leaf qdisc
+ * Lookup the leaf qdisc of a traffic class
+ * @arg class		the parent traffic class
+ * @arg cache		a qdisc cache allocated using rtnl_qdisc_alloc_cache()
+ *
+ * @return Matching Qdisc or NULL if the traffic class has no leaf qdisc
  */
 struct rtnl_qdisc *rtnl_class_leaf_qdisc(struct rtnl_class *class,
 					 struct nl_cache *cache)
@@ -241,19 +292,93 @@ struct rtnl_qdisc *rtnl_class_leaf_qdisc(struct rtnl_class *class,
 
 /** @} */
 
+/**
+ * @name Cache Related Functions
+ * @{
+ */
 
 /**
- * @name Iterators
+ * Allocate a cache and fill it with all configured traffic classes
+ * @arg sk		Netlink socket
+ * @arg ifindex		Interface index of the network device
+ * @arg result		Pointer to store the created cache
+ *
+ * Allocates a new traffic class cache and fills it with a list of all
+ * configured traffic classes on a specific network device. Release the
+ * cache with nl_cache_free().
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_class_alloc_cache(struct nl_sock *sk, int ifindex,
+			   struct nl_cache **result)
+{
+	struct nl_cache * cache;
+	int err;
+
+	if (!ifindex) {
+		APPBUG("ifindex must be specified");
+		return -NLE_INVAL;
+	}
+	
+	if (!(cache = nl_cache_alloc(&rtnl_class_ops)))
+		return -NLE_NOMEM;
+
+	cache->c_iarg1 = ifindex;
+	
+	if (sk && (err = nl_cache_refill(sk, cache)) < 0) {
+		nl_cache_free(cache);
+		return err;
+	}
+
+	*result = cache;
+	return 0;
+}
+
+/**
+ * Search traffic class by interface index and handle
+ * @arg cache		Traffic class cache
+ * @arg ifindex		Interface index
+ * @arg handle		ID of traffic class
+ *
+ * Searches a traffic class cache previously allocated with
+ * rtnl_class_alloc_cache() and searches for a traffi class matching
+ * the interface index and handle.
+ *
+ * The reference counter is incremented before returning the traffic
+ * class, therefore the reference must be given back with rtnl_class_put()
+ * after usage.
+ *
+ * @return Traffic class or NULL if no match was found.
+ */
+struct rtnl_class *rtnl_class_get(struct nl_cache *cache, int ifindex,
+				  uint32_t handle)
+{
+	struct rtnl_class *class;
+	
+	if (cache->c_ops != &rtnl_class_ops)
+		return NULL;
+
+	nl_list_for_each_entry(class, &cache->c_items, ce_list) {
+		if (class->c_handle == handle && class->c_ifindex == ifindex) {
+			nl_object_get((struct nl_object *) class);
+			return class;
+		}
+	}
+	return NULL;
+}
+
+/** @} */
+
+/**
+ * @name Deprecated Functions
  * @{
  */
 
 /**
  * Call a callback for each child of a class
- * @arg class		the parent class
- * @arg cache		a class cache including all classes of the interface
- *                      the specified class is attached to
- * @arg cb              callback function
- * @arg arg             argument to be passed to callback function
+ *
+ * @deprecated Use of this function is deprecated, it does not allow
+ *             to handle the out of memory situation that can occur.
  */
 void rtnl_class_foreach_child(struct rtnl_class *class, struct nl_cache *cache,
 			      void (*cb)(struct nl_object *, void *), void *arg)
@@ -274,11 +399,9 @@ void rtnl_class_foreach_child(struct rtnl_class *class, struct nl_cache *cache,
 
 /**
  * Call a callback for each classifier attached to the class
- * @arg class		the parent class
- * @arg cache		a filter cache including at least all the filters
- *                      attached to the specified class
- * @arg cb              callback function
- * @arg arg             argument to be passed to callback function
+ *
+ * @deprecated Use of this function is deprecated, it does not allow
+ *             to handle the out of memory situation that can occur.
  */
 void rtnl_class_foreach_cls(struct rtnl_class *class, struct nl_cache *cache,
 			    void (*cb)(struct nl_object *, void *), void *arg)
@@ -294,71 +417,6 @@ void rtnl_class_foreach_cls(struct rtnl_class *class, struct nl_cache *cache,
 
 	nl_cache_foreach_filter(cache, (struct nl_object *) filter, cb, arg);
 	rtnl_cls_put(filter);
-}
-
-/** @} */
-
-
-/**
- * @name Cache Management
- * @{
- */
-
-/**
- * Build a class cache including all classes attached to the specified interface
- * @arg sk		Netlink socket.
- * @arg ifindex		interface index of the link the classes are
- *                      attached to.
- * @arg result		Result pointer
- *
- * Allocates a new cache, initializes it properly and updates it to
- * include all classes attached to the specified interface.
- *
- * @return 0 on success or a negative error code.
- */
-int rtnl_class_alloc_cache(struct nl_sock *sk, int ifindex,
-			   struct nl_cache **result)
-{
-	struct nl_cache * cache;
-	int err;
-	
-	cache = nl_cache_alloc(&rtnl_class_ops);
-	if (!cache)
-		return -NLE_NOMEM;
-
-	cache->c_iarg1 = ifindex;
-	
-	if (sk && (err = nl_cache_refill(sk, cache)) < 0) {
-		nl_cache_free(cache);
-		return err;
-	}
-
-	*result = cache;
-	return 0;
-}
-
-/**
- * Look up class by its handle in the provided cache
- * @arg cache		class cache
- * @arg ifindex		interface the class is attached to
- * @arg handle		class handle
- * @return pointer to class inside the cache or NULL if no match was found.
- */
-struct rtnl_class *rtnl_class_get(struct nl_cache *cache, int ifindex,
-								  uint32_t handle)
-{
-	struct rtnl_class *class;
-	
-	if (cache->c_ops != &rtnl_class_ops)
-		return NULL;
-
-	nl_list_for_each_entry(class, &cache->c_items, ce_list) {
-		if (class->c_handle == handle && class->c_ifindex == ifindex) {
-			nl_object_get((struct nl_object *) class);
-			return class;
-		}
-	}
-	return NULL;
 }
 
 /** @} */

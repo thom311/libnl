@@ -23,6 +23,7 @@ static struct nl_dump_params params = {
 
 static int ifindex;
 static void print_qdisc(struct nl_object *, void *);
+static void print_tc_childs(struct rtnl_tc *, void *);
 
 static void print_usage(void)
 {
@@ -51,7 +52,7 @@ static void print_class(struct nl_object *obj, void *arg)
 	if (leaf)
 		print_qdisc((struct nl_object *) leaf, arg + 2);
 
-	rtnl_class_foreach_child(class, class_cache, &print_class, arg + 2);
+	print_tc_childs(TC_CAST(class), arg + 2);
 
 	if (rtnl_cls_alloc_cache(sock, ifindex, parent, &cls_cache) < 0)
 		return;
@@ -61,9 +62,8 @@ static void print_class(struct nl_object *obj, void *arg)
 	nl_cache_free(cls_cache);
 }
 
-static void print_qdisc_childs(struct rtnl_qdisc *qdisc, void *arg)
+static void print_tc_childs(struct rtnl_tc *tc, void *arg)
 {
-	struct rtnl_tc *tc = TC_CAST(qdisc);
 	struct rtnl_class *filter;
 
 	filter = nl_cli_class_alloc();
@@ -85,7 +85,7 @@ static void print_qdisc(struct nl_object *obj, void *arg)
 	params.dp_prefix = (int)(long) arg;
 	nl_object_dump(obj, &params);
 
-	print_qdisc_childs(qdisc, arg + 2);
+	print_tc_childs(TC_CAST(qdisc), arg + 2);
 
 	if (rtnl_cls_alloc_cache(sock, ifindex, parent, &cls_cache) < 0)
 		return;

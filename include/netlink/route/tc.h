@@ -24,6 +24,12 @@ extern "C" {
 #endif
 
 /**
+ * Compute tc handle based on major and minor parts
+ * @ingroup tc
+ */
+#define TC_HANDLE(maj, min)	(TC_H_MAJ((maj) << 16) | TC_H_MIN(min))
+
+/**
  * Traffic control object
  * @ingroup tc
  */

@@ -1351,7 +1351,7 @@ static const struct trans_tbl link_operstates[] = {
 	__ADD(IF_OPER_UP, up)
 };
 
-char *rtnl_link_operstate2str(int st, char *buf, size_t len)
+char *rtnl_link_operstate2str(uint8_t st, char *buf, size_t len)
 {
 	return __type2str(st, buf, len, link_operstates,
 			  ARRAY_SIZE(link_operstates));
@@ -1375,7 +1375,7 @@ static const struct trans_tbl link_modes[] = {
 	__ADD(IF_LINK_MODE_DORMANT, dormant)
 };
 
-char *rtnl_link_mode2str(int st, char *buf, size_t len)
+char *rtnl_link_mode2str(uint8_t st, char *buf, size_t len)
 {
 	return __type2str(st, buf, len, link_modes, ARRAY_SIZE(link_modes));
 }

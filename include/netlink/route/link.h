@@ -114,10 +114,10 @@ extern int	rtnl_link_str2stat(const char *);
 extern char *	rtnl_link_flags2str(int, char *, size_t);
 extern int	rtnl_link_str2flags(const char *);
 
-extern char *	rtnl_link_operstate2str(int, char *, size_t);
+extern char *	rtnl_link_operstate2str(uint8_t, char *, size_t);
 extern int	rtnl_link_str2operstate(const char *);
 
-extern char *	rtnl_link_mode2str(int, char *, size_t);
+extern char *	rtnl_link_mode2str(uint8_t, char *, size_t);
 extern int	rtnl_link_str2mode(const char *);
 
 /* Access Functions */

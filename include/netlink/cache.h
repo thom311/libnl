@@ -65,6 +65,8 @@ extern int			nl_cache_include(struct nl_cache *,
 						 struct nl_object *,
 						 change_func_t,
 						 void *);
+extern void			nl_cache_set_arg1(struct nl_cache *, int);
+extern void			nl_cache_set_arg2(struct nl_cache *, int);
 
 /* General */
 extern int			nl_cache_is_empty(struct nl_cache *);

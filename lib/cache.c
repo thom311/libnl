@@ -463,6 +463,32 @@ void nl_cache_remove(struct nl_object *obj)
  */
 
 /**
+ * Set synchronization arg1 of cache
+ * @arg cache		Cache
+ * @arg arg		argument
+ *
+ * Synchronization arguments are used to specify filters when
+ * requesting dumps from the kernel.
+ */
+void nl_cache_set_arg1(struct nl_cache *cache, int arg)
+{
+        cache->c_iarg1 = arg;
+}
+
+/**
+ * Set synchronization arg2 of cache
+ * @arg cache		Cache
+ * @arg arg		argument
+ *
+ * Synchronization arguments are used to specify filters when
+ * requesting dumps from the kernel.
+ */
+void nl_cache_set_arg2(struct nl_cache *cache, int arg)
+{
+        cache->c_iarg2 = arg;
+}
+
+/**
  * Invoke the request-update operation
  * @arg sk		Netlink socket.
  * @arg cache		Cache

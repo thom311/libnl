@@ -1000,6 +1000,9 @@ void dump_from_ops(struct nl_object *obj, struct nl_dump_params *params)
 		params->dp_pre_dump = 1;
 	}
 
+	if (params->dp_buf)
+                memset(params->dp_buf, 0, params->dp_buflen);
+
 	if (obj->ce_ops->oo_dump[type])
 		obj->ce_ops->oo_dump[type](obj, params);
 }

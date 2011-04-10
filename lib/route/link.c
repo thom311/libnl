@@ -1163,6 +1163,87 @@ int rtnl_link_change(struct nl_sock *sk, struct rtnl_link *old,
 	return wait_for_ack(sk);
 }
 
+/**
+ * Build a netlink message requesting the deletion of a link
+ * @arg link		Link to delete
+ * @arg result		Pointer to store resulting netlink message
+ *
+ * The behaviour of this function is identical to rtnl_link_delete() with
+ * the exception that it will not send the message but return it in the
+ * provided return pointer instead.
+ *
+ * @see rtnl_link_delete()
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_link_build_delete_request(const struct rtnl_link *link,
+				   struct nl_msg **result)
+{
+	struct nl_msg *msg;
+	struct ifinfomsg ifi = {
+		.ifi_index = link->l_index,
+	};
+
+	if (!(link->ce_mask & (LINK_ATTR_IFINDEX | LINK_ATTR_IFNAME))) {
+		APPBUG("ifindex or name must be specified");
+		return -NLE_MISSING_ATTR;
+	}
+
+	if (!(msg = nlmsg_alloc_simple(RTM_DELLINK, 0)))
+		return -NLE_NOMEM;
+
+	if (nlmsg_append(msg, &ifi, sizeof(ifi), NLMSG_ALIGNTO) < 0)
+		goto nla_put_failure;
+
+	if (link->ce_mask & LINK_ATTR_IFNAME)
+		NLA_PUT_STRING(msg, IFLA_IFNAME, link->l_name);
+
+	*result = msg;
+	return 0;
+
+nla_put_failure:
+	nlmsg_free(msg);
+	return -NLE_MSGSIZE;
+}
+
+/**
+ * Delete link
+ * @arg sk		Netlink socket
+ * @arg link		Link to delete
+ *
+ * Builds a \c RTM_DELLINK netlink message requesting the deletion of
+ * a network link which has been previously added to the kernel and
+ * sends the message to the kernel.
+ *
+ * If no matching link exists, the function will return
+ * -NLE_OBJ_NOTFOUND.
+ *
+ * After sending, the function will wait for the ACK or an eventual
+ * error message to be received and will therefore block until the
+ * operation has been completed.
+ *
+ * @note Disabling auto-ack (nl_socket_disable_auto_ack()) will cause
+ *       this function to return immediately after sending. In this case,
+ *       it is the responsibility of the caller to handle any error
+ *       messages returned.
+ *
+ * @note Only virtual links such as dummy interface or vlan interfaces
+ *       can be deleted. It is not possible to delete physical interfaces
+ *       such as ethernet interfaces or the loopback device.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_link_delete(struct nl_sock *sk, const struct rtnl_link *link)
+{
+	struct nl_msg *msg;
+	int err;
+	
+	if ((err = rtnl_link_build_delete_request(link, &msg)) < 0)
+		return err;
+
+	return nl_send_sync(sk, msg);
+}
+
 /** @} */
 
 /**

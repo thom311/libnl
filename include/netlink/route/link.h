@@ -102,6 +102,10 @@ extern int	rtnl_link_build_change_request(struct rtnl_link *,
 extern int	rtnl_link_change(struct nl_sock *, struct rtnl_link *,
 				 struct rtnl_link *, int);
 
+extern int	rtnl_link_build_delete_request(const struct rtnl_link *,
+					       struct nl_msg **);
+extern int	rtnl_link_delete(struct nl_sock *, const struct rtnl_link *);
+
 /* Name <-> Index Translations */
 extern char * 	rtnl_link_i2name(struct nl_cache *, int, char *, size_t);
 extern int	rtnl_link_name2i(struct nl_cache *, const char *);

@@ -36,6 +36,7 @@ extern void			nl_object_put(struct nl_object *);
 extern int			nl_object_shared(struct nl_object *);
 extern void			nl_object_dump(struct nl_object *,
 					       struct nl_dump_params *);
+extern void			nl_object_dump_buf(struct nl_object *, char *, size_t);
 extern int			nl_object_identical(struct nl_object *,
 						    struct nl_object *);
 extern uint32_t			nl_object_diff(struct nl_object *,

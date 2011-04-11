@@ -655,6 +655,7 @@ static int link_request_update(struct nl_cache *cache, struct nl_sock *sk)
 static void link_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 {
 	char buf[128];
+	struct nl_cache *cache = dp_cache(obj);
 	struct rtnl_link *link = (struct rtnl_link *) obj;
 
 	nl_dump_line(p, "%s %s ", link->l_name,

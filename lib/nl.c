@@ -799,6 +799,76 @@ int nl_wait_for_ack(struct nl_sock *sk)
 	return err;
 }
 
+/** @cond SKIP */
+struct pickup_param
+{
+	int (*parser)(struct nl_cache_ops *, struct sockaddr_nl *,
+		      struct nlmsghdr *, struct nl_parser_param *);
+	struct nl_object *result;
+};
+
+static int __store_answer(struct nl_object *obj, struct nl_parser_param *p)
+{
+	struct pickup_param *pp = p->pp_arg;
+	/*
+	 * the parser will put() the object at the end, expecting the cache
+	 * to take the reference.
+	 */
+	nl_object_get(obj);
+	pp->result =  obj;
+
+	return 0;
+}
+
+static int __pickup_answer(struct nl_msg *msg, void *arg)
+{
+	struct pickup_param *pp = arg;
+	struct nl_parser_param parse_arg = {
+		.pp_cb = __store_answer,
+		.pp_arg = pp,
+	};
+
+	return pp->parser(NULL, &msg->nm_src, msg->nm_nlh, &parse_arg);
+}
+
+/** @endcond */
+
+/**
+ * Pickup netlink answer, parse is and return object
+ * @arg sk		Netlink socket
+ * @arg parser		Parser function to parse answer
+ * @arg result		Result pointer to return parsed object
+ *
+ * @return 0 on success or a negative error code.
+ */
+int nl_pickup(struct nl_sock *sk,
+	      int (*parser)(struct nl_cache_ops *, struct sockaddr_nl *,
+			    struct nlmsghdr *, struct nl_parser_param *),
+	      struct nl_object **result)
+{
+	struct nl_cb *cb;
+	int err;
+	struct pickup_param pp = {
+		.parser = parser,
+	};
+
+	cb = nl_cb_clone(sk->s_cb);
+	if (cb == NULL)
+		return -NLE_NOMEM;
+
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, __pickup_answer, &pp);
+
+	err = nl_recvmsgs(sk, cb);
+	if (err < 0)
+		goto errout;
+
+	*result = pp.result;
+errout:
+	nl_cb_put(cb);
+
+	return err;
+}
+
 /** @} */
 
 /** @} */

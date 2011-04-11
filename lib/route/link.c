@@ -655,7 +655,6 @@ static int link_request_update(struct nl_cache *cache, struct nl_sock *sk)
 static void link_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 {
 	char buf[128];
-	struct nl_cache *cache = dp_cache(obj);
 	struct rtnl_link *link = (struct rtnl_link *) obj;
 
 	nl_dump_line(p, "%s %s ", link->l_name,
@@ -1242,6 +1241,98 @@ int rtnl_link_delete(struct nl_sock *sk, const struct rtnl_link *link)
 		return err;
 
 	return nl_send_sync(sk, msg);
+}
+
+
+/**
+ * Build a netlink message requesting a link
+ * @arg ifindex		Interface index
+ * @arg name		Name of link
+ * @arg result		Pointer to store resulting netlink message
+ *
+ * The behaviour of this function is identical to rtnl_link_get_kernel()
+ * with the exception that it will not send the message but return it in
+ * the provided return pointer instead.
+ *
+ * @see rtnl_link_get_kernel()
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_link_build_get_request(int ifindex, const char *name,
+				struct nl_msg **result)
+{
+	struct ifinfomsg ifi;
+	struct nl_msg *msg;
+
+	if (ifindex <= 0 && !name) {
+		APPBUG("ifindex or name must be specified");
+		return -NLE_MISSING_ATTR;
+	}
+
+	memset(&ifi, 0, sizeof(ifi));
+
+	if (!(msg = nlmsg_alloc_simple(RTM_GETLINK, 0)))
+		return -NLE_NOMEM;
+
+	if (ifindex > 0)
+		ifi.ifi_index = ifindex;
+
+	if (nlmsg_append(msg, &ifi, sizeof(ifi), NLMSG_ALIGNTO) < 0)
+		goto nla_put_failure;
+
+	if (name)
+		NLA_PUT_STRING(msg, IFLA_IFNAME, name);
+
+	*result = msg;
+	return 0;
+
+nla_put_failure:
+	nlmsg_free(msg);
+	return -NLE_MSGSIZE;
+}
+
+/**
+ * Get a link object directly from the kernel
+ * @arg sk		Netlink socket
+ * @arg ifindex		Interface index
+ * @arg name		name of link
+ * @arg result		result pointer to return link object
+ *
+ * This function builds a \c RTM_GETLINK netlink message to request
+ * a specific link directly from the kernel. The returned answer is
+ * parsed into a struct rtnl_link object and returned via the result
+ * pointer or -NLE_OBJ_NOTFOUND is returned if no matching link was
+ * found.
+ *
+ * @note Disabling auto-ack (nl_socket_disable_auto_ack()) will cause
+ *       this function to return immediately after sending. In this case,
+ *       it is the responsibility of the caller to handle any error
+ *       messages returned.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_link_get_kernel(struct nl_sock *sk, int ifindex, const char *name,
+			 struct rtnl_link **result)
+{
+	struct nl_msg *msg = NULL;
+	struct nl_object *obj;
+	int err;
+
+	if ((err = rtnl_link_build_get_request(ifindex, name, &msg)) < 0)
+		return err;
+
+	err = nl_send_auto(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
+		return err;
+
+	if ((err = nl_pickup(sk, link_msg_parser, &obj)) < 0)
+		return err;
+
+	/* We have used link_msg_parser(), object is definitely a link */
+	*result = (struct rtnl_link *) obj;
+
+	return 0;
 }
 
 /** @} */

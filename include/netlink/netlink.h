@@ -31,6 +31,8 @@
 #include <netlink/types.h>
 #include <netlink/handlers.h>
 #include <netlink/socket.h>
+#include <netlink/object.h>
+#include <netlink/cache-api.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,6 +76,12 @@ extern int			nl_recvmsgs_default(struct nl_sock *);
 
 extern int			nl_wait_for_ack(struct nl_sock *);
 
+extern int			nl_pickup(struct nl_sock *,
+					  int (*parser)(struct nl_cache_ops *,
+						struct sockaddr_nl *,
+						struct nlmsghdr *,
+						struct nl_parser_param *),
+					  struct nl_object **);
 /* Netlink Family Translations */
 extern char *			nl_nlfamily2str(int, char *, size_t);
 extern int			nl_str2nlfamily(const char *);

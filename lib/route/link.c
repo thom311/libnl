@@ -1031,85 +1031,56 @@ struct rtnl_link *rtnl_link_get_by_name(struct nl_cache *cache,
  * @{
  */
 
-/**
- * Builds a netlink change request message to change link attributes
- * @arg old		link to be changed
- * @arg tmpl		template with requested changes
- * @arg flags		additional netlink message flags
- * @arg result		Result pointer
- *
- * Builds a new netlink message requesting a change of link attributes.
- * The netlink message header isn't fully equipped with all relevant
- * fields and must be sent out via nl_send_auto_complete() or
- * supplemented as needed.
- * \a old must point to a link currently configured in the kernel
- * and \a tmpl must contain the attributes to be changed set via
- * \c rtnl_link_set_* functions.
- *
- * @return 0 on success or a negative error code.
- * @note Not all attributes can be changed, see
- *       \ref link_changeable "Changeable Attributes" for more details.
- */
-int rtnl_link_build_change_request(struct rtnl_link *old,
-				   struct rtnl_link *tmpl, int flags,
-				   struct nl_msg **result)
+static int build_link_msg(int cmd, struct ifinfomsg *hdr,
+			  struct rtnl_link *link, int flags, struct nl_msg **result)
 {
 	struct nl_msg *msg;
 	struct nlattr *af_spec;
-	struct ifinfomsg ifi = {
-		.ifi_family = old->l_family,
-		.ifi_index = old->l_index,
-	};
 
-	if (tmpl->ce_mask & LINK_ATTR_FLAGS) {
-		ifi.ifi_flags = old->l_flags & ~tmpl->l_flag_mask;
-		ifi.ifi_flags |= tmpl->l_flags;
-	}
-
-	msg = nlmsg_alloc_simple(RTM_SETLINK, flags);
+	msg = nlmsg_alloc_simple(cmd, flags);
 	if (!msg)
 		return -NLE_NOMEM;
 
-	if (nlmsg_append(msg, &ifi, sizeof(ifi), NLMSG_ALIGNTO) < 0)
+	if (nlmsg_append(msg, hdr, sizeof(*hdr), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
 
-	if (tmpl->ce_mask & LINK_ATTR_ADDR)
-		NLA_PUT_ADDR(msg, IFLA_ADDRESS, tmpl->l_addr);
+	if (link->ce_mask & LINK_ATTR_ADDR)
+		NLA_PUT_ADDR(msg, IFLA_ADDRESS, link->l_addr);
 
-	if (tmpl->ce_mask & LINK_ATTR_BRD)
-		NLA_PUT_ADDR(msg, IFLA_BROADCAST, tmpl->l_bcast);
+	if (link->ce_mask & LINK_ATTR_BRD)
+		NLA_PUT_ADDR(msg, IFLA_BROADCAST, link->l_bcast);
 
-	if (tmpl->ce_mask & LINK_ATTR_MTU)
-		NLA_PUT_U32(msg, IFLA_MTU, tmpl->l_mtu);
+	if (link->ce_mask & LINK_ATTR_MTU)
+		NLA_PUT_U32(msg, IFLA_MTU, link->l_mtu);
 
-	if (tmpl->ce_mask & LINK_ATTR_TXQLEN)
-		NLA_PUT_U32(msg, IFLA_TXQLEN, tmpl->l_txqlen);
+	if (link->ce_mask & LINK_ATTR_TXQLEN)
+		NLA_PUT_U32(msg, IFLA_TXQLEN, link->l_txqlen);
 
-	if (tmpl->ce_mask & LINK_ATTR_WEIGHT)
-		NLA_PUT_U32(msg, IFLA_WEIGHT, tmpl->l_weight);
+	if (link->ce_mask & LINK_ATTR_WEIGHT)
+		NLA_PUT_U32(msg, IFLA_WEIGHT, link->l_weight);
 
-	if (tmpl->ce_mask & LINK_ATTR_IFNAME)
-		NLA_PUT_STRING(msg, IFLA_IFNAME, tmpl->l_name);
+	if (link->ce_mask & LINK_ATTR_IFNAME)
+		NLA_PUT_STRING(msg, IFLA_IFNAME, link->l_name);
 
-	if (tmpl->ce_mask & LINK_ATTR_OPERSTATE)
-		NLA_PUT_U8(msg, IFLA_OPERSTATE, tmpl->l_operstate);
+	if (link->ce_mask & LINK_ATTR_OPERSTATE)
+		NLA_PUT_U8(msg, IFLA_OPERSTATE, link->l_operstate);
 
-	if (tmpl->ce_mask & LINK_ATTR_LINKMODE)
-		NLA_PUT_U8(msg, IFLA_LINKMODE, tmpl->l_linkmode);
+	if (link->ce_mask & LINK_ATTR_LINKMODE)
+		NLA_PUT_U8(msg, IFLA_LINKMODE, link->l_linkmode);
 
-	if (tmpl->ce_mask & LINK_ATTR_IFALIAS)
-		NLA_PUT_STRING(msg, IFLA_IFALIAS, tmpl->l_ifalias);
+	if (link->ce_mask & LINK_ATTR_IFALIAS)
+		NLA_PUT_STRING(msg, IFLA_IFALIAS, link->l_ifalias);
 
-	if ((tmpl->ce_mask & LINK_ATTR_LINKINFO) && tmpl->l_info_ops &&
-	    tmpl->l_info_ops->io_put_attrs) {
+	if ((link->ce_mask & LINK_ATTR_LINKINFO) && link->l_info_ops &&
+	    link->l_info_ops->io_put_attrs) {
 		struct nlattr *info;
 
 		if (!(info = nla_nest_start(msg, IFLA_LINKINFO)))
 			goto nla_put_failure;
 
-		NLA_PUT_STRING(msg, IFLA_INFO_KIND, tmpl->l_info_ops->io_name);
+		NLA_PUT_STRING(msg, IFLA_INFO_KIND, link->l_info_ops->io_name);
 
-		if (tmpl->l_info_ops->io_put_attrs(msg, tmpl) < 0)
+		if (link->l_info_ops->io_put_attrs(msg, link) < 0)
 			goto nla_put_failure;
 
 		nla_nest_end(msg, info);
@@ -1118,7 +1089,7 @@ int rtnl_link_build_change_request(struct rtnl_link *old,
 	if (!(af_spec = nla_nest_start(msg, IFLA_AF_SPEC)))
 		goto nla_put_failure;
 
-	if (do_foreach_af(tmpl, af_fill, msg) < 0)
+	if (do_foreach_af(link, af_fill, msg) < 0)
 		goto nla_put_failure;
 
 	nla_nest_end(msg, af_spec);
@@ -1132,35 +1103,119 @@ nla_put_failure:
 }
 
 /**
- * Change link attributes
- * @arg sk		Netlink socket.
- * @arg old		link to be changed
- * @arg tmpl		template with requested changes
+ * Build a netlink message requesting the modification of a link
+ * @arg orig		original link to change
+ * @arg changes		link containing the changes to be made
+ * @arg flags		additional netlink message flags
+ * @arg result		pointer to store resulting netlink message
+ *
+ * The behaviour of this function is identical to rtnl_link_change() with
+ * the exception that it will not send the message but return it in the
+ * provided return pointer instead.
+ *
+ * @see rtnl_link_change()
+ *
+ * @note The resulting message will have message type set to RTM_NEWLINK
+ *       which may not work with older kernels. You may have to modify it
+ *       to RTM_SETLINK (does not allow changing link info attributes) to
+ *       have the change request work with older kernels.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_link_build_change_request(struct rtnl_link *orig,
+				   struct rtnl_link *changes, int flags,
+				   struct nl_msg **result)
+{
+	struct ifinfomsg ifi = {
+		.ifi_family = orig->l_family,
+		.ifi_index = orig->l_index,
+	};
+	int err;
+
+	if (changes->ce_mask & LINK_ATTR_FLAGS) {
+		ifi.ifi_flags = orig->l_flags & ~changes->l_flag_mask;
+		ifi.ifi_flags |= changes->l_flags;
+	}
+
+	if (changes->l_family && changes->l_family != orig->l_family) {
+		APPBUG("link change: family is immutable");
+		return -NLE_IMMUTABLE;
+	}
+
+	/* Avoid unnecessary name change requests */
+	if (orig->ce_mask & LINK_ATTR_IFINDEX &&
+	    orig->ce_mask & LINK_ATTR_IFNAME &&
+	    changes->ce_mask & LINK_ATTR_IFNAME &&
+	    !strcmp(orig->l_name, changes->l_name))
+		changes->ce_mask &= ~LINK_ATTR_IFNAME;
+
+	if ((err = build_link_msg(RTM_NEWLINK, &ifi, changes, flags, result)) < 0)
+		goto errout;
+
+	return 0;
+
+errout:
+	return err;
+}
+
+/**
+ * Change link
+ * @arg sk		netlink socket.
+ * @arg orig		original link to be changed
+ * @arg changes		link containing the changes to be made
  * @arg flags		additional netlink message flags
  *
- * Builds a new netlink message by calling rtnl_link_build_change_request(),
- * sends the request to the kernel and waits for the next ACK to be
- * received, i.e. blocks until the request has been processed.
+ * Builds a \c RTM_NEWLINK netlink message requesting the change of
+ * a network link. If -EOPNOTSUPP is returned by the kernel, the
+ * message type will be changed to \c RTM_SETLINK and the message is
+ * resent to work around older kernel versions.
  *
- * @return 0 on success or a negative error code
- * @note Not all attributes can be changed, see
- *       \ref link_changeable "Changeable Attributes" for more details.
+ * The link to be changed is looked up based on the interface index
+ * supplied in the \p orig link. Optionaly the link name is used but
+ * only if no interface index is provided, otherwise providing an
+ * link name will result in the link name being changed.
+ *
+ * If no matching link exists, the function will return
+ * -NLE_OBJ_NOTFOUND.
+ *
+ * After sending, the function will wait for the ACK or an eventual
+ * error message to be received and will therefore block until the
+ * operation has been completed.
+ *
+ * @note Disabling auto-ack (nl_socket_disable_auto_ack()) will cause
+ *       this function to return immediately after sending. In this case,
+ *       it is the responsibility of the caller to handle any error
+ *       messages returned.
+ *
+ * @note The link name can only be changed if the link has been put
+ *       in opertional down state. (~IF_UP)
+ *
+ * @return 0 on success or a negative error code.
  */
-int rtnl_link_change(struct nl_sock *sk, struct rtnl_link *old,
-		     struct rtnl_link *tmpl, int flags)
+int rtnl_link_change(struct nl_sock *sk, struct rtnl_link *orig,
+		     struct rtnl_link *changes, int flags)
 {
 	struct nl_msg *msg;
 	int err;
 	
-	if ((err = rtnl_link_build_change_request(old, tmpl, flags, &msg)) < 0)
-		return err;
-	
-	err = nl_send_auto_complete(sk, msg);
-	nlmsg_free(msg);
+	err = rtnl_link_build_change_request(orig, changes, flags, &msg);
 	if (err < 0)
 		return err;
 
-	return wait_for_ack(sk);
+retry:
+	err = nl_send_auto_complete(sk, msg);
+	if (err < 0)
+		goto errout;
+
+	err = wait_for_ack(sk);
+	if (err == -NLE_OPNOTSUPP && msg->nm_nlh->nlmsg_type == RTM_NEWLINK) {
+		msg->nm_nlh->nlmsg_type = RTM_SETLINK;
+		goto retry;
+	}
+
+errout:
+	nlmsg_free(msg);
+	return err;
 }
 
 /**

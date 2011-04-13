@@ -45,6 +45,7 @@ static const char *errmsg[NLE_MAX+1] = {
 [NLE_PKTLOC_FILE]	= "Unable to open packet location file",
 [NLE_PARSE_ERR]		= "Unable to parse object",
 [NLE_NODEV]		= "No such device",
+[NLE_IMMUTABLE]		= "Immutable attribute",
 };
 
 /**

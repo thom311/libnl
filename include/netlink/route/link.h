@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_LINK_H_
@@ -96,6 +96,9 @@ extern struct rtnl_link *rtnl_link_get(struct nl_cache *, int);
 extern struct rtnl_link *rtnl_link_get_by_name(struct nl_cache *, const char *);
 
 
+extern int	rtnl_link_build_add_request(struct rtnl_link *, int,
+					    struct nl_msg **);
+extern int	rtnl_link_add(struct nl_sock *, struct rtnl_link *, int);
 extern int	rtnl_link_build_change_request(struct rtnl_link *,
 					       struct rtnl_link *, int,
 					       struct nl_msg **);

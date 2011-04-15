@@ -303,7 +303,8 @@ static void release_link_info(struct rtnl_link *link)
 	struct rtnl_link_info_ops *io = link->l_info_ops;
 
 	if (io != NULL) {
-		io->io_free(link);
+		if (io->io_free)
+			io->io_free(link);
 		rtnl_link_info_ops_put(io);
 		link->l_info_ops = NULL;
 	}
@@ -599,7 +600,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 			kind = nla_get_string(li[IFLA_INFO_KIND]);
 			ops = rtnl_link_info_ops_lookup(kind);
-			if (ops != NULL) {
+			if (ops && ops->io_parse) {
 				link->l_info_ops = ops;
 				err = ops->io_parse(link, li[IFLA_INFO_DATA],
 						    li[IFLA_INFO_XSTATS]);
@@ -1071,8 +1072,7 @@ static int build_link_msg(int cmd, struct ifinfomsg *hdr,
 	if (link->ce_mask & LINK_ATTR_IFALIAS)
 		NLA_PUT_STRING(msg, IFLA_IFALIAS, link->l_ifalias);
 
-	if ((link->ce_mask & LINK_ATTR_LINKINFO) && link->l_info_ops &&
-	    link->l_info_ops->io_put_attrs) {
+	if ((link->ce_mask & LINK_ATTR_LINKINFO) && link->l_info_ops) {
 		struct nlattr *info;
 
 		if (!(info = nla_nest_start(msg, IFLA_LINKINFO)))
@@ -1080,7 +1080,8 @@ static int build_link_msg(int cmd, struct ifinfomsg *hdr,
 
 		NLA_PUT_STRING(msg, IFLA_INFO_KIND, link->l_info_ops->io_name);
 
-		if (link->l_info_ops->io_put_attrs(msg, link) < 0)
+		if (link->l_info_ops->io_put_attrs &&
+		    link->l_info_ops->io_put_attrs(msg, link) < 0)
 			goto nla_put_failure;
 
 		nla_nest_end(msg, info);
@@ -1100,6 +1101,71 @@ static int build_link_msg(int cmd, struct ifinfomsg *hdr,
 nla_put_failure:
 	nlmsg_free(msg);
 	return -NLE_MSGSIZE;
+}
+
+/**
+ * Build a netlink message requesting the addition of a new virtual link
+ * @arg link		new link to add
+ * @arg flags		additional netlink message flags
+ * @arg result		pointer to store resulting netlink message
+ *
+ * The behaviour of this function is identical to rtnl_link_add() with
+ * the exception that it will not send the message but return it in the
+ * provided return pointer instead.
+ *
+ * @see rtnl_link_add()
+ *
+ * @note This operation is not supported on all kernel versions.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_link_build_add_request(struct rtnl_link *link, int flags,
+				struct nl_msg **result)
+{
+	struct ifinfomsg ifi = {
+		.ifi_family = link->l_family,
+		.ifi_index = link->l_index,
+		.ifi_flags = link->l_flags,
+	};
+
+	return build_link_msg(RTM_NEWLINK, &ifi, link, flags, result);
+}
+
+/**
+ * Add virtual link
+ * @arg sk		netlink socket.
+ * @arg link		new link to add
+ * @arg flags		additional netlink message flags
+ *
+ * Builds a \c RTM_NEWLINK netlink message requesting the addition of
+ * a new virtual link.
+ *
+ * After sending, the function will wait for the ACK or an eventual
+ * error message to be received and will therefore block until the
+ * operation has been completed.
+ *
+ * @note Disabling auto-ack (nl_socket_disable_auto_ack()) will cause
+ *       this function to return immediately after sending. In this case,
+ *       it is the responsibility of the caller to handle any error
+ *       messages returned.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_link_add(struct nl_sock *sk, struct rtnl_link *link, int flags)
+{
+	struct nl_msg *msg;
+	int err;
+	
+	err = rtnl_link_build_add_request(link, flags, &msg);
+	if (err < 0)
+		return err;
+
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
+		return err;
+
+	return wait_for_ack(sk);
 }
 
 /**
@@ -1928,9 +1994,10 @@ int rtnl_link_set_info_type(struct rtnl_link *link, const char *type)
 	if (link->l_info_ops)
 		release_link_info(link);
 
-	if ((err = io->io_alloc(link)) < 0)
+	if (io->io_alloc && (err = io->io_alloc(link)) < 0)
 		return err;
 
+	link->ce_mask |= LINK_ATTR_LINKINFO;
 	link->l_info_ops = io;
 
 	return 0;

@@ -56,7 +56,7 @@ libnl_route_la_SOURCES = \
 	route/cls/ematch/nbyte.c route/cls/ematch/text.c \
 	route/cls/ematch/meta.c \
 	\
-	route/link/api.c route/link/vlan.c \
+	route/link/api.c route/link/vlan.c route/link/dummy.c \
 	route/link/bridge.c route/link/inet6.c route/link/inet.c \
 	\
 	route/qdisc/blackhole.c route/qdisc/cbq.c route/qdisc/dsmark.c \

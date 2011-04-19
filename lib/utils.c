@@ -608,6 +608,9 @@ static const struct trans_tbl llprotos[] = {
 #ifdef ARPHRD_VOID
 	__ADD(ARPHRD_VOID,void)
 #endif
+#ifdef ARPHRD_NONE
+	__ADD(ARPHRD_NONE,nohdr)
+#endif
 };
 
 char * nl_llproto2str(int llproto, char *buf, size_t len)

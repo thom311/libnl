@@ -593,15 +593,16 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		if (err < 0)
 			goto errout;
 
-		if (li[IFLA_INFO_KIND] &&
-		    (li[IFLA_INFO_DATA] || li[IFLA_INFO_XSTATS])) {
+		if (li[IFLA_INFO_KIND]) {
 			struct rtnl_link_info_ops *ops;
 			char *kind;
 
 			kind = nla_get_string(li[IFLA_INFO_KIND]);
 			ops = rtnl_link_info_ops_lookup(kind);
-			if (ops && ops->io_parse) {
-				link->l_info_ops = ops;
+			link->l_info_ops = ops;
+			
+			if (ops && ops->io_parse &&
+			    (li[IFLA_INFO_DATA] || li[IFLA_INFO_XSTATS])) {
 				err = ops->io_parse(link, li[IFLA_INFO_DATA],
 						    li[IFLA_INFO_XSTATS]);
 				if (err < 0)

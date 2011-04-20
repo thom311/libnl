@@ -60,6 +60,7 @@ static struct nla_policy tc_stats2_policy[TCA_STATS_MAX+1] = {
 
 int rtnl_tc_msg_parse(struct nlmsghdr *n, struct rtnl_tc *tc)
 {
+	struct nl_cache *link_cache;
 	struct rtnl_tc_ops *ops;
 	struct nlattr *tb[TCA_MAX + 1];
 	char kind[TCKINDSIZ];
@@ -173,6 +174,13 @@ compat_xstats:
 		err = ops->to_msg_parser(tc, data);
 		if (err < 0)
 			return err;
+	}
+
+	if ((link_cache = nl_cache_mngt_require("route/link"))) {
+		struct rtnl_link *link;
+
+		if ((link = rtnl_link_get(link_cache, tc->tc_ifindex)))
+			rtnl_tc_set_link(tc, link);
 	}
 
 	return 0;

@@ -51,6 +51,7 @@ nobase_include_HEADERS = \
 	netlink/route/cls/u32.h \
 	netlink/route/link/api.h \
 	netlink/route/link/info-api.h \
+	netlink/route/link/inet.h \
 	netlink/route/link/vlan.h \
 	netlink/route/qdisc/cbq.h \
 	netlink/route/qdisc/dsmark.h \

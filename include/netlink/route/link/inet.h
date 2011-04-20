@@ -19,7 +19,7 @@ extern "C" {
 #endif
 
 extern const char *	rtnl_link_inet_devconf2str(int, char *, size_t);
-extern unsigned int	rtnl_link_inet_str2devconf(const char *);
+extern int		rtnl_link_inet_str2devconf(const char *);
 
 extern int		rtnl_link_inet_get_conf(struct rtnl_link *,
 						const unsigned int, uint32_t *);

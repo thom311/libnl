@@ -166,7 +166,7 @@ const char *rtnl_link_inet_devconf2str(int type, char *buf, size_t len)
 			  ARRAY_SIZE(inet_devconf));
 }
 
-unsigned int rtnl_link_inet_str2devconf(const char *name)
+int rtnl_link_inet_str2devconf(const char *name)
 {
 	return __str2type(name, inet_devconf, ARRAY_SIZE(inet_devconf));
 }

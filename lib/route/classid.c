@@ -106,7 +106,7 @@ static char *name_lookup(const uint32_t classid)
  * @return The destination buffer or the type encoded in hexidecimal
  *         form if no match was found.
  */
-char * rtnl_tc_handle2str(uint32_t handle, char *buf, size_t len)
+char *rtnl_tc_handle2str(uint32_t handle, char *buf, size_t len)
 {
 	if (TC_H_ROOT == handle)
 		snprintf(buf, len, "root");
@@ -120,11 +120,11 @@ char * rtnl_tc_handle2str(uint32_t handle, char *buf, size_t len)
 		if ((name = name_lookup(handle)))
 			snprintf(buf, len, "%s", name);
 		else if (0 == TC_H_MAJ(handle))
-			snprintf(buf, len, ":%02x", TC_H_MIN(handle));
+			snprintf(buf, len, ":%x", TC_H_MIN(handle));
 		else if (0 == TC_H_MIN(handle))
-			snprintf(buf, len, "%02x:", TC_H_MAJ(handle) >> 16);
+			snprintf(buf, len, "%x:", TC_H_MAJ(handle) >> 16);
 		else
-			snprintf(buf, len, "%02x:%02x",
+			snprintf(buf, len, "%x:%x",
 				TC_H_MAJ(handle) >> 16, TC_H_MIN(handle));
 	}
 

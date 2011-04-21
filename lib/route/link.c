@@ -216,7 +216,7 @@ static int af_clone(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
 	struct rtnl_link *dst = arg;
 
 	if (ops->ao_clone &&
-	    !(dst->l_af_data[ops->ao_family] = ops->ao_clone(link, data)))
+	    !(dst->l_af_data[ops->ao_family] = ops->ao_clone(dst, data)))
 		return -NLE_NOMEM;
 
 	return 0;

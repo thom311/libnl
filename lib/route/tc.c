@@ -179,8 +179,12 @@ compat_xstats:
 	if ((link_cache = nl_cache_mngt_require("route/link"))) {
 		struct rtnl_link *link;
 
-		if ((link = rtnl_link_get(link_cache, tc->tc_ifindex)))
+		if ((link = rtnl_link_get(link_cache, tc->tc_ifindex))) {
 			rtnl_tc_set_link(tc, link);
+
+			/* rtnl_tc_set_link incs refcnt */
+			rtnl_link_put(link);
+		}
 	}
 
 	return 0;
@@ -298,6 +302,33 @@ void rtnl_tc_set_link(struct rtnl_tc *tc, struct rtnl_link *link)
 	tc->tc_link = link;
 	tc->tc_ifindex = link->l_index;
 	tc->ce_mask |= TCA_ATTR_LINK | TCA_ATTR_IFINDEX;
+}
+
+/**
+ * Get link of traffic control object
+ * @arg tc		traffic control object
+ * @arg link		link object
+ *
+ * Returns the link of a traffic control object. The link is only
+ * returned if it has been set before via rtnl_tc_set_link() or
+ * if a link cache was available while parsing the tc object. This
+ * function may still return NULL even if an ifindex is assigned to
+ * the tc object. It will _not_ look up the link by itself.
+ *
+ * @note The returned link will have its reference counter incremented.
+ *       It is in the responsibility of the caller to return the
+ *       reference.
+ *
+ * @return link object or NULL if not set.
+ */
+struct rtnl_link *rtnl_tc_get_link(struct rtnl_tc *tc)
+{
+	if (tc->tc_link) {
+		nl_object_get(OBJ_CAST(tc->tc_link));
+		return tc->tc_link;
+	}
+
+	return NULL;
 }
 
 /**
@@ -720,10 +751,8 @@ int rtnl_tc_clone(struct nl_object *dstobj, struct nl_object *srcobj)
 	struct rtnl_tc_ops *ops;
 
 	if (src->tc_link) {
-		dst->tc_link = (struct rtnl_link *)
-					nl_object_clone(OBJ_CAST(src->tc_link));
-		if (!dst->tc_link)
-			return -NLE_NOMEM;
+		nl_object_get(OBJ_CAST(src->tc_link));
+		dst->tc_link = src->tc_link;
 	}
 
 	if (src->tc_opts) {

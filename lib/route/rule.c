@@ -374,18 +374,20 @@ static int build_rule_msg(struct rtnl_rule *tmpl, int cmd, int flags,
 	if (!msg)
 		return -NLE_NOMEM;
 
+	if (tmpl->ce_mask & RULE_ATTR_SRC) 
+		frh.src_len = nl_addr_get_prefixlen(tmpl->r_src);
+
+	if (tmpl->ce_mask & RULE_ATTR_DST)
+		frh.dst_len = nl_addr_get_prefixlen(tmpl->r_dst);
+
 	if (nlmsg_append(msg, &frh, sizeof(frh), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
 
-	if (tmpl->ce_mask & RULE_ATTR_SRC) {
-		frh.src_len = nl_addr_get_prefixlen(tmpl->r_src);
+	if (tmpl->ce_mask & RULE_ATTR_SRC)
 		NLA_PUT_ADDR(msg, FRA_SRC, tmpl->r_src);
-	}
 
-	if (tmpl->ce_mask & RULE_ATTR_DST) {
-		frh.dst_len = nl_addr_get_prefixlen(tmpl->r_dst);
+	if (tmpl->ce_mask & RULE_ATTR_DST) 
 		NLA_PUT_ADDR(msg, FRA_DST, tmpl->r_dst);
-	}
 
 	if (tmpl->ce_mask & RULE_ATTR_IIFNAME)
 		NLA_PUT_STRING(msg, FRA_IIFNAME, tmpl->r_iifname);

@@ -234,6 +234,7 @@ struct rtnl_addr
 	
 	char a_label[IFNAMSIZ];
 	uint32_t a_flag_mask;
+	struct rtnl_link *a_link;
 };
 
 struct rtnl_nexthop

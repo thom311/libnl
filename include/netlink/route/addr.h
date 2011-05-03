@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2003-2006 Baruch Even <baruch@ev-en.org>,
  *                         Mediatrix Telecom, inc. <ericb@mediatrix.com>
  */
@@ -29,6 +29,8 @@ extern struct rtnl_addr *rtnl_addr_alloc(void);
 extern void	rtnl_addr_put(struct rtnl_addr *);
 
 extern int	rtnl_addr_alloc_cache(struct nl_sock *, struct nl_cache **);
+extern struct rtnl_addr *
+		rtnl_addr_get(struct nl_cache *, int, struct nl_addr *);
 
 extern int	rtnl_addr_build_add_request(struct rtnl_addr *, int,
 					    struct nl_msg **);
@@ -47,6 +49,10 @@ extern char *	rtnl_addr_get_label(struct rtnl_addr *);
 
 extern void	rtnl_addr_set_ifindex(struct rtnl_addr *, int);
 extern int	rtnl_addr_get_ifindex(struct rtnl_addr *);
+
+extern void	rtnl_addr_set_link(struct rtnl_addr *, struct rtnl_link *);
+extern struct rtnl_link *
+		rtnl_addr_get_link(struct rtnl_addr *);
 
 extern void	rtnl_addr_set_family(struct rtnl_addr *, int);
 extern int	rtnl_addr_get_family(struct rtnl_addr *);

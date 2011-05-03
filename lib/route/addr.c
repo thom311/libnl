@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2003-2006 Baruch Even <baruch@ev-en.org>,
  *                         Mediatrix Telecom, inc. <ericb@mediatrix.com>
  */
@@ -158,6 +158,11 @@ static int addr_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct rtnl_addr *dst = nl_object_priv(_dst);
 	struct rtnl_addr *src = nl_object_priv(_src);
 
+	if (src->a_link) {
+		nl_object_get(OBJ_CAST(src->a_link));
+		dst->a_link = src->a_link;
+	}
+
 	if (src->a_peer)
 		if (!(dst->a_peer = nl_addr_clone(src->a_peer)))
 			return -NLE_NOMEM;
@@ -194,6 +199,7 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct ifaddrmsg *ifa;
 	struct nlattr *tb[IFA_MAX+1];
 	int err, peer_prefix = 0, family;
+	struct nl_cache *link_cache;
 
 	addr = rtnl_addr_alloc();
 	if (!addr)
@@ -286,6 +292,17 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			goto errout_nomem;
 
 		addr->ce_mask |= ADDR_ATTR_ANYCAST;
+	}
+
+	if ((link_cache = nl_cache_mngt_require("route/link"))) {
+		struct rtnl_link *link;
+
+		if ((link = rtnl_link_get(link_cache, addr->a_ifindex))) {
+			rtnl_addr_set_link(addr, link);
+
+			/* rtnl_addr_set_link incs refcnt */
+			rtnl_link_put(link);
+		}
 	}
 
 	err = pp->pp_cb((struct nl_object *) addr, pp);
@@ -476,6 +493,42 @@ void rtnl_addr_put(struct rtnl_addr *addr)
 int rtnl_addr_alloc_cache(struct nl_sock *sk, struct nl_cache **result)
 {
 	return nl_cache_alloc_and_fill(&rtnl_addr_ops, sk, result);
+}
+
+/**
+ * Search address in cache
+ * @arg cache		Address cache
+ * @arg ifindex		Interface index of address
+ * @arg addr		Local address part
+ *
+ * Searches address cache previously allocated with rtnl_addr_alloc_cache()
+ * for an address with a matching local address.
+ *
+ * The reference counter is incremented before returning the address, therefore
+ * the reference must be given back with rtnl_addr_put() after usage.
+ *
+ * @return Address object or NULL if no match was found.
+ */
+struct rtnl_addr *rtnl_addr_get(struct nl_cache *cache, int ifindex,
+				struct nl_addr *addr)
+{
+	struct rtnl_addr *a;
+
+	if (cache->c_ops != &rtnl_addr_ops)
+		return NULL;
+
+	nl_list_for_each_entry(a, &cache->c_items, ce_list) {
+		if (ifindex && a->a_ifindex != ifindex)
+			continue;
+
+		if (a->ce_mask & ADDR_ATTR_LOCAL &&
+		    !nl_addr_cmp(a->a_local, addr)) {
+			nl_object_get((struct nl_object *) a);
+			return a;
+		}
+	}
+
+	return NULL;
 }
 
 /** @} */
@@ -717,6 +770,29 @@ void rtnl_addr_set_ifindex(struct rtnl_addr *addr, int ifindex)
 int rtnl_addr_get_ifindex(struct rtnl_addr *addr)
 {
 	return addr->a_ifindex;
+}
+
+void rtnl_addr_set_link(struct rtnl_addr *addr, struct rtnl_link *link)
+{
+	rtnl_link_put(addr->a_link);
+
+	if (!link)
+		return;
+
+	nl_object_get(OBJ_CAST(link));
+	addr->a_link = link;
+	addr->a_ifindex = link->l_index;
+	addr->ce_mask |= ADDR_ATTR_IFINDEX;
+}
+
+struct rtnl_link *rtnl_addr_get_link(struct rtnl_addr *addr)
+{
+	if (addr->a_link) {
+		nl_object_get(OBJ_CAST(addr->a_link));
+		return addr->a_link;
+	}
+
+	return NULL;
 }
 
 void rtnl_addr_set_family(struct rtnl_addr *addr, int family)

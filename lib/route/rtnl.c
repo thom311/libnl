@@ -89,7 +89,7 @@ static const struct trans_tbl scopes[] = {
 	__ADD(254,host)
 	__ADD(253,link)
 	__ADD(200,site)
-	__ADD(0,universe)
+	__ADD(0,global)
 };
 
 char *rtnl_scope2str(int scope, char *buf, size_t size)

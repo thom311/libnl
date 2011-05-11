@@ -294,7 +294,7 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		addr->ce_mask |= ADDR_ATTR_ANYCAST;
 	}
 
-	if ((link_cache = nl_cache_mngt_require("route/link"))) {
+	if ((link_cache = __nl_cache_mngt_require("route/link"))) {
 		struct rtnl_link *link;
 
 		if ((link = rtnl_link_get(link_cache, addr->a_ifindex))) {

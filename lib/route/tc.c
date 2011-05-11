@@ -176,7 +176,7 @@ compat_xstats:
 			return err;
 	}
 
-	if ((link_cache = nl_cache_mngt_require("route/link"))) {
+	if ((link_cache = __nl_cache_mngt_require("route/link"))) {
 		struct rtnl_link *link;
 
 		if ((link = rtnl_link_get(link_cache, tc->tc_ifindex))) {

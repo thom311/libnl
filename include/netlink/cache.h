@@ -107,6 +107,7 @@ extern int			nl_cache_mngt_unregister(struct nl_cache_ops *);
 extern void			nl_cache_mngt_provide(struct nl_cache *);
 extern void			nl_cache_mngt_unprovide(struct nl_cache *);
 extern struct nl_cache *	nl_cache_mngt_require(const char *);
+extern struct nl_cache *	__nl_cache_mngt_require(const char *);
 
 struct nl_cache_mngr;
 

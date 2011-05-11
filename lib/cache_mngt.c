@@ -217,6 +217,17 @@ void nl_cache_mngt_unprovide(struct nl_cache *cache)
 		ops->co_major_cache = NULL;
 }
 
+struct nl_cache *__nl_cache_mngt_require(const char *name)
+{
+	struct nl_cache_ops *ops;
+
+	ops = nl_cache_ops_lookup(name);
+	if (ops)
+		return ops->co_major_cache;
+	
+	return NULL;
+}
+
 /**
  * Demand the use of a global cache
  * @arg name		name of the required object type
@@ -229,19 +240,15 @@ void nl_cache_mngt_unprovide(struct nl_cache *cache)
  */
 struct nl_cache *nl_cache_mngt_require(const char *name)
 {
-	struct nl_cache_ops *ops;
+	struct nl_cache *cache;
 
-	ops = nl_cache_ops_lookup(name);
-	if (!ops || !ops->co_major_cache) {
+	if (!(cache = __nl_cache_mngt_require(name)))
 		fprintf(stderr, "Application BUG: Your application must "
 			"call nl_cache_mngt_provide() and\nprovide a valid "
 			"%s cache to be used for internal lookups.\nSee the "
 			" API documentation for more details.\n", name);
-
-		return NULL;
-	}
 	
-	return ops->co_major_cache;
+	return cache;
 }
 
 /** @} */

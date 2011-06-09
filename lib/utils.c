@@ -151,6 +151,27 @@ double nl_cancel_down_bits(unsigned long long l, char **unit)
 		
 }
 
+int nl_rate2str(unsigned long long rate, int type, char *buf, size_t len)
+{
+	char *unit;
+	double frac;
+
+	switch (type) {
+	case NL_BYTE_RATE:
+		frac = nl_cancel_down_bytes(rate, &unit);
+		break;
+	
+	case NL_BIT_RATE:
+		frac = nl_cancel_down_bits(rate, &unit);
+		break;
+	
+	default:
+		BUG();
+	}
+
+	return snprintf(buf, len, "%.2f%s/s", frac, unit);
+}
+
 /**
  * Cancel down a micro second value
  * @arg	l		micro seconds

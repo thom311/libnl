@@ -38,9 +38,15 @@ extern "C" {
 
 /** @} */
 
+enum {
+	NL_BYTE_RATE,
+	NL_BIT_RATE,
+};
+
 /* unit pretty-printing */
 extern double	nl_cancel_down_bytes(unsigned long long, char **);
 extern double	nl_cancel_down_bits(unsigned long long, char **);
+extern int	nl_rate2str(unsigned long long, int, char *, size_t);
 extern double	nl_cancel_down_us(uint32_t, char **);
 
 /* generic unit translations */

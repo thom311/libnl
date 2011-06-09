@@ -987,6 +987,15 @@ void rtnl_tc_unregister(struct rtnl_tc_ops *ops)
 	nl_list_del(&ops->to_list);
 }
 
+/**
+ * Return pointer to private data of traffic control object
+ * @arg tc		traffic control object
+ *
+ * Allocates the private traffic control object data section
+ * as necessary and returns it.
+ *
+ * @return Pointer to private tc data or NULL if allocation failed.
+ */
 void *rtnl_tc_data(struct rtnl_tc *tc)
 {
 	if (!tc->tc_subdata) {
@@ -1010,6 +1019,20 @@ void *rtnl_tc_data(struct rtnl_tc *tc)
 	return nl_data_get(tc->tc_subdata);
 }
 
+/**
+ * Check traffic control object type and return private data section 
+ * @arg tc		traffic control object
+ * @arg ops		expected traffic control object operations
+ *
+ * Checks whether the traffic control object matches the type
+ * specified with the traffic control object operations. If the
+ * type matches, the private tc object data is returned. If type
+ * mismatches, APPBUG() will print a application bug warning.
+ *
+ * @see rtnl_tc_data()
+ *
+ * @return Pointer to private tc data or NULL if type mismatches.
+ */
 void *rtnl_tc_data_check(struct rtnl_tc *tc, struct rtnl_tc_ops *ops)
 {
 	if (tc->tc_ops != ops) {
@@ -1018,6 +1041,7 @@ void *rtnl_tc_data_check(struct rtnl_tc *tc, struct rtnl_tc_ops *ops)
 		snprintf(buf, sizeof(buf),
 			 "tc object %p used in %s context but is of type %s",
 			 tc, ops->to_kind, tc->tc_ops->to_kind);
+		APPBUG(buf);
 
 		return NULL;
 	}

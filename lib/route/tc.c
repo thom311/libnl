@@ -1010,6 +1010,21 @@ void *rtnl_tc_data(struct rtnl_tc *tc)
 	return nl_data_get(tc->tc_subdata);
 }
 
+void *rtnl_tc_data_check(struct rtnl_tc *tc, struct rtnl_tc_ops *ops)
+{
+	if (tc->tc_ops != ops) {
+		char buf[64];
+
+		snprintf(buf, sizeof(buf),
+			 "tc object %p used in %s context but is of type %s",
+			 tc, ops->to_kind, tc->tc_ops->to_kind);
+
+		return NULL;
+	}
+
+	return rtnl_tc_data(tc);
+}
+
 void rtnl_tc_type_register(struct rtnl_tc_type_ops *ops)
 {
 	if (ops->tt_type > RTNL_TC_TYPE_MAX)

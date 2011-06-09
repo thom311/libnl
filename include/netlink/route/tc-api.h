@@ -124,6 +124,8 @@ extern int			rtnl_tc_compare(struct nl_object *,
 						uint32_t, int);
 
 extern void *			rtnl_tc_data(struct rtnl_tc *);
+extern void *			rtnl_tc_data_check(struct rtnl_tc *,
+						   struct rtnl_tc_ops *);
 
 extern struct rtnl_tc_ops *	rtnl_tc_lookup_ops(enum rtnl_tc_type,
 						   const char *);

@@ -39,6 +39,7 @@
 #define SCH_HTB_HAS_RBUFFER		0x008
 #define SCH_HTB_HAS_CBUFFER		0x010
 #define SCH_HTB_HAS_QUANTUM		0x020
+#define SCH_HTB_HAS_LEVEL		0x040
 /** @endcond */
 
 static struct nla_policy htb_policy[TCA_HTB_MAX+1] = {
@@ -61,6 +62,7 @@ static int htb_qdisc_msg_parser(struct rtnl_tc *tc, void *data)
 		nla_memcpy(&opts, tb[TCA_HTB_INIT], sizeof(opts));
 		htb->qh_rate2quantum = opts.rate2quantum;
 		htb->qh_defcls = opts.defcls;
+		htb->qh_direct_pkts = opts.direct_pkts;
 
 		htb->qh_mask = (SCH_HTB_HAS_RATE2QUANTUM | SCH_HTB_HAS_DEFCLS);
 	}
@@ -84,16 +86,20 @@ static int htb_class_msg_parser(struct rtnl_tc *tc, void *data)
 		htb->ch_prio = opts.prio;
 		rtnl_copy_ratespec(&htb->ch_rate, &opts.rate);
 		rtnl_copy_ratespec(&htb->ch_ceil, &opts.ceil);
-		htb->ch_rbuffer = rtnl_tc_calc_bufsize(opts.buffer, opts.rate.rate);
-		htb->ch_cbuffer = rtnl_tc_calc_bufsize(opts.cbuffer, opts.ceil.rate);
+		htb->ch_rbuffer = rtnl_tc_calc_bufsize(opts.buffer,
+						       opts.rate.rate);
+		htb->ch_cbuffer = rtnl_tc_calc_bufsize(opts.cbuffer,
+						       opts.ceil.rate);
 		htb->ch_quantum = opts.quantum;
+		htb->ch_level = opts.level;
 
 		rtnl_tc_set_mpu(tc, htb->ch_rate.rs_mpu);
 		rtnl_tc_set_overhead(tc, htb->ch_rate.rs_overhead);
 
 		htb->ch_mask = (SCH_HTB_HAS_PRIO | SCH_HTB_HAS_RATE |
 				SCH_HTB_HAS_CEIL | SCH_HTB_HAS_RBUFFER |
-				SCH_HTB_HAS_CBUFFER | SCH_HTB_HAS_QUANTUM);
+				SCH_HTB_HAS_CBUFFER | SCH_HTB_HAS_QUANTUM |
+				SCH_HTB_HAS_LEVEL);
 	}
 
 	return 0;
@@ -111,8 +117,8 @@ static void htb_qdisc_dump_line(struct rtnl_tc *tc, void *data,
 		nl_dump(p, " r2q %u", htb->qh_rate2quantum);
 
 	if (htb->qh_mask & SCH_HTB_HAS_DEFCLS) {
-		char buf[32];
-		nl_dump(p, " default %s",
+		char buf[64];
+		nl_dump(p, " default-class %s",
 			rtnl_tc_handle2str(htb->qh_defcls, buf, sizeof(buf)));
 	}
 }
@@ -260,20 +266,72 @@ nla_put_failure:
 	return -NLE_MSGSIZE;
 }
 
+static struct rtnl_tc_ops htb_qdisc_ops;
+static struct rtnl_tc_ops htb_class_ops;
+
+static struct rtnl_htb_qdisc *htb_qdisc_data(struct rtnl_qdisc *qdisc)
+{
+	return rtnl_tc_data_check(TC_CAST(qdisc), &htb_qdisc_ops);
+}
+
+static struct rtnl_htb_class *htb_class_data(struct rtnl_class *class)
+{
+	return rtnl_tc_data_check(TC_CAST(class), &htb_class_ops);
+}
+
 /**
  * @name Attribute Modifications
  * @{
  */
 
-void rtnl_htb_set_rate2quantum(struct rtnl_qdisc *qdisc, uint32_t rate2quantum)
+/**
+ * Return rate/quantum ratio of HTB qdisc
+ * @arg qdisc		htb qdisc object
+ *
+ * @return rate/quantum ratio or 0 if unspecified
+ */
+uint32_t rtnl_htb_get_rate2quantum(struct rtnl_qdisc *qdisc)
 {
 	struct rtnl_htb_qdisc *htb;
 
-	if (!(htb = rtnl_tc_data(TC_CAST(qdisc))))
-		BUG();
+	if ((htb = htb_qdisc_data(qdisc)) &&
+	    htb->qh_mask & SCH_HTB_HAS_RATE2QUANTUM)
+		return htb->qh_rate2quantum;
+
+	return 0;
+}
+
+int rtnl_htb_set_rate2quantum(struct rtnl_qdisc *qdisc, uint32_t rate2quantum)
+{
+	struct rtnl_htb_qdisc *htb;
+
+	if (!(htb = htb_qdisc_data(qdisc)))
+		return -NLE_OPNOTSUPP;
 
 	htb->qh_rate2quantum = rate2quantum;
 	htb->qh_mask |= SCH_HTB_HAS_RATE2QUANTUM;
+
+	return 0;
+}
+
+/**
+ * Return default class of HTB qdisc
+ * @arg qdisc		htb qdisc object
+ *
+ * Returns the classid of the class where all unclassified traffic
+ * goes to.
+ *
+ * @return classid or TC_H_UNSPEC if unspecified.
+ */
+uint32_t rtnl_htb_get_defcls(struct rtnl_qdisc *qdisc)
+{
+	struct rtnl_htb_qdisc *htb;
+
+	if ((htb = htb_qdisc_data(qdisc)) &&
+	    htb->qh_mask & SCH_HTB_HAS_DEFCLS)
+		return htb->qh_defcls;
+
+	return TC_H_UNSPEC;
 }
 
 /**
@@ -281,70 +339,131 @@ void rtnl_htb_set_rate2quantum(struct rtnl_qdisc *qdisc, uint32_t rate2quantum)
  * @arg qdisc		qdisc to change
  * @arg defcls		new default class
  */
-void rtnl_htb_set_defcls(struct rtnl_qdisc *qdisc, uint32_t defcls)
+int rtnl_htb_set_defcls(struct rtnl_qdisc *qdisc, uint32_t defcls)
 {
 	struct rtnl_htb_qdisc *htb;
 
-	if (!(htb = rtnl_tc_data(TC_CAST(qdisc))))
-		BUG();
+	if (!(htb = htb_qdisc_data(qdisc)))
+		return -NLE_OPNOTSUPP;
 
 	htb->qh_defcls = defcls;
 	htb->qh_mask |= SCH_HTB_HAS_DEFCLS;
+
+	return 0;
 }
 
-void rtnl_htb_set_prio(struct rtnl_class *class, uint32_t prio)
+uint32_t rtnl_htb_get_prio(struct rtnl_class *class)
 {
 	struct rtnl_htb_class *htb;
 
-	if (!(htb = rtnl_tc_data(TC_CAST(class))))
-		BUG();
+	if ((htb = htb_class_data(class)) && htb->ch_mask & SCH_HTB_HAS_PRIO)
+		return htb->ch_prio;
+
+	return 0;
+}
+
+int rtnl_htb_set_prio(struct rtnl_class *class, uint32_t prio)
+{
+	struct rtnl_htb_class *htb;
+
+	if (!(htb = htb_class_data(class)))
+		return -NLE_OPNOTSUPP;
 
 	htb->ch_prio = prio;
 	htb->ch_mask |= SCH_HTB_HAS_PRIO;
+
+	return 0;
 }
 
 /**
- * Set rate of HTB class.
- * @arg class		HTB class to be modified.
- * @arg rate		New rate in bytes per second.
+ * Return rate of HTB class
+ * @arg class		htb class object
+ *
+ * @return Rate in bytes/s or 0 if unspecified.
  */
-void rtnl_htb_set_rate(struct rtnl_class *class, uint32_t rate)
-{
-	struct rtnl_htb_class *htb;
-
-	if (!(htb = rtnl_tc_data(TC_CAST(class))))
-		BUG();
-
-	htb->ch_rate.rs_cell_log = UINT8_MAX; /* use default value */
-	htb->ch_rate.rs_rate = rate;
-	htb->ch_mask |= SCH_HTB_HAS_RATE;
-}
-
 uint32_t rtnl_htb_get_rate(struct rtnl_class *class)
 {
 	struct rtnl_htb_class *htb;
 
-	if (!(htb = rtnl_tc_data(TC_CAST(class))))
-		return 0;
+	if ((htb = htb_class_data(class)) && htb->ch_mask & SCH_HTB_HAS_RATE)
+		return htb->ch_rate.rs_rate;
 
-	return htb->ch_rate.rs_rate;
+	return 0;
 }
 
 /**
- * Set ceil of HTB class.
- * @arg class		HTB class to be modified.
- * @arg ceil		New ceil in bytes per second.
+ * Set rate of HTB class
+ * @arg class		htb class object
+ * @arg rate		new rate in bytes per second
+ *
+ * @return 0 on success or a negative error code.
  */
-void rtnl_htb_set_ceil(struct rtnl_class *class, uint32_t ceil)
+int rtnl_htb_set_rate(struct rtnl_class *class, uint32_t rate)
 {
 	struct rtnl_htb_class *htb;
 
-	if (!(htb = rtnl_tc_data(TC_CAST(class))))
-		BUG();
+	if (!(htb = htb_class_data(class)))
+		return -NLE_OPNOTSUPP;
+
+	htb->ch_rate.rs_cell_log = UINT8_MAX; /* use default value */
+	htb->ch_rate.rs_rate = rate;
+	htb->ch_mask |= SCH_HTB_HAS_RATE;
+
+	return 0;
+}
+
+/**
+ * Return ceil rate of HTB class
+ * @arg class		htb class object
+ *
+ * @return Ceil rate in bytes/s or 0 if unspecified
+ */
+uint32_t rtnl_htb_get_ceil(struct rtnl_class *class)
+{
+	struct rtnl_htb_class *htb;
+
+	if ((htb = htb_class_data(class)) && htb->ch_mask & SCH_HTB_HAS_CEIL)
+		return htb->ch_ceil.rs_rate;
+
+	return 0;
+}
+
+/**
+ * Set ceil rate of HTB class
+ * @arg class		htb class object
+ * @arg ceil		new ceil rate number of bytes per second
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_htb_set_ceil(struct rtnl_class *class, uint32_t ceil)
+{
+	struct rtnl_htb_class *htb;
+
+	if (!(htb = htb_class_data(class)))
+		return -NLE_OPNOTSUPP;
 
 	htb->ch_ceil.rs_cell_log = UINT8_MAX; /* use default value */
 	htb->ch_ceil.rs_rate = ceil;
 	htb->ch_mask |= SCH_HTB_HAS_CEIL;
+
+	return 0;
+}
+
+/**
+ * Return burst buffer size of HTB class
+ * @arg class		htb class object
+ *
+ * @return Burst buffer size or 0 if unspecified
+ */
+uint32_t rtnl_htb_get_rbuffer(struct rtnl_class *class)
+{
+	struct rtnl_htb_class *htb;
+
+	if ((htb = htb_class_data(class)) &&
+	     htb->ch_mask & SCH_HTB_HAS_RBUFFER)
+		return htb->ch_rbuffer;
+
+	return 0;
 }
 
 /**
@@ -352,15 +471,34 @@ void rtnl_htb_set_ceil(struct rtnl_class *class, uint32_t ceil)
  * @arg class		HTB class to be modified.
  * @arg rbuffer		New size in bytes.
  */
-void rtnl_htb_set_rbuffer(struct rtnl_class *class, uint32_t rbuffer)
+int rtnl_htb_set_rbuffer(struct rtnl_class *class, uint32_t rbuffer)
 {
 	struct rtnl_htb_class *htb;
 
-	if (!(htb = rtnl_tc_data(TC_CAST(class))))
-		BUG();
+	if (!(htb = htb_class_data(class)))
+		return -NLE_OPNOTSUPP;
 
 	htb->ch_rbuffer = rbuffer;
 	htb->ch_mask |= SCH_HTB_HAS_RBUFFER;
+
+	return 0;
+}
+
+/**
+ * Return ceil burst buffer size of HTB class
+ * @arg class		htb class object
+ *
+ * @return Ceil burst buffer size or 0 if unspecified
+ */
+uint32_t rtnl_htb_get_cbuffer(struct rtnl_class *class)
+{
+	struct rtnl_htb_class *htb;
+
+	if ((htb = htb_class_data(class)) &&
+	     htb->ch_mask & SCH_HTB_HAS_CBUFFER)
+		return htb->ch_cbuffer;
+
+	return 0;
 }
 
 /**
@@ -368,31 +506,103 @@ void rtnl_htb_set_rbuffer(struct rtnl_class *class, uint32_t rbuffer)
  * @arg class		HTB class to be modified.
  * @arg cbuffer		New size in bytes.
  */
-void rtnl_htb_set_cbuffer(struct rtnl_class *class, uint32_t cbuffer)
+int rtnl_htb_set_cbuffer(struct rtnl_class *class, uint32_t cbuffer)
 {
 	struct rtnl_htb_class *htb;
 
-	if (!(htb = rtnl_tc_data(TC_CAST(class))))
-		BUG();
+	if (!(htb = htb_class_data(class)))
+		return -NLE_OPNOTSUPP;
 
 	htb->ch_cbuffer = cbuffer;
 	htb->ch_mask |= SCH_HTB_HAS_CBUFFER;
+
+	return 0;
 }
 
 /**
- * Set how much bytes to serve from leaf at once of HTB class {use r2q}.
- * @arg class		HTB class to be modified.
- * @arg quantum		New size in bytes.
+ * Return quantum of HTB class
+ * @arg class		htb class object
+ *
+ * See XXX[quantum def]
+ *
+ * @return Quantum or 0 if unspecified.
  */
-void rtnl_htb_set_quantum(struct rtnl_class *class, uint32_t quantum)
+uint32_t rtnl_htb_get_quantum(struct rtnl_class *class)
 {
 	struct rtnl_htb_class *htb;
 
-	if (!(htb = rtnl_tc_data(TC_CAST(class))))
-		BUG();
+	if ((htb = htb_class_data(class)) &&
+	    htb->ch_mask & SCH_HTB_HAS_QUANTUM)
+		return htb->ch_quantum;
+
+	return 0;
+}
+
+/**
+ * Set quantum of HTB class (overwrites value calculated based on r2q)
+ * @arg class		htb class object
+ * @arg quantum		new quantum in number of bytes
+ *
+ * See XXX[quantum def]
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_htb_set_quantum(struct rtnl_class *class, uint32_t quantum)
+{
+	struct rtnl_htb_class *htb;
+
+	if (!(htb = htb_class_data(class)))
+		return -NLE_OPNOTSUPP;
 
 	htb->ch_quantum = quantum;
 	htb->ch_mask |= SCH_HTB_HAS_QUANTUM;
+
+	return 0;
+}
+
+/**
+ * Return level of HTB class
+ * @arg class		htb class object
+ *
+ * Returns the level of the HTB class. Leaf classes are assigned level
+ * 0, root classes have level (TC_HTB_MAXDEPTH - 1). Interior classes
+ * have a level of one less than their parent.
+ *
+ * @return Level or -NLE_OPNOTSUPP
+ */
+int rtnl_htb_get_level(struct rtnl_class *class)
+{
+	struct rtnl_htb_class *htb;
+
+	if ((htb = htb_class_data(class)) && htb->ch_mask & SCH_HTB_HAS_LEVEL)
+		return htb->ch_level;
+
+	return -NLE_OPNOTSUPP;
+}
+
+/**
+ * Set level of HTB class
+ * @arg class		htb class object
+ * @arg level		new level of HTB class
+ *
+ * Sets the level of a HTB class. Note that changing the level of a HTB
+ * class does not change the level of its in kernel counterpart. This
+ * function is provided only to create HTB objects which can be compared
+ * against or filtered upon.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_htb_set_level(struct rtnl_class *class, int level)
+{
+	struct rtnl_htb_class *htb;
+
+	if (!(htb = htb_class_data(class)))
+		return -NLE_OPNOTSUPP;
+
+	htb->ch_level = level;
+	htb->ch_mask |= SCH_HTB_HAS_LEVEL;
+
+	return 0;
 }
 
 /** @} */

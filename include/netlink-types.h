@@ -631,6 +631,7 @@ struct rtnl_htb_qdisc
 	uint32_t		qh_rate2quantum;
 	uint32_t		qh_defcls;
 	uint32_t		qh_mask;
+	uint32_t		qh_direct_pkts;
 };
 
 struct rtnl_htb_class
@@ -642,6 +643,7 @@ struct rtnl_htb_class
 	uint32_t		ch_cbuffer;
 	uint32_t		ch_quantum;
 	uint32_t		ch_mask;
+	uint32_t		ch_level;
 };
 
 struct rtnl_cbq

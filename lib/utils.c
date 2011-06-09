@@ -689,6 +689,7 @@ static const struct trans_tbl ether_protos[] = {
 	__ADD(ETH_P_MPLS_UC,mpls_uc)
 	__ADD(ETH_P_MPLS_MC,mpls_mc)
 	__ADD(ETH_P_ATMMPOA,atmmpoa)
+	__ADD(ETH_P_LINK_CTL,link_ctl)
 	__ADD(ETH_P_ATMFATE,atmfate)
 	__ADD(ETH_P_PAE,pae)
 	__ADD(ETH_P_AOE,aoe)

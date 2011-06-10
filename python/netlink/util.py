@@ -9,6 +9,7 @@
 """
 
 import netlink.core as netlink
+import netlink.capi as capi
 from string import Formatter
 
 __version__ = "1.0"
@@ -92,6 +93,8 @@ class MyFormatter(Formatter):
                                 title = d['title']
                 except KeyError:
                 	pass
+                except AttributeError:
+                	pass
 
                 return title, str(value)
 
@@ -144,3 +147,33 @@ class MyFormatter(Formatter):
 
 	def nl(self, format_string=''):
 		return '\n' + self._indent + self.format(format_string)
+
+NL_BYTE_RATE = 0
+NL_BIT_RATE = 1
+
+class Rate(object):
+	def __init__(self, rate, mode=NL_BYTE_RATE):
+        	self._rate = rate
+                self._mode = mode
+
+        def __str__(self):
+                return capi.nl_rate2str(self._rate, self._mode, 32)[1]
+
+        def __int__(self):
+        	return self._rate
+
+	def __cmp__(self, other):
+        	return int(self) - int(other)
+
+class Size(object):
+	def __init__(self, size):
+        	self._size = size
+
+        def __str__(self):
+        	return capi.nl_size2str(self._size, 32)[0]
+
+        def __int__(self):
+        	return self._size
+
+        def __cmp__(self, other):
+        	return int(self) - int(other)

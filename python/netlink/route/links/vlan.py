@@ -57,6 +57,6 @@ class VLANLink(object):
 	def brief(self):
 		return 'vlan-id ' + self.id
 
-def assign_type(link):
+def init(link):
 	link.vlan = VLANLink(link._link)
-	return link.vlan
+        return link.vlan

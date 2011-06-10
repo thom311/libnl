@@ -117,15 +117,16 @@ class LinkCache(netlink.Cache):
         	if not cache:
                         cache = self._alloc_cache_name("route/link")
 
+		self._info_module = None
 		self._protocol = netlink.NETLINK_ROUTE
-                self._c_cache = cache
+                self._nl_cache = cache
 		self._set_arg1(family)
 
 	def __getitem__(self, key):
         	if type(key) is int:
-                        link = capi.rtnl_link_get(self._c_cache, key)
+                        link = capi.rtnl_link_get(self._nl_cache, key)
                 elif type(key) is str:
-                        link = capi.rtnl_link_get_by_name(self._c_cache, key)
+                        link = capi.rtnl_link_get_by_name(self._nl_cache, key)
 
 		if link is None:
                         raise KeyError()
@@ -147,10 +148,8 @@ class Link(netlink.Object):
 		netlink.Object.__init__(self, "route/link", "link", obj)
 		self._rtnl_link = self._obj2type(self._nl_object)
 
-		self._type = None
-
 		if self.type:
-                	self._type_lookup(self.type)
+                	self._module_lookup('netlink.route.links.' + self.type)
 
 		self.inet = inet.InetLink(self)
 		self.af = {'inet' : self.inet }
@@ -170,15 +169,6 @@ class Link(netlink.Object):
                         raise ValueError()
 
                 return Link(obj)
-
-	def _type_lookup(self, name):
-        	rname = 'netlink.route.links.' + name
-        	tmp = __import__(rname)
-                mod = sys.modules[rname]
-
-                # this will create a type instance and assign it to
-		# link.<type>, e.g. link.vlan.id
-                self._type = mod.assign_type(self)
 
 	#####################################################################
 	# ifindex
@@ -403,7 +393,7 @@ class Link(netlink.Object):
                 if capi.rtnl_link_set_info_type(self._rtnl_link, value) < 0:
                         raise NameError("unknown info type")
 
-                self._type_lookup(value)
+                self._module_lookup('netlink.route.links.' + value)
 
 	#####################################################################
 	# get_stat()
@@ -469,14 +459,7 @@ class Link(netlink.Object):
 
 	@property
 	def _brief(self):
-        	buf = ''
-		if self.type:
-			if self._type and hasattr(self._type, 'brief'):
-				buf += self._type.brief()
-			else:
-				buf += util.yellow(self.type)
-
-                return buf + self._foreach_af('brief')
+        	return self._module_brief() + self._foreach_af('brief')
 
 	@property
 	def _flags(self):
@@ -587,10 +570,8 @@ def get(name, socket=None):
 
 	return Link.from_capi(link)
 
-link_cache = LinkCache()
+_link_cache = LinkCache()
 
 def resolve(name):
-        socket = netlink.lookup_socket(netlink.NETLINK_ROUTE)
-        link_cache.refill()
-
-        return link_cache[name]
+	_link_cache.refill()
+        return _link_cache[name]

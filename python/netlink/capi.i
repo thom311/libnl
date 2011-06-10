@@ -120,6 +120,8 @@ extern const char *nl_geterror(int);
 
 extern double nl_cancel_down_bytes(unsigned long long, char **);
 extern double nl_cancel_down_bits(unsigned long long, char **);
+%cstring_output_maxsize(char *buf, size_t len)
+extern int nl_rate2str(unsigned long long rate, int type, char *buf, size_t len);
 extern double nl_cancel_down_us(uint32_t, char **);
 
 extern long nl_size2int(const char *);

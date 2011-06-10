@@ -254,6 +254,7 @@ class Object(object):
 	def __init__(self, obj_name, name, obj=None):
 		self._obj_name = obj_name
 		self._name = name
+		self._modules = []
 
 		if not obj:
                         obj = capi.object_alloc_name(self._obj_name)
@@ -284,12 +285,52 @@ class Object(object):
         	"""Clone object"""
         	return self._new_instance(capi.nl_object_clone(self._nl_object))
 
+	def _module_lookup(self, path, constructor=None):
+        	"""Lookup object specific module and load it
+
+                Object implementations consisting of multiple types may
+                offload some type specific code to separate modules which
+                are loadable on demand, e.g. a VLAN link or a specific
+                queueing discipline implementation.
+
+                Loads the module `path` and calls the constructor if
+                supplied or `module`.init()
+
+                The constructor/init function typically assigns a new
+                object covering the type specific implementation aspects
+                to the new object, e.g. link.vlan = VLANLink()
+                """
+                try:
+                        tmp = __import__(path)
+                except ImportError:
+                	return
+
+                module = sys.modules[path]
+
+		if constructor:
+			ret = getattr(module, constructor)(self)
+                else:
+                        ret = module.init(self)
+
+                if ret:
+                        self._modules.append(ret)
+
+	def _module_brief(self):
+        	ret = ''
+
+        	for module in self._modules:
+                        if hasattr(module, 'brief'):
+                                ret += module.brief()
+
+                return ret
+
 	def dump(self, params=None):
         	"""Dump object as human readable text"""
         	if params is None:
                         params = _defaultDumpParams
 
                 capi.nl_object_dump(self._nl_object, params._dp)
+
 
 	#####################################################################
 	# mark
@@ -361,12 +402,15 @@ class Object(object):
 class ObjIterator(object):
 	def __init__(self, cache, obj):
                 self._cache = cache
+                self._nl_object = None
 
-                capi.nl_object_get(obj)
-        	self._nl_object = obj
-
-                self._first = 1
-                self._end = 0
+		if not obj:
+                        self._end = 1
+                else:
+                        capi.nl_object_get(obj)
+                        self._nl_object = obj
+                        self._first = 1
+                        self._end = 0
 
 	def __del__(self):
         	if self._nl_object:
@@ -415,21 +459,21 @@ class Cache(object):
         	raise NotImplementedError()
 
 	def __del(self):
-        	capi.nl_cache_free(self._c_cache)
+        	capi.nl_cache_free(self._nl_cache)
 
 	def __len__(self):
-        	return capi.nl_cache_nitems(self._c_cache)
+        	return capi.nl_cache_nitems(self._nl_cache)
 
 	def __iter__(self):
-        	obj = capi.nl_cache_get_first(self._c_cache)
+        	obj = capi.nl_cache_get_first(self._nl_cache)
         	return ObjIterator(self, obj)
 
 	def __reversed__(self):
-		obj = capi.nl_cache_get_last(self._c_cache)
+		obj = capi.nl_cache_get_last(self._nl_cache)
         	return ReverseObjIterator(self, obj)
 
 	def __contains__(self, item):
-        	obj = capi.nl_cache_search(self._c_cache, item._nl_object)
+        	obj = capi.nl_cache_search(self._nl_cache, item._nl_object)
                 if obj is None:
                         return False
                 else:
@@ -458,7 +502,7 @@ class Cache(object):
         	if not filter:
                         raise ValueError()
 
-        	c = capi.nl_cache_subset(self._c_cache, filter._nl_object)
+        	c = capi.nl_cache_subset(self._nl_cache, filter._nl_object)
         	return self._new_cache(cache=c)
 
 	def dump(self, params=None, filter=None):
@@ -469,28 +513,28 @@ class Cache(object):
 		if filter:
                         filter = filter._nl_object
 
-                capi.nl_cache_dump_filter(self._c_cache, params._dp, filter)
+                capi.nl_cache_dump_filter(self._nl_cache, params._dp, filter)
 
 	def clear(self):
         	"""Remove all cache entries"""
-        	capi.nl_cache_clear(self._c_cache)
+        	capi.nl_cache_clear(self._nl_cache)
 
 	# Called by sub classes to set first cache argument
 	def _set_arg1(self, arg):
         	self.arg1 = arg
-                capi.nl_cache_set_arg1(self._c_cache, arg)
+                capi.nl_cache_set_arg1(self._nl_cache, arg)
 
 	# Called by sub classes to set second cache argument
 	def _set_arg2(self, arg):
         	self.arg2 = arg
-                capi.nl_cache_set_arg2(self._c_cache, arg)
+                capi.nl_cache_set_arg2(self._nl_cache, arg)
 
 	def refill(self, socket=None):
         	"""Clear cache and refill it"""
 		if socket is None:
                         socket = lookup_socket(self._protocol)
 
-        	capi.nl_cache_refill(socket._sock, self._c_cache)
+        	capi.nl_cache_refill(socket._sock, self._nl_cache)
                 return self
 
 	def resync(self, socket=None, cb=None):
@@ -498,7 +542,7 @@ class Cache(object):
 		if socket is None:
                         socket = lookup_socket(self._protocol)
 
-        	capi.nl_cache_resync(socket._sock, self._c_cache, cb)
+        	capi.nl_cache_resync(socket._sock, self._nl_cache, cb)
 
 	def provide(self):
         	"""Provide this cache to others
@@ -510,7 +554,7 @@ class Cache(object):
 		link names
 		"""
 
-        	capi.nl_cache_mngt_provide(self._c_cache)
+        	capi.nl_cache_mngt_provide(self._nl_cache)
 
 	def unprovide(self):
         	"""Unprovide this cache
@@ -519,7 +563,7 @@ class Cache(object):
 		has been handed out already, that reference will still
 		be valid.
 		"""
-        	capi.nl_cache_mngt_unprovide(self._c_cache)
+        	capi.nl_cache_mngt_unprovide(self._nl_cache)
 
 ###########################################################################
 # Cache Manager (Work in Progress)
@@ -708,7 +752,7 @@ class AbstractAddress(object):
 #
 attrs = {}
 
-def attr(name, **kwds):
+def add_attr(name, **kwds):
 	attrs[name] = {}
         for k in kwds:
                 attrs[name][k] = kwds[k]
@@ -726,6 +770,7 @@ def nlattr(name, **kwds):
         	return self._my_attr
 
         """
+
 	attrs[name] = {}
         for k in kwds:
                 attrs[name][k] = kwds[k]

@@ -27,7 +27,7 @@ class AddressCache(netlink.Cache):
                         cache = self._alloc_cache_name("route/addr")
 
 		self._protocol = netlink.NETLINK_ROUTE
-                self._c_cache = cache
+                self._nl_cache = cache
 
 	def __getitem__(self, key):
 		# Using ifindex=0 here implies that the local address itself
@@ -38,7 +38,7 @@ class AddressCache(netlink.Cache):
         	if type(local) is str:
                         local = netlink.AbstractAddress(local)
 
-		addr = capi.rtnl_addr_get(self._c_cache, ifindex,
+		addr = capi.rtnl_addr_get(self._nl_cache, ifindex,
 					  local._nl_addr)
 		if addr is None:
 			raise KeyError()

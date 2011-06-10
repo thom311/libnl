@@ -25,5 +25,6 @@ setup(name = 'netlink',
       author = 'Thomas Graf',
       author_email = 'tgraf@suug.ch',
       ext_modules = [netlink_capi, route_capi],
-      packages = ['netlink', 'netlink.route', 'netlink.route.links'],
+      packages = ['netlink', 'netlink.route', 'netlink.route.links',
+      		  'netlink.route.qdisc'],
      )

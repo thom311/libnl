@@ -7,6 +7,10 @@
 
 #include <netlink/route/tc.h>
 #include <netlink/route/qdisc.h>
+#include <netlink/route/class.h>
+#include <netlink/route/classifier.h>
+
+#include <netlink/route/qdisc/htb.h>
 
 #include <netlink/route/addr.h>
 %}
@@ -231,6 +235,26 @@ extern int		rtnl_classid_generate(const char *, uint32_t *, uint32_t);
                 return (struct rtnl_qdisc *) obj;
         }
 
+        struct nl_object *class2obj(struct rtnl_class *cl)
+        {
+                return OBJ_CAST(cl);
+        }
+
+        struct rtnl_class *obj2class(struct nl_object *obj)
+        {
+                return (struct rtnl_class *) obj;
+        }
+
+        struct nl_object *cls2obj(struct rtnl_cls *cls)
+        {
+                return OBJ_CAST(cls);
+        }
+
+        struct rtnl_cls *obj2cls(struct nl_object *obj)
+        {
+                return (struct rtnl_cls *) obj;
+        }
+
         struct rtnl_tc *obj2tc(struct nl_object *obj)
         {
                 return TC_CAST(obj);
@@ -259,6 +283,43 @@ extern int	rtnl_qdisc_update(struct nl_sock *, struct rtnl_qdisc *,
 extern int	rtnl_qdisc_build_delete_request(struct rtnl_qdisc *,
 						struct nl_msg **);
 extern int	rtnl_qdisc_delete(struct nl_sock *, struct rtnl_qdisc *);
+
+/* <netlink/route/classifier.h> */
+
+extern struct rtnl_cls *rtnl_cls_alloc(void);
+extern void		rtnl_cls_put(struct rtnl_cls *);
+
+extern int		rtnl_cls_add(struct nl_sock *, struct rtnl_cls *, int);
+
+extern int		rtnl_cls_delete(struct nl_sock *, struct rtnl_cls *,
+					int);
+
+extern void		rtnl_cls_set_prio(struct rtnl_cls *, uint16_t);
+extern uint16_t		rtnl_cls_get_prio(struct rtnl_cls *);
+
+extern void		rtnl_cls_set_protocol(struct rtnl_cls *, uint16_t);
+extern uint16_t		rtnl_cls_get_protocol(struct rtnl_cls *);
+
+/* <netlink/route/qdisc/htb.h> */
+
+extern uint32_t	rtnl_htb_get_rate2quantum(struct rtnl_qdisc *);
+extern int	rtnl_htb_set_rate2quantum(struct rtnl_qdisc *, uint32_t);
+extern uint32_t	rtnl_htb_get_defcls(struct rtnl_qdisc *);
+extern int	rtnl_htb_set_defcls(struct rtnl_qdisc *, uint32_t);
+
+extern uint32_t	rtnl_htb_get_prio(struct rtnl_class *);
+extern int	rtnl_htb_set_prio(struct rtnl_class *, uint32_t);
+extern uint32_t	rtnl_htb_get_rate(struct rtnl_class *);
+extern int	rtnl_htb_set_rate(struct rtnl_class *, uint32_t);
+extern uint32_t	rtnl_htb_get_ceil(struct rtnl_class *);
+extern int	rtnl_htb_set_ceil(struct rtnl_class *, uint32_t);
+extern uint32_t	rtnl_htb_get_rbuffer(struct rtnl_class *);
+extern int	rtnl_htb_set_rbuffer(struct rtnl_class *, uint32_t);
+extern uint32_t	rtnl_htb_get_cbuffer(struct rtnl_class *);
+extern int	rtnl_htb_set_cbuffer(struct rtnl_class *, uint32_t);
+extern uint32_t	rtnl_htb_get_quantum(struct rtnl_class *);
+extern int	rtnl_htb_set_quantum(struct rtnl_class *, uint32_t);
+extern int	rtnl_htb_get_level(struct rtnl_class *);
 
 /* <netlink/route/addr.h> */
 

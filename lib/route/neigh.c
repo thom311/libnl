@@ -465,6 +465,9 @@ static int build_neigh_msg(struct rtnl_neigh *tmpl, int cmd, int flags,
 
 	nhdr.ndm_family = nl_addr_get_family(tmpl->n_dst);
 
+	if (tmpl->ce_mask & NEIGH_ATTR_FLAGS)
+		nhdr.ndm_flags = tmpl->n_flags;
+
 	if (tmpl->ce_mask & NEIGH_ATTR_STATE)
 		nhdr.ndm_state = tmpl->n_state;
 

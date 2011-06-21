@@ -101,14 +101,20 @@
  * Creates a netlink socket using the specified protocol, binds the socket
  * and issues a connection attempt.
  *
+ * @note SOCK_CLOEXEC is set on the socket if available.
+ *
  * @return 0 on success or a negative error code.
  */
 int nl_connect(struct nl_sock *sk, int protocol)
 {
-	int err;
+	int err, flags = 0;
 	socklen_t addrlen;
 
-	sk->s_fd = socket(AF_NETLINK, SOCK_RAW, protocol);
+#ifdef SOCK_CLOEXEC
+	flags |= SOCK_CLOEXEC;
+#endif
+
+	sk->s_fd = socket(AF_NETLINK, SOCK_RAW | flags, protocol);
 	if (sk->s_fd < 0) {
 		err = -nl_syserr2nlerr(errno);
 		goto errout;

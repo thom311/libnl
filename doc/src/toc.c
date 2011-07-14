@@ -13,7 +13,7 @@ provide APIs on different levels of abstraction. The core library libnl.so
 provides a fundamental set of functions to deal with sockets, construct
 messages, and send/receive those messages. Additional high level interfaces
 for several individual netlink protocols are provided in separate
-libraries (e.g. \ref route_doc "nl-route.so", \ref genl_doc "nl-genl.so", ...).
+libraries (e.g. "nl-route.so", "nl-genl.so", ...).
 
 The library is designed to ensure that all components are optional, i.e.
 even though the core library provides a caching system which allows to
@@ -27,11 +27,6 @@ always achieved and undesired side effects can occur if a recent libnl
 version is used with a considerably older kernel.
 
 \section main_toc Table of Contents
-
-- \subpage core_doc "1. Netlink Core Library (-lnl)"
-- \subpage route_doc "2. Routing Netlink Library (-lnl-route)"
-- \subpage genl_doc "3. Generic Netlink Library (-lnl-genl)"
-- \subpage nf_doc "4. Netfilter Netlink Library (-lnl-nf)"
 
 \section main_trees GIT Trees
 

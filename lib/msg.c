@@ -181,8 +181,6 @@ static void __init init_msg_size(void)
  * Calculates size of netlink message based on payload length.
  * @arg payload		Length of payload
  *
- * See \ref core_msg_fmt_align for more information on alignment.
- *
  * @return size of netlink message without padding.
  */
 int nlmsg_size(int payload)
@@ -201,8 +199,6 @@ int nlmsg_msg_size(int payload)
  *
  * This function is idential to nlmsg_size() + nlmsg_padlen().
  *
- * See \ref core_msg_fmt_align for more information on alignment.
- *
  * @return Size of netlink message including padding.
  */
 int nlmsg_total_size(int payload)
@@ -217,8 +213,6 @@ int nlmsg_total_size(int payload)
  * Calculates the number of bytes of padding which is required to be added to
  * the end of the message to ensure that the next netlink message header begins
  * properly aligned to NLMSG_ALIGNTO.
- *
- * See \ref core_msg_fmt_align for more information on alignment.
  *
  * @return Number of bytes of padding needed.
  */

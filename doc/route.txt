@@ -1,0 +1,720 @@
+////
+	vim.syntax: asciidoc
+
+	Copyright (c) 2011 Thomas Graf <tgraf@suug.ch>
+////
+
+Netlink Routing Library
+=======================
+Thomas Graf <tgraf@suug.ch>
+3.0, March 23 2011:
+:toc:
+:icons:
+:numbered:
+
+
+== Introduction
+
+== Introduction to the Library
+
+== Addresses
+
+== Links / Interfaces
+
+== Neighbouring
+
+== Routing
+
+== Traffic Control
+
+The traffic control architecture allows the queueing and
+prioritization of packets before they are enqueued to the network
+driver. To a limited degree it is also possible to take control of
+network traffic as it enters the network stack.
+
+The architecture consists of three different types of modules:
+
+- *Queueing disciplines (qdisc)* provide a mechanism to enqueue packets
+  in different forms. They may be used to implement fair queueing,
+  prioritization of differentiated services, enforce bandwidth
+  limitations, or even to simulate network behaviour such as packet
+  loss and packet delay. Qdiscs can be classful in which case they
+  allow traffic classes described in the next paragraph to be attached
+  to them.
+
+- *Traffic classes (class)* are supported by several qdiscs to build
+  a tree structure for different types of traffic. Each class may be
+  assigned its own set of attributes such as bandwidth limits or
+  queueing priorities. Some qdiscs even allow borrowing of bandwidth
+  between classes.
+
+- *Classifiers (cls)* are used to decide which qdisc/class the packet
+  should be enqueued to. Different types of classifiers exists,
+  ranging from classification based on protocol header values to
+  classification based on packet priority or firewall marks.
+  Additionally most classifiers support *extended matches (ematch)*
+  which allow extending classifiers by a set of matcher modules, and
+  *actions* which allow classifiers to take actions such as mangling,
+  mirroring, or even rerouting of packets.
+
+.Default Qdisc
+
+The default qdisc used on all network devices is `pfifo_fast`.
+Network devices which do not require a transmit queue such as the
+loopback device do not have a default qdisc attached. The `pfifo_fast`
+qdisc provides three bands to prioritize interactive traffic over bulk
+traffic. Classification is based on the packet priority (diffserv).
+
+image:qdisc_default.png["Default Qdisc"]
+
+.Multiqueue Default Qdisc
+
+If the network device provides multiple transmit queues the `mq`
+qdisc is used by default. It will automatically create a separate
+class for each transmit queue available and will also replace
+the single per device tx lock with a per queue lock.
+
+image:qdisc_mq.png["Multiqueue default Qdisc"]
+
+.Example of a customized classful qdisc setup
+
+The following figure illustrates a possible combination of different
+queueing and classification modules to implement quality of service
+needs.
+
+image:tc_overview.png["Classful Qdisc diagram"]
+
+=== Traffic Control Object
+
+Each type traffic control module (qdisc, class, classifier) is
+represented by its own structure. All of them are based on the traffic
+control object represented by `struct rtnl_tc` which itself is based
+on the generic object `struct nl_object` to make it cacheable. The
+traffic control object contains all attributes, implementation details
+and statistics that are shared by all of the traffic control object
+types.
+
+image:tc_obj.png["struct rtnl_tc hierarchy"]
+
+It is not possible to allocate a `struct rtnl_tc` object, instead the
+actual tc object types must be allocated directly using
+`rtnl_qdisc_alloc()`, `rtnl_class_alloc()`, `rtnl_cls_alloc()` and
+then casted to `struct rtnl_tc` using the `TC_CAST()` macro.
+
+.Usage Example: Allocation, Casting, Freeing
+[source,c]
+-----
+#include <netlink/route/tc.h>
+#include <netlink/route/qdisc.h>
+
+struct rtnl_qdisc *qdisc;
+
+/* Allocation of a qdisc object */
+qdisc = rtnl_qdisc_alloc();
+
+/* Cast the qdisc to a tc object using TC_CAST() to use rtnl_tc_ functions. */
+rtnl_tc_set_mpu(TC_CAST(qdisc), 64);
+
+/* Free the qdisc object */
+rtnl_qdisc_put(qdisc);
+-----
+
+[[tc_attr]]
+==== Attributes
+
+[cols="a,a", options="header", frame="topbot"]
+|====================================================================
+| Attribute | C Interface
+|
+Handle::
+The handle uniquely identifies a tc object and is used to refer
+to other tc objects when constructing tc trees.
+|
+[source,c]
+-----
+void rtnl_tc_set_handle(struct rtnl_tc *tc, uint32_t handle);
+uint32_t rtnl_tc_get_handle(struct rtnl_tc *tc);
+-----
+|
+IfIndex::
+The interface index specifies the network device the traffic object
+is attached to. The function `rtnl_tc_set_link()` should be preferred
+when setting the interface index. It stores the reference to the link
+object in the tc object and allows retrieving the `mtu` and `linktype`
+automatically.
+|
+[source,c]
+-----
+void rtnl_tc_set_ifindex(struct rtnl_tc *tc, int ifindex);
+void rtnl_tc_set_link(struct rtnl_tc *tc, struct rtnl_link *link);
+int rtnl_tc_get_ifindex(struct rtnl_tc *tc);
+-----
+|
+LinkType::
+The link type specifies the kind of link that is used by the network
+device (e.g. ethernet, ATM, ...). It is derived automatically when
+the network device is specified with `rtnl_tc_set_link()`.
+The default fallback is `ARPHRD_ETHER` (ethernet).
+|
+[source,c]
+-----
+void rtnl_tc_set_linktype(struct rtnl_tc *tc, uint32_t type);
+uint32_t rtnl_tc_get_linktype(struct rtnl_tc *tc);
+-----
+|
+Kind::
+The kind character string specifies the type of qdisc, class,
+classifier. Setting the kind results in the module specific
+structure being allocated. Therefore it is imperative to call 
+`rtnl_tc_set_kind()` before using any type specific API functions
+such as `rtnl_htb_set_rate()`.
+|
+[source,c]
+-----
+int rtnl_tc_set_kind(struct rtnl_tc *tc, const char *kind);
+char *rtnl_tc_get_kind(struct rtnl_tc *tc);
+-----
+|
+MPU::
+The Minimum Packet Unit specifies the minimum packet size which will
+be transmitted
+ever be seen by this traffic control object. This value is used for
+rate calculations. Not all object implementations will make use of
+this value. The default value is 0.
+|
+[source,c]
+-----
+void rtnl_tc_set_mpu(struct rtnl_tc *tc, uint32_t mpu);
+uint32_t rtnl_tc_get_mpu(struct rtnl_tc *tc);
+-----
+|
+MTU::
+The Maximum Transmission Unit specifies the maximum packet size which
+will be transmitted. The value is derived from the link specified
+with `rtnl_tc_set_link()` if not overwritten with `rtnl_tc_set_mtu()`.
+If no link and MTU is specified, the value defaults to 1500
+(ethernet).
+|
+[source,c]
+-----
+void rtnl_tc_set_mtu(struct rtnl_tc *tc, uint32_t mtu);
+uint32_t rtnl_tc_get_mtu(struct rtnl_tc *tc);
+-----
+|
+Overhead::
+The overhead specifies the additional overhead per packet caused by
+the network layer. This value can be used to correct packet size
+calculations if the packet size on the wire does not match the packet
+size seen by the kernel. The default value is 0.
+|
+[source,c]
+-----
+void rtnl_tc_set_overhead(struct rtnl_tc *tc, uint32_t overhead);
+uint32_t rtnl_tc_get_overhead(struct rtnl_tc *tc);
+-----
+|
+Parent::
+Specifies the parent traffic control object. The parent is identifier
+by its handle. Special values are:
+- `TC_H_ROOT`: attach tc object directly to network device (root
+  qdisc, root classifier)
+- `TC_H_INGRESS`: same as `TC_H_ROOT` but on the ingress side of the
+  network stack.
+|
+[source,c]
+-----
+void rtnl_tc_set_parent(struct rtnl_tc *tc, uint32_t parent);
+uint32_t rtnl_tc_get_parent(struct rtnl_tc *tc);
+-----
+|
+Statistics::
+Generic statistics, see <<tc_stats, Accessing Statistics>> for
+additional information.
+|
+[source,c]
+-----
+uint64_t rtnl_tc_get_stat(struct rtnl_tc *tc, enum rtnl_tc_stat id);
+-----
+|====================================================================
+
+[[tc_stats]]
+==== Accessing Statistics
+
+The traffic control object holds a set of generic statistics. Not all
+traffic control modules will make use of all of these statistics. Some
+modules may provide additional statistics via their own APIs.
+
+.Statistic identifiers `(enum rtnl_tc_stat)`
+[cols="m,,", options="header", frame="topbot"]
+|====================================================================
+| ID                 | Type    | Description
+| RTNL_TC_PACKETS    | Counter | Total # of packets transmitted
+| RTNL_TC_BYTES      | Counter | Total # of bytes transmitted
+| RTNL_TC_RATE_BPS   | Rate    | Current bytes/s rate
+| RTNL_TC_RATE_PPS   | Rate    | Current packets/s rate
+| RTNL_TC_QLEN       | Rate    | Current length of the queue
+| RTNL_TC_BACKLOG    | Rate    | # of packets currently backloged
+| RTNL_TC_DROPS      | Counter | # of packets dropped
+| RTNL_TC_REQUEUES   | Counter | # of packets requeued
+| RTNL_TC_OVERLIMITS | Counter | # of packets that exceeded the limit
+|====================================================================
+
+NOTE: `RTNL_TC_RATE_BPS` and `RTNL_TC_RATE_PPS` only return meaningful
+      values if a rate estimator has been configured.
+
+.Usage Example: Retrieving tc statistics
+[source,c]
+-------
+#include <netlink/route/tc.h>
+
+uint64_t drops, qlen;
+
+drops = rtnl_tc_get_stat(TC_CAST(qdisc), RTNL_TC_DROPS);
+qlen  = rtnl_tc_get_stat(TC_CAST(qdisc), RTNL_TC_QLEN);
+-------
+
+==== Rate Table Calculations
+
+[[tc_qdisc]]
+=== Queueing Discipline (qdisc)
+
+.Classless Qdisc
+
+The queueing discipline (qdisc) is used to implement fair queueing,
+priorization or rate control. It provides a _enqueue()_ and
+_dequeue()_ operation. Whenever a network packet leaves the networking
+stack over a network device, be it a physical or virtual device, it
+will be enqueued to a qdisc unless the device is queueless. The
+_enqueue()_ operation is followed by an immediate call to _dequeue()_
+for the same qdisc to eventually retrieve a packet which can be
+scheduled for transmission by the driver. Additionally, the networking
+stack runs a watchdog which polls the qdisc regularly to dequeue and
+send packets even if no new packets are being enqueued.
+
+This additional watchdog is required due to the fact that qdiscs may
+hold on to packets and not return any packets upon _dequeue()_ in
+order to enforce bandwidth restrictions.
+
+image:classless_qdisc_nbands.png[alt="Multiband Qdisc", float="right"]
+
+The figure illustrates a trivial example of a classless qdisc
+consisting of three bands (queues). Use of multiple bands is a common
+technique in qdiscs to implement fair queueing between flows or
+prioritize differentiated services.
+
+Classless qdiscs can be regarded as a blackbox, their inner workings
+can only be steered using the configuration parameters provided by the
+qdisc. There is no way of taking influence on the structure of its
+internal queues itself.
+
+.Classful Qdisc
+
+Classful qdiscs allow for the queueing structure and classification
+process to be created by the user. 
+
+image:classful_qdisc.png["Classful Qdisc"]
+
+The figure above shows a classful qdisc with a classifier attached to
+it which will make the decision whether to enqueue a packet to traffic
+class +1:1+ or +1:2+. Unlike with classless qdiscs, classful qdiscs
+allow the classification process and the structure of the queues to be
+defined by the user. This allows for complex traffic class rules to
+be applied.
+
+.List of Qdisc Implementations
+[options="header", frame="topbot", cols="2,1^,8"]
+|======================================================================
+| Qdisc     | Classful | Description
+| ATM       | Yes      | FIXME
+| Blackhole | No       | This qdisc will drop all packets passed to it.
+| CBQ       | Yes      |
+The CBQ (Class Based Queueing) is a classful qdisc which allows
+creating traffic classes and enforce bandwidth limitations for each
+class.
+| DRR       | Yes      |
+The DRR (Deficit Round Robin) scheduler is a classful qdisc
+impelemting fair queueing. Each class is assigned a quantum specyfing
+the maximum number of bytes that can be served per round.  Unused
+quantum at the end of the round is carried over to the next round.
+| DSMARK   | Yes       | FIXME
+| FIFO     | No        | FIXME
+| GRED     | No        | FIXME
+| HFSC     | Yes       | FIXME
+| HTB      | Yes       | FIXME
+| mq       | Yes       | FIXME
+| multiq   | Yes       | FIXME
+| netem    | No        | FIXME
+| Prio     | Yes       | FIXME
+| RED      | Yes       | FIXME
+| SFQ      | Yes       | FIXME
+| TBF      | Yes       | FIXME
+| teql     | No        | FIXME
+|======================================================================
+
+
+.QDisc API Overview
+[cols="a,a", options="header", frame="topbot"]
+|====================================================================
+| Attribute | C Interface
+|
+Allocation / Freeing::
+|
+[source,c]
+-----
+struct rtnl_qdisc *rtnl_qdisc_alloc(void);
+void rtnl_qdisc_put(struct rtnl_qdisc *qdisc);
+-----
+|
+Addition::
+|
+[source,c]
+-----
+int rtnl_qdisc_build_add_request(struct rtnl_qdisc *qdisc, int flags,
+				 struct nl_msg **result);
+int rtnl_qdisc_add(struct nl_sock *sock, struct rtnl_qdisc *qdisc,
+                   int flags);
+-----
+|
+Modification::
+|
+[source,c]
+-----
+int rtnl_qdisc_build_change_request(struct rtnl_qdisc *old,
+				    struct rtnl_qdisc *new,
+				    struct nl_msg **result);
+int rtnl_qdisc_change(struct nl_sock *sock, struct rtnl_qdisc *old,
+		      struct rtnl_qdisc *new);
+-----
+|
+Deletion::
+|
+[source,c]
+-----
+int rtnl_qdisc_build_delete_request(struct rtnl_qdisc *qdisc,
+				    struct nl_msg **result);
+int rtnl_qdisc_delete(struct nl_sock *sock, struct rtnl_qdisc *qdisc);
+-----
+|
+Cache::
+|
+[source,c]
+-----
+int rtnl_qdisc_alloc_cache(struct nl_sock *sock,
+			   struct nl_cache **cache);
+struct rtnl_qdisc *rtnl_qdisc_get(struct nl_cache *cache, int, uint32_t);
+
+struct rtnl_qdisc *rtnl_qdisc_get_by_parent(struct nl_cache *, int, uint32_t);
+-----
+|====================================================================
+
+[[qdisc_get]]
+==== Retrieving Qdisc Configuration
+
+The function rtnl_qdisc_alloc_cache() is used to retrieve the current
+qdisc configuration in the kernel. It will construct a +RTM_GETQDISC+
+netlink message, requesting the complete list of qdiscs configured in
+the kernel.
+
+[source,c]
+-------
+#include <netlink/route/qdisc.h>
+
+struct nl_cache *all_qdiscs;
+
+if (rtnl_link_alloc_cache(sock, &all_qdiscs) < 0)
+	/* error while retrieving qdisc cfg */
+-------
+
+The cache can be accessed using the following functions:
+
+- Search qdisc with matching ifindex and handle:
++
+[source,c]
+--------
+struct rtnl_qdisc *rtnl_qdisc_get(struct nl_cache *cache, int ifindex, uint32_t handle);
+--------
+- Search qdisc with matching ifindex and parent:
++
+[source,c]
+--------
+struct rtnl_qdisc *rtnl_qdisc_get_by_parent(struct nl_cache *cache, int ifindex , uint32_t parent);
+--------
+- Or any of the generic cache functions (e.g. nl_cache_search(), nl_cache_dump(), etc.)
+
+.Example: Search and print qdisc
+[source,c]
+-------
+struct rtnl_qdisc *qdisc;
+int ifindex;
+
+ifindex = rtnl_link_get_ifindex(eth0_obj);
+
+/* search for qdisc on eth0 with handle 1:0 */
+if (!(qdisc = rtnl_qdisc_get(all_qdiscs, ifindex, TC_HANDLE(1, 0))))
+	/* no such qdisc found */
+
+nl_object_dump(OBJ_CAST(qdisc), NULL);
+
+rtnl_qdisc_put(qdisc);
+-------
+
+[[qdisc_add]]
+==== Adding a Qdisc
+
+In order to add a new qdisc to the kernel, a qdisc object needs to be
+allocated. It will hold all attributes of the new qdisc.
+
+[source,c]
+-----
+#include <netlink/route/qdisc.h>
+
+struct rtnl_qdisc *qdisc;
+
+if (!(qdisc = rtnl_qdisc_alloc()))
+	/* OOM error */
+-----
+
+The next step is to specify all generic qdisc attributes using the tc
+object interface described in the section <<tc_attr, traffic control
+object attributes>>.
+
+The following attributes must be specified:
+- IfIndex
+- Parent
+- Kind
+
+[source,c]
+-----
+/* Attach qdisc to device eth0 */
+rtnl_tc_set_link(TC_CAST(qdisc), eth0_obj);
+
+/* Make this the root qdisc */
+rtnl_tc_set_parent(TC_CAST(qdisc), TC_H_ROOT);
+
+/* Set qdisc identifier to 1:0, if left unspecified, a handle will be generated by the kernel. */
+rtnl_tc_set_handle(TC_CAST(qdisc), TC_HANDLE(1, 0));
+
+/* Make this a HTB qdisc */
+rtnl_tc_set_kind(TC_CAST(qdisc), "htb");
+-----
+
+After specyfing the qdisc kind (rtnl_tc_set_kind()) the qdisc type
+specific interface can be used to set attributes which are specific
+to the respective qdisc implementations:
+
+[source,c]
+------
+/* HTB feature: Make unclassified packets go to traffic class 1:5 */
+rtnl_htb_set_defcls(qdisc, TC_HANDLE(1, 5));
+------
+
+Finally, the qdisc is ready to be added and can be passed on to the
+function rntl_qdisc_add() which takes care of constructing a netlink
+message requesting the addition of the new qdisc, sends the message to
+the kernel and waits for the response by the kernel. The function
+returns 0 if the qdisc has been added or updated successfully or a
+negative error code if an error occured.
+
+CAUTION: The kernel operation for updating and adding a qdisc is the
+         same. Therefore when calling rtnl_qdisc_add() any existing
+         qdisc with matching handle will be updated unless the flag
+         NLM_F_EXCL is specified.
+
+The following flags may be specified:
+[horizontal]
+NLM_F_CREATE::  Create qdisc if it does not exist, otherwise
+                -NLE_OBJ_NOTFOUND is returned.
+NLM_F_REPLACE:: If another qdisc is already attached to the same
+                parent and their handles mismatch, replace the qdisc
+                instead of returning -EEXIST.
+NLM_F_EXCL::    Return -NLE_EXISTS if a qdisc with matching handles
+                exists already.
+
+WARNING: The function rtnl_qdisc_add() requires administrator
+         privileges.
+
+[source,c]
+------
+/* Submit request to kernel and wait for response */
+err = rtnl_qdisc_add(sock, qdisc, NLM_F_CREATE);
+
+/* Return the qdisc object to free memory resources */
+rtnl_qdisc_put(qdisc);
+
+if (err < 0) {
+	fprintf(stderr, "Unable to add qdisc: %s\n", nl_geterror(err));
+	return err;
+}
+------
+
+==== Deleting a qdisc
+
+[source,c]
+------
+#include <netlink/route/qdisc.h>
+
+struct rtnl_qdisc *qdisc;
+
+qdisc = rtnl_qdisc_alloc();
+
+rtnl_tc_set_link(TC_CAST(qdisc), eth0_obj);
+rtnl_tc_set_parent(TC_CAST(qdisc), TC_H_ROOT);
+
+rtnl_qdisc_delete(sock, qdisc)
+
+rtnl_qdisc_put(qdisc);
+------
+
+WARNING: The function rtnl_qdisc_delete() requires administrator
+         privileges.
+
+
+[[qdisc_htb]]
+==== HTB - Hierarchical Token Bucket
+
+.HTB Qdisc Attributes
+
+[cols="a,a", options="header", frame="topbot"]
+|====================================================================
+| Attribute | C Interface
+|
+Default Class::
+The default class is the fallback class to which all traffic which
+remained unclassified is directed to. If no default class or an
+invalid default class is specified, packets are transmitted directly
+to the next layer (direct transmissions).
+|
+[source,c]
+-----
+uint32_t rtnl_htb_get_defcls(struct rtnl_qdisc *qdisc);
+int rtnl_htb_set_defcls(struct rtnl_qdisc *qdisc, uint32_t defcls);
+-----
+|
+Rate to Quantum (r2q)::
+TODO
+|
+[source,c]
+-----
+uint32_t rtnl_htb_get_rate2quantum(struct rtnl_qdisc *qdisc);
+int rtnl_htb_set_rate2quantum(struct rtnl_qdisc *qdisc, uint32_t rate2quantum);
+-----
+|====================================================================
+
+
+.HTB Class Attributes
+
+[cols="a,a", options="header", frame="topbot"]
+|====================================================================
+| Attribute | C Interface
+|
+Priority::
+|
+[source,c]
+-----
+uint32_t rtnl_htb_get_prio(struct rtnl_class *class);
+int rtnl_htb_set_prio(struct rtnl_class *class, uint32_t prio);
+-----
+|
+Rate::
+The rate (bytes/s) specifies the maximum bandwidth an invidivual class
+can use without borrowing. The rate of a class should always be greater
+or erqual than the rate of its children.
+|
+[source,c]
+-----
+uint32_t rtnl_htb_get_rate(struct rtnl_class *class);
+int rtnl_htb_set_rate(struct rtnl_class *class, uint32_t ceil);
+-----
+|
+Ceil Rate::
+The ceil rate specifies the maximum bandwidth an invidivual class
+can use. This includes bandwidth that is being borrowed from other
+classes. Ceil defaults to the class rate implying that by default
+the class will not borrow. The ceil rate of a class should always
+be greater or erqual than the ceil rate of its children.
+|
+[source,c]
+-----
+uint32_t rtnl_htb_get_ceil(struct rtnl_class *class);
+int rtnl_htb_set_ceil(struct rtnl_class *class, uint32_t ceil);
+-----
+|
+Burst::
+TODO
+|
+[source,c]
+-----
+uint32_t rtnl_htb_get_rbuffer(struct rtnl_class *class);
+int rtnl_htb_set_rbuffer(struct rtnl_class *class, uint32_t burst);
+-----
+|
+Ceil Burst::
+TODO
+|
+[source,c]
+-----
+uint32_t rtnl_htb_get_bbuffer(struct rtnl_class *class);
+int rtnl_htb_set_bbuffer(struct rtnl_class *class, uint32_t burst);
+-----
+|
+Quantum::
+TODO
+|
+[source,c]
+-----
+int rtnl_htb_set_quantum(struct rtnl_class *class, uint32_t quantum);
+-----
+|====================================================================
+
+extern int	rtnl_htb_set_cbuffer(struct rtnl_class *, uint32_t);
+
+
+
+
+[[tc_class]]
+=== Class
+
+[options="header", cols="s,a,a,a,a"]
+|=======================================================================
+|        | UNSPEC             | TC_H_ROOT          | 0:pY  | pX:pY
+| UNSPEC 3+^|
+[horizontal]
+qdisc =:: root-qdisc
+class =:: root-qdisc:0
+|
+[horizontal]
+qdisc =:: pX:0
+class =:: pX:0
+| 0:hY 3+^|
+[horizontal]
+qdisc =:: root-qdisc
+class =:: root-qdisc:hY
+|
+[horizontal]
+qdisc =:: pX:0
+class =:: pX:hY
+| hX:hY 3+^|
+[horizontal]
+qdisc =:: hX:
+class =:: hX:hY
+|
+if pX != hX
+    return -EINVAL
+[horizontal]
+qdisc =:: hX:
+class =:: hX:hY
+|=======================================================================
+
+[[tc_cls]]
+=== Classifier (cls)
+
+[[tc_classid_mngt]]
+=== ClassID Management
+
+[[tc_pktloc]]
+=== Packet Location Aliasing (pktloc)
+
+[[tc_api]]
+=== Traffic Control Module API
+
+

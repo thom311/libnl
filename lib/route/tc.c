@@ -307,7 +307,6 @@ void rtnl_tc_set_link(struct rtnl_tc *tc, struct rtnl_link *link)
 /**
  * Get link of traffic control object
  * @arg tc		traffic control object
- * @arg link		link object
  *
  * Returns the link of a traffic control object. The link is only
  * returned if it has been set before via rtnl_tc_set_link() or

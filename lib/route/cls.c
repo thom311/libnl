@@ -237,6 +237,7 @@ int rtnl_cls_change(struct nl_sock *sk, struct rtnl_cls *cls, int flags)
 /**
  * Build netlink message requesting the deletion of a classifier
  * @arg cls		Classifier to delete
+ * @arg flags		Additional netlink message flags
  * @arg result		Pointer to store resulting netlink message
  *
  * The behaviour of this function is identical to rtnl_cls_delete() with
@@ -264,6 +265,7 @@ int rtnl_cls_build_delete_request(struct rtnl_cls *cls, int flags,
  * Delete classifier
  * @arg sk		Netlink socket
  * @arg cls		Classifier to delete
+ * @arg flags		Additional netlink message flags
  *
  * Builds a \c RTM_DELTFILTER netlink message requesting the deletion
  * of a classifier and sends the message to the kernel.

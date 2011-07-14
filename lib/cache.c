@@ -677,6 +677,7 @@ int nl_cache_resync(struct nl_sock *sk, struct nl_cache *cache,
 
 	NL_DBG(1, "Resyncing cache %p <%s>...\n", cache, nl_cache_name(cache));
 
+restart:
 	/* Mark all objects so we can see if some of them are obsolete */
 	nl_cache_mark_all(cache);
 
@@ -685,7 +686,9 @@ int nl_cache_resync(struct nl_sock *sk, struct nl_cache *cache,
 		goto errout;
 
 	err = __cache_pickup(sk, cache, &p);
-	if (err < 0)
+	if (err == -NLE_DUMP_INTR)
+		goto restart;
+	else if (err < 0)
 		goto errout;
 
 	nl_list_for_each_entry_safe(obj, next, &cache->c_items, ce_list) {
@@ -770,6 +773,7 @@ int nl_cache_refill(struct nl_sock *sk, struct nl_cache *cache)
 {
 	int err;
 
+restart:
 	err = nl_cache_request_full_dump(sk, cache);
 	if (err < 0)
 		return err;
@@ -778,7 +782,13 @@ int nl_cache_refill(struct nl_sock *sk, struct nl_cache *cache)
 	       cache, nl_cache_name(cache));
 	nl_cache_clear(cache);
 
-	return nl_cache_pickup(sk, cache);
+	err = nl_cache_pickup(sk, cache);
+	if (err == -NLE_DUMP_INTR) {
+		fprintf(stderr, "dump interrupted, restarting!\n");
+		goto restart;
+	}
+	
+	return err;
 }
 
 /** @} */

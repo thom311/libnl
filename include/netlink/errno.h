@@ -49,8 +49,9 @@ extern "C" {
 #define NLE_PARSE_ERR		30
 #define NLE_NODEV		31
 #define NLE_IMMUTABLE		32
+#define NLE_DUMP_INTR		33
 
-#define NLE_MAX			NLE_IMMUTABLE
+#define NLE_MAX			NLE_DUMP_INTR
 
 extern const char *	nl_geterror(int);
 extern void		nl_perror(int, const char *);

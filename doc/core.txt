@@ -4,11 +4,10 @@
 	Copyright (c) 2011 Thomas Graf <tgraf@suug.ch>
 ////
 
-Netlink Core Library
-====================
+Netlink Library (libnl)
+=======================
 Thomas Graf <tgraf@suug.ch>
-3.0, March 30 2011:
-:toc:
+3.0, July 17 2011:
 :numbered:
 
 == Introduction
@@ -26,7 +25,7 @@ modified using a netlink based protocol.
 Several sub libraries exist which provide APIs to several netlink
 protocols:
 
-- Adresses, Links, Neighbours, Routing & Traffic Control
+- link:route.html[libnl-route] Adresses, Links, Neighbours, Routing & Traffic Control
 - Netfilter
 - Generic Netlink
 
@@ -295,7 +294,7 @@ Error messages can be sent in response to a request. Error messages must
 use the standard message type +NLMSG_ERROR+. The payload consists of a
 error code and the original netlink mesage header of the request. 
 
-.Netlink Error Message Header (+struct nlmsggerr)
+.Netlink Error Message Header (+struct nlmsggerr+)
 [cols="^,^", width="50%"]
 |==============================================================
 2+| Length

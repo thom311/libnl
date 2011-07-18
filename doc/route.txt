@@ -4,22 +4,145 @@
 	Copyright (c) 2011 Thomas Graf <tgraf@suug.ch>
 ////
 
-Netlink Routing Library
-=======================
+Routing Family Netlink Library (libnl-route)
+============================================
 Thomas Graf <tgraf@suug.ch>
-3.0, March 23 2011:
-:toc:
-:icons:
-:numbered:
-
+3.1, July 17 2011:
 
 == Introduction
 
-== Introduction to the Library
+This library provides APIs to the kernel interfaces of the routing family.
 
 == Addresses
 
-== Links / Interfaces
+== Links (Network Devices)
+
+The link configuration interface is part of the +NETLINK_ROUTE+ protocol
+family and implements the following netlink message types:
+
+- View and modify the configuration of physical and virtual network devices.
+- Create and delete virtual network devices (e.g. dummy devices, VLAN devices,
+  tun devices, bridging devices, ...)
+- View and modify per link network configuration settings (e.g.
+  +net.ipv6.conf.eth0.accept_ra+, +net.ipv4.conf.eth1.forwarding+, ...)
+
+.Naming Convention (network device, link, interface)
+
+In networking several terms are commonly used to refer to network devices.
+While they have distinct meanings they have been used interchangeably in
+the past. Within the Linux kernel, the term _network device_ or _netdev_ is
+commonly used In user space the term _network interface_ is very common.
+The routing netlink protocol uses the term _link_ and so does the _iproute2_
+utility and most routing daemons.
+
+=== Protocol Definition
+
+This section describes the protocol semantics of the netlink link configuration
+interface. The following netlink message types are defined:
+
+[options="header", cols="1,2,2"]
+|==============================================================================
+| Message Type   | User -> Kernel                    | Kernel -> User
+| +RTM_NEWLINK+  | Create new virtual network device | Notification: Link changed or added
+| +RTM_DELLINK+  | Delete virtual network device     | Notification: Link deleted or disappeared
+| +RTM_GETLINK+  | Retrieve link configuration and statistics | 
+| +RTM_SETLINK+  | Modify link configuration | 
+|==============================================================================
+
+See the link:core.html#core_msg_types[Message Types] section of the Netlink
+Library documentation for more information on common semantics of these message
+types.
+
+.Link Message Header
+
+All netlink link messages share the following common header which is appended
+after the netlink message header (+struct nlmsghdr+). It is defined in the
+header +<linux/rtnetlink.h>+
+
+[source,c]
+-----
+struct ifinfomsg {
+	unsigned char	ifi_family;
+	unsigned char	__ifi_pad;
+	unsigned short	ifi_type;		/* ARPHRD_* */
+	int		ifi_index;		/* Link index	*/
+	unsigned	ifi_flags;		/* IFF_* flags	*/
+	unsigned	ifi_change;		/* IFF_* change mask */
+};
+-----
+
+The meaning of each field may differ depending on the message type.
+
+.Attributes
+
+All link message types may carry netlink attributes. They are defined in the
+header file <linux/if_link.h> and share the prefix +IFLA_+.
+
+
+=== Link Object
+
+Name::
+The name of a network device is the human readable representation of a
+network device and secondary identification parameter besides the interface
+index.
++
+[source,c]
+-----
+void  rtnl_link_set_name(struct rtnl_link *link, const char *name);
+char *rtnl_link_get_name(struct rtnl_link *link);
+-----
+
+Interface Index::
+The interface index is an integer uniquely identifying a network device.
+If present, it will be used to identify an existing network device.
++
+[source,c]
+-----
+void rtnl_link_set_ifindex(struct rtnl_link *link, int ifindex);
+int  rtnl_link_get_ifindex(struct rtnl_link *link);
+-----
+
+
+Address::
+The link layer address (MAC address).
++
+[source,c]
+-----
+void            rtnl_link_set_addr(struct rtnl_link *link, struct nl_addr *addr);
+struct nl_addr *rtnl_link_get_addr(struct rtnl_link *link);
+-----
+
+Broadcast Address::
+Foo
++
+[source,c]
+-----
+void            rtnl_link_set_broadcast(struct rtnl_link *link, struct nl_addr *addr);
+struct nl_addr *rtnl_link_get_broadcast(struct rtnl_link *link);
+-----
+
+MTU::
+The maximum transmission unit specifies the maximum packet size a network
+device can transmit or receive. This value may be lower than the capability
+of the physical network device.
++
+[source,c]
+-----
+void         rtnl_link_set_mtu(struct rtnl_link *link, unsigned int mtu);
+unsigned int rtnl_link_get_mtu(struct rtnl_link *link);
+-----
+
+Weight::
+Foo
++
+[source,c]
+-----
+void         rtnl_link_set_weight(struct rtnl_link *link, unsigned int weight);
+unsigned int rtnl_link_get_weight(struct rtnl_link *link);
+-----
+
+=== Link Cache
+
 
 == Neighbouring
 
@@ -122,97 +245,93 @@ rtnl_qdisc_put(qdisc);
 [[tc_attr]]
 ==== Attributes
 
-[cols="a,a", options="header", frame="topbot"]
-|====================================================================
-| Attribute | C Interface
-|
 Handle::
 The handle uniquely identifies a tc object and is used to refer
 to other tc objects when constructing tc trees.
-|
++
 [source,c]
 -----
 void rtnl_tc_set_handle(struct rtnl_tc *tc, uint32_t handle);
 uint32_t rtnl_tc_get_handle(struct rtnl_tc *tc);
 -----
-|
-IfIndex::
+
+Interface Index::
 The interface index specifies the network device the traffic object
 is attached to. The function `rtnl_tc_set_link()` should be preferred
 when setting the interface index. It stores the reference to the link
 object in the tc object and allows retrieving the `mtu` and `linktype`
 automatically.
-|
++
 [source,c]
 -----
 void rtnl_tc_set_ifindex(struct rtnl_tc *tc, int ifindex);
 void rtnl_tc_set_link(struct rtnl_tc *tc, struct rtnl_link *link);
 int rtnl_tc_get_ifindex(struct rtnl_tc *tc);
 -----
-|
-LinkType::
+
+Link Type::
 The link type specifies the kind of link that is used by the network
 device (e.g. ethernet, ATM, ...). It is derived automatically when
 the network device is specified with `rtnl_tc_set_link()`.
 The default fallback is `ARPHRD_ETHER` (ethernet).
-|
++
 [source,c]
 -----
 void rtnl_tc_set_linktype(struct rtnl_tc *tc, uint32_t type);
 uint32_t rtnl_tc_get_linktype(struct rtnl_tc *tc);
 -----
-|
+
 Kind::
 The kind character string specifies the type of qdisc, class,
 classifier. Setting the kind results in the module specific
 structure being allocated. Therefore it is imperative to call 
 `rtnl_tc_set_kind()` before using any type specific API functions
 such as `rtnl_htb_set_rate()`.
-|
++
 [source,c]
 -----
 int rtnl_tc_set_kind(struct rtnl_tc *tc, const char *kind);
 char *rtnl_tc_get_kind(struct rtnl_tc *tc);
 -----
-|
+
 MPU::
 The Minimum Packet Unit specifies the minimum packet size which will
 be transmitted
 ever be seen by this traffic control object. This value is used for
 rate calculations. Not all object implementations will make use of
 this value. The default value is 0.
-|
++
 [source,c]
 -----
 void rtnl_tc_set_mpu(struct rtnl_tc *tc, uint32_t mpu);
 uint32_t rtnl_tc_get_mpu(struct rtnl_tc *tc);
 -----
-|
+
 MTU::
 The Maximum Transmission Unit specifies the maximum packet size which
 will be transmitted. The value is derived from the link specified
 with `rtnl_tc_set_link()` if not overwritten with `rtnl_tc_set_mtu()`.
 If no link and MTU is specified, the value defaults to 1500
 (ethernet).
-|
++
 [source,c]
 -----
 void rtnl_tc_set_mtu(struct rtnl_tc *tc, uint32_t mtu);
 uint32_t rtnl_tc_get_mtu(struct rtnl_tc *tc);
 -----
-|
+
 Overhead::
 The overhead specifies the additional overhead per packet caused by
 the network layer. This value can be used to correct packet size
 calculations if the packet size on the wire does not match the packet
 size seen by the kernel. The default value is 0.
-|
++
 [source,c]
 -----
 void rtnl_tc_set_overhead(struct rtnl_tc *tc, uint32_t overhead);
 uint32_t rtnl_tc_get_overhead(struct rtnl_tc *tc);
 -----
-|
+
 Parent::
 Specifies the parent traffic control object. The parent is identifier
 by its handle. Special values are:
@@ -220,22 +339,21 @@ by its handle. Special values are:
   qdisc, root classifier)
 - `TC_H_INGRESS`: same as `TC_H_ROOT` but on the ingress side of the
   network stack.
-|
++
 [source,c]
 -----
 void rtnl_tc_set_parent(struct rtnl_tc *tc, uint32_t parent);
 uint32_t rtnl_tc_get_parent(struct rtnl_tc *tc);
 -----
-|
+
 Statistics::
 Generic statistics, see <<tc_stats, Accessing Statistics>> for
 additional information.
-|
++
 [source,c]
 -----
 uint64_t rtnl_tc_get_stat(struct rtnl_tc *tc, enum rtnl_tc_stat id);
 -----
-|====================================================================
 
 [[tc_stats]]
 ==== Accessing Statistics
@@ -574,97 +692,87 @@ WARNING: The function rtnl_qdisc_delete() requires administrator
 
 .HTB Qdisc Attributes
 
-[cols="a,a", options="header", frame="topbot"]
-|====================================================================
-| Attribute | C Interface
-|
 Default Class::
 The default class is the fallback class to which all traffic which
 remained unclassified is directed to. If no default class or an
 invalid default class is specified, packets are transmitted directly
 to the next layer (direct transmissions).
-|
++
 [source,c]
 -----
 uint32_t rtnl_htb_get_defcls(struct rtnl_qdisc *qdisc);
 int rtnl_htb_set_defcls(struct rtnl_qdisc *qdisc, uint32_t defcls);
 -----
-|
+
 Rate to Quantum (r2q)::
 TODO
-|
++
 [source,c]
 -----
 uint32_t rtnl_htb_get_rate2quantum(struct rtnl_qdisc *qdisc);
 int rtnl_htb_set_rate2quantum(struct rtnl_qdisc *qdisc, uint32_t rate2quantum);
 -----
-|====================================================================
 
 
 .HTB Class Attributes
 
-[cols="a,a", options="header", frame="topbot"]
-|====================================================================
-| Attribute | C Interface
-|
 Priority::
-|
++
 [source,c]
 -----
 uint32_t rtnl_htb_get_prio(struct rtnl_class *class);
 int rtnl_htb_set_prio(struct rtnl_class *class, uint32_t prio);
 -----
-|
+
 Rate::
 The rate (bytes/s) specifies the maximum bandwidth an invidivual class
 can use without borrowing. The rate of a class should always be greater
 or erqual than the rate of its children.
-|
++
 [source,c]
 -----
 uint32_t rtnl_htb_get_rate(struct rtnl_class *class);
 int rtnl_htb_set_rate(struct rtnl_class *class, uint32_t ceil);
 -----
-|
+
 Ceil Rate::
 The ceil rate specifies the maximum bandwidth an invidivual class
 can use. This includes bandwidth that is being borrowed from other
 classes. Ceil defaults to the class rate implying that by default
 the class will not borrow. The ceil rate of a class should always
 be greater or erqual than the ceil rate of its children.
-|
++
 [source,c]
 -----
 uint32_t rtnl_htb_get_ceil(struct rtnl_class *class);
 int rtnl_htb_set_ceil(struct rtnl_class *class, uint32_t ceil);
 -----
-|
+
 Burst::
 TODO
-|
++
 [source,c]
 -----
 uint32_t rtnl_htb_get_rbuffer(struct rtnl_class *class);
 int rtnl_htb_set_rbuffer(struct rtnl_class *class, uint32_t burst);
 -----
-|
+
 Ceil Burst::
 TODO
-|
++
 [source,c]
 -----
 uint32_t rtnl_htb_get_bbuffer(struct rtnl_class *class);
 int rtnl_htb_set_bbuffer(struct rtnl_class *class, uint32_t burst);
 -----
-|
+
 Quantum::
 TODO
-|
++
 [source,c]
 -----
 int rtnl_htb_set_quantum(struct rtnl_class *class, uint32_t quantum);
 -----
-|====================================================================
 
 extern int	rtnl_htb_set_cbuffer(struct rtnl_class *, uint32_t);
 
@@ -708,13 +816,19 @@ class =:: hX:hY
 [[tc_cls]]
 === Classifier (cls)
 
+TODO
+
 [[tc_classid_mngt]]
 === ClassID Management
+
+TODO
 
 [[tc_pktloc]]
 === Packet Location Aliasing (pktloc)
 
+TODO
+
 [[tc_api]]
 === Traffic Control Module API
 
-
+TODO

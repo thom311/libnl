@@ -12,7 +12,9 @@
 /**
  * @ingroup link
  * @defgroup vlan VLAN
- * @brief
+ * Virtual LAN link module
+ *
+ * See <a href="../route.html#link_vlan">VLAN API documentation</a> for more information
  *
  * @{
  */
@@ -45,21 +47,8 @@ struct vlan_info
 	struct vlan_map * 	vi_egress_qos;
 	uint32_t		vi_mask;
 };
+
 /** @endcond */
-
-static const struct trans_tbl vlan_flags[] = {
-	__ADD(VLAN_FLAG_REORDER_HDR, reorder_hdr)
-};
-
-char *rtnl_link_vlan_flags2str(int flags, char *buf, size_t len)
-{
-	return __flags2str(flags, buf, len, vlan_flags, ARRAY_SIZE(vlan_flags));
-}
-
-int rtnl_link_vlan_str2flags(const char *name)
-{
-	return __str2flags(name, vlan_flags, ARRAY_SIZE(vlan_flags));
-}
 
 static struct nla_policy vlan_policy[IFLA_VLAN_MAX+1] = {
 	[IFLA_VLAN_ID]		= { .type = NLA_U16 },
@@ -241,7 +230,7 @@ static int vlan_clone(struct rtnl_link *dst, struct rtnl_link *src)
 	int err;
 
 	dst->l_info = NULL;
-	if ((err = rtnl_link_set_info_type(dst, "vlan")) < 0)
+	if ((err = rtnl_link_set_type(dst, "vlan")) < 0)
 		return err;
 	vdst = dst->l_info;
 
@@ -334,12 +323,42 @@ static struct rtnl_link_info_ops vlan_info_ops = {
 	.io_free		= vlan_free,
 };
 
-int rtnl_link_vlan_set_id(struct rtnl_link *link, int id)
+/** @cond SKIP */
+#define IS_VLAN_LINK_ASSERT(link) \
+	if ((link)->l_info_ops != &vlan_info_ops) { \
+		APPBUG("Link is not a vlan link. set type \"vlan\" first."); \
+		return -NLE_OPNOTSUPP; \
+	}
+/** @endcond */
+
+/**
+ * @name VLAN Object
+ * @{
+ */
+
+/**
+ * Check if link is a VLAN link
+ * @arg link		Link object
+ *
+ * @return True if link is a VLAN link, otherwise false is returned.
+ */
+int rtnl_link_is_vlan(struct rtnl_link *link)
+{
+	return link->l_info_ops && !strcmp(link->l_info_ops->io_name, "vlan");
+}
+
+/**
+ * Set VLAN ID
+ * @arg link		Link object
+ * @arg id		VLAN identifier
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_vlan_set_id(struct rtnl_link *link, uint16_t id)
 {
 	struct vlan_info *vi = link->l_info;
 
-	if (link->l_info_ops != &vlan_info_ops || !link->l_info_ops)
-		return -NLE_OPNOTSUPP;
+	IS_VLAN_LINK_ASSERT(link);
 
 	vi->vi_vlan_id = id;
 	vi->vi_mask |= VLAN_HAS_ID;
@@ -347,12 +366,17 @@ int rtnl_link_vlan_set_id(struct rtnl_link *link, int id)
 	return 0;
 }
 
+/**
+ * Get VLAN Id
+ * @arg link		Link object
+ *
+ * @return VLAN id, 0 if not set or a negative error code.
+ */
 int rtnl_link_vlan_get_id(struct rtnl_link *link)
 {
 	struct vlan_info *vi = link->l_info;
 
-	if (link->l_info_ops != &vlan_info_ops || !link->l_info_ops)
-		return -NLE_OPNOTSUPP;
+	IS_VLAN_LINK_ASSERT(link);
 
 	if (vi->vi_mask & VLAN_HAS_ID)
 		return vi->vi_vlan_id;
@@ -360,12 +384,18 @@ int rtnl_link_vlan_get_id(struct rtnl_link *link)
 		return 0;
 }
 
+/**
+ * Set VLAN flags
+ * @arg link		Link object
+ * @arg flags		VLAN flags
+ *
+ * @return 0 on success or a negative error code.
+ */
 int rtnl_link_vlan_set_flags(struct rtnl_link *link, unsigned int flags)
 {
 	struct vlan_info *vi = link->l_info;
 
-	if (link->l_info_ops != &vlan_info_ops || !link->l_info_ops)
-		return -NLE_OPNOTSUPP;
+	IS_VLAN_LINK_ASSERT(link);
 
 	vi->vi_flags_mask |= flags;
 	vi->vi_flags |= flags;
@@ -374,12 +404,18 @@ int rtnl_link_vlan_set_flags(struct rtnl_link *link, unsigned int flags)
 	return 0;
 }
 
+/**
+ * Unset VLAN flags
+ * @arg link		Link object
+ * @arg flags		VLAN flags
+ *
+ * @return 0 on success or a negative error code.
+ */
 int rtnl_link_vlan_unset_flags(struct rtnl_link *link, unsigned int flags)
 {
 	struct vlan_info *vi = link->l_info;
 
-	if (link->l_info_ops != &vlan_info_ops || !link->l_info_ops)
-		return -NLE_OPNOTSUPP;
+	IS_VLAN_LINK_ASSERT(link);
 
 	vi->vi_flags_mask |= flags;
 	vi->vi_flags &= ~flags;
@@ -388,23 +424,34 @@ int rtnl_link_vlan_unset_flags(struct rtnl_link *link, unsigned int flags)
 	return 0;
 }
 
-unsigned int rtnl_link_vlan_get_flags(struct rtnl_link *link)
+/**
+ * Get VLAN flags
+ * @arg link		Link object
+ *
+ * @return VLAN flags, 0 if none set, or a negative error code.
+ */
+int rtnl_link_vlan_get_flags(struct rtnl_link *link)
 {
 	struct vlan_info *vi = link->l_info;
 
-	if (link->l_info_ops != &vlan_info_ops || !link->l_info_ops)
-		return -NLE_OPNOTSUPP;
+	IS_VLAN_LINK_ASSERT(link);
 
 	return vi->vi_flags;
 }
+
+/** @} */
+
+/**
+ * @name Quality of Service
+ * @{
+ */
 
 int rtnl_link_vlan_set_ingress_map(struct rtnl_link *link, int from,
 				   uint32_t to)
 {
 	struct vlan_info *vi = link->l_info;
 
-	if (link->l_info_ops != &vlan_info_ops || !link->l_info_ops)
-		return -NLE_OPNOTSUPP;
+	IS_VLAN_LINK_ASSERT(link);
 
 	if (from < 0 || from > VLAN_PRIO_MAX)
 		return -NLE_INVAL;
@@ -477,6 +524,30 @@ struct vlan_map *rtnl_link_vlan_get_egress_map(struct rtnl_link *link,
 		return NULL;
 	}
 }
+
+/** @} */
+
+static const struct trans_tbl vlan_flags[] = {
+	__ADD(VLAN_FLAG_REORDER_HDR, reorder_hdr)
+};
+
+/**
+ * @name Flag Translation
+ * @{
+ */
+
+char *rtnl_link_vlan_flags2str(int flags, char *buf, size_t len)
+{
+	return __flags2str(flags, buf, len, vlan_flags, ARRAY_SIZE(vlan_flags));
+}
+
+int rtnl_link_vlan_str2flags(const char *name)
+{
+	return __str2flags(name, vlan_flags, ARRAY_SIZE(vlan_flags));
+}
+
+/** @} */
+
 
 static void __init vlan_init(void)
 {

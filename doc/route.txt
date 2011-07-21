@@ -432,6 +432,7 @@ if (rtnl_link_add(sk, link, NLM_F_CREATE) < 0)
 rtnl_link_put(link);
 -----
 
+[[link_vlan]]
 ==== VLAN
 
 [source,c]

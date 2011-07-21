@@ -27,17 +27,19 @@ struct vlan_map
 
 #define VLAN_PRIO_MAX 7
 
+extern int		rtnl_link_is_vlan(struct rtnl_link *);
+
 extern char *		rtnl_link_vlan_flags2str(int, char *, size_t);
 extern int		rtnl_link_vlan_str2flags(const char *);
 
-extern int		rtnl_link_vlan_set_id(struct rtnl_link *, int);
+extern int		rtnl_link_vlan_set_id(struct rtnl_link *, uint16_t);
 extern int		rtnl_link_vlan_get_id(struct rtnl_link *);
 
 extern int		rtnl_link_vlan_set_flags(struct rtnl_link *,
 						 unsigned int);
 extern int		rtnl_link_vlan_unset_flags(struct rtnl_link *,
 						   unsigned int);
-extern unsigned int	rtnl_link_vlan_get_flags(struct rtnl_link *);
+extern int		rtnl_link_vlan_get_flags(struct rtnl_link *);
 
 extern int		rtnl_link_vlan_set_ingress_map(struct rtnl_link *,
 						       int, uint32_t);

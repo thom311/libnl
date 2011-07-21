@@ -2,21 +2,31 @@
 
 body, table, div, p, dl {
 	font-family: Lucida Grande, Verdana, Geneva, Arial, sans-serif;
-	font-size: 12px;
+	font-size: 13px;
 }
 
 /* @group Heading Levels */
 
+h1, h2, h3 {
+	color: #990000;
+}
+
 h1 {
-	font-size: 180%;
+	font-size: 150%;
+}
+
+.title {
+	font-size: 150%;
+	font-weight: bold;
+	margin: 10px 2px;
 }
 
 h2 {
-	font-size: 140%;
+	font-size: 120%;
 }
 
 h3 {
-	font-size: 120%;
+	font-size: 100%;
 }
 
 dt {
@@ -82,13 +92,15 @@ div.navtab {
 /* @group Link Styling */
 
 a {
-	color: #3D578C;
+	/* color: #3D578C; */
+	color: #990000;
 	font-weight: normal;
 	text-decoration: none;
 }
 
 .contents a:visited {
-	color: #4665A2;
+	/* color: #4665A2; */
+	color: #990000;
 }
 
 a:hover {
@@ -118,7 +130,8 @@ a.elRef {
 }
 
 a.code {
-	color: #4665A2;
+	/* color: #4665A2; */
+	color: #990000;
 }
 
 a.codeRef {
@@ -158,6 +171,7 @@ div.ah {
 	border-radius: 0.5em;
 	-webkit-border-radius: .5em;
 	-moz-border-radius: .5em;
+	box-shadow: 2px 2px 3px #999;
 	-webkit-box-shadow: 2px 2px 3px #999;
 	-moz-box-shadow: rgba(0, 0, 0, 0.15) 2px 2px 2px;
 	background-image: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#000),color-stop(0.3, #444));
@@ -167,7 +181,6 @@ div.ah {
 div.groupHeader {
 	margin-left: 16px;
 	margin-top: 12px;
-	margin-bottom: 6px;
 	font-weight: bold;
 }
 
@@ -185,16 +198,7 @@ body {
 div.contents {
 	margin-top: 10px;
 	margin-left: 10px;
-	margin-right: 10px;
-}
-
-div.contents p {
-	margin-left: 30px;
-}
-
-div.contents .fragment {
-	margin-left: 30px;
-	margin-right: 20px;
+	margin-right: 5px;
 }
 
 td.indexkey {
@@ -370,8 +374,13 @@ table.memberdecls {
         white-space: nowrap;
 }
 
+.memItemRight {
+	width: 100%;
+}
+
 .memTemplParams {
-	color: #4665A2;
+	/* color: #4665A2; */
+	color: #990000;
         white-space: nowrap;
 }
 
@@ -382,10 +391,11 @@ table.memberdecls {
 /* Styles for detailed member documentation */
 
 .memtemplate {
-	font-size: 100%;
-	color: #4665A2;
+	font-size: 80%;
+	/* color: #4665A2; */
+	color: #990000;
 	font-weight: normal;
-	margin-left: 3px;
+	margin-left: 9px;
 }
 
 .memnav {
@@ -397,10 +407,14 @@ table.memberdecls {
 	padding: 2px;
 }
 
+.mempage {
+	width: 100%;
+}
+
 .memitem {
 	padding: 0;
-	border: 1px solid #C4CFE5;
-	margin-bottom: 30px;
+	margin-bottom: 10px;
+	margin-right: 5px;
 }
 
 .memname {
@@ -410,17 +424,53 @@ table.memberdecls {
 }
 
 .memproto {
-	background-color: #F9FAFC;
-	border-bottom: 1px solid #A3B4D7;
+        border-top: 1px solid #A8B8D9;
+        border-left: 1px solid #A8B8D9;
+        border-right: 1px solid #A8B8D9;
+        border-bottom: 1px solid #A8B8D9;
         padding: 6px 0px 6px 0px;
-        color: #000000;
+        color: #253555;
         font-weight: bold;
+        /* text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9); */
+        /* opera specific markup */
+        box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
+        border-top-right-radius: 8px;
+        border-top-left-radius: 8px;
+        /* firefox specific markup */
+        -moz-box-shadow: rgba(0, 0, 0, 0.15) 5px 5px 5px;
+        -moz-border-radius-topright: 8px;
+        -moz-border-radius-topleft: 8px;
+        /* webkit specific markup */
+        -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
+        -webkit-border-top-right-radius: 8px;
+        -webkit-border-top-left-radius: 8px;
+        background-image:url('nav_f.png');
+        background-repeat:repeat-x;
+        background-color: #E2E8F2;
 
 }
 
 .memdoc {
+        border-bottom: 1px solid #A8B8D9;      
+        border-left: 1px solid #A8B8D9;      
+        border-right: 1px solid #A8B8D9; 
         padding: 2px 5px;
-	margin-left: 30px;
+        background-color: #FBFCFD;
+        border-top-width: 0;
+        /* opera specific markup */
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+        box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
+        /* firefox specific markup */
+        -moz-border-radius-bottomleft: 8px;
+        -moz-border-radius-bottomright: 8px;
+        -moz-box-shadow: rgba(0, 0, 0, 0.15) 5px 5px 5px;
+        background-image: -moz-linear-gradient(center top, #FFFFFF 0%, #FFFFFF 60%, #F7F8FB 95%, #EEF1F7);
+        /* webkit specific markup */
+        -webkit-border-bottom-left-radius: 8px;
+        -webkit-border-bottom-right-radius: 8px;
+        -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
+        background-image: -webkit-gradient(linear,center top,center bottom,from(#FFFFFF), color-stop(0.6,#FFFFFF), color-stop(0.60,#FFFFFF), color-stop(0.95,#F7F8FB), to(#EEF1F7));
 }
 
 .paramkey {
@@ -432,12 +482,35 @@ table.memberdecls {
 }
 
 .paramname {
-	color: #602020;
+	/* color: #602020; */
+	color: black;
 	white-space: nowrap;
 }
 .paramname em {
 	font-style: normal;
 }
+
+.params, .retval, .exception, .tparams {
+        border-spacing: 6px 2px;
+}       
+
+.params .paramname, .retval .paramname {
+        font-weight: bold;
+        vertical-align: top;
+}
+        
+.params .paramtype {
+        font-style: italic;
+        vertical-align: top;
+}       
+        
+.params .paramdir {
+        font-family: "courier new",courier,monospace;
+        vertical-align: top;
+}
+
+
+
 
 /* @end */
 
@@ -589,14 +662,14 @@ table.doxtable th {
 	list-style-type:none;
 	float:left;
 	padding-left:10px;
-	padding-right: 15px;
+	padding-right:15px;
 	background-image:url('bc_s.png');
 	background-repeat:no-repeat;
 	background-position:right;
 	color:#364D7C;
 }
 
-.navpath a
+.navpath li.navelem a
 {
 	height:32px;
 	display:block;
@@ -604,10 +677,24 @@ table.doxtable th {
 	outline: none;
 }
 
-.navpath a:hover
+.navpath li.navelem a:hover
 {
 	color:#6884BD;
 }
+
+.navpath li.footer
+{
+        list-style-type:none;
+        float:right;
+        padding-left:10px;
+        padding-right:15px;
+        background-image:none;
+        background-repeat:no-repeat;
+        background-position:right;
+        color:#364D7C;
+        font-size: 8pt;
+}
+
 
 div.summary
 {
@@ -619,6 +706,19 @@ div.summary
 }       
 
 div.summary a
+{
+	white-space: nowrap;
+}
+
+div.ingroups
+{
+	font-size: 8pt;
+	padding-left: 5px;
+	width: 50%;
+	text-align: left;
+}
+
+div.ingroups a
 {
 	white-space: nowrap;
 }
@@ -635,5 +735,112 @@ div.header
 div.headertitle
 {
 	padding: 5px 5px 5px 10px;
+}
+
+dl
+{
+        padding: 0 0 0 10px;
+}
+
+dl.note, dl.warning, dl.attention, dl.pre, dl.post, dl.invariant, dl.deprecated, dl.todo, dl.test, dl.bug
+{
+        border-left:4px solid;
+        padding: 0 0 0 6px;
+}
+
+dl.note
+{
+        border-color: #D0C000;
+}
+
+dl.warning, dl.attention
+{
+        border-color: #FF0000;
+}
+
+dl.pre, dl.post, dl.invariant
+{
+        border-color: #00D000;
+}
+
+dl.deprecated
+{
+        border-color: #505050;
+}
+
+dl.todo
+{
+        border-color: #00C0E0;
+}
+
+dl.test
+{
+        border-color: #3030E0;
+}
+
+dl.bug
+{
+        border-color: #C08050;
+}
+
+#projectlogo
+{
+	text-align: center;
+	vertical-align: bottom;
+	border-collapse: separate;
+}
+ 
+#projectlogo img
+{ 
+	border: 0px none;
+}
+ 
+#projectname
+{
+	font: 300% Tahoma, Arial,sans-serif;
+	margin: 0px;
+	padding: 2px 0px;
+}
+    
+#projectbrief
+{
+	font: 120% Tahoma, Arial,sans-serif;
+	margin: 0px;
+	padding: 0px;
+}
+
+#projectnumber
+{
+	font: 50% Tahoma, Arial,sans-serif;
+	margin: 0px;
+	padding: 0px;
+}
+
+#titlearea
+{
+	padding: 0px;
+	margin: 0px;
+	width: 100%;
+	border-bottom: 1px solid #5373B4;
+}
+
+.image
+{
+        text-align: center;
+}
+
+.dotgraph
+{
+        text-align: center;
+}
+
+.mscgraph
+{
+        text-align: center;
+}
+
+.caption
+{
+	font-weight: bold;
 }
 

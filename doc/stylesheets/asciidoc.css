@@ -23,10 +23,14 @@ body {
 a {
   /* color: blue; */
   color: #990000;
-  text-decoration: underline;
+  text-decoration: none;
 }
 a:visited {
   /* color: fuchsia; */
+}
+
+a:hover {
+	text-decoration: underline;
 }
 
 em {

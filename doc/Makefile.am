@@ -4,14 +4,16 @@
 
 ASCIIDOCOPTS=-a pygments -a language=c -a icons \
 	     -a toc2 \
+	     -a numbered \
 	     -a imagesdir="./images/" \
 	     -a iconsdir="./images/icons" \
 	     -a stylesdir="${abs_srcdir}/stylesheets/"
 
 %.html: %.txt
-	asciidoc $(ASCIIDOCOPTS) $<
-	./doxygen-link.py libnl.dict $@ > doxygen-link.tmp
-	mv doxygen-link.tmp $@
+	./resolve-asciidoc-refs.py $< > asciidoc.tmp
+	asciidoc $(ASCIIDOCOPTS) -o $@ asciidoc.tmp
+	./doxygen-link.py libnl.dict $@ > asciidoc.tmp
+	mv asciidoc.tmp $@
 
 asciidoc: core.html route.html index.html
 

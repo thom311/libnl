@@ -142,8 +142,8 @@ extern int rtnl_link_get_num_vf(struct rtnl_link *, uint32_t *);
 extern uint64_t rtnl_link_get_stat(struct rtnl_link *, int);
 extern int rtnl_link_set_stat(struct rtnl_link *, const unsigned int, const uint64_t);
 
-extern int rtnl_link_set_info_type(struct rtnl_link *, const char *);
-extern char *rtnl_link_get_info_type(struct rtnl_link *);
+extern int rtnl_link_set_type(struct rtnl_link *, const char *);
+extern char *rtnl_link_get_type(struct rtnl_link *);
 
 /* <netlink/route/link/vlan.h> */
 

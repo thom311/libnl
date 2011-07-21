@@ -386,11 +386,11 @@ class Link(netlink.Object):
 	@property
         def type(self):
         	"""Link type"""
-        	return capi.rtnl_link_get_info_type(self._rtnl_link)
+        	return capi.rtnl_link_get_type(self._rtnl_link)
 
 	@type.setter
         def type(self, value):
-                if capi.rtnl_link_set_info_type(self._rtnl_link, value) < 0:
+                if capi.rtnl_link_set_type(self._rtnl_link, value) < 0:
                         raise NameError("unknown info type")
 
                 self._module_lookup('netlink.route.links.' + value)

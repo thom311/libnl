@@ -1977,17 +1977,17 @@ int rtnl_link_set_stat(struct rtnl_link *link, const unsigned int id,
 }
 
 /**
- * Specify the info type of a link
- * @arg link	link object
- * @arg type	info type
+ * Set link type
+ * @arg link	Link object
+ * @arg type	Type of link
  *
- * Looks up the info type and prepares the link to store info type
- * specific attributes. If an info type has been assigned already
- * it will be released with all changes lost.
+ * Looks up the link type modules and prepares the link to store type
+ * specific attributes. If a type has been assigned already it will
+ * be released with all link type specific attributes lost.
  *
  * @return 0 on success or a negative errror code.
  */
-int rtnl_link_set_info_type(struct rtnl_link *link, const char *type)
+int rtnl_link_set_type(struct rtnl_link *link, const char *type)
 {
 	struct rtnl_link_info_ops *io;
 	int err;
@@ -2008,18 +2008,27 @@ int rtnl_link_set_info_type(struct rtnl_link *link, const char *type)
 }
 
 /**
- * Return info type of a link
- * @arg link	link object
+ * Get type of link
+ * @arg link	Link object
  *
- * @note The returned pointer is only valid as long as the link exists
- * @return Info type name or NULL if unknown.
+ * @return Name of link type or NULL if unknown.
  */
-char *rtnl_link_get_info_type(struct rtnl_link *link)
+char *rtnl_link_get_type(struct rtnl_link *link)
 {
 	if (link->l_info_ops)
 		return link->l_info_ops->io_name;
 	else
 		return NULL;
+}
+
+int rtnl_link_set_info_type(struct rtnl_link *link, const char *type)
+{
+	return rtnl_link_set_type(link, type);
+}
+
+char *rtnl_link_get_info_type(struct rtnl_link *link)
+{
+	return rtnl_link_get_type(link);
 }
 
 /** @} */

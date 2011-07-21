@@ -58,6 +58,7 @@ libnl_route_la_SOURCES = \
 	\
 	route/link/api.c route/link/vlan.c route/link/dummy.c \
 	route/link/bridge.c route/link/inet6.c route/link/inet.c \
+	route/link/bonding.c \
 	\
 	route/qdisc/blackhole.c route/qdisc/cbq.c route/qdisc/dsmark.c \
 	route/qdisc/fifo.c route/qdisc/htb.c route/qdisc/netem.c \

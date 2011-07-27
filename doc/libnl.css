@@ -361,6 +361,15 @@ table.memberdecls {
 	padding: 1px 0 0 8px;
 }
 
+.mdescRight > p {
+	padding: 0px;
+	margin: 0px;
+}
+
+.mdescRight > br {
+	font-size: 0pt;
+}
+
 .mdescLeft, .mdescRight {
 	padding: 0px 8px 4px 8px;
 	color: #555;

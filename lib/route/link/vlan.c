@@ -14,7 +14,10 @@
  * @defgroup vlan VLAN
  * Virtual LAN link module
  *
- * See <a href="../route.html#link_vlan">VLAN API documentation</a> for more information
+ * @details
+ * \b Link Type Name: "vlan"
+ *
+ * @route_doc{link_vlan, VLAN Documentation}
  *
  * @{
  */

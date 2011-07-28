@@ -6,144 +6,15 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
  * @ingroup rtnl
  * @defgroup link Links (Interfaces)
- * @brief
  *
- * @par Link Identification
- * A link can be identified by either its interface index or by its
- * name. The kernel favours the interface index but falls back to the
- * interface name if the interface index is lesser-than 0 for kernels
- * >= 2.6.11. Therefore you can request changes without mapping a
- * interface name to the corresponding index first.
- *
- * @par Changeable Attributes
- * @anchor link_changeable
- *  - Link layer address
- *  - Link layer broadcast address
- *  - device mapping (ifmap) (>= 2.6.9)
- *  - MTU (>= 2.6.9)
- *  - Transmission queue length (>= 2.6.9)
- *  - Weight (>= 2.6.9)
- *  - Link name (only via access through interface index) (>= 2.6.9)
- *  - Flags (>= 2.6.9)
- *    - IFF_DEBUG
- *    - IFF_NOTRAILERS
- *    - IFF_NOARP
- *    - IFF_DYNAMIC
- *    - IFF_MULTICAST
- *    - IFF_PORTSEL
- *    - IFF_AUTOMEDIA
- *    - IFF_UP
- *    - IFF_PROMISC
- *    - IFF_ALLMULTI
- *
- * @par Link Flags (linux/if.h)
- * @anchor link_flags
- * @code
- *   IFF_UP            Status of link (up|down)
- *   IFF_BROADCAST     Indicates this link allows broadcasting
- *   IFF_MULTICAST     Indicates this link allows multicasting
- *   IFF_ALLMULTI      Indicates this link is doing multicast routing
- *   IFF_DEBUG         Tell the driver to do debugging (currently unused)
- *   IFF_LOOPBACK      This is the loopback link
- *   IFF_POINTOPOINT   Point-to-point link
- *   IFF_NOARP         Link is unable to perform ARP
- *   IFF_PROMISC       Status of promiscious mode flag
- *   IFF_MASTER        Used by teql
- *   IFF_SLAVE         Used by teql
- *   IFF_PORTSEL       Indicates this link allows port selection
- *   IFF_AUTOMEDIA     Indicates this link selects port automatically
- *   IFF_DYNAMIC       Indicates the address of this link is dynamic
- *   IFF_RUNNING       Link is running and carrier is ok.
- *   IFF_NOTRAILERS    Unused, BSD compat.
- * @endcode
- *
- * @par Notes on IFF_PROMISC and IFF_ALLMULTI flags
- * Although you can query the status of IFF_PROMISC and IFF_ALLMULTI
- * they do not represent the actual state in the kernel but rather
- * whether the flag has been enabled/disabled by userspace. The link
- * may be in promiscious mode even if IFF_PROMISC is not set in a link
- * dump request response because promiscity might be needed by the driver
- * for a period of time.
- *
- * @note The unit of the transmission queue length depends on the
- *       link type, a common unit is \a packets.
- *
- * @par 1) Retrieving information about available links
- * @code
- * // The first step is to retrieve a list of all available interfaces within
- * // the kernel and put them into a cache.
- * struct nl_cache *cache = rtnl_link_alloc_cache(sk);
- *
- * // In a second step, a specific link may be looked up by either interface
- * // index or interface name.
- * struct rtnl_link *link = rtnl_link_get_by_name(cache, "lo");
- *
- * // rtnl_link_get_by_name() is the short version for translating the
- * // interface name to an interface index first like this:
- * int ifindex = rtnl_link_name2i(cache, "lo");
- * struct rtnl_link *link = rtnl_link_get(cache, ifindex);
- *
- * // After successful usage, the object must be given back to the cache
- * rtnl_link_put(link);
- * @endcode
- *
- * @par 2) Changing link attributes
- * @code
- * // In order to change any attributes of an existing link, we must allocate
- * // a new link to hold the change requests:
- * struct rtnl_link *request = rtnl_link_alloc();
- *
- * // Now we can go on and specify the attributes we want to change:
- * rtnl_link_set_weight(request, 300);
- * rtnl_link_set_mtu(request, 1360);
- *
- * // We can also shut an interface down administratively
- * rtnl_link_unset_flags(request, rtnl_link_str2flags("up"));
- *
- * // Actually, we should know which link to change, so let's look it up
- * struct rtnl_link *old = rtnl_link_get(cache, "eth0");
- *
- * // Two ways exist to commit this change request, the first one is to
- * // build the required netlink message and send it out in one single
- * // step:
- * rtnl_link_change(sk, old, request, 0);
- *
- * // An alternative way is to build the netlink message and send it
- * // out yourself using nl_send_auto_complete()
- * struct nl_msg *msg = rtnl_link_build_change_request(old, request);
- * nl_send_auto_complete(sk, nlmsg_hdr(msg));
- * nlmsg_free(msg);
- *
- * // Don't forget to give back the link object ;->
- * rtnl_link_put(old);
- * @endcode
- *
- * @par 3) Link Type Specific Attributes
- * @code
- * // Some link types offer additional parameters and statistics specific
- * // to their type. F.e. a VLAN link can be configured like this:
- * //
- * // Allocate a new link and set the info type to "vlan". This is required
- * // to prepare the link to hold vlan specific attributes.
- * struct rtnl_link *request = rtnl_link_alloc();
- * rtnl_link_set_info_type(request, "vlan");
- *
- * // Now vlan specific attributes can be set:
- * rtnl_link_vlan_set_id(request, 10);
- * rtnl_link_vlan_set_ingress_map(request, 2, 8);
- *
- * // Of course the attributes can also be read, check the info type
- * // to make sure you are using the right access functions:
- * char *type = rtnl_link_get_info_type(link);
- * if (!strcmp(type, "vlan"))
- * 	int id = rtnl_link_vlan_get_id(link);
- * @endcode
+ * @details
+ * @route_doc{route_link, Link Documentation}
  * @{
  */
 
@@ -918,24 +789,7 @@ static char *link_attrs2str(int attrs, char *buf, size_t len)
 }
 
 /**
- * @name Allocation/Freeing
- * @{
- */
-
-struct rtnl_link *rtnl_link_alloc(void)
-{
-	return (struct rtnl_link *) nl_object_alloc(&link_obj_ops);
-}
-
-void rtnl_link_put(struct rtnl_link *link)
-{
-	nl_object_put((struct nl_object *) link);
-}
-
-/** @} */
-
-/**
- * @name Cache Management
+ * @name Get / List
  * @{
  */
 
@@ -946,9 +800,21 @@ void rtnl_link_put(struct rtnl_link *link)
  * @arg family		Link address family or AF_UNSPEC
  * @arg result		Pointer to store resulting cache.
  *
- * Allocates a new link cache, initializes it properly and updates it
- * to include all links currently configured in the kernel.
+ * Allocates and initializes a new link cache. A netlink message is sent to
+ * the kernel requesting a full dump of all configured links. The returned
+ * messages are parsed and filled into the cache. If the operation succeeds
+ * the resulting cache will a link object for each link configured in the
+ * kernel.
  *
+ * If \c family is set to an address family other than \c AF_UNSPEC the
+ * contents of the cache can be limited to a specific address family.
+ * Currently the following address families are supported:
+ * - AF_BRIDGE
+ * - AF_INET6
+ *
+ * @route_doc{link_list, Get List of Links}
+ * @see rtnl_link_get()
+ * @see rtnl_link_get_by_name()
  * @return 0 on success or a negative error code.
  */
 int rtnl_link_alloc_cache(struct nl_sock *sk, int family, struct nl_cache **result)
@@ -972,14 +838,19 @@ int rtnl_link_alloc_cache(struct nl_sock *sk, int family, struct nl_cache **resu
 }
 
 /**
- * Look up link by interface index in the provided cache
- * @arg cache		link cache
- * @arg ifindex		link interface index
+ * Lookup link in cache by interface index
+ * @arg cache		Link cache
+ * @arg ifindex		Interface index
  *
- * The caller owns a reference on the returned object and
- * must give the object back via rtnl_link_put().
+ * Searches through the provided cache looking for a link with matching
+ * interface index.
  *
- * @return pointer to link inside the cache or NULL if no match was found.
+ * @attention The reference counter of the returned link object will be
+ *            incremented. Use rtnl_link_put() to release the reference.
+ *
+ * @route_doc{link_list, Get List of Links}
+ * @see rtnl_link_get_by_name()
+ * @return Link object or NULL if no match was found.
  */
 struct rtnl_link *rtnl_link_get(struct nl_cache *cache, int ifindex)
 {
@@ -999,14 +870,19 @@ struct rtnl_link *rtnl_link_get(struct nl_cache *cache, int ifindex)
 }
 
 /**
- * Look up link by link name in the provided cache
- * @arg cache		link cache
- * @arg name		link name
+ * Lookup link in cache by link name
+ * @arg cache		Link cache
+ * @arg name		Name of link
  *
- * The caller owns a reference on the returned object and
- * must give the object back via rtnl_link_put().
+ * Searches through the provided cache looking for a link with matching
+ * link name
  *
- * @return pointer to link inside the cache or NULL if no match was found.
+ * @attention The reference counter of the returned link object will be
+ *            incremented. Use rtnl_link_put() to release the reference.
+ *
+ * @route_doc{link_list, Get List of Links}
+ * @see rtnl_link_get()
+ * @return Link object or NULL if no match was found.
  */
 struct rtnl_link *rtnl_link_get_by_name(struct nl_cache *cache,
 					 const char *name)
@@ -1026,12 +902,145 @@ struct rtnl_link *rtnl_link_get_by_name(struct nl_cache *cache,
 	return NULL;
 }
 
-/** @} */
+/**
+ * Construct RTM_GETLINK netlink message
+ * @arg ifindex		Interface index
+ * @arg name		Name of link
+ * @arg result		Pointer to store resulting netlink message
+ *
+ * The behaviour of this function is identical to rtnl_link_get_kernel()
+ * with the exception that it will not send the message but return it in
+ * the provided return pointer instead.
+ *
+ * @see rtnl_link_get_kernel()
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_link_build_get_request(int ifindex, const char *name,
+				struct nl_msg **result)
+{
+	struct ifinfomsg ifi;
+	struct nl_msg *msg;
+
+	if (ifindex <= 0 && !name) {
+		APPBUG("ifindex or name must be specified");
+		return -NLE_MISSING_ATTR;
+	}
+
+	memset(&ifi, 0, sizeof(ifi));
+
+	if (!(msg = nlmsg_alloc_simple(RTM_GETLINK, 0)))
+		return -NLE_NOMEM;
+
+	if (ifindex > 0)
+		ifi.ifi_index = ifindex;
+
+	if (nlmsg_append(msg, &ifi, sizeof(ifi), NLMSG_ALIGNTO) < 0)
+		goto nla_put_failure;
+
+	if (name)
+		NLA_PUT_STRING(msg, IFLA_IFNAME, name);
+
+	*result = msg;
+	return 0;
+
+nla_put_failure:
+	nlmsg_free(msg);
+	return -NLE_MSGSIZE;
+}
 
 /**
- * @name Link Modifications
- * @{
+ * Get a link object directly from kernel
+ * @arg sk		Netlink socket
+ * @arg ifindex		Interface index
+ * @arg name		Name of link
+ * @arg result		Pointer to store resulting link object
+ *
+ * This function builds a \c RTM_GETLINK netlink message to request
+ * a specific link directly from the kernel. The returned answer is
+ * parsed into a struct rtnl_link object and returned via the result
+ * pointer or -NLE_OBJ_NOTFOUND is returned if no matching link was
+ * found.
+ *
+ * @route_doc{link_direct_lookup, Lookup Single Link (Direct Lookup)}
+ * @return 0 on success or a negative error code.
  */
+int rtnl_link_get_kernel(struct nl_sock *sk, int ifindex, const char *name,
+			 struct rtnl_link **result)
+{
+	struct nl_msg *msg = NULL;
+	struct nl_object *obj;
+	int err;
+
+	if ((err = rtnl_link_build_get_request(ifindex, name, &msg)) < 0)
+		return err;
+
+	err = nl_send_auto(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
+		return err;
+
+	if ((err = nl_pickup(sk, link_msg_parser, &obj)) < 0)
+		return err;
+
+	/* We have used link_msg_parser(), object is definitely a link */
+	*result = (struct rtnl_link *) obj;
+
+	return 0;
+}
+
+/**
+ * Translate interface index to corresponding link name
+ * @arg cache		Link cache
+ * @arg ifindex		Interface index
+ * @arg dst		String to store name
+ * @arg len		Length of destination string
+ *
+ * Translates the specified interface index to the corresponding
+ * link name and stores the name in the destination string.
+ *
+ * @route_doc{link_translate_ifindex, Translating interface index to link name}
+ * @see rtnl_link_name2i()
+ * @return Name of link or NULL if no match was found.
+ */
+char * rtnl_link_i2name(struct nl_cache *cache, int ifindex, char *dst,
+			size_t len)
+{
+	struct rtnl_link *link = rtnl_link_get(cache, ifindex);
+
+	if (link) {
+		strncpy(dst, link->l_name, len - 1);
+		rtnl_link_put(link);
+		return dst;
+	}
+
+	return NULL;
+}
+
+/**
+ * Translate link name to corresponding interface index
+ * @arg cache		Link cache
+ * @arg name		Name of link
+ *
+ * @route_doc{link_translate_ifindex, Translating interface index to link name}
+ * @see rtnl_link_i2name()
+ * @return Interface index or 0 if no match was found.
+ */
+int rtnl_link_name2i(struct nl_cache *cache, const char *name)
+{
+	int ifindex = 0;
+	struct rtnl_link *link;
+	
+	link = rtnl_link_get_by_name(cache, name);
+	if (link) {
+		ifindex = link->l_index;
+		rtnl_link_put(link);
+	}
+
+	return ifindex;
+}
+
+/** @} */
 
 static int build_link_msg(int cmd, struct ifinfomsg *hdr,
 			  struct rtnl_link *link, int flags, struct nl_msg **result)
@@ -1108,7 +1117,12 @@ nla_put_failure:
 }
 
 /**
- * Build a netlink message requesting the addition of a new virtual link
+ * @name Add / Modify
+ * @{
+ */
+
+/**
+ * Build a netlink message requesting the addition of new virtual link
  * @arg link		new link to add
  * @arg flags		additional netlink message flags
  * @arg result		pointer to store resulting netlink message
@@ -1148,10 +1162,7 @@ int rtnl_link_build_add_request(struct rtnl_link *link, int flags,
  * error message to be received and will therefore block until the
  * operation has been completed.
  *
- * @note Disabling auto-ack (nl_socket_disable_auto_ack()) will cause
- *       this function to return immediately after sending. In this case,
- *       it is the responsibility of the caller to handle any error
- *       messages returned.
+ * @copydoc auto_ack_warning
  *
  * @return 0 on success or a negative error code.
  */
@@ -1164,16 +1175,11 @@ int rtnl_link_add(struct nl_sock *sk, struct rtnl_link *link, int flags)
 	if (err < 0)
 		return err;
 
-	err = nl_send_auto_complete(sk, msg);
-	nlmsg_free(msg);
-	if (err < 0)
-		return err;
-
-	return wait_for_ack(sk);
+	return nl_send_sync(sk, msg);
 }
 
 /**
- * Build a netlink message requesting the modification of a link
+ * Build a netlink message requesting the modification of link
  * @arg orig		original link to change
  * @arg changes		link containing the changes to be made
  * @arg flags		additional netlink message flags
@@ -1252,10 +1258,7 @@ errout:
  * error message to be received and will therefore block until the
  * operation has been completed.
  *
- * @note Disabling auto-ack (nl_socket_disable_auto_ack()) will cause
- *       this function to return immediately after sending. In this case,
- *       it is the responsibility of the caller to handle any error
- *       messages returned.
+ * @copydoc auto_ack_warning
  *
  * @note The link name can only be changed if the link has been put
  *       in opertional down state. (~IF_UP)
@@ -1287,6 +1290,13 @@ errout:
 	nlmsg_free(msg);
 	return err;
 }
+
+/** @} */
+
+/**
+ * @name Delete
+ * @{
+ */
 
 /**
  * Build a netlink message requesting the deletion of a link
@@ -1347,10 +1357,7 @@ nla_put_failure:
  * error message to be received and will therefore block until the
  * operation has been completed.
  *
- * @note Disabling auto-ack (nl_socket_disable_auto_ack()) will cause
- *       this function to return immediately after sending. In this case,
- *       it is the responsibility of the caller to handle any error
- *       messages returned.
+ * @copydoc auto_ack_warning
  *
  * @note Only virtual links such as dummy interface or vlan interfaces
  *       can be deleted. It is not possible to delete physical interfaces
@@ -1369,156 +1376,584 @@ int rtnl_link_delete(struct nl_sock *sk, const struct rtnl_link *link)
 	return nl_send_sync(sk, msg);
 }
 
-
-/**
- * Build a netlink message requesting a link
- * @arg ifindex		Interface index
- * @arg name		Name of link
- * @arg result		Pointer to store resulting netlink message
- *
- * The behaviour of this function is identical to rtnl_link_get_kernel()
- * with the exception that it will not send the message but return it in
- * the provided return pointer instead.
- *
- * @see rtnl_link_get_kernel()
- *
- * @return 0 on success or a negative error code.
- */
-int rtnl_link_build_get_request(int ifindex, const char *name,
-				struct nl_msg **result)
-{
-	struct ifinfomsg ifi;
-	struct nl_msg *msg;
-
-	if (ifindex <= 0 && !name) {
-		APPBUG("ifindex or name must be specified");
-		return -NLE_MISSING_ATTR;
-	}
-
-	memset(&ifi, 0, sizeof(ifi));
-
-	if (!(msg = nlmsg_alloc_simple(RTM_GETLINK, 0)))
-		return -NLE_NOMEM;
-
-	if (ifindex > 0)
-		ifi.ifi_index = ifindex;
-
-	if (nlmsg_append(msg, &ifi, sizeof(ifi), NLMSG_ALIGNTO) < 0)
-		goto nla_put_failure;
-
-	if (name)
-		NLA_PUT_STRING(msg, IFLA_IFNAME, name);
-
-	*result = msg;
-	return 0;
-
-nla_put_failure:
-	nlmsg_free(msg);
-	return -NLE_MSGSIZE;
-}
-
-/**
- * Get a link object directly from the kernel
- * @arg sk		Netlink socket
- * @arg ifindex		Interface index
- * @arg name		name of link
- * @arg result		result pointer to return link object
- *
- * This function builds a \c RTM_GETLINK netlink message to request
- * a specific link directly from the kernel. The returned answer is
- * parsed into a struct rtnl_link object and returned via the result
- * pointer or -NLE_OBJ_NOTFOUND is returned if no matching link was
- * found.
- *
- * @note Disabling auto-ack (nl_socket_disable_auto_ack()) will cause
- *       this function to return immediately after sending. In this case,
- *       it is the responsibility of the caller to handle any error
- *       messages returned.
- *
- * @return 0 on success or a negative error code.
- */
-int rtnl_link_get_kernel(struct nl_sock *sk, int ifindex, const char *name,
-			 struct rtnl_link **result)
-{
-	struct nl_msg *msg = NULL;
-	struct nl_object *obj;
-	int err;
-
-	if ((err = rtnl_link_build_get_request(ifindex, name, &msg)) < 0)
-		return err;
-
-	err = nl_send_auto(sk, msg);
-	nlmsg_free(msg);
-	if (err < 0)
-		return err;
-
-	if ((err = nl_pickup(sk, link_msg_parser, &obj)) < 0)
-		return err;
-
-	/* We have used link_msg_parser(), object is definitely a link */
-	*result = (struct rtnl_link *) obj;
-
-	return 0;
-}
-
 /** @} */
 
 /**
- * @name Name <-> Index Translations
+ * @name Link Object
  * @{
  */
 
 /**
- * Translate an interface index to the corresponding link name
- * @arg cache		link cache
- * @arg ifindex		link interface index
- * @arg dst		destination buffer
- * @arg len		length of destination buffer
+ * Allocate link object
  *
- * Translates the specified interface index to the corresponding
- * link name and stores the name in the destination buffer.
- *
- * @return link name or NULL if no match was found.
+ * @see rtnl_link_put()
+ * @return New link object or NULL if allocation failed
  */
-char * rtnl_link_i2name(struct nl_cache *cache, int ifindex, char *dst,
-			size_t len)
+struct rtnl_link *rtnl_link_alloc(void)
 {
-	struct rtnl_link *link = rtnl_link_get(cache, ifindex);
-
-	if (link) {
-		strncpy(dst, link->l_name, len - 1);
-		rtnl_link_put(link);
-		return dst;
-	}
-
-	return NULL;
+	return (struct rtnl_link *) nl_object_alloc(&link_obj_ops);
 }
 
 /**
- * Translate a link name to the corresponding interface index
- * @arg cache		link cache
- * @arg name		link name
+ * Return a link object reference
  *
- * @return interface index or 0 if no match was found.
+ * @copydetails nl_object_put()
  */
-int rtnl_link_name2i(struct nl_cache *cache, const char *name)
+void rtnl_link_put(struct rtnl_link *link)
 {
-	int ifindex = 0;
-	struct rtnl_link *link;
-	
-	link = rtnl_link_get_by_name(cache, name);
-	if (link) {
-		ifindex = link->l_index;
-		rtnl_link_put(link);
-	}
+	nl_object_put((struct nl_object *) link);
+}
 
-	return ifindex;
+/**
+ * Set name of link object
+ * @arg link		Link object
+ * @arg name		New name
+ *
+ * @note To change the name of a link in the kernel, set the interface
+ *       index to the link you wish to change, modify the link name using
+ *       this function and pass the link object to rtnl_link_change() or
+ *       rtnl_link_add().
+ *
+ * @route_doc{link_attr_name, Link Name}
+ * @see rtnl_link_get_name()
+ * @see rtnl_link_set_ifindex()
+ */
+void rtnl_link_set_name(struct rtnl_link *link, const char *name)
+{
+	strncpy(link->l_name, name, sizeof(link->l_name) - 1);
+	link->ce_mask |= LINK_ATTR_IFNAME;
+}
+
+/**
+ * Return name of link object
+ * @arg link		Link object
+ *
+ * @route_doc{link_attr_name, Link Name}
+ * @see rtnl_link_set_name()
+ * @return Link name or NULL if name is not specified
+ */
+char *rtnl_link_get_name(struct rtnl_link *link)
+{
+	return link->ce_mask & LINK_ATTR_IFNAME ? link->l_name : NULL;
+}
+
+static inline void __assign_addr(struct rtnl_link *link, struct nl_addr **pos,
+				 struct nl_addr *new, int flag)
+{
+	if (*pos)
+		nl_addr_put(*pos);
+
+	nl_addr_get(new);
+	*pos = new;
+
+	link->ce_mask |= flag;
+}
+
+/**
+ * Set link layer address of link object
+ * @arg link		Link object
+ * @arg addr		New link layer address
+ *
+ * The function increments the reference counter of the address object
+ * and overwrites any existing link layer address previously assigned.
+ *
+ * @route_doc{link_attr_address, Link layer address}
+ * @see rtnl_link_get_addr()
+ */
+void rtnl_link_set_addr(struct rtnl_link *link, struct nl_addr *addr)
+{
+	__assign_addr(link, &link->l_addr, addr, LINK_ATTR_ADDR);
+}
+
+/**
+ * Return link layer address of link object
+ * @arg link		Link object
+ *
+ * @copydoc pointer_lifetime_warning
+ * @route_doc{link_attr_address, Link Layer Address}
+ * @see rtnl_link_set_addr()
+ * @return Link layer address or NULL if not set.
+ */
+struct nl_addr *rtnl_link_get_addr(struct rtnl_link *link)
+{
+	return link->ce_mask & LINK_ATTR_ADDR ? link->l_addr : NULL;
+}
+
+/**
+ * Set link layer broadcast address of link object
+ * @arg link		Link object
+ * @arg addr		New broadcast address
+ *
+ * The function increments the reference counter of the address object
+ * and overwrites any existing link layer broadcast address previously
+ * assigned.
+ *
+ * @route_doc{link_attr_broadcast, Link Layer Broadcast Address}
+ * @see rtnl_link_get_broadcast()
+ */
+void rtnl_link_set_broadcast(struct rtnl_link *link, struct nl_addr *addr)
+{
+	__assign_addr(link, &link->l_bcast, addr, LINK_ATTR_BRD);
+}
+
+/**
+ * Return link layer broadcast address of link object
+ * @arg link		Link object
+ *
+ * @copydoc pointer_lifetime_warning
+ * @route_doc{link_attr_address, Link Layer Address}
+ * @see rtnl_link_set_broadcast()
+ * @return Link layer address or NULL if not set.
+ */
+struct nl_addr *rtnl_link_get_broadcast(struct rtnl_link *link)
+{
+	return link->ce_mask & LINK_ATTR_BRD ? link->l_bcast : NULL;
+}
+
+/**
+ * Set flags of link object
+ * @arg link		Link object
+ * @arg flags		Flags
+ *
+ * @see rtnl_link_get_flags()
+ * @see rtnl_link_unset_flags()
+ */
+void rtnl_link_set_flags(struct rtnl_link *link, unsigned int flags)
+{
+	link->l_flag_mask |= flags;
+	link->l_flags |= flags;
+	link->ce_mask |= LINK_ATTR_FLAGS;
+}
+
+/**
+ * Unset flags of link object
+ * @arg link		Link object
+ * @arg flags		Flags
+ *
+ * @see rtnl_link_set_flags()
+ * @see rtnl_link_get_flags()
+ */
+void rtnl_link_unset_flags(struct rtnl_link *link, unsigned int flags)
+{
+	link->l_flag_mask |= flags;
+	link->l_flags &= ~flags;
+	link->ce_mask |= LINK_ATTR_FLAGS;
+}
+
+/**
+ * Return flags of link object
+ * @arg link		Link object
+ *
+ * @route_doc{link_attr_flags, Link Flags}
+ * @see rtnl_link_set_flags()
+ * @see rtnl_link_unset_flags()
+ * @return Link flags or 0 if none have been set.
+ */
+unsigned int rtnl_link_get_flags(struct rtnl_link *link)
+{
+	return link->l_flags;
+}
+
+/**
+ * Set address family of link object
+ *
+ * @see rtnl_link_get_family()
+ */
+void rtnl_link_set_family(struct rtnl_link *link, int family)
+{
+	link->l_family = family;
+	link->ce_mask |= LINK_ATTR_FAMILY;
+}
+
+/**
+ * Return address family of link object
+ * @arg link		Link object
+ *
+ * @see rtnl_link_set_family()
+ * @return Address family or \c AF_UNSPEC if not specified.
+ */
+int rtnl_link_get_family(struct rtnl_link *link)
+{
+	return link->ce_mask & LINK_ATTR_FAMILY ? link->l_family : AF_UNSPEC;
+}
+
+/**
+ * Set hardware type of link object
+ * @arg link		Link object
+ * @arg arptype		New hardware type \c (ARPHRD_*)
+ *
+ * @route_doc{link_attr_arptype, Hardware Type}
+ * @copydoc read_only_attribute
+ * @see rtnl_link_get_arptype()
+ */
+void rtnl_link_set_arptype(struct rtnl_link *link, unsigned int arptype)
+{
+	link->l_arptype = arptype;
+	link->ce_mask |= LINK_ATTR_ARPTYPE;
+}
+
+/**
+ * Get hardware type of link object
+ * @arg link		Link object
+ *
+ * @route_doc{link_attr_arptype, Hardware Type}
+ * @see rtnl_link_set_arptype()
+ * @return Hardware type \c (ARPHRD_ETHER *) or \c ARPHRD_VOID
+ */
+unsigned int rtnl_link_get_arptype(struct rtnl_link *link)
+{
+	if (link->ce_mask & LINK_ATTR_ARPTYPE)
+		return link->l_arptype;
+	else
+		return ARPHRD_VOID;
+}
+
+/**
+ * Set interface index of link object
+ * @arg link		Link object
+ * @arg ifindex		Interface index
+ *
+ * @route_doc{link_attr_ifindex, Interface Index}
+ * @see rtnl_link_get_ifindex()
+ */
+void rtnl_link_set_ifindex(struct rtnl_link *link, int ifindex)
+{
+	link->l_index = ifindex;
+	link->ce_mask |= LINK_ATTR_IFINDEX;
+}
+
+
+/**
+ * Return interface index of link object
+ * @arg link		Link object
+ *
+ * @route_doc{link_attr_ifindex, Interface Index}
+ * @see rtnl_link_set_ifindex()
+ * @return Interface index or 0 if not set.
+ */
+int rtnl_link_get_ifindex(struct rtnl_link *link)
+{
+	return link->l_index;
+}
+
+/**
+ * Set Maximum Transmission Unit of link object
+ * @arg link		Link object
+ * @arg mtu		New MTU value in number of bytes
+ *
+ * @route_doc{link_attr_mtu, Maximum Transmission Unit}
+ * @see rtnl_link_get_mtu()
+ */
+void rtnl_link_set_mtu(struct rtnl_link *link, unsigned int mtu)
+{
+	link->l_mtu = mtu;
+	link->ce_mask |= LINK_ATTR_MTU;
+}
+
+/**
+ * Return maximum transmission unit of link object
+ * @arg link		Link object
+ *
+ * @route_doc{link_attr_mtu, Maximum Transmission Unit}
+ * @see rtnl_link_set_mtu()
+ * @return MTU in bytes or 0 if not set
+ */
+unsigned int rtnl_link_get_mtu(struct rtnl_link *link)
+{
+	return link->l_mtu;
+}
+
+/**
+ * Set transmission queue length
+ * @arg link		Link object
+ * @arg txqlen		New queue length
+ *
+ * The unit is dependant on the link type. The most common units is number
+ * of packets.
+ *
+ * @route_doc{link_attr_txqlen, Transmission Queue Length}
+ */
+void rtnl_link_set_txqlen(struct rtnl_link *link, unsigned int txqlen)
+{
+	link->l_txqlen = txqlen;
+	link->ce_mask |= LINK_ATTR_TXQLEN;
+}
+
+/**
+ * Return transmission queue length
+ * @arg link		Link object
+ *
+ * The unit is dependant on the link type. The most common units is number
+ * of packets.
+ *
+ * @route_doc{link_attr_txqlen, Transmission Queue Length}
+ * @return queue length or 0 if not specified.
+ */
+unsigned int rtnl_link_get_txqlen(struct rtnl_link *link)
+{
+	return link->ce_mask & LINK_ATTR_TXQLEN ? link->l_txqlen : 0;
+}
+
+void rtnl_link_set_link(struct rtnl_link *link, int ifindex)
+{
+	link->l_link = ifindex;
+	link->ce_mask |= LINK_ATTR_LINK;
+}
+
+int rtnl_link_get_link(struct rtnl_link *link)
+{
+	return link->l_link;
+}
+
+/**
+ * Set master link of link object
+ * @arg link		Link object
+ * @arg ifindex		Interface index of master link
+ *
+ * @see rtnl_link_get_master()
+ */
+void rtnl_link_set_master(struct rtnl_link *link, int ifindex)
+{
+	link->l_master = ifindex;
+	link->ce_mask |= LINK_ATTR_MASTER;
+}
+
+/**
+ * Return master link of link object
+ * @arg link		Link object
+ *
+ * @see rtnl_link_set_master()
+ * @return Interface index of master link or 0 if not specified
+ */
+int rtnl_link_get_master(struct rtnl_link *link)
+{
+	return link->l_master;
+}
+
+/**
+ * Set operational status of link object
+ * @arg link		Link object
+ * @arg status		New opertional status
+ *
+ * @route_doc{link_attr_operstate, Operational Status}}
+ * @see rtnl_link_get_operstate()
+ */
+void rtnl_link_set_operstate(struct rtnl_link *link, uint8_t status)
+{
+	link->l_operstate = status;
+	link->ce_mask |= LINK_ATTR_OPERSTATE;
+}
+
+/**
+ * Return operational status of link object
+ * @arg link		Link object
+ *
+ * @route_doc{link_attr_operstate, Operational Status}
+ * @see rtnl_link_set_operstate()
+ * @return Opertional state or \c IF_OPER_UNKNOWN
+ */
+uint8_t rtnl_link_get_operstate(struct rtnl_link *link)
+{
+	return link->l_operstate;
+}
+
+/**
+ * Set link mode of link object
+ * @arg link		Link object
+ * @arg mode		New link mode
+ *
+ * @route_doc{link_attr_mode, Mode}
+ * @see rtnl_link_get_linkmode()
+ */
+void rtnl_link_set_linkmode(struct rtnl_link *link, uint8_t mode)
+{
+	link->l_linkmode = mode;
+	link->ce_mask |= LINK_ATTR_LINKMODE;
+}
+
+/**
+ * Return link mode of link object
+ * @arg link		Link object
+ *
+ * @route_doc{link_attr_mode, Mode}
+ * @see rtnl_link_get_linkmode()
+ * @return Link mode or \c IF_LINK_MODE_DEFAULT
+ */
+uint8_t rtnl_link_get_linkmode(struct rtnl_link *link)
+{
+	return link->l_linkmode;
+}
+
+/**
+ * Return alias name of link object (SNMP IfAlias)
+ * @arg link		Link object
+ *
+ * @route_doc{link_attr_alias, Alias}
+ * @see rtnl_link_set_ifalias()
+ * @return Alias name or NULL if not set.
+ */
+const char *rtnl_link_get_ifalias(struct rtnl_link *link)
+{
+	return link->l_ifalias;
+}
+
+/**
+ * Set alias name of link object (SNMP IfAlias)
+ * @arg link		Link object
+ * @arg alias		Alias name or NULL to unset
+ *
+ * Sets the alias name of the link to the specified name. The alias
+ * name can be unset by specyfing NULL as the alias. The name will
+ * be strdup()ed, so no need to provide a persistent character string.
+ *
+ * @route_doc{link_attr_alias, Alias}
+ * @see rtnl_link_get_ifalias()
+ */
+void rtnl_link_set_ifalias(struct rtnl_link *link, const char *alias)
+{
+	free(link->l_ifalias);
+	link->ce_mask &= ~LINK_ATTR_IFALIAS;
+
+	if (alias) {
+		link->l_ifalias = strdup(alias);
+		link->ce_mask |= LINK_ATTR_IFALIAS;
+	}
+}
+
+/**
+ * Set queueing discipline name of link object
+ * @arg link		Link object
+ * @arg name		Name of queueing discipline
+ *
+ * @copydoc read_only_attribute
+ *
+ * For more information on how to modify the qdisc of a link, see section
+ * @ref_route{route_tc, Traffic Control}.
+ *
+ * @route_doc{link_attr_qdisc, Queueing Discipline Name}
+ * @see rtnl_link_get_qdisc()
+ */
+void rtnl_link_set_qdisc(struct rtnl_link *link, const char *name)
+{
+	strncpy(link->l_qdisc, name, sizeof(link->l_qdisc) - 1);
+	link->ce_mask |= LINK_ATTR_QDISC;
+}
+
+/**
+ * Return name of queueing discipline of link object
+ * @arg link		Link object
+ *
+ * @route_doc{link_attr_qdisc, Queueing Discipline Name}
+ * @see rtnl_link_set_qdisc()
+ * @return Name of qdisc or NULL if not specified.
+ */
+char *rtnl_link_get_qdisc(struct rtnl_link *link)
+{
+	return link->ce_mask & LINK_ATTR_QDISC ? link->l_qdisc : NULL;
+}
+
+
+/**
+ * Return number of PCI virtual functions of link object
+ * @arg link		Link object
+ * @arg num_vf		Pointer to store number of VFs
+ *
+ * @return 0 on success or -NLE_OPNOTSUPP if not available
+ */
+int rtnl_link_get_num_vf(struct rtnl_link *link, uint32_t *num_vf)
+{
+	if (link->ce_mask & LINK_ATTR_NUM_VF) {
+		*num_vf = link->l_num_vf;
+		return 0;
+	} else
+		return -NLE_OPNOTSUPP;
+}
+
+/**
+ * Return value of link statistics counter
+ * @arg link		Link object
+ * @arg id		Identifier of statistical counter
+ *
+ * @return Value of counter or 0 if not specified.
+ */
+uint64_t rtnl_link_get_stat(struct rtnl_link *link, rtnl_link_stat_id_t id)
+{
+	if (id > RTNL_LINK_STATS_MAX)
+		return 0;
+
+	return link->l_stats[id];
+}
+
+/**
+ * Set value of link statistics counter
+ * @arg link		Link object
+ * @arg id		Identifier of statistical counter
+ * @arg value		New value
+ *
+ * \note Changing the value of a statistical counter will not change the
+ *       value in the kernel.
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_set_stat(struct rtnl_link *link, rtnl_link_stat_id_t id,
+		       const uint64_t value)
+{
+	if (id > RTNL_LINK_STATS_MAX)
+		return -NLE_INVAL;
+
+	link->l_stats[id] = value;
+
+	return 0;
+}
+
+/**
+ * Set type of link object
+ * @arg link		Link object
+ * @arg type		Name of link type
+ *
+ * Looks up the link type module and prepares the link to store type
+ * specific attributes. If a type has been assigned already it will
+ * be released with all link type specific attributes lost.
+ *
+ * @route_doc{link_modules, Link Modules}
+ * @return 0 on success or a negative errror code.
+ */
+int rtnl_link_set_type(struct rtnl_link *link, const char *type)
+{
+	struct rtnl_link_info_ops *io;
+	int err;
+
+	if ((io = rtnl_link_info_ops_lookup(type)) == NULL)
+		return -NLE_OPNOTSUPP;
+
+	if (link->l_info_ops)
+		release_link_info(link);
+
+	if (io->io_alloc && (err = io->io_alloc(link)) < 0)
+		return err;
+
+	link->ce_mask |= LINK_ATTR_LINKINFO;
+	link->l_info_ops = io;
+
+	return 0;
+}
+
+/**
+ * Return type of link
+ * @arg link		Link object
+ *
+ * @route_doc{link_modules, Link Modules}
+ * @return Name of link type or NULL if not specified.
+ */
+char *rtnl_link_get_type(struct rtnl_link *link)
+{
+	return link->l_info_ops ? link->l_info_ops->io_name : NULL;
 }
 
 /** @} */
 
 /**
- * @name Link Flags Translations
+ * @name Utilities
  * @{
  */
 
@@ -1544,7 +1979,7 @@ static const struct trans_tbl link_flags[] = {
 	__ADD(IFF_ECHO, echo)
 };
 
-char * rtnl_link_flags2str(int flags, char *buf, size_t len)
+char *rtnl_link_flags2str(int flags, char *buf, size_t len)
 {
 	return __flags2str(flags, buf, len, link_flags,
 			   ARRAY_SIZE(link_flags));
@@ -1554,13 +1989,6 @@ int rtnl_link_str2flags(const char *name)
 {
 	return __str2flags(name, link_flags, ARRAY_SIZE(link_flags));
 }
-
-/** @} */
-
-/**
- * @name Link Statistics Translations
- * @{
- */
 
 static const struct trans_tbl link_stats[] = {
 	__ADD(RTNL_LINK_RX_PACKETS, rx_packets)
@@ -1632,13 +2060,6 @@ int rtnl_link_str2stat(const char *name)
 	return __str2type(name, link_stats, ARRAY_SIZE(link_stats));
 }
 
-/** @} */
-
-/**
- * @name Link Operstate Translations
- * @{
- */
-
 static const struct trans_tbl link_operstates[] = {
 	__ADD(IF_OPER_UNKNOWN, unknown)
 	__ADD(IF_OPER_NOTPRESENT, notpresent)
@@ -1661,13 +2082,6 @@ int rtnl_link_str2operstate(const char *name)
 			  ARRAY_SIZE(link_operstates));
 }
 
-/** @} */
-
-/**
- * @name Link Mode Translations
- * @{
- */
-
 static const struct trans_tbl link_modes[] = {
 	__ADD(IF_LINK_MODE_DEFAULT, default)
 	__ADD(IF_LINK_MODE_DORMANT, dormant)
@@ -1686,349 +2100,40 @@ int rtnl_link_str2mode(const char *name)
 /** @} */
 
 /**
- * @name Attributes
- * @{
+ * @name Deprecated Functions
  */
 
-void rtnl_link_set_qdisc(struct rtnl_link *link, const char *qdisc)
+/**
+ * @deprecated Use of this function is deprecated, use rtnl_link_set_type()
+ */
+int rtnl_link_set_info_type(struct rtnl_link *link, const char *type)
 {
-	strncpy(link->l_qdisc, qdisc, sizeof(link->l_qdisc) - 1);
-	link->ce_mask |= LINK_ATTR_QDISC;
+	return rtnl_link_set_type(link, type);
 }
 
-char *rtnl_link_get_qdisc(struct rtnl_link *link)
+/**
+ * @deprecated Use of this function is deprecated, use rtnl_link_get_type()
+ */
+char *rtnl_link_get_info_type(struct rtnl_link *link)
 {
-	if (link->ce_mask & LINK_ATTR_QDISC)
-		return link->l_qdisc;
-	else
-		return NULL;
+	return rtnl_link_get_type(link);
 }
 
-void rtnl_link_set_name(struct rtnl_link *link, const char *name)
-{
-	strncpy(link->l_name, name, sizeof(link->l_name) - 1);
-	link->ce_mask |= LINK_ATTR_IFNAME;
-}
-
-char *rtnl_link_get_name(struct rtnl_link *link)
-{
-	if (link->ce_mask & LINK_ATTR_IFNAME)
-		return link->l_name;
-	else
-		return NULL;
-}
-
-static inline void __assign_addr(struct rtnl_link *link, struct nl_addr **pos,
-				 struct nl_addr *new, int flag)
-{
-	if (*pos)
-		nl_addr_put(*pos);
-
-	nl_addr_get(new);
-	*pos = new;
-
-	link->ce_mask |= flag;
-}
-
-void rtnl_link_set_addr(struct rtnl_link *link, struct nl_addr *addr)
-{
-	__assign_addr(link, &link->l_addr, addr, LINK_ATTR_ADDR);
-}
-
-struct nl_addr *rtnl_link_get_addr(struct rtnl_link *link)
-{
-	if (link->ce_mask & LINK_ATTR_ADDR)
-		return link->l_addr;
-	else
-		return NULL;
-}
-
-void rtnl_link_set_broadcast(struct rtnl_link *link, struct nl_addr *brd)
-{
-	__assign_addr(link, &link->l_bcast, brd, LINK_ATTR_BRD);
-}
-
-struct nl_addr *rtnl_link_get_broadcast(struct rtnl_link *link)
-{
-	if (link->ce_mask & LINK_ATTR_BRD)
-		return link->l_bcast;
-	else
-		return NULL;
-}
-
-void rtnl_link_set_flags(struct rtnl_link *link, unsigned int flags)
-{
-	link->l_flag_mask |= flags;
-	link->l_flags |= flags;
-	link->ce_mask |= LINK_ATTR_FLAGS;
-}
-
-void rtnl_link_unset_flags(struct rtnl_link *link, unsigned int flags)
-{
-	link->l_flag_mask |= flags;
-	link->l_flags &= ~flags;
-	link->ce_mask |= LINK_ATTR_FLAGS;
-}
-
-unsigned int rtnl_link_get_flags(struct rtnl_link *link)
-{
-	return link->l_flags;
-}
-
-void rtnl_link_set_family(struct rtnl_link *link, int family)
-{
-	link->l_family = family;
-	link->ce_mask |= LINK_ATTR_FAMILY;
-}
-
-int rtnl_link_get_family(struct rtnl_link *link)
-{
-	if (link->ce_mask & LINK_ATTR_FAMILY)
-		return link->l_family;
-	else
-		return AF_UNSPEC;
-}
-
-void rtnl_link_set_arptype(struct rtnl_link *link, unsigned int arptype)
-{
-	link->l_arptype = arptype;
-}
-
-unsigned int rtnl_link_get_arptype(struct rtnl_link *link)
-{
-	return link->l_arptype;
-}
-
-void rtnl_link_set_ifindex(struct rtnl_link *link, int ifindex)
-{
-	link->l_index = ifindex;
-	link->ce_mask |= LINK_ATTR_IFINDEX;
-}
-
-int rtnl_link_get_ifindex(struct rtnl_link *link)
-{
-	return link->l_index;
-}
-
-void rtnl_link_set_mtu(struct rtnl_link *link, unsigned int mtu)
-{
-	link->l_mtu = mtu;
-	link->ce_mask |= LINK_ATTR_MTU;
-}
-
-unsigned int rtnl_link_get_mtu(struct rtnl_link *link)
-{
-	if (link->ce_mask & LINK_ATTR_MTU)
-		return link->l_mtu;
-	else
-		return 0;
-}
-
-void rtnl_link_set_txqlen(struct rtnl_link *link, unsigned int txqlen)
-{
-	link->l_txqlen = txqlen;
-	link->ce_mask |= LINK_ATTR_TXQLEN;
-}
-
-unsigned int rtnl_link_get_txqlen(struct rtnl_link *link)
-{
-	if (link->ce_mask & LINK_ATTR_TXQLEN)
-		return link->l_txqlen;
-	else
-		return UINT_MAX;
-}
-
+/**
+ * @deprecated The weight attribute is unused and obsoleted in all recent kernels
+ */
 void rtnl_link_set_weight(struct rtnl_link *link, unsigned int weight)
 {
 	link->l_weight = weight;
 	link->ce_mask |= LINK_ATTR_WEIGHT;
 }
 
+/**
+ * @deprecated The weight attribute is unused and obsoleted in all recent kernels
+ */
 unsigned int rtnl_link_get_weight(struct rtnl_link *link)
 {
-	if (link->ce_mask & LINK_ATTR_WEIGHT)
-		return link->l_weight;
-	else
-		return UINT_MAX;
-}
-
-void rtnl_link_set_link(struct rtnl_link *link, int ifindex)
-{
-	link->l_link = ifindex;
-	link->ce_mask |= LINK_ATTR_LINK;
-}
-
-int rtnl_link_get_link(struct rtnl_link *link)
-{
-	return link->l_link;
-}
-
-void rtnl_link_set_master(struct rtnl_link *link, int ifindex)
-{
-	link->l_master = ifindex;
-	link->ce_mask |= LINK_ATTR_MASTER;
-}
-
-int rtnl_link_get_master(struct rtnl_link *link)
-{
-	return link->l_master;
-}
-
-void rtnl_link_set_operstate(struct rtnl_link *link, uint8_t operstate)
-{
-	link->l_operstate = operstate;
-	link->ce_mask |= LINK_ATTR_OPERSTATE;
-}
-
-uint8_t rtnl_link_get_operstate(struct rtnl_link *link)
-{
-	if (link->ce_mask & LINK_ATTR_OPERSTATE)
-		return link->l_operstate;
-	else
-		return IF_OPER_UNKNOWN;
-}
-
-void rtnl_link_set_linkmode(struct rtnl_link *link, uint8_t linkmode)
-{
-	link->l_linkmode = linkmode;
-	link->ce_mask |= LINK_ATTR_LINKMODE;
-}
-
-uint8_t rtnl_link_get_linkmode(struct rtnl_link *link)
-{
-	if (link->ce_mask & LINK_ATTR_LINKMODE)
-		return link->l_linkmode;
-	else
-		return IF_LINK_MODE_DEFAULT;
-}
-
-/**
- * Return alias name of link (SNMP IfAlias)
- * @arg link		Link object
- *
- * @return Alias name or NULL if not set.
- */
-const char *rtnl_link_get_ifalias(struct rtnl_link *link)
-{
-	return link->l_ifalias;
-}
-
-/**
- * Set alias name of link (SNMP IfAlias)
- * @arg link		Link object
- * @arg alias		Alias name or NULL to unset
- *
- * Sets the alias name of the link to the specified name. The alias
- * name can be unset by specyfing NULL as the alias. The name will
- * be strdup()ed, so no need to provide a persistent character string.
- */
-void rtnl_link_set_ifalias(struct rtnl_link *link, const char *alias)
-{
-	free(link->l_ifalias);
-	link->ce_mask &= ~LINK_ATTR_IFALIAS;
-
-	if (alias) {
-		link->l_ifalias = strdup(alias);
-		link->ce_mask |= LINK_ATTR_IFALIAS;
-	}
-}
-
-/**
- * Retrieve number of PCI VFs of link
- * @arg link		Link object
- * @arg num_vf		Pointer to store number of VFs
- *
- * @return 0 if value is available or -NLE_OPNOTSUPP if not.
- */
-int rtnl_link_get_num_vf(struct rtnl_link *link, uint32_t *num_vf)
-{
-	if (link->ce_mask & LINK_ATTR_NUM_VF) {
-		*num_vf = link->l_num_vf;
-		return 0;
-	} else
-		return -NLE_OPNOTSUPP;
-}
-
-uint64_t rtnl_link_get_stat(struct rtnl_link *link, int id)
-{
-	if (id < 0 || id > RTNL_LINK_STATS_MAX)
-		return 0;
-
-	return link->l_stats[id];
-}
-
-/**
- * Set value of a link statistics counter
- * @arg link		Link object
- * @arg id		Counter ID
- * @arg value		New value
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_set_stat(struct rtnl_link *link, const unsigned int id,
-		       const uint64_t value)
-{
-	if (id > RTNL_LINK_STATS_MAX)
-		return -NLE_INVAL;
-
-	link->l_stats[id] = value;
-
-	return 0;
-}
-
-/**
- * Set link type
- * @arg link	Link object
- * @arg type	Type of link
- *
- * Looks up the link type modules and prepares the link to store type
- * specific attributes. If a type has been assigned already it will
- * be released with all link type specific attributes lost.
- *
- * @return 0 on success or a negative errror code.
- */
-int rtnl_link_set_type(struct rtnl_link *link, const char *type)
-{
-	struct rtnl_link_info_ops *io;
-	int err;
-
-	if ((io = rtnl_link_info_ops_lookup(type)) == NULL)
-		return -NLE_OPNOTSUPP;
-
-	if (link->l_info_ops)
-		release_link_info(link);
-
-	if (io->io_alloc && (err = io->io_alloc(link)) < 0)
-		return err;
-
-	link->ce_mask |= LINK_ATTR_LINKINFO;
-	link->l_info_ops = io;
-
-	return 0;
-}
-
-/**
- * Get type of link
- * @arg link	Link object
- *
- * @return Name of link type or NULL if unknown.
- */
-char *rtnl_link_get_type(struct rtnl_link *link)
-{
-	if (link->l_info_ops)
-		return link->l_info_ops->io_name;
-	else
-		return NULL;
-}
-
-int rtnl_link_set_info_type(struct rtnl_link *link, const char *type)
-{
-	return rtnl_link_set_type(link, type);
-}
-
-char *rtnl_link_get_info_type(struct rtnl_link *link)
-{
-	return rtnl_link_get_type(link);
+	return link->l_weight;
 }
 
 /** @} */

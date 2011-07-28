@@ -12,7 +12,9 @@
 /**
  * @ingroup link
  * @defgroup dummy Dummy
- * @brief
+ *
+ * @details
+ * \b Link Type Name: "dummy"
  *
  * @{
  */

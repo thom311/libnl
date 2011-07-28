@@ -14,11 +14,11 @@
       <tab type="hierarchy" visible="yes" title="" intro=""/>
       <tab type="classmembers" visible="yes" title="" intro=""/>
     </tab>
-    <tab type="files" visible="yes" title="">
+    <tab type="files" visible="no" title="">
       <tab type="files" visible="yes" title="" intro=""/>
       <tab type="globals" visible="yes" title="" intro=""/>
     </tab>
-    <tab type="dirs" visible="yes" title="" intro=""/>
+    <tab type="dirs" visible="no" title="" intro=""/>
     <tab type="examples" visible="yes" title="" intro=""/>  
   </navindex>
 
@@ -64,13 +64,13 @@
     <detaileddescription title=""/>
     <memberdef>
       <typedefs title=""/>
-      <enums title=""/>
       <constructors title=""/>
       <functions title=""/>
       <related title=""/>
       <variables title=""/>
       <properties title=""/>
       <events title=""/>
+      <enums title=""/>
     </memberdef>
     <usedfiles visible="$SHOW_USED_FILES"/>
     <authorsection visible="yes"/>
@@ -132,14 +132,13 @@
     <groupgraph visible="$GROUP_GRAPHS"/>
     <detaileddescription title=""/>
     <memberdecl>
-      <classes visible="yes" title=""/>
       <namespaces visible="yes" title=""/>
       <dirs visible="yes" title=""/>
       <nestedgroups visible="yes" title=""/>
+      <classes visible="yes" title=""/>
       <files visible="yes" title=""/>
       <defines title=""/>
       <typedefs title=""/>
-      <enums title=""/>
       <enumvalues title=""/>
       <functions title=""/>
       <variables title=""/>
@@ -151,6 +150,7 @@
       <properties title=""/>
       <friends title=""/>
       <membergroups visible="yes"/>
+      <enums title=""/>
     </memberdecl>
     <memberdef>
       <pagedocs/>

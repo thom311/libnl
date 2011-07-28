@@ -376,7 +376,7 @@ table.memberdecls {
 }
 
 .memItemLeft, .memItemRight, .memTemplParams {
-	border-top: 1px solid #C4CFE5;
+	border-top: 1px solid #a7a7a7;
 }
 
 .memItemLeft, .memTemplItemLeft {
@@ -428,18 +428,17 @@ table.memberdecls {
 
 .memname {
         white-space: nowrap;
-        font-weight: bold;
+	font-family: monospace, fixed;
+	font-weight: bold;
+	font-size: 110%;
         margin-left: 6px;
 }
 
 .memproto {
-        border-top: 1px solid #A8B8D9;
-        border-left: 1px solid #A8B8D9;
-        border-right: 1px solid #A8B8D9;
-        border-bottom: 1px solid #A8B8D9;
+        border: 1px solid #990000;
         padding: 6px 0px 6px 0px;
-        color: #253555;
-        font-weight: bold;
+        /* color: #253555; */
+	color: #990000;
         /* text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.9); */
         /* opera specific markup */
         box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
@@ -453,17 +452,16 @@ table.memberdecls {
         -webkit-box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
         -webkit-border-top-right-radius: 8px;
         -webkit-border-top-left-radius: 8px;
-        background-image:url('nav_f.png');
-        background-repeat:repeat-x;
-        background-color: #E2E8F2;
-
+        /* background-image:url('nav_f.png');
+        background-repeat:repeat-x; */
+        background-color: #f1f1f1;
 }
 
 .memdoc {
-        border-bottom: 1px solid #A8B8D9;      
-        border-left: 1px solid #A8B8D9;      
-        border-right: 1px solid #A8B8D9; 
-        padding: 2px 5px;
+        border-bottom: 1px solid #990000;
+        border-left: 1px solid #990000;
+        border-right: 1px solid #990000;
+        padding: 10px 15px;
         background-color: #FBFCFD;
         border-top-width: 0;
         /* opera specific markup */
@@ -487,13 +485,15 @@ table.memberdecls {
 }
 
 .paramtype {
+	color: #c87424;
 	white-space: nowrap;
+	font-family: monospace, fixed;
 }
 
 .paramname {
-	/* color: #602020; */
-	color: black;
+	color: #990000;
 	white-space: nowrap;
+	font-family: monospace, fixed;
 }
 .paramname em {
 	font-style: normal;
@@ -749,6 +749,11 @@ div.headertitle
 dl
 {
         padding: 0 0 0 10px;
+}
+
+.memdoc > dl
+{
+	padding: 0px;
 }
 
 dl.note, dl.warning, dl.attention, dl.pre, dl.post, dl.invariant, dl.deprecated, dl.todo, dl.test, dl.bug

@@ -15,6 +15,7 @@ This library provides APIs to the kernel interfaces of the routing family.
 
 == Addresses
 
+[[route_link]]
 == Links (Network Devices)
 
 The link configuration interface is part of the +NETLINK_ROUTE+ protocol
@@ -171,34 +172,6 @@ Notification sent by the kernel to the multicast group +RTNLGRP_LINK+ when
 a. a network device was unregistered (change == ~0)
 b. a bridging device was deleted (address family will be +PF_BRIDGE+)
 
-[source,c]
------
-#define	IFF_UP		0x1		/* interface is up		*/
-#define	IFF_BROADCAST	0x2		/* broadcast address valid	*/
-#define	IFF_DEBUG	0x4		/* turn on debugging		*/
-#define	IFF_LOOPBACK	0x8		/* is a loopback net		*/
-#define	IFF_POINTOPOINT	0x10		/* interface is has p-p link	*/
-#define	IFF_NOTRAILERS	0x20		/* avoid use of trailers	*/
-#define	IFF_RUNNING	0x40		/* interface RFC2863 OPER_UP	*/
-#define	IFF_NOARP	0x80		/* no ARP protocol		*/
-#define	IFF_PROMISC	0x100		/* receive all packets		*/
-#define	IFF_ALLMULTI	0x200		/* receive all multicast packets*/
-
-#define IFF_MASTER	0x400		/* master of a load balancer 	*/
-#define IFF_SLAVE	0x800		/* slave of a load balancer	*/
-
-#define IFF_MULTICAST	0x1000		/* Supports multicast		*/
-
-#define IFF_PORTSEL	0x2000          /* can set media type		*/
-#define IFF_AUTOMEDIA	0x4000		/* auto media select active	*/
-#define IFF_DYNAMIC	0x8000		/* dialup device with changing addresses*/
-
-#define IFF_LOWER_UP	0x10000		/* driver signals L1 up		*/
-#define IFF_DORMANT	0x20000		/* driver signals dormant	*/
-
-#define IFF_ECHO	0x40000		/* echo sent packets		*/
------
-
 === Get / List
 
 [[link_list]]
@@ -252,6 +225,7 @@ rtnl_link_put(link);
 nl_cache_put(cache);
 -----
 
+[[link_direct_lookup]]
 ==== Lookup Single Link (Direct Lookup)
 
 If only a single link is of interest, the link can be looked up directly
@@ -287,6 +261,7 @@ NOTE: While using this function can save a substantial amount of bandwidth
       to rtnl_link_get_kernel() will always trigger sending a +RTM_GETLINK+
       request.
 
+[[link_translate_ifindex]]
 ==== Translating interface index to link name
 
 Applications which require to translate interface index to a link name or
@@ -347,68 +322,267 @@ rtnl_link_put(link);
 [[link_object]]
 === Link Object
 
-Name::
-The name of a network device is the human readable representation of a
-network device and secondary identification parameter besides the interface
-index.
-+
-Kernels >= 2.6.11 support identification by link name.
-+
+A link is represented by the structure +struct rtnl_link+. Instances may be
+created with the function +rtnl_link_alloc()+ or via a link cache (see
+<<link_list>>) and are freed again using the function +rtnl_link_put()+.
+
 [source,c]
 -----
-void  rtnl_link_set_name(struct rtnl_link *link, const char *name);
+#include <netlink/route/link.h>
+
+struct rtnl_link *rtnl_link_alloc(void);
+void rtnl_link_put(struct rtnl_link *link);
+-----
+
+[[link_attr_name]]
+==== Name
+The name serves as unique, human readable description of the link. By
+default, links are named based on their type and then enumerated, e.g.
+eth0, eth1, ethn but they may be renamed at any time.
+
+Kernels >= 2.6.11 support identification by link name.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+void rtnl_link_set_name(struct rtnl_link *link, const char *name);
 char *rtnl_link_get_name(struct rtnl_link *link);
 -----
 
-Interface Index::
-The interface index is an integer uniquely identifying a network device.
-If present, it will be used to identify an existing network device.
-+
+*Accepted link name format:* +[^ /]*+ (maximum length: 15 characters)
+
+[[link_attr_ifindex]]
+==== Interface Index (Identifier)
+The interface index is an integer uniquely identifying a link. If present
+in any link message, it will be used to identify an existing link.
+
 [source,c]
 -----
+#include <netlink/route/link.h>
+
 void rtnl_link_set_ifindex(struct rtnl_link *link, int ifindex);
-int  rtnl_link_get_ifindex(struct rtnl_link *link);
+int rtnl_link_get_ifindex(struct rtnl_link *link);
 -----
 
+[[link_attr_address]]
+==== Link Layer Address
+The link layer address (e.g. MAC address).
 
-Address::
-The link layer address (MAC address).
-+
 [source,c]
 -----
-void            rtnl_link_set_addr(struct rtnl_link *link, struct nl_addr *addr);
+#include <netlink/route/link.h>
+
+void rtnl_link_set_addr(struct rtnl_link *link, struct nl_addr *addr);
 struct nl_addr *rtnl_link_get_addr(struct rtnl_link *link);
 -----
 
-Broadcast Address::
-Foo
-+
+[[link_attr_broadcast]]
+==== Broadcast Address
+The link layer broadcast address
+
 [source,c]
 -----
-void            rtnl_link_set_broadcast(struct rtnl_link *link, struct nl_addr *addr);
+#include <netlink/route/link.h>
+
+void rtnl_link_set_broadcast(struct rtnl_link *link, struct nl_addr *addr);
 struct nl_addr *rtnl_link_get_broadcast(struct rtnl_link *link);
 -----
 
-MTU::
+[[link_attr_mtu]]
+==== MTU (Maximum Transmission Unit)
 The maximum transmission unit specifies the maximum packet size a network
 device can transmit or receive. This value may be lower than the capability
 of the physical network device.
-+
+
 [source,c]
 -----
-void         rtnl_link_set_mtu(struct rtnl_link *link, unsigned int mtu);
+#include <netlink/route/link.h>
+
+void rtnl_link_set_mtu(struct rtnl_link *link, unsigned int mtu);
 unsigned int rtnl_link_get_mtu(struct rtnl_link *link);
 -----
 
-Weight::
-Foo
-+
+[[link_attr_flags]]
+==== Flags
+The flags of a link enable or disable various link features or inform about
+the state of the link.
+
 [source,c]
 -----
-void         rtnl_link_set_weight(struct rtnl_link *link, unsigned int weight);
-unsigned int rtnl_link_get_weight(struct rtnl_link *link);
+#include <netlink/route/link.h>
+
+void rtnl_link_set_flags(struct rtnl_link *link, unsigned int flags);
+void rtnl_link_unset_flags(struct rtnl_link *link, unsigned int flags);
+unsigned int rtnl_link_get_flags(struct rtnl_link *link);
 -----
 
+[options="compact"]
+[horizontal]
+IFF_UP::           Link is up (administratively)
+IFF_RUNNING::      Link is up and carrier is OK (RFC2863 OPER_UP)
+IFF_LOWER_UP::     Link layer is operational
+IFF_DORMANT::      Driver signals dormant
+IFF_BROADCAST::    Link supports broadcasting
+IFF_MULTICAST::    Link supports multicasting
+IFF_ALLMULTI::     Link supports multicast routing
+IFF_DEBUG::        Tell driver to do debugging (currently unused)
+IFF_LOOPBACK::     Link loopback network
+IFF_POINTOPOINT::  Point-to-point link
+IFF_NOARP::        ARP is not supported
+IFF_PROMISC::      Status of promiscious mode
+IFF_MASTER::       Master of a load balancer (bonding)
+IFF_SLAVE::        Slave to a master link
+IFF_PORTSEL::      Driver supports setting media type (only used by ARM ethernet)
+IFF_AUTOMEDIA::    Link selects port automatically (only used by ARM ethernet)
+IFF_ECHO::         Echo sent packets (testing feature, CAN only)
+IFF_DYNAMIC::      Unused (BSD compatibility)
+IFF_NOTRAILERS::   Unused (BSD compatibility)
+
+To translate a link flag to a link flag name or vice versa:
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+char *rtnl_link_flags2str(int flags, char *buf, size_t size);
+int rtnl_link_str2flags(const char *flag_name);
+-----
+
+[[link_attr_txqlen]]
+==== Transmission Queue Length
+
+The transmission queue holds packets before packets are delivered to
+the driver for transmission. It is usually specified in number of
+packets but the unit may be specific to the link type.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+void rtnl_link_set_txqlen(struct rtnl_link *link, unsigned int txqlen);
+unsigned int rtnl_link_get_txqlen(struct rtnl_link *link);
+-----
+
+[[link_attr_operstate]]
+==== Operational Status
+The operational status has been introduced to provide extended information
+on the link status. Traditionally the link state has been described using
+the link flags +IFF_UP, IFF_RUNNING, IFF_LOWER_UP+, and +IFF_DORMANT+ which
+was no longer sufficient for some link types.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+void rtnl_link_set_operstate(struct rtnl_link *link, uint8_t state);
+uint8_t rtnl_link_get_operstate(struct rtnl_link *link);
+-----
+
+[options="compact"]
+[horizontal]
+IF_OPER_UNKNOWN::          Unknown state
+IF_OPER_NOTPRESENT::       Link not present
+IF_OPER_DOWN::             Link down
+IF_OPER_LOWERLAYERDOWN::   L1 down
+IF_OPER_TESTING::          Testing
+IF_OPER_DORMANT::          Dormant
+IF_OPER_UP::               Link up
+
+Translation of operational status code to string and vice versa:
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+char *rtnl_link_operstate2str(uint8_t state, char *buf, size_t size);
+int rtnl_link_str2operstate(const char *name);
+-----
+
+[[link_attr_mode]]
+==== Mode
+Currently known link modes are:
+
+[options="compact"]
+[horizontal]
+IF_LINK_MODE_DEFAULT::   Default link mode
+IF_LINK_MODE_DORMANT::   Limit upward transition to dormant
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+void rtnl_link_set_linkmode(struct rtnl_link *link, uint8_t mode);
+uint8_t rtnl_link_get_linkmode(struct rtnl_link *link);
+-----
+
+Translation of link mode to string and vice versa:
+
+[source,c]
+-----
+char *rtnl_link_mode2str(uint8_t mode, char *buf, size_t len);
+uint8_t rtnl_link_str2mode(const char *name);
+-----
+
+[[link_attr_alias]]
+==== IfAlias
+Alternative name for the link, primarly used for SNMP IfAlias.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+const char *rtnl_link_get_ifalias(struct rtnl_link *link);
+void rtnl_link_set_ifalias(struct rtnl_link *link, const char *alias);
+-----
+
+*Length limit:* 256
+
+[[link_attr_arptype]]
+==== Hardware Type
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+#include <linux/if_arp.h>
+
+void rtnl_link_set_arptype(struct rtnl_link *link, unsigned int arptype);
+unsigned int rtnl_link_get_arptype(struct rtnl_link *link);
+----
+
+Translation of hardware type to character string and vice versa:
+
+[source,c]
+-----
+#include <netlink/utils.h>
+
+char *nl_llproto2str(int arptype, char *buf, size_t len);
+int nl_str2llproto(const char *name);
+-----
+
+[[link_attr_qdisc]]
+==== Qdisc
+The name of the queueing discipline used by the link is of informational
+nature only. It is a read-only attribute provided by the kernel and cannot
+be modified. The set function is provided solely for the purpose of creating
+link objects to be used for comparison.
+
+For more information on how to modify the qdisc of a link, see section
+<<route_tc>>.
+
+[[link_attr_weight]]
+==== Weight
+This attribute is unused and obsoleted in all recent kernels.
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+extern void rtnl_link_set_qdisc(struct rtnl_link *link, const char *name);
+extern char *rtnl_link_get_qdisc(struct rtnl_link *link);
+-----
+
+[[link_modules]]
 === Modules
 
 [[link_bonding]]
@@ -490,6 +664,7 @@ rtnl_link_put(link);
 
 == Routing
 
+[[route_tc]]
 == Traffic Control
 
 The traffic control architecture allows the queueing and

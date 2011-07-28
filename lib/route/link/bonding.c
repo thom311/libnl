@@ -13,8 +13,10 @@
  * @ingroup link
  * @defgroup bonding Bonding
  *
- * <a href="../route.html#_links_network_devices">Link Documentation</a>
+ * @details
+ * \b Link Type Name: "bond"
  *
+ * @route_doc{link_bonding, Bonding Documentation}
  * @{
  */
 

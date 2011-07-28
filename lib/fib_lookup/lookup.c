@@ -203,8 +203,6 @@ struct nl_cache *flnl_result_alloc_cache(void)
  * \c rtnl_link_set_* functions.
  *
  * @return 0 on success or a negative error code.
- * @note Not all attributes can be changed, see
- *       \ref link_changeable "Changeable Attributes" for more details.
  */
 int flnl_lookup_build_request(struct flnl_request *req, int flags,
 			      struct nl_msg **result)

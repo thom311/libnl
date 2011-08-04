@@ -45,7 +45,7 @@
 static struct nl_list_head pktloc_name_ht[PKTLOC_NAME_HT_SIZ];
 
 /* djb2 */
-unsigned int pktloc_hash(const char *str)
+static unsigned int pktloc_hash(const char *str)
 {
 	unsigned long hash = 5381;
 	int c;

@@ -145,7 +145,8 @@ static void netem_dump_line(struct rtnl_tc *tc, void *data,
 		nl_dump(p, "limit %d", netem->qnm_limit);
 }
 
-int netem_msg_fill_raw(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
+static int netem_msg_fill_raw(struct rtnl_tc *tc, void *data,
+			      struct nl_msg *msg)
 {
 	int err = 0;
 	struct tc_netem_qopt opts;

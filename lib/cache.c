@@ -506,7 +506,8 @@ void nl_cache_set_arg2(struct nl_cache *cache, int arg)
  *
  * @return 0 on success or a negative error code.
  */
-int nl_cache_request_full_dump(struct nl_sock *sk, struct nl_cache *cache)
+static int nl_cache_request_full_dump(struct nl_sock *sk,
+				      struct nl_cache *cache)
 {
 	NL_DBG(2, "Requesting dump from kernel for cache %p <%s>...\n",
 	          cache, nl_cache_name(cache));
@@ -537,8 +538,8 @@ static int update_msg_parser(struct nl_msg *msg, void *arg)
  * @arg cache		Cache
  * @arg param		Parser parameters
  */
-int __cache_pickup(struct nl_sock *sk, struct nl_cache *cache,
-		   struct nl_parser_param *param)
+static int __cache_pickup(struct nl_sock *sk, struct nl_cache *cache,
+			  struct nl_parser_param *param)
 {
 	int err;
 	struct nl_cb *cb;

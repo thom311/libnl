@@ -94,7 +94,7 @@ void nl_cli_tc_parse_linktype(struct rtnl_tc *tc, char *arg)
 
 static NL_LIST_HEAD(tc_modules);
 
-struct nl_cli_tc_module *__nl_cli_tc_lookup(struct rtnl_tc_ops *ops)
+static struct nl_cli_tc_module *__nl_cli_tc_lookup(struct rtnl_tc_ops *ops)
 {
 	struct nl_cli_tc_module *tm;
 

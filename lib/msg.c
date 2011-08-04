@@ -188,7 +188,7 @@ int nlmsg_size(int payload)
 	return NLMSG_HDRLEN + payload;
 }
 
-int nlmsg_msg_size(int payload)
+static int nlmsg_msg_size(int payload)
 {
 	return nlmsg_size(payload);
 }
@@ -255,7 +255,7 @@ int nlmsg_datalen(const struct nlmsghdr *nlh)
 	return nlh->nlmsg_len - NLMSG_HDRLEN;
 }
 
-int nlmsg_len(const struct nlmsghdr *nlh)
+static int nlmsg_len(const struct nlmsghdr *nlh)
 {
 	return nlmsg_datalen(nlh);
 }

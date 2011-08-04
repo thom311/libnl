@@ -15,7 +15,7 @@
 #include <netlink/cli/link.h>
 
 static int quiet = 0, default_yes = 0, deleted = 0, interactive = 0;
-struct nl_sock *sock;
+static struct nl_sock *sock;
 
 static void print_usage(void)
 {

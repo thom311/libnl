@@ -41,7 +41,7 @@ static void print_usage(void)
 
 static char *prefix;
 
-void print_prefix(struct nl_dump_params *p, int line)
+static void print_prefix(struct nl_dump_params *p, int line)
 {
 	if (prefix)
 		nl_dump(p, "%s", prefix);

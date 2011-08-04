@@ -346,9 +346,10 @@ static int route_compare(struct nl_object *_a, struct nl_object *_b,
 			found = 0;
 			nl_list_for_each_entry(nh_b, &b->rt_nexthops,
 					       rtnh_list) {
-				if (!rtnl_route_nh_compare(nh_a, nh_b, ~0, 0))
+				if (!rtnl_route_nh_compare(nh_a, nh_b, ~0, 0)) {
 					found = 1;
 					break;
+				}
 			}
 			if (!found)
 				goto nh_mismatch;
@@ -360,9 +361,10 @@ static int route_compare(struct nl_object *_a, struct nl_object *_b,
 			found = 0;
 			nl_list_for_each_entry(nh_a, &a->rt_nexthops,
 					       rtnh_list) {
-				if (!rtnl_route_nh_compare(nh_a, nh_b, ~0, 0))
+				if (!rtnl_route_nh_compare(nh_a, nh_b, ~0, 0)) {
 					found = 1;
 					break;
+				}
 			}
 			if (!found)
 				goto nh_mismatch;

@@ -67,15 +67,12 @@ int nl_cache_nitems(struct nl_cache *cache)
  */
 int nl_cache_nitems_filter(struct nl_cache *cache, struct nl_object *filter)
 {
-	struct nl_object_ops *ops;
 	struct nl_object *obj;
 	int nitems = 0;
 
 	if (cache->c_ops == NULL)
 		BUG();
 
-	ops = cache->c_ops->co_obj_ops;
-	
 	nl_list_for_each_entry(obj, &cache->c_items, ce_list) {
 		if (filter && !nl_object_match_filter(obj, filter))
 			continue;
@@ -271,7 +268,6 @@ struct nl_cache *nl_cache_subset(struct nl_cache *orig,
 				 struct nl_object *filter)
 {
 	struct nl_cache *cache;
-	struct nl_object_ops *ops;
 	struct nl_object *obj;
 
 	if (!filter)
@@ -280,8 +276,6 @@ struct nl_cache *nl_cache_subset(struct nl_cache *orig,
 	cache = nl_cache_alloc(orig->c_ops);
 	if (!cache)
 		return NULL;
-
-	ops = orig->c_ops->co_obj_ops;
 
 	nl_list_for_each_entry(obj, &orig->c_items, ce_list) {
 		if (!nl_object_match_filter(obj, filter))
@@ -941,12 +935,9 @@ void nl_cache_foreach_filter(struct nl_cache *cache, struct nl_object *filter,
 			     void (*cb)(struct nl_object *, void *), void *arg)
 {
 	struct nl_object *obj, *tmp;
-	struct nl_object_ops *ops;
 
 	if (cache->c_ops == NULL)
 		BUG();
-
-	ops = cache->c_ops->co_obj_ops;
 
 	nl_list_for_each_entry_safe(obj, tmp, &cache->c_items, ce_list) {
 		if (filter) {

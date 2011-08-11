@@ -86,8 +86,6 @@ void nl_cli_link_parse_txqlen(struct rtnl_link *link, char *arg)
 
 void nl_cli_link_parse_weight(struct rtnl_link *link, char *arg)
 {
-	uint32_t weight = nl_cli_parse_u32(arg);
-	rtnl_link_set_weight(link, weight);
 }
 
 void nl_cli_link_parse_ifalias(struct rtnl_link *link, char *arg)

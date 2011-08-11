@@ -7,7 +7,7 @@
 Netlink Library (libnl)
 =======================
 Thomas Graf <tgraf@suug.ch>
-3.0, July 17 2011:
+3.1, Aug 11 2011:
 :numbered:
 
 == Introduction
@@ -70,8 +70,8 @@ makes use of.
 -----
 #include <netlink/version.h>
 
-#if LIBNL_VER_NUM >= LIBNL_VER(3,0)
-	/* include code if compiled with libnl version >= 3.0 */
+#if LIBNL_VER_NUM >= LIBNL_VER(3,1)
+	/* include code if compiled with libnl version >= 3.1 */
 #endif
 -----
 
@@ -2549,11 +2549,12 @@ dealing with network addresses is a common task.
 
 Currently the following address families are supported:
 
- - `AF_INET`
- - `AF_INET6`
- - `AF_LLC`
- - `AF_DECnet`
- - `AF_UNSPEC`
+[options="compact"]
+ * `AF_INET`
+ * `AF_INET6`
+ * `AF_LLC`
+ * `AF_DECnet`
+ * `AF_UNSPEC`
 
 [[core_addr_alloc]]
 .Address Allocation

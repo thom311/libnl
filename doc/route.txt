@@ -7,7 +7,7 @@
 Routing Family Netlink Library (libnl-route)
 ============================================
 Thomas Graf <tgraf@suug.ch>
-3.1, July 17 2011:
+3.1, Aug 11 2011:
 
 == Introduction
 

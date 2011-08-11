@@ -13,25 +13,21 @@ ifeq ($(shell [ ! -r ../Makefile.opts ] && echo 1),)
     include ../Makefile.opts
 endif
 
-LDFLAGS	+= -L../lib -lnl ../src/utils.o
+LDFLAGS	+= -L../lib -lnl -lnl-genl -lnl-route
 CIN 	:= $(wildcard test-*.c)
-TOOLS	:= $(CIN:%.c=%)
+TESTS	:= $(CIN:%.c=%)
 
-all: $(TOOLS)
-
-$(TOOLS): ../src/utils.o
+all: $(TESTS)
 
 test-%: test-%.c
 	@echo "  LD $@"; \
-	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS) -lnl-genl -lnl-route
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 
 clean:
 	@echo "  CLEAN src"; \
-	rm -f $(TOOLS)
+	rm -f $(TESTS)
 
 distclean: clean
 
 install:
 	@true
-
-include ../Makefile.rules

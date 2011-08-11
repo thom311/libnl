@@ -815,13 +815,14 @@ static void dump_one(struct nl_dump_params *parms, const char *fmt,
 		vfprintf(parms->dp_fd, fmt, args);
 	else if (parms->dp_buf || parms->dp_cb) {
 		char *buf = NULL;
-		vasprintf(&buf, fmt, args);
-		if (parms->dp_cb)
-			parms->dp_cb(parms, buf);
-		else
-			strncat(parms->dp_buf, buf,
-			        parms->dp_buflen - strlen(parms->dp_buf) - 1);
-		free(buf);
+		if (vasprintf(&buf, fmt, args) >= 0) {
+			if (parms->dp_cb)
+				parms->dp_cb(parms, buf);
+			else
+				strncat(parms->dp_buf, buf,
+					parms->dp_buflen - strlen(parms->dp_buf) - 1);
+			free(buf);
+		}
 	}
 }
 

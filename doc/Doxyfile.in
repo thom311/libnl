@@ -587,10 +587,10 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = ../lib \
-                         ../src/lib \
-                         ../include/netlink \
-			 src
+INPUT                  = @top_srcdir@/lib \
+                         @top_srcdir@/src/lib \
+                         @top_srcdir@/include/netlink \
+			 @top_srcdir@/src
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is
@@ -648,7 +648,7 @@ EXCLUDE_SYMBOLS        =
 # directories that contain example code fragments that are included (see
 # the \include command).
 
-EXAMPLE_PATH           = src
+EXAMPLE_PATH           = @top_srcdir@/src
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp
@@ -822,7 +822,7 @@ HTML_TIMESTAMP         = NO
 # the style sheet file to the HTML output directory, so don't put your own
 # stylesheet in the HTML output directory as well, or it will be erased!
 
-HTML_STYLESHEET        = libnl.css
+HTML_STYLESHEET        = @srcdir@/libnl.css
 
 # The HTML_COLORSTYLE_HUE tag controls the color of the HTML output.
 # Doxygen will adjust the colors in the stylesheet and background images

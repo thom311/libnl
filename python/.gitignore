@@ -1,3 +1,4 @@
 build
 capi_wrap.c
 capi.py
+setup.py

@@ -3,7 +3,7 @@
 from distutils.core import setup, Extension
 
 opts = ['-O', '-nodefaultctor']
-include = ['../include']
+include = ['@top_builddir@/include']
 
 netlink_capi = Extension('netlink/_capi',
                          sources = ['netlink/capi.i'],

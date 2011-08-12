@@ -51,5 +51,7 @@ AC_CHECK_LIB([pthread], [pthread_mutex_lock], [], AC_MSG_ERROR([libpthread is re
 AC_CONFIG_FILES([Makefile doc/Doxyfile doc/Makefile lib/Makefile
 	include/Makefile src/Makefile src/lib/Makefile man/Makefile
 	libnl-3.1.pc libnl-route-3.1.pc libnl-genl-3.1.pc libnl-nf-3.1.pc
+	python/Makefile python/setup.py python/netlink/Makefile
+	python/netlink/route/Makefile
 	include/netlink/version.h])
 AC_OUTPUT

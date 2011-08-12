@@ -8,7 +8,7 @@ if ENABLE_CLI
 OPT_DIRS += src
 endif
 
-SUBDIRS = include lib doc man $(OPT_DIRS)
+SUBDIRS = include lib doc man python $(OPT_DIRS)
 
 pkgconfig_DATA = libnl-3.1.pc \
 		 libnl-route-3.1.pc \

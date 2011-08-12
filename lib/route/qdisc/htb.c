@@ -217,11 +217,11 @@ static int htb_class_msg_fill(struct rtnl_tc *tc, void *data,
 	if (!htb || !(htb->ch_mask & SCH_HTB_HAS_RATE))
 		BUG();
 
+	memset(&opts, 0, sizeof(opts));
+
 	/* if not set, zero (0) is used as priority */
 	if (htb->ch_mask & SCH_HTB_HAS_PRIO)
 		opts.prio = htb->ch_prio;
-
-	memset(&opts, 0, sizeof(opts));
 
 	mtu = rtnl_tc_get_mtu(tc);
 

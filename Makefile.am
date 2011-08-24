@@ -15,8 +15,8 @@ pkgconfig_DATA = libnl-3.pc \
 		 libnl-genl-3.pc \
 		 libnl-nf-3.pc
 
-sysconfdir = @sysconfdir@/libnl
-sysconf_DATA = etc/pktloc etc/classid
+pkgsysconfdir = ${sysconfdir}/libnl
+pkgsysconf_DATA = etc/pktloc etc/classid
 
 EXTRA_DIST = \
 	$(sysconf_DATA)

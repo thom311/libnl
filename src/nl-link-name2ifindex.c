@@ -14,7 +14,7 @@
 
 static void print_usage(void)
 {
-	printf("Usage: nl-link-ifindex2name <ifindex>\n");
+	printf("Usage: nl-link-name2ifindex <name>\n");
 	exit(0);
 }
 

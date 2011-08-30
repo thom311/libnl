@@ -511,6 +511,21 @@ int nl_socket_modify_cb(struct nl_sock *sk, enum nl_cb_type type,
 	return nl_cb_set(sk->s_cb, type, kind, func, arg);
 }
 
+/**
+ * Modify the error callback handler associated with the socket
+ * @arg sk		Netlink socket.
+ * @arg kind		kind of callback
+ * @arg func		callback function
+ * @arg arg		argument to be passed to callback function
+ *
+ * @see nl_cb_err
+ */
+int nl_socket_modify_err_cb(struct nl_sock *sk, enum nl_cb_kind kind,
+			    nl_recvmsg_err_cb_t func, void *arg)
+{
+	return nl_cb_err(sk->s_cb, kind, func, arg);
+}
+
 /** @} */
 
 /**

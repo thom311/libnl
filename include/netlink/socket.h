@@ -45,6 +45,8 @@ extern void		nl_socket_set_cb(struct nl_sock *,
 extern int		nl_socket_modify_cb(struct nl_sock *, enum nl_cb_type,
 					    enum nl_cb_kind,
 					    nl_recvmsg_msg_cb_t, void *);
+extern int nl_socket_modify_err_cb(struct nl_sock *, enum nl_cb_kind,
+				   nl_recvmsg_err_cb_t, void *);
 
 extern int		nl_socket_set_buffer_size(struct nl_sock *, int, int);
 extern int		nl_socket_set_passcred(struct nl_sock *, int);

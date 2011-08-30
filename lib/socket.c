@@ -268,7 +268,14 @@ void nl_socket_set_local_port(struct nl_sock *sk, uint32_t port)
 {
 	if (port == 0) {
 		port = generate_local_port(); 
-		sk->s_flags &= ~NL_OWN_PORT;
+		/*
+		 * Release local port after generation of a new one to be
+		 * able to change local port using nl_socket_set_local_port(, 0)
+		 */
+		if (!(sk->s_flags & NL_OWN_PORT))
+			release_local_port(sk->s_local.nl_pid);
+		else
+			sk->s_flags &= ~NL_OWN_PORT;
 	} else  {
 		if (!(sk->s_flags & NL_OWN_PORT))
 			release_local_port(sk->s_local.nl_pid);

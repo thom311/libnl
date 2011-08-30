@@ -495,12 +495,12 @@ void nl_socket_set_cb(struct nl_sock *sk, struct nl_cb *cb)
 }
 
 /**
- * Modify the callback handler associated to the socket
+ * Modify the callback handler associated with the socket
  * @arg sk		Netlink socket.
  * @arg type		which type callback to set
  * @arg kind		kind of callback
  * @arg func		callback function
- * @arg arg		argument to be passwd to callback function
+ * @arg arg		argument to be passed to callback function
  *
  * @see nl_cb_set
  */

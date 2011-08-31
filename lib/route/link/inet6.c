@@ -71,23 +71,33 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 	if (tb[IFLA_INET6_CONF])
 		nla_memcpy(&i6->i6_conf, tb[IFLA_INET6_CONF],
 			   sizeof(i6->i6_conf));
-
+ 
+	/*
+	 * Due to 32bit data alignment, these addresses must be copied to an
+	 * aligned location prior to access.
+	 */
 	if (tb[IFLA_INET6_STATS]) {
-		uint64_t *cnt = nla_data(tb[IFLA_INET6_STATS]);
+		unsigned char *cnt = nla_data(tb[IFLA_INET6_STATS]);
+		uint64_t stat;
 		int i;
 
-		for (i = 1; i < __IPSTATS_MIB_MAX; i++)
+		for (i = 1; i < __IPSTATS_MIB_MAX; i++) {
+			memcpy(&stat, &cnt[i * sizeof(stat)], sizeof(stat));
 			rtnl_link_set_stat(link, RTNL_LINK_IP6_INPKTS + i - 1,
-					   cnt[i]);
+					   stat);
+		}
 	}
 
 	if (tb[IFLA_INET6_ICMP6STATS]) {
-		uint64_t *cnt = nla_data(tb[IFLA_INET6_ICMP6STATS]);
+		unsigned char *cnt = nla_data(tb[IFLA_INET6_ICMP6STATS]);
+		uint64_t stat;
 		int i;
 
-		for (i = 1; i < __ICMP6_MIB_MAX; i++)
+		for (i = 1; i < __ICMP6_MIB_MAX; i++) {
+			memcpy(&stat, &cnt[i * sizeof(stat)], sizeof(stat));
 			rtnl_link_set_stat(link, RTNL_LINK_ICMP6_INMSGS + i - 1,
-					   cnt[i]);
+					   stat);
+		}
 	}
 
 	return 0;

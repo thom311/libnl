@@ -293,7 +293,7 @@ static int genl_ctrl_grp_by_name(const struct genl_family *family,
 		}
 	}
 
-	return 0;
+	return -NLE_OBJ_NOTFOUND;
 }
 
 int genl_ctrl_resolve_grp(struct nl_sock *sk, const char *family_name,

@@ -9,7 +9,7 @@
 # Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
 #
 
-AC_INIT(libnl, 3.1, tgraf@suug.ch)
+AC_INIT(libnl, 3.2, tgraf@suug.ch)
 AC_CONFIG_HEADERS([lib/defs.h])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall foreign subdir-objects])
@@ -17,7 +17,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES(yes)], [])
 
 MAJ_VERSION=3
 AC_SUBST([MAJ_VERSION])
-MIN_VERSION=1
+MIN_VERSION=2
 AC_SUBST([MIN_VERSION])
 
 AC_PROG_CC
@@ -45,7 +45,7 @@ AC_CHECK_LIB([pthread], [pthread_mutex_lock], [], AC_MSG_ERROR([libpthread is re
 
 AC_CONFIG_FILES([Makefile doc/Doxyfile doc/Makefile lib/Makefile
 	include/Makefile src/Makefile src/lib/Makefile man/Makefile
-	libnl-3.1.pc libnl-route-3.1.pc libnl-genl-3.1.pc libnl-nf-3.1.pc
+	libnl-3.pc libnl-route-3.pc libnl-genl-3.pc libnl-nf-3.pc
 	python/Makefile python/setup.py python/netlink/Makefile
 	python/netlink/route/Makefile
 	include/netlink/version.h])

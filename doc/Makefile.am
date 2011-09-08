@@ -43,13 +43,6 @@ EXTRA_DIST = \
 	images/classful_qdisc.png \
 	images/classless_qdisc_nbands.png \
 	images/classless_qdisc.png \
-	images/core__1.png \
-	images/core__2.png \
-	images/core__3.png \
-	images/core__4.png \
-	images/core__5.png \
-	images/core__6.png \
-	images/core__7.png \
 	images/ifinfomsg.png \
 	images/library_overview.png \
 	images/nlmsgerr.png \

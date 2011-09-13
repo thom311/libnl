@@ -3,7 +3,13 @@
 SUBDIRS = lib
 
 AM_CPPFLAGS  = -Wall -I${top_srcdir}/include -I${top_builddir}/include -D_GNU_SOURCE -DSYSCONFDIR=\"$(sysconfdir)/libnl\"
-AM_LDFLAGS = -L${top_builddir}/lib -L${top_builddir}/src/lib -lnl-cli -lnl -lnl-nf -lnl-genl -lnl-route
+
+LDADD = \
+	${top_builddir}/src/lib/libnl-cli-3.la \
+	${top_builddir}/lib/libnl-3.la \
+	${top_builddir}/lib/libnl-nf-3.la \
+	${top_builddir}/lib/libnl-genl-3.la \
+	${top_builddir}/lib/libnl-route-3.la
 
 sbin_PROGRAMS = \
 	nl-qdisc-add nl-qdisc-list nl-qdisc-delete \

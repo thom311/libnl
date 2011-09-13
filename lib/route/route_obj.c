@@ -125,11 +125,8 @@ static int route_clone(struct nl_object *_dst, struct nl_object *_src)
 static void route_dump_line(struct nl_object *a, struct nl_dump_params *p)
 {
 	struct rtnl_route *r = (struct rtnl_route *) a;
-	struct nl_cache *link_cache;
 	int cache = 0, flags;
 	char buf[64];
-
-	link_cache = nl_cache_mngt_require("route/link");
 
 	if (r->rt_flags & RTM_F_CLONED)
 		cache = 1;

@@ -8,4 +8,4 @@ Description: Generic Netlink Library
 Version: @PACKAGE_VERSION@
 Requires: libnl-3
 Libs: -L${libdir} -lnl-genl
-Cflags: -I${includedir}
+Cflags: -I${includedir}/libnl@MAJ_VERSION@

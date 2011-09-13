@@ -1,6 +1,8 @@
 # -*- Makefile -*-
 
-nobase_include_HEADERS = \
+libnlincludedir = $(includedir)/libnl@MAJ_VERSION@
+
+nobase_libnlinclude_HEADERS = \
 	netlink/cli/addr.h \
 	netlink/cli/class.h \
 	netlink/cli/cls.h \

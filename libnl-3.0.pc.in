@@ -3,9 +3,8 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libnl-route
-Description: Netlink Routing Family Library
+Name: libnl
+Description: Convenience library for netlink sockets
 Version: @PACKAGE_VERSION@
-Requires: libnl-3
-Libs: -L${libdir} -lnl-route
+Libs: -L${libdir} -lnl-@MAJ_VERSION@
 Cflags: -I${includedir}/libnl@MAJ_VERSION@

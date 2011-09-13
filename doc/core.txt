@@ -7,7 +7,7 @@
 Netlink Library (libnl)
 =======================
 Thomas Graf <tgraf@suug.ch>
-3.1, Aug 11 2011:
+3.2, Sep 13 2011:
 :numbered:
 
 == Introduction
@@ -59,6 +59,25 @@ The low level APIs are described in:
 
 === Linking to this Library
 
+.Checking the presence using autoconf
+
+Projects using autoconf may use +PKG_CHECK_MODULES()+ to check if
+a specific version of libnl is available on the system. The example
+below also shows how to retrieve the +CFLAGS+ and linking dependencies
+required to link against the library.
+
+[source]
+----
+PKG_CHECK_MODULES(LIBNL3, libnl-3.0 >= 3.1, [have_libnl3=yes], [have_libnl3=no])
+if (test "${have_libnl3}" = "yes"); then
+	CFLAGS += "$LIBNL3_CFLAGS"
+	LIBS += "$LIBNL3_LIBS"
+fi
+----
+
+NOTE: The pkgconfig file is named +libnl-3.0.pc+ for historic reasons, it also
+      covers library versions >= 3.1.
+
 .Main Header
 
 The main header is `<netlink/netlink.h>`. Additional headers need to
@@ -77,7 +96,7 @@ makes use of.
 
 .Linking to libnl
 -----
-$ gcc myprogram.c -o myprogram -lnl
+$ gcc myprogram.c -o myprogram $(pkgconfig --cflags --libs libnl-3.0)
 -----
 
 === Debugging

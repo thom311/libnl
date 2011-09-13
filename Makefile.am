@@ -10,10 +10,10 @@ endif
 
 SUBDIRS = include lib doc man python $(OPT_DIRS)
 
-pkgconfig_DATA = libnl-3.pc \
-		 libnl-route-3.pc \
-		 libnl-genl-3.pc \
-		 libnl-nf-3.pc
+pkgconfig_DATA = libnl-3.0.pc \
+		 libnl-route-3.0.pc \
+		 libnl-genl-3.0.pc \
+		 libnl-nf-3.0.pc
 
 pkgsysconfdir = ${sysconfdir}/libnl
 pkgsysconf_DATA = etc/pktloc etc/classid

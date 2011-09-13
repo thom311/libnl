@@ -9,16 +9,43 @@
 # Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
 #
 
-AC_INIT(libnl, 3.2, tgraf@suug.ch)
+
+# copied from glib
+m4_define([libnl_major_version], [3])
+m4_define([libnl_minor_version], [2])
+m4_define([libnl_micro_version], [0]) # bump for every release unless minor was bumped
+m4_define([libnl_lt_revision],	 [0]) # bump or reset to 0 if interfaces were added
+m4_define([libnl_lt_age],	 [0]) # bump whenever a release is backwards compatible
+                                      # bump with +100 if a minor release is compatible
+				      # reset to 0 if interfaces were removed
+
+m4_define([libnl_version],
+	  [libnl_major_version.libnl_minor_version.libnl_micro_version])
+
+m4_define([libnl_lt_current],
+	  [m4_eval(100 * libnl_minor_version + libnl_micro_version - libnl_lt_revision)])
+
+AC_INIT(libnl, [libnl_version], [http://www.infradead.org/~tgr/libnl/])
 AC_CONFIG_HEADERS([lib/defs.h])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall foreign subdir-objects])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES(yes)], [])
 
-MAJ_VERSION=3
-AC_SUBST([MAJ_VERSION])
-MIN_VERSION=2
-AC_SUBST([MIN_VERSION])
+MAJ_VERSION=libnl_major_version
+AC_SUBST(MAJ_VERSION)
+MIN_VERSION=libnl_minor_version
+AC_SUBST(MIN_VERSION)
+MIC_VERSION=libnl_micro_version
+AC_SUBST(MIC_VERSION)
+LIBNL_VERSION=libnl_version
+AC_SUBST(LIBNL_VERSION)
+
+LT_CURRENT=libnl_lt_current
+AC_SUBST(LT_CURRENT)
+LT_REVISION=libnl_lt_revision
+AC_SUBST(LT_REVISION)
+LT_AGE=libnl_lt_age
+AC_SUBST(LT_AGE)
 
 AC_PROG_CC
 AM_PROG_CC_C_O
@@ -43,25 +70,39 @@ AM_CONDITIONAL([ENABLE_CLI], [test "$enable_cli" = "yes"])
 AC_CHECK_LIB([m], [pow], [], AC_MSG_ERROR([libm is required]))
 AC_CHECK_LIB([pthread], [pthread_mutex_lock], [], AC_MSG_ERROR([libpthread is required]))
 
-AC_CONFIG_FILES([Makefile doc/Doxyfile doc/Makefile lib/Makefile
-	include/Makefile src/Makefile src/lib/Makefile man/Makefile
-	libnl-3.pc libnl-route-3.pc libnl-genl-3.pc libnl-nf-3.pc
-	python/Makefile python/setup.py python/netlink/Makefile
-	python/netlink/route/Makefile
-	include/netlink/version.h])
+AC_CONFIG_FILES([
+Makefile
+libnl-3.0.pc
+libnl-route-3.0.pc
+libnl-genl-3.0.pc
+libnl-nf-3.0.pc
+doc/Doxyfile
+doc/Makefile
+lib/Makefile
+include/Makefile
+src/Makefile
+src/lib/Makefile
+man/Makefile
+python/Makefile
+python/setup.py
+python/netlink/Makefile
+python/netlink/route/Makefile
+include/netlink/version.h
+])
+
 AC_OUTPUT
 
-echo -------------------------------------------------------------------------------
-echo                                   NOTE
-echo 
-echo  Headers will be installed in ${includedir}/libnl${MAJ_VERSION} starting with
-echo  version 3.2. If you are using pkg-config things should continue to work as
-echo  expected, otherwise you will have to extend the CLFAGS of your project with
-echo
-echo              -I${includedir}/libnl${MAJ_VERSION}
-echo
-echo  Also, pkg-config files for sub libraries have been added, so you can
-echo  verify their presence
-echo
-echo -------------------------------------------------------------------------------
+echo "-------------------------------------------------------------------------------"
+echo "                                  NOTE"
+echo ""
+echo " Headers will be installed in ${includedir}/libnl${MAJ_VERSION} starting with"
+echo " version 3.2. If you are using pkg-config things should continue to work as"
+echo " expected, otherwise you will have to extend the CLFAGS of your project with"
+echo ""
+echo "             -I${includedir}/libnl${MAJ_VERSION}"
+echo ""
+echo " Also, pkg-config files for sub libraries have been added, so you can"
+echo " verify their presence"
+echo ""
+echo "-------------------------------------------------------------------------------"
 

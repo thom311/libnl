@@ -3,9 +3,9 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libnl-nf
-Description: Netfilter Netlink Library
+Name: libnl-genl
+Description: Generic Netlink Library
 Version: @PACKAGE_VERSION@
-Requires: libnl-3
-Libs: -L${libdir} -lnl-nf
+Requires: libnl-3.0
+Libs: -L${libdir} -lnl-genl-@MAJ_VERSION@
 Cflags: -I${includedir}/libnl@MAJ_VERSION@

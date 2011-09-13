@@ -19,7 +19,7 @@ pkgsysconfdir = ${sysconfdir}/libnl
 pkgsysconf_DATA = etc/pktloc etc/classid
 
 EXTRA_DIST = \
-	$(sysconf_DATA)
+	$(pkgsysconf_DATA)
 
 .PHONY: cscope
 cscope:

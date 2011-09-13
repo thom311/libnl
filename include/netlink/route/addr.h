@@ -17,6 +17,7 @@
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/addr.h>
+#include <netlink/route/link.h>
 
 #ifdef __cplusplus
 extern "C" {

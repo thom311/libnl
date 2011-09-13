@@ -50,3 +50,18 @@ AC_CONFIG_FILES([Makefile doc/Doxyfile doc/Makefile lib/Makefile
 	python/netlink/route/Makefile
 	include/netlink/version.h])
 AC_OUTPUT
+
+echo -------------------------------------------------------------------------------
+echo                                   NOTE
+echo 
+echo  Headers will be installed in ${includedir}/libnl${MAJ_VERSION} starting with
+echo  version 3.2. If you are using pkg-config things should continue to work as
+echo  expected, otherwise you will have to extend the CLFAGS of your project with
+echo
+echo              -I${includedir}/libnl${MAJ_VERSION}
+echo
+echo  Also, pkg-config files for sub libraries have been added, so you can
+echo  verify their presence
+echo
+echo -------------------------------------------------------------------------------
+

@@ -996,6 +996,10 @@ int rtnl_link_get_kernel(struct nl_sock *sk, int ifindex, const char *name,
 	/* We have used link_msg_parser(), object is definitely a link */
 	*result = (struct rtnl_link *) obj;
 
+	/* If an object has been returned, we also need to wait for the ACK */
+	 if (err == 0 && obj)
+		 nl_wait_for_ack(sk);
+
 	return 0;
 }
 

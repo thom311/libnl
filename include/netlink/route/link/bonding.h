@@ -9,8 +9,8 @@
  * Copyright (c) 2011 Thomas Graf <tgraf@suug.ch>
  */
 
-#ifndef NETLINK_LINK_VLAN_H_
-#define NETLINK_LINK_VLAN_H_
+#ifndef NETLINK_LINK_BONDING_H_
+#define NETLINK_LINK_BONDING_H_
 
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>

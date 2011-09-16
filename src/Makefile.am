@@ -33,7 +33,9 @@ noinst_PROGRAMS = \
 	nl-route-add nl-route-delete nl-route-get nl-route-list \
 	nl-fib-lookup \
 	nl-list-caches nl-list-sockets \
-	nl-util-addr
+	nl-util-addr \
+	nl-link-enslave \
+	nl-link-release
 
 genl_ctrl_list_SOURCES = genl-ctrl-list.c 
 

@@ -37,3 +37,5 @@ nl-util-addr
 nf-queue
 nl-classid-lookup
 nl-pktloc-lookup
+nl-link-enslave
+nl-link-release

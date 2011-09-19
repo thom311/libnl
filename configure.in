@@ -13,9 +13,9 @@
 # copied from glib
 m4_define([libnl_major_version], [3])
 m4_define([libnl_minor_version], [2])
-m4_define([libnl_micro_version], [0]) # bump for every release unless minor was bumped
+m4_define([libnl_micro_version], [1]) # bump for every release unless minor was bumped
 m4_define([libnl_lt_revision],	 [0]) # bump or reset to 0 if interfaces were added
-m4_define([libnl_lt_age],	 [0]) # bump whenever a release is backwards compatible
+m4_define([libnl_lt_age],	 [1]) # bump whenever a release is backwards compatible
                                       # bump with +100 if a minor release is compatible
 				      # reset to 0 if interfaces were removed
 
@@ -95,14 +95,26 @@ AC_OUTPUT
 echo "-------------------------------------------------------------------------------"
 echo "                                  NOTE"
 echo ""
-echo " Headers will be installed in ${includedir}/libnl${MAJ_VERSION} starting with"
-echo " version 3.2. If you are using pkg-config things should continue to work as"
-echo " expected, otherwise you will have to extend the CLFAGS of your project with"
+echo " There have been some changes starting with 3.2 regarding where and how libnl"
+echo " is being installed on the system in order to allow multiple libnl versions"
+echo " to be installed in parallel:"
 echo ""
-echo "             -I${includedir}/libnl${MAJ_VERSION}"
+echo "    - Headers will be installed in ${includedir}/libnl${MAJ_VERSION}, therefore"
+echo "      you will need to add \"-I/usr/include/libnl${MAJ_VERSION}\" to CFLAGS"
 echo ""
-echo " Also, pkg-config files for sub libraries have been added, so you can"
-echo " verify their presence"
+echo "    - The library basename was renamed to libnl-${MAJ_VERSION}, i.e. the SO names become"
+echo "      libnl-${MAJ_VERSION}.so., libnl-route-${MAJ_VERSION}.so, etc."
+echo ""
+echo "    - libtool versioning was assumed, to ease detection of compatible library"
+echo "      versions. libnl-${MAJ_VERSION}.so.CURRENT.REVISION.AGE where."
+echo "          CURRENT  := 100 * \$MINOR_VERSION + \$MICRO_VERSION"
+echo "          REVISION := nth revision if API was unchanged"
+echo "          AGE      := nth revision that is backwards compatible."
+echo ""
+echo " If you are using pkg-config for detecting and linking against the library "
+echo " things will continue magically as if nothing every happened. If you are "
+echo " linking manually you need to adapt your Makefiles or switch to using "
+echo " pkg-config files."
 echo ""
 echo "-------------------------------------------------------------------------------"
 

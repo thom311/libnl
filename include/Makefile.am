@@ -3,17 +3,6 @@
 libnlincludedir = $(includedir)/libnl@MAJ_VERSION@
 
 nobase_libnlinclude_HEADERS = \
-	netlink/cli/addr.h \
-	netlink/cli/class.h \
-	netlink/cli/cls.h \
-	netlink/cli/ct.h \
-	netlink/cli/link.h \
-	netlink/cli/neigh.h \
-	netlink/cli/qdisc.h \
-	netlink/cli/route.h \
-	netlink/cli/rule.h \
-	netlink/cli/tc.h \
-	netlink/cli/utils.h \
 	netlink/fib_lookup/lookup.h \
 	netlink/fib_lookup/request.h \
 	netlink/genl/ctrl.h \
@@ -83,6 +72,21 @@ nobase_libnlinclude_HEADERS = \
 	netlink/types.h \
 	netlink/utils.h \
 	netlink/version.h
+
+if ENABLE_CLI
+nobase_libnlinclude_HEADERS += \
+	netlink/cli/addr.h \
+	netlink/cli/class.h \
+	netlink/cli/cls.h \
+	netlink/cli/ct.h \
+	netlink/cli/link.h \
+	netlink/cli/neigh.h \
+	netlink/cli/qdisc.h \
+	netlink/cli/route.h \
+	netlink/cli/rule.h \
+	netlink/cli/tc.h \
+	netlink/cli/utils.h
+endif
 
 noinst_HEADERS = \
 	linux/fib_rules.h \

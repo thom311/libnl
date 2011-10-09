@@ -151,6 +151,7 @@ static void addr_free_data(struct nl_object *obj)
 	nl_addr_put(addr->a_bcast);
 	nl_addr_put(addr->a_multicast);
 	nl_addr_put(addr->a_anycast);
+	rtnl_link_put(addr->a_link);
 }
 
 static int addr_clone(struct nl_object *_dst, struct nl_object *_src)

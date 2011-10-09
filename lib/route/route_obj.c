@@ -1078,7 +1078,17 @@ int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)
 		nla_nest_end(msg, metrics);
 	}
 
-	if (rtnl_route_get_nnexthops(route) > 0) {
+	if (rtnl_route_get_nnexthops(route) == 1) {
+		struct rtnl_nexthop *nh;
+
+		nh = rtnl_route_nexthop_n(route, 0);
+		if (nh->rtnh_gateway)
+			NLA_PUT_ADDR(msg, RTA_GATEWAY, nh->rtnh_gateway);
+		if (nh->rtnh_ifindex)
+			NLA_PUT_U32(msg, RTA_OIF, nh->rtnh_ifindex);
+		if (nh->rtnh_realms)
+			NLA_PUT_U32(msg, RTA_FLOW, nh->rtnh_realms);
+	} else if (rtnl_route_get_nnexthops(route) > 1) {
 		struct nlattr *multipath;
 		struct rtnl_nexthop *nh;
 

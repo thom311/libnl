@@ -885,6 +885,8 @@ void __trans_list_clear(struct nl_list_head *head)
 		free(tl->a);
 		free(tl);
 	}
+
+	nl_init_list_head(head);
 }
 
 char *__type2str(int type, char *buf, size_t len,

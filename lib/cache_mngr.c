@@ -378,9 +378,12 @@ void nl_cache_mngr_free(struct nl_cache_mngr *mngr)
 	if (mngr->cm_handle)
 		nl_close(mngr->cm_handle);
 
-	for (i = 0; i < mngr->cm_nassocs; i++)
-		if (mngr->cm_assocs[i].ca_cache)
+	for (i = 0; i < mngr->cm_nassocs; i++) {
+		if (mngr->cm_assocs[i].ca_cache) {
+			nl_cache_mngt_unprovide(mngr->cm_assocs[i].ca_cache);
 			nl_cache_free(mngr->cm_assocs[i].ca_cache);
+		}
+	}
 
 	free(mngr->cm_assocs);
 	free(mngr);

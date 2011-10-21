@@ -201,6 +201,13 @@ struct nl_cache_ops
 	int   (*co_msg_parser)(struct nl_cache_ops *, struct sockaddr_nl *,
 			       struct nlmsghdr *, struct nl_parser_param *);
 
+	/**
+	 * Called whenever a notification has been parsed into an object and
+	 * is considered for inclusion into a cache. Must return NL_SKIP if
+	 * the object should not be included in the cache.
+	 */
+	int   (*co_event_filter)(struct nl_cache *, struct nl_object *obj);
+
 	/** Object operations */
 	struct nl_object_ops *	co_obj_ops;
 

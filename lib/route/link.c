@@ -528,6 +528,19 @@ errout:
 	return err;
 }
 
+static int link_event_filter(struct nl_cache *cache, struct nl_object *obj)
+{
+	struct rtnl_link *link = (struct rtnl_link *) obj;
+
+	/*
+	 * Ignore bridging messages when keeping the cache manager up to date.
+	 */
+	if (link->l_family == AF_BRIDGE)
+		return NL_SKIP;
+
+	return NL_OK;
+}
+
 static int link_request_update(struct nl_cache *cache, struct nl_sock *sk)
 {
 	int family = cache->c_iarg1;
@@ -2186,6 +2199,7 @@ static struct nl_cache_ops rtnl_link_ops = {
 	.co_groups		= link_groups,
 	.co_request_update	= link_request_update,
 	.co_msg_parser		= link_msg_parser,
+	.co_event_filter	= link_event_filter,
 	.co_obj_ops		= &link_obj_ops,
 };
 

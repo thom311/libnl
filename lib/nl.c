@@ -580,7 +580,7 @@ continue_reading:
 
 	hdr = (struct nlmsghdr *) buf;
 	while (nlmsg_ok(hdr, n)) {
-		NL_DBG(3, "recgmsgs(%p): Processing valid message...\n", sk);
+		NL_DBG(3, "recvmsgs(%p): Processing valid message...\n", sk);
 
 		nlmsg_free(msg);
 		msg = nlmsg_convert(hdr);

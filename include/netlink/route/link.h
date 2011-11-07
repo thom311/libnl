@@ -197,6 +197,12 @@ extern int	rtnl_link_set_stat(struct rtnl_link *, rtnl_link_stat_id_t,
 extern int	rtnl_link_set_type(struct rtnl_link *, const char *);
 extern char *	rtnl_link_get_type(struct rtnl_link *);
 
+extern int	rtnl_link_enslave_ifindex(struct nl_sock *, int, int);
+extern int	rtnl_link_enslave(struct nl_sock *, struct rtnl_link *,
+				  struct rtnl_link *);
+extern int	rtnl_link_release_ifindex(struct nl_sock *, int);
+extern int	rtnl_link_release(struct nl_sock *, struct rtnl_link *);
+
 /* deprecated */
 extern int	rtnl_link_set_info_type(struct rtnl_link *, const char *) __attribute__((deprecated));
 extern char *	rtnl_link_get_info_type(struct rtnl_link *) __attribute__((deprecated));

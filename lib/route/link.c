@@ -1980,6 +1980,129 @@ char *rtnl_link_get_type(struct rtnl_link *link)
 /** @} */
 
 /**
+ * @name Master/Slave
+ * @{
+ */
+
+/**
+ * Enslave slave link to master link
+ * @arg sock		netlink socket
+ * @arg master		ifindex of master link
+ * @arg slave		ifindex of slave link
+ *
+ * This function is identical to rtnl_link_enslave() except that
+ * it takes interface indices instead of rtnl_link objects.
+ *
+ * @see rtnl_link_enslave()
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_link_enslave_ifindex(struct nl_sock *sock, int master, int slave)
+{
+	struct rtnl_link *link;
+	int err;
+
+	if (!(link = rtnl_link_alloc()))
+		return -NLE_NOMEM;
+
+	rtnl_link_set_ifindex(link, slave);
+	rtnl_link_set_master(link, master);
+	
+	if ((err = rtnl_link_change(sock, link, link, 0)) < 0)
+		goto errout;
+
+	rtnl_link_put(link);
+
+	/*
+	 * Due to the kernel not signaling whether this opertion is
+	 * supported or not, we will retrieve the attribute to see  if the
+	 * request was successful. If the master assigned remains unchanged
+	 * we will return NLE_OPNOTSUPP to allow performing backwards
+	 * compatibility of some sort.
+	 */
+	if ((err = rtnl_link_get_kernel(sock, slave, NULL, &link)) < 0)
+		return err;
+
+	if (rtnl_link_get_master(link) != master)
+		err = -NLE_OPNOTSUPP;
+
+errout:
+	rtnl_link_put(link);
+
+	return err;
+}
+
+/**
+ * Enslave slave link to master link
+ * @arg sock		netlink socket
+ * @arg master		master link
+ * @arg slave		slave link
+ *
+ * Constructs a RTM_NEWLINK or RTM_SETLINK message adding the slave to
+ * the master and sends the request via the specified netlink socket.
+ *
+ * @note The feature of enslaving/releasing via netlink has only been added
+ *       recently to the kernel (Feb 2011). Also, the kernel does not signal
+ *       if the operation is not supported. Therefore this function will
+ *       verify if the master assignment has changed and will return
+ *       -NLE_OPNOTSUPP if it did not.
+ *
+ * @see rtnl_link_enslave_ifindex()
+ * @see rtnl_link_release()
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_link_enslave(struct nl_sock *sock, struct rtnl_link *master,
+		      struct rtnl_link *slave)
+{
+	return rtnl_link_enslave_ifindex(sock, rtnl_link_get_ifindex(master),
+					 rtnl_link_get_ifindex(slave));
+}
+
+/**
+ * Release slave link from its master
+ * @arg sock		netlink socket
+ * @arg slave		slave link
+ *
+ * This function is identical to rtnl_link_release() except that
+ * it takes an interface index instead of a rtnl_link object.
+ *
+ * @see rtnl_link_release()
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_link_release_ifindex(struct nl_sock *sock, int slave)
+{
+	return rtnl_link_enslave_ifindex(sock, 0, slave);
+}
+
+/**
+ * Release slave link from its master
+ * @arg sock		netlink socket
+ * @arg slave		slave link
+ *
+ * Constructs a RTM_NEWLINK or RTM_SETLINK message releasing the slave from
+ * its master and sends the request via the specified netlink socket.
+ *
+ * @note The feature of enslaving/releasing via netlink has only been added
+ *       recently to the kernel (Feb 2011). Also, the kernel does not signal
+ *       if the operation is not supported. Therefore this function will
+ *       verify if the master assignment has changed and will return
+ *       -NLE_OPNOTSUPP if it did not.
+ *
+ * @see rtnl_link_release_ifindex()
+ * @see rtnl_link_enslave()
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_link_release(struct nl_sock *sock, struct rtnl_link *slave)
+{
+	return rtnl_link_release_ifindex(sock, rtnl_link_get_ifindex(slave));
+}
+
+/** @} */
+
+/**
  * @name Utilities
  * @{
  */

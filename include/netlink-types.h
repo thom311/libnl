@@ -167,6 +167,7 @@ struct rtnl_link
 	uint8_t				l_operstate;
 	uint8_t				l_linkmode;
 	/* 2 byte hole */
+	char *				l_info_kind;
 	struct rtnl_link_info_ops *	l_info_ops;
 	void *				l_af_data[AF_MAX];
 	void *				l_info;

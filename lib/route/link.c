@@ -195,6 +195,7 @@ static void link_free_data(struct nl_object *c)
 		nl_addr_put(link->l_bcast);
 
 		free(link->l_ifalias);
+		free(link->l_info_kind);
 
 		do_foreach_af(link, af_free, NULL);
 	}
@@ -216,6 +217,10 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	if (src->l_ifalias)
 		if (!(dst->l_ifalias = strdup(src->l_ifalias)))
+			return -NLE_NOMEM;
+
+	if (src->l_info_kind)
+		if (!(dst->l_info_kind = strdup(src->l_info_kind)))
 			return -NLE_NOMEM;
 
 	if (src->l_info_ops && src->l_info_ops->io_clone) {
@@ -478,18 +483,27 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			struct rtnl_link_info_ops *ops;
 			char *kind;
 
-			kind = nla_get_string(li[IFLA_INFO_KIND]);
+			kind = nla_strdup(tb[IFLA_INFO_KIND]);
+			if (kind == NULL) {
+				err = -NLE_NOMEM;
+				goto errout;
+			}
+			link->l_info_kind = kind;
+			link->ce_mask |= LINK_ATTR_LINKINFO;
+
 			ops = rtnl_link_info_ops_lookup(kind);
 			link->l_info_ops = ops;
-			
-			if (ops && ops->io_parse &&
-			    (li[IFLA_INFO_DATA] || li[IFLA_INFO_XSTATS])) {
-				err = ops->io_parse(link, li[IFLA_INFO_DATA],
-						    li[IFLA_INFO_XSTATS]);
-				if (err < 0)
-					goto errout;
-			} else {
-				/* XXX: Warn about unparsed info? */
+
+			if (ops) {
+				if (ops->io_parse &&
+				    (li[IFLA_INFO_DATA] || li[IFLA_INFO_XSTATS])) {
+					err = ops->io_parse(link, li[IFLA_INFO_DATA],
+							    li[IFLA_INFO_XSTATS]);
+					if (err < 0)
+						goto errout;
+				} else {
+					/* XXX: Warn about unparsed info? */
+				}
 			}
 		}
 	}
@@ -1115,17 +1129,19 @@ static int build_link_msg(int cmd, struct ifinfomsg *hdr,
 	if (link->ce_mask & LINK_ATTR_MASTER)
 		NLA_PUT_U32(msg, IFLA_MASTER, link->l_master);
 
-	if ((link->ce_mask & LINK_ATTR_LINKINFO) && link->l_info_ops) {
+	if (link->ce_mask & LINK_ATTR_LINKINFO) {
 		struct nlattr *info;
 
 		if (!(info = nla_nest_start(msg, IFLA_LINKINFO)))
 			goto nla_put_failure;
 
-		NLA_PUT_STRING(msg, IFLA_INFO_KIND, link->l_info_ops->io_name);
+		NLA_PUT_STRING(msg, IFLA_INFO_KIND, link->l_info_kind);
 
-		if (link->l_info_ops->io_put_attrs &&
-		    link->l_info_ops->io_put_attrs(msg, link) < 0)
-			goto nla_put_failure;
+		if (link->l_info_ops) {
+			if (link->l_info_ops->io_put_attrs &&
+			    link->l_info_ops->io_put_attrs(msg, link) < 0)
+				goto nla_put_failure;
+		}
 
 		nla_nest_end(msg, info);
 	}
@@ -1952,20 +1968,36 @@ int rtnl_link_set_type(struct rtnl_link *link, const char *type)
 {
 	struct rtnl_link_info_ops *io;
 	int err;
+	char *kind;
 
-	if ((io = rtnl_link_info_ops_lookup(type)) == NULL)
-		return -NLE_OPNOTSUPP;
-
+	free(link->l_info_kind);
+	link->ce_mask &= ~LINK_ATTR_LINKINFO;
 	if (link->l_info_ops)
 		release_link_info(link);
 
-	if (io->io_alloc && (err = io->io_alloc(link)) < 0)
-		return err;
+	if (!type)
+		return 0;
 
+	kind = strdup(type);
+	if (!kind)
+		return -NLE_NOMEM;
+
+	io = rtnl_link_info_ops_lookup(type);
+	if (io) {
+		if (io->io_alloc && (err = io->io_alloc(link)) < 0)
+			goto errout;
+
+		link->l_info_ops = io;
+	}
+
+	link->l_info_kind = kind;
 	link->ce_mask |= LINK_ATTR_LINKINFO;
-	link->l_info_ops = io;
 
 	return 0;
+
+errout:
+	free(kind);
+	return err;
 }
 
 /**
@@ -1977,7 +2009,7 @@ int rtnl_link_set_type(struct rtnl_link *link, const char *type)
  */
 char *rtnl_link_get_type(struct rtnl_link *link)
 {
-	return link->l_info_ops ? link->l_info_ops->io_name : NULL;
+	return link->l_info_kind;
 }
 
 /** @} */

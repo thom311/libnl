@@ -60,15 +60,12 @@ int rtnl_link_bond_add(struct nl_sock *sock, const char *name,
 	if (!name) {
 		if (opts)
 			name = rtnl_link_get_name(opts);
-
-		if (!name)
-			return -NLE_MISSING_ATTR;
 	}
 
 	if ((err = rtnl_link_set_type(link, "bond")) < 0)
 		goto errout;
-	
 
+	if (name)
 		rtnl_link_set_name(link, name);
 
 	err = rtnl_link_add(sock, link, NLM_F_CREATE);

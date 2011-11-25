@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_DSMARK_H_
@@ -18,8 +18,8 @@
 extern "C" {
 #endif
 
-extern int	rtnl_class_dsmark_set_bmask(struct rtnl_class *, uint8_t);
-extern int	rtnl_class_dsmark_get_bmask(struct rtnl_class *);
+extern int	rtnl_class_dsmark_set_bitmask(struct rtnl_class *, uint8_t);
+extern int	rtnl_class_dsmark_get_bitmask(struct rtnl_class *);
 
 extern int	rtnl_class_dsmark_set_value(struct rtnl_class *, uint8_t);
 extern int	rtnl_class_dsmark_get_value(struct rtnl_class *);

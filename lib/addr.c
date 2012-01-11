@@ -497,7 +497,10 @@ int nl_addr_cmp(struct nl_addr *a, struct nl_addr *b)
 		d = a->a_len - b->a_len;
 
 		if (a->a_len && d == 0)
-			return memcmp(a->a_addr, b->a_addr, a->a_len);
+			d = memcmp(a->a_addr, b->a_addr, a->a_len);
+
+			if (d == 0)
+				return (a->a_prefixlen - b->a_prefixlen);
 	}
 
 	return d;

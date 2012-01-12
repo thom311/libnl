@@ -483,7 +483,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			struct rtnl_link_info_ops *ops;
 			char *kind;
 
-			kind = nla_strdup(tb[IFLA_INFO_KIND]);
+			kind = nla_strdup(li[IFLA_INFO_KIND]);
 			if (kind == NULL) {
 				err = -NLE_NOMEM;
 				goto errout;

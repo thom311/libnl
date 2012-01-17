@@ -105,10 +105,10 @@ nobase_pkglib_LTLIBRARIES = \
 	cli/cls/basic.la \
 	cli/cls/cgroup.la
 
-cli_qdisc_htb_la_LDFLAGS = -module -version-info 0:0:0
-cli_qdisc_blackhole_la_LDFLAGS = -module -version-info 0:0:0
-cli_qdisc_pfifo_la_LDFLAGS = -module -version-info 0:0:0
-cli_qdisc_bfifo_la_LDFLAGS = -module -version-info 0:0:0
-cli_cls_basic_la_LDFLAGS = -module -version-info 0:0:0
-cli_cls_cgroup_la_LDFLAGS = -module -version-info 0:0:0
+cli_qdisc_htb_la_LDFLAGS = -module -avoid-version
+cli_qdisc_blackhole_la_LDFLAGS = -module -avoid-version
+cli_qdisc_pfifo_la_LDFLAGS = -module -avoid-version
+cli_qdisc_bfifo_la_LDFLAGS = -module -avoid-version
+cli_cls_basic_la_LDFLAGS = -module -avoid-version
+cli_cls_cgroup_la_LDFLAGS = -module -avoid-version
 endif

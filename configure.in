@@ -13,15 +13,16 @@
 # copied from glib
 m4_define([libnl_major_version], [3])
 m4_define([libnl_minor_version], [2])
-m4_define([libnl_micro_version], [6]) # bump for every release unless minor was bumped
-m4_define([libnl_lt_revision],	 [1]) # bump or reset to 0 if interfaces were added
-m4_define([libnl_lt_age],	 [6]) # bump whenever a release is backwards compatible
+m4_define([libnl_micro_version], [7]) # bump for every release unless minor was bumped
+m4_define([libnl_lt_revision],	 [2]) # bump or reset to 0 if interfaces were added
+m4_define([libnl_backwards_age], [7]) # bump whenever a release is backwards compatible
                                       # bump with +100 if a minor release is compatible
 				      # reset to 0 if interfaces were removed
 
 m4_define([libnl_version],
 	  [libnl_major_version.libnl_minor_version.libnl_micro_version])
 
+m4_define([libnl_lt_age], [m4_eval(libnl_backwards_age - libnl_lt_revision)])
 m4_define([libnl_lt_current],
 	  [m4_eval(100 * libnl_minor_version + libnl_micro_version - libnl_lt_revision)])
 

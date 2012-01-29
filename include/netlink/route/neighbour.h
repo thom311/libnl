@@ -29,6 +29,8 @@ extern int	rtnl_neigh_alloc_cache(struct nl_sock *, struct nl_cache **);
 extern struct rtnl_neigh *rtnl_neigh_get(struct nl_cache *, int,
 					       struct nl_addr *);
 
+extern int      rtnl_neigh_parse(struct nlmsghdr *, struct rtnl_neigh **);
+
 extern char *	rtnl_neigh_state2str(int, char *, size_t);
 extern int	rtnl_neigh_str2state(const char *);
 

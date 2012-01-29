@@ -254,6 +254,21 @@ static int neigh_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			    struct nlmsghdr *n, struct nl_parser_param *pp)
 {
 	struct rtnl_neigh *neigh;
+	int err;
+
+	if ((err = rtnl_neigh_parse(n, &neigh)) < 0)
+		return err;
+
+	err = pp->pp_cb((struct nl_object *) neigh, pp);
+
+	rtnl_neigh_put(neigh);
+	return err;
+}
+
+
+int rtnl_neigh_parse(struct nlmsghdr *n, struct rtnl_neigh **result)
+{
+	struct rtnl_neigh *neigh;
 	struct nlattr *tb[NDA_MAX + 1];
 	struct ndmsg *nm;
 	int err;
@@ -317,7 +332,9 @@ static int neigh_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		neigh->ce_mask |= NEIGH_ATTR_PROBES;
 	}
 
-	err = pp->pp_cb((struct nl_object *) neigh, pp);
+	*result = neigh;
+	return 0;
+
 errout:
 	rtnl_neigh_put(neigh);
 	return err;

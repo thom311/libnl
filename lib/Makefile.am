@@ -72,7 +72,7 @@ libnl_route_3_la_SOURCES = \
 	route/qdisc/blackhole.c route/qdisc/cbq.c route/qdisc/dsmark.c \
 	route/qdisc/fifo.c route/qdisc/htb.c route/qdisc/netem.c \
 	route/qdisc/prio.c route/qdisc/red.c route/qdisc/sfq.c \
-	route/qdisc/tbf.c \
+	route/qdisc/tbf.c route/qdisc/plug.c \
 	\
 	fib_lookup/lookup.c fib_lookup/request.c \
 	\
@@ -101,6 +101,7 @@ nobase_pkglib_LTLIBRARIES = \
 	cli/qdisc/htb.la \
 	cli/qdisc/blackhole.la \
 	cli/qdisc/pfifo.la \
+	cli/qdisc/plug.la \
 	cli/qdisc/bfifo.la \
 	cli/cls/basic.la \
 	cli/cls/cgroup.la
@@ -108,6 +109,7 @@ nobase_pkglib_LTLIBRARIES = \
 cli_qdisc_htb_la_LDFLAGS = -module -avoid-version
 cli_qdisc_blackhole_la_LDFLAGS = -module -avoid-version
 cli_qdisc_pfifo_la_LDFLAGS = -module -avoid-version
+cli_qdisc_plug_la_LDFLAGS = -module -avoid-version
 cli_qdisc_bfifo_la_LDFLAGS = -module -avoid-version
 cli_cls_basic_la_LDFLAGS = -module -avoid-version
 cli_cls_cgroup_la_LDFLAGS = -module -avoid-version

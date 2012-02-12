@@ -54,6 +54,7 @@ nobase_libnlinclude_HEADERS = \
 	netlink/route/qdisc/red.h \
 	netlink/route/qdisc/sfq.h \
 	netlink/route/qdisc/tbf.h \
+	netlink/route/qdisc/plug.h \
 	netlink/route/addr.h \
 	netlink/route/class.h \
 	netlink/route/classifier.h \

@@ -669,6 +669,12 @@ struct rtnl_red
 	uint32_t	qr_mask;
 };
 
+struct rtnl_plug
+{
+	int             action;
+	uint32_t        limit;
+};
+
 struct flnl_request
 {
 	NLHDR_COMMON

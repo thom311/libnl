@@ -44,6 +44,7 @@ extern int			nl_cache_alloc_name(const char *,
 						    struct nl_cache **);
 extern struct nl_cache *	nl_cache_subset(struct nl_cache *,
 						struct nl_object *);
+extern struct nl_cache *	nl_cache_clone(struct nl_cache *);
 extern void			nl_cache_clear(struct nl_cache *);
 extern void			nl_cache_free(struct nl_cache *);
 

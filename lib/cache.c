@@ -288,6 +288,36 @@ struct nl_cache *nl_cache_subset(struct nl_cache *orig,
 }
 
 /**
+ * Allocate new cache and copy the contents of an existing cache
+ * @arg cache		Original cache to base new cache on
+ *
+ * Allocates a new cache matching the type of the cache specified by
+ * \p cache. Iterates over the \p cache cache and copies all objects
+ * to the new cache.
+ *
+ * The copied objects are clones but do not contain a reference to each
+ * other. Later modifications to objects in the original cache will
+ * not affect objects in the new cache.
+ *
+ * @return A newly allocated cache or NULL.
+ */
+struct nl_cache *nl_cache_clone(struct nl_cache *cache)
+{
+	struct nl_cache_ops *ops = nl_cache_get_ops(cache);
+	struct nl_cache *clone;
+	struct nl_object *obj;
+
+	clone = nl_cache_alloc(ops);
+	if (!clone)
+		return NULL;
+
+	nl_list_for_each_entry(obj, &cache->c_items, ce_list)
+		nl_cache_add(clone, obj);
+
+	return clone;
+}
+
+/**
  * Remove all objects of a cache.
  * @arg cache		Cache to clear
  *

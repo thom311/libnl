@@ -70,8 +70,8 @@ required to link against the library.
 ----
 PKG_CHECK_MODULES(LIBNL3, libnl-3.0 >= 3.1, [have_libnl3=yes], [have_libnl3=no])
 if (test "${have_libnl3}" = "yes"); then
-	CFLAGS += "$LIBNL3_CFLAGS"
-	LIBS += "$LIBNL3_LIBS"
+	CFLAGS="$LIBNL3_CFLAGS"
+	LIBS="$LIBNL3_LIBS"
 fi
 ----
 

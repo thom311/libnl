@@ -383,6 +383,10 @@ static int build_rule_msg(struct rtnl_rule *tmpl, int cmd, int flags,
 	if (nlmsg_append(msg, &frh, sizeof(frh), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
 
+	/* Additional table attribute replacing the 8bit in the header, was
+	 * required to allow more than 256 tables. */
+	NLA_PUT_U32(msg, FRA_TABLE, tmpl->r_table);
+
 	if (tmpl->ce_mask & RULE_ATTR_SRC)
 		NLA_PUT_ADDR(msg, FRA_SRC, tmpl->r_src);
 

@@ -914,6 +914,9 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 		nl_addr_put(src);
 	}
 
+	if (tb[RTA_TABLE])
+		rtnl_route_set_table(route, nla_get_u32(tb[RTA_TABLE]));
+
 	if (tb[RTA_IIF])
 		rtnl_route_set_iif(route, nla_get_u32(tb[RTA_IIF]));
 

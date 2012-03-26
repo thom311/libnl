@@ -593,7 +593,7 @@ nl_socket_modify_cb(sk, NL_CB_VALID, NL_CB_CUSTOM, my_func, NULL);
 nl_connect(sk, NETLINK_ROUTE);
 
 /* Subscribe to link notifications group */
-nl_socket_add_memberships(sk, RTNLGRP_LINK);
+nl_socket_add_memberships(sk, RTNLGRP_LINK, 0);
 
 /*
  * Start receiving messages. The function nl_recvmsgs_default() will block

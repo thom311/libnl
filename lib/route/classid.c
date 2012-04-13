@@ -41,7 +41,7 @@ static int compare_id(const void *pa, const void *pb)
 
 	if (ma->classid < mb->classid)
 		return -1;
-	
+
 	if (ma->classid > mb->classid)
 		return 1;
 
@@ -217,7 +217,7 @@ not_a_number:
 		} else {
 			/* XXXX:YYYY */
 			uint32_t l;
-			
+
 update:
 			l = strtoul(colon+1, &end, 16);
 
@@ -296,7 +296,7 @@ static int classid_map_add(uint32_t classid, const char *name)
 
 /**
  * (Re-)read classid file
- * 
+ *
  * Rereads the contents of the classid file (typically found at the location
  * /etc/libnl/classid) and refreshes the classid maps.
  *
@@ -409,7 +409,7 @@ int rtnl_classid_generate(const char *name, uint32_t *result, uint32_t parent)
 	fclose(fd);
 
 	if ((err = classid_map_add(classid, name)) < 0) {
-		/* 
+		/*
 		 * Error adding classid map, re-read classid file is best
 		 * option here. It is likely to fail as well but better
 		 * than nothing, entry was added to the file already anyway.
@@ -438,4 +438,12 @@ static void __init classid_init(void)
 		fprintf(stderr, "Failed to read classid file: %s\n", nl_geterror(err));
 }
 
+static void __exit classid_exit(void)
+{
+	void free_map(void *map) {
+		free(((struct classid_map *)map)->name);
+		free(map);
+	};
+	tdestroy(id_root, free_map);
+}
 /** @} */

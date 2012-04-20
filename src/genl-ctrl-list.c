@@ -1,12 +1,12 @@
 /*
- * src/genl-ctrl-list.c	List Generic Netlink Controller
+ * src/genl-ctrl-list.c	List Generic Netlink Families
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 #include <netlink/cli/utils.h>

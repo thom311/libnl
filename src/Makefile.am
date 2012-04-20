@@ -12,6 +12,7 @@ LDADD = \
 	${top_builddir}/lib/libnl-route-3.la
 
 sbin_PROGRAMS = \
+	genl-ctrl-list \
 	nl-qdisc-add nl-qdisc-list nl-qdisc-delete \
 	nl-class-add nl-class-list nl-class-delete \
 	nl-cls-add nl-cls-list nl-cls-delete \
@@ -20,7 +21,6 @@ sbin_PROGRAMS = \
 	nl-link-list
 
 noinst_PROGRAMS = \
-	genl-ctrl-list \
 	nf-ct-list nf-log nf-queue nf-monitor \
 	nl-addr-add nl-addr-delete nl-addr-list \
 	nl-link-set nl-link-stats \

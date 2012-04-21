@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	link = rtnl_link_alloc();
 	rtnl_link_set_name(link, "my_bond");
 
-	if ((err = rtnl_link_set_info_type(link, "bond")) < 0) {
+	if ((err = rtnl_link_set_type(link, "bond")) < 0) {
 		nl_perror(err, "Unable to set link info type");
 		return err;
 	}

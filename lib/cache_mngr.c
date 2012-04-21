@@ -169,7 +169,7 @@ errout:
  * @arg name		Name of cache to keep track of
  * @arg cb		Function to be called upon changes.
  * @arg data		Argument passed on to change callback
- * @arg result		Pointer to store added cache.
+ * @arg result		Pointer to store added cache (optional)
  *
  * Allocates a new cache of the specified type and adds it to the manager.
  * The operation will trigger a full dump request from the kernel to
@@ -259,7 +259,8 @@ retry:
 	NL_DBG(1, "Added cache %p <%s> to cache manager %p\n",
 	       cache, nl_cache_name(cache), mngr);
 
-	*result = cache;
+	if (result)
+		*result = cache;
 	return 0;
 
 errout_drop_membership:

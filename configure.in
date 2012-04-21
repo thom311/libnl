@@ -84,6 +84,7 @@ lib/Makefile
 include/Makefile
 src/Makefile
 src/lib/Makefile
+tests/Makefile
 man/Makefile
 python/Makefile
 python/setup.py

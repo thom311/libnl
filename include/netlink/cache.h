@@ -127,6 +127,8 @@ extern int			nl_cache_mngr_get_fd(struct nl_cache_mngr *);
 extern int			nl_cache_mngr_poll(struct nl_cache_mngr *,
 						   int);
 extern int			nl_cache_mngr_data_ready(struct nl_cache_mngr *);
+extern void			nl_cache_mngr_info(struct nl_cache_mngr *,
+						   struct nl_dump_params *);
 extern void			nl_cache_mngr_free(struct nl_cache_mngr *);
 
 #ifdef __cplusplus

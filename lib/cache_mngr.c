@@ -368,6 +368,48 @@ int nl_cache_mngr_data_ready(struct nl_cache_mngr *mngr)
 }
 
 /**
+ * Print information about cache manager
+ * @arg mngr		Cache manager
+ * @arg p		Dumping parameters
+ *
+ * Prints information about the cache manager including all managed caches.
+ *
+ * @note This is a debugging function.
+ */
+void nl_cache_mngr_info(struct nl_cache_mngr *mngr, struct nl_dump_params *p)
+{
+	char buf[128];
+	int i;
+
+	nl_dump_line(p, "cache-manager <%p>\n", mngr);
+	nl_dump_line(p, "  .protocol = %s\n",
+		     nl_nlfamily2str(mngr->cm_protocol, buf, sizeof(buf)));
+	nl_dump_line(p, "  .flags    = %#x\n", mngr->cm_flags);
+	nl_dump_line(p, "  .nassocs  = %u\n", mngr->cm_nassocs);
+	nl_dump_line(p, "  .sock     = <%p>\n", mngr->cm_sock);
+
+	for (i = 0; i < mngr->cm_nassocs; i++) {
+		struct nl_cache_assoc *assoc = &mngr->cm_assocs[i];
+
+		if (assoc->ca_cache) {
+			nl_dump_line(p, "  .cache[%d] = <%p> {\n", i, assoc->ca_cache);
+			nl_dump_line(p, "    .name = %s\n", assoc->ca_cache->c_ops->co_name);
+			nl_dump_line(p, "    .change_func = <%p>\n", assoc->ca_change);
+			nl_dump_line(p, "    .change_data = <%p>\n", assoc->ca_change_data);
+			nl_dump_line(p, "    .nitems = %u\n", nl_cache_nitems(assoc->ca_cache));
+			nl_dump_line(p, "    .objects = {\n");
+
+			p->dp_prefix += 6;
+			nl_cache_dump(assoc->ca_cache, p);
+			p->dp_prefix -= 6;
+
+			nl_dump_line(p, "    }\n");
+			nl_dump_line(p, "  }\n");
+		}
+	}
+}
+
+/**
  * Free cache manager and all caches.
  * @arg mngr		Cache manager.
  *

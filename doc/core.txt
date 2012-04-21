@@ -2555,6 +2555,82 @@ to further specify what will be part of the cache.
 All such functions return a newly allocated cache or NULL
 in case of an error.
 
+=== Cache Manager
+
+The purpose of a cache manager is to keep track of caches and
+automatically receive event notifications to keep the caches
+up to date with the kernel state. Each manager has exactly one
+netlink socket assigned which limits the scope of each manager
+to exactly one netlink family. Therefore all caches committed
+to a manager must be part of the same netlink family. Due to the
+nature of a manager, it is not possible to have a cache maintain
+two instances of the same cache type. The socket is subscribed
+to the event notification group of each cache and also put into
+non-blocking mode. Functions exist to poll() on the socket to
+wait for new events to be received.
+
+
+----
+ App       libnl                        Kernel
+        |                            |
+            +-----------------+        [ notification, link change ]
+        |   |  Cache Manager  |      | [   (IFF_UP | IFF_RUNNING)  ]
+            |                 |                |
+        |   |   +------------+|      |         |  [ notification, new addr ]
+    <-------|---| route/link |<-------(async)--+  [  10.0.1.1/32 dev eth1  ]
+        |   |   +------------+|      |                      |
+            |   +------------+|                             |
+    <---|---|---| route/addr |<------|-(async)--------------+
+            |   +------------+|
+        |   |   +------------+|      |
+    <-------|---| ...        ||
+        |   |   +------------+|      |
+            +-----------------+
+        |                            |
+----
+
+.Creating a new cache manager
+
+[source,c]
+----
+struct nl_cache_mngr *mngr;
+
+// Allocate a new cache manager for RTNETLINK and automatically
+// provide the caches added to the manager.
+mngr = nl_cache_mngr_alloc(NETLINK_ROUTE, NL_AUTO_PROVIDE);
+----
+
+.Keep track of a cache
+
+[source,c]
+----
+struct nl_cache *cache;
+
+// Create a new cache for links/interfaces and ask the manager to
+// keep it up to date for us. This will trigger a full dump request
+// to initially fill the cache.
+cache = nl_cache_mngr_add(mngr, "route/link");
+-----
+
+.Make the manager receive updates
+
+[source,c]
+----
+// Give the manager the ability to receive updates, will call poll()
+// with a timeout of 5 seconds.
+if (nl_cache_mngr_poll(mngr, 5000) > 0) {
+        // Manager received at least one update, dump cache?
+        nl_cache_dump(cache, ...);
+}
+----
+
+.Release cache manager
+
+[source,c]
+----
+nl_cache_mngr_free(mngr);
+----
+
 == Abstract Data Types
 
 A few high level abstract data types which are used by a majority netlink

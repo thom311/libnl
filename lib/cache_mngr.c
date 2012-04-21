@@ -12,72 +12,8 @@
 /**
  * @ingroup cache_mngt
  * @defgroup cache_mngr Manager
- * @brief Helps keeping caches up to date.
+ * @brief Automatically keep caches up to date
  *
- * The purpose of a cache manager is to keep track of caches and
- * automatically receive event notifications to keep the caches
- * up to date with the kernel state. Each manager has exactly one
- * netlink socket assigned which limits the scope of each manager
- * to exactly one netlink family. Therefore all caches committed
- * to a manager must be part of the same netlink family. Due to the
- * nature of a manager, it is not possible to have a cache maintain
- * two instances of the same cache type. The socket is subscribed
- * to the event notification group of each cache and also put into
- * non-blocking mode. Functions exist to poll() on the socket to
- * wait for new events to be received.
- *
- * @code
- * App       libnl                        Kernel
- *        |                            |
- *            +-----------------+        [ notification, link change ]
- *        |   |  Cache Manager  |      | [   (IFF_UP | IFF_RUNNING)  ]
- *            |                 |                |
- *        |   |   +------------+|      |         |  [ notification, new addr ]
- *    <-------|---| route/link |<-------(async)--+  [  10.0.1.1/32 dev eth1  ]
- *        |   |   +------------+|      |                      |
- *            |   +------------+|                             |
- *    <---|---|---| route/addr |<------|-(async)--------------+
- *            |   +------------+|
- *        |   |   +------------+|      |
- *    <-------|---| ...        ||
- *        |   |   +------------+|      |
- *            +-----------------+
- *        |                            |
- * @endcode
- *
- * @par 1) Creating a new cache manager
- * @code
- * struct nl_cache_mngr *mngr;
- *
- * // Allocate a new cache manager for RTNETLINK and automatically
- * // provide the caches added to the manager.
- * mngr = nl_cache_mngr_alloc(NETLINK_ROUTE, NL_AUTO_PROVIDE);
- * @endcode
- *
- * @par 2) Keep track of a cache
- * @code
- * struct nl_cache *cache;
- *
- * // Create a new cache for links/interfaces and ask the manager to
- * // keep it up to date for us. This will trigger a full dump request
- * // to initially fill the cache.
- * cache = nl_cache_mngr_add(mngr, "route/link");
- * @endcode
- *
- * @par 3) Make the manager receive updates
- * @code
- * // Give the manager the ability to receive updates, will call poll()
- * // with a timeout of 5 seconds.
- * if (nl_cache_mngr_poll(mngr, 5000) > 0) {
- *         // Manager received at least one update, dump cache?
- *         nl_cache_dump(cache, ...);
- * }
- * @endcode
- *
- * @par 4) Release cache manager
- * @code
- * nl_cache_mngr_free(mngr);
- * @endcode
  * @{
  */
 

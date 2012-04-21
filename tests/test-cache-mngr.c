@@ -32,13 +32,11 @@ int main(int argc, char *argv[])
 {
 	struct nl_cache_mngr *mngr;
 	struct nl_cache *lc, *nc, *ac, *rc;
-	struct nl_sock *sock;
 	int err;
 
 	signal(SIGINT, sigint);
 
-	sock = nl_cli_alloc_socket();
-	err = nl_cache_mngr_alloc(sock, NETLINK_ROUTE, NL_AUTO_PROVIDE, &mngr);
+	err = nl_cache_mngr_alloc(NULL, NETLINK_ROUTE, NL_AUTO_PROVIDE, &mngr);
 	if (err < 0)
 		nl_cli_fatal(err, "Unable to allocate cache manager: %s",
 			     nl_geterror(err));
@@ -67,7 +65,6 @@ int main(int argc, char *argv[])
 	}
 
 	nl_cache_mngr_free(mngr);
-	nl_socket_free(sock);
 
 	return 0;
 }

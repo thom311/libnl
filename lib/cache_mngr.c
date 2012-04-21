@@ -22,6 +22,9 @@
 #include <netlink/cache.h>
 #include <netlink/utils.h>
 
+#define NASSOC_INIT		16
+#define NASSOC_EXPAND		8
+
 static int include_cb(struct nl_object *obj, struct nl_parser_param *p)
 {
 	struct nl_cache_assoc *ca = p->pp_arg;
@@ -130,7 +133,7 @@ int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 	}
 
 	mngr->cm_sock = sk;
-	mngr->cm_nassocs = 32;
+	mngr->cm_nassocs = NASSOC_INIT;
 	mngr->cm_protocol = protocol;
 	mngr->cm_flags = flags;
 	mngr->cm_assocs = calloc(mngr->cm_nassocs,
@@ -208,17 +211,19 @@ retry:
 			break;
 
 	if (i >= mngr->cm_nassocs) {
-		mngr->cm_nassocs += 16;
+		mngr->cm_nassocs += NASSOC_EXPAND;
 		mngr->cm_assocs = realloc(mngr->cm_assocs,
 					  mngr->cm_nassocs *
 					  sizeof(struct nl_cache_assoc));
 		if (mngr->cm_assocs == NULL)
 			return -NLE_NOMEM;
-		else {
-			NL_DBG(1, "Increased capacity of cache manager %p " \
-				  "to %d\n", mngr, mngr->cm_nassocs);
-			goto retry;
-		}
+
+		memset(mngr->cm_assocs + (mngr->cm_nassocs - NASSOC_EXPAND), 0,
+		       NASSOC_EXPAND * sizeof(struct nl_cache_assoc));
+
+		NL_DBG(1, "Increased capacity of cache manager %p " \
+			  "to %d\n", mngr, mngr->cm_nassocs);
+		goto retry;
 	}
 
 	cache = nl_cache_alloc(ops);

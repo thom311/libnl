@@ -213,6 +213,11 @@ errout:
  * changes.
  *
  * @return 0 on success or a negative error code.
+ * @return -NLE_NOCACHE Unknown cache type
+ * @return -NLE_PROTO_MISMATCH Protocol mismatch between cache manager and
+ * 			       cache type
+ * @return -NLE_OPNOTSUPP Cache type does not support updates
+ * @return -NLE_EXIST Cache of this type already being managed
  */
 int nl_cache_mngr_add(struct nl_cache_mngr *mngr, const char *name,
 		      change_func_t cb, void *data, struct nl_cache **result)

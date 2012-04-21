@@ -324,7 +324,7 @@ int nl_cache_mngr_poll(struct nl_cache_mngr *mngr, int timeout)
  */
 int nl_cache_mngr_data_ready(struct nl_cache_mngr *mngr)
 {
-	int err;
+	int err, nread = 0;
 	struct nl_cb *cb;
 
 	NL_DBG(2, "Cache manager %p, reading new data from fd %d\n",
@@ -336,12 +336,17 @@ int nl_cache_mngr_data_ready(struct nl_cache_mngr *mngr)
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, event_input, mngr);
 
-	err = nl_recvmsgs(mngr->cm_sock, cb);
+	while ((err = nl_recvmsgs(mngr->cm_sock, cb)) > 0) {
+		NL_DBG(2, "Cache manager %p, recvmsgs read %d messages\n",
+		       mngr, err);
+		nread += err;
+	}
+
 	nl_cb_put(cb);
 	if (err < 0)
 		return err;
 
-	return 1;
+	return nread;
 }
 
 /**

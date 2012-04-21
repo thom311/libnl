@@ -175,9 +175,6 @@ int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 	if (!mngr->cm_assocs)
 		goto errout;
 
-	nl_socket_modify_cb(mngr->cm_handle, NL_CB_VALID, NL_CB_CUSTOM,
-			    event_input, mngr);
-
 	/* Required to receive async event notifications */
 	nl_socket_disable_seq_check(mngr->cm_handle);
 
@@ -359,8 +356,19 @@ int nl_cache_mngr_poll(struct nl_cache_mngr *mngr, int timeout)
 int nl_cache_mngr_data_ready(struct nl_cache_mngr *mngr)
 {
 	int err;
+	struct nl_cb *cb;
 
-	err = nl_recvmsgs_default(mngr->cm_handle);
+	NL_DBG(2, "Cache manager %p, reading new data from fd %d\n",
+	       mngr, nl_socket_get_fd(mngr->cm_handle));
+
+	cb = nl_cb_clone(mngr->cm_handle->s_cb);
+	if (cb == NULL)
+		return -NLE_NOMEM;
+
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, event_input, mngr);
+
+	err = nl_recvmsgs(mngr->cm_handle, cb);
+	nl_cb_put(cb);
 	if (err < 0)
 		return err;
 

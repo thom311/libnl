@@ -22,8 +22,10 @@
 #include <netlink/cache.h>
 #include <netlink/utils.h>
 
+/** @cond SKIP */
 #define NASSOC_INIT		16
 #define NASSOC_EXPAND		8
+/** @endcond */
 
 static int include_cb(struct nl_object *obj, struct nl_parser_param *p)
 {
@@ -175,6 +177,13 @@ errout:
  * to the notification group of the cache and keep track of any further
  * changes.
  *
+ * The user is responsible for calling nl_cache_mngr_poll() or monitor
+ * the socket and call nl_cache_mngr_data_ready() to allow the library
+ * to process netlink notification events.
+ *
+ * @see nl_cache_mngr_poll()
+ * @see nl_cache_mngr_data_ready()
+ *
  * @return 0 on success or a negative error code.
  * @return -NLE_NOCACHE Unknown cache type
  * @return -NLE_PROTO_MISMATCH Protocol mismatch between cache manager and
@@ -263,12 +272,13 @@ errout_free_cache:
 }
 
 /**
- * Get file descriptor
+ * Get socket file descriptor
  * @arg mngr		Cache Manager
  *
- * Get the file descriptor of the socket associated to the manager.
- * This can be used to change socket options or monitor activity
- * using poll()/select().
+ * Get the file descriptor of the socket associated with the manager.
+ *
+ * @note Do not use the socket for anything besides receiving
+ *       notifications.
  */
 int nl_cache_mngr_get_fd(struct nl_cache_mngr *mngr)
 {
@@ -281,14 +291,18 @@ int nl_cache_mngr_get_fd(struct nl_cache_mngr *mngr)
  * @arg timeout		Upper limit poll() will block, in milliseconds.
  *
  * Causes poll() to be called to check for new event notifications
- * being available. Automatically receives and handles available
- * notifications.
+ * being available. Calls nl_cache_mngr_data_ready() to process
+ * available data.
  *
  * This functionally is ideally called regularly during an idle
  * period.
  *
- * @return A positive value if at least one update was handled, 0
- *         for none, or a  negative error code.
+ * A timeout can be specified in milliseconds to limit the time the
+ * function will wait for updates.
+ *
+ * @see nl_cache_mngr_data_ready()
+ *
+ * @return The number of messages processed or a negative error code.
  */
 int nl_cache_mngr_poll(struct nl_cache_mngr *mngr, int timeout)
 {
@@ -316,11 +330,15 @@ int nl_cache_mngr_poll(struct nl_cache_mngr *mngr, int timeout)
  * @arg mngr		Cache manager
  *
  * This function can be called if the socket associated to the manager
- * contains updates to be received. This function should not be used
- * if nl_cache_mngr_poll() is used.
+ * contains updates to be received. This function should only be used
+ * if nl_cache_mngr_poll() is not used.
  *
- * @return A positive value if at least one update was handled, 0
- *         for none, or a  negative error code.
+ * The function will process messages until there is no more data to
+ * be read from the socket.
+ *
+ * @see nl_cache_mngr_poll()
+ *
+ * @return The number of messages processed or a negative error code.
  */
 int nl_cache_mngr_data_ready(struct nl_cache_mngr *mngr)
 {

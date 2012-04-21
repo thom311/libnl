@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_LOCAL_TYPES_H_
@@ -92,7 +92,7 @@ struct nl_cache_mngr
 	int			cm_protocol;
 	int			cm_flags;
 	int			cm_nassocs;
-	struct nl_sock *	cm_handle;
+	struct nl_sock *	cm_sock;
 	struct nl_cache_assoc *	cm_assocs;
 };
 

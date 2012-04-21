@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_CACHE_H_
@@ -113,6 +113,7 @@ extern struct nl_cache *	__nl_cache_mngt_require(const char *);
 struct nl_cache_mngr;
 
 #define NL_AUTO_PROVIDE		1
+#define NL_ALLOCATED_SOCK	2  /* For internal use only, do not use */
 
 extern int			nl_cache_mngr_alloc(struct nl_sock *,
 						    int, int,

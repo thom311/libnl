@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -82,10 +82,29 @@ found:
 
 /**
  * Allocate new cache manager
- * @arg sk		Netlink socket.
- * @arg protocol	Netlink Protocol this manager is used for
- * @arg flags		Flags
+ * @arg sk		Netlink socket or NULL to auto allocate
+ * @arg protocol	Netlink protocol this manager is used for
+ * @arg flags		Flags (\c NL_AUTO_PROVIDE)
  * @arg result		Result pointer
+ *
+ * Allocates a new cache manager for the specified netlink protocol.
+ *
+ * 1. If sk is not specified (\c NULL) a netlink socket matching the
+ *    specified protocol will be automatically allocated.
+ *
+ * 2. The socket will be put in non-blocking mode and sequence checking
+ *    will be disabled regardless of whether the socket was provided by
+ *    the caller or automatically allocated.
+ *
+ * 3. The socket will be connected.
+ *
+ * If the flag \c NL_AUTO_PROVIDE is specified, any cache added to the
+ * manager will automatically be made available to other users using
+ * nl_cache_mngt_provide().
+ *
+ * @note If the socket is provided by the caller, it is NOT recommended
+ *       to use the socket for anything else besides receiving netlink
+ *       notifications.
  *
  * @return 0 on success or a negative error code.
  */
@@ -95,14 +114,22 @@ int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 	struct nl_cache_mngr *mngr;
 	int err = -NLE_NOMEM;
 
-	if (sk == NULL)
+	/* Catch abuse of flags */
+	if (flags & NL_ALLOCATED_SOCK)
 		BUG();
 
 	mngr = calloc(1, sizeof(*mngr));
 	if (!mngr)
-		goto errout;
+		return -NLE_NOMEM;
 
-	mngr->cm_handle = sk;
+	if (!sk) {
+		if (!(sk = nl_socket_alloc()))
+			goto errout;
+
+		flags |= NL_ALLOCATED_SOCK;
+	}
+
+	mngr->cm_sock = sk;
 	mngr->cm_nassocs = 32;
 	mngr->cm_protocol = protocol;
 	mngr->cm_flags = flags;
@@ -112,12 +139,12 @@ int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 		goto errout;
 
 	/* Required to receive async event notifications */
-	nl_socket_disable_seq_check(mngr->cm_handle);
+	nl_socket_disable_seq_check(mngr->cm_sock);
 
-	if ((err = nl_connect(mngr->cm_handle, protocol) < 0))
+	if ((err = nl_connect(mngr->cm_sock, protocol) < 0))
 		goto errout;
 
-	if ((err = nl_socket_set_nonblocking(mngr->cm_handle) < 0))
+	if ((err = nl_socket_set_nonblocking(mngr->cm_sock) < 0))
 		goto errout;
 
 	NL_DBG(1, "Allocated cache manager %p, protocol %d, %d caches\n",
@@ -142,7 +169,7 @@ errout:
  * Allocates a new cache of the specified type and adds it to the manager.
  * The operation will trigger a full dump request from the kernel to
  * initially fill the contents of the cache. The manager will subscribe
- * to the notification group of the cache to keep track of any further
+ * to the notification group of the cache and keep track of any further
  * changes.
  *
  * @return 0 on success or a negative error code.
@@ -199,12 +226,12 @@ retry:
 		return -NLE_NOMEM;
 
 	for (grp = ops->co_groups; grp->ag_group; grp++) {
-		err = nl_socket_add_membership(mngr->cm_handle, grp->ag_group);
+		err = nl_socket_add_membership(mngr->cm_sock, grp->ag_group);
 		if (err < 0)
 			goto errout_free_cache;
 	}
 
-	err = nl_cache_refill(mngr->cm_handle, cache);
+	err = nl_cache_refill(mngr->cm_sock, cache);
 	if (err < 0)
 		goto errout_drop_membership;
 
@@ -223,7 +250,7 @@ retry:
 
 errout_drop_membership:
 	for (grp = ops->co_groups; grp->ag_group; grp++)
-		nl_socket_drop_membership(mngr->cm_handle, grp->ag_group);
+		nl_socket_drop_membership(mngr->cm_sock, grp->ag_group);
 errout_free_cache:
 	nl_cache_free(cache);
 
@@ -240,7 +267,7 @@ errout_free_cache:
  */
 int nl_cache_mngr_get_fd(struct nl_cache_mngr *mngr)
 {
-	return nl_socket_get_fd(mngr->cm_handle);
+	return nl_socket_get_fd(mngr->cm_sock);
 }
 
 /**
@@ -262,7 +289,7 @@ int nl_cache_mngr_poll(struct nl_cache_mngr *mngr, int timeout)
 {
 	int ret;
 	struct pollfd fds = {
-		.fd = nl_socket_get_fd(mngr->cm_handle),
+		.fd = nl_socket_get_fd(mngr->cm_sock),
 		.events = POLLIN,
 	};
 
@@ -272,6 +299,7 @@ int nl_cache_mngr_poll(struct nl_cache_mngr *mngr, int timeout)
 	if (ret < 0)
 		return -nl_syserr2nlerr(errno);
 
+	/* No events, return */
 	if (ret == 0)
 		return 0;
 
@@ -295,15 +323,15 @@ int nl_cache_mngr_data_ready(struct nl_cache_mngr *mngr)
 	struct nl_cb *cb;
 
 	NL_DBG(2, "Cache manager %p, reading new data from fd %d\n",
-	       mngr, nl_socket_get_fd(mngr->cm_handle));
+	       mngr, nl_socket_get_fd(mngr->cm_sock));
 
-	cb = nl_cb_clone(mngr->cm_handle->s_cb);
+	cb = nl_cb_clone(mngr->cm_sock->s_cb);
 	if (cb == NULL)
 		return -NLE_NOMEM;
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, event_input, mngr);
 
-	err = nl_recvmsgs(mngr->cm_handle, cb);
+	err = nl_recvmsgs(mngr->cm_sock, cb);
 	nl_cb_put(cb);
 	if (err < 0)
 		return err;
@@ -315,7 +343,7 @@ int nl_cache_mngr_data_ready(struct nl_cache_mngr *mngr)
  * Free cache manager and all caches.
  * @arg mngr		Cache manager.
  *
- * Release all resources after usage of a cache manager.
+ * Release all resources held by a cache manager.
  */
 void nl_cache_mngr_free(struct nl_cache_mngr *mngr)
 {
@@ -324,8 +352,11 @@ void nl_cache_mngr_free(struct nl_cache_mngr *mngr)
 	if (!mngr)
 		return;
 
-	if (mngr->cm_handle)
-		nl_close(mngr->cm_handle);
+	if (mngr->cm_sock)
+		nl_close(mngr->cm_sock);
+
+	if (mngr->cm_flags & NL_ALLOCATED_SOCK)
+		nl_socket_free(mngr->cm_sock);
 
 	for (i = 0; i < mngr->cm_nassocs; i++) {
 		if (mngr->cm_assocs[i].ca_cache) {

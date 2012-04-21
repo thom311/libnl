@@ -559,7 +559,7 @@ do { \
 
 static int recvmsgs(struct nl_sock *sk, struct nl_cb *cb)
 {
-	int n, err = 0, multipart = 0, interrupted = 0;
+	int n, err = 0, multipart = 0, interrupted = 0, nrecv = 0;
 	unsigned char *buf = NULL;
 	struct nlmsghdr *hdr;
 	struct sockaddr_nl nla = {0};
@@ -593,6 +593,8 @@ continue_reading:
 		nlmsg_set_src(msg, &nla);
 		if (creds)
 			nlmsg_set_creds(msg, creds);
+
+		nrecv++;
 
 		/* Raw callback is the first, it gives the most control
 		 * to the user and he can do his very own parsing. */
@@ -754,6 +756,9 @@ out:
 	if (interrupted)
 		err = -NLE_DUMP_INTR;
 
+	if (!err)
+		err = nrecv;
+
 	return err;
 }
 
@@ -770,7 +775,7 @@ out:
  * A non-blocking sockets causes the function to return immediately if
  * no data is available.
  *
- * @return 0 on success or a negative error code from nl_recv().
+ * @return Number of received messages or a negative error code from nl_recv().
  */
 int nl_recvmsgs(struct nl_sock *sk, struct nl_cb *cb)
 {

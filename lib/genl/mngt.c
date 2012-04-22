@@ -208,6 +208,9 @@ errout:
  */
 void genl_unregister(struct nl_cache_ops *ops)
 {
+	if (!ops)
+		return;
+
 	nl_cache_mngt_unregister(ops);
 	nl_list_del(&ops->co_genl->o_list);
 }

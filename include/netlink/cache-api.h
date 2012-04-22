@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_CACHE_API_H_
@@ -17,6 +17,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef void (*change_func_t)(struct nl_cache *, struct nl_object *, int, void *);
 
 /**
  * @ingroup cache
@@ -224,6 +226,22 @@ struct nl_cache_ops
 	 * @endcode
 	 */
 	int   (*co_event_filter)(struct nl_cache *, struct nl_object *obj);
+
+	/**
+	 * The function registered under this callback is called when an
+	 * object formed from a notification event needs to be included in
+	 * a cache.
+	 *
+	 * For each modified object, the change callback \c change_cb must
+	 * be called with the \c data argument provided.
+	 *
+	 * If no function is registered, the function nl_cache_include()
+	 * will be used for this purpose.
+	 *
+	 * @see nl_cache_include()
+	 */
+	int   (*co_include_event)(struct nl_cache *cache, struct nl_object *obj,
+				  change_func_t change_cb, void *data);
 
 	/** Object operations */
 	struct nl_object_ops *	co_obj_ops;

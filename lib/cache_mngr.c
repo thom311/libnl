@@ -42,7 +42,11 @@ static int include_cb(struct nl_object *obj, struct nl_parser_param *p)
 		if (ops->co_event_filter(ca->ca_cache, obj) != NL_OK)
 			return 0;
 
-	return nl_cache_include(ca->ca_cache, obj, ca->ca_change, ca->ca_change_data);
+	if (ops->co_include_event)
+		return ops->co_include_event(ca->ca_cache, obj, ca->ca_change,
+					     ca->ca_change_data);
+	else
+		return nl_cache_include(ca->ca_cache, obj, ca->ca_change, ca->ca_change_data);
 }
 
 static int event_input(struct nl_msg *msg, void *arg)

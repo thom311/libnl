@@ -202,9 +202,26 @@ struct nl_cache_ops
 			       struct nlmsghdr *, struct nl_parser_param *);
 
 	/**
-	 * Called whenever a notification has been parsed into an object and
-	 * is considered for inclusion into a cache. Must return NL_SKIP if
-	 * the object should not be included in the cache.
+	 * The function registered under this callback is called after a
+	 * netlink notification associated with this cache type has been
+	 * parsed into an object and is being considered for inclusio into
+	 * the specified cache.
+	 *
+	 * The purpose of this function is to filter out notifications
+	 * which should be ignored when updating caches.
+	 *
+	 * The function must return NL_SKIP to prevent the object from
+	 * being included, or NL_OK to include it.
+	 *
+	 * @code
+	 * int my_filter(struct nl_cache *cache, struct nl_object *obj)
+	 * {
+	 * 	if (reason_to_not_include_obj(obj))
+	 * 		return NL_SKIP;
+	 *
+	 * 	return NL_OK;
+	 * }
+	 * @endcode
 	 */
 	int   (*co_event_filter)(struct nl_cache *, struct nl_object *obj);
 

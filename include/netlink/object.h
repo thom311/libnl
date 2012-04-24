@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_OBJECT_H_
@@ -57,6 +57,11 @@ extern int			nl_object_is_marked(struct nl_object *);
 /* Access Functions */
 extern int			nl_object_get_refcnt(struct nl_object *);
 extern struct nl_cache *	nl_object_get_cache(struct nl_object *);
+extern const char *		nl_object_get_type(const struct nl_object *);
+extern int			nl_object_get_msgtype(const struct nl_object *);
+struct nl_object_ops *		nl_object_get_ops(const struct nl_object *);
+
+
 static inline void *		nl_object_priv(struct nl_object *obj)
 {
 	return obj;

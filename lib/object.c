@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -380,14 +380,67 @@ char *nl_object_attr_list(struct nl_object *obj, char *buf, size_t len)
  * @{
  */
 
+/**
+ * Return number of references held
+ * @arg obj		object
+ *
+ * @return The number of references held to this object
+ */
 int nl_object_get_refcnt(struct nl_object *obj)
 {
 	return obj->ce_refcnt;
 }
 
+/**
+ * Return cache the object is associated with
+ * @arg obj		object
+ *
+ * @note The returned pointer is not protected with a reference counter,
+ *       it is your responsibility.
+ *
+ * @return Pointer to cache or NULL if not associated with a cache.
+ */
 struct nl_cache *nl_object_get_cache(struct nl_object *obj)
 {
 	return obj->ce_cache;
+}
+
+/**
+ * Return the object's type
+ * @arg obj		object
+ *
+ * FIXME: link to list of object types
+ *
+ * @return Name of the object type
+ */
+const char *nl_object_get_type(const struct nl_object *obj)
+{
+	if (!obj->ce_ops)
+		BUG();
+
+	return obj->ce_ops->oo_name;
+}
+
+/**
+ * Return the netlink message type the object was derived from
+ * @arg obj		object
+ *
+ * @return Netlink message type or 0.
+ */
+int nl_object_get_msgtype(const struct nl_object *obj)
+{
+	return obj->ce_msgtype;
+}
+
+/**
+ * Return object operations structure
+ * @arg obj		object
+ *
+ * @return Pointer to the object operations structure
+ */
+struct nl_object_ops *nl_object_get_ops(const struct nl_object *obj)
+{
+	return obj->ce_ops;
 }
 
 /** @} */

@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 
-.PHONY: gendoc api_refs asciidoc
+.PHONY: gendoc api_ref asciidoc
 
 ASCIIDOCOPTS=-a pygments -a language=c -a icons \
 	     -a toc2 \

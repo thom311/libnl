@@ -71,6 +71,7 @@ extern int			nl_recv(struct nl_sock *,
 					struct ucred **);
 
 extern int			nl_recvmsgs(struct nl_sock *, struct nl_cb *);
+extern int			nl_recvmsgs_report(struct nl_sock *, struct nl_cb *);
 
 extern int			nl_recvmsgs_default(struct nl_sock *);
 

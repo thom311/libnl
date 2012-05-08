@@ -359,7 +359,7 @@ int nl_cache_mngr_data_ready(struct nl_cache_mngr *mngr)
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, event_input, mngr);
 
-	while ((err = nl_recvmsgs(mngr->cm_sock, cb)) > 0) {
+	while ((err = nl_recvmsgs_report(mngr->cm_sock, cb)) > 0) {
 		NL_DBG(2, "Cache manager %p, recvmsgs read %d messages\n",
 		       mngr, err);
 		nread += err;

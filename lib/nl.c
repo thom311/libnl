@@ -763,6 +763,26 @@ out:
 }
 
 /**
+ * Receive a set of messages from a netlink socket and report parsed messages
+ * @arg sk		Netlink socket.
+ * @arg cb		set of callbacks to control behaviour.
+ *
+ * This function is identical to nl_recvmsgs() to the point that it will
+ * return the number of parsed messages instead of 0 on success.
+ *
+ * @see nl_recvmsgs()
+ *
+ * @return Number of received messages or a negative error code from nl_recv().
+ */
+int nl_recvmsgs_report(struct nl_sock *sk, struct nl_cb *cb)
+{
+	if (cb->cb_recvmsgs_ow)
+		return cb->cb_recvmsgs_ow(sk, cb);
+	else
+		return recvmsgs(sk, cb);
+}
+
+/**
  * Receive a set of messages from a netlink socket.
  * @arg sk		Netlink socket.
  * @arg cb		set of callbacks to control behaviour.
@@ -775,14 +795,18 @@ out:
  * A non-blocking sockets causes the function to return immediately if
  * no data is available.
  *
- * @return Number of received messages or a negative error code from nl_recv().
+ * @see nl_recvmsgs_report()
+ *
+ * @return 0 on success or a negative error code from nl_recv().
  */
 int nl_recvmsgs(struct nl_sock *sk, struct nl_cb *cb)
 {
-	if (cb->cb_recvmsgs_ow)
-		return cb->cb_recvmsgs_ow(sk, cb);
-	else
-		return recvmsgs(sk, cb);
+	int err;
+
+	if ((err = nl_recvmsgs_report(sk, cb)) > 0)
+		err = 0;
+
+	return err;
 }
 
 /**

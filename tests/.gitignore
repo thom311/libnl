@@ -1,4 +1,8 @@
 test-cache-mngr
+test-complex-HTB-with-hash-filters
+test-create-bond
+test-create-vlan
+test-delete-link
 test-genl
 test-nf-cache-mngr
 test-socket-creation

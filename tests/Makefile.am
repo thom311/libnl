@@ -16,7 +16,8 @@ check_PROGRAMS = \
 	test-delete-link \
 	test-genl \
 	test-nf-cache-mngr \
-	test-socket-creation
+	test-socket-creation \
+	test-complex-HTB-with-hash-filters
 
 # Eventually add these to TESTS once converted to be real
 # test programs
@@ -29,3 +30,4 @@ test_delete_link_SOURCES = test-delete-link.c
 test_genl_SOURCES = test-genl.c
 test_nf_cache_mngr_SOURCES = test-nf-cache-mngr.c
 test_socket_creation_SOURCES = test-socket-creation.c
+test_complex_HTB_with_hash_filters_SOURCES = test-complex-HTB-with-hash-filters.c

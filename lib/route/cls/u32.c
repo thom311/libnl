@@ -374,6 +374,91 @@ int rtnl_u32_set_classid(struct rtnl_cls *cls, uint32_t classid)
 	return 0;
 }
 
+int rtnl_u32_set_divisor(struct rtnl_cls *cls, uint32_t divisor)
+{
+	struct rtnl_u32 *u;
+
+	if (!(u = (struct rtnl_u32 *) rtnl_tc_data(TC_CAST(cls))))
+		return -NLE_NOMEM;
+
+	u->cu_divisor = divisor;
+	u->cu_mask |= U32_ATTR_DIVISOR;
+	return 0;
+}
+
+int rtnl_u32_set_link(struct rtnl_cls *cls, uint32_t link)
+{
+	struct rtnl_u32 *u;
+
+	if (!(u = (struct rtnl_u32 *) rtnl_tc_data(TC_CAST(cls))))
+		return -NLE_NOMEM;
+
+	u->cu_link = link;
+	u->cu_mask |= U32_ATTR_LINK;
+	return 0;
+}
+
+int rtnl_u32_set_hashtable(struct rtnl_cls *cls, uint32_t ht)
+{
+	struct rtnl_u32 *u;
+
+	if (!(u = (struct rtnl_u32 *) rtnl_tc_data(TC_CAST(cls))))
+		return -NLE_NOMEM;
+
+	u->cu_hash = ht;
+	u->cu_mask |= U32_ATTR_HASH;
+	return 0;
+}
+
+int rtnl_u32_set_hashmask(struct rtnl_cls *cls, uint32_t hashmask, uint32_t offset)
+{
+	struct rtnl_u32 *u;
+	struct tc_u32_sel *sel;
+	int err;
+
+	hashmask = htonl(hashmask);
+
+	if (!(u = (struct rtnl_u32 *) rtnl_tc_data(TC_CAST(cls))))
+		return -NLE_NOMEM;
+
+	sel = u32_selector_alloc(u);
+	if (!sel)
+		return -NLE_NOMEM;
+
+	err = nl_data_append(u->cu_selector, NULL, sizeof(struct tc_u32_key));
+	if(err < 0)
+		return err;
+
+	sel = u32_selector(u);
+
+	sel->hmask = hashmask;
+	sel->hoff = offset;
+	return 0;
+}
+
+int rtnl_u32_set_cls_terminal(struct rtnl_cls *cls)
+{
+	struct rtnl_u32 *u;
+	struct tc_u32_sel *sel;
+	int err;
+
+	if (!(u = (struct rtnl_u32 *) rtnl_tc_data(TC_CAST(cls))))
+		return -NLE_NOMEM;
+
+	sel = u32_selector_alloc(u);
+	if (!sel)
+		return -NLE_NOMEM;
+
+	err = nl_data_append(u->cu_selector, NULL, sizeof(struct tc_u32_key));
+	if(err < 0)
+		return err;
+
+	sel = u32_selector(u);
+
+	sel->flags |= TC_U32_TERMINAL;
+	return 0;
+}
+
 /** @} */
 
 /**

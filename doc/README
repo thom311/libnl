@@ -1,6 +1,10 @@
 Requirements to build documentation
 
 mscgen
-asciidoc 8.6.5
+  http://www.mcternan.me.uk/mscgen/
+
 mscgen-filter-1.2
+  http://code.google.com/p/asciidoc-mscgen-filter/
+
+asciidoc 8.6.x
 doxygen

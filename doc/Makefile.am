@@ -79,20 +79,43 @@ EXTRA_DIST = \
 	images/icons/callouts/15.png
 
 %.html: %.txt
+if LINK_DOC
 	./resolve-asciidoc-refs.py $< > asciidoc.tmp
 	asciidoc $(ASCIIDOCOPTS) -o $@ asciidoc.tmp
 	./doxygen-link.py libnl.dict $@ > asciidoc.tmp
 	mv asciidoc.tmp $@
+else
+	asciidoc $(ASCIIDOCOPTS) -o $@ $<
+endif
 
 asciidoc: core.html route.html index.html
 
+link_doc:
+if LINK_DOC
+	./gen-tags.sh | ./tags2dict.sh > libnl.dict
+else
+	@echo "Warning: Linking to API reference is disabled, check configure output"
+endif
+
 api_ref:
 	doxygen Doxyfile;
-	./gen-tags.sh | ./tags2dict.sh > libnl.dict
+	$(MAKE) link_doc
 
 gendoc:
+if GENERATE_DOC
+if HAVE_DOXYGEN
 	$(MAKE) api_ref
+else
+	@echo "Warning: Building of API reference (doxygen) is disabled, check autoconf logs"
+endif
+if HAVE_ASCIIDOC
 	$(MAKE) asciidoc
+else
+	@echo "Warning: Building of asciidoc files is disabled, check autoconf logs"
+endif
+else
+	@echo "Warning: Building of documentation disabled by user or autoconf"
+endif
 
 clean-local:
 	rm -f api/* libnl.dict *.html;

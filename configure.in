@@ -73,6 +73,68 @@ AC_PROG_YACC
 AC_C_CONST
 AC_C_INLINE
 
+#
+# Generating the documentation
+#
+AC_ARG_ENABLE([doc],
+	      AS_HELP_STRING([--disable-doc], [Do not generate documentation]),
+	      [generate_doc="$enableval"], [generate_doc=auto])
+
+if test "x$generate_doc" != "xno"; then
+	AC_PROG_SED
+	AC_PROG_EGREP
+
+	AX_PYTHON
+
+	AC_CHECK_PROG(HAVE_DOXYGEN, [doxygen], yes, no)
+	if test "x$HAVE_DOXYGEN" = "xno" -a "x$generate_doc" = "xyes"; then
+		AC_MSG_ERROR([*** doxygen package required to generate documentation])
+	fi
+
+	link_doc=yes
+	AC_CHECK_PROG(HAVE_XMLSTARLET, [xmlstarlet], yes, no)
+	if test "x$HAVE_XMLSTARLET" = "xno"; then
+		if test "x$generate_doc" = "xyes"; then
+			AC_MSG_ERROR([*** xmlstarlet package required to generate documentation])
+		else
+			AC_MSG_WARN([*** xmlstarlet not found, linking to APi reference disabled])
+			link_doc=no
+		fi
+	fi
+
+	AC_CHECK_PROG(HAVE_ASCIIDOC, [asciidoc], yes, no)
+	if test "x$HAVE_ASCIIDOC" = "xno"; then
+		if test "x$generate_doc" = "xyes"; then
+			AC_MSG_ERROR([*** asciidoc package required to generate documentation])
+		else
+			AC_MSG_WARN([*** asciidoc not found, disabling building of guides])
+		fi
+	fi
+
+	AC_CHECK_PROG(HAVE_MSCGEN, [mscgen], yes, no)
+	if test "x$HAVE_MSCGEN" = "xno"; then
+		AC_MSG_WARN([*** mscgen not found, get it at http://www.mcternan.me.uk/mscgen/])
+		if test "x$generate_doc" = "xyes"; then
+			AC_MSG_ERROR([*** mscgen package required to generate documentation])
+		else
+			AC_MSG_WARN([*** Disabling building of guides])
+			HAVE_ASCIIDOC=no
+			HAVE_DOXYGEN=no
+		fi
+	fi
+
+	if test "x$HAVE_DOXYGEN" = "xno"; then
+		AC_MSG_WARN([*** Disabling API linking due to missing doxygen package])
+		link_doc=no
+	fi
+
+	AM_CONDITIONAL([LINK_DOC], [test "x$link_doc" = "xyes"])
+	AM_CONDITIONAL([HAVE_DOXYGEN], [test "x$HAVE_DOXYGEN" = "xyes"])
+	AM_CONDITIONAL([HAVE_ASCIIDOC], [test "x$HAVE_ASCIIDOC" = "xyes"])
+fi
+
+AM_CONDITIONAL([GENERATE_DOC], [test "x$generate_doc" != "xno"])
+
 AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
 	[Path to the pkgconfig directory [[LIBDIR/pkgconfig]]]),
 	[pkgconfigdir="$withval"], [pkgconfigdir='${libdir}/pkgconfig'])

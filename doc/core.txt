@@ -7,7 +7,7 @@
 Netlink Library (libnl)
 =======================
 Thomas Graf <tgraf@suug.ch>
-3.2, Sep 13 2011:
+3.2, May 9 2011:
 :numbered:
 
 == Introduction
@@ -59,32 +59,47 @@ The low level APIs are described in:
 
 === Linking to this Library
 
-.Checking the presence using autoconf
+.Checking the presence of the library using autoconf
 
 Projects using autoconf may use +PKG_CHECK_MODULES()+ to check if
 a specific version of libnl is available on the system. The example
 below also shows how to retrieve the +CFLAGS+ and linking dependencies
 required to link against the library.
 
+The following example shows how to check for a specific version of libnl. If
+found, it extends the `CFLAGS` and `LIBS` variable appropriately:
+
 [source]
 ----
 PKG_CHECK_MODULES(LIBNL3, libnl-3.0 >= 3.1, [have_libnl3=yes], [have_libnl3=no])
 if (test "${have_libnl3}" = "yes"); then
-	CFLAGS="$LIBNL3_CFLAGS"
-	LIBS="$LIBNL3_LIBS"
+	CFLAGS+="$LIBNL3_CFLAGS"
+	LIBS+="$LIBNL3_LIBS"
 fi
 ----
 
 NOTE: The pkgconfig file is named +libnl-3.0.pc+ for historic reasons, it also
       covers library versions >= 3.1.
 
-.Main Header
+.Header Files
 
-The main header is `<netlink/netlink.h>`. Additional headers need to
-be included in your sources depending on the subsystems your program
-makes use of.
+The main header file is `<netlink/netlink.h>`. Additional headers may need to
+be included in your sources depending on the subsystems and components your
+program makes use of.
 
-.Version Checking
+[source,c]
+-----
+#include <netlink/netlink.h>
+#include <netlink/cache.h>
+#include <netlink/route/link.h>
+-----
+
+.Version Dependent Code
+
+If your code wishes to be capable to link against multiple versions of libnl
+you may have direct the compiler to only include portions on the code depending
+on the version of libnl that it is compiled against.
+
 [source,c]
 -----
 #include <netlink/version.h>
@@ -94,7 +109,7 @@ makes use of.
 #endif
 -----
 
-.Linking to libnl
+.Linking
 -----
 $ gcc myprogram.c -o myprogram $(pkgconfig --cflags --libs libnl-3.0)
 -----
@@ -120,13 +135,12 @@ $ NLDBG=2 ./myprogram
 | 4     | Even less important messages
 |===============================================================
 
-.Debugging Netlink Messages
+.Debugging the Netlink Protocol
 
-Often it is useful to peek into the stream of netlink messages
-exchanged with other sockets. Setting the environment variable
-+NLCB=debug+ will cause the debugging message handlers to be used
-causing the netlink messages exchanged to be printed to +stderr+ in a
-human readable format:
+It is often useful to peek into the stream of netlink messages exchanged
+with other sockets. Setting the environment variable +NLCB=debug+ will
+cause the debugging message handlers to be used which in turn print the
+netlink messages exchanged in a human readable format to to +stderr+:
 
 -----
 $ NLCB=debug ./myprogram
@@ -179,6 +193,92 @@ protocol uses its own protocol number (e.g. +NETLINK_ROUTE+,
 +NETLINK_NETFILTER+, etc). Its addressing schema is based on a 32 bit
 port number, formerly referred to as PID, which uniquely identifies
 each peer.
+
+[[core_addressing]]
+=== Addressing
+
+The netlink address (port) consists of a 32bit integer. Port 0 (zero)
+is reserved for the kernel and refers to the kernel side socket of each
+netlink protocol family. Other port numbers usually refer to user space
+owned sockets, although this is not enforced.
+
+NOTE: In the beginning, it was common practice to use the process
+      identifier (PID) as the local port number. This became unpractical
+      with the introduction of threaded netlink applications and
+      applications requiring multiple sockets. Therefore libnl generates
+      unique port numbers based on the process identifier and adds an
+      offset to it allowing for multiple sockets to be used. The initial
+      socket will still equal to the process identifier for backwards
+      compatibility reasons.
+
+image:addressing.png["Addressing Example"]
+
+The above figure illustrates three applications and the kernel side
+exposing two kernel side sockets. It shows the common netlink use
+cases:
+
+  * User space to kernel
+  * User space to user space
+  * Listening to kernel multicast notifications
+
+.User Space to Kernel
+
+The most common form of netlink usage is for a user space application
+to send requests to the kernel and process the reply which is either
+an error message or a success notification.
+
+["mscgen"]
+--------
+msc {
+  App1,App2,Kernel;
+  App1=>Kernel [label="request (src=11, dst=0)"];
+  Kernel<=App1 [label="reply (src=0, dst=11)"];
+  ...;
+  App2=>Kernel [label="request (src=21, dst=0)"];
+  Kernel<=App2 [label="reply (src=0, dst=21)"];
+}
+--------
+
+.User Space to User Space
+
+Netlink may also be used as an IPC mechanism to communicate between user
+space applications directly. Communication is not limited to two peers,
+any number of peers may communicate with each other and multicasting
+capabilities allow to reach multiple peers with a single message.
+
+In order for the sockets to be visible to each other, both sockets must
+be created for the same netlink protocol family.
+
+["mscgen"]
+--------
+msc {
+  App2,App3;
+  App2=>App3 [label="request (src=22, dst=31)"];
+  App2<=App3 [label="reply (src=31, dst=22)"];
+  ...;
+}
+--------
+
+.User space listening to kernel notifications
+
+This form of netlink communication is typically found in user space
+daemons that need to act on certain kernel events. Such daemons will
+typically maintain a netlink socket subscribed to a multicast group that
+is used by the kernel to notify interested user space parties about
+specific events.
+
+["mscgen"]
+--------
+msc {
+  Kernel,App3;
+  Kernel=>App3 [label="notification (src=0, group=foo)"];
+  ...;
+}
+--------
+
+Use of multicasting is preferred over direct addressing due to the
+flexibility in exchanging the user space component at any time without
+the kernel noticing.
 
 [[core_msg_format]]
 === Message Format
@@ -395,7 +495,7 @@ The following standard flags are defined
 #define NLM_F_ECHO		8
 --------
 
-- `NLM_F_REQUEST` - Message is a request, see <<core_msg_type>>.
+- `NLM_F_REQUEST` - Message is a request, see <<core_msg_types>>.
 - `NLM_F_MULTI` - Multipart message, see <<core_multipart>>
 - `NLM_F_ACK` - ACK message requested, see <<core_msg_ack>>.
 - `NLM_F_ECHO` - Request to echo the request.
@@ -447,13 +547,14 @@ flags are mutually exclusive to the `GET` flags:
 Behaviour of these flags may differ slightly between different netlink
 protocols.
 
+[[core_seq_num]]
 === Sequence Numbers
 
 Netlink allows the use of sequence numbers to help relate replies to
 requests. It should be noted that unlike in protocols such as TCP
 there is no strict enforcment of the sequence number. The sole purpose
 of sequence numbers is to assist a sender in relating replies to the
-corresponding requests. See <<core_msg_type>> for more information.
+corresponding requests. See <<core_msg_types>> for more information.
 
 Sequence numbers are managed on a per socket basis, see
 <<core_sk_seq_num>> for more information on how to use sequence numbers.
@@ -469,16 +570,15 @@ See <<core_sk_multicast>>
 == Netlink Sockets
 
 In order to use the netlink protocol, a netlink socket is required.
-Each socket defines a completely independent context for sending and
-receiving of messages. An application may use multiple sockets for the
-same netlink protocol, e.g. one socket to send requests and receive
-replies and another socket subscribed to a multicast group to receive
-notifications.
+Each socket defines an independent context for sending and receiving of
+messages. An application may make use multiple sockets, e.g. a socket to
+send requests and receive the replies and another socket subscribed to a
+multicast group to receive notifications.
 
-=== Allocation & Freeing
+=== Socket structure (struct nl_sock)
 
-The netlink socket and all its related attributes are represented by
-+struct nl_sock+.
+The netlink socket and all related attributes including the actual file
+descriptor are represented by +struct nl_sock+.
 
 [source,c]
 --------
@@ -488,18 +588,22 @@ struct nl_sock *nl_socket_alloc(void)
 void nl_socket_free(struct nl_sock *sk)
 --------
 
+The application must allocate an instance of +struct nl_sock+ for each
+netlink socket it wishes to use.
+
 [[core_sk_seq_num]]
 === Sequence Numbers
 
 The library will automatically take care of sequence number handling
-for the application. A sequence number counter is stored in struct
-nl_sock which is meant to be used when sending messages which will
-produce a reply, error or any other message which needs to be
-related to the original message.
+for the application. A sequence number counter is stored in the
+socket structure which is used and incremented automatically when a 
+message needs to be sent which is expected to generate a reply such as
+an error or any other message type that needs to be related to the
+original message.
 
-The counter can be used directly with the function nl_socket_use_seq()
-which will return the current value of the counter and increment it by
-one afterwards.
+Alternatively, the counter can be used directly via the function
+nl_socket_use_seq(). It will return the current value of the counter
+and increment it by one afterwards.
 
 [source,c]
 --------
@@ -510,8 +614,8 @@ unsigned int nl_socket_use_seq(struct nl_sock *sk);
 
 Most applications will not want to deal with sequence number handling
 themselves though. When using nl_send_auto() the sequence number is
-filled out automatically and matched again on the receiving side. See
-<<core_send_recv>> for more information.
+filled in automatically and matched again when a reply is received. See
+section <<core_send_recv>> for more information.
 
 This behaviour can and must be disabled if the netlink protocol
 implemented does not use a request/reply model, e.g. when a socket is
@@ -524,6 +628,9 @@ used to receive notification messages.
 void nl_socket_disable_seq_check(struct nl_sock *sk);
 --------
 
+For more information on the theory behind netlink sequence numbers,
+see section <<core_seq_num>>.
+
 [[core_sk_multicast]]
 === Multicast Group Subscriptions
 
@@ -535,7 +642,7 @@ commonly used to implement event notifications.
 Prior to kernel 2.6.14 the group subscription was performed using a
 bitmask which limited the number of groups per protocol family to 32.
 This outdated interface can still be accessed via the function
-nl_join_groups even though it is not recommended for new code.
+nl_join_groups() even though it is not recommended for new code.
 
 [source,c]
 --------
@@ -663,6 +770,8 @@ uint32_t nl_socket_get_local_port(const struct nl_sock *sk);
 void nl_socket_set_local_port(struct nl_sock *sk, uint32_t port);
 --------
 
+See section <<core_addressing>> for more information on port numbers.
+
 CAUTION: Overwriting the local port is possible but you have to ensure
 that the provided value is unique and no other socket in any other
 application is using the same value.
@@ -684,6 +793,8 @@ netlink protocol family.
 uint32_t nl_socket_get_peer_port(const struct nl_sock *sk);
 void nl_socket_set_peer_port(struct nl_sock *sk, uint32_t port);
 --------
+
+See section <<core_addressing>> for more information on port numbers.
 
 .File Descriptor
 
@@ -776,7 +887,7 @@ function can be used to enable/disable receival of packet information.
 int nl_socket_recv_pktinfo(struct nl_sock *sk, int state);
 --------
 
-NOTE: Processing of NETLINK_PKTINFO has not been implemented yet.
+CAUTION: Processing of NETLINK_PKTINFO has not been implemented yet.
 
 [[core_send_recv]]
 == Sending and Receiving of Messages / Data
@@ -1350,8 +1461,8 @@ size for messages by calling nlmsg_set_default_size():
 void	  nlmsg_set_default_size(size_t);
 --------
 
-NOTE: Calling nlmsg_set_default_size() does not change the maximum
-      message size of already allocated messages.
+CAUTION: Calling nlmsg_set_default_size() does not change the maximum
+         message size of already allocated messages.
 
 [source,c]
 --------

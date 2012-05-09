@@ -211,6 +211,7 @@ int rtnl_route_nh_get_ifindex(struct rtnl_nexthop *nh)
 	return nh->rtnh_ifindex;
 }	
 
+/* FIXME: Convert to return an int */
 void rtnl_route_nh_set_gateway(struct rtnl_nexthop *nh, struct nl_addr *addr)
 {
 	struct nl_addr *old = nh->rtnh_gateway;

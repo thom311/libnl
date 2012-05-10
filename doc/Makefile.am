@@ -20,7 +20,6 @@ EXTRA_DIST = \
 	doxygen-link.py \
 	gen-tags.sh \
 	resolve-asciidoc-refs.py \
-	tags2dict.sh \
 	stylesheets/asciidoc.css \
 	stylesheets/asciidoc-manpage.css \
 	stylesheets/docbook-xsl.css \
@@ -78,28 +77,26 @@ EXTRA_DIST = \
 	images/icons/callouts/14.png \
 	images/icons/callouts/15.png
 
-%.html: %.txt
+link_doc:
 if LINK_DOC
+	./gen-tags.sh > libnl.dict
+else
+	@echo "Warning: Linking to API reference is disabled, check configure output"
+endif
+	
+
+%.html: %.txt link_doc
 	./resolve-asciidoc-refs.py $< > asciidoc.tmp
 	asciidoc $(ASCIIDOCOPTS) -o $@ asciidoc.tmp
+if LINK_DOC
 	./doxygen-link.py libnl.dict $@ > asciidoc.tmp
 	mv asciidoc.tmp $@
-else
-	asciidoc $(ASCIIDOCOPTS) -o $@ $<
 endif
 
 asciidoc: core.html route.html index.html
 
-link_doc:
-if LINK_DOC
-	./gen-tags.sh | ./tags2dict.sh > libnl.dict
-else
-	@echo "Warning: Linking to API reference is disabled, check configure output"
-endif
-
 api_ref:
 	doxygen Doxyfile;
-	$(MAKE) link_doc
 
 gendoc:
 if GENERATE_DOC

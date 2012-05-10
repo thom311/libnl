@@ -37,7 +37,16 @@
  *                                |      |                 Core Netlink
  * @endcode
  * 
+ * Related sections in the development guide:
+ * - @core_doc{core_cache, Caching System}
+ *
  * @{
+ *
+ * Header
+ * ------
+ * ~~~~{.c}
+ * #include <netlink/cache.h>
+ * ~~~~
  */
 
 #include <netlink-local.h>

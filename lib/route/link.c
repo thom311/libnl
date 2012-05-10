@@ -1442,8 +1442,7 @@ struct rtnl_link *rtnl_link_alloc(void)
 
 /**
  * Return a link object reference
- *
- * @copydetails nl_object_put()
+ * @arg link		Link object
  */
 void rtnl_link_put(struct rtnl_link *link)
 {

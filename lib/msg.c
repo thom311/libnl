@@ -6,156 +6,24 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
  * @ingroup core
- * @defgroup msg Messages
+ * @defgroup msg Message Construction & Parsing
  * Netlink Message Construction/Parsing Interface
  * 
- * The following information is partly extracted from RFC3549
- * (ftp://ftp.rfc-editor.org/in-notes/rfc3549.txt)
+ * Related sections in the development guide:
+ * - @core_doc{_message_parsing_amp_construction,Message Parsing & Construction}
  *
- * @par Message Format
- * Netlink messages consist of a byte stream with one or multiple
- * Netlink headers and an associated payload.  If the payload is too big
- * to fit into a single message it, can be split over multiple Netlink
- * messages, collectively called a multipart message.  For multipart
- * messages, the first and all following headers have the \c NLM_F_MULTI
- * Netlink header flag set, except for the last header which has the
- * Netlink header type \c NLMSG_DONE.
- *
- * @par
- * The Netlink message header (struct nlmsghdr) is shown below.
- * @code   
- * 0                   1                   2                   3
- * 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * |                          Length                             |
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * |            Type              |           Flags              |
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * |                      Sequence Number                        |
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * |                      Process ID (PID)                       |
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * @endcode
- *
- * @par
- * The netlink message header and payload must be aligned properly:
- * @code
- *  <------- NLMSG_ALIGN(hlen) ------> <---- NLMSG_ALIGN(len) --->
- * +----------------------------+- - -+- - - - - - - - - - -+- - -+
- * |           Header           | Pad |       Payload       | Pad |
- * |      struct nlmsghdr       |     |                     |     |
- * +----------------------------+- - -+- - - - - - - - - - -+- - -+
- * @endcode
- * @par
- * Message Format:
- * @code
- *    <--- nlmsg_total_size(payload)  --->
- *    <-- nlmsg_msg_size(payload) ->
- *   +----------+- - -+-------------+- - -+-------- - -
- *   | nlmsghdr | Pad |   Payload   | Pad | nlmsghdr
- *   +----------+- - -+-------------+- - -+-------- - -
- *   nlmsg_data(nlh)---^                   ^
- *   nlmsg_next(nlh)-----------------------+
- * @endcode
- * @par
- * The payload may consist of arbitary data but may have strict
- * alignment and formatting rules depening on the specific netlink
- * families.
- * @par
- * @code
- *    <---------------------- nlmsg_len(nlh) --------------------->
- *    <------ hdrlen ------>       <- nlmsg_attrlen(nlh, hdrlen) ->
- *   +----------------------+- - -+--------------------------------+
- *   |     Family Header    | Pad |           Attributes           |
- *   +----------------------+- - -+--------------------------------+
- *   nlmsg_attrdata(nlh, hdrlen)---^
- * @endcode
- * @par The ACK Netlink Message
- * This message is actually used to denote both an ACK and a NACK.
- * Typically, the direction is from FEC to CPC (in response to an ACK
- * request message).  However, the CPC should be able to send ACKs back
- * to FEC when requested.
- * @code
- *  0                   1                   2                   3
- *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * |                       Netlink message header                  |
- * |                       type = NLMSG_ERROR                      |
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * |                          Error code                           |
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * |                       OLD Netlink message header              |
- * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- * @endcode
- *
- * @par Example
- * @code
- * // Various methods exist to create/allocate a new netlink
- * // message. 
- * //
- * // nlmsg_alloc() will allocate an empty netlink message with
- * // a maximum payload size which defaults to the page size of
- * // the system. This default size can be modified using the
- * // function nlmsg_set_default_size().
- * struct nl_msg *msg = nlmsg_alloc();
- *
- * // Very often, the message type and message flags are known
- * // at allocation time while the other fields are auto generated:
- * struct nl_msg *msg = nlmsg_alloc_simple(MY_TYPE, MY_FLAGS);
- *
- * // Alternatively an existing netlink message header can be used
- * // to inherit the header values:
- * struct nlmsghdr hdr = {
- * 	.nlmsg_type = MY_TYPE,
- * 	.nlmsg_flags = MY_FLAGS,
- * };
- * struct nl_msg *msg = nlmsg_inherit(&hdr);
- *
- * // Last but not least, netlink messages received from netlink sockets
- * // can be converted into nl_msg objects using nlmsg_convert(). This
- * // will create a message with a maximum payload size which equals the
- * // length of the existing netlink message, therefore no more data can
- * // be appened without calling nlmsg_expand() first.
- * struct nl_msg *msg = nlmsg_convert(nlh_from_nl_sock);
- *
- * // Payload may be added to the message via nlmsg_append(). The fourth
- * // parameter specifies the number of alignment bytes the data should
- * // be padding with at the end. Common values are 0 to disable it or
- * // NLMSG_ALIGNTO to ensure proper netlink message padding.
- * nlmsg_append(msg, &mydata, sizeof(mydata), 0);
- *
- * // Sometimes it may be necessary to reserve room for data but defer
- * // the actual copying to a later point, nlmsg_reserve() can be used
- * // for this purpose:
- * void *data = nlmsg_reserve(msg, sizeof(mydata), NLMSG_ALIGNTO);
- *
- * // Attributes may be added using the attributes interface.
- *
- * // After successful use of the message, the memory must be freed
- * // using nlmsg_free()
- * nlmsg_free(msg);
- * @endcode
- * 
- * @par 4) Parsing messages
- * @code
- * int n;
- * unsigned char *buf;
- * struct nlmsghdr *hdr;
- *
- * n = nl_recv(handle, NULL, &buf);
- * 
- * hdr = (struct nlmsghdr *) buf;
- * while (nlmsg_ok(hdr, n)) {
- * 	// Process message here...
- * 	hdr = nlmsg_next(hdr, &n);
- * }
- * @endcode
  * @{
+ *
+ * Header
+ * ------
+ * ~~~~{.c}
+ * #include <netlink/msg.h>
+ * ~~~~
  */
 
 #include <netlink-local.h>

@@ -12,9 +12,24 @@
 /**
  * @ingroup cache_mngt
  * @defgroup cache_mngr Manager
- * @brief Automatically keep caches up to date
+ * @brief Manager keeping caches up to date automatically.
+ *
+ * The cache manager keeps caches up to date automatically by listening to
+ * netlink notifications and integrating the received information into the
+ * existing cache.
+ *
+ * @note This functionality is still considered experimental.
+ *
+ * Related sections in the development guide:
+ * - @core_doc{_cache_manager,Cache Manager}
  *
  * @{
+ *
+ * Header
+ * ------
+ * ~~~~{.c}
+ * #include <netlink/cache.h>
+ * ~~~~
  */
 
 #include <netlink-local.h>

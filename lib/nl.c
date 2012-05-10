@@ -6,78 +6,22 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
- * @defgroup core Core
+ * @defgroup core Core Library (libnl)
  *
- * @details
- * @par 1) Connecting the socket
- * @code
- * // Bind and connect the socket to a protocol, NETLINK_ROUTE in this example.
- * nl_connect(sk, NETLINK_ROUTE);
- * @endcode
+ * Socket handling, connection management, sending and receiving of data,
+ * message construction and parsing, object caching system, ...
  *
- * @par 2) Sending data
- * @code
- * // The most rudimentary method is to use nl_sendto() simply pushing
- * // a piece of data to the other netlink peer. This method is not
- * // recommended.
- * const char buf[] = { 0x01, 0x02, 0x03, 0x04 };
- * nl_sendto(sk, buf, sizeof(buf));
+ * This is the API reference of the core library. It is not meant as a guide
+ * but as a reference. Please refer to the core library guide for detailed
+ * documentation on the library architecture and examples:
  *
- * // A more comfortable interface is nl_send() taking a pointer to
- * // a netlink message.
- * struct nl_msg *msg = my_msg_builder();
- * nl_send(sk, nlmsg_hdr(msg));
+ * * @ref_asciidoc{core,_,Netlink Core Library Development Guide}
  *
- * // nl_sendmsg() provides additional control over the sendmsg() message
- * // header in order to allow more specific addressing of multiple peers etc.
- * struct msghdr hdr = { ... };
- * nl_sendmsg(sk, nlmsg_hdr(msg), &hdr);
  *
- * // You're probably too lazy to fill out the netlink pid, sequence number
- * // and message flags all the time. nl_send_auto_complete() automatically
- * // extends your message header as needed with an appropriate sequence
- * // number, the netlink pid stored in the netlink socket and the message
- * // flags NLM_F_REQUEST and NLM_F_ACK (if not disabled in the socket)
- * nl_send_auto_complete(sk, nlmsg_hdr(msg));
- *
- * // Simple protocols don't require the complex message construction interface
- * // and may favour nl_send_simple() to easly send a bunch of payload
- * // encapsulated in a netlink message header.
- * nl_send_simple(sk, MY_MSG_TYPE, 0, buf, sizeof(buf));
- * @endcode
- *
- * @par 3) Receiving data
- * @code
- * // nl_recv() receives a single message allocating a buffer for the message
- * // content and gives back the pointer to you.
- * struct sockaddr_nl peer;
- * unsigned char *msg;
- * nl_recv(sk, &peer, &msg);
- *
- * // nl_recvmsgs() receives a bunch of messages until the callback system
- * // orders it to state, usually after receving a compolete multi part
- * // message series.
- * nl_recvmsgs(sk, my_callback_configuration);
- *
- * // nl_recvmsgs_default() acts just like nl_recvmsg() but uses the callback
- * // configuration stored in the socket.
- * nl_recvmsgs_default(sk);
- *
- * // In case you want to wait for the ACK to be recieved that you requested
- * // with your latest message, you can call nl_wait_for_ack()
- * nl_wait_for_ack(sk);
- * @endcode
- *
- * @par 4) Closing
- * @code
- * // Close the socket first to release kernel memory
- * nl_close(sk);
- * @endcode
- * 
  * @{
  */
 
@@ -87,6 +31,30 @@
 #include <netlink/handlers.h>
 #include <netlink/msg.h>
 #include <netlink/attr.h>
+
+/**
+ * @defgroup core_types Data Types
+ *
+ * Core library data types
+ * @{
+ * @}
+ *
+ * @defgroup send_recv Send & Receive Data
+ *
+ * Connection management, sending & receiving of data
+ *
+ * Related sections in the development guide:
+ * - @core_doc{core_send_recv, Sending & Receiving}
+ * - @core_doc{core_sockets, Sockets}
+ *
+ * @{
+ *
+ * Header
+ * ------
+ * ~~~~{.c}
+ * #include <netlink/netlink.h>
+ * ~~~~
+ */
 
 /**
  * @name Connection Management
@@ -541,6 +509,7 @@ abort:
 	return 0;
 }
 
+/** @cond SKIP */
 #define NL_CB_CALL(cb, type, msg) \
 do { \
 	err = nl_cb_call(cb, type, msg); \
@@ -556,6 +525,7 @@ do { \
 		goto out; \
 	} \
 } while (0)
+/** @endcond */
 
 static int recvmsgs(struct nl_sock *sk, struct nl_cb *cb)
 {
@@ -919,6 +889,8 @@ errout:
 
 	return err;
 }
+
+/** @} */
 
 /** @} */
 

@@ -10,9 +10,21 @@
  */
 
 /**
- * @ingroup cache
- * @defgroup object Object
+ * @ingroup core_types
+ * @defgroup object Object (Cacheable)
+ *
+ * Generic object data type, for inheritance purposes to implement cacheable
+ * data types.
+ *
+ * Related sections in the development guide:
+ *
  * @{
+ *
+ * Header
+ * ------
+ * ~~~~{.c}
+ * #include <netlink/object.h>
+ * ~~~~
  */
 
 #include <netlink-local.h>

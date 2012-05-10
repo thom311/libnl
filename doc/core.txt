@@ -2811,6 +2811,17 @@ is stored in +*result+.
 NOTE: Make sure to return the reference to an address using
       `nl_addr_put()` after usage to allow memory being freed.
 
+.Example: Transform character string to abstract address
+[source,c]
+-----
+struct nl_addr *a = nl_addr_parse("::1", AF_UNSPEC);
+printf("Address family: %s\n", nl_af2str(nl_addr_get_family(a)));
+nl_addr_put(a);
+a = nl_addr_parse("11:22:33:44:55:66", AF_UNSPEC);
+printf("Address family: %s\n", nl_af2str(nl_addr_get_family(a)));
+nl_addr_put(a);
+-----
+
 .Address References
 
 Abstract addresses use reference counting to account for all users of

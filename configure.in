@@ -91,17 +91,6 @@ if test "x$generate_doc" != "xno"; then
 		AC_MSG_ERROR([*** doxygen package required to generate documentation])
 	fi
 
-	link_doc=yes
-	AC_CHECK_PROG(HAVE_XMLSTARLET, [xmlstarlet], yes, no)
-	if test "x$HAVE_XMLSTARLET" = "xno"; then
-		if test "x$generate_doc" = "xyes"; then
-			AC_MSG_ERROR([*** xmlstarlet package required to generate documentation])
-		else
-			AC_MSG_WARN([*** xmlstarlet not found, linking to APi reference disabled])
-			link_doc=no
-		fi
-	fi
-
 	AC_CHECK_PROG(HAVE_ASCIIDOC, [asciidoc], yes, no)
 	if test "x$HAVE_ASCIIDOC" = "xno"; then
 		if test "x$generate_doc" = "xyes"; then
@@ -123,6 +112,7 @@ if test "x$generate_doc" != "xno"; then
 		fi
 	fi
 
+	link_doc=yes
 	if test "x$HAVE_DOXYGEN" = "xno"; then
 		AC_MSG_WARN([*** Disabling API linking due to missing doxygen package])
 		link_doc=no

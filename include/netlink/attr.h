@@ -28,12 +28,12 @@ struct nl_msg;
  * @{
  */
 
- /**
-  * @ingroup attr
-  * Basic attribute data types
-  *
-  * See \ref attr_datatypes for more details.
-  */
+/**
+ * @ingroup attr
+ * Basic attribute data types
+ *
+ * See section @core_doc{core_attr_parse,Attribute Parsing} for more details.
+ */
 enum {
 	NLA_UNSPEC,	/**< Unspecified type, binary data chunk */
 	NLA_U8,		/**< 8 bit integer */
@@ -55,7 +55,7 @@ enum {
  * @ingroup attr
  * Attribute validation policy.
  *
- * See \ref attr_datatypes for more details.
+ * See section @core_doc{core_attr_parse,Attribute Parsing} for more details.
  */
 struct nla_policy {
 	/** Type of attribute or NLA_UNSPEC */

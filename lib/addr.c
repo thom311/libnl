@@ -1,28 +1,30 @@
 /*
- * lib/addr.c		Abstract Address
+ * lib/addr.c		Network Address
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
- * @ingroup core
- * @defgroup addr Abstract Address
+ * @ingroup core_types
+ * @defgroup addr Network Address
  *
- * @par 1) Transform character string to abstract address
- * @code
- * struct nl_addr *a = nl_addr_parse("::1", AF_UNSPEC);
- * printf("Address family: %s\n", nl_af2str(nl_addr_get_family(a)));
- * nl_addr_put(a);
- * a = nl_addr_parse("11:22:33:44:55:66", AF_UNSPEC);
- * printf("Address family: %s\n", nl_af2str(nl_addr_get_family(a)));
- * nl_addr_put(a);
- * @endcode
+ * Abstract data type representing any kind of network address
+ *
+ * Related sections in the development guide:
+ * - @core_doc{_abstract_address, Network Addresses}
+ *
  * @{
+ *
+ * Header
+ * ------
+ * ~~~~{.c}
+ * #include <netlink/addr.h>
+ * ~~~~
  */
 
 #include <netlink-local.h>
@@ -163,7 +165,7 @@ static void addr_destroy(struct nl_addr *addr)
 }
 
 /**
- * @name Creating Abstract Addresses
+ * @name Creating Abstract Network Addresses
  * @{
  */
 

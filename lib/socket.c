@@ -6,13 +6,25 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
- * @ingroup core
+ * @ingroup core_types
  * @defgroup socket Socket
+ *
+ * Representation of a netlink socket
+ *
+ * Related sections in the development guide:
+ * - @core_doc{core_sockets, Netlink Sockets}
+ *
  * @{
+ *
+ * Header
+ * ------
+ * ~~~~{.c}
+ * #include <netlink/socket.h>
+ * ~~~~
  */
 
 #include <pthread.h>

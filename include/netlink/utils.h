@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_UTILS_H_
@@ -31,7 +31,7 @@ extern "C" {
 #define NL_PROB_MIN 0x0
 
 /**
- * Upper probability limit
+ * Upper probability limit nl_dump_type
  * @ingroup utils
  */
 #define NL_PROB_MAX 0xffffffff

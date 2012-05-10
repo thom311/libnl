@@ -6,13 +6,22 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
  * @ingroup core
  * @defgroup utils Utilities
+ *
+ * Collection of helper functions
+ *
  * @{
+ *
+ * Header
+ * ------
+ * ~~~~{.c}
+ * #include <netlink/utils.h>
+ * ~~~~
  */
 
 #include <netlink-local.h>
@@ -21,10 +30,24 @@
 #include <linux/socket.h>
 
 /**
- * Debug level
+ * Global variable indicating the desired level of debugging output.
+ *
+ * Level | Messages Printed
+ * ----- | ---------------------------------------------------------
+ *     0 | Debugging output disabled
+ *     1 | Warnings, important events and notifications
+ *     2 | More or less important debugging messages
+ *     3 | Repetitive events causing a flood of debugging messages
+ *     4 | Even less important messages
+ *
+ * If available, the variable will be initialized to the value of the
+ * environment variable `NLDBG`. The default value is 0 (disabled).
+ *
+ * For more information, see section @core_doc{_debugging, Debugging}.
  */
 int nl_debug = 0;
 
+/** @cond SKIP */
 struct nl_dump_params nl_debug_dp = {
 	.dp_type = NL_DUMP_DETAILS,
 };
@@ -84,9 +107,10 @@ int __nl_read_num_str_file(const char *path, int (*cb)(long, const char *))
 
 	return 0;
 }
+/** @endcond */
 
 /**
- * @name Unit Pretty-Printing
+ * @name Pretty Printing of Numbers
  * @{
  */
 

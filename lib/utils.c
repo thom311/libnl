@@ -993,7 +993,8 @@ int __str2flags(const char *buf, const struct trans_tbl *tbl, size_t tbl_len)
 		t = strchr(p, ',');
 		len = t ? t - p : strlen(p);
 		for (i = 0; i < tbl_len; i++)
-			if (!strncasecmp(tbl[i].a, p, len))
+			if (len == strlen(tbl[i].a) &&
+			    !strncasecmp(tbl[i].a, p, len))
 				flags |= tbl[i].i;
 
 		if (!t)

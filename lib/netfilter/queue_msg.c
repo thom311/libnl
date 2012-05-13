@@ -24,6 +24,7 @@
 #include <netlink/attr.h>
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/queue_msg.h>
+#include <byteswap.h>
 
 static struct nl_cache_ops nfnl_queue_msg_ops;
 
@@ -35,7 +36,7 @@ static uint64_t ntohll(uint64_t x)
 #elif __BYTE_ORDER == __LITTLE_ENDIAN
 static uint64_t ntohll(uint64_t x)
 {
-	return __bswap_64(x);
+	return bswap_64(x);
 }
 #endif
 

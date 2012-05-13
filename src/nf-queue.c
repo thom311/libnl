@@ -13,6 +13,7 @@
 
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>
+#include <netinet/in.h>
 #include <linux/netfilter.h>
 #include <linux/netfilter/nfnetlink_queue.h>
 #include <netlink/netfilter/nfnl.h>

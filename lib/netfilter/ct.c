@@ -38,7 +38,7 @@ static uint64_t ntohll(uint64_t x)
 #elif __BYTE_ORDER == __LITTLE_ENDIAN
 static uint64_t ntohll(uint64_t x)
 {
-	return __bswap_64(x);
+	return bswap_64(x);
 }
 #endif
 

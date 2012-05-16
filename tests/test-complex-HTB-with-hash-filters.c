@@ -12,7 +12,11 @@
 #include <netlink/route/link.h>
 #include <netlink/route/tc.h>
 #include <netlink/route/qdisc.h>
+#include <netlink/route/qdisc/htb.h>
+#include <netlink/route/qdisc/sfq.h>
+#include <netlink/route/cls/u32.h>
 #include <netlink/route/classifier.h>
+#include <netlink/route/class.h>
 #include <linux/if_ether.h>
 
 #include <netlink/attr.h>
@@ -150,7 +154,7 @@ int u32_add_filter_on_ht(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint3
     
     rtnl_tc_set_link(TC_CAST(cls), rtnlLink);
 
-    if (err = rtnl_tc_set_kind(TC_CAST(cls), "u32")) {
+    if ((err = rtnl_tc_set_kind(TC_CAST(cls), "u32"))) {
         printf("Can not set classifier as u32\n");
         return 1;
     }
@@ -168,7 +172,7 @@ int u32_add_filter_on_ht(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint3
     
     rtnl_u32_set_cls_terminal(cls);
 
-    if (err = rtnl_cls_add(sock, cls, NLM_F_CREATE)) {
+    if ((err = rtnl_cls_add(sock, cls, NLM_F_CREATE))) {
         printf("Can not add classifier: %s\n", nl_geterror(err));
         return -1;
     }
@@ -202,7 +206,7 @@ int u32_add_filter_on_ht_with_hashmask(struct nl_sock *sock, struct rtnl_link *r
     
     rtnl_tc_set_link(TC_CAST(cls), rtnlLink);
 
-    if (err = rtnl_tc_set_kind(TC_CAST(cls), "u32")) {
+    if ((err = rtnl_tc_set_kind(TC_CAST(cls), "u32"))) {
         printf("Can not set classifier as u32\n");
         return 1;
     }
@@ -222,7 +226,7 @@ int u32_add_filter_on_ht_with_hashmask(struct nl_sock *sock, struct rtnl_link *r
     rtnl_u32_set_link(cls, htlink);
 
 
-    if (err = rtnl_cls_add(sock, cls, NLM_F_CREATE)) {
+    if ((err = rtnl_cls_add(sock, cls, NLM_F_CREATE))) {
         printf("Can not add classifier: %s\n", nl_geterror(err));
         return -1;
     }
@@ -248,7 +252,7 @@ int u32_add_ht(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t prio, 
     
     rtnl_tc_set_link(TC_CAST(cls), rtnlLink);
 
-    if (err = rtnl_tc_set_kind(TC_CAST(cls), "u32")) {
+    if ((err = rtnl_tc_set_kind(TC_CAST(cls), "u32"))) {
         printf("Can not set classifier as u32\n");
         return 1;
     }
@@ -261,7 +265,7 @@ int u32_add_ht(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t prio, 
     //printf("htid: 0x%X\n", htid);
     rtnl_u32_set_divisor(cls, divisor);
 
-    if (err = rtnl_cls_add(sock, cls, NLM_F_CREATE)) {
+    if ((err = rtnl_cls_add(sock, cls, NLM_F_CREATE))) {
         printf("Can not add classifier: %s\n", nl_geterror(err));
         return -1;
     }
@@ -297,7 +301,7 @@ int qdisc_add_HTB(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t def
     //printf("Add a new HTB qdisc\n");
     rtnl_tc_set_handle(TC_CAST(qdisc), TC_HANDLE(1,0));
 
-    if (err = rtnl_tc_set_kind(TC_CAST(qdisc), "htb") ){
+    if ((err = rtnl_tc_set_kind(TC_CAST(qdisc), "htb"))) {
         printf("Can not allocate HTB\n");
 	return -1;
     }
@@ -308,7 +312,7 @@ int qdisc_add_HTB(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t def
     rtnl_htb_set_rate2quantum(qdisc, 1);
 
     /* Submit request to kernel and wait for response */
-    if (err = rtnl_qdisc_add(sock, qdisc, NLM_F_CREATE)) {
+    if ((err = rtnl_qdisc_add(sock, qdisc, NLM_F_CREATE))) {
         printf("Can not allocate HTB Qdisc\n");
 	return -1;
     }
@@ -316,6 +320,7 @@ int qdisc_add_HTB(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t def
     /* Return the qdisc object to free memory resources */
     rtnl_qdisc_put(qdisc);
 
+    return 0;
 }
 
 /*
@@ -331,11 +336,11 @@ int class_add_HTB(struct nl_sock *sock, struct rtnl_link *rtnlLink,
 {
     int err;
     struct rtnl_class *class;
+    //struct rtnl_class *class = (struct rtnl_class *) tc;
 
     //create a HTB class 
-    class = (struct rtnl_class *)rtnl_class_alloc();
-    //class = rtnl_class_alloc();
-    if (!class) {
+    //class = (struct rtnl_class *)rtnl_class_alloc();
+    if (!(class = rtnl_class_alloc())) {
         printf("Can not allocate class object\n");
         return 1;
     }
@@ -346,13 +351,13 @@ int class_add_HTB(struct nl_sock *sock, struct rtnl_link *rtnlLink,
     rtnl_tc_set_parent(TC_CAST(class), TC_HANDLE(parentMaj, parentMin));
     rtnl_tc_set_handle(TC_CAST(class), TC_HANDLE(childMaj, childMin));
 
-    if (err = rtnl_tc_set_kind(TC_CAST(class), "htb") ){
+    if ((err = rtnl_tc_set_kind(TC_CAST(class), "htb"))) {
         printf("Can not set HTB to class\n");
         return 1;
     }
 
     //printf("set HTB class prio to %u\n", prio);
-    rtnl_htb_set_prio(class, prio);
+    rtnl_htb_set_prio((struct rtnl_class *)class, prio);
 
     if (rate) {
 	//rate=rate/8;
@@ -372,12 +377,12 @@ int class_add_HTB(struct nl_sock *sock, struct rtnl_link *rtnlLink,
         rtnl_htb_set_cbuffer(class, cburst);
     }
     /* Submit request to kernel and wait for response */
-    if (err = rtnl_class_add(sock, class, NLM_F_CREATE)) {
+    if ((err = rtnl_class_add(sock, class, NLM_F_CREATE))) {
         printf("Can not allocate HTB Qdisc\n");
         return 1;
     }
     rtnl_class_put(class);
-
+    return 0;
 }
 
 /*
@@ -405,7 +410,7 @@ int class_add_HTB_root(struct nl_sock *sock, struct rtnl_link *rtnlLink,
     //printf("Add a new HTB ROOT class\n");
     rtnl_tc_set_handle(TC_CAST(class), 1);
 
-    if (err = rtnl_tc_set_kind(TC_CAST(class), "htb") ){
+    if ((err = rtnl_tc_set_kind(TC_CAST(class), "htb"))) {
         printf("Can not set HTB to class\n");
         return 1;
     }
@@ -427,12 +432,12 @@ int class_add_HTB_root(struct nl_sock *sock, struct rtnl_link *rtnlLink,
     }
     
     /* Submit request to kernel and wait for response */
-    if (err = rtnl_class_add(sock, class, NLM_F_CREATE)) {
+    if ((err = rtnl_class_add(sock, class, NLM_F_CREATE))) {
         printf("Can not allocate HTB Qdisc\n");
         return 1;
     }
     rtnl_class_put(class);
-
+    return 0;
 }
 
 /*
@@ -455,7 +460,7 @@ int qdisc_add_SFQ_leaf(struct nl_sock *sock, struct rtnl_link *rtnlLink,
 
     rtnl_tc_set_handle(TC_CAST(qdisc), TC_HANDLE(parentMin,0));
 
-    if (err = rtnl_tc_set_kind(TC_CAST(qdisc), "sfq") ){
+    if ((err = rtnl_tc_set_kind(TC_CAST(qdisc), "sfq"))) {
         printf("Can not set SQF class\n");
         return 1;
     }
@@ -473,13 +478,14 @@ int qdisc_add_SFQ_leaf(struct nl_sock *sock, struct rtnl_link *rtnlLink,
     }
 
     /* Submit request to kernel and wait for response */
-    if (err = rtnl_qdisc_add(sock, qdisc, NLM_F_CREATE)) {
+    if ((err = rtnl_qdisc_add(sock, qdisc, NLM_F_CREATE))) {
         printf("Can not allocate SFQ qdisc\n");
 	return -1;
     }
 
     /* Return the qdisc object to free memory resources */
     rtnl_qdisc_put(qdisc);
+    return 0;
 }
 
 
@@ -490,20 +496,21 @@ int main() {
     struct nl_sock *sock;
     struct rtnl_link *link;
 
-    struct rtnl_qdisc *qdisc;
-    struct rtnl_class *class;
-    struct rtnl_cls   *cls;
+    //struct rtnl_qdisc *qdisc;
+    //struct rtnl_class *class;
+    //struct rtnl_cls   *cls;
 
-    uint32_t ht, htlink, htid, handle, divisor, hash, nodeid, hashmask, direction, classid;
-    struct rtnl_u32 *f_u32;
+    uint32_t ht, htlink, htid, direction, classid;
+    //uint32_t hash, hashmask, nodeid, divisor, handle;
+    //struct rtnl_u32 *f_u32;
     char chashlink[16]="";
 
-    uint64_t drops, qlen;
+    //uint64_t drops, qlen;
 
-    int master_index;
+    //int master_index;
     int err;
     
-    uint64_t rate=0, ceil=0;
+    //uint64_t rate=0, ceil=0;
 
     struct nl_cache *link_cache;
     
@@ -527,7 +534,7 @@ int main() {
     }
     
     /* lookup interface index of eth0 */
-    if (!(link = rtnl_link_get_by_name(link_cache, "eth0"))) {
+    if (!(link = rtnl_link_get_by_name(link_cache, "imq0"))) {
         /* error */
         printf("Interface not found\n");
         nl_socket_free(sock);
@@ -580,13 +587,14 @@ int main() {
      *
      */
 
-    divisor=0x0;	// unused here
-    handle = 0x0;	// unused here
-    hash = 0x0;		// unused here
-    htid = 0x0;		// unused here
-    nodeid = 0x0;	// unused here
-    uint32_t hashlink;
+    //divisor=0x0;	// unused here
+    //handle = 0x0;	// unused here
+    //hash = 0x0;		// unused here
+    //htid = 0x0;		// unused here
+    //nodeid = 0x0;	// unused here
 
+    // direction = 12 -> source IP
+    // direction = 16 -> destination IP
     direction = 16;
 
     /*

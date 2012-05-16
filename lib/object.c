@@ -259,6 +259,9 @@ int nl_object_is_marked(struct nl_object *obj)
  */
 void nl_object_dump(struct nl_object *obj, struct nl_dump_params *params)
 {
+	if (params->dp_buf)
+		memset(params->dp_buf, 0, params->dp_buflen);
+
 	dump_from_ops(obj, params);
 }
 

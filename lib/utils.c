@@ -824,7 +824,7 @@ void nl_new_line(struct nl_dump_params *params)
 			else if (params->dp_buf)
 				strncat(params->dp_buf, " ",
 					params->dp_buflen -
-					sizeof(params->dp_buf) - 1);
+					strlen(params->dp_buf) - 1);
 		}
 	}
 
@@ -844,7 +844,8 @@ static void dump_one(struct nl_dump_params *parms, const char *fmt,
 				parms->dp_cb(parms, buf);
 			else
 				strncat(parms->dp_buf, buf,
-					parms->dp_buflen - strlen(parms->dp_buf) - 1);
+					parms->dp_buflen -
+					strlen(parms->dp_buf) - 1);
 			free(buf);
 		}
 	}
@@ -1052,9 +1053,6 @@ void dump_from_ops(struct nl_object *obj, struct nl_dump_params *params)
 #endif
 		params->dp_pre_dump = 1;
 	}
-
-	if (params->dp_buf)
-                memset(params->dp_buf, 0, params->dp_buflen);
 
 	if (obj->ce_ops->oo_dump[type])
 		obj->ce_ops->oo_dump[type](obj, params);

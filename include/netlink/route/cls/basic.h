@@ -13,6 +13,8 @@
 #define NETLINK_BASIC_H_
 
 #include <netlink/netlink.h>
+#include <netlink/route/classifier.h>
+#include <netlink/route/cls/ematch.h>
 
 #ifdef __cplusplus
 extern "C" {

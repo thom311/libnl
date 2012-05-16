@@ -13,6 +13,8 @@
 #define NETLINK_DSMARK_H_
 
 #include <netlink/netlink.h>
+#include <netlink/route/qdisc.h>
+#include <netlink/route/class.h>
 
 #ifdef __cplusplus
 extern "C" {

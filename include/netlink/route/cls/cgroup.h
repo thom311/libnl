@@ -14,6 +14,8 @@
 
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
+#include <netlink/route/classifier.h>
+#include <netlink/route/cls/ematch.h>
 
 #ifdef __cplusplus
 extern "C" {

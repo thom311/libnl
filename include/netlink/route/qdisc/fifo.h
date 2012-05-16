@@ -13,6 +13,7 @@
 #define NETLINK_FIFO_H_
 
 #include <netlink/netlink.h>
+#include <netlink/route/qdisc.h>
 
 #ifdef __cplusplus
 extern "C" {

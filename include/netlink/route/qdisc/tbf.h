@@ -14,6 +14,7 @@
 
 #include <netlink/netlink.h>
 #include <netlink/route/tc.h>
+#include <netlink/route/qdisc.h>
 
 #ifdef __cplusplus
 extern "C" {

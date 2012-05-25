@@ -30,12 +30,14 @@
 #define FW_ATTR_ACTION       0x002
 #define FW_ATTR_POLICE       0x004
 #define FW_ATTR_INDEV        0x008
+#define FW_ATTR_MASK         0x010
 /** @endcond */
 
 static struct nla_policy fw_policy[TCA_FW_MAX+1] = {
 	[TCA_FW_CLASSID]	= { .type = NLA_U32 },
 	[TCA_FW_INDEV]		= { .type = NLA_STRING,
 				    .maxlen = IFNAMSIZ },
+	[TCA_FW_MASK]		= { .type = NLA_U32 },
 };
 
 static int fw_msg_parser(struct rtnl_tc *tc, void *data)
@@ -72,6 +74,11 @@ static int fw_msg_parser(struct rtnl_tc *tc, void *data)
 		f->cf_mask |= FW_ATTR_INDEV;
 	}
 
+	if (tb[TCA_FW_MASK]) {
+		f->cf_fwmask = nla_get_u32(tb[TCA_FW_MASK]);
+		f->cf_mask |= FW_ATTR_MASK;
+	}
+
 	return 0;
 }
 
@@ -101,12 +108,18 @@ static void fw_dump_line(struct rtnl_tc *tc, void *data,
 {
 	struct rtnl_fw *f = data;
 
-	if (f && f->cf_mask & FW_ATTR_CLASSID) {
+	if (!f)
+		return;
+
+	if (f->cf_mask & FW_ATTR_CLASSID) {
 		char buf[32];
 
 		nl_dump(p, " target %s",
 			rtnl_tc_handle2str(f->cf_classid, buf, sizeof(buf)));
 	}
+
+	if (f->cf_mask & FW_ATTR_MASK)
+		nl_dump(p, " mask 0x%x", f->cf_fwmask);
 }
 
 static void fw_dump_details(struct rtnl_tc *tc, void *data,
@@ -137,6 +150,9 @@ static int fw_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 	if (f->cf_mask & FW_ATTR_INDEV)
 		NLA_PUT_STRING(msg, TCA_FW_INDEV, f->cf_indev);
 
+	if (f->cf_mask & FW_ATTR_MASK)
+		NLA_PUT_U32(msg, TCA_FW_MASK, f->cf_fwmask);
+
 	return 0;
 
 nla_put_failure:
@@ -157,6 +173,19 @@ int rtnl_fw_set_classid(struct rtnl_cls *cls, uint32_t classid)
 	
 	f->cf_classid = classid;
 	f->cf_mask |= FW_ATTR_CLASSID;
+
+	return 0;
+}
+
+int rtnl_fw_set_mask(struct rtnl_cls *cls, uint32_t mask)
+{
+	struct rtnl_fw *f;
+
+	if (!(f = rtnl_tc_data(TC_CAST(cls))))
+		return -NLE_NOMEM;
+	
+	f->cf_fwmask = mask;
+	f->cf_mask |= FW_ATTR_MASK;
 
 	return 0;
 }

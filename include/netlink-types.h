@@ -512,6 +512,7 @@ struct rtnl_fw
 	struct nl_data *	cf_act;
 	struct nl_data *	cf_police;
 	char			cf_indev[IFNAMSIZ];
+	uint32_t		cf_fwmask;
 	int			cf_mask;
 };
 

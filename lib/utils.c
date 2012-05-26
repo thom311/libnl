@@ -359,11 +359,12 @@ long nl_prob2int(const char *str)
  * @{
  */
 
-#ifdef USER_HZ
-static uint32_t user_hz = USER_HZ;
-#else
-static uint32_t user_hz = 100;
+#ifndef USER_HZ
+#define USER_HZ 100
 #endif
+
+static uint32_t user_hz = USER_HZ;
+static uint32_t psched_hz = USER_HZ;
 
 static double ticks_per_usec = 1.0f;
 
@@ -394,6 +395,8 @@ static void __init get_psched_settings(void)
 	if (!got_hz)
 		user_hz = sysconf(_SC_CLK_TCK);
 
+	psched_hz = user_hz;
+
 	if (getenv("TICKS_PER_USEC")) {
 		double t = strtod(getenv("TICKS_PER_USEC"), NULL);
 		ticks_per_usec = t;
@@ -408,14 +411,16 @@ static void __init get_psched_settings(void)
 			strncpy(name, "/proc/net/psched", sizeof(name) - 1);
 		
 		if ((fd = fopen(name, "r"))) {
-			uint32_t ns_per_usec, ns_per_tick;
-			/* the file contains 4 hexadecimals, but we just use
-			   the first two of them */
-			fscanf(fd, "%08x %08x", &ns_per_usec, &ns_per_tick);
+			uint32_t ns_per_usec, ns_per_tick, nom, denom;
+
+			fscanf(fd, "%08x %08x %08x %08x",
+			       &ns_per_usec, &ns_per_tick, &nom, &denom);
 
 			ticks_per_usec = (double) ns_per_usec / 
 					 (double) ns_per_tick;
 
+			if (nom == 1000000)
+				psched_hz = denom;
 
 			fclose(fd);
 		}
@@ -431,6 +436,13 @@ int nl_get_user_hz(void)
 	return user_hz;
 }
 
+/**
+ * Return the value of packet scheduler HZ
+ */
+int nl_get_psched_hz(void)
+{
+	return psched_hz;
+}
 
 /**
  * Convert micro seconds to ticks

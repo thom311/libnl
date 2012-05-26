@@ -290,7 +290,7 @@ void rtnl_qdisc_tbf_set_rate(struct rtnl_qdisc *qdisc, int rate, int bucket,
 	tbf->qt_rate.rs_rate = rate;
 	tbf->qt_rate_bucket = bucket;
 	tbf->qt_rate.rs_cell_log = cell_log;
-	tbf->qt_rate_txtime = rtnl_tc_calc_txtime(bucket, rate);
+	tbf->qt_rate_txtime = nl_us2ticks(rtnl_tc_calc_txtime(bucket, rate));
 	tbf->qt_mask |= TBF_ATTR_RATE;
 }
 
@@ -372,7 +372,7 @@ int rtnl_qdisc_tbf_set_peakrate(struct rtnl_qdisc *qdisc, int rate, int bucket,
 	tbf->qt_peakrate.rs_rate = rate;
 	tbf->qt_peakrate_bucket = bucket;
 	tbf->qt_peakrate.rs_cell_log = cell_log;
-	tbf->qt_peakrate_txtime = rtnl_tc_calc_txtime(bucket, rate);
+	tbf->qt_peakrate_txtime = nl_us2ticks(rtnl_tc_calc_txtime(bucket, rate));
 	
 	tbf->qt_mask |= TBF_ATTR_PEAKRATE;
 

@@ -710,7 +710,7 @@ int rtnl_tc_build_rate_table(struct rtnl_tc *tc, struct rtnl_ratespec *spec,
 
 	for (i = 0; i < RTNL_TC_RTABLE_SIZE; i++) {
 		size = adjust_size((i + 1) << cell_log, spec->rs_mpu, linktype);
-		dst[i] = rtnl_tc_calc_txtime(size, spec->rs_rate);
+		dst[i] = nl_us2ticks(rtnl_tc_calc_txtime(size, spec->rs_rate));
 	}
 
 	spec->rs_cell_align = -1;

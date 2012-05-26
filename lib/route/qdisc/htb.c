@@ -86,9 +86,9 @@ static int htb_class_msg_parser(struct rtnl_tc *tc, void *data)
 		htb->ch_prio = opts.prio;
 		rtnl_copy_ratespec(&htb->ch_rate, &opts.rate);
 		rtnl_copy_ratespec(&htb->ch_ceil, &opts.ceil);
-		htb->ch_rbuffer = rtnl_tc_calc_bufsize(opts.buffer,
+		htb->ch_rbuffer = rtnl_tc_calc_bufsize(nl_ticks2us(opts.buffer),
 						       opts.rate.rate);
-		htb->ch_cbuffer = rtnl_tc_calc_bufsize(opts.cbuffer,
+		htb->ch_cbuffer = rtnl_tc_calc_bufsize(nl_ticks2us(opts.cbuffer),
 						       opts.ceil.rate);
 		htb->ch_quantum = opts.quantum;
 		htb->ch_level = opts.level;
@@ -242,16 +242,16 @@ static int htb_class_msg_fill(struct rtnl_tc *tc, void *data,
 	if (htb->ch_mask & SCH_HTB_HAS_RBUFFER)
 		buffer = htb->ch_rbuffer;
 	else
-		buffer = opts.rate.rate / nl_get_user_hz() + mtu; /* XXX */
+		buffer = opts.rate.rate / nl_get_psched_hz() + mtu; /* XXX */
 
-	opts.buffer = rtnl_tc_calc_txtime(buffer, opts.rate.rate);
+	opts.buffer = nl_us2ticks(rtnl_tc_calc_txtime(buffer, opts.rate.rate));
 
 	if (htb->ch_mask & SCH_HTB_HAS_CBUFFER)
 		cbuffer = htb->ch_cbuffer;
 	else
-		cbuffer = opts.ceil.rate / nl_get_user_hz() + mtu; /* XXX */
+		cbuffer = opts.ceil.rate / nl_get_psched_hz() + mtu; /* XXX */
 
-	opts.cbuffer = rtnl_tc_calc_txtime(cbuffer, opts.ceil.rate);
+	opts.cbuffer = nl_us2ticks(rtnl_tc_calc_txtime(cbuffer, opts.ceil.rate));
 
 	if (htb->ch_mask & SCH_HTB_HAS_QUANTUM)
 		opts.quantum = htb->ch_quantum;

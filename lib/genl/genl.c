@@ -202,6 +202,17 @@ int genlmsg_parse(struct nlmsghdr *nlh, int hdrlen, struct nlattr *tb[],
 }
 
 /**
+ * Return pointer to Generic Netlink header
+ * @arg nlh		Netlink message header
+ *
+ * @return Pointer to Generic Netlink message header
+ */
+struct genlmsghdr *genlmsg_hdr(struct nlmsghdr *nlh)
+{
+	return nlmsg_data(nlh);
+}
+
+/**
  * Return pointer to message payload
  * @arg gnlh		Generic Netlink message header
  *

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_GENL_H_
@@ -32,6 +32,8 @@ extern int		genlmsg_validate(struct nlmsghdr *, int, int,
 					 struct nla_policy *);
 extern int		genlmsg_parse(struct nlmsghdr *, int, struct nlattr **,
 				      int, struct nla_policy *);
+extern struct genlmsghdr *
+			genlmsg_hdr(struct nlmsghdr *);
 extern void *		genlmsg_data(const struct genlmsghdr *);
 extern int		genlmsg_len(const struct genlmsghdr *);
 extern struct nlattr *	genlmsg_attrdata(const struct genlmsghdr *, int);

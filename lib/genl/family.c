@@ -6,13 +6,14 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
- * @ingroup genl
- * @defgroup genl_family Generic Netlink Family
- * @brief
+ * @ingroup genl_ctrl
+ * @defgroup genl_family Generic Netlink Family Object
+ *
+ * Object representing a kernel side registered Generic Netlink family
  *
  * @{
  */
@@ -32,7 +33,6 @@
 #define FAMILY_ATTR_OPS		0x20
 
 struct nl_object_ops genl_family_ops;
-/** @endcond */
 
 static void family_constructor(struct nl_object *c)
 {
@@ -166,18 +166,32 @@ static int family_compare(struct nl_object *_a, struct nl_object *_b,
 
 	return diff;
 }
-
+/** @endcond */
 
 /**
- * @name Family Object
+ * @name Object Allocation
  * @{
  */
 
+/**
+ * Allocate new Generic Netlink family object
+ * 
+ * @return Newly allocated Generic Netlink family object or NULL.
+ */
 struct genl_family *genl_family_alloc(void)
 {
 	return (struct genl_family *) nl_object_alloc(&genl_family_ops);
 }
 
+/**
+ * Release reference on Generic Netlink family object
+ * @arg family		Generic Netlink family object
+ *
+ * Reduces the reference counter of a Generic Netlink family object by one.
+ * The object is freed after the last user has returned its reference.
+ *
+ * @see nl_object_put()
+ */
 void genl_family_put(struct genl_family *family)
 {
 	nl_object_put((struct nl_object *) family);
@@ -186,10 +200,16 @@ void genl_family_put(struct genl_family *family)
 /** @} */
 
 /**
- * @name Attributes
+ * @name Numeric Identifier
  * @{
  */
 
+/**
+ * Return numeric identifier
+ * @arg family		Generic Netlink family object
+ *
+ * @return Numeric identifier or 0 if not available.
+ */
 unsigned int genl_family_get_id(struct genl_family *family)
 {
 	if (family->ce_mask & FAMILY_ATTR_ID)
@@ -198,12 +218,30 @@ unsigned int genl_family_get_id(struct genl_family *family)
 		return GENL_ID_GENERATE;
 }
 
+/**
+ * Set the numeric identifier
+ * @arg family		Generic Netlink family object
+ * @arg id		New numeric identifier
+ */
 void genl_family_set_id(struct genl_family *family, unsigned int id)
 {
 	family->gf_id = id;
 	family->ce_mask |= FAMILY_ATTR_ID;
 }
 
+/** @} */
+
+/**
+ * @name Human Readable Name
+ * @{
+ */
+
+/**
+ * Return human readable name
+ * @arg family		Generic Netlink family object
+ *
+ * @return Name of family or NULL if not available
+ */
 char *genl_family_get_name(struct genl_family *family)
 {
 	if (family->ce_mask & FAMILY_ATTR_NAME)
@@ -212,12 +250,28 @@ char *genl_family_get_name(struct genl_family *family)
 		return NULL;
 }
 
+/**
+ * Set human readable name
+ * @arg family		Generic Netlink family object
+ * @arg name		New human readable name
+ */
 void genl_family_set_name(struct genl_family *family, const char *name)
 {
 	strncpy(family->gf_name, name, GENL_NAMSIZ-1);
 	family->ce_mask |= FAMILY_ATTR_NAME;
 }
 
+/**
+ * @name Interface Version
+ * @{
+ */
+
+/**
+ * Return interface version
+ * @arg family		Generic Netlink family object
+ *
+ * @return Interface version or 0 if not available.
+ */
 uint8_t genl_family_get_version(struct genl_family *family)
 {
 	if (family->ce_mask & FAMILY_ATTR_VERSION)
@@ -226,12 +280,30 @@ uint8_t genl_family_get_version(struct genl_family *family)
 		return 0;
 }
 
+/**
+ * Set interface version
+ * @arg family		Generic Netlink family object
+ * @arg version		New interface version
+ */
 void genl_family_set_version(struct genl_family *family, uint8_t version)
 {
 	family->gf_version = version;
 	family->ce_mask |= FAMILY_ATTR_VERSION;
 }
 
+/** @} */
+
+/**
+ * @name Header Size
+ * @{
+ */
+
+/**
+ * Return user header size expected by kernel component
+ * @arg family		Generic Netlink family object
+ *
+ * @return Expected header length or 0 if not available.
+ */
 uint32_t genl_family_get_hdrsize(struct genl_family *family)
 {
 	if (family->ce_mask & FAMILY_ATTR_HDRSIZE)
@@ -246,6 +318,13 @@ void genl_family_set_hdrsize(struct genl_family *family, uint32_t hdrsize)
 	family->ce_mask |= FAMILY_ATTR_HDRSIZE;
 }
 
+/** @} */
+
+/**
+ * @name Maximum Expected Attribute
+ * @{
+ */
+
 uint32_t genl_family_get_maxattr(struct genl_family *family)
 {
 	if (family->ce_mask & FAMILY_ATTR_MAXATTR)
@@ -259,6 +338,13 @@ void genl_family_set_maxattr(struct genl_family *family, uint32_t maxattr)
 	family->gf_maxattr = maxattr;
 	family->ce_mask |= FAMILY_ATTR_MAXATTR;
 }
+
+/** @} */
+
+/**
+ * @name Operations
+ * @{
+ */
 
 int genl_family_add_op(struct genl_family *family, int id, int flags)
 {

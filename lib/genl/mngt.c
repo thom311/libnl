@@ -6,77 +6,15 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
  * @ingroup genl
- * @defgroup genl_mngt Management
+ * @defgroup genl_mngt Family and Operations Management
  *
- * @par 1) Registering a generic netlink module
- * @code
- * #include <netlink/genl/mngt.h>
+ * Registering Generic Netlink Families and Commands
  *
- * // First step is to define all the commands being used in
- * // particular generic netlink family. The ID and name are
- * // mandatory to be filled out. A callback function and
- * // most the attribute policy that comes with it must be
- * // defined for commands expected to be issued towards
- * // userspace.
- * static struct genl_cmd foo_cmds[] = {
- * 	{
- * 		.c_id		= FOO_CMD_NEW,
- * 		.c_name		= "NEWFOO" ,
- * 		.c_maxattr	= FOO_ATTR_MAX,
- * 		.c_attr_policy	= foo_policy,
- * 		.c_msg_parser	= foo_msg_parser,
- * 	},
- * 	{
- * 		.c_id		= FOO_CMD_DEL,
- * 		.c_name		= "DELFOO" ,
- * 	},
- * };
- *
- * // The list of commands must then be integrated into a
- * // struct genl_ops serving as handle for this particular
- * // family.
- * static struct genl_ops my_genl_ops = {
- * 	.o_cmds			= foo_cmds,
- * 	.o_ncmds		= ARRAY_SIZE(foo_cmds),
- * };
- *
- * // Using the above struct genl_ops an arbitary number of
- * // cache handles can be associated to it.
- * //
- * // The macro GENL_HDRSIZE() must be used to specify the
- * // length of the header to automatically take headers on
- * // generic layers into account.
- * //
- * // The macro GENL_FAMILY() is used to represent the generic
- * // netlink family id.
- * static struct nl_cache_ops genl_foo_ops = {
- * 	.co_name		= "genl/foo",
- * 	.co_hdrsize		= GENL_HDRSIZE(sizeof(struct my_hdr)),
- * 	.co_msgtypes		= GENL_FAMILY(GENL_ID_GENERATE, "foo"),
- * 	.co_genl		= &my_genl_ops,
- * 	.co_protocol		= NETLINK_GENERIC,
- * 	.co_request_update      = foo_request_update,
- * 	.co_obj_ops		= &genl_foo_ops,
- * };
- *
- * // Finally each cache handle for a generic netlink family
- * // must be registered using genl_register().
- * static void __init foo_init(void)
- * {
- * 	genl_register(&genl_foo_ops);
- * }
- *
- * // ... respectively unregsted again.
- * static void __exit foo_exit(void)
- * {
- * 	genl_unregister(&genl_foo_ops);
- * }
- * @endcode
  * @{
  */
 
@@ -87,6 +25,8 @@
 #include <netlink/genl/family.h>
 #include <netlink/genl/ctrl.h>
 #include <netlink/utils.h>
+
+/** @cond SKIP */
 
 static NL_LIST_HEAD(genl_ops_list);
 
@@ -159,15 +99,18 @@ char *genl_op2name(int family, int op, char *buf, size_t len)
 	return NULL;
 }
 
+/** @endcond */
 
 /**
- * @name Register/Unregister
+ * @name Registration (Cache Based)
  * @{
  */
 
 /**
- * Register generic netlink operations
- * @arg ops		cache operations
+ * Register Generic Netlink family backed cache
+ * @arg ops		Cache operations definition
+ *
+ * @return 0 on success or a negative error code.
  */
 int genl_register(struct nl_cache_ops *ops)
 {
@@ -203,8 +146,8 @@ errout:
 }
 
 /**
- * Unregister generic netlink operations
- * @arg ops		cache operations
+ * Unregister cache based Generic Netlink family
+ * @arg ops		Cache operations definition
  */
 void genl_unregister(struct nl_cache_ops *ops)
 {
@@ -217,11 +160,7 @@ void genl_unregister(struct nl_cache_ops *ops)
 
 /** @} */
 
-/**
- * @name Resolving ID/Name
- * @{
- */
-
+/** @cond SKIP */
 static int __genl_ops_resolve(struct nl_cache *ctrl, struct genl_ops *ops)
 {
 	struct genl_family *family;
@@ -236,7 +175,22 @@ static int __genl_ops_resolve(struct nl_cache *ctrl, struct genl_ops *ops)
 
 	return -NLE_OBJ_NOTFOUND;
 }
+/** @endcond */
 
+/**
+ * @name Resolving the name of registered families
+ * @{
+ */
+
+/**
+ * Resolve a single Generic Netlink family
+ * @arg sk		Generic Netlink socket
+ * @arg ops		Generic Netlink family definition
+ *
+ * Resolves the family name to its numeric identifier.
+ *
+ * @return 0 on success or a negative error code.
+ */
 int genl_ops_resolve(struct nl_sock *sk, struct genl_ops *ops)
 {
 	struct nl_cache *ctrl;
@@ -252,6 +206,19 @@ errout:
 	return err;
 }
 
+/**
+ * Resolve all registered Generic Netlink families
+ * @arg sk		Generic Netlink socket
+ *
+ * Walks through all local Generic Netlink families that have been registered
+ * using genl_register() and resolves the name of each family to the
+ * corresponding numeric identifier.
+ *
+ * @see genl_register()
+ * @see genl_ops_resolve()
+ *
+ * @return 0 on success or a negative error code.
+ */
 int genl_mngt_resolve(struct nl_sock *sk)
 {
 	struct nl_cache *ctrl;
@@ -271,6 +238,5 @@ errout:
 }
 
 /** @} */
-
 
 /** @} */

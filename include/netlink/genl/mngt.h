@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2006 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_GENL_MNGT_H_
@@ -22,57 +22,124 @@ extern "C" {
 
 struct nl_cache_ops;
 
+/**
+ * @ingroup genl_mngt
+ * @struct genl_info netlink/genl/mngt.h
+ *
+ * Informative structure passed on to message parser callbacks
+ *
+ * This structure is passed on to all message parser callbacks and contains
+ * information about the sender of the message as well as pointers to all
+ * relevant sections of the parsed message.
+ *
+ * @see genl_cmd::c_msg_parser
+ */
 struct genl_info
 {
+	/** Socket address of sender */
 	struct sockaddr_nl *    who;
+
+	/** Pointer to Netlink message header */
 	struct nlmsghdr *       nlh;
+
+	/** Pointer to Generic Netlink message header */
 	struct genlmsghdr *     genlhdr;
+
+	/** Pointer to user header */
 	void *                  userhdr;
+
+	/** Pointer to array of parsed attributes */
 	struct nlattr **        attrs;
 };
 
 /**
  * @ingroup genl_mngt
- * Generic Netlink Command
+ * @struct genl_cmd netlink/genl/mngt.h
+ *
+ * Definition of a Generic Netlink command.
+ *
+ * This structure is used to define the list of available commands on the
+ * receiving side.
+ *
+ * @par Example:
+ * @code
+ * static struct genl_cmd foo_cmds[] = {
+ * 	{
+ * 		.c_id		= FOO_CMD_NEW,
+ * 		.c_name		= "NEWFOO" ,
+ * 		.c_maxattr	= FOO_ATTR_MAX,
+ * 		.c_attr_policy	= foo_policy,
+ * 		.c_msg_parser	= foo_msg_parser,
+ * 	},
+ * 	{
+ * 		.c_id		= FOO_CMD_DEL,
+ * 		.c_name		= "DELFOO" ,
+ * 	},
+ * };
+ *
+ * static struct genl_ops my_genl_ops = {
+ * 	[...]
+ * 	.o_cmds			= foo_cmds,
+ * 	.o_ncmds		= ARRAY_SIZE(foo_cmds),
+ * };
+ * @endcode
  */
 struct genl_cmd
 {
-	/** Unique command identifier */
+	/** Numeric command identifier (required) */
 	int			c_id;
 
-	/** Name/description of command */
+	/** Human readable name  (required) */
 	char *			c_name;
 
-	/**
-	 * Maximum attribute identifier, must be provided if
-	 * a message parser is available.
-	 */
+	/** Maximum attribute identifier that the command is prepared to handle. */
 	int			c_maxattr;
 
+	/** Called whenever a message for this command is received */
 	int		      (*c_msg_parser)(struct nl_cache_ops *,
 					      struct genl_cmd *,
 					      struct genl_info *, void *);
 
-	/**
-	 * Attribute validation policy (optional)
-	 */
+	/** Attribute validation policy, enforced before the callback is called */
 	struct nla_policy *	c_attr_policy;
 };
 
 /**
  * @ingroup genl_mngt
- * Generic Netlink Operations
+ * @struct genl_ops netlink/genl/mngt.h
+ *
+ * Definition of a Generic Netlink family
+ *
+ * @see genl_cmd
  */
 struct genl_ops
 {
 	int			o_family;
+
+	/** Numeric identifier, automatically resolved by genl_mngt_resolve() */
 	int			o_id;
+
+	/** Human readable name, used to resolve to numeric identifier */
 	char *			o_name;
+
+	/**
+	 * If registered via genl_register(), will point to the related
+	 * cache operations.
+	 */
 	struct nl_cache_ops *	o_cache_ops;
+
+	/**
+	 * Can point to an array of generic netlink commands definitions.
+	 */
 	struct genl_cmd	*	o_cmds;
+
+	/** Size of \c o_cmds array */
 	int			o_ncmds;
 
-	/* linked list of all genl cache operations */
+	/**
+	 * @private
+	 * Used internally to link together all registered operations.
+	 */
 	struct nl_list_head	o_list;
 };
 

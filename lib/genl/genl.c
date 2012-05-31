@@ -12,80 +12,6 @@
 /**
  * @defgroup genl Generic Netlink Library (libnl-genl)
  *
- * @par Message Format
- * @code
- *  <------- NLMSG_ALIGN(hlen) ------> <---- NLMSG_ALIGN(len) --->
- * +----------------------------+- - -+- - - - - - - - - - -+- - -+
- * |           Header           | Pad |       Payload       | Pad |
- * |      struct nlmsghdr       |     |                     |     |
- * +----------------------------+- - -+- - - - - - - - - - -+- - -+
- * @endcode
- * @code
- *  <-------- GENL_HDRLEN -------> <--- hdrlen -->
- *                                 <------- genlmsg_len(ghdr) ------>
- * +------------------------+- - -+---------------+- - -+------------+
- * | Generic Netlink Header | Pad | Family Header | Pad | Attributes |
- * |    struct genlmsghdr   |     |               |     |            |
- * +------------------------+- - -+---------------+- - -+------------+
- * genlmsg_data(ghdr)--------------^                     ^
- * genlmsg_attrdata(ghdr, hdrlen)-------------------------
- * @endcode
- *
- * @par Example
- * @code
- * #include <netlink/netlink.h>
- * #include <netlink/genl/genl.h>
- * #include <netlink/genl/ctrl.h>
- *
- * struct nl_sock *sock;
- * struct nl_msg *msg;
- * int family;
- *
- * // Allocate a new netlink socket
- * sock = nl_socket_alloc();
- *
- * // Connect to generic netlink socket on kernel side
- * genl_connect(sock);
- *
- * // Ask kernel to resolve family name to family id
- * family = genl_ctrl_resolve(sock, "generic_netlink_family_name");
- *
- * // Construct a generic netlink by allocating a new message, fill in
- * // the header and append a simple integer attribute.
- * msg = nlmsg_alloc();
- * genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, family, 0, NLM_F_ECHO,
- *             CMD_FOO_GET, FOO_VERSION);
- * nla_put_u32(msg, ATTR_FOO, 123);
- *
- * // Send message over netlink socket
- * nl_send_auto_complete(sock, msg);
- *
- * // Free message
- * nlmsg_free(msg);
- *
- * // Prepare socket to receive the answer by specifying the callback
- * // function to be called for valid messages.
- * nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM, parse_cb, NULL);
- *
- * // Wait for the answer and receive it
- * nl_recvmsgs_default(sock);
- *
- * static int parse_cb(struct nl_msg *msg, void *arg)
- * {
- *     struct nlmsghdr *nlh = nlmsg_hdr(msg);
- *     struct nlattr *attrs[ATTR_MAX+1];
- *
- *     // Validate message and parse attributes
- *     genlmsg_parse(nlh, 0, attrs, ATTR_MAX, policy);
- *
- *     if (attrs[ATTR_FOO]) {
- *         uint32_t value = nla_get_u32(attrs[ATTR_FOO]);
- *         ...
- *     }
- *
- *     return 0;
- * }
- * @endcode
  * @{
  */
 
@@ -95,10 +21,27 @@
 #include <netlink/utils.h>
 
 /**
- * @name Socket Creating
+ * @name Generic Netlink Socket
  * @{
  */
 
+/**
+ * Connect a Generic Netlink socket
+ * @arg sk		Unconnected Netlink socket
+ *
+ * This function expects a struct nl_socket object previously allocated via
+ * nl_socket_alloc(). It calls nl_connect() to create the local socket file
+ * descriptor and binds the socket to the \c NETLINK_GENERIC Netlink protocol.
+ *
+ * Using this function is equivalent to:
+ * @code
+ * nl_connect(sk, NETLINK_GENERIC);
+ * @endcode
+ *
+ * @see nl_connect()
+ *
+ * @return 0 on success or a negative error code.
+ */
 int genl_connect(struct nl_sock *sk)
 {
 	return nl_connect(sk, NETLINK_GENERIC);
@@ -107,20 +50,34 @@ int genl_connect(struct nl_sock *sk)
 /** @} */
 
 /**
- * @name Sending
+ * @name Sending Data
  * @{
  */
 
 /**
- * Send trivial generic netlink message
- * @arg sk		Netlink socket.
- * @arg family		Generic netlink family
- * @arg cmd		Command
- * @arg version		Version
- * @arg flags		Additional netlink message flags.
+ * Send a Generic Netlink message consisting only of a header
+ * @arg sk		Generic Netlink socket
+ * @arg family		Numeric family identifier
+ * @arg cmd		Numeric command identifier
+ * @arg version		Interface version
+ * @arg flags		Additional Netlink message flags (optional)
  *
- * Fills out a routing netlink request message and sends it out
- * using nl_send_simple().
+ * This function is a shortcut for sending a Generic Netlink message without
+ * any message payload. The message will only consist of the Netlink and
+ * Generic Netlink headers. The header is constructed based on the specified
+ * parameters and passed on to nl_send_simple() to send it on the specified
+ * socket.
+ *
+ * @par Example:
+ * @code
+ * #include <netlink/genl/genl.h>
+ * #include <linux/genetlink.h>
+ *
+ * err = genl_send_simple(sk, GENL_ID_CTRL, CTRL_CMD_GETFAMILY, CTRL_VERSION,
+ *                        NLM_F_DUMP);
+ * @endcode
+ *
+ * @see nl_send_simple()
  *
  * @return 0 on success or a negative error code.
  */
@@ -137,12 +94,26 @@ int genl_send_simple(struct nl_sock *sk, int family, int cmd,
 
 /** @} */
 
-
 /**
  * @name Message Parsing
  * @{
  */
 
+/**
+ * Validate Generic Netlink message headers
+ * @arg nlh		Pointer to Netlink message header
+ * @arg hdrlen		Length of user header
+ *
+ * Verifies the integrity of the Netlink and Generic Netlink headers by
+ * enforcing the following requirements:
+ *  - Valid Netlink message header (nlmsg_valid_hdr())
+ *  - Presence of a complete Generic Netlink header
+ *  - At least \c hdrlen bytes of payload included after the generic
+ *    netlink header.
+ *
+ * @return A positive integer (true) if the headers are valid or
+ *         0 (false) if not.
+ */
 int genlmsg_valid_hdr(struct nlmsghdr *nlh, int hdrlen)
 {
 	struct genlmsghdr *ghdr;
@@ -157,8 +128,28 @@ int genlmsg_valid_hdr(struct nlmsghdr *nlh, int hdrlen)
 	return 1;
 }
 
+/**
+ * Validate Generic Netlink message including attributes
+ * @arg nlh		Pointer to Netlink message header
+ * @arg hdrlen		Length of user header
+ * @arg maxtype		Maximum attribtue id expected
+ * @arg policy		Attribute validation policy
+ *
+ * Verifies the validity of the Netlink and Generic Netlink headers using
+ * genlmsg_valid_hdr() and calls nla_validate() on the message payload to
+ * verify the integrity of eventual attributes.
+ *
+ * @note You may call genlmsg_parse() directly to perform validation and
+ *       parsing in a single step. 
+ *
+ * @see genlmsg_valid_hdr()
+ * @see nla_validate()
+ * @see genlmsg_parse()
+ *
+ * @return 0 on success or a negative error code.
+ */
 int genlmsg_validate(struct nlmsghdr *nlh, int hdrlen, int maxtype,
-		   struct nla_policy *policy)
+		     struct nla_policy *policy)
 {
 	struct genlmsghdr *ghdr;
 
@@ -170,6 +161,33 @@ int genlmsg_validate(struct nlmsghdr *nlh, int hdrlen, int maxtype,
 			    genlmsg_attrlen(ghdr, hdrlen), maxtype, policy);
 }
 
+/**
+ * Parse Generic Netlink message including attributes
+ * @arg nlh		Pointer to Netlink message header
+ * @arg hdrlen		Length of user header
+ * @arg tb		Array to store parsed attributes
+ * @arg maxtype		Maximum attribute id expected
+ * @arg policy		Attribute validation policy
+ *
+ * Verifies the validity of the Netlink and Generic Netlink headers using
+ * genlmsg_valid_hdr() and calls nla_parse() on the message payload to
+ * parse eventual attributes.
+ *
+ * @par Example:
+ * @code
+ * struct nlattr *attrs[MY_TYPE_MAX+1];
+ *
+ * if ((err = genlsmg_parse(nlmsg_nlh(msg), sizeof(struct my_hdr), attrs,
+ *                          MY_TYPE_MAX, attr_policy)) < 0)
+ * 	// ERROR
+ * @endcode
+ *
+ * @see genlmsg_valid_hdr()
+ * @see genlmsg_validate()
+ * @see nla_parse()
+ *
+ * @return 0 on success or a negative error code.
+ */
 int genlmsg_parse(struct nlmsghdr *nlh, int hdrlen, struct nlattr *tb[],
 		  int maxtype, struct nla_policy *policy)
 {
@@ -184,29 +202,44 @@ int genlmsg_parse(struct nlmsghdr *nlh, int hdrlen, struct nlattr *tb[],
 }
 
 /**
- * Get head of message payload
- * @arg gnlh	genetlink messsage header
+ * Return pointer to message payload
+ * @arg gnlh		Generic Netlink message header
+ *
+ * Calculates the pointer to the message payload based on the pointer
+ * to the generic netlink message header.
+ *
+ * @note Depending on whether your own message format uses a header, the
+ *       returned pointer may in fact point to the user header.
+ *
+ * @return Pointer to generic netlink message
  */
 void *genlmsg_data(const struct genlmsghdr *gnlh)
 {
 	return ((unsigned char *) gnlh + GENL_HDRLEN);
 }
 
+
 /**
- * Get lenght of message payload
- * @arg gnlh	genetlink message header
+ * Return length of message payload
+ * @arg gnlh		Generic Netlink message header
+ *
+ * @return Length of user payload including an eventual user header in
+ *         number of bytes.
  */
 int genlmsg_len(const struct genlmsghdr *gnlh)
 {
-	struct nlmsghdr *nlh = (struct nlmsghdr *)((unsigned char *)gnlh -
-							NLMSG_HDRLEN);
+	struct nlmsghdr *nlh;
+	
+	nlh = (struct nlmsghdr *)((unsigned char *) gnlh - NLMSG_HDRLEN);
 	return (nlh->nlmsg_len - GENL_HDRLEN - NLMSG_HDRLEN);
 }
 
 /**
- * Get head of attribute data
- * @arg gnlh	generic netlink message header
- * @arg hdrlen	length of family specific header
+ * Return pointer to message attributes
+ * @arg gnlh		Generic Netlink message header
+ * @arg hdrlen		Length of user header
+ *
+ * @return Pointer to the start of the message's attributes section.
  */
 struct nlattr *genlmsg_attrdata(const struct genlmsghdr *gnlh, int hdrlen)
 {
@@ -214,9 +247,12 @@ struct nlattr *genlmsg_attrdata(const struct genlmsghdr *gnlh, int hdrlen)
 }
 
 /**
- * Get length of attribute data
- * @arg gnlh	generic netlink message header
- * @arg hdrlen	length of family specific header
+ * Return length of message attributes
+ * @arg gnlh		Generic Netlink message header
+ * @arg hdrlen		Length of user header
+ *
+ * @return Length of the message section containing attributes in number
+ *         of bytes.
  */
 int genlmsg_attrlen(const struct genlmsghdr *gnlh, int hdrlen)
 {
@@ -226,24 +262,45 @@ int genlmsg_attrlen(const struct genlmsghdr *gnlh, int hdrlen)
 /** @} */
 
 /**
- * @name Message Building
+ * @name Message Construction
  * @{
  */
 
 /**
- * Add generic netlink header to netlink message
- * @arg msg		netlink message
- * @arg pid		netlink process id or NL_AUTO_PID
- * @arg seq		sequence number of message or NL_AUTO_SEQ
- * @arg family		generic netlink family
- * @arg hdrlen		length of user specific header
- * @arg flags		message flags
- * @arg cmd		generic netlink command
- * @arg version		protocol version
+ * Add Generic Netlink headers to Netlink message
+ * @arg msg		Netlink message object
+ * @arg port		Netlink port or NL_AUTO_PORT
+ * @arg seq		Sequence number of message or NL_AUTO_SEQ
+ * @arg family		Numeric family identifier
+ * @arg hdrlen		Length of user header
+ * @arg flags		Additional Netlink message flags (optional)
+ * @arg cmd		Numeric command identifier
+ * @arg version		Interface version
  *
- * Returns pointer to user specific header.
+ * Calls nlmsg_put() on the specified message object to reserve space for
+ * the Netlink header, the Generic Netlink header, and a user header of
+ * specified length. Fills out the header fields with the specified
+ * parameters.
+ *
+ * @par Example:
+ * @code
+ * struct nl_msg *msg;
+ * struct my_hdr *user_hdr;
+ *
+ * if (!(msg = nlmsg_alloc()))
+ * 	// ERROR
+ *
+ * user_hdr = genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, family_id,
+ *                        sizeof(struct my_hdr), 0, MY_CMD_FOO, 0);
+ * if (!user_hdr)
+ * 	// ERROR
+ * @endcode
+ *
+ * @see nlmsg_put()
+ *
+ * Returns Pointer to user header or NULL if an error occurred.
  */
-void *genlmsg_put(struct nl_msg *msg, uint32_t pid, uint32_t seq, int family,
+void *genlmsg_put(struct nl_msg *msg, uint32_t port, uint32_t seq, int family,
 		  int hdrlen, int flags, uint8_t cmd, uint8_t version)
 {
 	struct nlmsghdr *nlh;
@@ -252,7 +309,7 @@ void *genlmsg_put(struct nl_msg *msg, uint32_t pid, uint32_t seq, int family,
 		.version = version,
 	};
 
-	nlh = nlmsg_put(msg, pid, seq, family, GENL_HDRLEN + hdrlen, flags);
+	nlh = nlmsg_put(msg, port, seq, family, GENL_HDRLEN + hdrlen, flags);
 	if (nlh == NULL)
 		return NULL;
 

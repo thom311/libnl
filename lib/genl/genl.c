@@ -213,26 +213,10 @@ struct genlmsghdr *genlmsg_hdr(struct nlmsghdr *nlh)
 }
 
 /**
- * Return pointer to message payload
+ * Return length of message payload including user header
  * @arg gnlh		Generic Netlink message header
  *
- * Calculates the pointer to the message payload based on the pointer
- * to the generic netlink message header.
- *
- * @note Depending on whether your own message format uses a header, the
- *       returned pointer may in fact point to the user header.
- *
- * @return Pointer to generic netlink message
- */
-void *genlmsg_data(const struct genlmsghdr *gnlh)
-{
-	return ((unsigned char *) gnlh + GENL_HDRLEN);
-}
-
-
-/**
- * Return length of message payload
- * @arg gnlh		Generic Netlink message header
+ * @see genlmsg_data()
  *
  * @return Length of user payload including an eventual user header in
  *         number of bytes.
@@ -240,9 +224,55 @@ void *genlmsg_data(const struct genlmsghdr *gnlh)
 int genlmsg_len(const struct genlmsghdr *gnlh)
 {
 	struct nlmsghdr *nlh;
-	
+
 	nlh = (struct nlmsghdr *)((unsigned char *) gnlh - NLMSG_HDRLEN);
 	return (nlh->nlmsg_len - GENL_HDRLEN - NLMSG_HDRLEN);
+}
+
+
+/**
+ * Return pointer to user header
+ * @arg gnlh		Generic Netlink message header
+ *
+ * Calculates the pointer to the user header based on the pointer to
+ * the Generic Netlink message header.
+ *
+ * @return Pointer to the user header
+ */
+void *genlmsg_user_hdr(const struct genlmsghdr *gnlh)
+{
+	return genlmsg_data(gnlh);
+}
+
+/**
+ * Return pointer to user data
+ * @arg gnlh		Generic netlink message header
+ * @arg hdrlen		Length of user header
+ *
+ * Calculates the pointer to the user data based on the pointer to
+ * the Generic Netlink message header.
+ *
+ * @see genlmsg_user_datalen()
+ *
+ * @return Pointer to the user data
+ */
+void *genlmsg_user_data(const struct genlmsghdr *gnlh, const int hdrlen)
+{
+	return genlmsg_user_hdr(gnlh) + NLMSG_ALIGN(hdrlen);
+}
+
+/**
+ * Return length of user data
+ * @arg gnlh		Generic Netlink message header
+ * @arg hdrlen		Length of user header
+ *
+ * @see genlmsg_user_data()
+ *
+ * @return Length of user data in bytes
+ */
+int genlmsg_user_datalen(const struct genlmsghdr *gnlh, const int hdrlen)
+{
+	return genlmsg_len(gnlh) - NLMSG_ALIGN(hdrlen);
 }
 
 /**
@@ -250,17 +280,21 @@ int genlmsg_len(const struct genlmsghdr *gnlh)
  * @arg gnlh		Generic Netlink message header
  * @arg hdrlen		Length of user header
  *
+ * @see genlmsg_attrlen()
+ *
  * @return Pointer to the start of the message's attributes section.
  */
 struct nlattr *genlmsg_attrdata(const struct genlmsghdr *gnlh, int hdrlen)
 {
-	return genlmsg_data(gnlh) + NLMSG_ALIGN(hdrlen);
+	return genlmsg_user_data(gnlh, hdrlen);
 }
 
 /**
  * Return length of message attributes
  * @arg gnlh		Generic Netlink message header
  * @arg hdrlen		Length of user header
+ *
+ * @see genlmsg_attrdata()
  *
  * @return Length of the message section containing attributes in number
  *         of bytes.
@@ -333,4 +367,25 @@ void *genlmsg_put(struct nl_msg *msg, uint32_t port, uint32_t seq, int family,
 
 /** @} */
 
+/**
+ * @name Deprecated
+ * @{
+ */
+
+/**
+ * Return pointer to message payload
+ * @arg gnlh		Generic Netlink message header
+ *
+ * @deprecated This function has been deprecated due to inability to specify
+ *             the length of the user header. Use genlmsg_user_hdr()
+ *             respectively genlmsg_user_data().
+ *
+ * @return Pointer to payload section
+ */
+void *genlmsg_data(const struct genlmsghdr *gnlh)
+{
+	return ((unsigned char *) gnlh + GENL_HDRLEN);
+}
+
+/** @} */
 /** @} */

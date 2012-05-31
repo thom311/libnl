@@ -35,6 +35,10 @@ extern int		genlmsg_parse(struct nlmsghdr *, int, struct nlattr **,
 extern struct genlmsghdr *
 			genlmsg_hdr(struct nlmsghdr *);
 extern void *		genlmsg_data(const struct genlmsghdr *);
+extern void *		genlmsg_user_hdr(const struct genlmsghdr *);
+extern void *		genlmsg_user_data(const struct genlmsghdr *, const int);
+extern int		genlmsg_user_datalen(const struct genlmsghdr *,
+					     const int);
 extern int		genlmsg_len(const struct genlmsghdr *);
 extern struct nlattr *	genlmsg_attrdata(const struct genlmsghdr *, int);
 extern int		genlmsg_attrlen(const struct genlmsghdr *, int);

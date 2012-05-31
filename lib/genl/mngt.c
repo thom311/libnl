@@ -60,7 +60,7 @@ found:
 			.who = who,
 			.nlh = nlh,
 			.genlhdr = ghdr,
-			.userhdr = genlmsg_data(ghdr),
+			.userhdr = genlmsg_user_hdr(ghdr),
 			.attrs = tb,
 		};
 

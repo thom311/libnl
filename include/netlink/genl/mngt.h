@@ -166,6 +166,9 @@ extern int		genl_handle_msg(struct nl_msg *, void *);
 extern int		genl_register(struct nl_cache_ops *);
 extern void		genl_unregister(struct nl_cache_ops *);
 
+extern int		genl_ops_resolve(struct nl_sock *, struct genl_ops *);
+extern int		genl_mngt_resolve(struct nl_sock *);
+
 #ifdef __cplusplus
 }
 #endif

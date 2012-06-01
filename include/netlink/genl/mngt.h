@@ -110,16 +110,34 @@ struct genl_cmd
  *
  * Definition of a Generic Netlink family
  *
+ * @par Example:
+ * @code
+ * static struct genl_cmd foo_cmds[] = {
+ * 	[...]
+ * };
+ *
+ * static struct genl_ops my_genl_ops = {
+ * 	.o_name			= "foo",
+ * 	.o_hdrsize		= sizeof(struct my_hdr),
+ * 	.o_cmds			= foo_cmds,
+ * 	.o_ncmds		= ARRAY_SIZE(foo_cmds),
+ * };
+ *
+ * if ((err = genl_register_family(&my_genl_ops)) < 0)
+ * 	// ERROR
+ * @endcode
+ *
  * @see genl_cmd
  */
 struct genl_ops
 {
-	int			o_family;
+	/** Length of user header */
+	unsigned int		o_hdrsize;
 
-	/** Numeric identifier, automatically resolved by genl_mngt_resolve() */
+	/** Numeric identifier, automatically filled in by genl_ops_resolve() */
 	int			o_id;
 
-	/** Human readable name, used to resolve to numeric identifier */
+	/** Human readable name, used by genl_ops_resolve() to resolve numeric id */
 	char *			o_name;
 
 	/**
@@ -128,12 +146,10 @@ struct genl_ops
 	 */
 	struct nl_cache_ops *	o_cache_ops;
 
-	/**
-	 * Can point to an array of generic netlink commands definitions.
-	 */
+	/** Optional array defining the available Generic Netlink commands */
 	struct genl_cmd	*	o_cmds;
 
-	/** Size of \c o_cmds array */
+	/** Number of elements in \c o_cmds array */
 	int			o_ncmds;
 
 	/**
@@ -143,6 +159,9 @@ struct genl_ops
 	struct nl_list_head	o_list;
 };
 
+extern int		genl_register_family(struct genl_ops *);
+extern int		genl_unregister_family(struct genl_ops *);
+extern int		genl_handle_msg(struct nl_msg *, void *);
 
 extern int		genl_register(struct nl_cache_ops *);
 extern void		genl_unregister(struct nl_cache_ops *);

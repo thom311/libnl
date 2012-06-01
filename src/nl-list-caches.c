@@ -81,9 +81,9 @@ static void print(struct nl_cache_ops *ops, void *arg)
 
 		printf("    genl:\n" \
 		       "        name: %s\n" \
-		       "        family: %d\n" \
+		       "        user-hdr: %d\n" \
 		       "        id: %d\n",
-		       genl_ops->o_name, genl_ops->o_family, genl_ops->o_id);
+		       genl_ops->o_name, genl_ops->o_hdrsize, genl_ops->o_id);
 
 		if (genl_ops->o_ncmds) {
 			int i;

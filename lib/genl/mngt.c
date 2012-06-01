@@ -11,7 +11,7 @@
 
 /**
  * @ingroup genl
- * @defgroup genl_mngt Family and Operations Management
+ * @defgroup genl_mngt Family and Command Registration
  *
  * Registering Generic Netlink Families and Commands
  *
@@ -30,28 +30,34 @@
 
 static NL_LIST_HEAD(genl_ops_list);
 
-static int genl_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
-			   struct nlmsghdr *nlh, struct nl_parser_param *pp)
+static struct genl_cmd *lookup_cmd(struct genl_ops *ops, int cmd_id)
 {
-	int i, err;
+	struct genl_cmd *cmd;
+	int i;
+
+	for (i = 0; i < ops->o_ncmds; i++) {
+		cmd = &ops->o_cmds[i];
+		if (cmd->c_id == cmd_id)
+			return cmd;
+	}
+
+	return NULL;
+}
+
+static int cmd_msg_parser(struct sockaddr_nl *who, struct nlmsghdr *nlh,
+			  struct genl_ops *ops, struct nl_cache_ops *cache_ops, void *arg)
+{
+	int err;
 	struct genlmsghdr *ghdr;
 	struct genl_cmd *cmd;
 
-	ghdr = nlmsg_data(nlh);
+	ghdr = genlmsg_hdr(nlh);
 
-	if (ops->co_genl == NULL)
-		BUG();
-
-	for (i = 0; i < ops->co_genl->o_ncmds; i++) {
-		cmd = &ops->co_genl->o_cmds[i];
-		if (cmd->c_id == ghdr->cmd)
-			goto found;
+	if (!(cmd = lookup_cmd(ops, ghdr->cmd))) {
+		err = -NLE_MSGTYPE_NOSUPPORT;
+		goto errout;
 	}
 
-	err = -NLE_MSGTYPE_NOSUPPORT;
-	goto errout;
-
-found:
 	if (cmd->c_msg_parser == NULL)
 		err = -NLE_OPNOTSUPP;
 	else {
@@ -64,16 +70,49 @@ found:
 			.attrs = tb,
 		};
 
-		err = nlmsg_parse(nlh, ops->co_hdrsize, tb, cmd->c_maxattr,
+		err = nlmsg_parse(nlh, GENL_HDRSIZE(ops->o_hdrsize), tb, cmd->c_maxattr,
 				  cmd->c_attr_policy);
 		if (err < 0)
 			goto errout;
 
-		err = cmd->c_msg_parser(ops, cmd, &info, pp);
+		err = cmd->c_msg_parser(cache_ops, cmd, &info, arg);
 	}
 errout:
 	return err;
 
+}
+
+static int genl_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
+			   struct nlmsghdr *nlh, struct nl_parser_param *pp)
+{
+	if (ops->co_genl == NULL)
+		BUG();
+
+	return cmd_msg_parser(who, nlh, ops->co_genl, ops, pp);
+}
+
+static struct genl_ops *lookup_family(int family)
+{
+	struct genl_ops *ops;
+
+	nl_list_for_each_entry(ops, &genl_ops_list, o_list) {
+		if (ops->o_id == family)
+			return ops;
+	}
+
+	return NULL;
+}
+
+static struct genl_ops *lookup_family_by_name(const char *name)
+{
+	struct genl_ops *ops;
+
+	nl_list_for_each_entry(ops, &genl_ops_list, o_list) {
+		if (!strcmp(ops->o_name, name))
+			return ops;
+	}
+
+	return NULL;
 }
 
 char *genl_op2name(int family, int op, char *buf, size_t len)
@@ -81,16 +120,14 @@ char *genl_op2name(int family, int op, char *buf, size_t len)
 	struct genl_ops *ops;
 	int i;
 
-	nl_list_for_each_entry(ops, &genl_ops_list, o_list) {
-		if (ops->o_family == family) {
-			for (i = 0; i < ops->o_ncmds; i++) {
-				struct genl_cmd *cmd;
-				cmd = &ops->o_cmds[i];
+	if ((ops = lookup_family(family))) {
+		for (i = 0; i < ops->o_ncmds; i++) {
+			struct genl_cmd *cmd;
+			cmd = &ops->o_cmds[i];
 
-				if (cmd->c_id == op) {
-					strncpy(buf, cmd->c_name, len - 1);
-					return buf;
-				}
+			if (cmd->c_id == op) {
+				strncpy(buf, cmd->c_name, len - 1);
+				return buf;
 			}
 		}
 	}
@@ -102,13 +139,102 @@ char *genl_op2name(int family, int op, char *buf, size_t len)
 /** @endcond */
 
 /**
- * @name Registration (Cache Based)
+ * @name Registration
+ * @{
+ */
+
+/**
+ * Register Generic Netlink family and associated commands
+ * @arg ops		Generic Netlink family definition
+ *
+ * Registers the specified Generic Netlink family definition together with
+ * all associated commands. After registration, received Generic Netlink
+ * messages can be passed to genl_handle_msg() which will validate the
+ * messages, look for a matching command and call the respective callback
+ * function automatically.
+ *
+ * @note Consider using genl_register() if the family is used to implement a
+ *       cacheable type.
+ *
+ * @see genl_unregister_family();
+ * @see genl_register();
+ *
+ * @return 0 on success or a negative error code.
+ */
+int genl_register_family(struct genl_ops *ops)
+{
+	if (!ops->o_name)
+		return -NLE_INVAL;
+
+	if (ops->o_cmds && ops->o_ncmds <= 0)
+		return -NLE_INVAL;
+
+	if (ops->o_id && lookup_family(ops->o_id))
+		return -NLE_EXIST;
+
+	if (lookup_family_by_name(ops->o_name))
+		return -NLE_EXIST;
+
+	nl_list_add_tail(&ops->o_list, &genl_ops_list);
+
+	return 0;
+}
+
+/**
+ * Unregister Generic Netlink family
+ * @arg ops		Generic Netlink family definition
+ *
+ * Unregisters a family and all associated commands that were previously
+ * registered using genl_register_family().
+ *
+ * @see genl_register_family()
+ *
+ * @return 0 on success or a negative error code.
+ */
+int genl_unregister_family(struct genl_ops *ops)
+{
+	nl_list_del(&ops->o_list);
+
+	return 0;
+}
+
+/**
+ * Run a received message through the demultiplexer
+ * @arg msg		Generic Netlink message
+ * @arg arg		Argument passed on to the message handler callback
+ *
+ * @return 0 on success or a negative error code.
+ */
+int genl_handle_msg(struct nl_msg *msg, void *arg)
+{
+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+	struct genl_ops *ops;
+
+	if (!genlmsg_valid_hdr(nlh, 0))
+		return -NLE_INVAL;
+
+	if (!(ops = lookup_family(nlh->nlmsg_type)))
+		return -NLE_MSGTYPE_NOSUPPORT;
+
+	return cmd_msg_parser(nlmsg_get_src(msg), nlh, ops, NULL, arg);
+}
+
+/** @} */
+
+/**
+ * @name Registration of Cache Operations
  * @{
  */
 
 /**
  * Register Generic Netlink family backed cache
  * @arg ops		Cache operations definition
+ *
+ * Same as genl_register_family() but additionally registers the specified
+ * cache operations using nl_cache_mngt_register() and associates it with
+ * the Generic Netlink family.
+ *
+ * @see genl_register_family()
  *
  * @return 0 on success or a negative error code.
  */
@@ -132,13 +258,13 @@ int genl_register(struct nl_cache_ops *ops)
 	}
 
 	ops->co_genl->o_cache_ops = ops;
+	ops->co_genl->o_hdrsize = ops->co_hdrsize - GENL_HDRLEN;
 	ops->co_genl->o_name = ops->co_msgtypes[0].mt_name;
-	ops->co_genl->o_family = ops->co_msgtypes[0].mt_id;
+	ops->co_genl->o_id = ops->co_msgtypes[0].mt_id;
 	ops->co_msg_parser = genl_msg_parser;
 
-	/* FIXME: check for dup */
-
-	nl_list_add_tail(&ops->co_genl->o_list, &genl_ops_list);
+	if ((err = genl_register_family(ops->co_genl)) < 0)
+		goto errout;
 
 	err = nl_cache_mngt_register(ops);
 errout:
@@ -155,7 +281,8 @@ void genl_unregister(struct nl_cache_ops *ops)
 		return;
 
 	nl_cache_mngt_unregister(ops);
-	nl_list_del(&ops->co_genl->o_list);
+
+	genl_unregister_family(ops->co_genl);
 }
 
 /** @} */

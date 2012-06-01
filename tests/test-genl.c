@@ -84,6 +84,9 @@ int main(int argc, char *argv[])
 	if ((err = genl_ops_resolve(sock, &ops)) < 0)
 		nl_cli_fatal(err, "Unable to resolve family name");
 
+	if (genl_ctrl_resolve(sock, "nlctrl") != GENL_ID_CTRL)
+		nl_cli_fatal(NLE_INVAL, "Resolving of \"nlctrl\" failed");
+
 	msg = nlmsg_alloc();
 	if (msg == NULL)
 		nl_cli_fatal(NLE_NOMEM, "Unable to allocate netlink message");

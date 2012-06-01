@@ -61,6 +61,47 @@ static struct nla_policy family_grp_policy[CTRL_ATTR_MCAST_GRP_MAX+1] = {
 	[CTRL_ATTR_MCAST_GRP_ID]   = { .type = NLA_U32 },
 };
 
+static int parse_mcast_grps(struct genl_family *family, struct nlattr *grp_attr)
+{
+	struct nlattr *nla;
+	int remaining, err;
+
+	if (!grp_attr)
+		BUG();
+
+	nla_for_each_nested(nla, grp_attr, remaining) {
+		struct nlattr *tb[CTRL_ATTR_MCAST_GRP_MAX+1];
+		int id;
+		const char * name;
+
+		err = nla_parse_nested(tb, CTRL_ATTR_MCAST_GRP_MAX, nla,
+				       family_grp_policy);
+		if (err < 0)
+			goto errout;
+
+		if (tb[CTRL_ATTR_MCAST_GRP_ID] == NULL) {
+			err = -NLE_MISSING_ATTR;
+			goto errout;
+		}
+		id = nla_get_u32(tb[CTRL_ATTR_MCAST_GRP_ID]);
+
+		if (tb[CTRL_ATTR_MCAST_GRP_NAME] == NULL) {
+			err = -NLE_MISSING_ATTR;
+			goto errout;
+		}
+		name = nla_get_string(tb[CTRL_ATTR_MCAST_GRP_NAME]);
+
+		err = genl_family_add_grp(family, id, name);
+		if (err < 0)
+			goto errout;
+	}
+
+	err = 0;
+
+errout:
+	return err;
+}
+
 static int ctrl_msg_parser(struct nl_cache_ops *ops, struct genl_cmd *cmd,
 			   struct genl_info *info, void *arg)
 {
@@ -137,37 +178,9 @@ static int ctrl_msg_parser(struct nl_cache_ops *ops, struct genl_cmd *cmd,
 	}
 	
 	if (info->attrs[CTRL_ATTR_MCAST_GROUPS]) {
-		struct nlattr *nla, *nla_grps;
-		int remaining;
-
-		nla_grps = info->attrs[CTRL_ATTR_MCAST_GROUPS];
-		nla_for_each_nested(nla, nla_grps, remaining) {
-			struct nlattr *tb[CTRL_ATTR_MCAST_GRP_MAX+1];
-			int id;
-			const char * name;
-
-			err = nla_parse_nested(tb, CTRL_ATTR_MCAST_GRP_MAX, nla,
-					       family_grp_policy);
-			if (err < 0)
-				goto errout;
-
-			if (tb[CTRL_ATTR_MCAST_GRP_ID] == NULL) {
-				err = -NLE_MISSING_ATTR;
-				goto errout;
-			}
-			id = nla_get_u32(tb[CTRL_ATTR_MCAST_GRP_ID]);
-
-			if (tb[CTRL_ATTR_MCAST_GRP_NAME] == NULL) {
-				err = -NLE_MISSING_ATTR;
-				goto errout;
-			}
-			name = nla_get_string(tb[CTRL_ATTR_MCAST_GRP_NAME]);
-
-			err = genl_family_add_grp(family, id, name);
-			if (err < 0)
-				goto errout;
-		}
-
+		err = parse_mcast_grps(family, info->attrs[CTRL_ATTR_MCAST_GROUPS]);
+		if (err < 0)
+			goto errout;
 	}
 
 	err = pp->pp_cb((struct nl_object *) family, pp);
@@ -175,6 +188,104 @@ errout:
 	genl_family_put(family);
 	return err;
 }
+
+/**
+ * process responses from from the query sent by genl_ctrl_probe_by_name 
+ * @arg nl_msg		Returned message.
+ * @arg name		genl_family structure to fill out.
+ *
+ * Process returned messages, filling out the missing informatino in the
+ * genl_family structure
+ *
+ * @return Indicator to keep processing frames or not
+ *
+ */
+static int probe_response(struct nl_msg *msg, void *arg)
+{
+	struct nlattr *tb[CTRL_ATTR_MAX+1];
+	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+	struct genl_family *ret = (struct genl_family *)arg;
+
+	if (genlmsg_parse(nlh, 0, tb, CTRL_ATTR_MAX, ctrl_policy))
+		return NL_SKIP;
+
+	if (tb[CTRL_ATTR_FAMILY_ID])
+		genl_family_set_id(ret, nla_get_u16(tb[CTRL_ATTR_FAMILY_ID]));
+
+	if (tb[CTRL_ATTR_MCAST_GROUPS])
+		if (parse_mcast_grps(ret, tb[CTRL_ATTR_MCAST_GROUPS]) < 0)
+			return NL_SKIP;
+
+	return NL_STOP;
+}
+
+/**
+ * Look up generic netlink family by family name querying the kernel directly
+ * @arg sk		Socket.
+ * @arg name		Family name.
+ *
+ * Directly query's the kernel for a given family name.  The caller will own a
+ * reference on the returned object which needsd to be given back after usage
+ * using genl_family_put.
+ *
+ * Note: This API call differs from genl_ctrl_search_by_name in that it querys
+ * the kernel directly, alowing for module autoload to take place to resolve the
+ * family request. Using an nl_cache prevents that operation
+ *
+ * @return Generic netlink family object or NULL if no match was found.
+ */
+static struct genl_family *genl_ctrl_probe_by_name(struct nl_sock *sk, const char *name)
+{
+	struct nl_msg *msg;
+	struct genl_family *ret = NULL;
+	struct nl_cb *cb;
+	int rc;
+
+	ret = genl_family_alloc();
+	if (!ret)
+		goto out;
+
+	genl_family_set_name(ret, name);
+
+	msg = nlmsg_alloc();
+	if (!msg)
+		goto out_fam_free;
+
+	if (!(cb = nl_cb_clone(nl_socket_get_cb(sk))))
+		goto out_msg_free;
+
+
+	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, GENL_ID_CTRL,
+		    0, 0, CTRL_CMD_GETFAMILY, 1);
+
+	if (nla_put_string(msg, CTRL_ATTR_FAMILY_NAME, name))
+		goto out_cb_free;
+
+	rc = nl_send_auto_complete(sk, msg);
+	if (rc < 0)
+		goto out_cb_free;
+
+	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, probe_response, (void *)ret);
+
+	nl_recvmsgs(sk, cb);
+
+	if (genl_family_get_id(ret) != 0) {
+		nlmsg_free(msg);
+		nl_cb_put(cb);
+		return ret;
+	}
+
+out_cb_free:
+	nl_cb_put(cb);
+out_msg_free:
+	nlmsg_free(msg);
+out_fam_free:
+	genl_family_put(ret);
+	ret = NULL;
+out:
+	return ret;
+}
+
 
 /** @endcond */
 
@@ -299,14 +410,10 @@ struct genl_family *genl_ctrl_search_by_name(struct nl_cache *cache,
  */
 int genl_ctrl_resolve(struct nl_sock *sk, const char *name)
 {
-	struct nl_cache *cache;
 	struct genl_family *family;
 	int err;
 
-	if ((err = genl_ctrl_alloc_cache(sk, &cache)) < 0)
-		return err;
-
-	family = genl_ctrl_search_by_name(cache, name);
+	family = genl_ctrl_probe_by_name(sk, name);
 	if (family == NULL) {
 		err = -NLE_OBJ_NOTFOUND;
 		goto errout;
@@ -315,8 +422,6 @@ int genl_ctrl_resolve(struct nl_sock *sk, const char *name)
 	err = genl_family_get_id(family);
 	genl_family_put(family);
 errout:
-	nl_cache_free(cache);
-
 	return err;
 }
 
@@ -348,14 +453,11 @@ static int genl_ctrl_grp_by_name(const struct genl_family *family,
 int genl_ctrl_resolve_grp(struct nl_sock *sk, const char *family_name,
 			  const char *grp_name)
 {
-	struct nl_cache *cache;
+
 	struct genl_family *family;
 	int err;
 
-	if ((err = genl_ctrl_alloc_cache(sk, &cache)) < 0)
-		return err;
-
-	family = genl_ctrl_search_by_name(cache, family_name);
+	family = genl_ctrl_probe_by_name(sk, family_name);
 	if (family == NULL) {
 		err = -NLE_OBJ_NOTFOUND;
 		goto errout;
@@ -364,8 +466,6 @@ int genl_ctrl_resolve_grp(struct nl_sock *sk, const char *family_name,
 	err = genl_ctrl_grp_by_name(family, grp_name);
 	genl_family_put(family);
 errout:
-	nl_cache_free(cache);
-
 	return err;
 }
 

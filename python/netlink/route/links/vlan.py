@@ -6,9 +6,11 @@
 
 """
 
-import netlink.core as netlink
-import netlink.route.capi as capi
+from __future__ import absolute_import
 
+
+from ... import core as netlink
+from ..  import capi as capi
 class VLANLink(object):
 	def __init__(self, link):
         	self._link = link

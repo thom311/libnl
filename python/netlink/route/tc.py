@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2011 Thomas Graf <tgraf@suug.ch>
 #
+from __future__ import absolute_import
 
 __all__ = [
 	'TcCache',
@@ -12,12 +13,11 @@ __all__ = [
 
 import socket
 import sys
-import netlink.core as netlink
-import netlink.capi as core_capi
-import netlink.route.capi as capi
-import netlink.util as util
-
-import netlink.route.link as Link
+from .. import core as netlink
+from .. import capi as core_capi
+from .  import capi as capi
+from .. import util as util
+from .  import link as Link
 
 TC_PACKETS = 0
 TC_BYTES = 1

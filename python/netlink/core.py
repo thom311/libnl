@@ -25,8 +25,11 @@ The following exceptions are defined:
 All other classes or functions in this module are considered implementation
 details.
 """
+from __future__ import absolute_import
 
-import capi
+
+
+from . import capi
 import sys
 import socket
 import struct

@@ -34,6 +34,8 @@ The following public functions exist:
 
 """
 
+from __future__ import absolute_import
+
 __version__ = "0.1"
 __all__ = [
 	'LinkCache',
@@ -42,11 +44,11 @@ __all__ = [
 
 import socket
 import sys
-import netlink.core as netlink
-import netlink.capi as core_capi
-import netlink.route.capi as capi
-import netlink.route.links.inet as inet
-import netlink.util as util
+from .. import core as netlink
+from .. import capi as core_capi
+from .  import capi as capi
+from .links  import inet as inet
+from .. import util as util
 
 ###########################################################################
 # Link statistics definitions

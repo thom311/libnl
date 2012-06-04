@@ -6,12 +6,13 @@
 
 """
 
+from __future__ import absolute_import
+
 __all__ = ['']
 
-import netlink.core as netlink
-import netlink.route.capi as capi
-import netlink.util as util
-
+from ... import core as netlink
+from ..  import capi as capi
+from ... import util as util
 DEVCONF_FORWARDING = 1
 DEVCONF_MC_FORWARDING = 2
 DEVCONF_PROXY_ARP = 3

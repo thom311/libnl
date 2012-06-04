@@ -5,17 +5,20 @@
 """Module providing access to network addresses
 """
 
+from __future__ import absolute_import
+
+
 __version__ = "1.0"
 __all__ = [
 	'AddressCache',
 	'Address']
 
 import datetime
-import netlink.core as netlink
-import netlink.capi as core_capi
-import netlink.route.capi as capi
-import netlink.route.link as Link
-import netlink.util as util
+from .. import core as netlink
+from .. import capi as core_capi
+from .  import capi as capi
+from .  import link as Link
+from .. import util as util
 
 ###########################################################################
 # Address Cache

@@ -8,8 +8,10 @@
 
 """
 
-import netlink.core as netlink
-import netlink.capi as capi
+from __future__ import absolute_import
+
+from . import core as netlink
+from . import capi as capi
 from string import Formatter
 
 __version__ = "1.0"

@@ -6,10 +6,12 @@
 
 """
 
-import netlink.core as netlink
-import netlink.util as util
-import netlink.route.capi as capi
-import netlink.route.tc as tc
+from __future__ import absolute_import
+
+from ... import core as netlink
+from ... import util as util
+from ..  import capi as capi
+from ..  import tc as tc
 
 class HTBQdisc(object):
 	def __init__(self, qdisc):

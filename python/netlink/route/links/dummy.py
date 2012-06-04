@@ -14,12 +14,12 @@ __all__ = ['init']
 from ... import core as netlink
 from ..  import capi as capi
 class DummyLink(object):
-	def __init__(self, link):
-        	self._rtnl_link = link
+    def __init__(self, link):
+        self._rtnl_link = link
 
-	def brief(self):
-        	return 'dummy'
+    def brief(self):
+        return 'dummy'
 
 def init(link):
-	link.dummy = DummyLink(link._rtnl_link)
-        return link.dummy
+    link.dummy = DummyLink(link._rtnl_link)
+    return link.dummy

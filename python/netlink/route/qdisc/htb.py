@@ -14,150 +14,150 @@ from ..  import capi as capi
 from ..  import tc as tc
 
 class HTBQdisc(object):
-	def __init__(self, qdisc):
-        	self._qdisc = qdisc
+    def __init__(self, qdisc):
+        self._qdisc = qdisc
 
-	###################################################################
-	# default class
-        @netlink.nlattr('qdisc.htb.default_class', type=int)
-	@property
-        def default_class(self):
-        	return tc.Handle(capi.rtnl_htb_get_defcls(self._qdisc._rtnl_qdisc))
+    ###################################################################
+    # default class
+    @netlink.nlattr('qdisc.htb.default_class', type=int)
+    @property
+    def default_class(self):
+        return tc.Handle(capi.rtnl_htb_get_defcls(self._qdisc._rtnl_qdisc))
 
-        @default_class.setter
-        def default_class(self, value):
-                capi.rtnl_htb_set_defcls(self._qdisc._rtnl_qdisc, int(value))
+    @default_class.setter
+    def default_class(self, value):
+        capi.rtnl_htb_set_defcls(self._qdisc._rtnl_qdisc, int(value))
 
-	#####################################################################
-	# r2q
-        @netlink.nlattr('qdisc.htb.r2q', type=int)
-	@property
-        def r2q(self):
-        	return capi.rtnl_htb_get_rate2quantum(self._qdisc._rtnl_qdisc)
+    #####################################################################
+    # r2q
+    @netlink.nlattr('qdisc.htb.r2q', type=int)
+    @property
+    def r2q(self):
+        return capi.rtnl_htb_get_rate2quantum(self._qdisc._rtnl_qdisc)
 
-        @r2q.setter
-        def r2q(self, value):
-                capi.rtnl_htb_get_rate2quantum(self._qdisc._rtnl_qdisc,
-                			       int(value))
+    @r2q.setter
+    def r2q(self, value):
+        capi.rtnl_htb_get_rate2quantum(self._qdisc._rtnl_qdisc,
+                           int(value))
 
-	def brief(self):
-		fmt = util.MyFormatter(self)
+    def brief(self):
+        fmt = util.MyFormatter(self)
 
-		ret = ' {s|default-class!k} {a|default_class}'
+        ret = ' {s|default-class!k} {a|default_class}'
 
-                if self.r2q:
-                        ret += ' {s|r2q!k} {a|r2q}'
+        if self.r2q:
+            ret += ' {s|r2q!k} {a|r2q}'
 
-                return fmt.format(ret)
+        return fmt.format(ret)
 
 class HTBClass(object):
-	def __init__(self, cl):
-        	self._class = cl
+    def __init__(self, cl):
+        self._class = cl
 
-	#####################################################################
-	# rate
-        @netlink.nlattr('class.htb.rate', type=str)
-	@property
-        def rate(self):
-        	rate = capi.rtnl_htb_get_rate(self._class._rtnl_class)
-                return util.Rate(rate)
+    #####################################################################
+    # rate
+    @netlink.nlattr('class.htb.rate', type=str)
+    @property
+    def rate(self):
+        rate = capi.rtnl_htb_get_rate(self._class._rtnl_class)
+        return util.Rate(rate)
 
-	@rate.setter
-        def rate(self, value):
-        	capi.rtnl_htb_set_rate(self._class._rtnl_class, int(value))
+    @rate.setter
+    def rate(self, value):
+        capi.rtnl_htb_set_rate(self._class._rtnl_class, int(value))
 
-	#####################################################################
-	# ceil
-        @netlink.nlattr('class.htb.ceil', type=str)
-	@property
-        def ceil(self):
-        	ceil = capi.rtnl_htb_get_ceil(self._class._rtnl_class)
-                return util.Rate(ceil)
+    #####################################################################
+    # ceil
+    @netlink.nlattr('class.htb.ceil', type=str)
+    @property
+    def ceil(self):
+        ceil = capi.rtnl_htb_get_ceil(self._class._rtnl_class)
+        return util.Rate(ceil)
 
-	@ceil.setter
-        def ceil(self, value):
-        	capi.rtnl_htb_set_ceil(self._class._rtnl_class, int(value))
+    @ceil.setter
+    def ceil(self, value):
+        capi.rtnl_htb_set_ceil(self._class._rtnl_class, int(value))
 
-	#####################################################################
-	# burst
-        @netlink.nlattr('class.htb.burst', type=str)
-	@property
-        def burst(self):
-        	burst = capi.rtnl_htb_get_rbuffer(self._class._rtnl_class)
-                return util.Size(burst)
+    #####################################################################
+    # burst
+    @netlink.nlattr('class.htb.burst', type=str)
+    @property
+    def burst(self):
+        burst = capi.rtnl_htb_get_rbuffer(self._class._rtnl_class)
+        return util.Size(burst)
 
-	@burst.setter
-        def burst(self, value):
-        	capi.rtnl_htb_set_rbuffer(self._class._rtnl_class, int(value))
+    @burst.setter
+    def burst(self, value):
+        capi.rtnl_htb_set_rbuffer(self._class._rtnl_class, int(value))
 
-	#####################################################################
-	# ceil burst
-        @netlink.nlattr('class.htb.ceil_burst', type=str)
-	@property
-        def ceil_burst(self):
-        	burst = capi.rtnl_htb_get_cbuffer(self._class._rtnl_class)
-                return util.Size(burst)
+    #####################################################################
+    # ceil burst
+    @netlink.nlattr('class.htb.ceil_burst', type=str)
+    @property
+    def ceil_burst(self):
+        burst = capi.rtnl_htb_get_cbuffer(self._class._rtnl_class)
+        return util.Size(burst)
 
-	@ceil_burst.setter
-        def ceil_burst(self, value):
-        	capi.rtnl_htb_set_cbuffer(self._class._rtnl_class, int(value))
+    @ceil_burst.setter
+    def ceil_burst(self, value):
+        capi.rtnl_htb_set_cbuffer(self._class._rtnl_class, int(value))
 
-	#####################################################################
-	# priority
-        @netlink.nlattr('class.htb.prio', type=int)
-	@property
-        def prio(self):
-        	return capi.rtnl_htb_get_prio(self._class._rtnl_class)
+    #####################################################################
+    # priority
+    @netlink.nlattr('class.htb.prio', type=int)
+    @property
+    def prio(self):
+        return capi.rtnl_htb_get_prio(self._class._rtnl_class)
 
-	@prio.setter
-        def prio(self, value):
-        	capi.rtnl_htb_set_prio(self._class._rtnl_class, int(value))
+    @prio.setter
+    def prio(self, value):
+        capi.rtnl_htb_set_prio(self._class._rtnl_class, int(value))
 
-	#####################################################################
-	# quantum
-        @netlink.nlattr('class.htb.quantum', type=int)
-	@property
-        def quantum(self):
-        	return capi.rtnl_htb_get_quantum(self._class._rtnl_class)
+    #####################################################################
+    # quantum
+    @netlink.nlattr('class.htb.quantum', type=int)
+    @property
+    def quantum(self):
+        return capi.rtnl_htb_get_quantum(self._class._rtnl_class)
 
-	@quantum.setter
-        def quantum(self, value):
-        	capi.rtnl_htb_set_quantum(self._class._rtnl_class, int(value))
+    @quantum.setter
+    def quantum(self, value):
+        capi.rtnl_htb_set_quantum(self._class._rtnl_class, int(value))
 
-	#####################################################################
-	# level
-        @netlink.nlattr('class.htb.level', type=int)
-	@property
-        def level(self):
-        	level = capi.rtnl_htb_get_level(self._class._rtnl_class)
+    #####################################################################
+    # level
+    @netlink.nlattr('class.htb.level', type=int)
+    @property
+    def level(self):
+        level = capi.rtnl_htb_get_level(self._class._rtnl_class)
 
-	@level.setter
-        def level(self, value):
-        	capi.rtnl_htb_set_level(self._class._rtnl_class, int(value))
+    @level.setter
+    def level(self, value):
+        capi.rtnl_htb_set_level(self._class._rtnl_class, int(value))
 
-        def brief(self):
-		fmt = util.MyFormatter(self)
+    def brief(self):
+        fmt = util.MyFormatter(self)
 
-		ret = ' {t|prio} {t|rate}'
+        ret = ' {t|prio} {t|rate}'
 
-                if self.rate != self.ceil:
-                        ret += ' {s|borrow-up-to!k} {a|ceil}'
+        if self.rate != self.ceil:
+            ret += ' {s|borrow-up-to!k} {a|ceil}'
 
-                ret += ' {t|burst}'
+        ret += ' {t|burst}'
 
-                return fmt.format(ret)
+        return fmt.format(ret)
 
-	def details(self):
-		fmt = util.MyFormatter(self)
+    def details(self):
+        fmt = util.MyFormatter(self)
 
-                return fmt.nl('\t{t|level} {t|quantum}')
+        return fmt.nl('\t{t|level} {t|quantum}')
 
 def init_qdisc(qdisc):
-	qdisc.htb = HTBQdisc(qdisc)
-        return qdisc.htb
+    qdisc.htb = HTBQdisc(qdisc)
+    return qdisc.htb
 
 def init_class(cl):
-	cl.htb = HTBClass(cl)
-        return cl.htb
+    cl.htb = HTBClass(cl)
+    return cl.htb
 
 #extern void rtnl_htb_set_quantum(struct rtnl_class *, uint32_t quantum);

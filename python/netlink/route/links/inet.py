@@ -41,98 +41,98 @@ DEVCONF_PROXY_ARP_PVLAN = 25
 DEVCONF_MAX = DEVCONF_PROXY_ARP_PVLAN
 
 def _resolve(id):
-	if type(id) is str:
-		id = capi.rtnl_link_inet_str2devconf(id)[0]
-		if id < 0:
-			raise NameError("unknown configuration id")
-	return id
+    if type(id) is str:
+        id = capi.rtnl_link_inet_str2devconf(id)[0]
+        if id < 0:
+            raise NameError("unknown configuration id")
+    return id
 
 class InetLink(object):
-	def __init__(self, link):
-        	self._link = link
+    def __init__(self, link):
+        self._link = link
 
-	def details(self, fmt):
-		buf = fmt.nl('\n\t{0}\n\t'.format(util.title('Configuration:')))
+    def details(self, fmt):
+        buf = fmt.nl('\n\t{0}\n\t'.format(util.title('Configuration:')))
 
-		for i in range(DEVCONF_FORWARDING,DEVCONF_MAX+1):
-			if i & 1 and i > 1:
-				buf += fmt.nl('\t')
-			txt = util.kw(capi.rtnl_link_inet_devconf2str(i, 32)[0])
-			buf += fmt.format('{0:28s} {1:12}  ', txt,
-					  self.get_conf(i))
+        for i in range(DEVCONF_FORWARDING,DEVCONF_MAX+1):
+            if i & 1 and i > 1:
+                buf += fmt.nl('\t')
+            txt = util.kw(capi.rtnl_link_inet_devconf2str(i, 32)[0])
+            buf += fmt.format('{0:28s} {1:12}  ', txt,
+                      self.get_conf(i))
 
 
-		return buf
+        return buf
 
-	def get_conf(self, id):
-		return capi.inet_get_conf(self._link._rtnl_link, _resolve(id))
+    def get_conf(self, id):
+        return capi.inet_get_conf(self._link._rtnl_link, _resolve(id))
 
-	def set_conf(self, id, value):
-		return capi.rtnl_link_inet_set_conf(self._link._rtnl_link,
-                				_resolve(id), int(value))
+    def set_conf(self, id, value):
+        return capi.rtnl_link_inet_set_conf(self._link._rtnl_link,
+                        _resolve(id), int(value))
 
-        @netlink.nlattr('link.inet.forwarding', type=bool, fmt=util.bool)
-	@property
-	def forwarding(self):
-		return bool(self.get_conf(DEVCONF_FORWARDING))
+    @netlink.nlattr('link.inet.forwarding', type=bool, fmt=util.bool)
+    @property
+    def forwarding(self):
+        return bool(self.get_conf(DEVCONF_FORWARDING))
 
-	@forwarding.setter
-	def forwarding(self, value):
-		self.set_conf(DEVCONF_FORWARDING, int(value))
+    @forwarding.setter
+    def forwarding(self, value):
+        self.set_conf(DEVCONF_FORWARDING, int(value))
 
-        @netlink.nlattr('link.inet.mc_forwarding', type=bool, fmt=util.bool)
-	@property
-	def mc_forwarding(self):
-		return bool(self.get_conf(DEVCONF_MC_FORWARDING))
+    @netlink.nlattr('link.inet.mc_forwarding', type=bool, fmt=util.bool)
+    @property
+    def mc_forwarding(self):
+        return bool(self.get_conf(DEVCONF_MC_FORWARDING))
 
-	@mc_forwarding.setter
-	def mc_forwarding(self, value):
-		self.set_conf(DEVCONF_MC_FORWARDING, int(value))
+    @mc_forwarding.setter
+    def mc_forwarding(self, value):
+        self.set_conf(DEVCONF_MC_FORWARDING, int(value))
 
-        @netlink.nlattr('link.inet.proxy_arp', type=bool, fmt=util.bool)
-	@property
-	def proxy_arp(self):
-		return bool(self.get_conf(DEVCONF_PROXY_ARP))
+    @netlink.nlattr('link.inet.proxy_arp', type=bool, fmt=util.bool)
+    @property
+    def proxy_arp(self):
+        return bool(self.get_conf(DEVCONF_PROXY_ARP))
 
-	@proxy_arp.setter
-	def proxy_arp(self, value):
-		self.set_conf(DEVCONF_PROXY_ARP, int(value))
+    @proxy_arp.setter
+    def proxy_arp(self, value):
+        self.set_conf(DEVCONF_PROXY_ARP, int(value))
 
-        @netlink.nlattr('link.inet.accept_redirects', type=bool, fmt=util.bool)
-	@property
-	def accept_redirects(self):
-		return bool(self.get_conf(DEVCONF_ACCEPT_REDIRECTS))
+    @netlink.nlattr('link.inet.accept_redirects', type=bool, fmt=util.bool)
+    @property
+    def accept_redirects(self):
+        return bool(self.get_conf(DEVCONF_ACCEPT_REDIRECTS))
 
-	@accept_redirects.setter
-	def accept_redirects(self, value):
-		self.set_conf(DEVCONF_ACCEPT_REDIRECTS, int(value))
+    @accept_redirects.setter
+    def accept_redirects(self, value):
+        self.set_conf(DEVCONF_ACCEPT_REDIRECTS, int(value))
 
-        @netlink.nlattr('link.inet.secure_redirects', type=bool, fmt=util.bool)
-	@property
-	def secure_redirects(self):
-		return bool(self.get_conf(DEVCONF_SECURE_REDIRECTS))
+    @netlink.nlattr('link.inet.secure_redirects', type=bool, fmt=util.bool)
+    @property
+    def secure_redirects(self):
+        return bool(self.get_conf(DEVCONF_SECURE_REDIRECTS))
 
-	@secure_redirects.setter
-	def secure_redirects(self, value):
-		self.set_conf(DEVCONF_SECURE_REDIRECTS, int(value))
+    @secure_redirects.setter
+    def secure_redirects(self, value):
+        self.set_conf(DEVCONF_SECURE_REDIRECTS, int(value))
 
-        @netlink.nlattr('link.inet.send_redirects', type=bool, fmt=util.bool)
-	@property
-	def send_redirects(self):
-		return bool(self.get_conf(DEVCONF_SEND_REDIRECTS))
+    @netlink.nlattr('link.inet.send_redirects', type=bool, fmt=util.bool)
+    @property
+    def send_redirects(self):
+        return bool(self.get_conf(DEVCONF_SEND_REDIRECTS))
 
-	@send_redirects.setter
-	def send_redirects(self, value):
-		self.set_conf(DEVCONF_SEND_REDIRECTS, int(value))
+    @send_redirects.setter
+    def send_redirects(self, value):
+        self.set_conf(DEVCONF_SEND_REDIRECTS, int(value))
 
-        @netlink.nlattr('link.inet.shared_media', type=bool, fmt=util.bool)
-	@property
-	def shared_media(self):
-		return bool(self.get_conf(DEVCONF_SHARED_MEDIA))
+    @netlink.nlattr('link.inet.shared_media', type=bool, fmt=util.bool)
+    @property
+    def shared_media(self):
+        return bool(self.get_conf(DEVCONF_SHARED_MEDIA))
 
-	@shared_media.setter
-	def shared_media(self, value):
-		self.set_conf(DEVCONF_SHARED_MEDIA, int(value))
+    @shared_media.setter
+    def shared_media(self, value):
+        self.set_conf(DEVCONF_SHARED_MEDIA, int(value))
 
 #	IPV4_DEVCONF_RP_FILTER,
 #	IPV4_DEVCONF_ACCEPT_SOURCE_ROUTE,

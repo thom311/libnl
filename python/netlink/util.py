@@ -17,7 +17,7 @@ from string import Formatter
 __version__ = "1.0"
 
 def _color(t, c):
-	return chr(0x1b)+"["+str(c)+"m"+str(t)+chr(0x1b)+"[0m"
+	return b'{esc}[{color}m{text}{esc}[0m'.format(esc=b'\x1b', color=c, text=t)
 
 def black(t):
 	return _color(t, 30)
@@ -126,7 +126,7 @@ class MyFormatter(Formatter):
                 if include_title:
                         if not title:
                                 title = key	# fall back to key as title
-                        value = kw(title) + ' ' + value
+                        value = '{0} {1}'.format(kw(title), value)
 
                 return value
 

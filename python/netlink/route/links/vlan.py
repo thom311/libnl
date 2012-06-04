@@ -57,7 +57,7 @@ class VLANLink(object):
 	#   - egress map
 
 	def brief(self):
-		return 'vlan-id ' + self.id
+		return 'vlan-id {0}'.format(self.id)
 
 def init(link):
 	link.vlan = VLANLink(link._link)

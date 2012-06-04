@@ -52,7 +52,7 @@ class InetLink(object):
         	self._link = link
 
 	def details(self, fmt):
-		buf = '\n' + fmt.nl('\t%s\n\t' % util.title('Configuration:'))
+		buf = fmt.nl('\n\t{0}\n\t'.format(util.title('Configuration:')))
 
 		for i in range(DEVCONF_FORWARDING,DEVCONF_MAX+1):
 			if i & 1 and i > 1:

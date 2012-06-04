@@ -92,14 +92,14 @@ class NetlinkError(Exception):
 
 class KernelError(NetlinkError):
 	def __str__(self):
-        	return "Kernel returned: " + self._msg
+        	return "Kernel returned: {0}".format(self._msg)
 
 class ImmutableError(NetlinkError):
 	def __init__(self, msg):
         	self._msg = msg
 
 	def __str__(self):
-        	return "Immutable attribute: " + self._msg
+        	return "Immutable attribute: {0}".format(self._msg)
 
 class Message(object):
 	"""Netlink message"""
@@ -162,7 +162,7 @@ class Socket(object):
         	capi.nl_socket_free(self._sock)
 
 	def __str__(self):
-        	return "nlsock<" + str(self.localPort) + ">"
+        	return "nlsock<{0}>".format(self.localPort)
 
 	@property
         def local_port(self):
@@ -626,7 +626,7 @@ class AddressFamily(object):
         	return self._family
 
 	def __repr__(self):
-        	return 'AddressFamily(\'' + str(self) + '\')'
+        	return 'AddressFamily({0!r})'.format(str(self))
 
 
 ###########################################################################

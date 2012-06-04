@@ -127,7 +127,7 @@ class LinkCache(netlink.Cache):
 	def __getitem__(self, key):
         	if type(key) is int:
                         link = capi.rtnl_link_get(self._nl_cache, key)
-                elif type(key) is str:
+                else:
                         link = capi.rtnl_link_get_by_name(self._nl_cache, key)
 
 		if link is None:
@@ -227,7 +227,7 @@ class Link(netlink.Object):
 
 	@flags.setter
         def flags(self, value):
-        	if type(value) is list:
+        	if not (type(value) is str):
                         for flag in value:
                                 self._set_flag(flag)
                 else:

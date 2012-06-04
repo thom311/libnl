@@ -374,12 +374,12 @@ class Address(netlink.Object):
 
 		if not nodev:
 			buf += fmt.format(' {a|ifindex}')
-		
+
 		buf += fmt.format(' {a|scope}')
 
 		if self.label:
 			buf += fmt.format(' "{a|label}"')
-		
+
 		buf += fmt.format(' <{a|_flags}>')
 
 		if details:

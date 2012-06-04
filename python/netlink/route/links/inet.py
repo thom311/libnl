@@ -66,7 +66,7 @@ class InetLink(object):
 
 	def get_conf(self, id):
 		return capi.inet_get_conf(self._link._rtnl_link, _resolve(id))
-	
+
 	def set_conf(self, id, value):
 		return capi.rtnl_link_inet_set_conf(self._link._rtnl_link,
                 				_resolve(id), int(value))
@@ -75,7 +75,7 @@ class InetLink(object):
 	@property
 	def forwarding(self):
 		return bool(self.get_conf(DEVCONF_FORWARDING))
-	
+
 	@forwarding.setter
 	def forwarding(self, value):
 		self.set_conf(DEVCONF_FORWARDING, int(value))
@@ -84,7 +84,7 @@ class InetLink(object):
 	@property
 	def mc_forwarding(self):
 		return bool(self.get_conf(DEVCONF_MC_FORWARDING))
-	
+
 	@mc_forwarding.setter
 	def mc_forwarding(self, value):
 		self.set_conf(DEVCONF_MC_FORWARDING, int(value))
@@ -93,7 +93,7 @@ class InetLink(object):
 	@property
 	def proxy_arp(self):
 		return bool(self.get_conf(DEVCONF_PROXY_ARP))
-	
+
 	@proxy_arp.setter
 	def proxy_arp(self, value):
 		self.set_conf(DEVCONF_PROXY_ARP, int(value))
@@ -102,7 +102,7 @@ class InetLink(object):
 	@property
 	def accept_redirects(self):
 		return bool(self.get_conf(DEVCONF_ACCEPT_REDIRECTS))
-	
+
 	@accept_redirects.setter
 	def accept_redirects(self, value):
 		self.set_conf(DEVCONF_ACCEPT_REDIRECTS, int(value))
@@ -111,7 +111,7 @@ class InetLink(object):
 	@property
 	def secure_redirects(self):
 		return bool(self.get_conf(DEVCONF_SECURE_REDIRECTS))
-	
+
 	@secure_redirects.setter
 	def secure_redirects(self, value):
 		self.set_conf(DEVCONF_SECURE_REDIRECTS, int(value))
@@ -120,7 +120,7 @@ class InetLink(object):
 	@property
 	def send_redirects(self):
 		return bool(self.get_conf(DEVCONF_SEND_REDIRECTS))
-	
+
 	@send_redirects.setter
 	def send_redirects(self, value):
 		self.set_conf(DEVCONF_SEND_REDIRECTS, int(value))
@@ -129,7 +129,7 @@ class InetLink(object):
 	@property
 	def shared_media(self):
 		return bool(self.get_conf(DEVCONF_SHARED_MEDIA))
-	
+
 	@shared_media.setter
 	def shared_media(self, value):
 		self.set_conf(DEVCONF_SHARED_MEDIA, int(value))

@@ -66,9 +66,9 @@ RX_FIFO_ERR = 10
 TX_FIFO_ERR = 11
 RX_LEN_ERR = 12
 RX_OVER_ERR = 13
-RX_CRC_ERR = 14 
+RX_CRC_ERR = 14
 RX_FRAME_ERR = 15
-RX_MISSED_ERR = 16 
+RX_MISSED_ERR = 16
 TX_ABORT_ERR = 17
 TX_CARRIER_ERR = 18
 TX_HBEAT_ERR = 19
@@ -495,7 +495,7 @@ class Link(netlink.Object):
 			buf += fmt.nl('\t{t|mtu} {t|txqlen} {t|weight} '\
 				      '{t|qdisc} {t|operstate}')
 			buf += fmt.nl('\t{t|broadcast} {t|alias}')
-                	
+
                         buf += self._foreach_af('details', fmt)
 
 		if stats:

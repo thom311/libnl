@@ -43,13 +43,13 @@ NETLINK_ROUTE = 0
 # NETLINK_UNUSED = 1
 NETLINK_USERSOCK = 2
 NETLINK_FIREWALL = 3
-NETLINK_INET_DIAG = 4	
+NETLINK_INET_DIAG = 4
 NETLINK_NFLOG = 5
 NETLINK_XFRM = 6
 NETLINK_SELINUX = 7
 NETLINK_ISCSI = 8
 NETLINK_AUDIT = 9
-NETLINK_FIB_LOOKUP = 10	
+NETLINK_FIB_LOOKUP = 10
 NETLINK_CONNECTOR = 11
 NETLINK_NETFILTER = 12
 NETLINK_IP6_FW = 13
@@ -588,7 +588,7 @@ class CacheManager(object):
 
 		if self._mngr:
 			capi.nl_cache_mngr_free(self._mngr)
-	
+
 	def add(self, name):
 		capi.cache_mngr_add(self._mngr, name, None, None)
 

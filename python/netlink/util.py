@@ -1,5 +1,5 @@
 #
-# Utilities 
+# Utilities
 #
 # Copyright (c) 2011 Thomas Graf <tgraf@suug.ch>
 #
@@ -141,7 +141,7 @@ class MyFormatter(Formatter):
                 	return bold(value)
                 elif conversion is None:
                 	return value
-                
+
                 raise ValueError("Unknown converion specifier {0!s}".format(conversion))
 
 	def nl(self):

@@ -19,7 +19,7 @@ class DummyLink(object):
 
 	def brief(self):
         	return 'dummy'
-	
+
 def init(link):
 	link.dummy = DummyLink(link._rtnl_link)
         return link.dummy

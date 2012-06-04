@@ -247,7 +247,7 @@ class Tc(netlink.Object):
 
         def stats(self, fmt):
         	return fmt.nl('{t|packets} {t|bytes} {t|qlen}')
-        	
+
 ###########################################################################
 # Queueing discipline cache
 class QdiscCache(netlink.Cache):
@@ -360,13 +360,13 @@ class Qdisc(Tc):
 		fmt = util.MyFormatter(self, indent)
 
 		buf = fmt.format(self.brief('qdisc', nodev, noparent))
-		
+
 		if details:
 			buf += fmt.nl('\t' + self.details())
 
                 if stats:
                         buf += self.stats(fmt)
-                	
+
 #		if stats:
 #			l = [['Packets', RX_PACKETS, TX_PACKETS],
 #			     ['Bytes', RX_BYTES, TX_BYTES],
@@ -500,7 +500,7 @@ class TcClass(Tc):
 
 		if details:
 			buf += fmt.nl('\t' + self.details())
-                	
+
 		return buf
 
 ###########################################################################
@@ -589,7 +589,7 @@ class Classifier(Tc):
 
 		if details:
 			buf += fmt.nl('\t' + self.details())
-                	
+
 		return buf
 
 _qdisc_cache = QdiscCache()
@@ -604,7 +604,7 @@ def get_qdisc(ifindex, handle=None, parent=None):
 		   (handle == None or qdisc.handle == handle) and \
 		   (parent == None or qdisc.parent == parent):
 		   	l.append(qdisc)
-	
+
 	return l
 
 _class_cache = {}
@@ -617,7 +617,7 @@ def get_class(ifindex, parent, handle=None):
 	except KeyError:
 		cache = TcClassCache(ifindex)
 		_class_cache[ifindex] = cache
-	
+
 	cache.refill()
 
 	for cl in cache:
@@ -642,7 +642,7 @@ def get_cls(ifindex, parent, handle=None):
 	except KeyError:
 		cache = ClassifierCache(ifindex, parent)
 		_cls_cache[ifindex][parent] = cache
-	
+
 	cache.refill()
 
 	for cls in cache:

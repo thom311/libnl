@@ -298,7 +298,7 @@ class Link(netlink.Object):
         @netlink.nlattr('link.txqlen', type=int, fmt=util.num)
         @property
         def txqlen(self):
-        	""""Length of transmit queue"""
+        	"""Length of transmit queue"""
         	return capi.rtnl_link_get_txqlen(self._rtnl_link)
 
 	@txqlen.setter

@@ -345,9 +345,9 @@ class Address(netlink.Object):
 
 	#####################################################################
 	# delete()
-	def delete(self, socket):
-		"""Attempt to delete this link in the kernel"""
-		ret = capi.rtnl_addr_delete(socket._sock, self._addr)
+	def delete(self, socket, flags=0):
+		"""Attempt to delete this address in the kernel"""
+		ret = capi.rtnl_addr_delete(socket._sock, self._rtnl_addr, flags)
                 if ret < 0:
                         raise netlink.KernelError(ret)
 

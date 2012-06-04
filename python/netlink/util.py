@@ -13,6 +13,7 @@ from __future__ import absolute_import
 from . import core as netlink
 from . import capi as capi
 from string import Formatter
+import types
 
 __version__ = "1.0"
 
@@ -82,7 +83,7 @@ class MyFormatter(Formatter):
                 value = getattr(self._obj, key)
                 title = None
 
-                if type(value) == 'instancemethod':
+                if isinstance(value, types.MethodType):
                         value = value()
 
         	try:
@@ -143,9 +144,6 @@ class MyFormatter(Formatter):
                 	return value
 
                 raise ValueError("Unknown converion specifier {0!s}".format(conversion))
-
-	def nl(self):
-		return '\n' + self._indent
 
 	def nl(self, format_string=''):
 		return '\n' + self._indent + self.format(format_string)

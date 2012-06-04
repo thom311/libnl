@@ -32,7 +32,6 @@ from __future__ import absolute_import
 from . import capi
 import sys
 import socket
-import struct
 
 __all__ = ['Message', 'Socket', 'DumpParams', 'Object', 'Cache', 'KernelError',
            'NetlinkError']
@@ -618,9 +617,6 @@ class AddressFamily(object):
 
 	def __str__(self):
         	return capi.nl_af2str(self._family, 32)[0]
-
-	def __len__(self):
-		return len(str(self))
 
 	def __int__(self):
         	return self._family

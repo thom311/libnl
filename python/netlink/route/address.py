@@ -147,16 +147,28 @@ class Address(netlink.Object):
         @netlink.nlattr('address.flags', type=str, fmt=util.string)
 	@property
         def flags(self):
-        	"""Flags"""
+        	"""Flags
+
+                Setting this property will *Not* reset flags to value you supply in
+
+                Examples:
+                addr.flags = '+xxx' # add xxx flag
+                addr.flags = 'xxx'  # exactly the same
+                addr.flags = '-xxx' # remove xxx flag
+                addr.flags = [ '+xxx', '-yyy' ] # list operation
+        	"""
         	flags = capi.rtnl_addr_get_flags(self._rtnl_addr)
                 return capi.rtnl_addr_flags2str(flags, 256)[0].split(',')
 
 	def _set_flag(self, flag):
-                if flag[0] == '-':
+                if flag.startswith('-'):
                         i = capi.rtnl_addr_str2flags(flag[1:])
                         capi.rtnl_addr_unset_flags(self._rtnl_addr, i)
-                else:
+                elif flag.startswith('+'):
                         i = capi.rtnl_addr_str2flags(flag[1:])
+                        capi.rtnl_addr_set_flags(self._rtnl_addr, i)
+                else:
+                        i = capi.rtnl_addr_str2flags(flag)
                         capi.rtnl_addr_set_flags(self._rtnl_addr, i)
 
 	@flags.setter

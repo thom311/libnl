@@ -213,16 +213,26 @@ class Link(netlink.Object):
         @netlink.nlattr('link.flags', type=str, fmt=util.string)
 	@property
         def flags(self):
-        	"""Flags"""
+                """Flags
+                Setting this property will *Not* reset flags to value you supply in
+                Examples:
+                link.flags = '+xxx' # add xxx flag
+                link.flags = 'xxx'  # exactly the same
+                link.flags = '-xxx' # remove xxx flag
+                link.flags = [ '+xxx', '-yyy' ] # list operation
+                """
         	flags = capi.rtnl_link_get_flags(self._rtnl_link)
                 return capi.rtnl_link_flags2str(flags, 256)[0].split(',')
 
 	def _set_flag(self, flag):
-                if flag[0] == '-':
+                if flag.startswith('-'):
                         i = capi.rtnl_link_str2flags(flag[1:])
                         capi.rtnl_link_unset_flags(self._rtnl_link, i)
-                else:
+                elif flag.startswith('+'):
                         i = capi.rtnl_link_str2flags(flag[1:])
+                        capi.rtnl_link_set_flags(self._rtnl_link, i)
+                else:
+                        i = capi.rtnl_link_str2flags(flag)
                         capi.rtnl_link_set_flags(self._rtnl_link, i)
 
 	@flags.setter

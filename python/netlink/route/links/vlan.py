@@ -32,15 +32,26 @@ class VLANLink(object):
         @netlink.nlattr('link.vlan.flags', type=str)
 	@property
         def flags(self):
-        	"""vlan flags"""
+                """ VLAN flags
+                Setting this property will *Not* reset flags to value you supply in
+                Examples:
+                link.flags = '+xxx' # add xxx flag
+                link.flags = 'xxx'  # exactly the same
+                link.flags = '-xxx' # remove xxx flag
+                link.flags = [ '+xxx', '-yyy' ] # list operation
+                """
         	flags = capi.rtnl_link_vlan_get_flags(self._link)
                 return capi.rtnl_link_vlan_flags2str(flags, 256)[0].split(',')
 
 	def _set_flag(self, flag):
-                i = capi.rtnl_link_vlan_str2flags(flag[1:])
-                if flag[0] == '-':
+                if flag.startswith('-'):
+                        i = capi.rtnl_link_vlan_str2flags(flag[1:])
                         capi.rtnl_link_vlan_unset_flags(self._link, i)
+                elif flag.startswith('+'):
+                        i = capi.rtnl_link_vlan_str2flags(flag[1:])
+                        capi.rtnl_link_vlan_set_flags(self._link, i)
                 else:
+                        i = capi.rtnl_link_vlan_str2flags(flag)
                         capi.rtnl_link_vlan_set_flags(self._link, i)
 
 	@flags.setter

@@ -32,7 +32,7 @@ def yellow(t):
 def blue(t):
 	return _color(t, 34)
 
-def mangenta(t):
+def magenta(t):
 	return _color(t, 35)
 
 def cyan(t):

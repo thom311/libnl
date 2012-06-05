@@ -15,8 +15,6 @@ class VLANLink(object):
     def __init__(self, link):
         self._link = link
 
-    ###################################################################
-    # id
     @netlink.nlattr('link.vlan.id', type=int)
     @property
     def id(self):
@@ -27,8 +25,6 @@ class VLANLink(object):
     def id(self, value):
         capi.rtnl_link_vlan_set_id(self._link, int(value))
 
-    ###################################################################
-    # flags
     @netlink.nlattr('link.vlan.flags', type=str)
     @property
     def flags(self):

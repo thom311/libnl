@@ -17,8 +17,6 @@ class HTBQdisc(object):
     def __init__(self, qdisc):
         self._qdisc = qdisc
 
-    ###################################################################
-    # default class
     @netlink.nlattr('qdisc.htb.default_class', type=int)
     @property
     def default_class(self):
@@ -28,8 +26,6 @@ class HTBQdisc(object):
     def default_class(self, value):
         capi.rtnl_htb_set_defcls(self._qdisc._rtnl_qdisc, int(value))
 
-    #####################################################################
-    # r2q
     @netlink.nlattr('qdisc.htb.r2q', type=int)
     @property
     def r2q(self):
@@ -54,8 +50,6 @@ class HTBClass(object):
     def __init__(self, cl):
         self._class = cl
 
-    #####################################################################
-    # rate
     @netlink.nlattr('class.htb.rate', type=str)
     @property
     def rate(self):
@@ -66,8 +60,6 @@ class HTBClass(object):
     def rate(self, value):
         capi.rtnl_htb_set_rate(self._class._rtnl_class, int(value))
 
-    #####################################################################
-    # ceil
     @netlink.nlattr('class.htb.ceil', type=str)
     @property
     def ceil(self):
@@ -78,8 +70,6 @@ class HTBClass(object):
     def ceil(self, value):
         capi.rtnl_htb_set_ceil(self._class._rtnl_class, int(value))
 
-    #####################################################################
-    # burst
     @netlink.nlattr('class.htb.burst', type=str)
     @property
     def burst(self):
@@ -90,8 +80,6 @@ class HTBClass(object):
     def burst(self, value):
         capi.rtnl_htb_set_rbuffer(self._class._rtnl_class, int(value))
 
-    #####################################################################
-    # ceil burst
     @netlink.nlattr('class.htb.ceil_burst', type=str)
     @property
     def ceil_burst(self):
@@ -102,8 +90,6 @@ class HTBClass(object):
     def ceil_burst(self, value):
         capi.rtnl_htb_set_cbuffer(self._class._rtnl_class, int(value))
 
-    #####################################################################
-    # priority
     @netlink.nlattr('class.htb.prio', type=int)
     @property
     def prio(self):
@@ -113,8 +99,6 @@ class HTBClass(object):
     def prio(self, value):
         capi.rtnl_htb_set_prio(self._class._rtnl_class, int(value))
 
-    #####################################################################
-    # quantum
     @netlink.nlattr('class.htb.quantum', type=int)
     @property
     def quantum(self):
@@ -124,8 +108,6 @@ class HTBClass(object):
     def quantum(self, value):
         capi.rtnl_htb_set_quantum(self._class._rtnl_class, int(value))
 
-    #####################################################################
-    # level
     @netlink.nlattr('class.htb.level', type=int)
     @property
     def level(self):

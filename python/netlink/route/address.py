@@ -19,8 +19,6 @@ from .  import capi as capi
 from .  import link as Link
 from .. import util as util
 
-###########################################################################
-# Address Cache
 class AddressCache(netlink.Cache):
     """Cache containing network addresses"""
 
@@ -55,8 +53,6 @@ class AddressCache(netlink.Cache):
     def _new_cache(cache):
         return AddressCache(cache=cache)
 
-###########################################################################
-# Address Object
 class Address(netlink.Object):
     """Network address"""
 
@@ -90,8 +86,6 @@ class Address(netlink.Object):
     def _new_instance(obj):
         return Address(obj)
 
-    #####################################################################
-    # ifindex
     @netlink.nlattr('address.ifindex', type=int, immutable=True,
             fmt=util.num)
     @property
@@ -107,8 +101,6 @@ class Address(netlink.Object):
 
         self.link = link
 
-    #####################################################################
-    # link
     @netlink.nlattr('address.link', type=str, fmt=util.string)
     @property
     def link(self):
@@ -133,8 +125,6 @@ class Address(netlink.Object):
         if capi.rtnl_addr_get_ifindex(self._orig) == 0:
             capi.rtnl_addr_set_ifindex(self._orig, value.ifindex)
 
-    #####################################################################
-    # label
     @netlink.nlattr('address.label', type=str, fmt=util.string)
     @property
     def label(self):
@@ -145,8 +135,6 @@ class Address(netlink.Object):
     def label(self, value):
         capi.rtnl_addr_set_label(self._rtnl_addr, value)
 
-    #####################################################################
-    # flags
     @netlink.nlattr('address.flags', type=str, fmt=util.string)
     @property
     def flags(self):
@@ -182,8 +170,6 @@ class Address(netlink.Object):
         else:
             self._set_flag(value)
 
-    #####################################################################
-    # family
     @netlink.nlattr('address.family', type=int, immutable=True,
             fmt=util.num)
     @property
@@ -199,8 +185,6 @@ class Address(netlink.Object):
 
         capi.rtnl_addr_set_family(self._rtnl_addr, int(value))
 
-    #####################################################################
-    # scope
     @netlink.nlattr('address.scope', type=int, fmt=util.num)
     @property
     def scope(self):
@@ -214,8 +198,6 @@ class Address(netlink.Object):
             value = capi.rtnl_str2scope(value)
         capi.rtnl_addr_set_scope(self._rtnl_addr, value)
 
-    #####################################################################
-    # local address
     @netlink.nlattr('address.local', type=str, immutable=True,
             fmt=util.addr)
     @property
@@ -234,8 +216,6 @@ class Address(netlink.Object):
         if capi.rtnl_addr_get_local(self._orig) is None:
             capi.rtnl_addr_set_local(self._orig, a._nl_addr)
 
-    #####################################################################
-    # Peer address
     @netlink.nlattr('address.peer', type=str, fmt=util.addr)
     @property
     def peer(self):
@@ -248,8 +228,6 @@ class Address(netlink.Object):
         a = netlink.AbstractAddress(value)
         capi.rtnl_addr_set_peer(self._rtnl_addr, a._nl_addr)
 
-    #####################################################################
-    # Broadcast address
     @netlink.nlattr('address.broadcast', type=str, fmt=util.addr)
     @property
     def broadcast(self):
@@ -262,8 +240,6 @@ class Address(netlink.Object):
         a = netlink.AbstractAddress(value)
         capi.rtnl_addr_set_broadcast(self._rtnl_addr, a._nl_addr)
 
-    #####################################################################
-    # Multicast address
     @netlink.nlattr('address.multicast', type=str, fmt=util.addr)
     @property
     def multicast(self):
@@ -280,8 +256,6 @@ class Address(netlink.Object):
 
         capi.rtnl_addr_set_multicast(self._rtnl_addr, a._nl_addr)
 
-    #####################################################################
-    # Anycast address
     @netlink.nlattr('address.anycast', type=str, fmt=util.addr)
     @property
     def anycast(self):
@@ -294,8 +268,6 @@ class Address(netlink.Object):
         a = netlink.AbstractAddress(value)
         capi.rtnl_addr_set_anycast(self._rtnl_addr, a._nl_addr)
 
-    #####################################################################
-    # Valid lifetime
     @netlink.nlattr('address.valid_lifetime', type=int, immutable=True,
             fmt=util.num)
     @property
@@ -311,8 +283,6 @@ class Address(netlink.Object):
     def valid_lifetime(self, value):
         capi.rtnl_addr_set_valid_lifetime(self._rtnl_addr, int(value))
 
-    #####################################################################
-    # Preferred lifetime
     @netlink.nlattr('address.preferred_lifetime', type=int,
             immutable=True, fmt=util.num)
     @property
@@ -328,8 +298,6 @@ class Address(netlink.Object):
     def preferred_lifetime(self, value):
         capi.rtnl_addr_set_preferred_lifetime(self._rtnl_addr, int(value))
 
-    #####################################################################
-    # Creation Time
     @netlink.nlattr('address.create_time', type=int, immutable=True,
             fmt=util.num)
     @property
@@ -338,8 +306,6 @@ class Address(netlink.Object):
         hsec = capi.rtnl_addr_get_create_time(self._rtnl_addr)
         return datetime.timedelta(milliseconds=10*hsec)
 
-    #####################################################################
-    # Last Update
     @netlink.nlattr('address.last_update', type=int, immutable=True,
             fmt=util.num)
     @property
@@ -348,8 +314,6 @@ class Address(netlink.Object):
         hsec = capi.rtnl_addr_get_last_update_time(self._rtnl_addr)
         return datetime.timedelta(milliseconds=10*hsec)
 
-    #####################################################################
-    # add()
     def add(self, socket=None, flags=None):
         if not socket:
             socket = netlink.lookup_socket(netlink.NETLINK_ROUTE)
@@ -361,8 +325,6 @@ class Address(netlink.Object):
         if ret < 0:
             raise netlink.KernelError(ret)
 
-    #####################################################################
-    # delete()
     def delete(self, socket, flags=0):
         """Attempt to delete this address in the kernel"""
         ret = capi.rtnl_addr_delete(socket._sock, self._rtnl_addr, flags)
@@ -377,10 +339,6 @@ class Address(netlink.Object):
     def _flags(self):
         return ','.join(self.flags)
 
-    ###################################################################
-    #
-    # format(details=False, stats=False)
-    #
     def format(self, details=False, stats=False, nodev=False, indent=''):
         """Return address as formatted text"""
         fmt = util.MyFormatter(self, indent)

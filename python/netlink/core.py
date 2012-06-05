@@ -256,8 +256,6 @@ class DumpParams(object):
 # underscore this to make sure it is deleted first upon module deletion
 _defaultDumpParams = DumpParams(NL_DUMP_LINE)
 
-###########################################################################
-# Cacheable Object (Base Class)
 class Object(object):
     """Cacheable object (base class)"""
 
@@ -342,8 +340,6 @@ class Object(object):
         capi.nl_object_dump(self._nl_object, params._dp)
 
 
-    #####################################################################
-    # mark
     @property
     def mark(self):
         return bool(capi.nl_object_is_marked(self._nl_object))
@@ -355,21 +351,15 @@ class Object(object):
         else:
             capi.nl_object_unmark(self._nl_object)
 
-    #####################################################################
-    # shared
     @property
     def shared(self):
         return capi.nl_object_shared(self._nl_object) != 0
 
-    #####################################################################
-    # attrs
     @property
     def attrs(self):
         attr_list = capi.nl_object_attr_list(self._nl_object, 1024)
         return attr_list[0].split()
 
-    #####################################################################
-    # refcnt
     @property
     def refcnt(self):
         return capi.nl_object_get_refcnt(self._nl_object)
@@ -458,8 +448,6 @@ class ReverseObjIterator(ObjIterator):
     def get_next(self):
         return capi.nl_cache_get_prev(self._nl_object)
 
-###########################################################################
-# Cache
 class Cache(object):
     """Collection of netlink objects"""
     def __init__(self):
@@ -577,7 +565,6 @@ class Cache(object):
         """
         capi.nl_cache_mngt_unprovide(self._nl_cache)
 
-###########################################################################
 # Cache Manager (Work in Progress)
 NL_AUTO_PROVIDE = 1
 class CacheManager(object):
@@ -601,8 +588,6 @@ class CacheManager(object):
     def add(self, name):
         capi.cache_mngr_add(self._mngr, name, None, None)
 
-###########################################################################
-# Address Family
 class AddressFamily(object):
     """Address family representation
 
@@ -635,8 +620,6 @@ class AddressFamily(object):
         return 'AddressFamily({0!r})'.format(str(self))
 
 
-###########################################################################
-# Abstract Address
 class AbstractAddress(object):
     """Abstract address object
 

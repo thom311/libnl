@@ -42,8 +42,6 @@ STAT_OVERLIMITS = 8
 STAT_MAX = STAT_OVERLIMITS
 
 
-###########################################################################
-# Handle
 class Handle(object):
     """ Traffic control handle
 
@@ -83,16 +81,12 @@ class Handle(object):
     def isroot(self):
         return self._val == TC_H_ROOT or self._val == TC_H_INGRESS
 
-###########################################################################
-# TC Cache
 class TcCache(netlink.Cache):
     """Cache of traffic control object"""
 
     def __getitem__(self, key):
         raise NotImplementedError()
 
-###########################################################################
-# Tc Object
 class Tc(netlink.Object):
     def __cmp__(self, other):
         diff = self.ifindex - other.ifindex
@@ -109,8 +103,6 @@ class Tc(netlink.Object):
         """True if tc object is a root object"""
         return self.parent.isroot()
 
-    #####################################################################
-    # ifindex
     @property
     def ifindex(self):
         """interface index"""
@@ -120,8 +112,6 @@ class Tc(netlink.Object):
     def ifindex(self, value):
         capi.rtnl_tc_set_ifindex(self._rtnl_tc, int(value))
 
-    #####################################################################
-    # link
     @property
     def link(self):
         link = capi.rtnl_tc_get_link(self._rtnl_tc)
@@ -134,8 +124,6 @@ class Tc(netlink.Object):
     def link(self, value):
         capi.rtnl_tc_set_link(self._rtnl_tc, value._link)
 
-    #####################################################################
-    # mtu
     @property
     def mtu(self):
         return capi.rtnl_tc_get_mtu(self._rtnl_tc)
@@ -144,8 +132,6 @@ class Tc(netlink.Object):
     def mtu(self, value):
         capi.rtnl_tc_set_mtu(self._rtnl_tc, int(value))
 
-    #####################################################################
-    # mpu
     @property
     def mpu(self):
         return capi.rtnl_tc_get_mpu(self._rtnl_tc)
@@ -154,8 +140,6 @@ class Tc(netlink.Object):
     def mpu(self, value):
         capi.rtnl_tc_set_mpu(self._rtnl_tc, int(value))
 
-    #####################################################################
-    # overhead
     @property
     def overhead(self):
         return capi.rtnl_tc_get_overhead(self._rtnl_tc)
@@ -164,8 +148,6 @@ class Tc(netlink.Object):
     def overhead(self, value):
         capi.rtnl_tc_set_overhead(self._rtnl_tc, int(value))
 
-    #####################################################################
-    # linktype
     @property
     def linktype(self):
         return capi.rtnl_tc_get_linktype(self._rtnl_tc)
@@ -174,8 +156,6 @@ class Tc(netlink.Object):
     def linktype(self, value):
         capi.rtnl_tc_set_linktype(self._rtnl_tc, int(value))
 
-    #####################################################################
-    # handle
     @property
     def handle(self):
         return Handle(capi.rtnl_tc_get_handle(self._rtnl_tc))
@@ -184,8 +164,6 @@ class Tc(netlink.Object):
     def handle(self, value):
         capi.rtnl_tc_set_handle(self._rtnl_tc, int(value))
 
-    #####################################################################
-    # parent
     @property
     def parent(self):
         return Handle(capi.rtnl_tc_get_parent(self._rtnl_tc))
@@ -194,8 +172,6 @@ class Tc(netlink.Object):
     def parent(self, value):
         capi.rtnl_tc_set_parent(self._rtnl_tc, int(value))
 
-    #####################################################################
-    # kind
     @property
     def kind(self):
         return capi.rtnl_tc_get_kind(self._rtnl_tc)
@@ -248,8 +224,6 @@ class Tc(netlink.Object):
     def stats(fmt):
         return fmt.nl('{t|packets} {t|bytes} {t|qlen}')
 
-###########################################################################
-# Queueing discipline cache
 class QdiscCache(netlink.Cache):
     """Cache of qdiscs"""
 
@@ -279,8 +253,6 @@ class QdiscCache(netlink.Cache):
     def _new_cache(cache):
         return QdiscCache(cache=cache)
 
-###########################################################################
-# Qdisc Object
 class Qdisc(Tc):
     """Queueing discipline"""
 
@@ -326,8 +298,6 @@ class Qdisc(Tc):
 
         return ret
 
-#	#####################################################################
-#	# add()
 #	def add(self, socket, flags=None):
 #        	if not flags:
 #                        flags = netlink.NLM_F_CREATE
@@ -336,8 +306,6 @@ class Qdisc(Tc):
 #		if ret < 0:
 #			raise netlink.KernelError(ret)
 #
-#	#####################################################################
-#	# change()
 #	def change(self, socket, flags=0):
 #		"""Commit changes made to the link object"""
 #		if not self._orig:
@@ -346,18 +314,12 @@ class Qdisc(Tc):
 #                if ret < 0:
 #                        raise netlink.KernelError(ret)
 #
-#	#####################################################################
-#	# delete()
 #	def delete(self, socket):
 #		"""Attempt to delete this link in the kernel"""
 #        	ret = capi.rtnl_link_delete(socket._sock, self._link)
 #                if ret < 0:
 #                        raise netlink.KernelError(ret)
 
-    ###################################################################
-    #
-    # format(details=False, stats=False)
-    #
     def format(self, details=False, stats=False, nodev=False,
            noparent=False, indent=''):
         """Return qdisc as formatted text"""
@@ -429,8 +391,6 @@ class Qdisc(Tc):
 
         return buf
 
-###########################################################################
-# Traffic class cache
 class TcClassCache(netlink.Cache):
     """Cache of traffic classes"""
 
@@ -449,8 +409,6 @@ class TcClassCache(netlink.Cache):
     def _new_cache(self, cache):
         return TcClassCache(self.arg1, cache=cache)
 
-###########################################################################
-# Traffic Class Object
 class TcClass(Tc):
     """Traffic Class"""
 
@@ -494,10 +452,6 @@ class TcClass(Tc):
 
         return ret
 
-    ###################################################################
-    #
-    # format(details=False, stats=False)
-    #
     def format(self, details=False, _stats=False, nodev=False,
            noparent=False, indent=''):
         """Return class as formatted text"""
@@ -510,8 +464,6 @@ class TcClass(Tc):
 
         return buf
 
-###########################################################################
-# Classifier Cache
 class ClassifierCache(netlink.Cache):
     """Cache of traffic classifiers objects"""
 
@@ -531,8 +483,6 @@ class ClassifierCache(netlink.Cache):
     def _new_cache(self, cache):
         return ClassifierCache(self.arg1, self.arg2, cache=cache)
 
-###########################################################################
-# Classifier Object
 class Classifier(Tc):
     """Classifier"""
 
@@ -561,8 +511,6 @@ class Classifier(Tc):
 
         return Classifier(obj)
 
-    #####################################################################
-    # priority
     @property
     def priority(self):
         return capi.rtnl_cls_get_prio(self._rtnl_cls)
@@ -571,8 +519,6 @@ class Classifier(Tc):
     def priority(self, value):
         capi.rtnl_cls_set_prio(self._rtnl_cls, int(value))
 
-    #####################################################################
-    # protocol
     @property
     def protocol(self):
         return capi.rtnl_cls_get_protocol(self._rtnl_cls)
@@ -585,10 +531,6 @@ class Classifier(Tc):
     def childs(self):
         return []
 
-    ###################################################################
-    #
-    # format(details=False, stats=False)
-    #
     def format(self, details=False, _stats=False, nodev=False,
            noparent=False, indent=''):
         """Return class as formatted text"""

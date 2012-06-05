@@ -50,7 +50,6 @@ from .  import capi as capi
 from .links  import inet as inet
 from .. import util as util
 
-###########################################################################
 # Link statistics definitions
 RX_PACKETS = 0
 TX_PACKETS = 1
@@ -110,8 +109,6 @@ ICMP6_INERRORS = 54
 ICMP6_OUTMSGS = 55
 ICMP6_OUTERRORS = 56
 
-###########################################################################
-# Link Cache
 class LinkCache(netlink.Cache):
     """Cache of network links"""
 
@@ -142,8 +139,6 @@ class LinkCache(netlink.Cache):
     def _new_cache(self, cache):
         return LinkCache(family=self.arg1, cache=cache)
 
-###########################################################################
-# Link Object
 class Link(netlink.Object):
     """Network link"""
 
@@ -175,8 +170,6 @@ class Link(netlink.Object):
 
         return Link(obj)
 
-    #####################################################################
-    # ifindex
     @netlink.nlattr('link.ifindex', type=int, immutable=True, fmt=util.num)
     @property
     def ifindex(self):
@@ -192,8 +185,6 @@ class Link(netlink.Object):
         if capi.rtnl_link_get_ifindex(self._orig) == 0:
             capi.rtnl_link_set_ifindex(self._orig, int(value))
 
-    #####################################################################
-    # name
     @netlink.nlattr('link.name', type=str, fmt=util.bold)
     @property
     def name(self):
@@ -211,8 +202,6 @@ class Link(netlink.Object):
         if capi.rtnl_link_get_name(self._orig) is None:
             capi.rtnl_link_set_name(self._orig, value)
 
-    #####################################################################
-    # flags
     @netlink.nlattr('link.flags', type=str, fmt=util.string)
     @property
     def flags(self):
@@ -246,8 +235,6 @@ class Link(netlink.Object):
         else:
             self._set_flag(value)
 
-    #####################################################################
-    # mtu
     @netlink.nlattr('link.mtu', type=int, fmt=util.num)
     @property
     def mtu(self):
@@ -258,8 +245,6 @@ class Link(netlink.Object):
     def mtu(self, value):
         capi.rtnl_link_set_mtu(self._rtnl_link, int(value))
 
-    #####################################################################
-    # family
     @netlink.nlattr('link.family', type=int, immutable=True, fmt=util.num)
     @property
     def family(self):
@@ -270,8 +255,6 @@ class Link(netlink.Object):
     def family(self, value):
         capi.rtnl_link_set_family(self._rtnl_link, value)
 
-    #####################################################################
-    # address
     @netlink.nlattr('link.address', type=str, fmt=util.addr)
     @property
     def address(self):
@@ -283,8 +266,6 @@ class Link(netlink.Object):
     def address(self, value):
         capi.rtnl_link_set_addr(self._rtnl_link, value._addr)
 
-    #####################################################################
-    # broadcast
     @netlink.nlattr('link.broadcast', type=str, fmt=util.addr)
     @property
     def broadcast(self):
@@ -296,8 +277,6 @@ class Link(netlink.Object):
     def broadcast(self, value):
         capi.rtnl_link_set_broadcast(self._rtnl_link, value._addr)
 
-    #####################################################################
-    # qdisc
     @netlink.nlattr('link.qdisc', type=str, immutable=True, fmt=util.string)
     @property
     def qdisc(self):
@@ -308,8 +287,6 @@ class Link(netlink.Object):
     def qdisc(self, value):
         capi.rtnl_link_set_qdisc(self._rtnl_link, value)
 
-    #####################################################################
-    # txqlen
     @netlink.nlattr('link.txqlen', type=int, fmt=util.num)
     @property
     def txqlen(self):
@@ -320,8 +297,6 @@ class Link(netlink.Object):
     def txqlen(self, value):
         capi.rtnl_link_set_txqlen(self._rtnl_link, int(value))
 
-    #####################################################################
-    # weight
     @netlink.nlattr('link.weight', type=str, fmt=util.string)
     @property
     def weight(self):
@@ -340,8 +315,6 @@ class Link(netlink.Object):
             v = int(value)
         capi.rtnl_link_set_weight(self._rtnl_link, v)
 
-    #####################################################################
-    # arptype
     @netlink.nlattr('link.arptype', type=str, immutable=True, fmt=util.string)
     @property
     def arptype(self):
@@ -354,8 +327,6 @@ class Link(netlink.Object):
         i = core_capi.nl_str2llproto(value)
         capi.rtnl_link_set_arptype(self._rtnl_link, i)
 
-    #####################################################################
-    # operstate
     @netlink.nlattr('link.operstate', type=str, immutable=True,
             fmt=util.string, title='state')
     @property
@@ -369,8 +340,6 @@ class Link(netlink.Object):
         i = capi.rtnl_link_str2operstate(value)
         capi.rtnl_link_set_operstate(self._rtnl_link, i)
 
-    #####################################################################
-    # mode
     @netlink.nlattr('link.mode', type=str, immutable=True, fmt=util.string)
     @property
     def mode(self):
@@ -383,8 +352,6 @@ class Link(netlink.Object):
         i = capi.rtnl_link_str2mode(value)
         capi.rtnl_link_set_linkmode(self._rtnl_link, i)
 
-    #####################################################################
-    # alias
     @netlink.nlattr('link.alias', type=str, fmt=util.string)
     @property
     def alias(self):
@@ -395,8 +362,6 @@ class Link(netlink.Object):
     def alias(self, value):
         capi.rtnl_link_set_ifalias(self._rtnl_link, value)
 
-    #####################################################################
-    # type
     @netlink.nlattr('link.type', type=str, fmt=util.string)
     @property
     def type(self):
@@ -410,8 +375,6 @@ class Link(netlink.Object):
 
         self._module_lookup('netlink.route.links.' + value)
 
-    #####################################################################
-    # get_stat()
     def get_stat(self, stat):
         """Retrieve statistical information"""
         if type(stat) is str:
@@ -421,8 +384,6 @@ class Link(netlink.Object):
 
         return capi.rtnl_link_get_stat(self._rtnl_link, stat)
 
-    #####################################################################
-    # add()
     def add(self, sock=None, flags=None):
         if not sock:
             sock = netlink.lookup_socket(netlink.NETLINK_ROUTE)
@@ -434,8 +395,6 @@ class Link(netlink.Object):
         if ret < 0:
             raise netlink.KernelError(ret)
 
-    #####################################################################
-    # change()
     def change(self, sock=None, flags=0):
         """Commit changes made to the link object"""
         if sock is None:
@@ -447,8 +406,6 @@ class Link(netlink.Object):
         if ret < 0:
             raise netlink.KernelError(ret)
 
-    #####################################################################
-    # delete()
     def delete(self, sock=None):
         """Attempt to delete this link in the kernel"""
         if sock is None:
@@ -497,10 +454,6 @@ class Link(netlink.Object):
                 pass
         return buf
 
-    ###################################################################
-    #
-    # format(details=False, stats=False)
-    #
     def format(self, details=False, stats=False, indent=''):
         """Return link as formatted text"""
         fmt = util.MyFormatter(self, indent)

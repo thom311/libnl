@@ -68,7 +68,7 @@ def good(t):
 def title(t):
     return t
 
-def bool(t):
+def boolean(t):
     return str(t)
 
 def handle(t):
@@ -81,7 +81,7 @@ class MyFormatter(Formatter):
 
     def _nlattr(self, key):
         value = getattr(self._obj, key)
-        title = None
+        title_ = None
 
         if isinstance(value, types.MethodType):
             value = value()
@@ -93,13 +93,13 @@ class MyFormatter(Formatter):
                 value = d['fmt'](value)
 
             if 'title' in d:
-                title = d['title']
+                title_ = d['title']
         except KeyError:
             pass
         except AttributeError:
             pass
 
-        return title, str(value)
+        return title_, str(value)
 
     def get_value(self, key, args, kwds):
         # Let default get_value() handle ints
@@ -122,12 +122,12 @@ class MyFormatter(Formatter):
             return Formatter.get_value(self, key, args, kwds)
 
         key = key[2:]
-        (title, value) = self._nlattr(key)
+        (title_, value) = self._nlattr(key)
 
         if include_title:
-            if not title:
-                title = key	# fall back to key as title
-            value = '{0} {1}'.format(kw(title), value)
+            if not title_:
+                title_ = key    # fall back to key as title
+            value = '{0} {1}'.format(kw(title_), value)
 
         return value
 

@@ -56,7 +56,7 @@ class InetLink(object):
     def details(self, fmt):
         buf = fmt.nl('\n\t{0}\n\t'.format(util.title('Configuration:')))
 
-        for i in range(DEVCONF_FORWARDING,DEVCONF_MAX+1):
+        for i in range(DEVCONF_FORWARDING, DEVCONF_MAX+1):
             if i & 1 and i > 1:
                 buf += fmt.nl('\t')
             txt = util.kw(capi.rtnl_link_inet_devconf2str(i, 32)[0])
@@ -73,7 +73,7 @@ class InetLink(object):
         return capi.rtnl_link_inet_set_conf(self._link._rtnl_link,
                         _resolve(id), int(value))
 
-    @netlink.nlattr('link.inet.forwarding', type=bool, fmt=util.bool)
+    @netlink.nlattr('link.inet.forwarding', type=bool, fmt=util.boolean)
     @property
     def forwarding(self):
         return bool(self.get_conf(DEVCONF_FORWARDING))
@@ -82,7 +82,7 @@ class InetLink(object):
     def forwarding(self, value):
         self.set_conf(DEVCONF_FORWARDING, int(value))
 
-    @netlink.nlattr('link.inet.mc_forwarding', type=bool, fmt=util.bool)
+    @netlink.nlattr('link.inet.mc_forwarding', type=bool, fmt=util.boolean)
     @property
     def mc_forwarding(self):
         return bool(self.get_conf(DEVCONF_MC_FORWARDING))
@@ -91,7 +91,7 @@ class InetLink(object):
     def mc_forwarding(self, value):
         self.set_conf(DEVCONF_MC_FORWARDING, int(value))
 
-    @netlink.nlattr('link.inet.proxy_arp', type=bool, fmt=util.bool)
+    @netlink.nlattr('link.inet.proxy_arp', type=bool, fmt=util.boolean)
     @property
     def proxy_arp(self):
         return bool(self.get_conf(DEVCONF_PROXY_ARP))
@@ -100,7 +100,7 @@ class InetLink(object):
     def proxy_arp(self, value):
         self.set_conf(DEVCONF_PROXY_ARP, int(value))
 
-    @netlink.nlattr('link.inet.accept_redirects', type=bool, fmt=util.bool)
+    @netlink.nlattr('link.inet.accept_redirects', type=bool, fmt=util.boolean)
     @property
     def accept_redirects(self):
         return bool(self.get_conf(DEVCONF_ACCEPT_REDIRECTS))
@@ -109,7 +109,7 @@ class InetLink(object):
     def accept_redirects(self, value):
         self.set_conf(DEVCONF_ACCEPT_REDIRECTS, int(value))
 
-    @netlink.nlattr('link.inet.secure_redirects', type=bool, fmt=util.bool)
+    @netlink.nlattr('link.inet.secure_redirects', type=bool, fmt=util.boolean)
     @property
     def secure_redirects(self):
         return bool(self.get_conf(DEVCONF_SECURE_REDIRECTS))
@@ -118,7 +118,7 @@ class InetLink(object):
     def secure_redirects(self, value):
         self.set_conf(DEVCONF_SECURE_REDIRECTS, int(value))
 
-    @netlink.nlattr('link.inet.send_redirects', type=bool, fmt=util.bool)
+    @netlink.nlattr('link.inet.send_redirects', type=bool, fmt=util.boolean)
     @property
     def send_redirects(self):
         return bool(self.get_conf(DEVCONF_SEND_REDIRECTS))
@@ -127,7 +127,7 @@ class InetLink(object):
     def send_redirects(self, value):
         self.set_conf(DEVCONF_SEND_REDIRECTS, int(value))
 
-    @netlink.nlattr('link.inet.shared_media', type=bool, fmt=util.bool)
+    @netlink.nlattr('link.inet.shared_media', type=bool, fmt=util.boolean)
     @property
     def shared_media(self):
         return bool(self.get_conf(DEVCONF_SHARED_MEDIA))

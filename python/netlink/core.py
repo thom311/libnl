@@ -150,8 +150,8 @@ class Message(object):
     def attrs(self):
         return capi.nlmsg_attrdata(self._msg)
 
-    def send(self, socket):
-        socket.send(self)
+    def send(self, sock):
+        sock.send(self)
 
 class Socket(object):
     """Netlink socket"""
@@ -227,12 +227,12 @@ def lookup_socket(protocol):
 class DumpParams(object):
     """Dumping parameters"""
 
-    def __init__(self, type=NL_DUMP_LINE):
+    def __init__(self, type_=NL_DUMP_LINE):
         self._dp = capi.alloc_dump_params()
         if not self._dp:
             raise Exception('Unable to allocate struct nl_dump_params')
 
-        self._dp.dp_type = type
+        self._dp.dp_type = type_
 
     def __del__(self):
         capi.free_dump_params(self._dp)
@@ -254,7 +254,7 @@ class DumpParams(object):
         self._dp.dp_prefix = value
 
 # underscore this to make sure it is deleted first upon module deletion
-_defaultDumpParams = DumpParams(type=NL_DUMP_LINE)
+_defaultDumpParams = DumpParams(NL_DUMP_LINE)
 
 ###########################################################################
 # Cacheable Object (Base Class)
@@ -311,7 +311,7 @@ class Object(object):
         to the new object, e.g. link.vlan = VLANLink()
         """
         try:
-            tmp = __import__(path)
+            __import__(path)
         except ImportError:
             return
 
@@ -346,10 +346,7 @@ class Object(object):
     # mark
     @property
     def mark(self):
-        if capi.nl_object_is_marked(self.obj):
-            return True
-        else:
-            return False
+        return bool(capi.nl_object_is_marked(self._nl_object))
 
     @mark.setter
     def mark(self, value):
@@ -369,7 +366,7 @@ class Object(object):
     @property
     def attrs(self):
         attr_list = capi.nl_object_attr_list(self._nl_object, 1024)
-        return re.split('\W+', attr_list[0])
+        return attr_list[0].split()
 
     #####################################################################
     # refcnt
@@ -467,6 +464,8 @@ class Cache(object):
     """Collection of netlink objects"""
     def __init__(self):
         raise NotImplementedError()
+        self.arg1 = None
+        self.arg2 = None
 
     def __del(self):
         capi.nl_cache_free(self._nl_cache)
@@ -491,39 +490,41 @@ class Cache(object):
             return True
 
     # called by sub classes to allocate type specific caches by name
-    def _alloc_cache_name(self, name):
+    @staticmethod
+    def _alloc_cache_name(name):
         return capi.alloc_cache_name(name)
 
     # implemented by sub classes, must return new instasnce of cacheable
     # object
-    def _new_object(self, obj):
+    @staticmethod
+    def _new_object(obj):
         raise NotImplementedError()
 
     # implemented by sub classes, must return instance of sub class
     def _new_cache(self, cache):
         raise NotImplementedError()
 
-    def subset(self, filter):
+    def subset(self, filter_):
         """Return new cache containing subset of cache
 
         Cretes a new cache containing all objects which match the
         specified filter.
         """
-        if not filter:
+        if not filter_:
             raise ValueError()
 
-        c = capi.nl_cache_subset(self._nl_cache, filter._nl_object)
+        c = capi.nl_cache_subset(self._nl_cache, filter_._nl_object)
         return self._new_cache(cache=c)
 
-    def dump(self, params=None, filter=None):
+    def dump(self, params=None, filter_=None):
         """Dump (print) cache as human readable text"""
         if not params:
             params = _defaultDumpParams
 
-        if filter:
-            filter = filter._nl_object
+        if filter_:
+            filter_ = filter_._nl_object
 
-        capi.nl_cache_dump_filter(self._nl_cache, params._dp, filter)
+        capi.nl_cache_dump_filter(self._nl_cache, params._dp, filter_)
 
     def clear(self):
         """Remove all cache entries"""
@@ -587,7 +588,7 @@ class CacheManager(object):
         if not flags:
             flags = NL_AUTO_PROVIDE
 
-        self._mngr = cache_mngr_alloc(self._sock._sock, protocol, flags)
+        self._mngr = capi.cache_mngr_alloc(self._sock._sock, protocol, flags)
 
     def __del__(self):
         if self._sock:

@@ -13,13 +13,12 @@ __all__ = [
 ]
 
 
-from ... import core as netlink
-from ..  import capi as capi
 class DummyLink(object):
     def __init__(self, link):
         self._rtnl_link = link
 
-    def brief(self):
+    @staticmethod
+    def brief():
         return 'dummy'
 
 def init(link):

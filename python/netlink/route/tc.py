@@ -12,10 +12,7 @@ __all__ = [
     'TcClass',
 ]
 
-import socket
-import sys
 from .. import core as netlink
-from .. import capi as core_capi
 from .  import capi as capi
 from .. import util as util
 from .  import link as Link
@@ -231,7 +228,8 @@ class Tc(netlink.Object):
 
         return ret + self._module_brief()
 
-    def details(self):
+    @staticmethod
+    def details():
         return '{t|mtu} {t|mpu} {t|overhead} {t|linktype}'
 
     @property
@@ -246,7 +244,8 @@ class Tc(netlink.Object):
     def qlen(self):
         return self.get_stat(STAT_QLEN)
 
-    def stats(self, fmt):
+    @staticmethod
+    def stats(fmt):
         return fmt.nl('{t|packets} {t|bytes} {t|qlen}')
 
 ###########################################################################
@@ -272,10 +271,12 @@ class QdiscCache(netlink.Cache):
 #		else:
 #                        return Qdisc._from_capi(capi.qdisc2obj(qdisc))
 
-    def _new_object(self, obj):
+    @staticmethod
+    def _new_object(obj):
         return Qdisc(obj)
 
-    def _new_cache(self, cache):
+    @staticmethod
+    def _new_cache(cache):
         return QdiscCache(cache=cache)
 
 ###########################################################################
@@ -300,10 +301,12 @@ class Qdisc(Tc):
     def from_capi(cls, obj):
         return cls(capi.qdisc2obj(obj))
 
-    def _obj2type(self, obj):
+    @staticmethod
+    def _obj2type(obj):
         return capi.obj2qdisc(obj)
 
-    def _new_instance(self, obj):
+    @staticmethod
+    def _new_instance(obj):
         if not obj:
             raise ValueError()
 
@@ -439,7 +442,8 @@ class TcClassCache(netlink.Cache):
         self._nl_cache = cache
         self._set_arg1(ifindex)
 
-    def _new_object(self, obj):
+    @staticmethod
+    def _new_object(obj):
         return TcClass(obj)
 
     def _new_cache(self, cache):
@@ -467,10 +471,12 @@ class TcClass(Tc):
     def from_capi(cls, obj):
         return cls(capi.class2obj(obj))
 
-    def _obj2type(self, obj):
+    @staticmethod
+    def _obj2type(obj):
         return capi.obj2class(obj)
 
-    def _new_instance(self, obj):
+    @staticmethod
+    def _new_instance(obj):
         if not obj:
             raise ValueError()
 
@@ -492,7 +498,7 @@ class TcClass(Tc):
     #
     # format(details=False, stats=False)
     #
-    def format(self, details=False, stats=False, nodev=False,
+    def format(self, details=False, _stats=False, nodev=False,
            noparent=False, indent=''):
         """Return class as formatted text"""
         fmt = util.MyFormatter(self, indent)
@@ -518,7 +524,8 @@ class ClassifierCache(netlink.Cache):
         self._set_arg1(ifindex)
         self._set_arg2(int(parent))
 
-    def _new_object(self, obj):
+    @staticmethod
+    def _new_object(obj):
         return Classifier(obj)
 
     def _new_cache(self, cache):
@@ -543,10 +550,12 @@ class Classifier(Tc):
     def from_capi(cls, obj):
         return cls(capi.cls2obj(obj))
 
-    def _obj2type(self, obj):
+    @staticmethod
+    def _obj2type(obj):
         return capi.obj2cls(obj)
 
-    def _new_instance(self, obj):
+    @staticmethod
+    def _new_instance(obj):
         if not obj:
             raise ValueError()
 
@@ -580,7 +589,7 @@ class Classifier(Tc):
     #
     # format(details=False, stats=False)
     #
-    def format(self, details=False, stats=False, nodev=False,
+    def format(self, details=False, _stats=False, nodev=False,
            noparent=False, indent=''):
         """Return class as formatted text"""
         fmt = util.MyFormatter(self, indent)

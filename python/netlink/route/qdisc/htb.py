@@ -129,7 +129,7 @@ class HTBClass(object):
     @netlink.nlattr('class.htb.level', type=int)
     @property
     def level(self):
-        level = capi.rtnl_htb_get_level(self._class._rtnl_class)
+        return capi.rtnl_htb_get_level(self._class._rtnl_class)
 
     @level.setter
     def level(self, value):

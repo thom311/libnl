@@ -15,7 +15,6 @@ __all__ = [
 
 import datetime
 from .. import core as netlink
-from .. import capi as core_capi
 from .  import capi as capi
 from .  import link as Link
 from .. import util as util
@@ -48,10 +47,12 @@ class AddressCache(netlink.Cache):
 
         return Address._from_capi(addr)
 
-    def _new_object(self, obj):
+    @staticmethod
+    def _new_object(obj):
         return Address(obj)
 
-    def _new_cache(self, cache):
+    @staticmethod
+    def _new_cache(cache):
         return AddressCache(cache=cache)
 
 ###########################################################################
@@ -67,7 +68,8 @@ class Address(netlink.Object):
     def _from_capi(cls, obj):
         return cls(capi.addr2obj(obj))
 
-    def _obj2type(self, obj):
+    @staticmethod
+    def _obj2type(obj):
         return capi.obj2addr(obj)
 
     def __cmp__(self, other):
@@ -84,7 +86,8 @@ class Address(netlink.Object):
 
         return diff
 
-    def _new_instance(self, obj):
+    @staticmethod
+    def _new_instance(obj):
         return Address(obj)
 
     #####################################################################
@@ -191,8 +194,8 @@ class Address(netlink.Object):
 
     @family.setter
     def family(self, value):
-        if not isinstance(value, AddressFamily):
-            value = AddressFamily(value)
+        if not isinstance(value, netlink.AddressFamily):
+            value = netlink.AddressFamily(value)
 
         capi.rtnl_addr_set_family(self._rtnl_addr, int(value))
 

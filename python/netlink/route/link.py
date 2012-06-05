@@ -44,7 +44,6 @@ __all__ = [
 ]
 
 import socket
-import sys
 from .. import core as netlink
 from .. import capi as core_capi
 from .  import capi as capi
@@ -136,7 +135,8 @@ class LinkCache(netlink.Cache):
         else:
             return Link.from_capi(link)
 
-    def _new_object(self, obj):
+    @staticmethod
+    def _new_object(obj):
         return Link(obj)
 
     def _new_cache(self, cache):
@@ -161,13 +161,15 @@ class Link(netlink.Object):
     def from_capi(cls, obj):
         return cls(capi.link2obj(obj))
 
-    def _obj2type(self, obj):
+    @staticmethod
+    def _obj2type(obj):
         return capi.obj2link(obj)
 
     def __cmp__(self, other):
         return self.ifindex - other.ifindex
 
-    def _new_instance(self, obj):
+    @staticmethod
+    def _new_instance(obj):
         if not obj:
             raise ValueError()
 
@@ -344,8 +346,8 @@ class Link(netlink.Object):
     @property
     def arptype(self):
         """Type of link (cannot be changed)"""
-        type = capi.rtnl_link_get_arptype(self._rtnl_link)
-        return core_capi.nl_llproto2str(type, 64)[0]
+        type_ = capi.rtnl_link_get_arptype(self._rtnl_link)
+        return core_capi.nl_llproto2str(type_, 64)[0]
 
     @arptype.setter
     def arptype(self, value):
@@ -364,7 +366,7 @@ class Link(netlink.Object):
 
     @operstate.setter
     def operstate(self, value):
-        i = capi.rtnl_link_str2operstate(flag)
+        i = capi.rtnl_link_str2operstate(value)
         capi.rtnl_link_set_operstate(self._rtnl_link, i)
 
     #####################################################################
@@ -378,7 +380,7 @@ class Link(netlink.Object):
 
     @mode.setter
     def mode(self, value):
-        i = capi.rtnl_link_str2mode(flag)
+        i = capi.rtnl_link_str2mode(value)
         capi.rtnl_link_set_linkmode(self._rtnl_link, i)
 
     #####################################################################
@@ -421,38 +423,38 @@ class Link(netlink.Object):
 
     #####################################################################
     # add()
-    def add(self, socket=None, flags=None):
-        if not socket:
-            socket = netlink.lookup_socket(netlink.NETLINK_ROUTE)
+    def add(self, sock=None, flags=None):
+        if not sock:
+            sock = netlink.lookup_socket(netlink.NETLINK_ROUTE)
 
         if not flags:
             flags = netlink.NLM_F_CREATE
 
-        ret = capi.rtnl_link_add(socket._sock, self._rtnl_link, flags)
+        ret = capi.rtnl_link_add(sock._sock, self._rtnl_link, flags)
         if ret < 0:
             raise netlink.KernelError(ret)
 
     #####################################################################
     # change()
-    def change(self, socket=None, flags=0):
+    def change(self, sock=None, flags=0):
         """Commit changes made to the link object"""
-        if not socket:
-            socket = netlink.lookup_socket(netlink.NETLINK_ROUTE)
+        if sock is None:
+            sock = netlink.lookup_socket(netlink.NETLINK_ROUTE)
 
         if not self._orig:
-            raise NetlinkError('Original link not available')
-        ret = capi.rtnl_link_change(socket._sock, self._orig, self._rtnl_link, flags)
+            raise netlink.NetlinkError('Original link not available')
+        ret = capi.rtnl_link_change(sock._sock, self._orig, self._rtnl_link, flags)
         if ret < 0:
             raise netlink.KernelError(ret)
 
     #####################################################################
     # delete()
-    def delete(self, socket=None):
+    def delete(self, sock=None):
         """Attempt to delete this link in the kernel"""
-        if not socket:
-            socket = netlink.lookup_socket(netlink.NETLINK_ROUTE)
+        if sock is None:
+            sock = netlink.lookup_socket(netlink.NETLINK_ROUTE)
 
-        ret = capi.rtnl_link_delete(socket._sock, self._rtnl_link)
+        ret = capi.rtnl_link_delete(sock._sock, self._rtnl_link)
         if ret < 0:
             raise netlink.KernelError(ret)
 
@@ -567,21 +569,21 @@ class Link(netlink.Object):
                 row[0] = util.kw(row[0])
                 row[1] = self.get_stat(row[1]) if row[1] else ''
                 row[2] = self.get_stat(row[2]) if row[2] else ''
-                buf += '\t{0:27} {1:>16} {2:>16}\n'.format(*row)
+                buf += '\t{0[0]:27} {0[1]:>16} {0[2]:>16}\n'.format(row)
 
             buf += self._foreach_af('stats')
 
         return buf
 
-def get(name, socket=None):
+def get(name, sock=None):
     """Lookup Link object directly from kernel"""
     if not name:
         raise ValueError()
 
-    if not socket:
-        socket = netlink.lookup_socket(netlink.NETLINK_ROUTE)
+    if not sock:
+        sock = netlink.lookup_socket(netlink.NETLINK_ROUTE)
 
-    link = capi.get_from_kernel(socket._sock, 0, name)
+    link = capi.get_from_kernel(sock._sock, 0, name)
     if not link:
         return None
 

@@ -8,7 +8,7 @@
 from __future__ import absolute_import
 
 
-__version__ = "1.0"
+__version__ = '1.0'
 __all__ = [
     'AddressCache',
     'Address']
@@ -27,7 +27,7 @@ class AddressCache(netlink.Cache):
 
     def __init__(self, cache=None):
         if not cache:
-            cache = self._alloc_cache_name("route/addr")
+            cache = self._alloc_cache_name('route/addr')
 
         self._protocol = netlink.NETLINK_ROUTE
         self._nl_cache = cache
@@ -60,7 +60,7 @@ class Address(netlink.Object):
     """Network address"""
 
     def __init__(self, obj=None):
-        netlink.Object.__init__(self, "route/addr", "address", obj)
+        netlink.Object.__init__(self, 'route/addr', 'address', obj)
         self._rtnl_addr = self._obj2type(self._nl_object)
 
     @classmethod

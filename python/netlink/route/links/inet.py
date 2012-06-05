@@ -8,7 +8,9 @@
 
 from __future__ import absolute_import
 
-__all__ = ['']
+__all__ = [
+    '',
+]
 
 from ... import core as netlink
 from ..  import capi as capi
@@ -44,7 +46,7 @@ def _resolve(id):
     if type(id) is str:
         id = capi.rtnl_link_inet_str2devconf(id)[0]
         if id < 0:
-            raise NameError("unknown configuration id")
+            raise NameError('unknown configuration id')
     return id
 
 class InetLink(object):

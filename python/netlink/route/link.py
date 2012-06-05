@@ -36,11 +36,12 @@ The following public functions exist:
 
 from __future__ import absolute_import
 
-__version__ = "0.1"
+__version__ = '0.1'
 __all__ = [
     'LinkCache',
     'Link',
-    'get_from_kernel']
+    'get_from_kernel',
+]
 
 import socket
 import sys
@@ -117,7 +118,7 @@ class LinkCache(netlink.Cache):
 
     def __init__(self, family=socket.AF_UNSPEC, cache=None):
         if not cache:
-            cache = self._alloc_cache_name("route/link")
+            cache = self._alloc_cache_name('route/link')
 
         self._info_module = None
         self._protocol = netlink.NETLINK_ROUTE
@@ -147,7 +148,7 @@ class Link(netlink.Object):
     """Network link"""
 
     def __init__(self, obj=None):
-        netlink.Object.__init__(self, "route/link", "link", obj)
+        netlink.Object.__init__(self, 'route/link', 'link', obj)
         self._rtnl_link = self._obj2type(self._nl_object)
 
         if self.type:
@@ -403,7 +404,7 @@ class Link(netlink.Object):
     @type.setter
     def type(self, value):
         if capi.rtnl_link_set_type(self._rtnl_link, value) < 0:
-            raise NameError("unknown info type")
+            raise NameError('unknown info type')
 
         self._module_lookup('netlink.route.links.' + value)
 
@@ -414,7 +415,7 @@ class Link(netlink.Object):
         if type(stat) is str:
             stat = capi.rtnl_link_str2stat(stat)
             if stat < 0:
-                raise NameError("unknown name of statistic")
+                raise NameError('unknown name of statistic')
 
         return capi.rtnl_link_get_stat(self._rtnl_link, stat)
 
@@ -439,7 +440,7 @@ class Link(netlink.Object):
             socket = netlink.lookup_socket(netlink.NETLINK_ROUTE)
 
         if not self._orig:
-            raise NetlinkError("Original link not available")
+            raise NetlinkError('Original link not available')
         ret = capi.rtnl_link_change(socket._sock, self._orig, self._rtnl_link, flags)
         if ret < 0:
             raise netlink.KernelError(ret)
@@ -475,7 +476,11 @@ class Link(netlink.Object):
 
     @property
     def _flags(self):
-        ignore = ['up', 'running', 'lowerup']
+        ignore = [
+            'up',
+            'running',
+            'lowerup',
+        ]
         return ','.join([flag for flag in self.flags if flag not in ignore])
 
     def _foreach_af(self, name, args=None):

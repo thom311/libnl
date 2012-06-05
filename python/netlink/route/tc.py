@@ -9,7 +9,8 @@ __all__ = [
     'QdiscCache',
     'Qdisc',
     'TcClassCache',
-    'TcClass']
+    'TcClass',
+]
 
 import socket
 import sys
@@ -255,7 +256,7 @@ class QdiscCache(netlink.Cache):
 
     def __init__(self, cache=None):
         if not cache:
-            cache = self._alloc_cache_name("route/qdisc")
+            cache = self._alloc_cache_name('route/qdisc')
 
         self._protocol = netlink.NETLINK_ROUTE
         self._nl_cache = cache
@@ -283,7 +284,7 @@ class Qdisc(Tc):
     """Queueing discipline"""
 
     def __init__(self, obj=None):
-        netlink.Object.__init__(self, "route/qdisc", "qdisc", obj)
+        netlink.Object.__init__(self, 'route/qdisc', 'qdisc', obj)
         self._module_path = 'netlink.route.qdisc.'
         self._rtnl_qdisc = self._obj2type(self._nl_object)
         self._rtnl_tc = capi.obj2tc(self._nl_object)
@@ -337,7 +338,7 @@ class Qdisc(Tc):
 #	def change(self, socket, flags=0):
 #		"""Commit changes made to the link object"""
 #		if not self._orig:
-#			raise NetlinkError("Original link not available")
+#			raise NetlinkError('Original link not available')
 #        	ret = capi.rtnl_link_change(socket._sock, self._orig, self._link, flags)
 #                if ret < 0:
 #                        raise netlink.KernelError(ret)
@@ -432,7 +433,7 @@ class TcClassCache(netlink.Cache):
 
     def __init__(self, ifindex, cache=None):
         if not cache:
-            cache = self._alloc_cache_name("route/class")
+            cache = self._alloc_cache_name('route/class')
 
         self._protocol = netlink.NETLINK_ROUTE
         self._nl_cache = cache
@@ -450,7 +451,7 @@ class TcClass(Tc):
     """Traffic Class"""
 
     def __init__(self, obj=None):
-        netlink.Object.__init__(self, "route/class", "class", obj)
+        netlink.Object.__init__(self, 'route/class', 'class', obj)
         self._module_path = 'netlink.route.qdisc.'
         self._rtnl_class = self._obj2type(self._nl_object)
         self._rtnl_tc = capi.obj2tc(self._nl_object)
@@ -510,7 +511,7 @@ class ClassifierCache(netlink.Cache):
 
     def __init__(self, ifindex, parent, cache=None):
         if not cache:
-            cache = self._alloc_cache_name("route/cls")
+            cache = self._alloc_cache_name('route/cls')
 
         self._protocol = netlink.NETLINK_ROUTE
         self._nl_cache = cache
@@ -529,7 +530,7 @@ class Classifier(Tc):
     """Classifier"""
 
     def __init__(self, obj=None):
-        netlink.Object.__init__(self, "route/cls", "cls", obj)
+        netlink.Object.__init__(self, 'route/cls', 'cls', obj)
         self._module_path = 'netlink.route.cls.'
         self._rtnl_cls = self._obj2type(self._nl_object)
         self._rtnl_tc = capi.obj2tc(self._nl_object)

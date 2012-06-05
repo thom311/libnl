@@ -15,7 +15,7 @@ from . import capi as capi
 from string import Formatter
 import types
 
-__version__ = "1.0"
+__version__ = '1.0'
 
 def _color(t, c):
     return b'{esc}[{color}m{text}{esc}[0m'.format(esc=b'\x1b', color=c, text=t)
@@ -143,7 +143,7 @@ class MyFormatter(Formatter):
         elif conversion is None:
             return value
 
-        raise ValueError("Unknown converion specifier {0!s}".format(conversion))
+        raise ValueError('Unknown converion specifier {0!s}'.format(conversion))
 
     def nl(self, format_string=''):
         return '\n' + self._indent + self.format(format_string)

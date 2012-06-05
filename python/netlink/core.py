@@ -33,9 +33,17 @@ from . import capi
 import sys
 import socket
 
-__all__ = ['Message', 'Socket', 'DumpParams', 'Object', 'Cache', 'KernelError',
-       'NetlinkError']
-__version__ = "0.1"
+__all__ = [
+    'Message',
+    'Socket',
+    'DumpParams',
+    'Object',
+    'Cache',
+    'KernelError',
+    'NetlinkError',
+]
+
+__version__ = '0.1'
 
 # netlink protocols
 NETLINK_ROUTE = 0
@@ -91,14 +99,14 @@ class NetlinkError(Exception):
 
 class KernelError(NetlinkError):
     def __str__(self):
-        return "Kernel returned: {0}".format(self._msg)
+        return 'Kernel returned: {0}'.format(self._msg)
 
 class ImmutableError(NetlinkError):
     def __init__(self, msg):
         self._msg = msg
 
     def __str__(self):
-        return "Immutable attribute: {0}".format(self._msg)
+        return 'Immutable attribute: {0}'.format(self._msg)
 
 class Message(object):
     """Netlink message"""
@@ -110,7 +118,7 @@ class Message(object):
             self._msg = capi.nlmsg_alloc_size(size)
 
         if self._msg is None:
-            raise Exception("Message allocation returned NULL")
+            raise Exception('Message allocation returned NULL')
 
     def __del__(self):
         capi.nlmsg_free(self._msg)
@@ -155,13 +163,13 @@ class Socket(object):
             self._sock = capi.nl_socket_alloc_cb(cb)
 
         if self._sock is None:
-            raise Exception("NULL pointer returned while allocating socket")
+            raise Exception('NULL pointer returned while allocating socket')
 
     def __del__(self):
         capi.nl_socket_free(self._sock)
 
     def __str__(self):
-        return "nlsock<{0}>".format(self.localPort)
+        return 'nlsock<{0}>'.format(self.localPort)
 
     @property
     def local_port(self):
@@ -200,7 +208,7 @@ class Socket(object):
     def sendto(self, buf):
         ret = capi.nl_sendto(self._sock, buf, len(buf))
         if ret < 0:
-            raise Exception("Failed to send")
+            raise Exception('Failed to send')
         else:
             return ret
 
@@ -222,7 +230,7 @@ class DumpParams(object):
     def __init__(self, type=NL_DUMP_LINE):
         self._dp = capi.alloc_dump_params()
         if not self._dp:
-            raise Exception("Unable to allocate struct nl_dump_params")
+            raise Exception('Unable to allocate struct nl_dump_params')
 
         self._dp.dp_type = type
 
@@ -388,17 +396,17 @@ class Object(object):
 
     def apply(self, attr, val):
         try:
-            d = attrs[self._name + "." + attr]
+            d = attrs[self._name + '.' + attr]
         except KeyError:
-            raise KeyError("Unknown " + self._name +
-                       " attribute: " + attr)
+            raise KeyError('Unknown ' + self._name +
+                       ' attribute: ' + attr)
 
         if 'immutable' in d:
             raise ImmutableError(attr)
 
         if not self._hasattr(attr):
-            raise KeyError("Invalid " + self._name +
-                       " attribute: " + attr)
+            raise KeyError('Invalid ' + self._name +
+                       ' attribute: ' + attr)
         self._setattr(attr, val)
 
 class ObjIterator(object):
@@ -695,7 +703,7 @@ class AbstractAddress(object):
         if self._nl_addr:
             return capi.nl_addr2str(self._nl_addr, 64)[0]
         else:
-            return "none"
+            return 'none'
 
     @property
     def shared(self):

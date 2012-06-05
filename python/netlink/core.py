@@ -463,7 +463,8 @@ class ReverseObjIterator(ObjIterator):
 class Cache(object):
     """Collection of netlink objects"""
     def __init__(self):
-        raise NotImplementedError()
+        if self.__class__ is Cache:
+            raise NotImplementedError()
         self.arg1 = None
         self.arg2 = None
 

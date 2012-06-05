@@ -610,10 +610,13 @@ def get_qdisc(ifindex, handle=None, parent=None):
     _qdisc_cache.refill()
 
     for qdisc in _qdisc_cache:
-        if qdisc.ifindex == ifindex and \
-           (handle == None or qdisc.handle == handle) and \
-           (parent == None or qdisc.parent == parent):
-            l.append(qdisc)
+        if qdisc.ifindex != ifindex:
+            continue
+        if (handle is not None) and (qdisc.handle != handle):
+            continue
+        if (parent is not None) and (qdisc.parent != parent):
+            continue
+        l.append(qdisc)
 
     return l
 
@@ -631,32 +634,29 @@ def get_class(ifindex, parent, handle=None):
     cache.refill()
 
     for cl in cache:
-        if (parent == None or cl.parent == parent) and \
-           (handle == None or cl.handle == handle):
-            l.append(cl)
+        if (parent is not None) and (cl.parent != parent):
+            continue
+        if (handle is not None) and (cl.handle != handle):
+            continue
+        l.append(cl)
 
     return l
 
 _cls_cache = {}
 
 def get_cls(ifindex, parent, handle=None):
-    l = []
+
+    chain = _cls_cache.get(ifindex, dict())
 
     try:
-        chain = _cls_cache[ifindex]
-    except KeyError:
-        _cls_cache[ifindex] = {}
-
-    try:
-        cache = _cls_cache[ifindex][parent]
+        cache = chain[parent]
     except KeyError:
         cache = ClassifierCache(ifindex, parent)
-        _cls_cache[ifindex][parent] = cache
+        chain[parent] = cache
 
     cache.refill()
 
-    for cls in cache:
-        if handle == None or cls.handle == handle:
-            l.append(cls)
+    if handle is None:
+        return [ cls for cls in cache ]
 
-    return l
+    return [ cls for cls in cache if cls.handle == handle ]

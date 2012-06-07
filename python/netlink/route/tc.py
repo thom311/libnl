@@ -157,6 +157,7 @@ class Tc(netlink.Object):
         capi.rtnl_tc_set_linktype(self._rtnl_tc, int(value))
 
     @property
+    @netlink.nlattr(fmt=util.handle)
     def handle(self):
         return Handle(capi.rtnl_tc_get_handle(self._rtnl_tc))
 
@@ -165,6 +166,7 @@ class Tc(netlink.Object):
         capi.rtnl_tc_set_handle(self._rtnl_tc, int(value))
 
     @property
+    @netlink.nlattr(fmt=util.handle)
     def parent(self):
         return Handle(capi.rtnl_tc_get_parent(self._rtnl_tc))
 
@@ -173,6 +175,7 @@ class Tc(netlink.Object):
         capi.rtnl_tc_set_parent(self._rtnl_tc, int(value))
 
     @property
+    @netlink.nlattr(fmt=util.bold)
     def kind(self):
         return capi.rtnl_tc_get_kind(self._rtnl_tc)
 
@@ -261,10 +264,6 @@ class Qdisc(Tc):
         self._module_path = 'netlink.route.qdisc.'
         self._rtnl_qdisc = self._obj2type(self._nl_object)
         self._rtnl_tc = capi.obj2tc(self._nl_object)
-
-        netlink.add_attr('qdisc.handle', fmt=util.handle)
-        netlink.add_attr('qdisc.parent', fmt=util.handle)
-        netlink.add_attr('qdisc.kind', fmt=util.bold)
 
         if self.kind:
             self._tc_module_lookup()
@@ -418,10 +417,6 @@ class TcClass(Tc):
         self._rtnl_class = self._obj2type(self._nl_object)
         self._rtnl_tc = capi.obj2tc(self._nl_object)
 
-        netlink.add_attr('class.handle', fmt=util.handle)
-        netlink.add_attr('class.parent', fmt=util.handle)
-        netlink.add_attr('class.kind', fmt=util.bold)
-
         if self.kind:
             self._tc_module_lookup()
 
@@ -491,10 +486,6 @@ class Classifier(Tc):
         self._module_path = 'netlink.route.cls.'
         self._rtnl_cls = self._obj2type(self._nl_object)
         self._rtnl_tc = capi.obj2tc(self._nl_object)
-
-        netlink.add_attr('cls.handle', fmt=util.handle)
-        netlink.add_attr('cls.parent', fmt=util.handle)
-        netlink.add_attr('cls.kind', fmt=util.bold)
 
     @classmethod
     def from_capi(cls, obj):

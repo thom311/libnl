@@ -381,21 +381,6 @@ class Object(object):
         obj, attr = self._resolve(attr)
         return hasattr(obj, attr)
 
-    def apply(self, attr, val):
-        try:
-            d = attrs[self._name + '.' + attr]
-        except KeyError:
-            raise KeyError('Unknown ' + self._name +
-                       ' attribute: ' + attr)
-
-        if 'immutable' in d:
-            raise ImmutableError(attr)
-
-        if not self._hasattr(attr):
-            raise KeyError('Invalid ' + self._name +
-                       ' attribute: ' + attr)
-        self._setattr(attr, val)
-
 class ObjIterator(object):
     def __init__(self, cache, obj):
         self._cache = cache
@@ -733,42 +718,27 @@ class AbstractAddress(object):
         capi.nl_addr_set_family(self._nl_addr, int(value))
 
 
-# global dictionay for all object attributes
-#
-# attrs[type][keyword] : value
-#
 # keyword:
 #   type = { int | str }
 #   immutable = { True | False }
 #   fmt = func (formatting function)
-#
-attrs = {}
+#   title = string
 
-def add_attr(name, **kwds):
-    attrs[name] = {}
-    for k in kwds:
-        attrs[name][k] = kwds[k]
-
-def nlattr(name, **kwds):
+def nlattr(**kwds):
     """netlink object attribute decorator
 
     decorator used to mark mutable and immutable properties
     of netlink objects. All properties marked as such are
     regarded to be accessable.
 
-    @netlink.nlattr('my_type.my_attr', type=int)
     @property
+    @netlink.nlattr(type=int)
     def my_attr(self):
         return self._my_attr
 
     """
 
-    attrs[name] = {}
-    for k in kwds:
-        attrs[name][k] = kwds[k]
-
     def wrap_fn(func):
+        func.formatinfo = kwds
         return func
-
     return wrap_fn
-

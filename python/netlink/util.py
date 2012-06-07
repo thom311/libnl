@@ -80,24 +80,19 @@ class MyFormatter(Formatter):
         self._indent = indent
 
     def _nlattr(self, key):
+        value = getattr(self._obj.__class__, key)
+        if not isinstance(value, property):
+            raise ValueError('Invalid formatting string {0}'.format(key))
+
+        d = getattr(value.fget, 'formatinfo', dict())
+
+        # value = value.fget() is exactly the same
         value = getattr(self._obj, key)
-        title_ = None
 
-        if isinstance(value, types.MethodType):
-            value = value()
+        if 'fmt' in d:
+            value = d['fmt'](value)
 
-        try:
-            d = netlink.attrs[self._obj._name + '.' + key]
-
-            if 'fmt' in d:
-                value = d['fmt'](value)
-
-            if 'title' in d:
-                title_ = d['title']
-        except KeyError:
-            pass
-        except AttributeError:
-            pass
+        title_ = d.get('title', None)
 
         return title_, str(value)
 

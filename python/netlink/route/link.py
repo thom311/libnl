@@ -170,8 +170,8 @@ class Link(netlink.Object):
 
         return Link(obj)
 
-    @netlink.nlattr('link.ifindex', type=int, immutable=True, fmt=util.num)
     @property
+    @netlink.nlattr(type=int, immutable=True, fmt=util.num)
     def ifindex(self):
         """interface index"""
         return capi.rtnl_link_get_ifindex(self._rtnl_link)
@@ -185,8 +185,8 @@ class Link(netlink.Object):
         if capi.rtnl_link_get_ifindex(self._orig) == 0:
             capi.rtnl_link_set_ifindex(self._orig, int(value))
 
-    @netlink.nlattr('link.name', type=str, fmt=util.bold)
     @property
+    @netlink.nlattr(type=str, fmt=util.bold)
     def name(self):
         """Name of link"""
         return capi.rtnl_link_get_name(self._rtnl_link)
@@ -202,8 +202,8 @@ class Link(netlink.Object):
         if capi.rtnl_link_get_name(self._orig) is None:
             capi.rtnl_link_set_name(self._orig, value)
 
-    @netlink.nlattr('link.flags', type=str, fmt=util.string)
     @property
+    @netlink.nlattr(type=str, fmt=util.string)
     def flags(self):
         """Flags
         Setting this property will *Not* reset flags to value you supply in
@@ -235,8 +235,8 @@ class Link(netlink.Object):
         else:
             self._set_flag(value)
 
-    @netlink.nlattr('link.mtu', type=int, fmt=util.num)
     @property
+    @netlink.nlattr(type=int, fmt=util.num)
     def mtu(self):
         """Maximum Transmission Unit"""
         return capi.rtnl_link_get_mtu(self._rtnl_link)
@@ -245,8 +245,8 @@ class Link(netlink.Object):
     def mtu(self, value):
         capi.rtnl_link_set_mtu(self._rtnl_link, int(value))
 
-    @netlink.nlattr('link.family', type=int, immutable=True, fmt=util.num)
     @property
+    @netlink.nlattr(type=int, immutable=True, fmt=util.num)
     def family(self):
         """Address family"""
         return capi.rtnl_link_get_family(self._rtnl_link)
@@ -255,8 +255,8 @@ class Link(netlink.Object):
     def family(self, value):
         capi.rtnl_link_set_family(self._rtnl_link, value)
 
-    @netlink.nlattr('link.address', type=str, fmt=util.addr)
     @property
+    @netlink.nlattr(type=str, fmt=util.addr)
     def address(self):
         """Hardware address (MAC address)"""
         a = capi.rtnl_link_get_addr(self._rtnl_link)
@@ -266,8 +266,8 @@ class Link(netlink.Object):
     def address(self, value):
         capi.rtnl_link_set_addr(self._rtnl_link, value._addr)
 
-    @netlink.nlattr('link.broadcast', type=str, fmt=util.addr)
     @property
+    @netlink.nlattr(type=str, fmt=util.addr)
     def broadcast(self):
         """Hardware broadcast address"""
         a = capi.rtnl_link_get_broadcast(self._rtnl_link)
@@ -277,8 +277,8 @@ class Link(netlink.Object):
     def broadcast(self, value):
         capi.rtnl_link_set_broadcast(self._rtnl_link, value._addr)
 
-    @netlink.nlattr('link.qdisc', type=str, immutable=True, fmt=util.string)
     @property
+    @netlink.nlattr(type=str, immutable=True, fmt=util.string)
     def qdisc(self):
         """Name of qdisc (cannot be changed)"""
         return capi.rtnl_link_get_qdisc(self._rtnl_link)
@@ -287,8 +287,8 @@ class Link(netlink.Object):
     def qdisc(self, value):
         capi.rtnl_link_set_qdisc(self._rtnl_link, value)
 
-    @netlink.nlattr('link.txqlen', type=int, fmt=util.num)
     @property
+    @netlink.nlattr(type=int, fmt=util.num)
     def txqlen(self):
         """Length of transmit queue"""
         return capi.rtnl_link_get_txqlen(self._rtnl_link)
@@ -297,8 +297,8 @@ class Link(netlink.Object):
     def txqlen(self, value):
         capi.rtnl_link_set_txqlen(self._rtnl_link, int(value))
 
-    @netlink.nlattr('link.weight', type=str, fmt=util.string)
     @property
+    @netlink.nlattr(type=str, fmt=util.string)
     def weight(self):
         """Weight"""
         v = capi.rtnl_link_get_weight(self._rtnl_link)
@@ -315,8 +315,8 @@ class Link(netlink.Object):
             v = int(value)
         capi.rtnl_link_set_weight(self._rtnl_link, v)
 
-    @netlink.nlattr('link.arptype', type=str, immutable=True, fmt=util.string)
     @property
+    @netlink.nlattr(type=str, immutable=True, fmt=util.string)
     def arptype(self):
         """Type of link (cannot be changed)"""
         type_ = capi.rtnl_link_get_arptype(self._rtnl_link)
@@ -327,9 +327,8 @@ class Link(netlink.Object):
         i = core_capi.nl_str2llproto(value)
         capi.rtnl_link_set_arptype(self._rtnl_link, i)
 
-    @netlink.nlattr('link.operstate', type=str, immutable=True,
-            fmt=util.string, title='state')
     @property
+    @netlink.nlattr(type=str, immutable=True, fmt=util.string, title='state')
     def operstate(self):
         """Operational status"""
         operstate = capi.rtnl_link_get_operstate(self._rtnl_link)
@@ -340,8 +339,8 @@ class Link(netlink.Object):
         i = capi.rtnl_link_str2operstate(value)
         capi.rtnl_link_set_operstate(self._rtnl_link, i)
 
-    @netlink.nlattr('link.mode', type=str, immutable=True, fmt=util.string)
     @property
+    @netlink.nlattr(type=str, immutable=True, fmt=util.string)
     def mode(self):
         """Link mode"""
         mode = capi.rtnl_link_get_linkmode(self._rtnl_link)
@@ -352,8 +351,8 @@ class Link(netlink.Object):
         i = capi.rtnl_link_str2mode(value)
         capi.rtnl_link_set_linkmode(self._rtnl_link, i)
 
-    @netlink.nlattr('link.alias', type=str, fmt=util.string)
     @property
+    @netlink.nlattr(type=str, fmt=util.string)
     def alias(self):
         """Interface alias (SNMP)"""
         return capi.rtnl_link_get_ifalias(self._rtnl_link)
@@ -362,8 +361,8 @@ class Link(netlink.Object):
     def alias(self, value):
         capi.rtnl_link_set_ifalias(self._rtnl_link, value)
 
-    @netlink.nlattr('link.type', type=str, fmt=util.string)
     @property
+    @netlink.nlattr(type=str, fmt=util.string)
     def type(self):
         """Link type"""
         return capi.rtnl_link_get_type(self._rtnl_link)

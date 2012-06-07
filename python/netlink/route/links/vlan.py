@@ -15,8 +15,8 @@ class VLANLink(object):
     def __init__(self, link):
         self._link = link
 
-    @netlink.nlattr('link.vlan.id', type=int)
     @property
+    @netlink.nlattr(type=int)
     def id(self):
         """vlan identifier"""
         return capi.rtnl_link_vlan_get_id(self._link)
@@ -25,8 +25,8 @@ class VLANLink(object):
     def id(self, value):
         capi.rtnl_link_vlan_set_id(self._link, int(value))
 
-    @netlink.nlattr('link.vlan.flags', type=str)
     @property
+    @netlink.nlattr(type=str)
     def flags(self):
         """ VLAN flags
         Setting this property will *Not* reset flags to value you supply in

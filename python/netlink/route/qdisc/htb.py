@@ -17,8 +17,8 @@ class HTBQdisc(object):
     def __init__(self, qdisc):
         self._qdisc = qdisc
 
-    @netlink.nlattr('qdisc.htb.default_class', type=int)
     @property
+    @netlink.nlattr(type=int)
     def default_class(self):
         return tc.Handle(capi.rtnl_htb_get_defcls(self._qdisc._rtnl_qdisc))
 
@@ -26,8 +26,8 @@ class HTBQdisc(object):
     def default_class(self, value):
         capi.rtnl_htb_set_defcls(self._qdisc._rtnl_qdisc, int(value))
 
-    @netlink.nlattr('qdisc.htb.r2q', type=int)
     @property
+    @netlink.nlattr('r2q', type=int)
     def r2q(self):
         return capi.rtnl_htb_get_rate2quantum(self._qdisc._rtnl_qdisc)
 
@@ -50,8 +50,8 @@ class HTBClass(object):
     def __init__(self, cl):
         self._class = cl
 
-    @netlink.nlattr('class.htb.rate', type=str)
     @property
+    @netlink.nlattr(type=str)
     def rate(self):
         rate = capi.rtnl_htb_get_rate(self._class._rtnl_class)
         return util.Rate(rate)
@@ -60,8 +60,8 @@ class HTBClass(object):
     def rate(self, value):
         capi.rtnl_htb_set_rate(self._class._rtnl_class, int(value))
 
-    @netlink.nlattr('class.htb.ceil', type=str)
     @property
+    @netlink.nlattr(type=str)
     def ceil(self):
         ceil = capi.rtnl_htb_get_ceil(self._class._rtnl_class)
         return util.Rate(ceil)
@@ -70,8 +70,8 @@ class HTBClass(object):
     def ceil(self, value):
         capi.rtnl_htb_set_ceil(self._class._rtnl_class, int(value))
 
-    @netlink.nlattr('class.htb.burst', type=str)
     @property
+    @netlink.nlattr(type=str)
     def burst(self):
         burst = capi.rtnl_htb_get_rbuffer(self._class._rtnl_class)
         return util.Size(burst)
@@ -80,8 +80,8 @@ class HTBClass(object):
     def burst(self, value):
         capi.rtnl_htb_set_rbuffer(self._class._rtnl_class, int(value))
 
-    @netlink.nlattr('class.htb.ceil_burst', type=str)
     @property
+    @netlink.nlattr(type=str)
     def ceil_burst(self):
         burst = capi.rtnl_htb_get_cbuffer(self._class._rtnl_class)
         return util.Size(burst)
@@ -90,8 +90,8 @@ class HTBClass(object):
     def ceil_burst(self, value):
         capi.rtnl_htb_set_cbuffer(self._class._rtnl_class, int(value))
 
-    @netlink.nlattr('class.htb.prio', type=int)
     @property
+    @netlink.nlattr(type=int)
     def prio(self):
         return capi.rtnl_htb_get_prio(self._class._rtnl_class)
 
@@ -99,8 +99,8 @@ class HTBClass(object):
     def prio(self, value):
         capi.rtnl_htb_set_prio(self._class._rtnl_class, int(value))
 
-    @netlink.nlattr('class.htb.quantum', type=int)
     @property
+    @netlink.nlattr(type=int)
     def quantum(self):
         return capi.rtnl_htb_get_quantum(self._class._rtnl_class)
 
@@ -108,8 +108,8 @@ class HTBClass(object):
     def quantum(self, value):
         capi.rtnl_htb_set_quantum(self._class._rtnl_class, int(value))
 
-    @netlink.nlattr('class.htb.level', type=int)
     @property
+    @netlink.nlattr(type=int)
     def level(self):
         return capi.rtnl_htb_get_level(self._class._rtnl_class)
 

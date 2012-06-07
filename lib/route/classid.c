@@ -438,12 +438,13 @@ static void __init classid_init(void)
 		fprintf(stderr, "Failed to read classid file: %s\n", nl_geterror(err));
 }
 
+static void free_map(void *map) {
+	free(((struct classid_map *)map)->name);
+	free(map);
+};
+
 static void __exit classid_exit(void)
 {
-	void free_map(void *map) {
-		free(((struct classid_map *)map)->name);
-		free(map);
-	};
 	tdestroy(id_root, free_map);
 }
 /** @} */

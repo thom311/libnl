@@ -159,11 +159,6 @@ extern void free_dump_params(struct nl_dump_params *);
 
 extern int nl_connect(struct nl_sock *, int);
 extern void nl_close(struct nl_sock *);
-extern int nl_pickup(struct nl_sock *, int (*parser)(struct nl_cache_ops *,
-                                                struct sockaddr_nl *,
-                                                struct nlmsghdr *,
-                                                struct nl_parser_param *),
-                                          struct nl_object **);
 
 /* <netlink/socket.h> */
 extern struct nl_sock *nl_socket_alloc(void);

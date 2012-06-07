@@ -298,24 +298,6 @@ class Link(netlink.Object):
         capi.rtnl_link_set_txqlen(self._rtnl_link, int(value))
 
     @property
-    @netlink.nlattr(type=str, fmt=util.string)
-    def weight(self):
-        """Weight"""
-        v = capi.rtnl_link_get_weight(self._rtnl_link)
-        if v == 4294967295:
-            return 'max'
-        else:
-            return str(v)
-
-    @weight.setter
-    def weight(self, value):
-        if value == 'max':
-            v = 4294967295
-        else:
-            v = int(value)
-        capi.rtnl_link_set_weight(self._rtnl_link, v)
-
-    @property
     @netlink.nlattr(type=str, immutable=True, fmt=util.string)
     def arptype(self):
         """Type of link (cannot be changed)"""

@@ -104,9 +104,6 @@ extern unsigned int rtnl_link_get_mtu(struct rtnl_link *);
 extern void rtnl_link_set_txqlen(struct rtnl_link *, unsigned int);
 extern unsigned int rtnl_link_get_txqlen(struct rtnl_link *);
 
-extern void rtnl_link_set_weight(struct rtnl_link *, unsigned int);
-extern unsigned int rtnl_link_get_weight(struct rtnl_link *);
-
 extern void rtnl_link_set_ifindex(struct rtnl_link *, int);
 extern int rtnl_link_get_ifindex(struct rtnl_link *);
 

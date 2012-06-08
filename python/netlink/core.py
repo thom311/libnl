@@ -441,7 +441,7 @@ class Cache(object):
         self.arg1 = None
         self.arg2 = None
 
-    def __del(self):
+    def __del__(self):
         capi.nl_cache_free(self._nl_cache)
 
     def __len__(self):

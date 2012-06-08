@@ -114,7 +114,7 @@ static int vlan_parse(struct rtnl_link *link, struct nlattr *data,
 				return -NLE_INVAL;
 
 			map = nla_data(nla);
-			if (map->from < 0 || map->from > VLAN_PRIO_MAX) {
+			if (map->from > VLAN_PRIO_MAX) {
 				return -NLE_INVAL;
 			}
 
@@ -181,7 +181,8 @@ static void vlan_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 static void vlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct vlan_info *vi = link->l_info;
-	int i, printed;
+	int printed;
+	uint32_t i;
 	char buf[64];
 
 	rtnl_link_vlan_flags2str(vi->vi_flags, buf, sizeof(buf));
@@ -291,7 +292,7 @@ static int vlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (vi->vi_mask & VLAN_HAS_EGRESS_QOS) {
 		struct ifla_vlan_qos_mapping map;
 		struct nlattr *qos;
-		int i;
+		uint32_t i;
 
 		if (!(qos = nla_nest_start(msg, IFLA_VLAN_EGRESS_QOS)))
 			goto nla_put_failure;

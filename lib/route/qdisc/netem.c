@@ -827,7 +827,8 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 		BUG();
 		
 	FILE *f;
-	int i, n = 0;
+	int n = 0;
+	size_t i;
 	size_t len = 2048;
 	char *line;
 	char name[NAME_MAX];

@@ -368,7 +368,7 @@ int nl_addr_parse(const char *addrstr, int hint, struct nl_addr **result)
 	}
 
 	if (hint == AF_UNSPEC && strchr(str, ':')) {
-		int i = 0;
+		size_t i = 0;
 		char *s = str, *p;
 		for (;;) {
 			long l = strtol(s, &p, 16);
@@ -542,7 +542,7 @@ int nl_addr_cmp_prefix(struct nl_addr *a, struct nl_addr *b)
  */
 int nl_addr_iszero(struct nl_addr *addr)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < addr->a_len; i++)
 		if (addr->a_addr[i])
@@ -823,7 +823,7 @@ unsigned int nl_addr_get_prefixlen(struct nl_addr *addr)
  */
 char *nl_addr2str(struct nl_addr *addr, char *buf, size_t size)
 {
-	int i;
+	unsigned int i;
 	char tmp[16];
 
 	if (!addr || !addr->a_len) {

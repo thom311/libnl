@@ -110,9 +110,6 @@ struct nl_data *nl_data_clone(struct nl_data *src)
  */
 int nl_data_append(struct nl_data *data, void *buf, size_t size)
 {
-	if (size < 0)
-		BUG();
-
 	if (size > 0) {
 		data->d_data = realloc(data->d_data, data->d_size + size);
 		if (!data->d_data)

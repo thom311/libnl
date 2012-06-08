@@ -154,7 +154,8 @@ char *rtnl_tc_handle2str(uint32_t handle, char *buf, size_t len)
 int rtnl_tc_str2handle(const char *str, uint32_t *res)
 {
 	char *colon, *end;
-	uint32_t h, err;
+	uint32_t h;
+	int err;
 
 	if (!strcasecmp(str, "root")) {
 		*res = TC_H_ROOT;

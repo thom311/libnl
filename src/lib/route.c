@@ -198,11 +198,15 @@ void nl_cli_route_parse_table(struct rtnl_route *route, char *arg)
 {
 	unsigned long lval;
 	char *endptr;
+	int table;
 
 	lval = strtoul(arg, &endptr, 0);
 	if (endptr == arg) {
-		if ((lval = rtnl_route_str2table(arg)) < 0)
+		if ((table = rtnl_route_str2table(arg)) < 0)
 			nl_cli_fatal(EINVAL, "Unknown table name \"%s\"", arg);
+	}
+	else {
+		table = lval;
 	}
 
 	rtnl_route_set_table(route, lval);
@@ -233,16 +237,20 @@ void nl_cli_route_parse_protocol(struct rtnl_route *route, char *arg)
 {
 	unsigned long lval;
 	char *endptr;
+	int proto;
 
 	lval = strtoul(arg, &endptr, 0);
 	if (endptr == arg) {
-		if ((lval = rtnl_route_str2proto(arg)) < 0)
+		if ((proto = rtnl_route_str2proto(arg)) < 0)
 			nl_cli_fatal(EINVAL,
 				     "Unknown routing protocol name \"%s\"",
 				     arg);
 	}
+	else {
+		proto = lval;
+	}
 
-	rtnl_route_set_protocol(route, lval);
+	rtnl_route_set_protocol(route, proto);
 }
 
 void nl_cli_route_parse_type(struct rtnl_route *route, char *arg)

@@ -285,14 +285,14 @@ void nl_object_dump_buf(struct nl_object *obj, char *buf, size_t len)
 int nl_object_identical(struct nl_object *a, struct nl_object *b)
 {
 	struct nl_object_ops *ops = obj_ops(a);
-	int req_attrs;
+	uint32_t req_attrs;
 
 	/* Both objects must be of same type */
 	if (ops != obj_ops(b))
 		return 0;
 
 	req_attrs = ops->oo_id_attrs;
-	if (req_attrs == ~0)
+	if (req_attrs == 0xFFFFFFFF)
 		req_attrs = a->ce_mask & b->ce_mask;
 
 	/* Both objects must provide all required attributes to uniquely

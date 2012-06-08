@@ -305,7 +305,7 @@ static const struct {
  */
 char *nl_size2str(const size_t size, char *buf, const size_t len)
 {
-	int i;
+	size_t i;
 
 	for (i = 0; i < ARRAY_SIZE(size_units); i++) {
 		if (size >= size_units[i].limit) {
@@ -515,10 +515,12 @@ int nl_str2msec(const char *str, uint64_t *result)
  */
 char * nl_msec2str(uint64_t msec, char *buf, size_t len)
 {
-	int i, split[5];
-	char *units[] = {"d", "h", "m", "s", "msec"};
+	uint64_t split[5];
+	size_t i;
+	static const char *units[5] = {"d", "h", "m", "s", "msec"};
+	char * const buf_orig = buf;
 
-#define _SPLIT(idx, unit) if ((split[idx] = msec / unit) > 0) msec %= unit
+#define _SPLIT(idx, unit) if ((split[idx] = msec / unit)) msec %= unit
 	_SPLIT(0, 86400000);	/* days */
 	_SPLIT(1, 3600000);	/* hours */
 	_SPLIT(2, 60000);	/* minutes */
@@ -526,18 +528,17 @@ char * nl_msec2str(uint64_t msec, char *buf, size_t len)
 #undef  _SPLIT
 	split[4] = msec;
 
-	memset(buf, 0, len);
-
-	for (i = 0; i < ARRAY_SIZE(split); i++) {
-		if (split[i] > 0) {
-			char t[64];
-			snprintf(t, sizeof(t), "%s%d%s",
-				 strlen(buf) ? " " : "", split[i], units[i]);
-			strncat(buf, t, len - strlen(buf) - 1);
-		}
+	for (i = 0; i < ARRAY_SIZE(split) && len; i++) {
+		int l;
+		if (split[i] == 0)
+			continue;
+		l = snprintf(buf, len, "%s%" PRIu64 "%s",
+			(buf==buf_orig) ? "" : " ", split[i], units[i]);
+		buf += l;
+		len -= l;
 	}
 
-	return buf;
+	return buf_orig;
 }
 
 /** @} */
@@ -929,7 +930,7 @@ void __trans_list_clear(struct nl_list_head *head)
 char *__type2str(int type, char *buf, size_t len,
 		 const struct trans_tbl *tbl, size_t tbl_len)
 {
-	int i;
+	size_t i;
 	for (i = 0; i < tbl_len; i++) {
 		if (tbl[i].i == type) {
 			snprintf(buf, len, "%s", tbl[i].a);
@@ -960,7 +961,7 @@ char *__list_type2str(int type, char *buf, size_t len,
 char *__flags2str(int flags, char *buf, size_t len,
 		  const struct trans_tbl *tbl, size_t tbl_len)
 {
-	int i;
+	size_t i;
 	int tmp = flags;
 
 	memset(buf, 0, len);
@@ -981,7 +982,7 @@ int __str2type(const char *buf, const struct trans_tbl *tbl, size_t tbl_len)
 {
 	unsigned long l;
 	char *end;
-	int i;
+	size_t i;
 
 	if (*buf == '\0')
 		return -NLE_INVAL;
@@ -1020,7 +1021,9 @@ int __list_str2type(const char *buf, struct nl_list_head *head)
 
 int __str2flags(const char *buf, const struct trans_tbl *tbl, size_t tbl_len)
 {
-	int i, flags = 0, len;
+	int flags = 0;
+	size_t i;
+	size_t len; /* ptrdiff_t ? */
 	char *p = (char *) buf, *t;
 
 	for (;;) {

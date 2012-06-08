@@ -223,9 +223,9 @@ struct genlmsghdr *genlmsg_hdr(struct nlmsghdr *nlh)
  */
 int genlmsg_len(const struct genlmsghdr *gnlh)
 {
-	struct nlmsghdr *nlh;
+	const struct nlmsghdr *nlh;
 
-	nlh = (struct nlmsghdr *)((unsigned char *) gnlh - NLMSG_HDRLEN);
+	nlh = (const struct nlmsghdr *)((const unsigned char *) gnlh - NLMSG_HDRLEN);
 	return (nlh->nlmsg_len - GENL_HDRLEN - NLMSG_HDRLEN);
 }
 

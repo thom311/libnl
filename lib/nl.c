@@ -417,7 +417,7 @@ errout:
 int nl_recv(struct nl_sock *sk, struct sockaddr_nl *nla,
 	    unsigned char **buf, struct ucred **creds)
 {
-	int n;
+	ssize_t n;
 	int flags = 0;
 	static int page_size = 0;
 	struct iovec iov;

@@ -188,7 +188,8 @@ static int validate_nla(struct nlattr *nla, int maxtype,
 			struct nla_policy *policy)
 {
 	struct nla_policy *pt;
-	int minlen = 0, type = nla_type(nla);
+	unsigned int minlen = 0;
+	int type = nla_type(nla);
 
 	if (type <= 0 || type > maxtype)
 		return 0;

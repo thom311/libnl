@@ -625,7 +625,7 @@ nla_put_failure:
 int rtnl_addr_build_add_request(struct rtnl_addr *addr, int flags,
 				struct nl_msg **result)
 {
-	int required = ADDR_ATTR_IFINDEX | ADDR_ATTR_FAMILY |
+	uint32_t required = ADDR_ATTR_IFINDEX | ADDR_ATTR_FAMILY |
 		       ADDR_ATTR_PREFIXLEN | ADDR_ATTR_LOCAL;
 
 	if ((addr->ce_mask & required) != required)
@@ -698,7 +698,7 @@ int rtnl_addr_add(struct nl_sock *sk, struct rtnl_addr *addr, int flags)
 int rtnl_addr_build_delete_request(struct rtnl_addr *addr, int flags,
 				   struct nl_msg **result)
 {
-	int required = ADDR_ATTR_IFINDEX | ADDR_ATTR_FAMILY;
+	uint32_t required = ADDR_ATTR_IFINDEX | ADDR_ATTR_FAMILY;
 
 	if ((addr->ce_mask & required) != required)
 		return -NLE_MISSING_ATTR;

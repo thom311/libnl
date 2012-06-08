@@ -116,7 +116,7 @@ static int u32_msg_parser(struct rtnl_tc *tc, void *data)
 
 	if (tb[TCA_U32_PCNT]) {
 		struct tc_u32_sel *sel;
-		int pcnt_size;
+		size_t pcnt_size;
 
 		if (!tb[TCA_U32_SEL]) {
 			err = -NLE_MISSING_ATTR;

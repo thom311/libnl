@@ -100,7 +100,7 @@ void rtnl_class_put(struct rtnl_class *class)
 static int class_build(struct rtnl_class *class, int type, int flags,
 		       struct nl_msg **result)
 {
-	int needed = TCA_ATTR_PARENT | TCA_ATTR_HANDLE;
+	uint32_t needed = TCA_ATTR_PARENT | TCA_ATTR_HANDLE;
 
 	if ((class->ce_mask & needed) == needed &&
 	    TC_H_MAJ(class->c_parent) && TC_H_MAJ(class->c_handle) &&
@@ -196,7 +196,7 @@ int rtnl_class_build_delete_request(struct rtnl_class *class, struct nl_msg **re
 {
 	struct nl_msg *msg;
 	struct tcmsg tchdr;
-	int required = TCA_ATTR_IFINDEX | TCA_ATTR_HANDLE;
+	uint32_t required = TCA_ATTR_IFINDEX | TCA_ATTR_HANDLE;
 
 	if ((class->ce_mask & required) != required) {
 		APPBUG("ifindex and handle must be specified");

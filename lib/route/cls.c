@@ -37,7 +37,7 @@ static int cls_build(struct rtnl_cls *cls, int type, int flags,
 {
 	int err, prio, proto;
 	struct tcmsg *tchdr;
-	int required = TCA_ATTR_IFINDEX;
+	uint32_t required = TCA_ATTR_IFINDEX;
 
 	if ((cls->ce_mask & required) != required) {
 		APPBUG("ifindex must be specified");
@@ -251,7 +251,7 @@ int rtnl_cls_change(struct nl_sock *sk, struct rtnl_cls *cls, int flags)
 int rtnl_cls_build_delete_request(struct rtnl_cls *cls, int flags,
 				  struct nl_msg **result)
 {
-	int required = CLS_ATTR_PRIO;
+	uint32_t required = CLS_ATTR_PRIO;
 
 	if ((cls->ce_mask & required) != required) {
 		APPBUG("prio must be specified");

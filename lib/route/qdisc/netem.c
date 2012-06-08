@@ -841,7 +841,7 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 	/* Check several locations for the dist file */
 	char *test_path[] = { "", "./", "/usr/lib/tc/", "/usr/local/lib/tc/" };
 	
-	for (i = 0; i < sizeof(test_path)/sizeof(test_path[0]); i++) {
+	for (i = 0; i < ARRAY_SIZE(test_path); i++) {
 		snprintf(name, NAME_MAX, "%s%s%s", test_path[i], dist_type, dist_suffix);
 		if ((f = fopen(name, "r")))
 			break;

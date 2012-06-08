@@ -77,7 +77,7 @@ extern void			nfnl_queue_msg_set_physoutdev(struct nfnl_queue_msg *, uint32_t);
 extern int			nfnl_queue_msg_test_physoutdev(const struct nfnl_queue_msg *);
 extern uint32_t			nfnl_queue_msg_get_physoutdev(const struct nfnl_queue_msg *);
 
-extern void			nfnl_queue_msg_set_hwaddr(struct nfnl_queue_msg *, uint8_t *, int);
+extern void			nfnl_queue_msg_set_hwaddr(struct nfnl_queue_msg *, const uint8_t *, unsigned int);
 extern int			nfnl_queue_msg_test_hwaddr(const struct nfnl_queue_msg *);
 extern const uint8_t *		nfnl_queue_msg_get_hwaddr(const struct nfnl_queue_msg *, int *);
 

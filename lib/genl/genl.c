@@ -221,7 +221,7 @@ struct genlmsghdr *genlmsg_hdr(struct nlmsghdr *nlh)
  * @return Length of user payload including an eventual user header in
  *         number of bytes.
  */
-int genlmsg_len(const struct genlmsghdr *gnlh)
+unsigned int genlmsg_len(const struct genlmsghdr *gnlh)
 {
 	const struct nlmsghdr *nlh;
 

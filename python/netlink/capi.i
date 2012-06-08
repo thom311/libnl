@@ -177,8 +177,8 @@ extern void  nl_socket_set_peer_groups(struct nl_sock *sk, uint32_t groups);
 extern int nl_socket_set_buffer_size(struct nl_sock *, int, int);
 
 /* <netlink/msg.h> */
-extern int			nlmsg_size(int);
-extern int			nlmsg_total_size(int);
+extern unsigned int		nlmsg_size(unsigned int);
+extern unsigned int		nlmsg_total_size(unsigned int);
 extern int			nlmsg_padlen(int);
 
 extern void *			nlmsg_data(const struct nlmsghdr *);
@@ -191,7 +191,7 @@ extern int		  nlmsg_attrlen(const struct nlmsghdr *, int);
 
 /* message parsing */
 extern int		  nlmsg_valid_hdr(const struct nlmsghdr *, int);
-extern int		  nlmsg_ok(const struct nlmsghdr *, int);
+extern int		  nlmsg_ok(const struct nlmsghdr *, unsigned int);
 extern struct nlmsghdr *  nlmsg_next(struct nlmsghdr *, int *);
 extern int		  nlmsg_parse(struct nlmsghdr *, int, struct nlattr **,
 				      int, struct nla_policy *);

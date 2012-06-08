@@ -181,7 +181,7 @@ struct nl_cache_ops
 	char  *			co_name;
 
 	/** Size of family specific netlink header */
-	int			co_hdrsize;
+	unsigned int		co_hdrsize;
 
 	/** Netlink protocol */
 	int			co_protocol;

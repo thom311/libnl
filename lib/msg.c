@@ -51,12 +51,12 @@ static void __init init_msg_size(void)
  *
  * @return size of netlink message without padding.
  */
-int nlmsg_size(int payload)
+unsigned int nlmsg_size(unsigned int payload)
 {
 	return NLMSG_HDRLEN + payload;
 }
 
-static int nlmsg_msg_size(int payload)
+static unsigned int nlmsg_msg_size(unsigned int payload)
 {
 	return nlmsg_size(payload);
 }
@@ -69,7 +69,7 @@ static int nlmsg_msg_size(int payload)
  *
  * @return Size of netlink message including padding.
  */
-int nlmsg_total_size(int payload)
+unsigned int nlmsg_total_size(unsigned int payload)
 {
 	return NLMSG_ALIGN(nlmsg_msg_size(payload));
 }
@@ -176,7 +176,7 @@ int nlmsg_valid_hdr(const struct nlmsghdr *nlh, int hdrlen)
  * @arg nlh		netlink message header
  * @arg remaining	number of bytes remaining in message stream
  */
-int nlmsg_ok(const struct nlmsghdr *nlh, int remaining)
+int nlmsg_ok(const struct nlmsghdr *nlh, unsigned int remaining)
 {
 	return (remaining >= sizeof(struct nlmsghdr) &&
 		nlh->nlmsg_len >= sizeof(struct nlmsghdr) &&

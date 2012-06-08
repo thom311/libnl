@@ -76,8 +76,8 @@ extern int		nla_padlen(int payload);
 /* Attribute parsing */
 extern int		nla_type(const struct nlattr *);
 extern void *		nla_data(const struct nlattr *);
-extern int		nla_len(const struct nlattr *);
-extern int		nla_ok(const struct nlattr *, int);
+extern unsigned int	nla_len(const struct nlattr *);
+extern int		nla_ok(const struct nlattr *, unsigned int);
 extern struct nlattr *	nla_next(const struct nlattr *, int *);
 extern int		nla_parse(struct nlattr **, int, struct nlattr *,
 				  int, struct nla_policy *);

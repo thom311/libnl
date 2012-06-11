@@ -166,6 +166,11 @@ int rtnl_tc_str2handle(const char *str, uint32_t *res)
 		return 0;
 	}
 
+	if (!strcasecmp(str, "ingress")) {
+		*res = TC_H_INGRESS;
+		return 0;
+	}
+
 	h = strtoul(str, &colon, 16);
 
 	/* MAJ is not a number */

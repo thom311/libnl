@@ -234,10 +234,11 @@ static int probe_response(struct nl_msg *msg, void *arg)
  *
  * @return Generic netlink family object or NULL if no match was found.
  */
-static struct genl_family *genl_ctrl_probe_by_name(struct nl_sock *sk, const char *name)
+static struct genl_family *genl_ctrl_probe_by_name(struct nl_sock *sk,
+						   const char *name)
 {
 	struct nl_msg *msg;
-	struct genl_family *ret = NULL;
+	struct genl_family *ret;
 	struct nl_cb *cb;
 	int rc;
 
@@ -254,18 +255,23 @@ static struct genl_family *genl_ctrl_probe_by_name(struct nl_sock *sk, const cha
 	if (!(cb = nl_cb_clone(nl_socket_get_cb(sk))))
 		goto out_msg_free;
 
+	if (genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, GENL_ID_CTRL,
+			0, 0, CTRL_CMD_GETFAMILY, 1) < 0) {
+		BUG();
+		goto out_cb_free;
+	}
 
-	genlmsg_put(msg, NL_AUTO_PID, NL_AUTO_SEQ, GENL_ID_CTRL,
-		    0, 0, CTRL_CMD_GETFAMILY, 1);
+	if (nla_put_string(msg, CTRL_ATTR_FAMILY_NAME, name) < 0)
+		goto out_cb_free;
 
-	if (nla_put_string(msg, CTRL_ATTR_FAMILY_NAME, name))
+	rc = nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, probe_response,
+		       (void *) ret);
+	if (rc < 0)
 		goto out_cb_free;
 
 	rc = nl_send_auto_complete(sk, msg);
 	if (rc < 0)
 		goto out_cb_free;
-
-	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, probe_response, (void *)ret);
 
 	rc = nl_recvmsgs(sk, cb);
 	if (rc < 0)

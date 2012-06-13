@@ -267,7 +267,14 @@ static struct genl_family *genl_ctrl_probe_by_name(struct nl_sock *sk, const cha
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, probe_response, (void *)ret);
 
-	nl_recvmsgs(sk, cb);
+	rc = nl_recvmsgs(sk, cb);
+	if (rc < 0)
+		goto out_cb_free;
+
+	/* If search was successful, request may be ACKed after data */
+	rc = wait_for_ack(sk);
+	if (rc < 0)
+		goto out_cb_free;
 
 	if (genl_family_get_id(ret) != 0) {
 		nlmsg_free(msg);

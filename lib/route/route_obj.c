@@ -986,6 +986,7 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 	}
 
 	if (old_nh) {
+		rtnl_route_nh_set_flags(old_nh, rtm->rtm_flags & 0xff);
 		if (route->rt_nr_nh == 0) {
 			/* If no nexthops have been provided via RTA_MULTIPATH
 			 * we add it as regular nexthop to maintain backwards
@@ -1045,9 +1046,14 @@ int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)
 	if (route->rt_src)
 		rtmsg.rtm_src_len = nl_addr_get_prefixlen(route->rt_src);
 
-
 	if (rtmsg.rtm_scope == RT_SCOPE_NOWHERE)
 		rtmsg.rtm_scope = rtnl_route_guess_scope(route);
+
+	if (rtnl_route_get_nnexthops(route) == 1) {
+		struct rtnl_nexthop *nh;
+		nh = rtnl_route_nexthop_n(route, 0);
+		rtmsg.rtm_flags |= nh->rtnh_flags;
+	}
 
 	if (nlmsg_append(msg, &rtmsg, sizeof(rtmsg), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;

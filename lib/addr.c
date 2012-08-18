@@ -279,7 +279,9 @@ int nl_addr_parse(const char *addrstr, int hint, struct nl_addr **result)
 	if (!strcasecmp(str, "default") ||
 	    !strcasecmp(str, "all") ||
 	    !strcasecmp(str, "any")) {
-			
+
+		len = 0;
+
 		switch (hint) {
 			case AF_INET:
 			case AF_UNSPEC:
@@ -287,17 +289,14 @@ int nl_addr_parse(const char *addrstr, int hint, struct nl_addr **result)
 				 * no hint given the user wants to have a IPv4
 				 * address given back. */
 				family = AF_INET;
-				len = 4;
 				goto prefix;
 
 			case AF_INET6:
 				family = AF_INET6;
-				len = 16;
 				goto prefix;
 
 			case AF_LLC:
 				family = AF_LLC;
-				len = 6;
 				goto prefix;
 
 			default:

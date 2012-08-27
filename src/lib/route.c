@@ -209,7 +209,7 @@ void nl_cli_route_parse_table(struct rtnl_route *route, char *arg)
 		table = lval;
 	}
 
-	rtnl_route_set_table(route, lval);
+	rtnl_route_set_table(route, table);
 }
 
 void nl_cli_route_parse_prio(struct rtnl_route *route, char *arg)

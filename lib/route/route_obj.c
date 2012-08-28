@@ -335,7 +335,7 @@ static int route_compare(struct nl_object *_a, struct nl_object *_b,
 		diff |= ROUTE_DIFF(FLAGS,
 			  (a->rt_flags ^ b->rt_flags) & b->rt_flag_mask);
 	} else {
-		if (a->rt_nr_nh != a->rt_nr_nh)
+		if (a->rt_nr_nh != b->rt_nr_nh)
 			goto nh_mismatch;
 
 		/* search for a dup in each nh of a */

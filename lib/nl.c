@@ -69,6 +69,8 @@
  * Creates a netlink socket using the specified protocol, binds the socket
  * and issues a connection attempt.
  *
+ * This function fail if socket is already connected.
+ *
  * @note SOCK_CLOEXEC is set on the socket if available.
  *
  * @return 0 on success or a negative error code.
@@ -81,6 +83,9 @@ int nl_connect(struct nl_sock *sk, int protocol)
 #ifdef SOCK_CLOEXEC
 	flags |= SOCK_CLOEXEC;
 #endif
+
+        if (sk->s_fd != -1)
+                return -NLE_BAD_SOCK;
 
 	sk->s_fd = socket(AF_NETLINK, SOCK_RAW | flags, protocol);
 	if (sk->s_fd < 0) {
@@ -123,8 +128,10 @@ int nl_connect(struct nl_sock *sk, int protocol)
 
 	return 0;
 errout:
-	close(sk->s_fd);
-	sk->s_fd = -1;
+        if (sk->s_fd != -1) {
+    		close(sk->s_fd);
+    		sk->s_fd = -1;
+        }
 
 	return err;
 }

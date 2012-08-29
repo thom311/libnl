@@ -662,7 +662,7 @@ static void link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 
 	res = nl_cancel_down_bytes(link->l_stats[RTNL_LINK_RX_BYTES], &unit);
 
-	strcpy(fmt, "     RX %X.2f %s %10llu %10llu %10llu %10llu %10llu\n");
+	strcpy(fmt, "     RX %X.2f %s %10" PRIu64 " %10" PRIu64 " %10" PRIu64 " %10" PRIu64 " %10" PRIu64 "\n");
 	fmt[9] = *unit == 'B' ? '9' : '7';
 	
 	nl_dump_line(p, fmt, res, unit,
@@ -674,7 +674,7 @@ static void link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 
 	res = nl_cancel_down_bytes(link->l_stats[RTNL_LINK_TX_BYTES], &unit);
 
-	strcpy(fmt, "     TX %X.2f %s %10llu %10llu %10llu %10llu %10llu\n");
+	strcpy(fmt, "     TX %X.2f %s %10" PRIu64 " %10" PRIu64 " %10" PRIu64 " %10" PRIu64 " %10" PRIu64 "\n");
 	fmt[9] = *unit == 'B' ? '9' : '7';
 	
 	nl_dump_line(p, fmt, res, unit,

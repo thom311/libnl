@@ -277,7 +277,7 @@ static void ct_dump_stats(struct nl_object *a, struct nl_dump_params *p)
 	for (i=0; i<=1; i++) {
 		res = nl_cancel_down_bytes(nfnl_ct_get_bytes(ct, i), &unit);
 		packets = nfnl_ct_get_packets(ct, i);
-		nl_dump_line(p, "    %s %10llu %7.2f %s\n", names[i], packets, res, unit);
+		nl_dump_line(p, "    %s %10" PRIu64  " %7.2f %s\n", names[i], packets, res, unit);
 	}
 }
 

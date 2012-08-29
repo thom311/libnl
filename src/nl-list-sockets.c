@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 	while (fgets(buf, sizeof(buf), fd)) {
 		unsigned long sk, cb;
 		int ret, proto, pid, rmem, wmem, refcnt;
-		uint32_t groups;
+		unsigned int groups;
 		
 		ret = sscanf(buf, "%lx %d %d %08x %d %d %lx %d\n",
 			     &sk, &proto, &pid, &groups, &rmem, &wmem,

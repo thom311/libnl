@@ -28,6 +28,7 @@
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <linux/socket.h>
+#include <stdlib.h> /* exit() */
 
 /**
  * Global variable indicating the desired level of debugging output.
@@ -421,10 +422,15 @@ static void __init get_psched_settings(void)
 			strncpy(name, "/proc/net/psched", sizeof(name) - 1);
 		
 		if ((fd = fopen(name, "r"))) {
-			uint32_t ns_per_usec, ns_per_tick, nom, denom;
+			unsigned int ns_per_usec, ns_per_tick, nom, denom;
 
-			fscanf(fd, "%08x %08x %08x %08x",
-			       &ns_per_usec, &ns_per_tick, &nom, &denom);
+			if (fscanf(fd, "%08x %08x %08x %08x",
+			       &ns_per_usec, &ns_per_tick, &nom, &denom) != 4) {
+                            fprintf(stderr, "Fatal error: can not read psched settings from \"%s\". " \
+                                    "Try to set TICKS_PER_USEC, PROC_NET_PSCHED or PROC_ROOT " \
+                                    "environment variables\n", name);
+                            exit(1);
+                        }
 
 			ticks_per_usec = (double) ns_per_usec / 
 					 (double) ns_per_tick;

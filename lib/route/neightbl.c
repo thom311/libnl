@@ -332,21 +332,32 @@ static void neightbl_dump_stats(struct nl_object *arg, struct nl_dump_params *p)
 	if (!(ntbl->ce_mask & NEIGHTBL_ATTR_STATS))
 		return;
 
-	nl_dump_line(p, "    lookups %lld hits %lld failed %lld " \
-		    "allocations %lld destroys %lld\n",
+	nl_dump_line(p, "   " \
+                    " lookups %" PRIu64 \
+                    " hits %" PRIu64 \
+                    " failed %" PRIu64 \
+		    " allocations %" PRIu64 \
+                    " destroys %" PRIu64 \
+                    "\n",
 		ntbl->nt_stats.ndts_lookups,
 		ntbl->nt_stats.ndts_hits,
 		ntbl->nt_stats.ndts_res_failed,
 		ntbl->nt_stats.ndts_allocs,
 		ntbl->nt_stats.ndts_destroys);
 
-	nl_dump_line(p, "    hash-grows %lld forced-gc-runs %lld " \
-		    "periodic-gc-runs %lld\n",
+	nl_dump_line(p, "   " \
+                        " hash-grows %" PRIu64 \
+                        " forced-gc-runs %" PRIu64 \
+                        " periodic-gc-runs %" PRIu64 \
+                        "\n",
 		ntbl->nt_stats.ndts_hash_grows,
 		ntbl->nt_stats.ndts_forced_gc_runs,
 		ntbl->nt_stats.ndts_periodic_gc_runs);
 
-	nl_dump_line(p, "    rcv-unicast-probes %lld rcv-multicast-probes %lld\n",
+	nl_dump_line(p, "   " \
+                        " rcv-unicast-probes %" PRIu64 \
+                        " rcv-multicast-probes %" PRIu64 \
+                        "\n",
 		ntbl->nt_stats.ndts_rcv_probes_ucast,
 		ntbl->nt_stats.ndts_rcv_probes_mcast);
 }

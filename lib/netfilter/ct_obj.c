@@ -267,8 +267,8 @@ static void ct_dump_stats(struct nl_object *a, struct nl_dump_params *p)
 	    !nfnl_ct_test_bytes(ct, 1) ||
 	    !nfnl_ct_test_packets(ct, 1))
 	    {
-		nl_dump_line(p, "    Statics are not available.\n");
-		nl_dump_line(p, "    Please set sysctl net.netfilter.nf_conntrack_acct = 1\n");
+		nl_dump_line(p, "    Statistics are not available.\n");
+		nl_dump_line(p, "    Please set sysctl net.netfilter.nf_conntrack_acct=1\n");
 		nl_dump_line(p, "    (Require kernel 2.6.27)\n");
 		return;
 	    }

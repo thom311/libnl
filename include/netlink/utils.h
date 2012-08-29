@@ -44,8 +44,8 @@ enum {
 };
 
 /* unit pretty-printing */
-extern double	nl_cancel_down_bytes(unsigned long long, const char **);
-extern double	nl_cancel_down_bits(unsigned long long, const char **);
+extern double	nl_cancel_down_bytes(unsigned long long, char **);
+extern double	nl_cancel_down_bits(unsigned long long, char **);
 extern int	nl_rate2str(unsigned long long, int, char *, size_t);
 extern double	nl_cancel_down_us(uint32_t, char **);
 

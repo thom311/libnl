@@ -102,7 +102,7 @@ extern void	rtnl_route_foreach_nexthop(struct rtnl_route *r,
                                  void (*cb)(struct rtnl_nexthop *, void *),
                                  void *arg);
 
-extern struct rtnl_nexthop * rtnl_route_nexthop_n(struct rtnl_route *r, int n);
+extern struct rtnl_nexthop * rtnl_route_nexthop_n(struct rtnl_route *r, uint32_t n);
 
 extern int	rtnl_route_guess_scope(struct rtnl_route *);
 

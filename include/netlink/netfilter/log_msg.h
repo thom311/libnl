@@ -65,7 +65,7 @@ extern uint32_t		nfnl_log_msg_get_physindev(const struct nfnl_log_msg *);
 extern void		nfnl_log_msg_set_physoutdev(struct nfnl_log_msg *, uint32_t);
 extern uint32_t		nfnl_log_msg_get_physoutdev(const struct nfnl_log_msg *);
 
-extern void		nfnl_log_msg_set_hwaddr(struct nfnl_log_msg *, uint8_t *, int);
+extern void		nfnl_log_msg_set_hwaddr(struct nfnl_log_msg *, const uint8_t *, unsigned int);
 extern const uint8_t *	nfnl_log_msg_get_hwaddr(const struct nfnl_log_msg *, int *);
 
 extern int		nfnl_log_msg_set_payload(struct nfnl_log_msg *, uint8_t *, int);

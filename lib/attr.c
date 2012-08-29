@@ -128,7 +128,7 @@ void *nla_data(const struct nlattr *nla)
  *
  * @return Length of payload in bytes.
  */
-int nla_len(const struct nlattr *nla)
+unsigned int nla_len(const struct nlattr *nla)
 {
 	return nla->nla_len - NLA_HDRLEN;
 }
@@ -145,7 +145,7 @@ int nla_len(const struct nlattr *nla)
  *
  * @return True if the attribute can be accessed safely, false otherwise.
  */
-int nla_ok(const struct nlattr *nla, int remaining)
+int nla_ok(const struct nlattr *nla, unsigned int remaining)
 {
 	return remaining >= sizeof(*nla) &&
 	       nla->nla_len >= sizeof(*nla) &&

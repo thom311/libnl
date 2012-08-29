@@ -371,8 +371,8 @@ uint32_t nfnl_queue_msg_get_physoutdev(const struct nfnl_queue_msg *msg)
 	return msg->queue_msg_physoutdev;
 }
 
-void nfnl_queue_msg_set_hwaddr(struct nfnl_queue_msg *msg, uint8_t *hwaddr,
-			       int len)
+void nfnl_queue_msg_set_hwaddr(struct nfnl_queue_msg *msg, const uint8_t *hwaddr,
+			       unsigned int len)
 {
 	if (len > sizeof(msg->queue_msg_hwaddr))
 		len = sizeof(msg->queue_msg_hwaddr);

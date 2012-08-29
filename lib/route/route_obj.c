@@ -724,7 +724,7 @@ void rtnl_route_foreach_nexthop(struct rtnl_route *r,
 	}
 }
 
-struct rtnl_nexthop *rtnl_route_nexthop_n(struct rtnl_route *r, int n)
+struct rtnl_nexthop *rtnl_route_nexthop_n(struct rtnl_route *r, uint32_t n)
 {
 	struct rtnl_nexthop *nh;
 	uint32_t i;

@@ -316,7 +316,7 @@ uint32_t nfnl_log_msg_get_physoutdev(const struct nfnl_log_msg *msg)
 	return msg->log_msg_physoutdev;
 }
 
-void nfnl_log_msg_set_hwaddr(struct nfnl_log_msg *msg, uint8_t *hwaddr, int len)
+void nfnl_log_msg_set_hwaddr(struct nfnl_log_msg *msg, const uint8_t *hwaddr, unsigned int len)
 {
 	if (len > sizeof(msg->log_msg_hwaddr))
 		len = sizeof(msg->log_msg_hwaddr);

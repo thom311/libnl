@@ -1,5 +1,5 @@
 /*
- * netlink/version.h	Compile Time Versioning Information
+ * netlink/version.h	Versioning Information
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -11,6 +11,8 @@
 
 #ifndef NETLINK_VERSION_H_
 #define NETLINK_VERSION_H_
+
+/* Compile Time Versioning Information */
 
 #define LIBNL_STRING "@PACKAGE_STRING@"
 #define LIBNL_VERSION "@PACKAGE_VERSION@"
@@ -24,5 +26,12 @@
 #define LIBNL_CURRENT		@LT_CURRENT@
 #define LIBNL_REVISION		@LT_REVISION@
 #define LIBNL_AGE		@LT_AGE@
+
+/* Run-time version information */
+
+extern const int        nl_ver_num;
+extern const int        nl_ver_maj;
+extern const int        nl_ver_min;
+extern const int        nl_ver_mic;
 
 #endif

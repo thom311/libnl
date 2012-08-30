@@ -255,8 +255,8 @@ static struct genl_family *genl_ctrl_probe_by_name(struct nl_sock *sk,
 	if (!(cb = nl_cb_clone(nl_socket_get_cb(sk))))
 		goto out_msg_free;
 
-	if (genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, GENL_ID_CTRL,
-			0, 0, CTRL_CMD_GETFAMILY, 1) < 0) {
+	if (!genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, GENL_ID_CTRL,
+			0, 0, CTRL_CMD_GETFAMILY, 1)) {
 		BUG();
 		goto out_cb_free;
 	}

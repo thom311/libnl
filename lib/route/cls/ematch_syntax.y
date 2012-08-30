@@ -53,7 +53,9 @@ extern int ematch_lex(YYSTYPE *, void *);
 static void yyerror(void *scanner, char **errp, struct nl_list_head *root, const char *msg)
 {
 	if (msg)
-		asprintf(errp, "%s", msg);
+            *errp = strdup(msg);
+        else
+	    *errp = NULL;
 }
 %}
 
@@ -186,7 +188,7 @@ ematch:
 			struct rtnl_ematch *e;
 
 			if (!(e = rtnl_ematch_alloc())) {
-				asprintf(errp, "Unable to allocate ematch object");
+				*errp = strdup("Unable to allocate ematch object");
 				YYABORT;
 			}
 
@@ -201,7 +203,7 @@ ematch:
 			struct rtnl_ematch *e;
 
 			if (!(e = rtnl_ematch_alloc())) {
-				asprintf(errp, "Unable to allocate ematch object");
+				*errp = strdup("Unable to allocate ematch object");
 				YYABORT;
 			}
 
@@ -219,7 +221,7 @@ ematch:
 			struct rtnl_ematch *e;
 
 			if (!(e = rtnl_ematch_alloc())) {
-				asprintf(errp, "Unable to allocate ematch object");
+				*errp = strdup("Unable to allocate ematch object");
 				YYABORT;
 			}
 
@@ -246,7 +248,7 @@ ematch:
 			struct rtnl_ematch *e;
 
 			if (!(e = rtnl_ematch_alloc())) {
-				asprintf(errp, "Unable to allocate ematch object");
+				*errp = strdup("Unable to allocate ematch object");
 				YYABORT;
 			}
 
@@ -265,7 +267,7 @@ ematch:
 			struct rtnl_ematch *e;
 
 			if (!(e = rtnl_ematch_alloc())) {
-				asprintf(errp, "Unable to allocate ematch object");
+				*errp = strdup("Unable to allocate ematch object");
 				YYABORT;
 			}
 
@@ -417,7 +419,8 @@ pattern:
 				memcpy($$.data, nl_addr_get_binary_addr(addr), $$.len);
 				nl_addr_put(addr);
 			} else {
-				asprintf(errp, "invalid pattern \"%s\"", $1);
+				if (asprintf(errp, "invalid pattern \"%s\"", $1) == -1)
+					*errp = NULL;
 				YYABORT;
 			}
 		}
@@ -433,7 +436,8 @@ pktloc:
 			struct rtnl_pktloc *loc;
 
 			if (rtnl_pktloc_lookup($1, &loc) < 0) {
-				asprintf(errp, "Packet location \"%s\" not found", $1);
+				if (asprintf(errp, "Packet location \"%s\" not found", $1) == -1)
+					*errp = NULL;
 				YYABORT;
 			}
 
@@ -445,12 +449,12 @@ pktloc:
 			struct rtnl_pktloc *loc;
 
 			if ($5 && (!$1 || $1 > TCF_EM_ALIGN_U32)) {
-				asprintf(errp, "mask only allowed for alignments u8|u16|u32");
+				*errp = strdup("mask only allowed for alignments u8|u16|u32");
 				YYABORT;
 			}
 
 			if (!(loc = rtnl_pktloc_alloc())) {
-				asprintf(errp, "Unable to allocate packet location object");
+				*errp = strdup("Unable to allocate packet location object");
 				YYABORT;
 			}
 

@@ -274,10 +274,10 @@ void nl_complete_msg(struct nl_sock *sk, struct nl_msg *msg)
 	struct nlmsghdr *nlh;
 
 	nlh = nlmsg_hdr(msg);
-	if (nlh->nlmsg_pid == 0)
+	if (nlh->nlmsg_pid == NL_AUTO_PORT)
 		nlh->nlmsg_pid = sk->s_local.nl_pid;
 
-	if (nlh->nlmsg_seq == 0)
+	if (nlh->nlmsg_seq == NL_AUTO_SEQ)
 		nlh->nlmsg_seq = sk->s_seq_next++;
 
 	if (msg->nm_protocol == -1)

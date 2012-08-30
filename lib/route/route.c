@@ -69,6 +69,10 @@ static int route_request_update(struct nl_cache *c, struct nl_sock *h)
  * Allocates a new cache, initializes it properly and updates it to
  * contain all routes currently configured in the kernel.
  *
+ * Valid flags:
+ *   * ROUTE_CACHE_CONTENT - Cache will contain contents of routing cache
+ *                           instead of actual routes.
+ *
  * @note The caller is responsible for destroying and freeing the
  *       cache after using it.
  * @return 0 on success or a negative error code.

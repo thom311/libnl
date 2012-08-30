@@ -132,6 +132,16 @@ if test "x$generate_doc" != "xno"; then
 		fi
 	fi
 
+	AC_CHECK_PROG(HAVE_PYGMENTIZE, [pygmentize], yes, no)
+	if test "x$HAVE_PYGMENTIZE" = "xno"; then
+		if test "x$generate_doc" = "xyes"; then
+			AC_MSG_ERROR([*** pygmentize package required to generate documentation])
+		else
+			AC_MSG_WARN([*** Disabling building of guides])
+			HAVE_ASCIIDOC=no
+		fi
+	fi
+
 	link_doc=yes
 	if test "x$HAVE_DOXYGEN" = "xno"; then
 		AC_MSG_WARN([*** Disabling API linking due to missing doxygen package])

@@ -91,12 +91,32 @@ if test "x$generate_doc" != "xno"; then
 		AC_MSG_ERROR([*** doxygen package required to generate documentation])
 	fi
 
+	AC_CHECK_PROG(HAVE_DOT, [dot], yes, no)
+	if test "x$HAVE_DOT" = "xno"; then
+		if test "x$generate_doc" = "xyes"; then
+			AC_MSG_ERROR([*** graphviz package required to generate documentation])
+		else
+			AC_MSG_WARN([*** graphviz not found, disabling building of API reference])
+			HAVE_DOXYGEN=no
+		fi
+	fi
+
 	AC_CHECK_PROG(HAVE_ASCIIDOC, [asciidoc], yes, no)
 	if test "x$HAVE_ASCIIDOC" = "xno"; then
 		if test "x$generate_doc" = "xyes"; then
 			AC_MSG_ERROR([*** asciidoc package required to generate documentation])
 		else
 			AC_MSG_WARN([*** asciidoc not found, disabling building of guides])
+		fi
+	fi
+
+	AC_CHECK_PROG(HAVE_SOURCE_HIGHLIGHT, [source-highlight], yes, no)
+	if test "x$HAVE_SOURCE_HIGHLIGHT" = "xno"; then
+		if test "x$generate_doc" = "xyes"; then
+			AC_MSG_ERROR([*** source-highlight required to generate documentation])
+		else
+			AC_MSG_WARN([*** source-highlight not found, disabling building of guides])
+			HAVE_ASCIIDOC=no
 		fi
 	fi
 

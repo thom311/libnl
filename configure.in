@@ -147,11 +147,11 @@ if test "x$generate_doc" != "xno"; then
 		AC_MSG_WARN([*** Disabling API linking due to missing doxygen package])
 		link_doc=no
 	fi
-
-	AM_CONDITIONAL([LINK_DOC], [test "x$link_doc" = "xyes"])
-	AM_CONDITIONAL([HAVE_DOXYGEN], [test "x$HAVE_DOXYGEN" = "xyes"])
-	AM_CONDITIONAL([HAVE_ASCIIDOC], [test "x$HAVE_ASCIIDOC" = "xyes"])
 fi
+
+AM_CONDITIONAL([LINK_DOC], [test "x$link_doc" = "xyes"])
+AM_CONDITIONAL([HAVE_DOXYGEN], [test "x$HAVE_DOXYGEN" = "xyes"])
+AM_CONDITIONAL([HAVE_ASCIIDOC], [test "x$HAVE_ASCIIDOC" = "xyes"])
 
 AM_CONDITIONAL([GENERATE_DOC], [test "x$generate_doc" != "xno"])
 

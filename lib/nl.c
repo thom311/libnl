@@ -459,25 +459,31 @@ retry:
 	n = recvmsg(sk->s_fd, &msg, flags);
 	if (!n)
 		goto abort;
-	else if (n < 0) {
+
+	if (n < 0) {
+
 		if (errno == EINTR) {
 			NL_DBG(3, "recvmsg() returned EINTR, retrying\n");
 			goto retry;
-		} else if (errno == EAGAIN) {
+		}
+
+                if (errno == EAGAIN) {
 			NL_DBG(3, "recvmsg() returned EAGAIN, aborting\n");
 			goto abort;
-		} else {
-			free(msg.msg_control);
-			free(*buf);
-			return -nl_syserr2nlerr(errno);
 		}
+
+		free(msg.msg_control);
+		free(*buf);
+		return -nl_syserr2nlerr(errno);
 	}
 
 	if (msg.msg_flags & MSG_CTRUNC) {
 		msg.msg_controllen *= 2;
 		msg.msg_control = realloc(msg.msg_control, msg.msg_controllen);
 		goto retry;
-	} else if (iov.iov_len < n || msg.msg_flags & MSG_TRUNC) {
+	}
+
+        if (iov.iov_len < n || msg.msg_flags & MSG_TRUNC) {
 		/* Provided buffer is not long enough, enlarge it
 		 * to size of n (which should be total length of the message)
 		 * and try again. */
@@ -485,7 +491,9 @@ retry:
 		iov.iov_base = *buf = realloc(*buf, iov.iov_len);
 		flags = 0;
 		goto retry;
-	} else if (flags != 0) {
+	}
+
+        if (flags != 0) {
 		/* Buffer is big enough, do the actual reading */
 		flags = 0;
 		goto retry;

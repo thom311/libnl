@@ -190,10 +190,10 @@ static int htb_qdisc_msg_fill(struct rtnl_tc *tc, void *data,
 			      struct nl_msg *msg)
 {
 	struct rtnl_htb_qdisc *htb = data;
-	struct tc_htb_glob opts = {0};
-
-	opts.version = TC_HTB_PROTOVER;
-	opts.rate2quantum = 10;
+	struct tc_htb_glob opts = {
+        	.version = TC_HTB_PROTOVER,
+	        .rate2quantum = 10,
+        };
 
 	if (htb) {
 		if (htb->qh_mask & SCH_HTB_HAS_RATE2QUANTUM)

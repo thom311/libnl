@@ -540,6 +540,12 @@ static int recvmsgs(struct nl_sock *sk, struct nl_cb *cb)
 	int n, err = 0, multipart = 0, interrupted = 0, nrecv = 0;
 	unsigned char *buf = NULL;
 	struct nlmsghdr *hdr;
+
+	/*
+	nla is passed on to not only to nl_recv() but may also be passed
+	to a function pointer provided by the caller which may or may not
+	initialize the variable. Thomas Graf.
+	*/
 	struct sockaddr_nl nla = {0};
 	struct nl_msg *msg = NULL;
 	struct ucred *creds = NULL;

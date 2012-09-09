@@ -332,7 +332,7 @@ static int route_compare(struct nl_object *_a, struct nl_object *_b,
 			if (a->rt_metrics_mask & (1 << i) &&
 			    (!(b->rt_metrics_mask & (1 << i)) ||
 			     a->rt_metrics[i] != b->rt_metrics[i]))
-				ROUTE_DIFF(METRICS, 1);
+				diff |= ROUTE_DIFF(METRICS, 1);
 		}
 
 		diff |= ROUTE_DIFF(FLAGS,

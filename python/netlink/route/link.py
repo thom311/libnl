@@ -152,6 +152,15 @@ class Link(netlink.Object):
         self.inet = inet.InetLink(self)
         self.af = {'inet' : self.inet }
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, tb):
+        if exc_type is None:
+            self.change()
+        else:
+            return false
+
     @classmethod
     def from_capi(cls, obj):
         return cls(capi.link2obj(obj))

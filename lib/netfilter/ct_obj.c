@@ -121,10 +121,10 @@ static void dump_icmp(struct nl_dump_params *p, struct nfnl_ct *ct, int reply)
 	if (nfnl_ct_test_icmp_type(ct, reply))
 		nl_dump(p, "icmp type %d ", nfnl_ct_get_icmp_type(ct, reply));
 
-	if (nfnl_ct_test_icmp_type(ct, reply))
+	if (nfnl_ct_test_icmp_code(ct, reply))
 		nl_dump(p, "code %d ", nfnl_ct_get_icmp_code(ct, reply));
 
-	if (nfnl_ct_test_icmp_type(ct, reply))
+	if (nfnl_ct_test_icmp_id(ct, reply))
 		nl_dump(p, "id %d ", nfnl_ct_get_icmp_id(ct, reply));
 }
 

@@ -779,13 +779,35 @@ struct nfnl_ct {
 	struct nfnl_ct_dir	ct_repl;
 };
 
+union nfnl_exp_protodata {
+    struct {
+        uint16_t    src;
+        uint16_t    dst;
+    } port;
+    struct {
+        uint16_t    id;
+        uint8_t     type;
+        uint8_t     code;
+    } icmp;
+};
+
+// Allow for different master/expect l4 protocols
+struct nfnl_exp_proto
+{
+    uint8_t                  l4protonum;
+    union nfnl_exp_protodata l4protodata;
+};
+
+struct nfnl_exp_dir {
+    struct nl_addr *    src;
+    struct nl_addr *    dst;
+    struct nfnl_exp_proto proto;
+};
+
 struct nfnl_exp {
     NLHDR_COMMON
 
     uint8_t         exp_family;     // IPv4, IPv6, etc - required
-    uint8_t         exp_proto;      // tcp, udp, etc - required
-    union nfnl_ct_protoinfo exp_protoinfo; // ??? Assured, etc?
-
     uint32_t        exp_timeout;      // required afaik
     uint32_t        exp_id;           // optional
     uint16_t        exp_zone;         // optional

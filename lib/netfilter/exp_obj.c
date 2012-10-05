@@ -29,35 +29,33 @@
 
 /** @cond SKIP */
 #define EXP_ATTR_FAMILY             (1UL << 0)
-#define EXP_ATTR_PROTO              (1UL << 1)
-
-#define EXP_ATTR_TIMEOUT            (1UL << 2) // 32-bit
-#define EXP_ATTR_ID	              (1UL << 3) // 32-bit
-#define EXP_ATTR_HELPER_NAME        (1UL << 4) // string (16 bytes max)
-#define EXP_ATTR_ZONE               (1UL << 5) // 16-bit
-#define EXP_ATTR_CLASS              (1UL << 6) // 32-bit
-#define EXP_ATTR_FLAGS              (1UL << 7) // 32-bit
-#define EXP_ATTR_FN                 (1UL << 8) // String
+#define EXP_ATTR_TIMEOUT            (1UL << 1) // 32-bit
+#define EXP_ATTR_ID	                (1UL << 2) // 32-bit
+#define EXP_ATTR_HELPER_NAME        (1UL << 3) // string (16 bytes max)
+#define EXP_ATTR_ZONE               (1UL << 4) // 16-bit
+#define EXP_ATTR_CLASS              (1UL << 5) // 32-bit
+#define EXP_ATTR_FLAGS              (1UL << 6) // 32-bit
+#define EXP_ATTR_FN                 (1UL << 7) // String
 
 // Tuples
-#define EXP_ATTR_EXPECT             (1UL << 9)  // contains ip, proto
-#define EXP_ATTR_EXPECT_IP          (1UL << 10) // contains src, dst
-#define EXP_ATTR_EXPECT_L4PROTO     (1UL << 11) // contains l4proto # + PORT attrs or ICMP attrs
-#define EXP_ATTR_EXPECT_L4PROTO_NUM (1UL << 12)
-#define EXP_ATTR_MASTER             (1UL << 13) // contains ip, proto
-#define EXP_ATTR_MASTER_IP          (1UL << 14) // contains src, dst
-#define EXP_ATTR_MASTER_L4PROTO     (1UL << 15) // contains l4proto # + PORT attrs or ICMP attrs
-#define EXP_ATTR_MASTER_L4PROTO_NUM (1UL << 16)
-#define EXP_ATTR_MASK               (1UL << 17) // contains ip, proto
-#define EXP_ATTR_MASK_IP            (1UL << 18) // contains src, dst
-#define EXP_ATTR_MASK_L4PROTO       (1UL << 19) // contains l4proto # + PORT attrs or ICMP attrs
-#define EXP_ATTR_MASK_L4PROTO_NUM   (1UL << 20)
-#define EXP_ATTR_NAT                (1UL << 21) // contains ip, proto
-#define EXP_ATTR_NAT_IP             (1UL << 22) // contains src, dst
-#define EXP_ATTR_NAT_L4PROTO        (1UL << 23) // contains l4proto # + PORT attrs or ICMP attrs
-#define EXP_ATTR_NAT_L4PROTO_NUM    (1UL << 24)
+#define EXP_ATTR_EXPECT             (1UL << 8)  // contains ip, proto
+#define EXP_ATTR_EXPECT_IP          (1UL << 9) // contains src, dst
+#define EXP_ATTR_EXPECT_L4PROTO     (1UL << 10) // contains l4proto # + PORT attrs or ICMP attrs
+#define EXP_ATTR_EXPECT_L4PROTO_NUM (1UL << 11)
+#define EXP_ATTR_MASTER             (1UL << 12) // contains ip, proto
+#define EXP_ATTR_MASTER_IP          (1UL << 13) // contains src, dst
+#define EXP_ATTR_MASTER_L4PROTO     (1UL << 14) // contains l4proto # + PORT attrs or ICMP attrs
+#define EXP_ATTR_MASTER_L4PROTO_NUM (1UL << 15)
+#define EXP_ATTR_MASK               (1UL << 16) // contains ip, proto
+#define EXP_ATTR_MASK_IP            (1UL << 17) // contains src, dst
+#define EXP_ATTR_MASK_L4PROTO       (1UL << 18) // contains l4proto # + PORT attrs or ICMP attrs
+#define EXP_ATTR_MASK_L4PROTO_NUM   (1UL << 19)
+#define EXP_ATTR_NAT                (1UL << 20) // contains ip, proto
+#define EXP_ATTR_NAT_IP             (1UL << 21) // contains src, dst
+#define EXP_ATTR_NAT_L4PROTO        (1UL << 22) // contains l4proto # + PORT attrs or ICMP attrs
+#define EXP_ATTR_NAT_L4PROTO_NUM    (1UL << 23)
 
-#define EXP_ATTR_NAT_DIR            (1UL << 25)
+#define EXP_ATTR_NAT_DIR            (1UL << 24)
 /** @endcond */
 
 static void exp_free_data(struct nl_object *c)
@@ -299,15 +297,72 @@ static void ct_dump_stats(struct nl_object *a, struct nl_dump_params *p)
 static int exp_cmp_tuples_loose(struct nfnl_ct_dir *a, struct nfnl_ct_dir *b)
 {
     // Must return 0 for match, 1 for mismatch
+    // Parent attribute, so must reflect lower level attribute diffs
+    int d = exp_cmp_tuples_ip_loose(a, b);
+    if (d == 0) {
+        d = exp_cmp_tuples_proto(&a->proto, &b->proto))
+    }
+    return d;
+}
 
+static int exp_cmp_tuples(struct nfnl_exp_dir *a, struct nfnl_exp_dir *b)
+{
+    // Must return 0 for match, 1 for mismatch
+    // Parent attribute, so must reflect lower level attribute diffs
+    int d = exp_cmp_tuples_ip(a, b);
+    if (d == 0) {
+        d = exp_cmp_tuples_proto(&a->proto, &b->proto))
+    }
+    return d;
+}
+
+static int exp_cmp_tuples_ip_loose(struct nfnl_exp_dir *a, struct nfnl_exp_dir *b) {
+    // Must return 0 for match, 1 for mismatch
     int d = nl_addr_cmp_prefix(a->src, b->src);
 
     if (d == 0) {
         d = nl_addr_cmp_prefix(a->dst, b->dst);
+    }
+    return d;
+}
 
-        if (d == 0) {
+
+static int exp_cmp_tuples_ip(struct nfnl_exp_dir *a, struct nfnl_exp_dir *b) {
+    // Must return 0 for match, 1 for mismatch
+    int d = nl_addr_cmp(a->src, b->src);
+
+    if (d == 0) {
+        d = nl_addr_cmp(a->dst, b->dst);
+    }
+    return d;
+}
+
+
+static int exp_cmp_tuples_proto(struct nfnl_exp_proto *a, struct nfnl_exp_proto *b) {
+    // Must return 0 for match, 1 for mismatch
+
+    // Parent attribute, so must reflect lower level attribute diffs
+    int d = exp_cmp_tuples_protonum(a->l4protonum, b->l4protonum);
+
+    if (d == 0) {
+        // Check actual proto data
+        if (a->l4protonum == IPPROTO_ICMP ||
+            a->l4protonum == IPPROTO_ICMPV6) {
+            d == ( (a->l4protodata.icmp.code != b->l4protodata.icmp.code) ||
+                   (a->l4protodata.icmp.type != b->l4protodata.icmp.type) ||
+                   (a->l4protodata.icmp.id != b->l4protodata.icmp.id) )
+        } else {
+            d == ( (a->l4protodata.port.src != b->l4protodata.port.src) ||
+                   (a->l4protodata.port.dst != b->l4protodata.icmp.dst) )
         }
     }
+
+    return d;
+}
+
+static int exp_cmp_tuples_protonum(uint8_t a, uint8_t b) {
+    // Must return 0 for match, 1 for mismatch
+    return (a != b)
 }
 
 static int exp_compare(struct nl_object *_a, struct nl_object *_b,
@@ -319,27 +374,37 @@ static int exp_compare(struct nl_object *_a, struct nl_object *_b,
 
 #define EXP_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, EXP_ATTR_##ATTR, a, b, EXPR)
 #define EXP_DIFF_VAL(ATTR, FIELD) EXP_DIFF(ATTR, a->FIELD != b->FIELD)
-#define EXP_DIFF_ADDR(ATTR, FIELD) \
-	((flags & LOOSE_COMPARISON) \
-		? EXP_DIFF(ATTR, nl_addr_cmp_prefix(a->FIELD, b->FIELD)) \
-		: EXP_DIFF(ATTR, nl_addr_cmp(a->FIELD, b->FIELD)))
+#define EXP_DIFF_STRING(ATTR, FIELD) EXP_DIFF(ATTR, (strncmp(a->FIELD, b->FIELD, 16) != 0))
 
 #define EXP_DIFF_TUPLE(ATTR, FIELD) \
     ((flags & LOOSE_COMPARISON) \
         ? EXP_DIFF(ATTR, exp_cmp_tuples_loose(a->FIELD, b->FIELD)) \
         : EXP_DIFF(ATTR, exp_cmp_tuples(a->FIELD, b->FIELD)))
 
-        diff |= EXP_DIFF_VAL(FAMILY,		exp_family);
-        diff |= EXP_DIFF_VAL(PROTO,		exp_proto);
-        diff |= EXP_DIFF_VAL(TIMEOUT,		exp_timeout);
-        diff |= EXP_DIFF_VAL(ID,			exp_id);
+#define EXP_DIFF_IP(ATTR, FIELD) \
+    ((flags & LOOSE_COMPARISON) \
+        ? EXP_DIFF(ATTR, exp_cmp_tuples_ip_loose(a->FIELD, b->FIELD)) \
+        : EXP_DIFF(ATTR, exp_cmp_tuples_ip(a->FIELD, b->FIELD)))
+
+#define EXP_DIFF_PROTO(ATTR, FIELD) \
+        EXP_DIFF(ATTR, exp_cmp_tuples_proto(a->FIELD, b->FIELD))
+
+        diff |= EXP_DIFF_VAL(FAMILY,        exp_family);
+        diff |= EXP_DIFF_VAL(TIMEOUT,       exp_timeout);
+        diff |= EXP_DIFF_VAL(ID,            exp_id);
+        diff |= EXP_DIFF_VAL(ZONE,          exp_zone);
+        diff |= EXP_DIFF_VAL(CLASS,         exp_class);
+        diff |= EXP_DIFF_VAL(FLAGS,         exp_flags);
+        diff |= EXP_DIFF_VAL(NAT_DIR,       exp_flags);
 
         diff |= EXP_DIFF(FLAGS, (a->exp_flags ^ b->exp_flags));
 
 #undef CT_DIFF
 #undef CT_DIFF_VAL
-#undef CT_DIFF_ADDR
+#undef EXP_DIFF_STRING
 #undef CT_DIFF_TUPLE
+#undef CT_DIFF_IP
+#undef CT_DIFF_PROTO
 
 	return diff;
 }

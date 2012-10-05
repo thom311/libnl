@@ -779,6 +779,28 @@ struct nfnl_ct {
 	struct nfnl_ct_dir	ct_repl;
 };
 
+struct nfnl_exp {
+    NLHDR_COMMON
+
+    uint8_t         exp_family;     // IPv4, IPv6, etc - required
+    uint8_t         exp_proto;      // tcp, udp, etc - required
+    union nfnl_ct_protoinfo exp_protoinfo; // ??? Assured, etc?
+
+    uint32_t        exp_timeout;      // required afaik
+    uint32_t        exp_id;           // optional
+    uint16_t        exp_zone;         // optional
+    uint32_t        exp_class;        // optional
+    uint32_t        exp_flags;        // optional
+    char *          exp_helper_name; //optional
+    char *          exp_fn;          //optional
+    uint8_t         exp_nat_dir;     // optional
+
+    struct nfnl_ct_dir exp_expect; // required
+    struct nfnl_ct_dir exp_master; // required
+    struct nfnl_ct_dir exp_mask;   // required
+    struct nfnl_ct_dir exp_nat;    // optional
+};
+
 struct nfnl_log {
 	NLHDR_COMMON
 

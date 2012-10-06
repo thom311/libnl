@@ -817,10 +817,10 @@ struct nfnl_exp {
     char *          exp_fn;          //optional
     uint8_t         exp_nat_dir;     // optional
 
-    struct nfnl_ct_dir exp_expect; // required
-    struct nfnl_ct_dir exp_master; // required
-    struct nfnl_ct_dir exp_mask;   // required
-    struct nfnl_ct_dir exp_nat;    // optional
+    struct nfnl_exp_dir exp_expect; // required
+    struct nfnl_exp_dir exp_master; // required
+    struct nfnl_exp_dir exp_mask;   // required
+    struct nfnl_exp_dir exp_nat;    // optional
 };
 
 struct nfnl_log {

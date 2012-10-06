@@ -26,10 +26,10 @@ extern "C" {
 struct nfnl_exp;
 
 enum nfnl_exp_tuples {
-    NFNL_EXP_EXPECT,
-    NFNL_EXP_MASTER,
-    NFNL_EXP_MASK,
-    NFNL_EXP_NAT
+    NFNL_EXP_TUPLE_EXPECT,
+    NFNL_EXP_TUPLE_MASTER,
+    NFNL_EXP_TUPLE_MASK,
+    NFNL_EXP_TUPLE_NAT
 };
 
 extern struct nl_object_ops exp_obj_ops;
@@ -98,31 +98,28 @@ extern uint8_t nfnl_exp_get_nat_dir(const struct nfnl_exp *, int);
 
 // The int argument specifies which nfnl_ct_dir (expect, master, mask or nat)
 // Expectation objects only use orig, not reply
-extern int  nfnl_exp_test_tuple(const struct nfnl_exp *, int);
 
 extern int  nfnl_exp_set_src(struct nfnl_exp *, int, struct nl_addr *);
+extern int  nfnl_exp_test_src(const struct nfnl_exp *);
 extern struct nl_addr * nfnl_ct_get_src(const struct nfnl_exp *, int);
 
 extern int  nfnl_exp_set_dst(struct nfnl_exp *, int, struct nl_addr *);
+extern int  nfnl_exp_test_dst(const struct nfnl_exp *);
 extern struct nl_addr * nfnl_exp_get_dst(const struct nfnl_exp *, int);
 
-extern int  nfnl_exp_set_l4proto(struct nfnl_exp *, int, uint8_t);
-extern int  nfnl_exp_test_l4proto(const struct nfnl_exp *);
-extern struct uint8_t * nfnl_exp_get_l4proto(const struct nfnl_exp *, int);
+extern void  nfnl_exp_set_l4protonum(struct nfnl_exp *, int, uint8_t);
+extern int  nfnl_exp_test_l4protonum(const struct nfnl_exp *, int);
+extern uint8_t * nfnl_exp_get_l4protonum(const struct nfnl_exp *, int);
 
-extern void nfnl_exp_set_src_port(struct nfnl_exp *, int, uint16_t);
+extern void nfnl_exp_set_ports(struct nfnl_exp *, int, uint16_t, uint16_t);
+extern int nfnl_exp_test_ports(const struct nfnl_exp *, int);
 extern uint16_t nfnl_exp_get_src_port(const struct nfnl_exp *, int);
-
-extern void nfnl_exp_set_dst_port(struct nfnl_exp *, int, uint16_t);
 extern uint16_t nfnl_exp_get_dst_port(const struct nfnl_exp *, int);
 
-extern void nfnl_exp_set_icmp_id(struct nfnl_exp *, int, uint16_t);
+extern void nfnl_exp_set_icmp(struct nfnl_exp *, int, uint16_t, uint8_t, uint8_t);
+extern int nfnl_exp_test_icmp(const struct nfnl_exp *, int);
 extern uint16_t nfnl_exp_get_icmp_id(const struct nfnl_exp *, int);
-
-extern void nfnl_exp_set_icmp_type(struct nfnl_exp *, int, uint8_t);
 extern uint8_t  nfnl_exp_get_icmp_type(const struct nfnl_exp *, int);
-
-extern void nfnl_exp_set_icmp_code(struct nfnl_exp *, int, uint8_t);
 extern uint8_t  nfnl_exp_get_icmp_code(const struct nfnl_exp *, int);
 
 // TODO: Expectation table does support CPU stats get command, not sure if the same

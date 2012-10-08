@@ -60,10 +60,6 @@ extern int  nfnl_exp_query(struct nl_sock *, const struct nfnl_exp *, int);
 extern void nfnl_exp_set_family(struct nfnl_exp *, uint8_t);
 extern uint8_t  nfnl_exp_get_family(const struct nfnl_exp *);
 
-extern void nfnl_exp_set_proto(struct nfnl_exp *, uint8_t);
-extern int  nfnl_exp_test_proto(const struct nfnl_exp *);
-extern uint8_t  nfnl_exp_get_proto(const struct nfnl_exp *);
-
 extern void nfnl_exp_set_timeout(struct nfnl_exp *, uint32_t);
 extern int  nfnl_exp_test_timeout(const struct nfnl_exp *);
 extern uint32_t nfnl_exp_get_timeout(const struct nfnl_exp *);

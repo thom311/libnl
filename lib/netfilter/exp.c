@@ -1,5 +1,5 @@
 /*
- * lib/netfilter/ct.c	Conntrack
+ * lib/netfilter/ct.c	Conntrack Expectation
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
@@ -14,7 +14,7 @@
 
 /**
  * @ingroup nfnl
- * @defgroup ct Conntrack
+ * @defgroup exp Expectation
  * @brief
  * @{
  */
@@ -26,9 +26,9 @@
 #include <netlink-local.h>
 #include <netlink/attr.h>
 #include <netlink/netfilter/nfnl.h>
-#include <netlink/netfilter/ct.h>
+#include <netlink/netfilter/exp.h>
 
-static struct nl_cache_ops nfnl_ct_ops;
+static struct nl_cache_ops nfnl_exp_ops;
 
 #if __BYTE_ORDER == __BIG_ENDIAN
 static uint64_t ntohll(uint64_t x)
@@ -42,35 +42,33 @@ static uint64_t ntohll(uint64_t x)
 }
 #endif
 
-static struct nla_policy ct_policy[CTA_MAX+1] = {
-	[CTA_TUPLE_ORIG]	= { .type = NLA_NESTED },
-	[CTA_TUPLE_REPLY]	= { .type = NLA_NESTED },
-	[CTA_STATUS]		= { .type = NLA_U32 },
-	[CTA_PROTOINFO]		= { .type = NLA_NESTED },
-	//[CTA_HELP]
-	//[CTA_NAT_SRC]
-	[CTA_TIMEOUT]		= { .type = NLA_U32 },
-	[CTA_MARK]		= { .type = NLA_U32 },
-	[CTA_COUNTERS_ORIG]	= { .type = NLA_NESTED },
-	[CTA_COUNTERS_REPLY]	= { .type = NLA_NESTED },
-	[CTA_USE]		= { .type = NLA_U32 },
-	[CTA_ID]		= { .type = NLA_U32 },
-	//[CTA_NAT_DST]
+static struct nla_policy exp_policy[CTA_EXPECT_MAX+1] = {
+	[CTA_EXPECT_MASTER]	    = { .type = NLA_NESTED },
+	[CTA_EXPECT_TUPLE]	    = { .type = NLA_NESTED },
+	[CTA_EXPECT_MASK]	    = { .type = NLA_NESTED },
+	[CTA_EXPECT_TIMEOUT]    = { .type = NLA_U32 },
+	[CTA_EXPECT_ID]		    = { .type = NLA_U32 },
+	[CTA_EXPECT_HELP_NAME]  = { .type = NLA_STRING },
+    //[CTA_EXPECT_ZONE]       = { .type = NLA_U16 },    // In latest kernel header
+    //[CTA_EXPECT_FLAGS]      = { .type = NLA_U32 },    // In latest kernel header
+	//[CTA_EXPECT_CLASS]      = { .type = NLA_U32 },    // In libnetfilter_conntrack include/linux/linux_nfnetlink_conntrack.h
+    //[CTA_EXPECT_NAT]        = { .type = NLA_NESTED }, // In libnetfilter_conntrack include/linux/linux_nfnetlink_conntrack.h
+    //[CTA_EXPECT_FN]         = { .type = NLA_STRING }, // In libnetfilter_conntrack include/linux/linux_nfnetlink_conntrack.h
 };
 
-static struct nla_policy ct_tuple_policy[CTA_TUPLE_MAX+1] = {
+static struct nla_policy exp_tuple_policy[CTA_TUPLE_MAX+1] = {
 	[CTA_TUPLE_IP]		= { .type = NLA_NESTED },
 	[CTA_TUPLE_PROTO]	= { .type = NLA_NESTED },
 };
 
-static struct nla_policy ct_ip_policy[CTA_IP_MAX+1] = {
+static struct nla_policy exp_ip_policy[CTA_IP_MAX+1] = {
 	[CTA_IP_V4_SRC]		= { .type = NLA_U32 },
 	[CTA_IP_V4_DST]		= { .type = NLA_U32 },
 	[CTA_IP_V6_SRC]		= { .minlen = 16 },
 	[CTA_IP_V6_DST]		= { .minlen = 16 },
 };
 
-static struct nla_policy ct_proto_policy[CTA_PROTO_MAX+1] = {
+static struct nla_policy exp_proto_policy[CTA_PROTO_MAX+1] = {
 	[CTA_PROTO_NUM]		= { .type = NLA_U8 },
 	[CTA_PROTO_SRC_PORT]	= { .type = NLA_U16 },
 	[CTA_PROTO_DST_PORT]	= { .type = NLA_U16 },
@@ -82,33 +80,14 @@ static struct nla_policy ct_proto_policy[CTA_PROTO_MAX+1] = {
 	[CTA_PROTO_ICMPV6_CODE]	= { .type = NLA_U8 },
 };
 
-static struct nla_policy ct_protoinfo_policy[CTA_PROTOINFO_MAX+1] = {
-	[CTA_PROTOINFO_TCP]	= { .type = NLA_NESTED },
-};
 
-static struct nla_policy ct_protoinfo_tcp_policy[CTA_PROTOINFO_TCP_MAX+1] = {
-	[CTA_PROTOINFO_TCP_STATE]		= { .type = NLA_U8 },
-	[CTA_PROTOINFO_TCP_WSCALE_ORIGINAL]	= { .type = NLA_U8 },
-	[CTA_PROTOINFO_TCP_WSCALE_REPLY]	= { .type = NLA_U8 },
-	[CTA_PROTOINFO_TCP_FLAGS_ORIGINAL]	= { .minlen = 2 },
-	[CTA_PROTOINFO_TCP_FLAGS_REPLY]		= { .minlen = 2 },
-
-};
-
-static struct nla_policy ct_counters_policy[CTA_COUNTERS_MAX+1] = {
-	[CTA_COUNTERS_PACKETS]	= { .type = NLA_U64 },
-	[CTA_COUNTERS_BYTES]	= { .type = NLA_U64 },
-	[CTA_COUNTERS32_PACKETS]= { .type = NLA_U32 },
-	[CTA_COUNTERS32_BYTES]	= { .type = NLA_U32 },
-};
-
-static int ct_parse_ip(struct nfnl_ct *ct, int repl, struct nlattr *attr)
+static int exp_parse_ip(struct nfnl_exp *exp, int tuple, struct nlattr *attr)
 {
 	struct nlattr *tb[CTA_IP_MAX+1];
 	struct nl_addr *addr;
 	int err;
 
-        err = nla_parse_nested(tb, CTA_IP_MAX, attr, ct_ip_policy);
+        err = nla_parse_nested(tb, CTA_IP_MAX, attr, exp_ip_policy);
 	if (err < 0)
 		goto errout;
 
@@ -116,7 +95,7 @@ static int ct_parse_ip(struct nfnl_ct *ct, int repl, struct nlattr *attr)
 		addr = nl_addr_alloc_attr(tb[CTA_IP_V4_SRC], AF_INET);
 		if (addr == NULL)
 			goto errout_enomem;
-		err = nfnl_ct_set_src(ct, repl, addr);
+		err = nfnl_exp_set_src(exp, tuple, addr);
 		nl_addr_put(addr);
 		if (err < 0)
 			goto errout;
@@ -125,7 +104,7 @@ static int ct_parse_ip(struct nfnl_ct *ct, int repl, struct nlattr *attr)
 		addr = nl_addr_alloc_attr(tb[CTA_IP_V4_DST], AF_INET);
 		if (addr == NULL)
 			goto errout_enomem;
-		err = nfnl_ct_set_dst(ct, repl, addr);
+		err = nfnl_exp_set_dst(exp, tuple, addr);
 		nl_addr_put(addr);
 		if (err < 0)
 			goto errout;
@@ -134,7 +113,7 @@ static int ct_parse_ip(struct nfnl_ct *ct, int repl, struct nlattr *attr)
 		addr = nl_addr_alloc_attr(tb[CTA_IP_V6_SRC], AF_INET6);
 		if (addr == NULL)
 			goto errout_enomem;
-		err = nfnl_ct_set_src(ct, repl, addr);
+		err = nfnl_exp_set_src(exp, tuple, addr);
 		nl_addr_put(addr);
 		if (err < 0)
 			goto errout;
@@ -143,7 +122,7 @@ static int ct_parse_ip(struct nfnl_ct *ct, int repl, struct nlattr *attr)
 		addr = nl_addr_alloc_attr(tb[CTA_IP_V6_DST], AF_INET6);
 		if (addr == NULL)
 			goto errout_enomem;
-		err = nfnl_ct_set_dst(ct, repl, addr);
+		err = nfnl_exp_set_dst(exp, tuple, addr);
 		nl_addr_put(addr);
 		if (err < 0)
 			goto errout;
@@ -157,53 +136,55 @@ errout:
 	return err;
 }
 
-static int ct_parse_proto(struct nfnl_ct *ct, int repl, struct nlattr *attr)
+static int exp_parse_proto(struct nfnl_exp *exp, int tuple, struct nlattr *attr)
 {
 	struct nlattr *tb[CTA_PROTO_MAX+1];
 	int err;
+	uint16_t srcport = 0, dstport = 0, icmpid = 0;
+	uint8_t icmptype = 0, icmpcode = 0;
 
-	err = nla_parse_nested(tb, CTA_PROTO_MAX, attr, ct_proto_policy);
+	err = nla_parse_nested(tb, CTA_PROTO_MAX, attr, exp_proto_policy);
 	if (err < 0)
 		return err;
 
-	if (!repl && tb[CTA_PROTO_NUM])
-		nfnl_ct_set_proto(ct, nla_get_u8(tb[CTA_PROTO_NUM]));
-	if (tb[CTA_PROTO_SRC_PORT])
-		nfnl_ct_set_src_port(ct, repl,
-			ntohs(nla_get_u16(tb[CTA_PROTO_SRC_PORT])));
-	if (tb[CTA_PROTO_DST_PORT])
-		nfnl_ct_set_dst_port(ct, repl,
-			ntohs(nla_get_u16(tb[CTA_PROTO_DST_PORT])));
-	if (tb[CTA_PROTO_ICMP_ID])
-		nfnl_ct_set_icmp_id(ct, repl,
-			ntohs(nla_get_u16(tb[CTA_PROTO_ICMP_ID])));
-	if (tb[CTA_PROTO_ICMP_TYPE])
-		nfnl_ct_set_icmp_type(ct, repl,
-				nla_get_u8(tb[CTA_PROTO_ICMP_TYPE]));
-	if (tb[CTA_PROTO_ICMP_CODE])
-		nfnl_ct_set_icmp_code(ct, repl,
-				nla_get_u8(tb[CTA_PROTO_ICMP_CODE]));
+	if (tb[CTA_PROTO_NUM])
+		nfnl_exp_set_l4protonum(exp, tuple, nla_get_u8(tb[CTA_PROTO_NUM]));
 
+	if (tb[CTA_PROTO_SRC_PORT])
+	    srcport = ntohs(nla_get_u16(tb[CTA_PROTO_SRC_PORT]));
+	if (tb[CTA_PROTO_DST_PORT])
+        dstport = ntohs(nla_get_u16(tb[CTA_PROTO_DST_PORT]));
+	if (tb[CTA_PROTO_SRC_PORT] || tb[CTA_PROTO_DST_PORT])
+        nfnl_exp_set_ports(exp, tuple, srcport, dstport);
+
+	if (tb[CTA_PROTO_ICMP_ID])
+	    icmpid = ntohs(nla_get_u16(tb[CTA_PROTO_ICMP_ID]));
+	if (tb[CTA_PROTO_ICMP_TYPE])
+		icmptype = nla_get_u8(tb[CTA_PROTO_ICMP_TYPE]);
+	if (tb[CTA_PROTO_ICMP_CODE])
+		icmpcode = nla_get_u8(tb[CTA_PROTO_ICMP_CODE]);
+	if (tb[CTA_PROTO_ICMP_ID] || tb[CTA_PROTO_ICMP_TYPE] || tb[CTA_PROTO_ICMP_CODE])
+	    nfnl_exp_set_icmp(exp, tuple, icmpid, icmptype, icmpcode);
 	return 0;
 }
 
-static int ct_parse_tuple(struct nfnl_ct *ct, int repl, struct nlattr *attr)
+static int exp_parse_tuple(struct nfnl_exp *exp, int tuple, struct nlattr *attr)
 {
 	struct nlattr *tb[CTA_TUPLE_MAX+1];
 	int err;
 
-	err = nla_parse_nested(tb, CTA_TUPLE_MAX, attr, ct_tuple_policy);
+	err = nla_parse_nested(tb, CTA_TUPLE_MAX, attr, exp_tuple_policy);
 	if (err < 0)
 		return err;
 
 	if (tb[CTA_TUPLE_IP]) {
-		err = ct_parse_ip(ct, repl, tb[CTA_TUPLE_IP]);
+		err = exp_parse_ip(exp, tuple, tb[CTA_TUPLE_IP]);
 		if (err < 0)
 			return err;
 	}
 
 	if (tb[CTA_TUPLE_PROTO]) {
-		err = ct_parse_proto(ct, repl, tb[CTA_TUPLE_PROTO]);
+		err = exp_parse_proto(exp, tuple, tb[CTA_TUPLE_PROTO]);
 		if (err < 0)
 			return err;
 	}
@@ -211,185 +192,132 @@ static int ct_parse_tuple(struct nfnl_ct *ct, int repl, struct nlattr *attr)
 	return 0;
 }
 
-static int ct_parse_protoinfo_tcp(struct nfnl_ct *ct, struct nlattr *attr)
-{
-	struct nlattr *tb[CTA_PROTOINFO_TCP_MAX+1];
-	int err;
-
-	err = nla_parse_nested(tb, CTA_PROTOINFO_TCP_MAX, attr,
-			       ct_protoinfo_tcp_policy);
-	if (err < 0)
-		return err;
-
-	if (tb[CTA_PROTOINFO_TCP_STATE])
-		nfnl_ct_set_tcp_state(ct,
-				nla_get_u8(tb[CTA_PROTOINFO_TCP_STATE]));
-
-	return 0;
-}
-
-static int ct_parse_protoinfo(struct nfnl_ct *ct, struct nlattr *attr)
-{
-	struct nlattr *tb[CTA_PROTOINFO_MAX+1];
-	int err;
-
-	err = nla_parse_nested(tb, CTA_PROTOINFO_MAX, attr,
-			       ct_protoinfo_policy);
-	if (err < 0)
-		return err;
-
-	if (tb[CTA_PROTOINFO_TCP]) {
-		err = ct_parse_protoinfo_tcp(ct, tb[CTA_PROTOINFO_TCP]);
-		if (err < 0)
-			return err;
-	}
-
-	return 0;
-}
-
-static int ct_parse_counters(struct nfnl_ct *ct, int repl, struct nlattr *attr)
-{
-	struct nlattr *tb[CTA_COUNTERS_MAX+1];
-	int err;
-
-	err = nla_parse_nested(tb, CTA_COUNTERS_MAX, attr, ct_counters_policy);
-	if (err < 0)
-		return err;
-
-	if (tb[CTA_COUNTERS_PACKETS])
-		nfnl_ct_set_packets(ct, repl,
-			ntohll(nla_get_u64(tb[CTA_COUNTERS_PACKETS])));
-	if (tb[CTA_COUNTERS32_PACKETS])
-		nfnl_ct_set_packets(ct, repl,
-			ntohl(nla_get_u32(tb[CTA_COUNTERS32_PACKETS])));
-	if (tb[CTA_COUNTERS_BYTES])
-		nfnl_ct_set_bytes(ct, repl,
-			ntohll(nla_get_u64(tb[CTA_COUNTERS_BYTES])));
-	if (tb[CTA_COUNTERS32_BYTES])
-		nfnl_ct_set_bytes(ct, repl,
-			ntohl(nla_get_u32(tb[CTA_COUNTERS32_BYTES])));
-
-	return 0;
-}
-
-int nfnlmsg_ct_group(struct nlmsghdr *nlh)
+int nfnlmsg_exp_group(struct nlmsghdr *nlh)
 {
 	switch (nfnlmsg_subtype(nlh)) {
-	case IPCTNL_MSG_CT_NEW:
+	case IPCTNL_MSG_EXP_NEW:
 		if (nlh->nlmsg_flags & (NLM_F_CREATE|NLM_F_EXCL))
-			return NFNLGRP_CONNTRACK_NEW;
+			return NFNLGRP_CONNTRACK_EXP_NEW;
 		else
-			return NFNLGRP_CONNTRACK_UPDATE;
-	case IPCTNL_MSG_CT_DELETE:
-		return NFNLGRP_CONNTRACK_DESTROY;
+			return NFNLGRP_CONNTRACK_EXP_UPDATE;
+	case IPCTNL_MSG_EXP_DELETE:
+		return NFNLGRP_CONNTRACK_EXP_DESTROY;
 	default:
 		return NFNLGRP_NONE;
 	}
 }
 
-int nfnlmsg_ct_parse(struct nlmsghdr *nlh, struct nfnl_ct **result)
+int nfnlmsg_exp_parse(struct nlmsghdr *nlh, struct nfnl_exp **result)
 {
-	struct nfnl_ct *ct;
+	struct nfnl_exp *exp;
 	struct nlattr *tb[CTA_MAX+1];
 	int err;
 
-	ct = nfnl_ct_alloc();
-	if (!ct)
+	exp = nfnl_exp_alloc();
+	if (!exp)
 		return -NLE_NOMEM;
 
-	ct->ce_msgtype = nlh->nlmsg_type;
+	exp->ce_msgtype = nlh->nlmsg_type;
 
-	err = nlmsg_parse(nlh, sizeof(struct nfgenmsg), tb, CTA_MAX,
-			  ct_policy);
+	err = nlmsg_parse(nlh, sizeof(struct nfgenmsg), tb, CTA_EXPECT_MAX,
+			  exp_policy);
 	if (err < 0)
 		goto errout;
 
-	nfnl_ct_set_family(ct, nfnlmsg_family(nlh));
+	nfnl_exp_set_family(exp, nfnlmsg_family(nlh));
 
-	if (tb[CTA_TUPLE_ORIG]) {
-		err = ct_parse_tuple(ct, 0, tb[CTA_TUPLE_ORIG]);
+	if (tb[CTA_EXPECT_TUPLE]) {
+        err = exp_parse_tuple(exp, NFNL_EXP_TUPLE_EXPECT, tb[CTA_EXPECT_TUPLE]);
+        if (err < 0)
+            goto errout;
+    }
+	if (tb[CTA_EXPECT_MASTER]) {
+		err = exp_parse_tuple(exp, NFNL_EXP_TUPLE_MASTER, tb[CTA_EXPECT_MASTER]);
 		if (err < 0)
 			goto errout;
 	}
-	if (tb[CTA_TUPLE_REPLY]) {
-		err = ct_parse_tuple(ct, 1, tb[CTA_TUPLE_REPLY]);
-		if (err < 0)
-			goto errout;
-	}
-
-	if (tb[CTA_PROTOINFO]) {
-		err = ct_parse_protoinfo(ct, tb[CTA_PROTOINFO]);
-		if (err < 0)
-			goto errout;
-	}
-
-	if (tb[CTA_STATUS])
-		nfnl_ct_set_status(ct, ntohl(nla_get_u32(tb[CTA_STATUS])));
-	if (tb[CTA_TIMEOUT])
-		nfnl_ct_set_timeout(ct, ntohl(nla_get_u32(tb[CTA_TIMEOUT])));
-	if (tb[CTA_MARK])
-		nfnl_ct_set_mark(ct, ntohl(nla_get_u32(tb[CTA_MARK])));
-	if (tb[CTA_USE])
-		nfnl_ct_set_use(ct, ntohl(nla_get_u32(tb[CTA_USE])));
-	if (tb[CTA_ID])
-		nfnl_ct_set_id(ct, ntohl(nla_get_u32(tb[CTA_ID])));
-
-	if (tb[CTA_COUNTERS_ORIG]) {
-		err = ct_parse_counters(ct, 0, tb[CTA_COUNTERS_ORIG]);
+	if (tb[CTA_EXPECT_MASK]) {
+		err = exp_parse_tuple(exp, NFNL_EXP_TUPLE_MASK, tb[CTA_EXPECT_MASK]);
 		if (err < 0)
 			goto errout;
 	}
 
-	if (tb[CTA_COUNTERS_REPLY]) {
-		err = ct_parse_counters(ct, 1, tb[CTA_COUNTERS_REPLY]);
-		if (err < 0)
-			goto errout;
-	}
+	if (tb[CTA_EXPECT_TIMEOUT])
+		nfnl_exp_set_timeout(exp, ntohl(nla_get_u32(tb[CTA_EXPECT_TIMEOUT])));
+	if (tb[CTA_EXPECT_ID])
+		nfnl_exp_set_id(exp, ntohl(nla_get_u32(tb[CTA_EXPECT_ID])));
+    if (tb[CTA_EXPECT_HELP_NAME])
+        nfnl_exp_set_helper_name(exp, nla_data(tb[CTA_EXPECT_HELP_NAME]));
 
-	*result = ct;
+	*result = exp;
 	return 0;
 
 errout:
-	nfnl_ct_put(ct);
+	nfnl_exp_put(exp);
 	return err;
 }
 
-static int ct_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
+static int exp_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			 struct nlmsghdr *nlh, struct nl_parser_param *pp)
 {
-	struct nfnl_ct *ct;
+	struct nfnl_exp *exp;
 	int err;
 
-	if ((err = nfnlmsg_ct_parse(nlh, &ct)) < 0)
+	if ((err = nfnlmsg_exp_parse(nlh, &exp)) < 0)
 		goto errout;
 
-	err = pp->pp_cb((struct nl_object *) ct, pp);
+	err = pp->pp_cb((struct nl_object *) exp, pp);
 errout:
-	nfnl_ct_put(ct);
+	nfnl_exp_put(exp);
 	return err;
 }
 
-int nfnl_ct_dump_request(struct nl_sock *sk)
+int nfnl_exp_dump_request(struct nl_sock *sk)
 {
-	return nfnl_send_simple(sk, NFNL_SUBSYS_CTNETLINK, IPCTNL_MSG_CT_GET,
+	return nfnl_send_simple(sk, NFNL_SUBSYS_CTNETLINK_EXP, IPCTNL_MSG_EXP_GET,
 				NLM_F_DUMP, AF_UNSPEC, 0);
 }
 
-static int ct_request_update(struct nl_cache *cache, struct nl_sock *sk)
+static int exp_request_update(struct nl_cache *cache, struct nl_sock *sk)
 {
-	return nfnl_ct_dump_request(sk);
+	return nfnl_exp_dump_request(sk);
 }
 
-static int nfnl_ct_build_tuple(struct nl_msg *msg, const struct nfnl_ct *ct,
-			       int repl)
+static int exp_get_tuple_attr(int tuple)
+{
+    int attr = 0;
+
+    switch (tuple) {
+        case NFNL_EXP_TUPLE_MASTER:
+            attr = CTA_EXPECT_MASTER;
+            break;
+        case NFNL_EXP_TUPLE_MASK:
+            attr = CTA_EXPECT_MASK;
+            break;
+        //case NFNL_EXP_TUPLE_NAT:
+        //    attr = EXP_ATTR_NAT_L4PROTO_NUM;
+        //    break;
+        case NFNL_EXP_TUPLE_EXPECT:
+        default :
+            attr = CTA_EXPECT_TUPLE;
+            break;
+    }
+
+    return attr;
+}
+
+static int nfnl_exp_build_tuple(struct nl_msg *msg, const struct nfnl_exp *exp,
+			       int type)
 {
 	struct nlattr *tuple, *ip, *proto;
 	struct nl_addr *addr;
 	int family;
 
-	family = nfnl_ct_get_family(ct);
+	int tupattr = exp_get_tuple_attr(type);
 
-	tuple = nla_nest_start(msg, repl ? CTA_TUPLE_REPLY : CTA_TUPLE_ORIG);
+	family = nfnl_exp_get_family(exp);
+
+	tuple = nla_nest_start(msg, tupattr);
 	if (!tuple)
 		goto nla_put_failure;
 
@@ -397,13 +325,13 @@ static int nfnl_ct_build_tuple(struct nl_msg *msg, const struct nfnl_ct *ct,
 	if (!ip)
 		goto nla_put_failure;
 
-	addr = nfnl_ct_get_src(ct, repl);
+	addr = nfnl_exp_get_src(exp, type);
 	if (addr)
 		NLA_PUT_ADDR(msg,
 			     family == AF_INET ? CTA_IP_V4_SRC : CTA_IP_V6_SRC,
 			     addr);
 
-	addr = nfnl_ct_get_dst(ct, repl);
+	addr = nfnl_exp_get_dst(exp, type);
 	if (addr)
 		NLA_PUT_ADDR(msg,
 			     family == AF_INET ? CTA_IP_V4_DST : CTA_IP_V6_DST,
@@ -415,28 +343,27 @@ static int nfnl_ct_build_tuple(struct nl_msg *msg, const struct nfnl_ct *ct,
 	if (!proto)
 		goto nla_put_failure;
 
-	if (nfnl_ct_test_proto(ct))
-		NLA_PUT_U8(msg, CTA_PROTO_NUM, nfnl_ct_get_proto(ct));
+	if (nfnl_exp_test_l4protonum(exp, type))
+		NLA_PUT_U8(msg, CTA_PROTO_NUM, nfnl_exp_get_l4protonum(exp, type));
 
-	if (nfnl_ct_test_src_port(ct, repl))
+	if (nfnl_exp_test_ports(exp, type)) {
 		NLA_PUT_U16(msg, CTA_PROTO_SRC_PORT,
-			htons(nfnl_ct_get_src_port(ct, repl)));
+			htons(nfnl_exp_get_src_port(exp, type)));
 
-	if (nfnl_ct_test_dst_port(ct, repl))
 		NLA_PUT_U16(msg, CTA_PROTO_DST_PORT,
-			htons(nfnl_ct_get_dst_port(ct, repl)));
+			htons(nfnl_exp_get_dst_port(exp, type)));
+	}
 
-	if (nfnl_ct_test_icmp_id(ct, repl))
+	if (nfnl_exp_test_icmp(exp, type)) {
 		NLA_PUT_U16(msg, CTA_PROTO_ICMP_ID,
-			htons(nfnl_ct_get_icmp_id(ct, repl)));
+			htons(nfnl_exp_get_icmp_id(exp, type)));
 
-	if (nfnl_ct_test_icmp_type(ct, repl))
 		NLA_PUT_U8(msg, CTA_PROTO_ICMP_TYPE,
-			    nfnl_ct_get_icmp_type(ct, repl));
+			    nfnl_exp_get_icmp_type(exp, type));
 
-	if (nfnl_ct_test_icmp_code(ct, repl))
 		NLA_PUT_U8(msg, CTA_PROTO_ICMP_CODE,
-			    nfnl_ct_get_icmp_code(ct, repl));
+			    nfnl_exp_get_icmp_code(exp, type));
+	}
 
 	nla_nest_end(msg, proto);
 
@@ -447,19 +374,35 @@ nla_put_failure:
 	return -NLE_MSGSIZE;
 }
 
-static int nfnl_ct_build_message(const struct nfnl_ct *ct, int cmd, int flags,
+static int nfnl_exp_build_message(const struct nfnl_exp *exp, int cmd, int flags,
 				 struct nl_msg **result)
 {
 	struct nl_msg *msg;
 	int err;
 
-	msg = nfnlmsg_alloc_simple(NFNL_SUBSYS_CTNETLINK, cmd, flags,
-				   nfnl_ct_get_family(ct), 0);
+	msg = nfnlmsg_alloc_simple(NFNL_SUBSYS_CTNETLINK_EXP, cmd, flags,
+				   nfnl_exp_get_family(exp), 0);
 	if (msg == NULL)
 		return -NLE_NOMEM;
 
-	if ((err = nfnl_ct_build_tuple(msg, ct, 0)) < 0)
+	if ((err = nfnl_exp_build_tuple(msg, exp, CTA_EXPECT_TUPLE)) < 0)
 		goto err_out;
+
+    if ((err = nfnl_exp_build_tuple(msg, exp, CTA_EXPECT_MASTER)) < 0)
+        goto err_out;
+
+    if ((err = nfnl_exp_build_tuple(msg, exp, CTA_EXPECT_MASK)) < 0)
+        goto err_out;
+
+    // FIXME timeout and helper name
+    if (nfnl_exp_test_id(exp))
+        NLA_PUT_U32(msg, CTA_EXPECT_ID, htonl(nfnl_exp_get_id(exp)));
+
+    if (nfnl_exp_test_timeout(exp))
+        NLA_PUT_U32(msg, CTA_EXPECT_TIMEOUT, htonl(nfnl_exp_get_timeout(exp)));
+
+    if (nfnl_exp_test_helper_name(exp))
+        NLA_PUT_STRING(msg, CTA_EXPECT_HELP_NAME, nfnl_exp_get_helper_name(exp));
 
 	*result = msg;
 	return 0;
@@ -469,18 +412,18 @@ err_out:
 	return err;
 }
 
-int nfnl_ct_build_add_request(const struct nfnl_ct *ct, int flags,
+int nfnl_exp_build_add_request(const struct nfnl_exp *exp, int flags,
 			      struct nl_msg **result)
 {
-	return nfnl_ct_build_message(ct, IPCTNL_MSG_CT_NEW, flags, result);
+	return nfnl_exp_build_message(exp, IPCTNL_MSG_EXP_NEW, flags, result);
 }
 
-int nfnl_ct_add(struct nl_sock *sk, const struct nfnl_ct *ct, int flags)
+int nfnl_exp_add(struct nl_sock *sk, const struct nfnl_exp *exp, int flags)
 {
 	struct nl_msg *msg;
 	int err;
 
-	if ((err = nfnl_ct_build_add_request(ct, flags, &msg)) < 0)
+	if ((err = nfnl_exp_build_add_request(exp, flags, &msg)) < 0)
 		return err;
 
 	err = nl_send_auto_complete(sk, msg);
@@ -491,18 +434,18 @@ int nfnl_ct_add(struct nl_sock *sk, const struct nfnl_ct *ct, int flags)
 	return wait_for_ack(sk);
 }
 
-int nfnl_ct_build_delete_request(const struct nfnl_ct *ct, int flags,
+int nfnl_exp_build_delete_request(const struct nfnl_exp *exp, int flags,
 				 struct nl_msg **result)
 {
-	return nfnl_ct_build_message(ct, IPCTNL_MSG_CT_DELETE, flags, result);
+	return nfnl_exp_build_message(exp, IPCTNL_MSG_EXP_DELETE, flags, result);
 }
 
-int nfnl_ct_del(struct nl_sock *sk, const struct nfnl_ct *ct, int flags)
+int nfnl_exp_del(struct nl_sock *sk, const struct nfnl_exp *exp, int flags)
 {
 	struct nl_msg *msg;
 	int err;
 
-	if ((err = nfnl_ct_build_delete_request(ct, flags, &msg)) < 0)
+	if ((err = nfnl_exp_build_delete_request(exp, flags, &msg)) < 0)
 		return err;
 
 	err = nl_send_auto_complete(sk, msg);
@@ -513,18 +456,18 @@ int nfnl_ct_del(struct nl_sock *sk, const struct nfnl_ct *ct, int flags)
 	return wait_for_ack(sk);
 }
 
-int nfnl_ct_build_query_request(const struct nfnl_ct *ct, int flags,
+int nfnl_exp_build_query_request(const struct nfnl_exp *exp, int flags,
 				struct nl_msg **result)
 {
-	return nfnl_ct_build_message(ct, IPCTNL_MSG_CT_GET, flags, result);
+	return nfnl_exp_build_message(exp, IPCTNL_MSG_EXP_GET, flags, result);
 }
 
-int nfnl_ct_query(struct nl_sock *sk, const struct nfnl_ct *ct, int flags)
+int nfnl_exp_query(struct nl_sock *sk, const struct nfnl_exp *exp, int flags)
 {
 	struct nl_msg *msg;
 	int err;
 
-	if ((err = nfnl_ct_build_query_request(ct, flags, &msg)) < 0)
+	if ((err = nfnl_exp_build_query_request(exp, flags, &msg)) < 0)
 		return err;
 
 	err = nl_send_auto_complete(sk, msg);
@@ -541,61 +484,61 @@ int nfnl_ct_query(struct nl_sock *sk, const struct nfnl_ct *ct, int flags)
  */
 
 /**
- * Build a conntrack cache holding all conntrack currently in the kernel
+ * Build a expectation cache holding all expectations currently in the kernel
  * @arg sk		Netlink socket.
  * @arg result		Pointer to store resulting cache.
  *
  * Allocates a new cache, initializes it properly and updates it to
- * contain all conntracks currently in the kernel.
+ * contain all expectations currently in the kernel.
  *
  * @return 0 on success or a negative error code.
  */
-int nfnl_ct_alloc_cache(struct nl_sock *sk, struct nl_cache **result)
+int nfnl_exp_alloc_cache(struct nl_sock *sk, struct nl_cache **result)
 {
-	return nl_cache_alloc_and_fill(&nfnl_ct_ops, sk, result);
+	return nl_cache_alloc_and_fill(&nfnl_exp_ops, sk, result);
 }
 
 /** @} */
 
 /**
- * @name Conntrack Addition
+ * @name Expectation Addition
  * @{
  */
 
 /** @} */
 
-static struct nl_af_group ct_groups[] = {
-	{ AF_UNSPEC, NFNLGRP_CONNTRACK_NEW },
-	{ AF_UNSPEC, NFNLGRP_CONNTRACK_UPDATE },
-	{ AF_UNSPEC, NFNLGRP_CONNTRACK_DESTROY },
+static struct nl_af_group exp_groups[] = {
+	{ AF_UNSPEC, NFNLGRP_CONNTRACK_EXP_NEW },
+	{ AF_UNSPEC, NFNLGRP_CONNTRACK_EXP_UPDATE },
+	{ AF_UNSPEC, NFNLGRP_CONNTRACK_EXP_DESTROY },
 	{ END_OF_GROUP_LIST },
 };
 
-#define NFNLMSG_CT_TYPE(type) NFNLMSG_TYPE(NFNL_SUBSYS_CTNETLINK, (type))
-static struct nl_cache_ops nfnl_ct_ops = {
-	.co_name		= "netfilter/ct",
+#define NFNLMSG_EXP_TYPE(type) NFNLMSG_TYPE(NFNL_SUBSYS_CTNETLINK_EXP, (type))
+static struct nl_cache_ops nfnl_exp_ops = {
+	.co_name		= "netfilter/exp",
 	.co_hdrsize		= NFNL_HDRLEN,
 	.co_msgtypes		= {
-		{ NFNLMSG_CT_TYPE(IPCTNL_MSG_CT_NEW), NL_ACT_NEW, "new" },
-		{ NFNLMSG_CT_TYPE(IPCTNL_MSG_CT_GET), NL_ACT_GET, "get" },
-		{ NFNLMSG_CT_TYPE(IPCTNL_MSG_CT_DELETE), NL_ACT_DEL, "del" },
+		{ NFNLMSG_CT_TYPE(IPCTNL_MSG_EXP_NEW), NL_ACT_NEW, "new" },
+		{ NFNLMSG_CT_TYPE(IPCTNL_MSG_EXP_GET), NL_ACT_GET, "get" },
+		{ NFNLMSG_CT_TYPE(IPCTNL_MSG_EXP_DELETE), NL_ACT_DEL, "del" },
 		END_OF_MSGTYPES_LIST,
 	},
 	.co_protocol		= NETLINK_NETFILTER,
-	.co_groups		= ct_groups,
-	.co_request_update	= ct_request_update,
-	.co_msg_parser		= ct_msg_parser,
-	.co_obj_ops		= &ct_obj_ops,
+	.co_groups		= exp_groups,
+	.co_request_update	= exp_request_update,
+	.co_msg_parser		= exp_msg_parser,
+	.co_obj_ops		= &exp_obj_ops,
 };
 
-static void __init ct_init(void)
+static void __init exp_init(void)
 {
-	nl_cache_mngt_register(&nfnl_ct_ops);
+	nl_cache_mngt_register(&nfnl_exp_ops);
 }
 
-static void __exit ct_exit(void)
+static void __exit exp_exit(void)
 {
-	nl_cache_mngt_unregister(&nfnl_ct_ops);
+	nl_cache_mngt_unregister(&nfnl_exp_ops);
 }
 
 /** @} */

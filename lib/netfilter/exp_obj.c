@@ -87,7 +87,6 @@ static int exp_clone(struct nl_object *_dst, struct nl_object *_src)
     struct nfnl_exp *dst = (struct nfnl_exp *) _dst;
     struct nfnl_exp *src = (struct nfnl_exp *) _src;
     struct nl_addr *addr;
-    int result = 0;
 
     // Expectation
     if (src->exp_expect.src) {
@@ -185,7 +184,7 @@ static void dump_icmp(struct nl_dump_params *p, struct nfnl_exp *exp, int tuple)
 
 static void exp_dump_tuples(struct nfnl_exp *exp, struct nl_dump_params *p)
 {
-	struct nl_addr *tuple_src, *tuple_dst;
+	struct nl_addr *tuple_src = NULL, *tuple_dst = NULL;
 	int tuple_sport = 0, tuple_dport = 0;
 	int i = 0;
     char buf[64];
@@ -199,9 +198,9 @@ static void exp_dump_tuples(struct nfnl_exp *exp, struct nl_dump_params *p)
             tuple_dst = nfnl_exp_get_dst(exp, i);
 
         // Don't have tests for individual ports/types/codes/ids,
-        if (nfnl_exp_test_l4protonum(exp)) {
+        if (nfnl_exp_test_l4protonum(exp, i)) {
             nl_dump(p, "%s ",
-              nl_ip_proto2str(nfnl_exp_get_l4protonum(exp), buf, sizeof(buf)));
+              nl_ip_proto2str(nfnl_exp_get_l4protonum(exp, i), buf, sizeof(buf)));
         }
 
         if (nfnl_exp_test_ports(exp, i)) {
@@ -236,14 +235,14 @@ static void exp_dump_details(struct nl_object *a, struct nl_dump_params *p)
 	char buf[64];
 	int fp = 0;
 
-	ct_dump_line(a, p);
+	exp_dump_line(a, p);
 
 	nl_dump(p, "    id 0x%x ", exp->exp_id);
 	nl_dump_line(p, "family %s ",
 		nl_af2str(exp->exp_family, buf, sizeof(buf)));
 
 	if (nfnl_exp_test_timeout(exp)) {
-		uint64_t timeout_ms = nfnl_ct_get_timeout(exp) * 1000UL;
+		uint64_t timeout_ms = nfnl_exp_get_timeout(exp) * 1000UL;
 		nl_dump(p, "timeout %s ",
 			nl_msec2str(timeout_ms, buf, sizeof(buf)));
 	}
@@ -345,9 +344,9 @@ static int exp_compare(struct nl_object *_a, struct nl_object *_b,
         ? EXP_DIFF(ATTR, nl_addr_cmp_prefix(a->FIELD, b->FIELD)) \
         : EXP_DIFF(ATTR, nl_addr_cmp(a->FIELD, b->FIELD)))
 #define EXP_DIFF_L4PROTO_PORTS(ATTR, FIELD) \
-         EXP_DIFF(ATTR, exp_cmp_l4proto_ports(a->FIELD, b->FIELD))
+         EXP_DIFF(ATTR, exp_cmp_l4proto_ports(&(a->FIELD), &(b->FIELD)))
 #define EXP_DIFF_L4PROTO_ICMP(ATTR, FIELD) \
-         EXP_DIFF(ATTR, exp_cmp_l4proto_icmp(a->FIELD, b->FIELD))
+         EXP_DIFF(ATTR, exp_cmp_l4proto_icmp(&(a->FIELD), &(b->FIELD)))
 
         diff |= EXP_DIFF_VAL(FAMILY,             exp_family);
         diff |= EXP_DIFF_VAL(TIMEOUT,            exp_timeout);
@@ -363,26 +362,26 @@ static int exp_compare(struct nl_object *_a, struct nl_object *_b,
         diff |= EXP_DIFF_ADDR(EXPECT_IP_SRC,     exp_expect.src);
         diff |= EXP_DIFF_ADDR(EXPECT_IP_DST,     exp_expect.dst);
         diff |= EXP_DIFF_VAL(EXPECT_L4PROTO_NUM, exp_expect.proto.l4protonum);
-        diff |= EXP_DIFF_L4PROTO_PORTS(EXPECT_L4PROTO_PORTS, exp_expect.proto.l4protodata.port);
-        diff |= EXP_DIFF_L4PROTO_ICMP(EXPECT_L4PROTO_ICMP, exp_expect.proto.l4protodata.icmp);
+        diff |= EXP_DIFF_L4PROTO_PORTS(EXPECT_L4PROTO_PORTS, exp_expect.proto.l4protodata);
+        diff |= EXP_DIFF_L4PROTO_ICMP(EXPECT_L4PROTO_ICMP, exp_expect.proto.l4protodata);
 
         diff |= EXP_DIFF_ADDR(MASTER_IP_SRC,     exp_master.src);
         diff |= EXP_DIFF_ADDR(MASTER_IP_DST,     exp_master.dst);
         diff |= EXP_DIFF_VAL(MASTER_L4PROTO_NUM, exp_master.proto.l4protonum);
-        diff |= EXP_DIFF_L4PROTO_PORTS(MASTER_L4PROTO_PORTS, exp_master.proto.l4protodata.port);
-        diff |= EXP_DIFF_L4PROTO_ICMP(MASTER_L4PROTO_ICMP,   exp_master.proto.l4protodata.icmp);
+        diff |= EXP_DIFF_L4PROTO_PORTS(MASTER_L4PROTO_PORTS, exp_master.proto.l4protodata);
+        diff |= EXP_DIFF_L4PROTO_ICMP(MASTER_L4PROTO_ICMP,   exp_master.proto.l4protodata);
 
         diff |= EXP_DIFF_ADDR(MASK_IP_SRC,       exp_mask.src);
         diff |= EXP_DIFF_ADDR(MASK_IP_DST,       exp_mask.dst);
         diff |= EXP_DIFF_VAL(MASK_L4PROTO_NUM,   exp_mask.proto.l4protonum);
-        diff |= EXP_DIFF_L4PROTO_PORTS(MASK_L4PROTO_PORTS, exp_mask.proto.l4protodata.port);
-        diff |= EXP_DIFF_L4PROTO_ICMP(MASK_L4PROTO_ICMP,   exp_mask.proto.l4protodata.icmp);
+        diff |= EXP_DIFF_L4PROTO_PORTS(MASK_L4PROTO_PORTS, exp_mask.proto.l4protodata);
+        diff |= EXP_DIFF_L4PROTO_ICMP(MASK_L4PROTO_ICMP,   exp_mask.proto.l4protodata);
 
         diff |= EXP_DIFF_ADDR(NAT_IP_SRC,        exp_nat.src);
         diff |= EXP_DIFF_ADDR(NAT_IP_DST,        exp_nat.dst);
         diff |= EXP_DIFF_VAL(NAT_L4PROTO_NUM,    exp_nat.proto.l4protonum);
-        diff |= EXP_DIFF_L4PROTO_PORTS(NAT_L4PROTO_PORTS, exp_nat.proto.l4protodata.port);
-        diff |= EXP_DIFF_L4PROTO_ICMP(NAT_L4PROTO_ICMP,   exp_nat.proto.l4protodata.icmp);
+        diff |= EXP_DIFF_L4PROTO_PORTS(NAT_L4PROTO_PORTS, exp_nat.proto.l4protodata);
+        diff |= EXP_DIFF_L4PROTO_ICMP(NAT_L4PROTO_ICMP,   exp_nat.proto.l4protodata);
 
 #undef EXP_DIFF
 #undef EXP_DIFF_VAL
@@ -477,6 +476,11 @@ void nfnl_exp_set_flags(struct nfnl_exp *exp, uint32_t flags)
 {
 	exp->exp_flags |= flags;
 	exp->ce_mask |= EXP_ATTR_FLAGS;
+}
+
+int nfnl_exp_test_flags(const struct nfnl_exp *exp)
+{
+    return !!(exp->ce_mask & EXP_ATTR_FLAGS);
 }
 
 void nfnl_exp_unset_flags(struct nfnl_exp *exp, uint32_t flags)
@@ -592,22 +596,6 @@ uint32_t nfnl_exp_get_class(const struct nfnl_exp *exp)
     return exp->exp_class;
 }
 
-void nfnl_exp_set_flags(struct nfnl_exp *exp, uint32_t flags)
-{
-    exp->exp_flags = flags;
-    exp->ce_mask |= EXP_ATTR_FLAGS;
-}
-
-int nfnl_exp_test_flags(const struct nfnl_exp *exp)
-{
-    return !!(exp->ce_mask & EXP_ATTR_FLAGS);
-}
-
-uint32_t nfnl_exp_get_flags(const struct nfnl_exp *exp)
-{
-    return exp->exp_flags;
-}
-
 int nfnl_exp_set_fn(struct nfnl_exp *exp, void *fn)
 {
     free(exp->exp_fn);
@@ -645,27 +633,13 @@ uint8_t nfnl_exp_get_nat_dir(const struct nfnl_exp *exp)
     return exp->exp_nat_dir;
 }
 
-static struct nfnl_exp_dir *exp_get_dir(struct nfnl_exp *exp, int tuple)
-{
-    struct nfnl_exp_dir *dir = NULL;
-
-    switch (tuple) {
-        case NFNL_EXP_TUPLE_MASTER:
-            dir = &exp->exp_master;
-            break;
-        case NFNL_EXP_TUPLE_MASK:
-            dir = &exp->exp_mask;
-            break;
-        case NFNL_EXP_TUPLE_NAT:
-            dir = &exp->exp_nat;
-            break;
-        case NFNL_EXP_TUPLE_EXPECT:
-        default :
-            dir = &exp->exp_expect;
-            break;
-    }
-    return dir;
-}
+#define EXP_GET_TUPLE(e, t) \
+    (t == NFNL_EXP_TUPLE_MASTER) ? \
+        &(e->exp_master) : \
+    (t == NFNL_EXP_TUPLE_MASK) ?\
+        &(e->exp_mask) : \
+    (t == NFNL_EXP_TUPLE_NAT) ?\
+        &(e->exp_nat) : &(exp->exp_expect)
 
 static int exp_get_src_attr(int tuple)
 {
@@ -735,14 +709,14 @@ static int exp_set_addr(struct nfnl_exp *exp, struct nl_addr *addr,
 
 int nfnl_exp_set_src(struct nfnl_exp *exp, int tuple, struct nl_addr *addr)
 {
-	struct nfnl_exp_dir *dir = exp_get_dir(exp, tuple);
+	struct nfnl_exp_dir *dir = EXP_GET_TUPLE(exp, tuple);
 
 	return exp_set_addr(exp, addr, exp_get_src_attr(tuple), &dir->src);
 }
 
 int nfnl_exp_set_dst(struct nfnl_exp *exp, int tuple, struct nl_addr *addr)
 {
-    struct nfnl_exp_dir *dir = exp_get_dir(exp, tuple);
+    struct nfnl_exp_dir *dir = EXP_GET_TUPLE(exp, tuple);
 
     return exp_set_addr(exp, addr, exp_get_dst_attr(tuple), &dir->dst);
 }
@@ -760,7 +734,7 @@ int nfnl_exp_test_dst(const struct nfnl_exp *exp, int tuple)
 
 struct nl_addr *nfnl_exp_get_src(const struct nfnl_exp *exp, int tuple)
 {
-	const struct nfnl_exp_dir *dir = exp_get_dir(exp, tuple);
+    const struct nfnl_exp_dir *dir = EXP_GET_TUPLE(exp, tuple);
 
     if (!(exp->ce_mask & exp_get_src_attr(tuple)))
 		return NULL;
@@ -769,7 +743,7 @@ struct nl_addr *nfnl_exp_get_src(const struct nfnl_exp *exp, int tuple)
 
 struct nl_addr *nfnl_exp_get_dst(const struct nfnl_exp *exp, int tuple)
 {
-	const struct nfnl_exp_dir *dir = exp_get_dir(exp, tuple);
+	const struct nfnl_exp_dir *dir = EXP_GET_TUPLE(exp, tuple);
 
 	if (!(exp->ce_mask & exp_get_dst_attr(tuple)))
 		return NULL;
@@ -801,20 +775,20 @@ static int exp_get_l4protonum_attr(int tuple)
 
 void nfnl_exp_set_l4protonum(struct nfnl_exp *exp, int tuple, uint8_t l4protonum)
 {
-    const struct nfnl_exp_dir *dir = exp_get_dir(exp, tuple);
+    struct nfnl_exp_dir *dir = EXP_GET_TUPLE(exp, tuple);
 
     dir->proto.l4protonum = l4protonum;
-    exp->ce_mask |= exp_get_l4protonum_attr(exp, tuple);
+    exp->ce_mask |= exp_get_l4protonum_attr(tuple);
 }
 
 int nfnl_exp_test_l4protonum(const struct nfnl_exp *exp, int tuple)
 {
-    return !!(exp->ce_mask & exp_get_l4protonum_attr(exp, tuple));
+    return !!(exp->ce_mask & exp_get_l4protonum_attr(tuple));
 }
 
-struct uint8_t * nfnl_exp_get_l4protonum(const struct nfnl_exp *exp, int tuple)
+uint8_t nfnl_exp_get_l4protonum(const struct nfnl_exp *exp, int tuple)
 {
-    const struct nfnl_exp_dir *dir = exp_get_dir(exp, tuple);
+    const struct nfnl_exp_dir *dir = EXP_GET_TUPLE(exp, tuple);
     return dir->proto.l4protonum;
 }
 
@@ -843,7 +817,7 @@ static int exp_get_l4ports_attr(int tuple)
 
 void nfnl_exp_set_ports(struct nfnl_exp *exp, int tuple, uint16_t srcport, uint16_t dstport)
 {
-	struct nfnl_exp_dir *dir = exp_get_dir(exp, tuple);
+	struct nfnl_exp_dir *dir = EXP_GET_TUPLE(exp, tuple);
 
 	dir->proto.l4protodata.port.src = srcport;
 	dir->proto.l4protodata.port.dst = dstport;
@@ -858,13 +832,13 @@ int nfnl_exp_test_ports(const struct nfnl_exp *exp, int tuple)
 
 uint16_t nfnl_exp_get_src_port(const struct nfnl_exp *exp, int tuple)
 {
-	const struct nfnl_exp_dir *dir = exp_get_dir(exp, tuple);
+	const struct nfnl_exp_dir *dir = EXP_GET_TUPLE(exp, tuple);
 	return dir->proto.l4protodata.port.src;
 }
 
 uint16_t nfnl_exp_get_dst_port(const struct nfnl_exp *exp, int tuple)
 {
-    const struct nfnl_exp_dir *dir = exp_get_dir(exp, tuple);
+    const struct nfnl_exp_dir *dir = EXP_GET_TUPLE(exp, tuple);
 
 	return dir->proto.l4protodata.port.dst;
 }
@@ -892,9 +866,9 @@ static int exp_get_l4icmp_attr(int tuple)
     return attr;
 }
 
-void nfnl_exp_set_icmp(struct nfnl_exp *exp, int tuple, uint16_t id, uint8_t type, uint8_t, code)
+void nfnl_exp_set_icmp(struct nfnl_exp *exp, int tuple, uint16_t id, uint8_t type, uint8_t code)
 {
-	struct nfnl_exp_dir *dir = exp_get_dir(exp, tuple);
+	struct nfnl_exp_dir *dir = EXP_GET_TUPLE(exp, tuple);
 
 	dir->proto.l4protodata.icmp.id = id;
 	dir->proto.l4protodata.icmp.type = type;
@@ -911,21 +885,21 @@ int nfnl_exp_test_icmp(const struct nfnl_exp *exp, int tuple)
 
 uint16_t nfnl_exp_get_icmp_id(const struct nfnl_exp *exp, int tuple)
 {
-	const struct nfnl_exp_dir *dir = exp_get_dir(exp, tuple);
+	const struct nfnl_exp_dir *dir = EXP_GET_TUPLE(exp, tuple);
 
 	return dir->proto.l4protodata.icmp.id;
 }
 
 uint8_t nfnl_exp_get_icmp_type(const struct nfnl_exp *exp, int tuple)
 {
-    const struct nfnl_exp_dir *dir = exp_get_dir(exp, tuple);
+    const struct nfnl_exp_dir *dir = EXP_GET_TUPLE(exp, tuple);
 
 	return dir->proto.l4protodata.icmp.type;
 }
 
-uint8_t nfnl_ct_get_icmp_code(const struct nfnl_exp *exp, int tuple)
+uint8_t nfnl_exp_get_icmp_code(const struct nfnl_exp *exp, int tuple)
 {
-    const struct nfnl_exp_dir *dir = exp_get_dir(exp, tuple);
+    const struct nfnl_exp_dir *dir = EXP_GET_TUPLE(exp, tuple);
 
 	return dir->proto.l4protodata.icmp.code;
 }

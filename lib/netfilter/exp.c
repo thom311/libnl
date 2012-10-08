@@ -30,18 +30,6 @@
 
 static struct nl_cache_ops nfnl_exp_ops;
 
-#if __BYTE_ORDER == __BIG_ENDIAN
-static uint64_t ntohll(uint64_t x)
-{
-	return x;
-}
-#elif __BYTE_ORDER == __LITTLE_ENDIAN
-static uint64_t ntohll(uint64_t x)
-{
-	return bswap_64(x);
-}
-#endif
-
 static struct nla_policy exp_policy[CTA_EXPECT_MAX+1] = {
 	[CTA_EXPECT_MASTER]	    = { .type = NLA_NESTED },
 	[CTA_EXPECT_TUPLE]	    = { .type = NLA_NESTED },
@@ -407,6 +395,7 @@ static int nfnl_exp_build_message(const struct nfnl_exp *exp, int cmd, int flags
 	*result = msg;
 	return 0;
 
+nla_put_failure:
 err_out:
 	nlmsg_free(msg);
 	return err;
@@ -519,9 +508,9 @@ static struct nl_cache_ops nfnl_exp_ops = {
 	.co_name		= "netfilter/exp",
 	.co_hdrsize		= NFNL_HDRLEN,
 	.co_msgtypes		= {
-		{ NFNLMSG_CT_TYPE(IPCTNL_MSG_EXP_NEW), NL_ACT_NEW, "new" },
-		{ NFNLMSG_CT_TYPE(IPCTNL_MSG_EXP_GET), NL_ACT_GET, "get" },
-		{ NFNLMSG_CT_TYPE(IPCTNL_MSG_EXP_DELETE), NL_ACT_DEL, "del" },
+		{ NFNLMSG_EXP_TYPE(IPCTNL_MSG_EXP_NEW), NL_ACT_NEW, "new" },
+		{ NFNLMSG_EXP_TYPE(IPCTNL_MSG_EXP_GET), NL_ACT_GET, "get" },
+		{ NFNLMSG_EXP_TYPE(IPCTNL_MSG_EXP_DELETE), NL_ACT_DEL, "del" },
 		END_OF_MSGTYPES_LIST,
 	},
 	.co_protocol		= NETLINK_NETFILTER,

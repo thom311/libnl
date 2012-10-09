@@ -1164,6 +1164,12 @@ static int build_link_msg(int cmd, struct ifinfomsg *hdr,
 	if (link->ce_mask & LINK_ATTR_MASTER)
 		NLA_PUT_U32(msg, IFLA_MASTER, link->l_master);
 
+	if (link->ce_mask & LINK_ATTR_NUM_TX_QUEUES)
+		NLA_PUT_U32(msg, IFLA_NUM_TX_QUEUES, link->l_num_tx_queues);
+
+	if (link->ce_mask & LINK_ATTR_NUM_RX_QUEUES)
+		NLA_PUT_U32(msg, IFLA_NUM_RX_QUEUES, link->l_num_rx_queues);
+
 	if (link->ce_mask & LINK_ATTR_LINKINFO) {
 		struct nlattr *info;
 

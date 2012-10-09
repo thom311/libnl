@@ -36,6 +36,7 @@ static void print_usage(void)
 	"     --master-dport=PORT     Master conntrack destination port\n"
 	" -F, --family=FAMILY         Address family\n"
 	"     --timeout=NUM           Timeout value\n"
+    "     --helper=STRING         Helper Name\n"
 	//"     --flags                 Flags\n"
 	);
 	exit(0);
@@ -69,6 +70,7 @@ int main(int argc, char *argv[])
 			ARG_MASTER_DST,
 			ARG_MASTER_DPORT,
 			ARG_TIMEOUT,
+            ARG_HELPER_NAME,
 			//ARG_FLAGS,
 		};
 		static struct option long_opts[] = {
@@ -88,6 +90,7 @@ int main(int argc, char *argv[])
 			{ "master-dport", 1, 0, ARG_MASTER_DPORT },
 			{ "family", 1, 0, 'F' },
 			{ "timeout", 1, 0, ARG_TIMEOUT },
+			{ "helper", 1, 0, ARG_HELPER_NAME },
             //{ "flags", 1, 0, ARG_FLAGS},
 			{ 0, 0, 0, 0 }
 		};
@@ -116,6 +119,7 @@ int main(int argc, char *argv[])
 		case ARG_MASTER_DPORT: nl_cli_exp_parse_dst_port(exp, NFNL_EXP_TUPLE_MASTER, optarg); break;
 		case 'F': nl_cli_exp_parse_family(exp, optarg); break;
 		case ARG_TIMEOUT: nl_cli_exp_parse_timeout(exp, optarg); break;
+        case ARG_HELPER_NAME: nl_cli_exp_parse_helper_name(exp, optarg); break;
 		//case ARG_FLAGS: nl_cli_exp_parse_flags(exp, optarg); break;
 		}
  	}

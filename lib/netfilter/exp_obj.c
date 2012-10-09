@@ -58,7 +58,6 @@
 #define EXP_ATTR_NAT_L4PROTO_NUM      (1UL << 25) // contains l4proto # + PORT attrs or ICMP attrs
 #define EXP_ATTR_NAT_L4PROTO_PORTS    (1UL << 26)
 #define EXP_ATTR_NAT_L4PROTO_ICMP     (1UL << 27)
-
 #define EXP_ATTR_NAT_DIR              (1UL << 28) // 8-bit
 /** @endcond */
 
@@ -184,14 +183,16 @@ static void dump_icmp(struct nl_dump_params *p, struct nfnl_exp *exp, int tuple)
 
 static void exp_dump_tuples(struct nfnl_exp *exp, struct nl_dump_params *p)
 {
-	struct nl_addr *tuple_src = NULL, *tuple_dst = NULL;
+	struct nl_addr *tuple_src, *tuple_dst;
 	int tuple_sport = 0, tuple_dport = 0;
 	int i = 0;
     char buf[64];
 
 	for (i = NFNL_EXP_TUPLE_EXPECT; i <= NFNL_EXP_TUPLE_NAT; i++) {
+        tuple_src = NULL;
+        tuple_dst = NULL;
 
-        // Test needed for NAT case
+	    // Test needed for NAT case
 	    if (nfnl_exp_test_src(exp, i))
             tuple_src = nfnl_exp_get_src(exp, i);
         if (nfnl_exp_test_dst(exp, i))
@@ -207,6 +208,7 @@ static void exp_dump_tuples(struct nfnl_exp *exp, struct nl_dump_params *p)
             tuple_sport = nfnl_exp_get_src_port(exp, i);
             tuple_dport = nfnl_exp_get_dst_port(exp, i);
         }
+
         dump_addr(p, tuple_src, tuple_sport);
         dump_addr(p, tuple_dst, tuple_dport);
         dump_icmp(p, exp, 0);
@@ -636,9 +638,9 @@ uint8_t nfnl_exp_get_nat_dir(const struct nfnl_exp *exp)
 #define EXP_GET_TUPLE(e, t) \
     (t == NFNL_EXP_TUPLE_MASTER) ? \
         &(e->exp_master) : \
-    (t == NFNL_EXP_TUPLE_MASK) ?\
+    (t == NFNL_EXP_TUPLE_MASK) ? \
         &(e->exp_mask) : \
-    (t == NFNL_EXP_TUPLE_NAT) ?\
+    (t == NFNL_EXP_TUPLE_NAT) ? \
         &(e->exp_nat) : &(exp->exp_expect)
 
 static int exp_get_src_attr(int tuple)

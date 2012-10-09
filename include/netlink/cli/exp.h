@@ -21,6 +21,7 @@ extern struct nl_cache *nl_cli_exp_alloc_cache(struct nl_sock *);
 extern void nl_cli_exp_parse_family(struct nfnl_exp *, char *);
 extern void nl_cli_exp_parse_timeout(struct nfnl_exp *, char *);
 extern void nl_cli_exp_parse_id(struct nfnl_exp *, char *);
+extern void nl_cli_exp_parse_helper_name(struct nfnl_exp *, char *);
 extern void nl_cli_exp_parse_src(struct nfnl_exp *, int, char *);
 extern void nl_cli_exp_parse_dst(struct nfnl_exp *, int, char *);
 extern void nl_cli_exp_parse_l4protonum(struct nfnl_exp *, int, char *);

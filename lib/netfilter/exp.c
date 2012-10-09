@@ -505,8 +505,8 @@ static struct nl_af_group exp_groups[] = {
 
 #define NFNLMSG_EXP_TYPE(type) NFNLMSG_TYPE(NFNL_SUBSYS_CTNETLINK_EXP, (type))
 static struct nl_cache_ops nfnl_exp_ops = {
-	.co_name		= "netfilter/exp",
-	.co_hdrsize		= NFNL_HDRLEN,
+	.co_name		    = "netfilter/exp",
+	.co_hdrsize		    = NFNL_HDRLEN,
 	.co_msgtypes		= {
 		{ NFNLMSG_EXP_TYPE(IPCTNL_MSG_EXP_NEW), NL_ACT_NEW, "new" },
 		{ NFNLMSG_EXP_TYPE(IPCTNL_MSG_EXP_GET), NL_ACT_GET, "get" },
@@ -514,10 +514,10 @@ static struct nl_cache_ops nfnl_exp_ops = {
 		END_OF_MSGTYPES_LIST,
 	},
 	.co_protocol		= NETLINK_NETFILTER,
-	.co_groups		= exp_groups,
+	.co_groups		    = exp_groups,
 	.co_request_update	= exp_request_update,
 	.co_msg_parser		= exp_msg_parser,
-	.co_obj_ops		= &exp_obj_ops,
+	.co_obj_ops		    = &exp_obj_ops,
 };
 
 static void __init exp_init(void)

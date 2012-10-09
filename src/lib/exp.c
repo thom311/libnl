@@ -102,26 +102,4 @@ void nl_cli_exp_parse_dst_port(struct nfnl_exp *exp, int tuple, char *arg)
 	nfnl_exp_set_ports(exp, tuple, sport, dport);
 }
 
-#if 0
-		} else if (arg_match("origicmpid")) {
-			if (argc > ++idx)
-				nfnl_ct_set_icmp_id(ct, 0, strtoul(argv[idx++], NULL, 0));
-		} else if (arg_match("origicmptype")) {
-			if (argc > ++idx)
-				nfnl_ct_set_icmp_type(ct, 0, strtoul(argv[idx++], NULL, 0));
-		} else if (arg_match("origicmpcode")) {
-			if (argc > ++idx)
-				nfnl_ct_set_icmp_code(ct, 0, strtoul(argv[idx++], NULL, 0));
-		} else if (arg_match("replyicmpid")) {
-			if (argc > ++idx)
-				nfnl_ct_set_icmp_id(ct, 1, strtoul(argv[idx++], NULL, 0));
-		} else if (arg_match("replyicmptype")) {
-			if (argc > ++idx)
-				nfnl_ct_set_icmp_type(ct, 1, strtoul(argv[idx++], NULL, 0));
-		} else if (arg_match("replyicmpcode")) {
-			if (argc > ++idx)
-				nfnl_ct_set_icmp_code(ct, 1, strtoul(argv[idx++], NULL, 0));
-		}
-#endif
-
 /** @} */

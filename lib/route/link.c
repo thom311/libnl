@@ -539,7 +539,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	if (tb[IFLA_PROMISCUITY]) {
 		link->l_promiscuity = nla_get_u32(tb[IFLA_PROMISCUITY]);
-		link->l_flags |= LINK_ATTR_PROMISCUITY;
+		link->ce_mask |= LINK_ATTR_PROMISCUITY;
 	}
 
 	err = pp->pp_cb((struct nl_object *) link, pp);
@@ -2034,7 +2034,7 @@ char *rtnl_link_get_type(struct rtnl_link *link)
 void rtnl_link_set_promiscuity(struct rtnl_link *link, uint32_t count)
 {
 	link->l_promiscuity = count;
-	link->l_master |= LINK_ATTR_PROMISCUITY;
+	link->ce_mask |= LINK_ATTR_PROMISCUITY;
 }
 
 /**

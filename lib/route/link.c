@@ -640,7 +640,7 @@ static void link_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 	if (link->ce_mask & LINK_ATTR_IFINDEX)
 		nl_dump(p, "index %u ", link->l_index);
 
-	if (link->ce_mask & LINK_ATTR_PROMISCUITY)
+	if (link->ce_mask & LINK_ATTR_PROMISCUITY && link->l_promiscuity > 0)
 		nl_dump(p, "promisc-mode (%u users) ", link->l_promiscuity);
 
 	nl_dump(p, "\n");

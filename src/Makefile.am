@@ -21,7 +21,7 @@ sbin_PROGRAMS = \
 	nl-link-list
 
 noinst_PROGRAMS = \
-	nf-ct-list nf-log nf-queue nf-monitor \
+	nf-ct-list nf-log nf-queue nf-monitor nf-exp-list \
 	nl-addr-add nl-addr-delete nl-addr-list \
 	nl-link-set nl-link-stats \
 	nl-link-ifindex2name nl-link-name2ifindex \

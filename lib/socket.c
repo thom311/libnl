@@ -587,6 +587,36 @@ int nl_socket_set_buffer_size(struct nl_sock *sk, int rxbuf, int txbuf)
 }
 
 /**
+ * Set default message buffer size of netlink socket.
+ * @arg sk		Netlink socket.
+ * @arg bufsize		Default message buffer size in bytes.
+ *
+ * Sets the default message buffer size to the specified length in bytes.
+ * The default message buffer size limits the maximum message size the
+ * socket will be able to receive. It is generally recommneded to specify
+ * a buffer size no less than the size of a memory page.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int nl_socket_set_msg_buf_size(struct nl_sock *sk, size_t bufsize)
+{
+	sk->s_bufsize = bufsize;
+
+	return 0;
+}
+
+/**
+ * Get default message buffer size of netlink socket.
+ * @arg sk		Netlink socket.
+ *
+ * @return Size of default message buffer.
+ */
+size_t nl_socket_get_msg_buf_size(struct nl_sock *sk)
+{
+	return sk->s_bufsize;
+}
+
+/**
  * Enable/disable credential passing on netlink socket.
  * @arg sk		Netlink socket.
  * @arg state		New state (0 - disabled, 1 - enabled)

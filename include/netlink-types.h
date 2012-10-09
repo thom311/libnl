@@ -69,6 +69,7 @@ struct nl_sock
 	unsigned int		s_seq_expect;
 	int			s_flags;
 	struct nl_cb *		s_cb;
+	size_t			s_bufsize;
 };
 
 struct nl_cache

@@ -174,6 +174,8 @@ struct rtnl_link
 	void *				l_info;
 	char *				l_ifalias;
 	uint32_t			l_promiscuity;
+	uint32_t			l_num_tx_queues;
+	uint32_t			l_num_rx_queues;
 };
 
 struct rtnl_ncacheinfo

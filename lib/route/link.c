@@ -50,6 +50,8 @@
 #define LINK_ATTR_IFALIAS	(1 << 19)
 #define LINK_ATTR_NUM_VF	(1 << 20)
 #define LINK_ATTR_PROMISCUITY	(1 << 21)
+#define LINK_ATTR_NUM_TX_QUEUES	(1 << 22)
+#define LINK_ATTR_NUM_RX_QUEUES	(1 << 23)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -256,6 +258,8 @@ static struct nla_policy link_policy[IFLA_MAX+1] = {
 	[IFLA_NUM_VF]		= { .type = NLA_U32 },
 	[IFLA_AF_SPEC]		= { .type = NLA_NESTED },
 	[IFLA_PROMISCUITY]	= { .type = NLA_U32 },
+	[IFLA_NUM_TX_QUEUES]	= { .type = NLA_U32 },
+	[IFLA_NUM_RX_QUEUES]	= { .type = NLA_U32 },
 };
 
 static struct nla_policy link_info_policy[IFLA_INFO_MAX+1] = {
@@ -542,6 +546,16 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		link->ce_mask |= LINK_ATTR_PROMISCUITY;
 	}
 
+	if (tb[IFLA_NUM_TX_QUEUES]) {
+		link->l_num_tx_queues = nla_get_u32(tb[IFLA_NUM_TX_QUEUES]);
+		link->ce_mask |= LINK_ATTR_NUM_TX_QUEUES;
+	}
+
+	if (tb[IFLA_NUM_RX_QUEUES]) {
+		link->l_num_rx_queues = nla_get_u32(tb[IFLA_NUM_RX_QUEUES]);
+		link->ce_mask |= LINK_ATTR_NUM_RX_QUEUES;
+	};
+
 	err = pp->pp_cb((struct nl_object *) link, pp);
 errout:
 	rtnl_link_af_ops_put(af_ops);
@@ -635,6 +649,12 @@ static void link_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 		nl_dump_line(p, "    alias %s\n", link->l_ifalias);
 
 	nl_dump_line(p, "    ");
+
+	if (link->ce_mask & LINK_ATTR_NUM_TX_QUEUES)
+		nl_dump(p, "txq %u ", link->l_num_tx_queues);
+
+	if (link->ce_mask & LINK_ATTR_NUM_RX_QUEUES)
+		nl_dump(p, "rxq %u ", link->l_num_rx_queues);
 
 	if (link->ce_mask & LINK_ATTR_BRD)
 		nl_dump(p, "brd %s ", nl_addr2str(link->l_bcast, buf,
@@ -794,6 +814,8 @@ static int link_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= LINK_DIFF(IFALIAS,	strcmp(a->l_ifalias, b->l_ifalias));
 	diff |= LINK_DIFF(NUM_VF,	a->l_num_vf != b->l_num_vf);
 	diff |= LINK_DIFF(PROMISCUITY,	a->l_promiscuity != b->l_promiscuity);
+	diff |= LINK_DIFF(NUM_TX_QUEUES,a->l_num_tx_queues != b->l_num_tx_queues);
+	diff |= LINK_DIFF(NUM_RX_QUEUES,a->l_num_rx_queues != b->l_num_rx_queues);
 
 	if (flags & LOOSE_COMPARISON)
 		diff |= LINK_DIFF(FLAGS,
@@ -828,6 +850,8 @@ static const struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_IFALIAS, ifalias)
 	__ADD(LINK_ATTR_NUM_VF, num_vf)
 	__ADD(LINK_ATTR_PROMISCUITY, promiscuity)
+	__ADD(LINK_ATTR_NUM_TX_QUEUES, num_tx_queues)
+	__ADD(LINK_ATTR_NUM_RX_QUEUES, num_rx_queues)
 };
 
 static char *link_attrs2str(int attrs, char *buf, size_t len)
@@ -2049,6 +2073,67 @@ uint32_t rtnl_link_get_promiscuity(struct rtnl_link *link)
 	return link->l_promiscuity;
 }
 
+/**
+ * Set number of TX queues
+ * @arg link		Link object
+ * @arg nqueues		Number of queues
+ *
+ * Sets the number of TX queues of the link object. The value is considered
+ * by the kernel when creating network devices that can be created via
+ * netlink. The value will be passed on to alloc_netdev_mqs()
+ *
+ * Therefore use of rtnl_link_set_num_tx_queues() only makes sense in
+ * combination with rtnl_link_add() or if the link object is used as a filter.
+ *
+ * @see rtnl_link_get_num_tx_queues()
+ */
+void rtnl_link_set_num_tx_queues(struct rtnl_link *link, uint32_t nqueues)
+{
+	link->l_num_tx_queues = nqueues;
+	link->ce_mask |= LINK_ATTR_NUM_TX_QUEUES;
+}
+
+/**
+ * Return number of TX queues
+ * @arg link		Link object
+ *
+ * @return Number of TX queues or 0
+ */
+uint32_t rtnl_link_get_num_tx_queues(struct rtnl_link *link)
+{
+	return link->l_num_tx_queues;
+}
+
+/**
+ * Set number of RX queues
+ * @arg link		Link object
+ * @arg nqueues		Number of queues
+ *
+ * Sets the number of RX queues of the link object. The value is considered
+ * by the kernel when creating network devices that can be created via
+ * netlink. The value will be passed on to alloc_netdev_mqs()
+ *
+ * Therefore use of rtnl_link_set_num_rx_queues() only makes sense in
+ * combination with rtnl_link_add() or if the link object is used as a filter.
+ *
+ * @see rtnl_link_get_num_rx_queues()
+ */
+void rtnl_link_set_num_rx_queues(struct rtnl_link *link, uint32_t nqueues)
+{
+	link->l_num_rx_queues = nqueues;
+	link->ce_mask |= LINK_ATTR_NUM_RX_QUEUES;
+}
+
+/**
+ * Return number of RX queues
+ * @arg link		Link object
+ *
+ * @return Number of RX queues or 0
+ */
+uint32_t rtnl_link_get_num_rx_queues(struct rtnl_link *link)
+{
+	return link->l_num_rx_queues;
+}
 
 /** @} */
 

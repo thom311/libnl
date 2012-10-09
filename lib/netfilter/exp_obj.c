@@ -184,13 +184,15 @@ static void dump_icmp(struct nl_dump_params *p, struct nfnl_exp *exp, int tuple)
 static void exp_dump_tuples(struct nfnl_exp *exp, struct nl_dump_params *p)
 {
 	struct nl_addr *tuple_src, *tuple_dst;
-	int tuple_sport = 0, tuple_dport = 0;
+	int tuple_sport, tuple_dport;
 	int i = 0;
     char buf[64];
 
 	for (i = NFNL_EXP_TUPLE_EXPECT; i <= NFNL_EXP_TUPLE_NAT; i++) {
         tuple_src = NULL;
         tuple_dst = NULL;
+        tuple_sport = 0;
+        tuple_dport = 0;
 
 	    // Test needed for NAT case
 	    if (nfnl_exp_test_src(exp, i))

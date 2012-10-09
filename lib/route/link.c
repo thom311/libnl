@@ -52,6 +52,7 @@
 #define LINK_ATTR_PROMISCUITY	(1 << 21)
 #define LINK_ATTR_NUM_TX_QUEUES	(1 << 22)
 #define LINK_ATTR_NUM_RX_QUEUES	(1 << 23)
+#define LINK_ATTR_GROUP		(1 << 24)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -260,6 +261,7 @@ static struct nla_policy link_policy[IFLA_MAX+1] = {
 	[IFLA_PROMISCUITY]	= { .type = NLA_U32 },
 	[IFLA_NUM_TX_QUEUES]	= { .type = NLA_U32 },
 	[IFLA_NUM_RX_QUEUES]	= { .type = NLA_U32 },
+	[IFLA_GROUP]		= { .type = NLA_U32 },
 };
 
 static struct nla_policy link_info_policy[IFLA_INFO_MAX+1] = {
@@ -554,7 +556,12 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (tb[IFLA_NUM_RX_QUEUES]) {
 		link->l_num_rx_queues = nla_get_u32(tb[IFLA_NUM_RX_QUEUES]);
 		link->ce_mask |= LINK_ATTR_NUM_RX_QUEUES;
-	};
+	}
+
+	if (tb[IFLA_GROUP]) {
+		link->l_group = nla_get_u32(tb[IFLA_GROUP]);
+		link->ce_mask |= LINK_ATTR_GROUP;
+	}
 
 	err = pp->pp_cb((struct nl_object *) link, pp);
 errout:
@@ -612,6 +619,9 @@ static void link_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 		if (ll)
 			rtnl_link_put(ll);
 	}
+
+	if (link->ce_mask & LINK_ATTR_GROUP)
+		nl_dump(p, "group %u ", link->l_group);
 
 	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_LINE])
 		link->l_info_ops->io_dump[NL_DUMP_LINE](link, p);
@@ -816,6 +826,7 @@ static int link_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= LINK_DIFF(PROMISCUITY,	a->l_promiscuity != b->l_promiscuity);
 	diff |= LINK_DIFF(NUM_TX_QUEUES,a->l_num_tx_queues != b->l_num_tx_queues);
 	diff |= LINK_DIFF(NUM_RX_QUEUES,a->l_num_rx_queues != b->l_num_rx_queues);
+	diff |= LINK_DIFF(GROUP,	a->l_group != b->l_group);
 
 	if (flags & LOOSE_COMPARISON)
 		diff |= LINK_DIFF(FLAGS,
@@ -852,6 +863,7 @@ static const struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_PROMISCUITY, promiscuity)
 	__ADD(LINK_ATTR_NUM_TX_QUEUES, num_tx_queues)
 	__ADD(LINK_ATTR_NUM_RX_QUEUES, num_rx_queues)
+	__ADD(LINK_ATTR_GROUP, group)
 };
 
 static char *link_attrs2str(int attrs, char *buf, size_t len)
@@ -1169,6 +1181,9 @@ static int build_link_msg(int cmd, struct ifinfomsg *hdr,
 
 	if (link->ce_mask & LINK_ATTR_NUM_RX_QUEUES)
 		NLA_PUT_U32(msg, IFLA_NUM_RX_QUEUES, link->l_num_rx_queues);
+
+	if (link->ce_mask & LINK_ATTR_GROUP)
+		NLA_PUT_U32(msg, IFLA_GROUP, link->l_group);
 
 	if (link->ce_mask & LINK_ATTR_LINKINFO) {
 		struct nlattr *info;
@@ -1521,6 +1536,28 @@ void rtnl_link_set_name(struct rtnl_link *link, const char *name)
 char *rtnl_link_get_name(struct rtnl_link *link)
 {
 	return link->ce_mask & LINK_ATTR_IFNAME ? link->l_name : NULL;
+}
+
+/**
+ * Set the group identifier of a link object
+ * @arg link		Link object
+ * @arg group		Group identifier
+ */
+void rtnl_link_set_group(struct rtnl_link *link, uint32_t group)
+{
+	link->l_group = group;
+	link->ce_mask |= LINK_ATTR_GROUP;
+}
+
+/**
+ * Return the group identifier of link object
+ * @arg link		Link object
+ *
+ * @return Group identifier or 0 if not set.
+ */
+uint32_t rtnl_link_get_group(struct rtnl_link *link)
+{
+	return link->l_group;
 }
 
 static inline void __assign_addr(struct rtnl_link *link, struct nl_addr **pos,

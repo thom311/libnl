@@ -148,6 +148,9 @@ extern char *	rtnl_link_get_qdisc(struct rtnl_link *);
 extern void	rtnl_link_set_name(struct rtnl_link *, const char *);
 extern char *	rtnl_link_get_name(struct rtnl_link *);
 
+extern void	rtnl_link_set_group(struct rtnl_link *, uint32_t);
+extern uint32_t	rtnl_link_get_group(struct rtnl_link *);
+
 extern void	rtnl_link_set_flags(struct rtnl_link *, unsigned int);
 extern void	rtnl_link_unset_flags(struct rtnl_link *, unsigned int);
 extern unsigned int rtnl_link_get_flags(struct rtnl_link *);

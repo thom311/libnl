@@ -365,6 +365,20 @@ void rtnl_link_set_ifindex(struct rtnl_link *link, int ifindex);
 int rtnl_link_get_ifindex(struct rtnl_link *link);
 -----
 
+[[link_attr_group]]
+==== Group
+Each link can be assigned a numeric group identifier to group a bunch of links
+together and apply a set of changes to a group instead of just a single link.
+
+
+[source,c]
+-----
+#include <netlink/route/link.h>
+
+void rtnl_link_set_group(struct rtnl_link *link, uint32_t group);
+uint32_t rtnl_link_get_group(struct rtnl_link *link);
+-----
+
 [[link_attr_address]]
 ==== Link Layer Address
 The link layer address (e.g. MAC address).

@@ -176,6 +176,7 @@ struct rtnl_link
 	uint32_t			l_promiscuity;
 	uint32_t			l_num_tx_queues;
 	uint32_t			l_num_rx_queues;
+	uint32_t			l_group;
 };
 
 struct rtnl_ncacheinfo

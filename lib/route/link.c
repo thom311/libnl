@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -28,27 +28,28 @@
 #include <netlink/route/link/api.h>
 
 /** @cond SKIP */
-#define LINK_ATTR_MTU     0x0001
-#define LINK_ATTR_LINK    0x0002
-#define LINK_ATTR_TXQLEN  0x0004
-#define LINK_ATTR_WEIGHT  0x0008
-#define LINK_ATTR_MASTER  0x0010
-#define LINK_ATTR_QDISC   0x0020
-#define LINK_ATTR_MAP     0x0040
-#define LINK_ATTR_ADDR    0x0080
-#define LINK_ATTR_BRD     0x0100
-#define LINK_ATTR_FLAGS   0x0200
-#define LINK_ATTR_IFNAME  0x0400
-#define LINK_ATTR_IFINDEX 0x0800
-#define LINK_ATTR_FAMILY  0x1000
-#define LINK_ATTR_ARPTYPE 0x2000
-#define LINK_ATTR_STATS   0x4000
-#define LINK_ATTR_CHANGE  0x8000
-#define LINK_ATTR_OPERSTATE 0x10000
-#define LINK_ATTR_LINKMODE  0x20000
-#define LINK_ATTR_LINKINFO  0x40000
-#define LINK_ATTR_IFALIAS   0x80000
-#define LINK_ATTR_NUM_VF   0x100000
+#define LINK_ATTR_MTU		(1 <<  0)
+#define LINK_ATTR_LINK		(1 <<  1)
+#define LINK_ATTR_TXQLEN	(1 <<  2)
+#define LINK_ATTR_WEIGHT	(1 <<  3)
+#define LINK_ATTR_MASTER	(1 <<  4)
+#define LINK_ATTR_QDISC		(1 <<  5)
+#define LINK_ATTR_MAP		(1 <<  6)
+#define LINK_ATTR_ADDR		(1 <<  7)
+#define LINK_ATTR_BRD		(1 <<  8)
+#define LINK_ATTR_FLAGS		(1 <<  9)
+#define LINK_ATTR_IFNAME	(1 << 10)
+#define LINK_ATTR_IFINDEX	(1 << 11)
+#define LINK_ATTR_FAMILY	(1 << 12)
+#define LINK_ATTR_ARPTYPE	(1 << 13)
+#define LINK_ATTR_STATS		(1 << 14)
+#define LINK_ATTR_CHANGE	(1 << 15)
+#define LINK_ATTR_OPERSTATE	(1 << 16)
+#define LINK_ATTR_LINKMODE	(1 << 17)
+#define LINK_ATTR_LINKINFO	(1 << 18)
+#define LINK_ATTR_IFALIAS	(1 << 19)
+#define LINK_ATTR_NUM_VF	(1 << 20)
+#define LINK_ATTR_PROMISCUITY	(1 << 21)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -236,24 +237,25 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 }
 
 static struct nla_policy link_policy[IFLA_MAX+1] = {
-	[IFLA_IFNAME]	= { .type = NLA_STRING,
-			    .maxlen = IFNAMSIZ },
-	[IFLA_MTU]	= { .type = NLA_U32 },
-	[IFLA_TXQLEN]	= { .type = NLA_U32 },
-	[IFLA_LINK]	= { .type = NLA_U32 },
-	[IFLA_WEIGHT]	= { .type = NLA_U32 },
-	[IFLA_MASTER]	= { .type = NLA_U32 },
-	[IFLA_OPERSTATE]= { .type = NLA_U8 },
-	[IFLA_LINKMODE] = { .type = NLA_U8 },
-	[IFLA_LINKINFO]	= { .type = NLA_NESTED },
-	[IFLA_QDISC]	= { .type = NLA_STRING,
-			    .maxlen = IFQDISCSIZ },
-	[IFLA_STATS]	= { .minlen = sizeof(struct rtnl_link_stats) },
-	[IFLA_STATS64]	= { .minlen = sizeof(struct rtnl_link_stats64) },
-	[IFLA_MAP]	= { .minlen = sizeof(struct rtnl_link_ifmap) },
-	[IFLA_IFALIAS]	= { .type = NLA_STRING, .maxlen = IFALIASZ },
-	[IFLA_NUM_VF]	= { .type = NLA_U32 },
-	[IFLA_AF_SPEC]	= { .type = NLA_NESTED },
+	[IFLA_IFNAME]		= { .type = NLA_STRING,
+				    .maxlen = IFNAMSIZ },
+	[IFLA_MTU]		= { .type = NLA_U32 },
+	[IFLA_TXQLEN]		= { .type = NLA_U32 },
+	[IFLA_LINK]		= { .type = NLA_U32 },
+	[IFLA_WEIGHT]		= { .type = NLA_U32 },
+	[IFLA_MASTER]		= { .type = NLA_U32 },
+	[IFLA_OPERSTATE]	= { .type = NLA_U8 },
+	[IFLA_LINKMODE] 	= { .type = NLA_U8 },
+	[IFLA_LINKINFO]		= { .type = NLA_NESTED },
+	[IFLA_QDISC]		= { .type = NLA_STRING,
+				    .maxlen = IFQDISCSIZ },
+	[IFLA_STATS]		= { .minlen = sizeof(struct rtnl_link_stats) },
+	[IFLA_STATS64]		= { .minlen = sizeof(struct rtnl_link_stats64)},
+	[IFLA_MAP]		= { .minlen = sizeof(struct rtnl_link_ifmap) },
+	[IFLA_IFALIAS]		= { .type = NLA_STRING, .maxlen = IFALIASZ },
+	[IFLA_NUM_VF]		= { .type = NLA_U32 },
+	[IFLA_AF_SPEC]		= { .type = NLA_NESTED },
+	[IFLA_PROMISCUITY]	= { .type = NLA_U32 },
 };
 
 static struct nla_policy link_info_policy[IFLA_INFO_MAX+1] = {
@@ -535,6 +537,11 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		}
 	}
 
+	if (tb[IFLA_PROMISCUITY]) {
+		link->l_promiscuity = nla_get_u32(tb[IFLA_PROMISCUITY]);
+		link->l_flags |= LINK_ATTR_PROMISCUITY;
+	}
+
 	err = pp->pp_cb((struct nl_object *) link, pp);
 errout:
 	rtnl_link_af_ops_put(af_ops);
@@ -619,6 +626,8 @@ static void link_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 	if (link->ce_mask & LINK_ATTR_IFINDEX)
 		nl_dump(p, "index %u ", link->l_index);
 
+	if (link->ce_mask & LINK_ATTR_PROMISCUITY)
+		nl_dump(p, "promisc-mode (%u users) ", link->l_promiscuity);
 
 	nl_dump(p, "\n");
 
@@ -784,6 +793,7 @@ static int link_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= LINK_DIFF(BRD,		nl_addr_cmp(a->l_bcast, b->l_bcast));
 	diff |= LINK_DIFF(IFALIAS,	strcmp(a->l_ifalias, b->l_ifalias));
 	diff |= LINK_DIFF(NUM_VF,	a->l_num_vf != b->l_num_vf);
+	diff |= LINK_DIFF(PROMISCUITY,	a->l_promiscuity != b->l_promiscuity);
 
 	if (flags & LOOSE_COMPARISON)
 		diff |= LINK_DIFF(FLAGS,
@@ -817,6 +827,7 @@ static const struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_LINKMODE, linkmode)
 	__ADD(LINK_ATTR_IFALIAS, ifalias)
 	__ADD(LINK_ATTR_NUM_VF, num_vf)
+	__ADD(LINK_ATTR_PROMISCUITY, promiscuity)
 };
 
 static char *link_attrs2str(int attrs, char *buf, size_t len)
@@ -2010,6 +2021,34 @@ char *rtnl_link_get_type(struct rtnl_link *link)
 {
 	return link->l_info_kind;
 }
+
+/**
+ * Set link promiscuity count
+ * @arg link		Link object
+ * @arg count		New promiscuity count
+ *
+ * @copydoc read_only_attribute
+ *
+ * @see rtnl_link_get_promiscuity()
+ */
+void rtnl_link_set_promiscuity(struct rtnl_link *link, uint32_t count)
+{
+	link->l_promiscuity = count;
+	link->l_master |= LINK_ATTR_PROMISCUITY;
+}
+
+/**
+ * Return link promiscuity count
+ * @arg link		Link object
+ *
+ * @see rtnl_link_set_promiscuity()
+ * @return Link promiscuity count or 0
+ */
+uint32_t rtnl_link_get_promiscuity(struct rtnl_link *link)
+{
+	return link->l_promiscuity;
+}
+
 
 /** @} */
 

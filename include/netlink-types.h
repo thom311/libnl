@@ -173,6 +173,7 @@ struct rtnl_link
 	void *				l_af_data[AF_MAX];
 	void *				l_info;
 	char *				l_ifalias;
+	uint32_t			l_promiscuity;
 };
 
 struct rtnl_ncacheinfo

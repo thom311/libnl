@@ -61,7 +61,6 @@ void nl_cli_exp_parse_id(struct nfnl_exp *exp, char *arg)
 
 void nl_cli_exp_parse_helper_name(struct nfnl_exp *exp, char *arg)
 {
-    int err;
     nfnl_exp_set_helper_name(exp, arg);
 }
 

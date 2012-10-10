@@ -37,11 +37,13 @@ static struct nla_policy exp_policy[CTA_EXPECT_MAX+1] = {
 	[CTA_EXPECT_TIMEOUT]    = { .type = NLA_U32 },
 	[CTA_EXPECT_ID]		    = { .type = NLA_U32 },
 	[CTA_EXPECT_HELP_NAME]  = { .type = NLA_STRING },
-    //[CTA_EXPECT_ZONE]       = { .type = NLA_U16 },    // In latest kernel header
-    //[CTA_EXPECT_FLAGS]      = { .type = NLA_U32 },    // In latest kernel header
-	//[CTA_EXPECT_CLASS]      = { .type = NLA_U32 },    // In libnetfilter_conntrack include/linux/linux_nfnetlink_conntrack.h
-    //[CTA_EXPECT_NAT]        = { .type = NLA_NESTED }, // In libnetfilter_conntrack include/linux/linux_nfnetlink_conntrack.h
-    //[CTA_EXPECT_FN]         = { .type = NLA_STRING }, // In libnetfilter_conntrack include/linux/linux_nfnetlink_conntrack.h
+#if 0
+	[CTA_EXPECT_ZONE]       = { .type = NLA_U16 },    // In latest kernel header
+    [CTA_EXPECT_FLAGS]      = { .type = NLA_U32 },    // In latest kernel header
+	[CTA_EXPECT_CLASS]      = { .type = NLA_U32 },    // In libnetfilter_conntrack include/linux/linux_nfnetlink_conntrack.h
+    [CTA_EXPECT_NAT]        = { .type = NLA_NESTED }, // In libnetfilter_conntrack include/linux/linux_nfnetlink_conntrack.h
+    [CTA_EXPECT_FN]         = { .type = NLA_STRING }, // In libnetfilter_conntrack include/linux/linux_nfnetlink_conntrack.h
+#endif
 };
 
 static struct nla_policy exp_tuple_policy[CTA_TUPLE_MAX+1] = {
@@ -276,18 +278,18 @@ static int exp_get_tuple_attr(int tuple)
     int attr = 0;
 
     switch (tuple) {
-        case NFNL_EXP_TUPLE_MASTER:
-            attr = CTA_EXPECT_MASTER;
+        case CTA_EXPECT_MASTER:
+            attr = NFNL_EXP_TUPLE_MASTER;
             break;
-        case NFNL_EXP_TUPLE_MASK:
-            attr = CTA_EXPECT_MASK;
+        case CTA_EXPECT_MASK:
+            attr = NFNL_EXP_TUPLE_MASK;
             break;
-        //case NFNL_EXP_TUPLE_NAT:
-        //    attr = EXP_ATTR_NAT_L4PROTO_NUM;
+        //case CTA_EXPECT_NAT:
+        //    attr = NFNL_EXP_TUPLE_NAT;
         //    break;
-        case NFNL_EXP_TUPLE_EXPECT:
+        case CTA_EXPECT_TUPLE:
         default :
-            attr = CTA_EXPECT_TUPLE;
+            attr = NFNL_EXP_TUPLE_EXPECT;
             break;
     }
 
@@ -295,17 +297,17 @@ static int exp_get_tuple_attr(int tuple)
 }
 
 static int nfnl_exp_build_tuple(struct nl_msg *msg, const struct nfnl_exp *exp,
-			       int type)
+			       int cta)
 {
 	struct nlattr *tuple, *ip, *proto;
 	struct nl_addr *addr;
 	int family;
 
-	int tupattr = exp_get_tuple_attr(type);
-
 	family = nfnl_exp_get_family(exp);
 
-	tuple = nla_nest_start(msg, tupattr);
+	int type = exp_get_tuple_attr(cta);
+
+	tuple = nla_nest_start(msg, cta);
 	if (!tuple)
 		goto nla_put_failure;
 

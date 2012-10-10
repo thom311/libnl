@@ -1,6 +1,7 @@
 genl-ctrl-list
 nf-ct-list
 nf-exp-list
+nf-exp-create
 nf-log
 nf-monitor
 nl-addr-add

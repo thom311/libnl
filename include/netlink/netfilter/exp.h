@@ -19,6 +19,19 @@
 #include <netlink/cache.h>
 #include <netlink/msg.h>
 
+#include <linux/version.h>
+
+#if CTA_EXPECT_MAX > CTA_EXPECT_HELP_NAME
+#define NLE_ZONE
+#elseif CTA_EXPECT_MAX > CTA_EXPECT_ZONE
+#define NLE_ZONE
+#define NLE_FLAGS
+#elseif (CTA_EXPECT_MAX > CTA_EXPECT_FLAGS)
+#define NLE_ZONE
+#define NLE_FLAGS
+#define NLE_NAT_FN_CLASS
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,7 +42,10 @@ enum nfnl_exp_tuples {
     NFNL_EXP_TUPLE_EXPECT,
     NFNL_EXP_TUPLE_MASTER,
     NFNL_EXP_TUPLE_MASK,
-    NFNL_EXP_TUPLE_NAT
+#ifdef NLE_NAT_FN_CLASS
+    NFNL_EXP_TUPLE_NAT,
+#endif
+    NFNL_EXP_TUPLE_MAX
 };
 
 extern struct nl_object_ops exp_obj_ops;
@@ -72,17 +88,22 @@ extern int  nfnl_exp_set_helper_name(struct nfnl_exp *, void *);
 extern int  nfnl_exp_test_helper_name(const struct nfnl_exp *);
 extern const char * nfnl_exp_get_helper_name(const struct nfnl_exp *);
 
+#ifdef NLE_ZONE
 extern void nfnl_exp_set_zone(struct nfnl_exp *, uint16_t);
 extern int  nfnl_exp_test_zone(const struct nfnl_exp *);
 extern uint16_t nfnl_exp_get_zone(const struct nfnl_exp *);
+#endif
 
-extern void nfnl_exp_set_class(struct nfnl_exp *, uint32_t);
-extern int  nfnl_exp_test_class(const struct nfnl_exp *);
-extern uint32_t nfnl_exp_get_class(const struct nfnl_exp *);
-
+#ifdef NLE_FLAGS
 extern void nfnl_exp_set_flags(struct nfnl_exp *, uint32_t);
 extern int  nfnl_exp_test_flags(const struct nfnl_exp *);
 extern uint32_t nfnl_exp_get_flags(const struct nfnl_exp *);
+#endif
+
+#ifdef NLE_NAT_FN_CLASS
+extern void nfnl_exp_set_class(struct nfnl_exp *, uint32_t);
+extern int  nfnl_exp_test_class(const struct nfnl_exp *);
+extern uint32_t nfnl_exp_get_class(const struct nfnl_exp *);
 
 extern int  nfnl_exp_set_fn(struct nfnl_exp *, void *);
 extern int  nfnl_exp_test_fn(const struct nfnl_exp *);
@@ -91,6 +112,7 @@ extern const char * nfnl_exp_get_fn(const struct nfnl_exp *);
 extern void nfnl_exp_set_nat_dir(struct nfnl_exp *, uint8_t);
 extern int  nfnl_exp_test_nat_dir(const struct nfnl_exp *);
 extern uint8_t nfnl_exp_get_nat_dir(const struct nfnl_exp *);
+#endif
 
 // The int argument specifies which nfnl_exp_dir (expect, master, mask or nat)
 // Expectation objects only use orig, not reply

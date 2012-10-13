@@ -33,10 +33,9 @@
 #define EXP_ATTR_ID	                   (1UL << 2) // 32-bit
 #define EXP_ATTR_HELPER_NAME          (1UL << 3) // string (16 bytes max)
 #define EXP_ATTR_ZONE                 (1UL << 4) // 16-bit
-#define EXP_ATTR_CLASS                (1UL << 5) // 32-bit ???
-#define EXP_ATTR_FLAGS                (1UL << 6) // 32-bit
+#define EXP_ATTR_FLAGS                (1UL << 5) // 32-bit
+#define EXP_ATTR_CLASS                (1UL << 6) // 32-bit ???
 #define EXP_ATTR_FN                   (1UL << 7) // String ???
-
 // Tuples
 #define EXP_ATTR_EXPECT_IP_SRC        (1UL << 8)
 #define EXP_ATTR_EXPECT_IP_DST        (1UL << 9)
@@ -188,7 +187,7 @@ static void exp_dump_tuples(struct nfnl_exp *exp, struct nl_dump_params *p)
 	int i = 0;
     char buf[64];
 
-	for (i = NFNL_EXP_TUPLE_EXPECT; i <= NFNL_EXP_TUPLE_NAT; i++) {
+	for (i = NFNL_EXP_TUPLE_EXPECT; i < NFNL_EXP_TUPLE_MAX; i++) {
         tuple_src = NULL;
         tuple_dst = NULL;
         tuple_sport = 0;
@@ -216,8 +215,10 @@ static void exp_dump_tuples(struct nfnl_exp *exp, struct nl_dump_params *p)
         dump_icmp(p, exp, 0);
     }
 
+#ifdef	NLE_NAT_FN_CLASS
     if (nfnl_exp_test_nat_dir(exp))
         nl_dump(p, "nat dir %s ", exp->exp_nat_dir);
+#endif
 
 }
 
@@ -254,18 +255,22 @@ static void exp_dump_details(struct nl_object *a, struct nl_dump_params *p)
     if (nfnl_exp_test_helper_name(exp))
         nl_dump(p, "helper %s ", exp->exp_helper_name);
 
+#ifdef NLE_NAT_FN_CLASS
     if (nfnl_exp_test_fn(exp))
         nl_dump(p, "fn %s ", exp->exp_fn);
 
-    if (nfnl_exp_test_zone(exp))
-        nl_dump(p, "zone %u ", nfnl_exp_get_zone(exp));
-
     if (nfnl_exp_test_class(exp))
         nl_dump(p, "class %u ", nfnl_exp_get_class(exp));
+#endif
 
-	if (nfnl_exp_test_flags(exp))
+#ifdef NLE_ZONE
+    if (nfnl_exp_test_zone(exp))
+        nl_dump(p, "zone %u ", nfnl_exp_get_zone(exp));
+#endif
+
+#ifdef NLE_FLAGS
+    if (nfnl_exp_test_flags(exp))
 		nl_dump(p, "<");
-
 #define PRINT_FLAG(str) \
 	{ nl_dump(p, "%s%s", fp++ ? "," : "", (str)); }
 
@@ -279,40 +284,10 @@ static void exp_dump_details(struct nl_object *a, struct nl_dump_params *p)
 
 	if (nfnl_exp_test_flags(exp))
 		nl_dump(p, ">");
+#endif
+
 	nl_dump(p, "\n");
 }
-
-/*
-static void ct_dump_stats(struct nl_object *a, struct nl_dump_params *p)
-{
-	struct nfnl_ct *ct = (struct nfnl_ct *) a;
-	double res;
-	char *unit;
-	uint64_t packets;
-	const char * const names[] = {"rx", "tx"};
-	int i;
-
-	ct_dump_details(a, p);
-
-	if (!nfnl_ct_test_bytes(ct, 0) ||
-	    !nfnl_ct_test_packets(ct, 0) ||
-	    !nfnl_ct_test_bytes(ct, 1) ||
-	    !nfnl_ct_test_packets(ct, 1))
-	    {
-		nl_dump_line(p, "    Statistics are not available.\n");
-		nl_dump_line(p, "    Please set sysctl net.netfilter.nf_conntrack_acct=1\n");
-		nl_dump_line(p, "    (Require kernel 2.6.27)\n");
-		return;
-	    }
-
-	nl_dump_line(p, "        # packets      volume\n");
-	for (i=0; i<=1; i++) {
-		res = nl_cancel_down_bytes(nfnl_ct_get_bytes(ct, i), &unit);
-		packets = nfnl_ct_get_packets(ct, i);
-		nl_dump_line(p, "    %s %10" PRIu64  " %7.2f %s\n", names[i], packets, res, unit);
-	}
-}
-*/
 
 static int exp_cmp_l4proto_ports (union nfnl_exp_protodata *a, union nfnl_exp_protodata *b) {
     // Must return 0 for match, 1 for mismatch
@@ -637,6 +612,7 @@ uint8_t nfnl_exp_get_nat_dir(const struct nfnl_exp *exp)
     return exp->exp_nat_dir;
 }
 
+#ifdef NLE_NAT_FN_CLASS
 #define EXP_GET_TUPLE(e, t) \
     (t == NFNL_EXP_TUPLE_MASTER) ? \
         &(e->exp_master) : \
@@ -644,6 +620,13 @@ uint8_t nfnl_exp_get_nat_dir(const struct nfnl_exp *exp)
         &(e->exp_mask) : \
     (t == NFNL_EXP_TUPLE_NAT) ? \
         &(e->exp_nat) : &(exp->exp_expect)
+#else
+#define EXP_GET_TUPLE(e, t) \
+    (t == NFNL_EXP_TUPLE_MASTER) ? \
+        &(e->exp_master) : \
+    (t == NFNL_EXP_TUPLE_MASK) ? \
+        &(e->exp_mask) : &(exp->exp_expect)
+#endif
 
 static int exp_get_src_attr(int tuple)
 {
@@ -656,9 +639,11 @@ static int exp_get_src_attr(int tuple)
         case NFNL_EXP_TUPLE_MASK:
             attr = EXP_ATTR_MASK_IP_SRC;
             break;
+#ifdef NLE_NAT_FN_CLASS
         case NFNL_EXP_TUPLE_NAT:
             attr = EXP_ATTR_NAT_IP_SRC;
             break;
+#endif
         case NFNL_EXP_TUPLE_EXPECT:
         default :
             attr = EXP_ATTR_EXPECT_IP_SRC;
@@ -679,9 +664,11 @@ static int exp_get_dst_attr(int tuple)
         case NFNL_EXP_TUPLE_MASK:
             attr = EXP_ATTR_MASK_IP_DST;
             break;
+#ifdef NLE_NAT_FN_CLASS
         case NFNL_EXP_TUPLE_NAT:
             attr = EXP_ATTR_NAT_IP_DST;
             break;
+#endif
         case NFNL_EXP_TUPLE_EXPECT:
         default :
             attr = EXP_ATTR_EXPECT_IP_DST;
@@ -765,9 +752,11 @@ static int exp_get_l4protonum_attr(int tuple)
         case NFNL_EXP_TUPLE_MASK:
             attr = EXP_ATTR_MASK_L4PROTO_NUM;
             break;
+#ifdef NLE_NAT_FN_CLASS
         case NFNL_EXP_TUPLE_NAT:
             attr = EXP_ATTR_NAT_L4PROTO_NUM;
             break;
+#endif
         case NFNL_EXP_TUPLE_EXPECT:
         default :
             attr = EXP_ATTR_EXPECT_L4PROTO_NUM;
@@ -807,9 +796,11 @@ static int exp_get_l4ports_attr(int tuple)
         case NFNL_EXP_TUPLE_MASK:
             attr = EXP_ATTR_MASK_L4PROTO_PORTS;
             break;
+#ifdef NLE_NAT_FN_CLASS
         case NFNL_EXP_TUPLE_NAT:
             attr = EXP_ATTR_NAT_L4PROTO_PORTS;
             break;
+#endif
         case NFNL_EXP_TUPLE_EXPECT:
         default :
             attr = EXP_ATTR_EXPECT_L4PROTO_PORTS;
@@ -858,9 +849,11 @@ static int exp_get_l4icmp_attr(int tuple)
         case NFNL_EXP_TUPLE_MASK:
             attr = EXP_ATTR_MASK_L4PROTO_ICMP;
             break;
+#ifdef NLE_NAT_FN_CLASS
         case NFNL_EXP_TUPLE_NAT:
             attr = EXP_ATTR_NAT_L4PROTO_ICMP;
             break;
+#endif
         case NFNL_EXP_TUPLE_EXPECT:
         default :
             attr = EXP_ATTR_EXPECT_L4PROTO_ICMP;

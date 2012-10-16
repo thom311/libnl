@@ -9,6 +9,7 @@
  * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
+ * Copyright (c) 2012 Rich Fought <rich.fought@watchguard.com>
  */
 
 #include <sys/types.h>
@@ -215,10 +216,8 @@ static void exp_dump_tuples(struct nfnl_exp *exp, struct nl_dump_params *p)
         dump_icmp(p, exp, 0);
     }
 
-#ifdef	NLE_NAT_FN_CLASS
     if (nfnl_exp_test_nat_dir(exp))
         nl_dump(p, "nat dir %s ", exp->exp_nat_dir);
-#endif
 
 }
 
@@ -255,20 +254,15 @@ static void exp_dump_details(struct nl_object *a, struct nl_dump_params *p)
     if (nfnl_exp_test_helper_name(exp))
         nl_dump(p, "helper %s ", exp->exp_helper_name);
 
-#ifdef NLE_NAT_FN_CLASS
     if (nfnl_exp_test_fn(exp))
         nl_dump(p, "fn %s ", exp->exp_fn);
 
     if (nfnl_exp_test_class(exp))
         nl_dump(p, "class %u ", nfnl_exp_get_class(exp));
-#endif
 
-#ifdef NLE_ZONE
     if (nfnl_exp_test_zone(exp))
         nl_dump(p, "zone %u ", nfnl_exp_get_zone(exp));
-#endif
 
-#ifdef NLE_FLAGS
     if (nfnl_exp_test_flags(exp))
 		nl_dump(p, "<");
 #define PRINT_FLAG(str) \
@@ -284,7 +278,6 @@ static void exp_dump_details(struct nl_object *a, struct nl_dump_params *p)
 
 	if (nfnl_exp_test_flags(exp))
 		nl_dump(p, ">");
-#endif
 
 	nl_dump(p, "\n");
 }
@@ -612,7 +605,6 @@ uint8_t nfnl_exp_get_nat_dir(const struct nfnl_exp *exp)
     return exp->exp_nat_dir;
 }
 
-#ifdef NLE_NAT_FN_CLASS
 #define EXP_GET_TUPLE(e, t) \
     (t == NFNL_EXP_TUPLE_MASTER) ? \
         &(e->exp_master) : \
@@ -620,13 +612,6 @@ uint8_t nfnl_exp_get_nat_dir(const struct nfnl_exp *exp)
         &(e->exp_mask) : \
     (t == NFNL_EXP_TUPLE_NAT) ? \
         &(e->exp_nat) : &(exp->exp_expect)
-#else
-#define EXP_GET_TUPLE(e, t) \
-    (t == NFNL_EXP_TUPLE_MASTER) ? \
-        &(e->exp_master) : \
-    (t == NFNL_EXP_TUPLE_MASK) ? \
-        &(e->exp_mask) : &(exp->exp_expect)
-#endif
 
 static int exp_get_src_attr(int tuple)
 {
@@ -639,11 +624,9 @@ static int exp_get_src_attr(int tuple)
         case NFNL_EXP_TUPLE_MASK:
             attr = EXP_ATTR_MASK_IP_SRC;
             break;
-#ifdef NLE_NAT_FN_CLASS
         case NFNL_EXP_TUPLE_NAT:
             attr = EXP_ATTR_NAT_IP_SRC;
             break;
-#endif
         case NFNL_EXP_TUPLE_EXPECT:
         default :
             attr = EXP_ATTR_EXPECT_IP_SRC;
@@ -664,11 +647,9 @@ static int exp_get_dst_attr(int tuple)
         case NFNL_EXP_TUPLE_MASK:
             attr = EXP_ATTR_MASK_IP_DST;
             break;
-#ifdef NLE_NAT_FN_CLASS
         case NFNL_EXP_TUPLE_NAT:
             attr = EXP_ATTR_NAT_IP_DST;
             break;
-#endif
         case NFNL_EXP_TUPLE_EXPECT:
         default :
             attr = EXP_ATTR_EXPECT_IP_DST;
@@ -752,11 +733,9 @@ static int exp_get_l4protonum_attr(int tuple)
         case NFNL_EXP_TUPLE_MASK:
             attr = EXP_ATTR_MASK_L4PROTO_NUM;
             break;
-#ifdef NLE_NAT_FN_CLASS
         case NFNL_EXP_TUPLE_NAT:
             attr = EXP_ATTR_NAT_L4PROTO_NUM;
             break;
-#endif
         case NFNL_EXP_TUPLE_EXPECT:
         default :
             attr = EXP_ATTR_EXPECT_L4PROTO_NUM;
@@ -796,11 +775,9 @@ static int exp_get_l4ports_attr(int tuple)
         case NFNL_EXP_TUPLE_MASK:
             attr = EXP_ATTR_MASK_L4PROTO_PORTS;
             break;
-#ifdef NLE_NAT_FN_CLASS
         case NFNL_EXP_TUPLE_NAT:
             attr = EXP_ATTR_NAT_L4PROTO_PORTS;
             break;
-#endif
         case NFNL_EXP_TUPLE_EXPECT:
         default :
             attr = EXP_ATTR_EXPECT_L4PROTO_PORTS;
@@ -849,11 +826,9 @@ static int exp_get_l4icmp_attr(int tuple)
         case NFNL_EXP_TUPLE_MASK:
             attr = EXP_ATTR_MASK_L4PROTO_ICMP;
             break;
-#ifdef NLE_NAT_FN_CLASS
         case NFNL_EXP_TUPLE_NAT:
             attr = EXP_ATTR_NAT_L4PROTO_ICMP;
             break;
-#endif
         case NFNL_EXP_TUPLE_EXPECT:
         default :
             attr = EXP_ATTR_EXPECT_L4PROTO_ICMP;
@@ -906,14 +881,14 @@ uint8_t nfnl_exp_get_icmp_code(const struct nfnl_exp *exp, int tuple)
 struct nl_object_ops exp_obj_ops = {
 	.oo_name		= "netfilter/exp",
 	.oo_size		= sizeof(struct nfnl_exp),
-	.oo_free_data		= exp_free_data,
+	.oo_free_data   = exp_free_data,
 	.oo_clone		= exp_clone,
 	.oo_dump = {
-	    [NL_DUMP_LINE]	= exp_dump_line,
+	    [NL_DUMP_LINE]	    = exp_dump_line,
 	    [NL_DUMP_DETAILS]	= exp_dump_details,
 	},
 	.oo_compare		= exp_compare,
-	.oo_attrs2str		= exp_attrs2str,
+	.oo_attrs2str	= exp_attrs2str,
 };
 
 /** @} */

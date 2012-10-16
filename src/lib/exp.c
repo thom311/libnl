@@ -6,7 +6,8 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 20012 Rich Fought <Rich.Fought@watchguard.com>
+ * Copyright (c) 2008-2009 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2012 Rich Fought <rich.fought@watchguard.com>
  */
 
 /**
@@ -64,6 +65,35 @@ void nl_cli_exp_parse_helper_name(struct nfnl_exp *exp, char *arg)
     nfnl_exp_set_helper_name(exp, arg);
 }
 
+void nl_cli_exp_parse_zone(struct nfnl_exp *exp, char *arg)
+{
+    uint32_t zone = nl_cli_parse_u32(arg);
+    nfnl_exp_set_zone(exp, zone);
+}
+
+void nl_cli_exp_parse_flags(struct nfnl_exp *exp, char *arg)
+{
+    uint32_t flags = nl_cli_parse_u32(arg);
+    nfnl_exp_set_flags(exp, flags);
+}
+
+void nl_cli_exp_parse_class(struct nfnl_exp *exp, char *arg)
+{
+    uint32_t class = nl_cli_parse_u32(arg);
+    nfnl_exp_set_class(exp, class);
+}
+
+void nl_cli_exp_parse_nat_dir(struct nfnl_exp *exp, char *arg)
+{
+    uint32_t nat_dir = nl_cli_parse_u32(arg);
+    nfnl_exp_set_nat_dir(exp, nat_dir);
+}
+
+void nl_cli_exp_parse_fn(struct nfnl_exp *exp, char *arg)
+{
+    nfnl_exp_set_fn(exp, arg);
+}
+
 void nl_cli_exp_parse_src(struct nfnl_exp *exp, int tuple, char *arg)
 {
 	int err;
@@ -97,14 +127,39 @@ void nl_cli_exp_parse_l4protonum(struct nfnl_exp *exp, int tuple, char *arg)
 void nl_cli_exp_parse_src_port(struct nfnl_exp *exp, int tuple, char *arg)
 {
 	uint32_t sport = nl_cli_parse_u32(arg);
-	nfnl_exp_set_ports(exp, tuple, sport, 0);
+    uint16_t dport = nfnl_exp_get_dst_port(exp, tuple);
+	nfnl_exp_set_ports(exp, tuple, sport, dport);
 }
 
 void nl_cli_exp_parse_dst_port(struct nfnl_exp *exp, int tuple, char *arg)
 {
 	uint32_t dport = nl_cli_parse_u32(arg);
-	uint32_t sport = nfnl_exp_get_src_port(exp, tuple);
+	uint16_t sport = nfnl_exp_get_src_port(exp, tuple);
 	nfnl_exp_set_ports(exp, tuple, sport, dport);
+}
+
+void nl_cli_exp_parse_icmp_id(struct nfnl_exp *exp, int tuple, char *arg)
+{
+    uint32_t id = nl_cli_parse_u32(arg);
+    uint8_t type = nfnl_exp_get_icmp_type(exp, tuple);
+    uint8_t code = nfnl_exp_get_icmp_code(exp, tuple);
+    nfnl_exp_set_icmp(exp, tuple, id, type, code);
+}
+
+void nl_cli_exp_parse_icmp_type(struct nfnl_exp *exp, int tuple, char *arg)
+{
+    uint32_t type = nl_cli_parse_u32(arg);
+    uint16_t id = nfnl_exp_get_icmp_id(exp, tuple);
+    uint8_t code = nfnl_exp_get_icmp_code(exp, tuple);
+    nfnl_exp_set_icmp(exp, tuple, id, type, code);
+}
+
+void nl_cli_exp_parse_icmp_code(struct nfnl_exp *exp, int tuple, char *arg)
+{
+    uint32_t code = nl_cli_parse_u32(arg);
+    uint16_t id = nfnl_exp_get_icmp_id(exp, tuple);
+    uint8_t type = nfnl_exp_get_icmp_type(exp, tuple);
+    nfnl_exp_set_icmp(exp, tuple, id, type, code);
 }
 
 /** @} */

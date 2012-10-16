@@ -7,6 +7,7 @@
  *	of the License.
  *
  * Copyright (c) 2012 Rich Fought <Rich.Fought@watchguard.com>
+ * Copyright (c) 2008-2009 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef __NETLINK_CLI_EXP_H_
@@ -22,10 +23,20 @@ extern void nl_cli_exp_parse_family(struct nfnl_exp *, char *);
 extern void nl_cli_exp_parse_timeout(struct nfnl_exp *, char *);
 extern void nl_cli_exp_parse_id(struct nfnl_exp *, char *);
 extern void nl_cli_exp_parse_helper_name(struct nfnl_exp *, char *);
+extern void nl_cli_exp_parse_zone(struct nfnl_exp *, char *);
+extern void nl_cli_exp_parse_flags(struct nfnl_exp *, char *);
+extern void nl_cli_exp_parse_class(struct nfnl_exp *, char *);
+extern void nl_cli_exp_parse_nat_dir(struct nfnl_exp *, char *);
+extern void nl_cli_exp_parse_fn(struct nfnl_exp *, char *);
+
 extern void nl_cli_exp_parse_src(struct nfnl_exp *, int, char *);
 extern void nl_cli_exp_parse_dst(struct nfnl_exp *, int, char *);
 extern void nl_cli_exp_parse_l4protonum(struct nfnl_exp *, int, char *);
 extern void nl_cli_exp_parse_src_port(struct nfnl_exp *, int, char *);
 extern void nl_cli_exp_parse_dst_port(struct nfnl_exp *, int, char *);
+extern void nl_cli_exp_parse_icmp_id(struct nfnl_exp *, int, char *);
+extern void nl_cli_exp_parse_icmp_type(struct nfnl_exp *, int, char *);
+extern void nl_cli_exp_parse_icmp_code(struct nfnl_exp *, int, char *);
+
 
 #endif

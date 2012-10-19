@@ -405,9 +405,9 @@ errout:
 /**
  * Receive data from netlink socket
  * @arg sk		Netlink socket.
- * @arg nla		Destination pointer for peer's netlink address.
- * @arg buf		Destination pointer for message content.
- * @arg creds		Destination pointer for credentials.
+ * @arg nla		Destination pointer for peer's netlink address. (required)
+ * @arg buf		Destination pointer for message content. (required)
+ * @arg creds		Destination pointer for credentials. (optional)
  *
  * Receives a netlink message, allocates a buffer in \c *buf and
  * stores the message content. The peer's netlink address is stored
@@ -433,13 +433,9 @@ int nl_recv(struct nl_sock *sk, struct sockaddr_nl *nla,
 		.msg_namelen = sizeof(struct sockaddr_nl),
 		.msg_iov = &iov,
 		.msg_iovlen = 1,
-		.msg_control = NULL,
-		.msg_controllen = 0,
-		.msg_flags = 0,
 	};
-	struct cmsghdr *cmsg;
-
-	memset(nla, 0, sizeof(*nla));
+	struct ucred* tmpcreds = NULL;
+	int retval = 0;
 
 	if (sk->s_flags & NL_MSG_PEEK)
 		flags |= MSG_PEEK | MSG_TRUNC;
@@ -448,73 +444,114 @@ int nl_recv(struct nl_sock *sk, struct sockaddr_nl *nla,
 		page_size = getpagesize();
 
 	iov.iov_len = sk->s_bufsize ? : page_size;
-	iov.iov_base = *buf = malloc(iov.iov_len);
+	iov.iov_base = malloc(iov.iov_len);
 
-	if (sk->s_flags & NL_SOCK_PASSCRED) {
+	if (!iov.iov_base) {
+	    retval = -NLE_NOMEM;
+	    goto abort;
+	}
+
+	if (creds && (sk->s_flags & NL_SOCK_PASSCRED)) {
 		msg.msg_controllen = CMSG_SPACE(sizeof(struct ucred));
-		msg.msg_control = calloc(1, msg.msg_controllen);
+		msg.msg_control = malloc(msg.msg_controllen);
+		if (!msg.msg_control) {
+			retval = -NLE_NOMEM;
+			goto abort;
+		}
 	}
 retry:
 
 	n = recvmsg(sk->s_fd, &msg, flags);
-	if (!n)
+	if (!n) {
+		retval = 0;
 		goto abort;
-	else if (n < 0) {
+	}
+	if (n < 0) {
 		if (errno == EINTR) {
 			NL_DBG(3, "recvmsg() returned EINTR, retrying\n");
 			goto retry;
-		} else if (errno == EAGAIN) {
-			NL_DBG(3, "recvmsg() returned EAGAIN, aborting\n");
-			goto abort;
-		} else {
-			free(msg.msg_control);
-			free(*buf);
-			return -nl_syserr2nlerr(errno);
 		}
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			NL_DBG(3, "recvmsg() returned EAGAIN||EWOULDBLOCK, aborting\n");
+			retval = 0;
+			goto abort;
+		}
+		retval = -nl_syserr2nlerr(errno);
+		goto abort;
 	}
 
 	if (msg.msg_flags & MSG_CTRUNC) {
+		void *tmp;
 		msg.msg_controllen *= 2;
-		msg.msg_control = realloc(msg.msg_control, msg.msg_controllen);
+		tmp = realloc(msg.msg_control, msg.msg_controllen);
+		if (!tmp) {
+		    retval = -NLE_NOMEM;
+		    goto abort;
+		}
+		msg.msg_control = tmp;
 		goto retry;
-	} else if (iov.iov_len < n || msg.msg_flags & MSG_TRUNC) {
+	}
+
+	if (iov.iov_len < n || (msg.msg_flags & MSG_TRUNC)) {
+		void *tmp;
 		/* Provided buffer is not long enough, enlarge it
 		 * to size of n (which should be total length of the message)
 		 * and try again. */
 		iov.iov_len = n;
-		iov.iov_base = *buf = realloc(*buf, iov.iov_len);
+		tmp = realloc(iov.iov_base, iov.iov_len);
+		if (!tmp) {
+		    retval = -NLE_NOMEM;
+		    goto abort;
+		}
+		iov.iov_base = tmp;
 		flags = 0;
 		goto retry;
-	} else if (flags != 0) {
+	}
+
+        if (flags != 0) {
 		/* Buffer is big enough, do the actual reading */
 		flags = 0;
 		goto retry;
 	}
 
 	if (msg.msg_namelen != sizeof(struct sockaddr_nl)) {
-		free(msg.msg_control);
-		free(*buf);
-		return -NLE_NOADDR;
+		retval =  -NLE_NOADDR;
+		goto abort;
 	}
 
-	for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
-		if (cmsg->cmsg_level == SOL_SOCKET &&
-		    cmsg->cmsg_type == SCM_CREDENTIALS) {
-			if (creds) {
-				*creds = calloc(1, sizeof(struct ucred));
-				memcpy(*creds, CMSG_DATA(cmsg), sizeof(struct ucred));
+	if (creds && (sk->s_flags & NL_SOCK_PASSCRED)) {
+		struct cmsghdr *cmsg;
+
+		for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+			if (cmsg->cmsg_level != SOL_SOCKET)
+				continue;
+			if (cmsg->cmsg_type != SCM_CREDENTIALS)
+				continue;
+			tmpcreds = malloc(sizeof(*tmpcreds));
+			if (!tmpcreds) {
+				retval = -NLE_NOMEM;
+				goto abort;
 			}
+			memcpy(tmpcreds, CMSG_DATA(cmsg), sizeof(*tmpcreds));
 			break;
 		}
 	}
 
-	free(msg.msg_control);
-	return n;
-
+	retval = n;
 abort:
 	free(msg.msg_control);
-	free(*buf);
-	return 0;
+
+	if (retval <= 0) {
+	    free(iov.iov_base); iov.iov_base = NULL;
+	    free(tmpcreds); tmpcreds = NULL;
+	}
+
+	*buf = iov.iov_base;
+
+	if (creds)
+	    *creds = tmpcreds;
+
+	return retval;
 }
 
 /** @cond SKIP */
@@ -540,6 +577,12 @@ static int recvmsgs(struct nl_sock *sk, struct nl_cb *cb)
 	int n, err = 0, multipart = 0, interrupted = 0, nrecv = 0;
 	unsigned char *buf = NULL;
 	struct nlmsghdr *hdr;
+
+	/*
+	nla is passed on to not only to nl_recv() but may also be passed
+	to a function pointer provided by the caller which may or may not
+	initialize the variable. Thomas Graf.
+	*/
 	struct sockaddr_nl nla = {0};
 	struct nl_msg *msg = NULL;
 	struct ucred *creds = NULL;

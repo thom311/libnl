@@ -311,7 +311,7 @@ static int classid_map_add(uint32_t classid, const char *name)
 int rtnl_tc_read_classid_file(void)
 {
 	static time_t last_read;
-	struct stat st = {0};
+	struct stat st;
 	char buf[256], *path;
 	FILE *fd;
 	int err;

@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 
 	copy_range = 0xFFFF;
 	if (argc > 4)
-		copy_mode = atoi(argv[4]);
+		copy_range = atoi(argv[4]);
 	nfnl_log_set_copy_range(log, copy_range);
 
 	if ((err = nfnl_log_create(nf_sock, log)) < 0)

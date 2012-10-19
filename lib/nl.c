@@ -407,7 +407,7 @@ errout:
  * @arg sk		Netlink socket.
  * @arg nla		Destination pointer for peer's netlink address. (required)
  * @arg buf		Destination pointer for message content. (required)
- * @arg creds		Destination pointer for credentials.
+ * @arg creds		Destination pointer for credentials. (optional)
  *
  * Receives a netlink message, allocates a buffer in \c *buf and
  * stores the message content. The peer's netlink address is stored
@@ -451,7 +451,7 @@ int nl_recv(struct nl_sock *sk, struct sockaddr_nl *nla,
 	    goto abort;
 	}
 
-	if (sk->s_flags & NL_SOCK_PASSCRED) {
+	if (creds && (sk->s_flags & NL_SOCK_PASSCRED)) {
 		msg.msg_controllen = CMSG_SPACE(sizeof(struct ucred));
 		msg.msg_control = malloc(msg.msg_controllen);
 		if (!msg.msg_control) {
@@ -519,17 +519,20 @@ retry:
 		goto abort;
 	}
 
-	for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
-		if (cmsg->cmsg_level == SOL_SOCKET &&
-		    cmsg->cmsg_type == SCM_CREDENTIALS) {
-			if (creds) {
-				tmpcreds = malloc(sizeof(*tmpcreds));
-				if (!tmpcreds) {
-				       retval = -NLE_NOMEM;
-				       goto abort;
-				}
-				memcpy(tmpcreds, CMSG_DATA(cmsg), sizeof(*tmpcreds));
+	if (creds && (sk->s_flags & NL_SOCK_PASSCRED)) {
+		struct cmsghdr *cmsg;
+
+		for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
+			if (cmsg->cmsg_level != SOL_SOCKET)
+				continue;
+			if (cmsg->cmsg_type != SCM_CREDENTIALS)
+				continue;
+			tmpcreds = malloc(sizeof(*tmpcreds));
+			if (!tmpcreds) {
+				retval = -NLE_NOMEM;
+				goto abort;
 			}
+			memcpy(tmpcreds, CMSG_DATA(cmsg), sizeof(*tmpcreds));
 			break;
 		}
 	}

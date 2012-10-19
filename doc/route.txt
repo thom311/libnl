@@ -13,6 +13,9 @@ Thomas Graf <tgraf@suug.ch>
 
 This library provides APIs to the kernel interfaces of the routing family.
 
+
+NOTE: Work in progress.
+
 == Addresses
 
 [[route_link]]

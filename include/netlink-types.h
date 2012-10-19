@@ -780,47 +780,47 @@ struct nfnl_ct {
 };
 
 union nfnl_exp_protodata {
-    struct {
-        uint16_t    src;
-        uint16_t    dst;
-    } port;
-    struct {
-        uint16_t    id;
-        uint8_t     type;
-        uint8_t     code;
-    } icmp;
+	struct {
+		uint16_t	src;
+		uint16_t	dst;
+	} port;
+	struct {
+		uint16_t	id;
+		uint8_t		type;
+		uint8_t		code;
+	} icmp;
 };
 
 // Allow for different master/expect l4 protocols
 struct nfnl_exp_proto
 {
-    uint8_t                  l4protonum;
-    union nfnl_exp_protodata l4protodata;
+	uint8_t						l4protonum;
+	union nfnl_exp_protodata	l4protodata;
 };
 
 struct nfnl_exp_dir {
-    struct nl_addr *    src;
-    struct nl_addr *    dst;
-    struct nfnl_exp_proto proto;
+	struct nl_addr *		src;
+	struct nl_addr *		dst;
+	struct nfnl_exp_proto	proto;
 };
 
 struct nfnl_exp {
-    NLHDR_COMMON
+	NLHDR_COMMON
 
-    uint8_t         exp_family;     // IPv4, IPv6, etc - required
-    uint32_t        exp_timeout;      // required afaik
-    uint32_t        exp_id;           // optional
-    uint16_t        exp_zone;         // optional
-    uint32_t        exp_class;        // optional
-    uint32_t        exp_flags;        // optional
-    char *          exp_helper_name; //optional
-    char *          exp_fn;          //optional
-    uint8_t         exp_nat_dir;     // optional
+	uint8_t			exp_family;
+	uint32_t		exp_timeout;
+	uint32_t		exp_id;
+	uint16_t		exp_zone;
+	uint32_t		exp_class;
+	uint32_t		exp_flags;
+	char *			exp_helper_name;
+	char *			exp_fn;
+	uint8_t			exp_nat_dir;
 
-    struct nfnl_exp_dir exp_expect; // required
-    struct nfnl_exp_dir exp_master; // required
-    struct nfnl_exp_dir exp_mask;   // required
-    struct nfnl_exp_dir exp_nat;    // optional
+	struct nfnl_exp_dir		exp_expect;
+	struct nfnl_exp_dir		exp_master;
+	struct nfnl_exp_dir		exp_mask;
+	struct nfnl_exp_dir		exp_nat;
 };
 
 struct nfnl_log {

@@ -27,19 +27,19 @@ static void print_usage(void)
 	"\n"
 	"Expectation Selection\n"
 	" -i, --id=NUM                Identifier\n"
-    "     --expect-proto=PROTOCOL Expectation protocol\n"
+	"     --expect-proto=PROTOCOL Expectation protocol\n"
 	"     --expect-src=ADDR       Expectation source address\n"
 	"     --expect-sport=PORT     Expectation source port\n"
 	"     --expect-dst=ADDR       Expectation destination address\n"
 	"     --expect-dport=PORT     Expectation destination port\n"
-    "     --master-proto=PROTOCOL Master conntrack protocol\n"
+	"     --master-proto=PROTOCOL Master conntrack protocol\n"
 	"     --master-src=ADDR       Master conntrack source address\n"
 	"     --master-sport=PORT     Master conntrack source port\n"
 	"     --master-dst=ADDR       Master conntrack destination address\n"
 	"     --master-dport=PORT     Master conntrack destination port\n"
 	" -F, --family=FAMILY         Address family\n"
 	"     --timeout=NUM           Timeout value\n"
-    "     --helper=STRING         Helper Name\n"
+	"     --helper=STRING         Helper Name\n"
 	//"     --flags                 Flags\n"
 	);
 	exit(0);
@@ -67,14 +67,14 @@ int main(int argc, char *argv[])
 			ARG_EXPECT_SPORT,
 			ARG_EXPECT_DST,
 			ARG_EXPECT_DPORT,
-            ARG_MASTER_PROTO,
+			ARG_MASTER_PROTO,
 			ARG_MASTER_SRC,
 			ARG_MASTER_SPORT,
 			ARG_MASTER_DST,
 			ARG_MASTER_DPORT,
 			ARG_TIMEOUT,
-            ARG_HELPER_NAME,
-			//ARG_FLAGS,
+ 			ARG_HELPER_NAME,
+			ARG_FLAGS,
 		};
 		static struct option long_opts[] = {
 			{ "format", 1, 0, 'f' },
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 			{ "expect-sport", 1, 0, ARG_EXPECT_SPORT },
 			{ "expect-dst", 1, 0, ARG_EXPECT_DST },
 			{ "expect-dport", 1, 0, ARG_EXPECT_DPORT },
-            { "master-proto", 1, 0, ARG_MASTER_PROTO },
+			{ "master-proto", 1, 0, ARG_MASTER_PROTO },
 			{ "master-src", 1, 0, ARG_MASTER_SRC },
 			{ "master-sport", 1, 0, ARG_MASTER_SPORT },
 			{ "master-dst", 1, 0, ARG_MASTER_DST },
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 			{ "family", 1, 0, 'F' },
 			{ "timeout", 1, 0, ARG_TIMEOUT },
 			{ "helper", 1, 0, ARG_HELPER_NAME },
-            //{ "flags", 1, 0, ARG_FLAGS},
+			{ "flags", 1, 0, ARG_FLAGS},
 			{ 0, 0, 0, 0 }
 		};
 	
@@ -115,15 +115,15 @@ int main(int argc, char *argv[])
 		case ARG_EXPECT_SPORT: nl_cli_exp_parse_src_port(exp, NFNL_EXP_TUPLE_EXPECT, optarg); break;
 		case ARG_EXPECT_DST: nl_cli_exp_parse_dst(exp, NFNL_EXP_TUPLE_EXPECT, optarg); break;
 		case ARG_EXPECT_DPORT: nl_cli_exp_parse_dst_port(exp, NFNL_EXP_TUPLE_EXPECT, optarg); break;
-        case ARG_MASTER_PROTO: nl_cli_exp_parse_l4protonum(exp, NFNL_EXP_TUPLE_MASTER, optarg); break;
+		case ARG_MASTER_PROTO: nl_cli_exp_parse_l4protonum(exp, NFNL_EXP_TUPLE_MASTER, optarg); break;
 		case ARG_MASTER_SRC: nl_cli_exp_parse_src(exp, NFNL_EXP_TUPLE_MASTER, optarg); break;
 		case ARG_MASTER_SPORT: nl_cli_exp_parse_src_port(exp, NFNL_EXP_TUPLE_MASTER, optarg); break;
 		case ARG_MASTER_DST: nl_cli_exp_parse_dst(exp, NFNL_EXP_TUPLE_MASTER, optarg); break;
 		case ARG_MASTER_DPORT: nl_cli_exp_parse_dst_port(exp, NFNL_EXP_TUPLE_MASTER, optarg); break;
 		case 'F': nl_cli_exp_parse_family(exp, optarg); break;
 		case ARG_TIMEOUT: nl_cli_exp_parse_timeout(exp, optarg); break;
-        case ARG_HELPER_NAME: nl_cli_exp_parse_helper_name(exp, optarg); break;
-		//case ARG_FLAGS: nl_cli_exp_parse_flags(exp, optarg); break;
+		case ARG_HELPER_NAME: nl_cli_exp_parse_helper_name(exp, optarg); break;
+		case ARG_FLAGS: nl_cli_exp_parse_flags(exp, optarg); break;
 		}
  	}
 

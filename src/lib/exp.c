@@ -62,36 +62,36 @@ void nl_cli_exp_parse_id(struct nfnl_exp *exp, char *arg)
 
 void nl_cli_exp_parse_helper_name(struct nfnl_exp *exp, char *arg)
 {
-    nfnl_exp_set_helper_name(exp, arg);
+	nfnl_exp_set_helper_name(exp, arg);
 }
 
 void nl_cli_exp_parse_zone(struct nfnl_exp *exp, char *arg)
 {
-    uint32_t zone = nl_cli_parse_u32(arg);
-    nfnl_exp_set_zone(exp, zone);
+	uint32_t zone = nl_cli_parse_u32(arg);
+	nfnl_exp_set_zone(exp, zone);
 }
 
 void nl_cli_exp_parse_flags(struct nfnl_exp *exp, char *arg)
 {
-    uint32_t flags = nl_cli_parse_u32(arg);
-    nfnl_exp_set_flags(exp, flags);
+	uint32_t flags = nl_cli_parse_u32(arg);
+	nfnl_exp_set_flags(exp, flags);
 }
 
 void nl_cli_exp_parse_class(struct nfnl_exp *exp, char *arg)
 {
-    uint32_t class = nl_cli_parse_u32(arg);
-    nfnl_exp_set_class(exp, class);
+	uint32_t class = nl_cli_parse_u32(arg);
+	nfnl_exp_set_class(exp, class);
 }
 
 void nl_cli_exp_parse_nat_dir(struct nfnl_exp *exp, char *arg)
 {
-    uint32_t nat_dir = nl_cli_parse_u32(arg);
-    nfnl_exp_set_nat_dir(exp, nat_dir);
+	uint32_t nat_dir = nl_cli_parse_u32(arg);
+	nfnl_exp_set_nat_dir(exp, nat_dir);
 }
 
 void nl_cli_exp_parse_fn(struct nfnl_exp *exp, char *arg)
 {
-    nfnl_exp_set_fn(exp, arg);
+	nfnl_exp_set_fn(exp, arg);
 }
 
 void nl_cli_exp_parse_src(struct nfnl_exp *exp, int tuple, char *arg)
@@ -114,20 +114,20 @@ void nl_cli_exp_parse_dst(struct nfnl_exp *exp, int tuple, char *arg)
 
 void nl_cli_exp_parse_l4protonum(struct nfnl_exp *exp, int tuple, char *arg)
 {
-    int l4protonum;
+	int l4protonum;
 
-    if ((l4protonum = nl_str2ip_proto(arg)) < 0)
-        nl_cli_fatal(l4protonum,
-                 "Unable to nl_cli_exp_parse protocol \"%s\": %s",
-                 arg, nl_geterror(l4protonum));
+	if ((l4protonum = nl_str2ip_proto(arg)) < 0)
+		nl_cli_fatal(l4protonum,
+			"Unable to nl_cli_exp_parse protocol \"%s\": %s",
+			arg, nl_geterror(l4protonum));
 
-    nfnl_exp_set_l4protonum(exp, tuple, l4protonum);
+	nfnl_exp_set_l4protonum(exp, tuple, l4protonum);
 }
 
 void nl_cli_exp_parse_src_port(struct nfnl_exp *exp, int tuple, char *arg)
 {
 	uint32_t sport = nl_cli_parse_u32(arg);
-    uint16_t dport = nfnl_exp_get_dst_port(exp, tuple);
+	uint16_t dport = nfnl_exp_get_dst_port(exp, tuple);
 	nfnl_exp_set_ports(exp, tuple, sport, dport);
 }
 
@@ -140,26 +140,26 @@ void nl_cli_exp_parse_dst_port(struct nfnl_exp *exp, int tuple, char *arg)
 
 void nl_cli_exp_parse_icmp_id(struct nfnl_exp *exp, int tuple, char *arg)
 {
-    uint32_t id = nl_cli_parse_u32(arg);
-    uint8_t type = nfnl_exp_get_icmp_type(exp, tuple);
-    uint8_t code = nfnl_exp_get_icmp_code(exp, tuple);
-    nfnl_exp_set_icmp(exp, tuple, id, type, code);
+	uint32_t id = nl_cli_parse_u32(arg);
+	uint8_t type = nfnl_exp_get_icmp_type(exp, tuple);
+	uint8_t code = nfnl_exp_get_icmp_code(exp, tuple);
+	nfnl_exp_set_icmp(exp, tuple, id, type, code);
 }
 
 void nl_cli_exp_parse_icmp_type(struct nfnl_exp *exp, int tuple, char *arg)
 {
-    uint32_t type = nl_cli_parse_u32(arg);
-    uint16_t id = nfnl_exp_get_icmp_id(exp, tuple);
-    uint8_t code = nfnl_exp_get_icmp_code(exp, tuple);
-    nfnl_exp_set_icmp(exp, tuple, id, type, code);
+	uint32_t type = nl_cli_parse_u32(arg);
+	uint16_t id = nfnl_exp_get_icmp_id(exp, tuple);
+	uint8_t code = nfnl_exp_get_icmp_code(exp, tuple);
+	nfnl_exp_set_icmp(exp, tuple, id, type, code);
 }
 
 void nl_cli_exp_parse_icmp_code(struct nfnl_exp *exp, int tuple, char *arg)
 {
-    uint32_t code = nl_cli_parse_u32(arg);
-    uint16_t id = nfnl_exp_get_icmp_id(exp, tuple);
-    uint8_t type = nfnl_exp_get_icmp_type(exp, tuple);
-    nfnl_exp_set_icmp(exp, tuple, id, type, code);
+	uint32_t code = nl_cli_parse_u32(arg);
+	uint16_t id = nfnl_exp_get_icmp_id(exp, tuple);
+	uint8_t type = nfnl_exp_get_icmp_type(exp, tuple);
+	nfnl_exp_set_icmp(exp, tuple, id, type, code);
 }
 
 /** @} */

@@ -29,11 +29,11 @@ extern "C" {
 struct nfnl_exp;
 
 enum nfnl_exp_tuples {
-    NFNL_EXP_TUPLE_EXPECT,
-    NFNL_EXP_TUPLE_MASTER,
-    NFNL_EXP_TUPLE_MASK,
-    NFNL_EXP_TUPLE_NAT,
-    NFNL_EXP_TUPLE_MAX
+	NFNL_EXP_TUPLE_EXPECT,
+	NFNL_EXP_TUPLE_MASTER,
+	NFNL_EXP_TUPLE_MASK,
+	NFNL_EXP_TUPLE_NAT,
+	NFNL_EXP_TUPLE_MAX
 };
 
 extern struct nl_object_ops exp_obj_ops;
@@ -50,15 +50,15 @@ extern void nfnl_exp_put(struct nfnl_exp *);
 extern int  nfnl_exp_dump_request(struct nl_sock *);
 
 extern int  nfnl_exp_build_add_request(const struct nfnl_exp *, int,
-                      struct nl_msg **);
+						struct nl_msg **);
 extern int  nfnl_exp_add(struct nl_sock *, const struct nfnl_exp *, int);
 
 extern int  nfnl_exp_build_delete_request(const struct nfnl_exp *, int,
-                         struct nl_msg **);
+						struct nl_msg **);
 extern int  nfnl_exp_del(struct nl_sock *, const struct nfnl_exp *, int);
 
 extern int  nfnl_exp_build_query_request(const struct nfnl_exp *, int,
-                        struct nl_msg **);
+						struct nl_msg **);
 extern int  nfnl_exp_query(struct nl_sock *, const struct nfnl_exp *, int);
 
 extern void nfnl_exp_set_family(struct nfnl_exp *, uint8_t);
@@ -121,7 +121,6 @@ extern int nfnl_exp_test_icmp(const struct nfnl_exp *, int);
 extern uint16_t nfnl_exp_get_icmp_id(const struct nfnl_exp *, int);
 extern uint8_t  nfnl_exp_get_icmp_type(const struct nfnl_exp *, int);
 extern uint8_t  nfnl_exp_get_icmp_code(const struct nfnl_exp *, int);
-
 
 #ifdef __cplusplus
 }

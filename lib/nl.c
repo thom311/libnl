@@ -475,9 +475,8 @@ retry:
 			NL_DBG(3, "recvmsg() returned EINTR, retrying\n");
 			goto retry;
 		}
-
-                if (errno == EAGAIN) {
-			NL_DBG(3, "recvmsg() returned EAGAIN, aborting\n");
+		if (errno == EAGAIN || errno == EWOULDBLOCK) {
+			NL_DBG(3, "recvmsg() returned EAGAIN||EWOULDBLOCK, aborting\n");
 			retval = 0;
 			goto abort;
 		}

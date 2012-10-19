@@ -405,8 +405,8 @@ errout:
 /**
  * Receive data from netlink socket
  * @arg sk		Netlink socket.
- * @arg nla		Destination pointer for peer's netlink address.
- * @arg buf		Destination pointer for message content.
+ * @arg nla		Destination pointer for peer's netlink address. (required)
+ * @arg buf		Destination pointer for message content. (required)
  * @arg creds		Destination pointer for credentials.
  *
  * Receives a netlink message, allocates a buffer in \c *buf and
@@ -433,11 +433,7 @@ int nl_recv(struct nl_sock *sk, struct sockaddr_nl *nla,
 		.msg_namelen = sizeof(struct sockaddr_nl),
 		.msg_iov = &iov,
 		.msg_iovlen = 1,
-		.msg_control = NULL,
-		.msg_controllen = 0,
-		.msg_flags = 0,
 	};
-	memset(nla, 0, sizeof(*nla));
 	struct ucred* tmpcreds = NULL;
 	int retval = 0;
 
@@ -457,7 +453,7 @@ int nl_recv(struct nl_sock *sk, struct sockaddr_nl *nla,
 
 	if (sk->s_flags & NL_SOCK_PASSCRED) {
 		msg.msg_controllen = CMSG_SPACE(sizeof(struct ucred));
-		msg.msg_control = calloc(1, msg.msg_controllen);
+		msg.msg_control = malloc(msg.msg_controllen);
 		if (!msg.msg_control) {
 			retval = -NLE_NOMEM;
 			goto abort;
@@ -496,7 +492,7 @@ retry:
 		goto retry;
 	}
 
-        if (iov.iov_len < n || msg.msg_flags & MSG_TRUNC) {
+	if (iov.iov_len < n || (msg.msg_flags & MSG_TRUNC)) {
 		void *tmp;
 		/* Provided buffer is not long enough, enlarge it
 		 * to size of n (which should be total length of the message)

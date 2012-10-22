@@ -3,7 +3,6 @@
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = include lib man python tests
-DIST_SUBDIRS = doc
 
 pkgconfig_DATA = libnl-3.0.pc \
 		 libnl-route-3.0.pc \

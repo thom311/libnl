@@ -14,8 +14,14 @@
 #include <netlink/netlink.h>
 #include <netlink/route/cls/ematch.h>
 
-static int container_parse(struct rtnl_ematch *e, void *data, size_t len)
+static int container_parse(struct rtnl_ematch *e, void *data, size_t len __attribute__((unused)))
 {
+	/*
+	The kernel may provide more than 4 bytes of data in the future and we want
+	older libnl versions to be ok with that. We want interfaces to be growable
+	so we only ever enforce a minimum data length and copy as much as we are
+	aware of. Thomas Graf.
+	*/
 	memcpy(e->e_data, data, sizeof(uint32_t));
 
 	return 0;

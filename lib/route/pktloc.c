@@ -90,7 +90,7 @@ static int read_pktlocs(void)
 	YY_BUFFER_STATE buf = NULL;
 	yyscan_t scanner = NULL;
 	static time_t last_read;
-	struct stat st = {0};
+	struct stat st;
 	char *path;
 	int i, err;
 	FILE *fd;

@@ -26,4 +26,8 @@ extern int		rtnl_link_inet_get_conf(struct rtnl_link *,
 extern int		rtnl_link_inet_set_conf(struct rtnl_link *,
 						const unsigned int, uint32_t);
 
+#ifdef __cplusplus
+}
+#endif
+
 #endif

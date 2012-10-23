@@ -130,5 +130,8 @@ extern void *			rtnl_link_af_data(const struct rtnl_link *,
 extern int			rtnl_link_af_register(struct rtnl_link_af_ops *);
 extern int			rtnl_link_af_unregister(struct rtnl_link_af_ops *);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

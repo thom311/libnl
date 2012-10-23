@@ -29,7 +29,8 @@ libnl_nf_3_la_SOURCES = \
 	netfilter/ct.c netfilter/ct_obj.c netfilter/log.c \
 	netfilter/log_msg.c netfilter/log_msg_obj.c netfilter/log_obj.c \
 	netfilter/netfilter.c netfilter/nfnl.c netfilter/queue.c \
-	netfilter/queue_msg.c netfilter/queue_msg_obj.c netfilter/queue_obj.c
+	netfilter/queue_msg.c netfilter/queue_msg_obj.c netfilter/queue_obj.c \
+	netfilter/exp.c netfilter/exp_obj.c
 
 CLEANFILES = \
 	route/pktloc_grammar.c route/pktloc_grammar.h \

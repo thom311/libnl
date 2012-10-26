@@ -784,6 +784,50 @@ struct nfnl_ct {
 	struct nfnl_ct_dir	ct_repl;
 };
 
+union nfnl_exp_protodata {
+	struct {
+		uint16_t	src;
+		uint16_t	dst;
+	} port;
+	struct {
+		uint16_t	id;
+		uint8_t		type;
+		uint8_t		code;
+	} icmp;
+};
+
+// Allow for different master/expect l4 protocols
+struct nfnl_exp_proto
+{
+	uint8_t						l4protonum;
+	union nfnl_exp_protodata	l4protodata;
+};
+
+struct nfnl_exp_dir {
+	struct nl_addr *		src;
+	struct nl_addr *		dst;
+	struct nfnl_exp_proto	proto;
+};
+
+struct nfnl_exp {
+	NLHDR_COMMON
+
+	uint8_t			exp_family;
+	uint32_t		exp_timeout;
+	uint32_t		exp_id;
+	uint16_t		exp_zone;
+	uint32_t		exp_class;
+	uint32_t		exp_flags;
+	char *			exp_helper_name;
+	char *			exp_fn;
+	uint8_t			exp_nat_dir;
+
+	struct nfnl_exp_dir		exp_expect;
+	struct nfnl_exp_dir		exp_master;
+	struct nfnl_exp_dir		exp_mask;
+	struct nfnl_exp_dir		exp_nat;
+};
+
 struct nfnl_log {
 	NLHDR_COMMON
 

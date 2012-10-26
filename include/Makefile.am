@@ -16,6 +16,7 @@ nobase_libnlinclude_HEADERS = \
 	netlink/netfilter/nfnl.h \
 	netlink/netfilter/queue.h \
 	netlink/netfilter/queue_msg.h \
+	netlink/netfilter/exp.h \
 	netlink/addr.h \
 	netlink/attr.h \
 	netlink/cache-api.h \

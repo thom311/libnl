@@ -22,6 +22,7 @@ sbin_PROGRAMS = \
 
 noinst_PROGRAMS = \
 	nf-ct-list nf-log nf-queue nf-monitor \
+	nf-exp-list nf-exp-add nf-exp-delete \
 	nl-addr-add nl-addr-delete nl-addr-list \
 	nl-link-set nl-link-stats \
 	nl-link-ifindex2name nl-link-name2ifindex \
@@ -43,6 +44,10 @@ nf_ct_list_SOURCES = nf-ct-list.c
 nf_log_SOURCES = nf-log.c
 nf_queue_SOURCES = nf-queue.c 
 nf_monitor_SOURCES = nf-monitor.c
+
+nf_exp_list_SOURCES = nf-exp-list.c 
+nf_exp_add_SOURCES = nf-exp-add.c 
+nf_exp_delete_SOURCES = nf-exp-delete.c 
 
 nl_addr_add_SOURCES = nl-addr-add.c
 nl_addr_delete_SOURCES = nl-addr-delete.c

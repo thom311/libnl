@@ -27,7 +27,11 @@
  * ~~~~
  */
 
+#include "defs.h"
+
+#ifndef DISABLE_PTHREADS
 #include <pthread.h>
+#endif
 
 #include <netlink-local.h>
 #include <netlink/netlink.h>
@@ -57,14 +61,18 @@ static void __init init_default_cb(void)
 }
 
 static uint32_t used_ports_map[32];
+#ifndef DISABLE_PTHREADS
 static pthread_mutex_t port_map_mutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
 
 static uint32_t generate_local_port(void)
 {
 	int i, n;
 	uint32_t pid = getpid() & 0x3FFFFF;
 
+#ifndef DISABLE_PTHREADS
 	pthread_mutex_lock(&port_map_mutex);
+#endif
 
 	for (i = 0; i < 32; i++) {
 		if (used_ports_map[i] == 0xFFFFFFFF)
@@ -80,13 +88,17 @@ static uint32_t generate_local_port(void)
 			/* PID_MAX_LIMIT is currently at 2^22, leaving 10 bit
 			 * to, i.e. 1024 unique ports per application. */
 
+#ifndef DISABLE_PTHREADS
 			pthread_mutex_unlock(&port_map_mutex);
+#endif
 
 			return pid + (n << 22);
 		}
 	}
 
+#ifndef DISABLE_PTHREADS
 	pthread_mutex_unlock(&port_map_mutex);
+#endif
 
 	/* Out of sockets in our own PID namespace, what to do? FIXME */
 	return UINT_MAX;
@@ -101,9 +113,13 @@ static void release_local_port(uint32_t port)
 	
 	nr = port >> 22;
 
+#ifndef DISABLE_PTHREADS
 	pthread_mutex_lock(&port_map_mutex);
+#endif
 	used_ports_map[nr / 32] &= ~(1 << (nr % 32));
+#ifndef DISABLE_PTHREADS
 	pthread_mutex_unlock(&port_map_mutex);
+#endif
 }
 
 /**

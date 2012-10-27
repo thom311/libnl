@@ -890,11 +890,6 @@ struct nl_addr *rtnl_addr_get_local(struct rtnl_addr *addr)
 int rtnl_addr_set_peer(struct rtnl_addr *addr, struct nl_addr *peer)
 {
 	return __assign_addr(addr, &addr->a_peer, peer, ADDR_ATTR_PEER);
-
-	addr->a_prefixlen = nl_addr_get_prefixlen(addr->a_peer);
-	addr->ce_mask |= ADDR_ATTR_PREFIXLEN;
-
-	return 0;
 }
 
 struct nl_addr *rtnl_addr_get_peer(struct rtnl_addr *addr)

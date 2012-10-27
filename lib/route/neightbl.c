@@ -143,7 +143,7 @@ static int neightbl_msg_parser(struct nl_cache_ops *ops,
 	ntbl->nt_family = rtmsg->rtgen_family;
 
 	if (tb[NDTA_NAME] == NULL) {
-		return -NLE_MISSING_ATTR;
+		err = -NLE_MISSING_ATTR;
 		goto errout;
 	}
 

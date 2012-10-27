@@ -347,13 +347,17 @@ int nl_socket_add_memberships(struct nl_sock *sk, int group, ...)
 	va_start(ap, group);
 
 	while (group != 0) {
-		if (group < 0)
+		if (group < 0) {
+			va_end(ap);
 			return -NLE_INVAL;
+		}
 
 		err = setsockopt(sk->s_fd, SOL_NETLINK, NETLINK_ADD_MEMBERSHIP,
 						 &group, sizeof(group));
-		if (err < 0)
+		if (err < 0) {
+			va_end(ap);
 			return -nl_syserr2nlerr(errno);
+		}
 
 		group = va_arg(ap, int);
 	}
@@ -391,13 +395,17 @@ int nl_socket_drop_memberships(struct nl_sock *sk, int group, ...)
 	va_start(ap, group);
 
 	while (group != 0) {
-		if (group < 0)
+		if (group < 0) {
+			va_end(ap);
 			return -NLE_INVAL;
+		}
 
 		err = setsockopt(sk->s_fd, SOL_NETLINK, NETLINK_DROP_MEMBERSHIP,
 						 &group, sizeof(group));
-		if (err < 0)
+		if (err < 0) {
+			va_end(ap);
 			return -nl_syserr2nlerr(errno);
+		}
 
 		group = va_arg(ap, int);
 	}

@@ -642,6 +642,17 @@ static int cache_include(struct nl_cache *cache, struct nl_object *obj,
 	case NL_ACT_DEL:
 		old = nl_cache_search(cache, obj);
 		if (old) {
+			/*
+			 * Some objects types might support merging the new
+			 * object with the old existing cache object.
+			 * Handle them first.
+			 */
+			if (nl_object_update(old, obj) == 0) {
+				cb(cache, old, NL_ACT_CHANGE, data);
+				nl_object_put(obj);
+				return 0;
+			}
+
 			nl_cache_remove(old);
 			if (type->mt_act == NL_ACT_DEL) {
 				if (cb)

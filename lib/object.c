@@ -139,6 +139,23 @@ struct nl_object *nl_object_clone(struct nl_object *obj)
 }
 
 /**
+ * Merge a cacheable object
+ * @arg dst		object to be merged into
+ * @arg src		new object to be merged into dst
+ *
+ * @return 0 or a negative error code.
+ */
+int nl_object_update(struct nl_object *dst, struct nl_object *src)
+{
+	struct nl_object_ops *ops = obj_ops(dst);
+
+	if (ops->oo_update)
+		return ops->oo_update(dst, src);
+
+	return -NLE_OPNOTSUPP;
+}
+
+/**
  * Free a cacheable object
  * @arg obj		object to free
  *

@@ -336,6 +336,18 @@ struct nl_object_ops
 			    uint32_t, int);
 
 
+	/**
+	 * update function
+	 *
+	 * Will be called when the object given by first argument
+	 * needs to be updated with the contents of the second object
+	 *
+	 * The function must return 0 for success and error for failure
+	 * to update. In case of failure its assumed that the original
+	 * object is not touched
+	 */
+	int   (*oo_update)(struct nl_object *, struct nl_object *);
+
 	char *(*oo_attrs2str)(int, char *, size_t);
 
 	/**

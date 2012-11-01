@@ -31,6 +31,8 @@ extern int			nl_object_alloc_name(const char *,
 						     struct nl_object **);
 extern void			nl_object_free(struct nl_object *);
 extern struct nl_object *	nl_object_clone(struct nl_object *obj);
+extern int			nl_object_update(struct nl_object *dst,
+						 struct nl_object *src);
 extern void			nl_object_get(struct nl_object *);
 extern void			nl_object_put(struct nl_object *);
 extern int			nl_object_shared(struct nl_object *);

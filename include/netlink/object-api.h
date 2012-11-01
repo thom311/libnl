@@ -337,6 +337,11 @@ struct nl_object_ops
 
 
 	char *(*oo_attrs2str)(int, char *, size_t);
+
+	/**
+	 * Get key attributes by family function
+	 */
+	uint32_t   (*oo_id_attrs_get)(struct nl_object *);
 };
 
 /** @} */

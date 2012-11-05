@@ -416,8 +416,15 @@ errout:
  * are handled by repeating the read. The input buffer size is determined
  * by peeking before the actual read is done.
  *
+ * The buffer size used when reading from the netlink socket and thus limiting
+ * the maximum size of a netlink message that can be read defaults to the size
+ * of a memory page (getpagesize()). The buffer size can be modified on a per
+ * socket level using the function nl_socket_set_msg_buf_size().
+ *
  * A non-blocking sockets causes the function to return immediately with
  * a return value of 0 if no data is available.
+ *
+ * @see nl_socket_set_msg_buf_size()
  *
  * @return Number of octets read, 0 on EOF or a negative error code.
  */

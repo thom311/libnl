@@ -551,9 +551,8 @@ abort:
 	if (retval <= 0) {
 	    free(iov.iov_base); iov.iov_base = NULL;
 	    free(tmpcreds); tmpcreds = NULL;
-	}
-
-	*buf = iov.iov_base;
+	} else
+		*buf = iov.iov_base;
 
 	if (creds)
 	    *creds = tmpcreds;

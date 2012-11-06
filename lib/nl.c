@@ -404,29 +404,49 @@ errout:
 
 /**
  * Receive data from netlink socket
- * @arg sk		Netlink socket.
- * @arg nla		Destination pointer for peer's netlink address. (required)
- * @arg buf		Destination pointer for message content. (required)
- * @arg creds		Destination pointer for credentials. (optional)
+ * @arg sk		Netlink socket (required)
+ * @arg nla		Netlink socket structure to hold address of peer (required)
+ * @arg buf		Destination pointer for message content (required)
+ * @arg creds		Destination pointer for credentials (optional)
  *
- * Receives a netlink message, allocates a buffer in \c *buf and
- * stores the message content. The peer's netlink address is stored
- * in \c *nla. The caller is responsible for freeing the buffer allocated
- * in \c *buf if a positive value is returned.  Interrupted system calls
- * are handled by repeating the read. The input buffer size is determined
- * by peeking before the actual read is done.
+ * Receives data from a connected netlink socket using recvmsg() and returns
+ * the number of bytes read. The read data is stored in a newly allocated
+ * buffer that is assigned to \c *buf. The peer's netlink address will be
+ * stored in \c *nla.
+ *
+ * This function blocks until data is available to be read unless the socket
+ * has been put into non-blocking mode using nl_socket_set_nonblocking() in
+ * which case this function will return immediately with a return value of 0.
  *
  * The buffer size used when reading from the netlink socket and thus limiting
  * the maximum size of a netlink message that can be read defaults to the size
  * of a memory page (getpagesize()). The buffer size can be modified on a per
  * socket level using the function nl_socket_set_msg_buf_size().
  *
- * A non-blocking sockets causes the function to return immediately with
- * a return value of 0 if no data is available.
+ * If message peeking is enabled using nl_socket_enable_msg_peek() the size of
+ * the message to be read will be determined using the MSG_PEEK flag prior to
+ * performing the actual read. This leads to an additional recvmsg() call for
+ * every read operation which has performance implications and is not
+ * recommended for high throughput protocols.
  *
+ * An eventual interruption of the recvmsg() system call is automatically
+ * handled by retrying the operation.
+ *
+ * If receiving of credentials has been enabled using the function
+ * nl_socket_set_passcred(), this function will allocate a new struct ucred
+ * filled with the received credentials and assign it to \c *creds. The caller
+ * is responsible for freeing the buffer.
+ *
+ * @note The caller is responsible to free the returned data buffer and if
+ *       enabled, the credentials buffer.
+ *
+ * @see nl_socket_set_nonblocking()
  * @see nl_socket_set_msg_buf_size()
+ * @see nl_socket_enable_msg_peek()
+ * @see nl_socket_set_passcred()
  *
- * @return Number of octets read, 0 on EOF or a negative error code.
+ * @return Number of bytes read, 0 on EOF, 0 on no data event (non-blocking
+ *         mode), or a negative error code.
  */
 int nl_recv(struct nl_sock *sk, struct sockaddr_nl *nla,
 	    unsigned char **buf, struct ucred **creds)

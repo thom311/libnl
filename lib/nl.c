@@ -464,6 +464,9 @@ int nl_recv(struct nl_sock *sk, struct sockaddr_nl *nla,
 	struct ucred* tmpcreds = NULL;
 	int retval = 0;
 
+	if (!buf)
+		return -NLE_INVAL;
+
 	if (sk->s_flags & NL_MSG_PEEK)
 		flags |= MSG_PEEK | MSG_TRUNC;
 

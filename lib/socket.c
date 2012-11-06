@@ -472,6 +472,15 @@ void nl_socket_set_peer_groups(struct nl_sock *sk, uint32_t groups)
  * @{
  */
 
+/**
+ * Return the file descriptor of the backing socket
+ * @arg sk		Netlink socket
+ *
+ * Only valid after calling nl_connect() to create and bind the respective
+ * socket.
+ *
+ * @return File descriptor or -1 if not available.
+ */
 int nl_socket_get_fd(const struct nl_sock *sk)
 {
 	return sk->s_fd;

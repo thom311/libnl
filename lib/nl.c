@@ -477,8 +477,8 @@ int nl_recv(struct nl_sock *sk, struct sockaddr_nl *nla,
 	iov.iov_base = malloc(iov.iov_len);
 
 	if (!iov.iov_base) {
-	    retval = -NLE_NOMEM;
-	    goto abort;
+		retval = -NLE_NOMEM;
+		goto abort;
 	}
 
 	if (creds && (sk->s_flags & NL_SOCK_PASSCRED)) {
@@ -515,8 +515,8 @@ retry:
 		msg.msg_controllen *= 2;
 		tmp = realloc(msg.msg_control, msg.msg_controllen);
 		if (!tmp) {
-		    retval = -NLE_NOMEM;
-		    goto abort;
+			retval = -NLE_NOMEM;
+			goto abort;
 		}
 		msg.msg_control = tmp;
 		goto retry;
@@ -530,8 +530,8 @@ retry:
 		iov.iov_len = n;
 		tmp = realloc(iov.iov_base, iov.iov_len);
 		if (!tmp) {
-		    retval = -NLE_NOMEM;
-		    goto abort;
+			retval = -NLE_NOMEM;
+			goto abort;
 		}
 		iov.iov_base = tmp;
 		flags = 0;
@@ -572,13 +572,15 @@ abort:
 	free(msg.msg_control);
 
 	if (retval <= 0) {
-	    free(iov.iov_base); iov.iov_base = NULL;
-	    free(tmpcreds); tmpcreds = NULL;
+		free(iov.iov_base);
+		iov.iov_base = NULL;
+		free(tmpcreds);
+		tmpcreds = NULL;
 	} else
 		*buf = iov.iov_base;
 
 	if (creds)
-	    *creds = tmpcreds;
+		*creds = tmpcreds;
 
 	return retval;
 }

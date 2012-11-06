@@ -158,15 +158,37 @@ void nl_close(struct nl_sock *sk)
  */
 
 /**
- * Send raw data over netlink socket.
- * @arg sk		Netlink socket.
- * @arg buf		Data buffer.
- * @arg size		Size of data buffer.
- * @return Number of characters written on success or a negative error code.
+ * Transmit raw data over netlink socket.
+ * @arg sk		Netlink socket (required)
+ * @arg buf		Buffer carrying data to send (required)
+ * @arg size		Size of buffer (required)
+ *
+ * Transmits "raw" data over the specified netlink socket. Unlike the other
+ * transmit functions it does not modify the data in any way. It directly
+ * passes the buffer \c buf of \c size to sendto().
+ *
+ * The message is addressed to the peer as specified in the socket by either
+ * the nl_socket_set_peer_port() or nl_socket_set_peer_groups() function.
+ *
+ * @note Because there is no indication on the message boundaries of the data
+ *       being sent, the \c NL_CB_MSG_OUT callback handler will not be invoked
+ *       for data that is being sent using this function.
+ *
+ * @see nl_socket_set_peer_port()
+ * @see nl_socket_set_peer_groups()
+ * @see nl_sendmsg()
+ *
+ * @return Number of bytes sent or a negative error code.
  */
 int nl_sendto(struct nl_sock *sk, void *buf, size_t size)
 {
 	int ret;
+
+	if (!buf)
+		return -NLE_INVAL;
+
+	if (sk->s_fd < 0)
+		return -NLE_BAD_SOCK;
 
 	ret = sendto(sk->s_fd, buf, size, 0, (struct sockaddr *)
 		     &sk->s_peer, sizeof(sk->s_peer));

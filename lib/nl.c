@@ -331,6 +331,10 @@ int nl_send_iovec(struct nl_sock *sk, struct nl_msg *msg, struct iovec *iov, uns
  * If present in the `msg`, credentials set by the nlmsg_set_creds() function
  * are added to the control buffer of the message.
  *
+ * @par Overwriting Capability:
+ * Calls to this function can be overwritten by providing an alternative using
+ * the nl_cb_overwrite_send() function.
+ *
  * @callback This function triggers the `NL_CB_MSG_OUT` callback.
  *
  * @attention
@@ -343,17 +347,24 @@ int nl_send_iovec(struct nl_sock *sk, struct nl_msg *msg, struct iovec *iov, uns
  * @see nl_socket_set_peer_groups()
  * @see nlmsg_set_dst()
  * @see nlmsg_set_creds()
+ * @see nl_cb_overwrite_send()
  *
  * @return Number of bytes sent on success or a negative error code.
 */
 int nl_send(struct nl_sock *sk, struct nl_msg *msg)
 {
-	struct iovec iov = {
-		.iov_base = (void *) nlmsg_hdr(msg),
-		.iov_len = nlmsg_hdr(msg)->nlmsg_len,
-	};
+	struct nl_cb *cb = sk->s_cb;
 
-	return nl_send_iovec(sk, msg, &iov, 1);
+	if (cb->cb_send_ow)
+		return cb->cb_send_ow(sk, msg);
+	else {
+		struct iovec iov = {
+			.iov_base = (void *) nlmsg_hdr(msg),
+			.iov_len = nlmsg_hdr(msg)->nlmsg_len,
+		};
+
+		return nl_send_iovec(sk, msg, &iov, 1);
+	}
 }
 
 /**
@@ -411,14 +422,9 @@ void nl_complete_msg(struct nl_sock *sk, struct nl_msg *msg)
  */
 int nl_send_auto(struct nl_sock *sk, struct nl_msg *msg)
 {
-	struct nl_cb *cb = sk->s_cb;
-
 	nl_complete_msg(sk, msg);
 
-	if (cb->cb_send_ow)
-		return cb->cb_send_ow(sk, msg);
-	else
-		return nl_send(sk, msg);
+	return nl_send(sk, msg);
 }
 
 /**

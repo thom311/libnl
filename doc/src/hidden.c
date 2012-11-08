@@ -32,4 +32,11 @@
       accessor function is provided solely for the purpose of creating
       objects for comparison and filtering.
 
+\page low_level_api Low Level API
+
+\note This is a low level API function. A high level function implementing
+      the same functionality with a simplified usage pattern exists. This
+      function is available as an alternative if the default library
+      behaviour is not desirable.
+
 */

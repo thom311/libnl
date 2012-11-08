@@ -198,7 +198,9 @@ ALIASES                = arg=\param \
                          "ref_core{2}=\ref_asciidoc{core,\1,\2 (Netlink Core Library Development Guide)}" \
                          "ref_route{2}=\ref_asciidoc{route,\1,\2 (Netlink Routing Development Guide)}" \
                          "core_doc{2}=\ref_core{\1,\2}" \
-                         "route_doc{2}=\ref_route{\1,\2}"
+                         "route_doc{2}=\ref_route{\1,\2}" \
+			 "callback=\par Callback Invocation:\n" \
+			 "lowlevel=\copydoc low_level_api"
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding

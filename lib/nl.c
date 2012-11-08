@@ -158,12 +158,12 @@ void nl_close(struct nl_sock *sk)
  */
 
 /**
- * Transmit raw data over netlink socket.
+ * Transmit raw data over Netlink socket.
  * @arg sk		Netlink socket (required)
  * @arg buf		Buffer carrying data to send (required)
  * @arg size		Size of buffer (required)
  *
- * Transmits "raw" data over the specified netlink socket. Unlike the other
+ * Transmits "raw" data over the specified Netlink socket. Unlike the other
  * transmit functions it does not modify the data in any way. It directly
  * passes the buffer \c buf of \c size to sendto().
  *
@@ -199,16 +199,48 @@ int nl_sendto(struct nl_sock *sk, void *buf, size_t size)
 }
 
 /**
- * Send netlink message with control over sendmsg() message header.
- * @arg sk		Netlink socket.
- * @arg msg		Netlink message to be sent.
- * @arg hdr		Sendmsg() message header.
- * @return Number of characters sent on sucess or a negative error code.
+ * Transmit Netlink message using sendmsg()
+ * @arg sk		Netlink socket (required)
+ * @arg msg		Netlink message to be sent (required)
+ * @arg hdr		sendmsg() message header (required)
+ *
+ * Transmits the message specified in \c hdr over the Netlink socket using the
+ * sendmsg() system call.
+ *
+ * @attention
+ * The `msg` argument will *not* be used to derive the message payload that
+ * is being sent out. The `msg` argument is *only* passed on to the
+ * `NL_CB_MSG_OUT` callback. The caller is responsible to initialize the
+ * `hdr` struct properly and have it point to the message payload and
+ * socket address.
+ *
+ * @note
+ * This function uses `nlmsg_set_src()` to modify the `msg` argument prior to
+ * invoking the `NL_CB_MSG_OUT` callback to provide the local port number.
+ *
+ * @callback This function triggers the `NL_CB_MSG_OUT` callback.
+ *
+ * @attention
+ * Think twice before using this function. It provides a low level access to
+ * the Netlink socket. Among other limitations, it does not add credentials
+ * even if enabled or respect the destination address specified in the `msg`
+ * object.
+ *
+ * @see nl_socket_set_local_port()
+ * @see nl_send_auto()
+ * @see nl_send_iovec()
+ *
+ * @return Number of bytes sent on success or a negative error code.
+ *
+ * @lowlevel
  */
 int nl_sendmsg(struct nl_sock *sk, struct nl_msg *msg, struct msghdr *hdr)
 {
 	struct nl_cb *cb;
 	int ret;
+
+	if (sk->s_fd < 0)
+		return -NLE_BAD_SOCK;
 
 	nlmsg_set_src(msg, &sk->s_local);
 
@@ -227,13 +259,23 @@ int nl_sendmsg(struct nl_sock *sk, struct nl_msg *msg, struct msghdr *hdr)
 
 
 /**
- * Send netlink message.
- * @arg sk		Netlink socket.
- * @arg msg		Netlink message to be sent.
- * @arg iov		iovec to be sent.
- * @arg iovlen		number of struct iovec to be sent.
- * @see nl_sendmsg()
- * @return Number of characters sent on success or a negative error code.
+ * Transmit Netlink message (taking IO vector)
+ * @arg sk		Netlink socket (required)
+ * @arg msg		Netlink message to be sent (required)
+ * @arg iov		IO vector to be sent (required)
+ * @arg iovlen		Number of struct iovec to be sent (required)
+ *
+ * This function is identical to nl_send() except that instead of taking a
+ * `struct nl_msg` object it takes an IO vector. Please see the description
+ * of `nl_send()`.
+ *
+ * @callback This function triggers the `NL_CB_MSG_OUT` callback.
+ *
+ * @see nl_send()
+ *
+ * @return Number of bytes sent on success or a negative error code.
+ *
+ * @lowlevel
  */
 int nl_send_iovec(struct nl_sock *sk, struct nl_msg *msg, struct iovec *iov, unsigned iovlen)
 {
@@ -272,14 +314,37 @@ int nl_send_iovec(struct nl_sock *sk, struct nl_msg *msg, struct iovec *iov, uns
 	return nl_sendmsg(sk, msg, &hdr);
 }
 
-
-
 /**
-* Send netlink message.
-* @arg sk		Netlink socket.
-* @arg msg		Netlink message to be sent.
-* @see nl_sendmsg()
-* @return Number of characters sent on success or a negative error code.
+ * Transmit Netlink message
+ * @arg sk		Netlink socket (required)
+ * @arg msg		Netlink message (required)
+ *
+ * Transmits the Netlink message `msg` over the Netlink socket using the
+ * `sendmsg()` system call. This function is based on `nl_send_iovec()` but
+ * takes care of initializing a `struct iovec` based on the `msg` object.
+ *
+ * The message is addressed to the peer as specified in the socket by either
+ * the nl_socket_set_peer_port() or nl_socket_set_peer_groups() function.
+ * The peer address can be overwritten by specifying an address in the `msg`
+ * object using nlmsg_set_dst().
+ *
+ * If present in the `msg`, credentials set by the nlmsg_set_creds() function
+ * are added to the control buffer of the message.
+ *
+ * @callback This function triggers the `NL_CB_MSG_OUT` callback.
+ *
+ * @attention
+ * Unlike `nl_send_auto()`, this function does *not* finalize the message in
+ * terms of automatically adding needed flags or filling out port numbers.
+ *
+ * @see nl_send_auto()
+ * @see nl_send_iovec()
+ * @see nl_socket_set_peer_port()
+ * @see nl_socket_set_peer_groups()
+ * @see nlmsg_set_dst()
+ * @see nlmsg_set_creds()
+ *
+ * @return Number of bytes sent on success or a negative error code.
 */
 int nl_send(struct nl_sock *sk, struct nl_msg *msg)
 {
@@ -291,6 +356,24 @@ int nl_send(struct nl_sock *sk, struct nl_msg *msg)
 	return nl_send_iovec(sk, msg, &iov, 1);
 }
 
+/**
+ * Finalize Netlink message
+ * @arg sk		Netlink socket (required)
+ * @arg msg		Netlink message (required)
+ *
+ * This function finalizes a Netlink message by completing the message with
+ * desirable flags and values depending on the socket configuration.
+ *
+ *  - If not yet filled out, the source address of the message (`nlmsg_pid`)
+ *    will be set to the local port number of the socket.
+ *  - If not yet specified, the next available sequence number is assigned
+ *    to the message (`nlmsg_seq`).
+ *  - If not yet specified, the protocol field of the message will be set to
+ *    the protocol field of the socket.
+ *  - The `NLM_F_REQUEST` Netlink message flag will be set.
+ *  - The `NLM_F_ACK` flag will be set if Auto-ACK mode is enabled on the
+ *    socket.
+ */
 void nl_complete_msg(struct nl_sock *sk, struct nl_msg *msg)
 {
 	struct nlmsghdr *nlh;
@@ -311,25 +394,20 @@ void nl_complete_msg(struct nl_sock *sk, struct nl_msg *msg)
 		nlh->nlmsg_flags |= NLM_F_ACK;
 }
 
-void nl_auto_complete(struct nl_sock *sk, struct nl_msg *msg)
-{
-	nl_complete_msg(sk, msg);
-}
-
 /**
- * Automatically complete and send a netlink message
- * @arg sk		Netlink socket.
- * @arg msg		Netlink message to be sent.
+ * Finalize and transmit Netlink message
+ * @arg sk		Netlink socket (required)
+ * @arg msg		Netlink message (required)
  *
- * This function takes a netlink message and passes it on to
- * nl_auto_complete() for completion.
+ * Finalizes the message by passing it to `nl_complete_msg()` and transmits it
+ * by passing it to `nl_send()`.
  *
- * Checks the netlink message \c nlh for completness and extends it
- * as required before sending it out. Checked fields include pid,
- * sequence nr, and flags.
+ * @callback This function triggers the `NL_CB_MSG_OUT` callback.
  *
+ * @see nl_complete_msg()
  * @see nl_send()
- * @return Number of characters sent or a negative error code.
+ *
+ * @return Number of bytes sent or a negative error code.
  */
 int nl_send_auto(struct nl_sock *sk, struct nl_msg *msg)
 {
@@ -343,27 +421,28 @@ int nl_send_auto(struct nl_sock *sk, struct nl_msg *msg)
 		return nl_send(sk, msg);
 }
 
-int nl_send_auto_complete(struct nl_sock *sk, struct nl_msg *msg)
-{
-	return nl_send_auto(sk, msg);
-}
-
 /**
- * Send netlink message and wait for response (sync request-response)
- * @arg sk		Netlink socket
- * @arg msg		Netlink message to be sent
+ * Finalize and transmit Netlink message and wait for ACK or error message
+ * @arg sk		Netlink socket (required)
+ * @arg msg		Netlink message (required)
  *
- * This function takes a netlink message and sends it using nl_send_auto().
- * It will then wait for the response (ACK or error message) to be
- * received. Threfore this function will block until the operation has
- * been completed.
+ * Passes the `msg` to `nl_send_auto()` to finalize and transmit it. Frees the
+ * message and waits (sleeps) for the ACK or error message to be received.
  *
- * @note Disabling auto-ack (nl_socket_disable_auto_ack()) will cause
- *       this function to return immediately after sending. In this case,
- *       it is the responsibility of the caller to handle any eventual
- *       error messages returned.
+ * @attention
+ * Disabling Auto-ACK (nl_socket_disable_auto_ack()) will cause this function
+ * to return immediately after transmitting the message. However, the peer may
+ * still be returning an error message in response to the request. It is the
+ * responsibility of the caller to handle such messages.
+ *
+ * @callback This function triggers the `NL_CB_MSG_OUT` callback.
+ *
+ * @attention
+ * This function frees the `msg` object after transmitting it by calling
+ * `nlmsg_free()`.
  *
  * @see nl_send_auto().
+ * @see nl_wait_for_ack()
  *
  * @return 0 on success or a negative error code.
  */
@@ -993,6 +1072,30 @@ errout:
 
 	return err;
 }
+
+/** @} */
+
+/**
+ * @name Deprecated
+ * @{
+ */
+
+/**
+ * @deprecated Please use nl_complete_msg()
+ */
+void nl_auto_complete(struct nl_sock *sk, struct nl_msg *msg)
+{
+	nl_complete_msg(sk, msg);
+}
+
+/**
+ * @deprecated Please use nl_send_auto()
+ */
+int nl_send_auto_complete(struct nl_sock *sk, struct nl_msg *msg)
+{
+	return nl_send_auto(sk, msg);
+}
+
 
 /** @} */
 

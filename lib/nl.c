@@ -479,18 +479,24 @@ int nl_send_sync(struct nl_sock *sk, struct nl_msg *msg)
 }
 
 /**
- * Send simple netlink message using nl_send_auto_complete()
- * @arg sk		Netlink socket.
- * @arg type		Netlink message type.
- * @arg flags		Netlink message flags.
- * @arg buf		Data buffer.
- * @arg size		Size of data buffer.
+ * Construct and transmit a Netlink message
+ * @arg sk		Netlink socket (required)
+ * @arg type		Netlink message type (required)
+ * @arg flags		Netlink message flags (optional)
+ * @arg buf		Data buffer (optional)
+ * @arg size		Size of data buffer (optional)
  *
- * Builds a netlink message with the specified type and flags and
- * appends the specified data as payload to the message.
+ * Allocates a new Netlink message based on `type` and `flags`. If `buf`
+ * points to payload of length `size` that payload will be appended to the
+ * message.
  *
- * @see nl_send_auto_complete()
+ * Sends out the message using `nl_send_auto()` and frees the message
+ * afterwards.
+ *
+ * @see nl_send_auto()
+ *
  * @return Number of characters sent on success or a negative error code.
+ * @retval -NLE_NOMEM Unable to allocate Netlink message
  */
 int nl_send_simple(struct nl_sock *sk, int type, int flags, void *buf,
 		   size_t size)
@@ -507,9 +513,8 @@ int nl_send_simple(struct nl_sock *sk, int type, int flags, void *buf,
 		if (err < 0)
 			goto errout;
 	}
-	
 
-	err = nl_send_auto_complete(sk, msg);
+	err = nl_send_auto(sk, msg);
 errout:
 	nlmsg_free(msg);
 

@@ -62,18 +62,25 @@
  */
 
 /**
- * Create and connect netlink socket.
- * @arg sk		Netlink socket.
- * @arg protocol	Netlink protocol to use.
+ * Create file descriptor and bind socket.
+ * @arg sk		Netlink socket (required)
+ * @arg protocol	Netlink protocol to use (required)
  *
- * Creates a netlink socket using the specified protocol, binds the socket
- * and issues a connection attempt.
+ * Creates a new Netlink socket using `socket()` and binds the socket to the
+ * protocol and local port specified in the `sk` socket object. Fails if
+ * the socket is already connected.
  *
- * This function fail if socket is already connected.
+ * @note If available, the `close-on-exec` (`SOCK_CLOEXEC`) feature is enabled
+ *       automatically on the new file descriptor. This causes the socket to
+ *       be closed automatically if any of the `exec` family functions succeed.
+ *       This is essential for multi threaded programs.
  *
- * @note SOCK_CLOEXEC is set on the socket if available.
+ * @see nl_socket_alloc()
+ * @see nl_close()
  *
  * @return 0 on success or a negative error code.
+ *
+ * @retval -NLE_BAD_SOCK Socket is already connected
  */
 int nl_connect(struct nl_sock *sk, int protocol)
 {
@@ -137,8 +144,15 @@ errout:
 }
 
 /**
- * Close/Disconnect netlink socket.
- * @arg sk		Netlink socket.
+ * Close Netlink socket
+ * @arg sk		Netlink socket (required)
+ *
+ * Closes the Netlink socket using `close()`.
+ *
+ * @note The socket is closed automatically if a `struct nl_sock` object is
+ *       freed using `nl_socket_free()`.
+ *
+ * @see nl_connect()
  */
 void nl_close(struct nl_sock *sk)
 {

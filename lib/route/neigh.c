@@ -151,6 +151,7 @@
 #include <netlink-local.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
+#include <netlink/hashtable.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/neighbour.h>
 #include <netlink/route/link.h>
@@ -195,6 +196,50 @@ static int neigh_clone(struct nl_object *_dst, struct nl_object *_src)
 			return -NLE_NOMEM;
 
 	return 0;
+}
+
+static void neigh_keygen(struct nl_object *obj, uint32_t *hashkey,
+			 uint32_t table_sz)
+{
+	struct rtnl_neigh *neigh = (struct rtnl_neigh *) obj;
+	unsigned int nkey_sz;
+	struct nl_addr *addr = NULL;
+	struct neigh_hash_key {
+		uint32_t	n_family;
+		uint32_t	n_ifindex;
+		char		n_addr[0];
+	} __attribute__((packed)) *nkey;
+	char buf[INET6_ADDRSTRLEN+5];
+
+	if (neigh->n_dst)
+		addr = neigh->n_dst;
+
+	nkey_sz = sizeof(*nkey);
+	if (addr)
+		nkey_sz += nl_addr_get_len(addr);
+
+	nkey = calloc(1, nkey_sz);
+	if (!nkey) {
+		*hashkey = 0;
+		return;
+	}
+	nkey->n_family = neigh->n_family;
+	nkey->n_ifindex = neigh->n_ifindex;
+	if (addr)
+		memcpy(nkey->n_addr,
+			nl_addr_get_binary_addr(addr),
+			nl_addr_get_len(addr));
+
+	*hashkey = nl_hash(nkey, nkey_sz, 0) % table_sz;
+
+	NL_DBG(5, "neigh %p key (fam %d dev %d addr %s) keysz %d hash 0x%x\n",
+		neigh, nkey->n_family, nkey->n_ifindex,
+		nl_addr2str(addr, buf, sizeof(buf)),
+		nkey_sz, *hashkey);
+
+	free(nkey);
+
+	return;
 }
 
 static int neigh_compare(struct nl_object *_a, struct nl_object *_b,
@@ -825,6 +870,7 @@ static struct nl_object_ops neigh_obj_ops = {
 	    [NL_DUMP_STATS]	= neigh_dump_stats,
 	},
 	.oo_compare		= neigh_compare,
+	.oo_keygen		= neigh_keygen,
 	.oo_attrs2str		= neigh_attrs2str,
 	.oo_id_attrs		= (NEIGH_ATTR_IFINDEX | NEIGH_ATTR_DST | NEIGH_ATTR_FAMILY),
 };

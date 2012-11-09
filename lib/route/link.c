@@ -23,6 +23,7 @@
 #include <netlink/attr.h>
 #include <netlink/utils.h>
 #include <netlink/object.h>
+#include <netlink/hashtable.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link.h>
 #include <netlink/route/link/api.h>
@@ -798,6 +799,27 @@ static int link_handle_event(struct nl_object *a, struct rtnl_link_event_cb *cb)
 	return nevents;
 }
 #endif
+
+
+static void link_keygen(struct nl_object *obj, uint32_t *hashkey,
+        uint32_t table_sz)
+{
+	struct rtnl_link *link = (struct rtnl_link *) obj;
+	unsigned int lkey_sz;
+	struct link_hash_key {
+		uint32_t	l_index;
+	} __attribute__((packed)) lkey;
+
+	lkey_sz = sizeof(lkey);
+	lkey.l_index = link->l_index;
+
+	*hashkey = nl_hash(&lkey, lkey_sz, 0) % table_sz;
+
+	NL_DBG(5, "link %p key (dev %d) keysz %d, hash 0x%x\n",
+	       link, lkey.l_index, lkey_sz, *hashkey);
+
+	return;
+}
 
 static int link_compare(struct nl_object *_a, struct nl_object *_b,
 			uint32_t attrs, int flags)
@@ -2500,6 +2522,7 @@ static struct nl_object_ops link_obj_ops = {
 	    [NL_DUMP_STATS]	= link_dump_stats,
 	},
 	.oo_compare		= link_compare,
+	.oo_keygen		= link_keygen,
 	.oo_attrs2str		= link_attrs2str,
 	.oo_id_attrs		= LINK_ATTR_IFINDEX,
 };

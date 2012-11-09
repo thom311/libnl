@@ -35,6 +35,7 @@
 #include <netlink/cache.h>
 #include <netlink/utils.h>
 #include <netlink/data.h>
+#include <netlink/hashtable.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/route.h>
 #include <netlink/route/link.h>
@@ -287,6 +288,51 @@ static void route_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 			     ci->rtci_last_use / nl_get_user_hz(),
 			     ci->rtci_expires / nl_get_user_hz());
 	}
+}
+
+static void route_keygen(struct nl_object *obj, uint32_t *hashkey,
+			  uint32_t table_sz)
+{
+	struct rtnl_route *route = (struct rtnl_route *) obj;
+	unsigned int rkey_sz;
+	struct nl_addr *addr = NULL;
+	struct route_hash_key {
+		uint8_t		rt_family;
+		uint8_t		rt_tos;
+		uint32_t	rt_table;
+		char 		rt_addr[0];
+	} __attribute__((packed)) *rkey;
+	char buf[INET6_ADDRSTRLEN+5];
+
+	if (route->rt_dst)
+		addr = route->rt_dst;
+
+	rkey_sz = sizeof(*rkey);
+	if (addr)
+		rkey_sz += nl_addr_get_len(addr);
+	rkey = calloc(1, rkey_sz);
+	if (!rkey) {
+		NL_DBG(2, "Warning: calloc failed for %d bytes...\n", rkey_sz);
+		*hashkey = 0;
+		return;
+	}
+	rkey->rt_family = route->rt_family;
+	rkey->rt_tos = route->rt_tos;
+	rkey->rt_table = route->rt_table;
+	if (addr)
+		memcpy(rkey->rt_addr, nl_addr_get_binary_addr(addr),
+			nl_addr_get_len(addr));
+
+	*hashkey = nl_hash(rkey, rkey_sz, 0) % table_sz;
+
+	NL_DBG(5, "route %p key (fam %d tos %d table %d addr %s) keysz %d "
+		"hash 0x%x\n", route, rkey->rt_family, rkey->rt_tos,
+		rkey->rt_table, nl_addr2str(addr, buf, sizeof(buf)),
+		rkey_sz, *hashkey);
+
+	free(rkey);
+
+	return;
 }
 
 static int route_compare(struct nl_object *_a, struct nl_object *_b,
@@ -1151,6 +1197,7 @@ struct nl_object_ops route_obj_ops = {
 	    [NL_DUMP_STATS]	= route_dump_stats,
 	},
 	.oo_compare		= route_compare,
+	.oo_keygen		= route_keygen,
 	.oo_attrs2str		= route_attrs2str,
 	.oo_id_attrs		= (ROUTE_ATTR_FAMILY | ROUTE_ATTR_TOS |
 				   ROUTE_ATTR_TABLE | ROUTE_ATTR_DST),

@@ -50,6 +50,8 @@ extern char *			nl_object_attrs2str(struct nl_object *,
 						    size_t);
 extern char *			nl_object_attr_list(struct nl_object *,
 						    char *, size_t);
+extern void			nl_object_keygen(struct nl_object *,
+						 uint32_t *, uint32_t);
 
 /* Marks */
 extern void			nl_object_mark(struct nl_object *);

@@ -18,7 +18,7 @@ lib_LTLIBRARIES = \
 libnl_3_la_SOURCES = \
 	addr.c attr.c cache.c cache_mngr.c cache_mngt.c data.c \
 	error.c handlers.c msg.c nl.c object.c socket.c utils.c \
-	version.c hash.c
+	version.c hash.c hashtable.c
 
 libnl_genl_3_la_LIBADD  = libnl-3.la
 libnl_genl_3_la_SOURCES = \

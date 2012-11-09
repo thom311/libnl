@@ -348,6 +348,16 @@ struct nl_object_ops
 	 */
 	int   (*oo_update)(struct nl_object *, struct nl_object *);
 
+	/**
+	 * Hash Key generator function
+	 *
+	 * When called returns a hash key for the object being
+	 * referenced. This key will be used by higher level hash functions
+	 * to build association lists. Each object type gets to specify
+	 * it's own key formulation
+	 */
+	void   (*oo_keygen)(struct nl_object *, uint32_t *, uint32_t);
+
 	char *(*oo_attrs2str)(int, char *, size_t);
 
 	/**

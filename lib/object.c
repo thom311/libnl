@@ -413,6 +413,27 @@ char *nl_object_attr_list(struct nl_object *obj, char *buf, size_t len)
 	return nl_object_attrs2str(obj, obj->ce_mask, buf, len);
 }
 
+/**
+ * Generate object hash key
+ * @arg obj		the object
+ * @arg hashkey		destination buffer to be used for key stream
+ * @arg hashtbl_sz	hash table size
+ *
+ * @return hash key in destination buffer
+ */
+void nl_object_keygen(struct nl_object *obj, uint32_t *hashkey,
+		      uint32_t hashtbl_sz)
+{
+	struct nl_object_ops *ops = obj_ops(obj);
+
+	if (ops->oo_keygen)
+		ops->oo_keygen(obj, hashkey, hashtbl_sz);
+	else
+		*hashkey = 0;
+
+	return;
+}
+
 /** @} */
 
 /**

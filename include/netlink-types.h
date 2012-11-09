@@ -30,6 +30,7 @@
 struct nl_cache_ops;
 struct nl_sock;
 struct nl_object;
+struct nl_hash_table;
 
 struct nl_cb
 {
@@ -78,6 +79,7 @@ struct nl_cache
 	int			c_nitems;
 	int                     c_iarg1;
 	int                     c_iarg2;
+	struct nl_hash_table *	hashtable;
 	struct nl_cache_ops *   c_ops;
 };
 

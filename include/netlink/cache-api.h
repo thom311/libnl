@@ -186,6 +186,9 @@ struct nl_cache_ops
 	/** Netlink protocol */
 	int			co_protocol;
 
+	/** cache object hash size **/
+	int			co_hash_size;
+
 	/** Group definition */
 	struct nl_af_group *	co_groups;
 	

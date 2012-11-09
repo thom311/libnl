@@ -53,6 +53,7 @@
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/object.h>
+#include <netlink/hashtable.h>
 #include <netlink/utils.h>
 
 /**
@@ -189,6 +190,22 @@ struct nl_cache *nl_cache_alloc(struct nl_cache_ops *ops)
 
 	nl_init_list_head(&cache->c_items);
 	cache->c_ops = ops;
+
+	/*
+	 * If object type provides a hash keygen
+	 * functions, allocate a hash table for the
+	 * cache objects for faster lookups
+	 */
+	if (ops->co_obj_ops->oo_keygen) {
+		int hashtable_size;
+
+		if (ops->co_hash_size)
+			hashtable_size = ops->co_hash_size;
+		else
+			hashtable_size = NL_MAX_HASH_ENTRIES;
+
+		cache->hashtable = nl_hash_table_alloc(hashtable_size);
+	}
 
 	NL_DBG(2, "Allocated cache %p <%s>.\n", cache, nl_cache_name(cache));
 
@@ -362,6 +379,10 @@ void nl_cache_free(struct nl_cache *cache)
 		return;
 
 	nl_cache_clear(cache);
+
+	if (cache->hashtable)
+		nl_hash_table_free(cache->hashtable);
+
 	NL_DBG(1, "Freeing cache %p <%s>...\n", cache, nl_cache_name(cache));
 	free(cache);
 }
@@ -375,7 +396,17 @@ void nl_cache_free(struct nl_cache *cache)
 
 static int __cache_add(struct nl_cache *cache, struct nl_object *obj)
 {
+	int ret;
+
 	obj->ce_cache = cache;
+
+	if (cache->hashtable) {
+		ret = nl_hash_table_add(cache->hashtable, obj);
+		if (ret < 0) {
+			obj->ce_cache = NULL;
+			return ret;
+		}
+	}
 
 	nl_list_add_tail(&obj->ce_list, &cache->c_items);
 	cache->c_nitems++;
@@ -411,6 +442,7 @@ static int __cache_add(struct nl_cache *cache, struct nl_object *obj)
 int nl_cache_add(struct nl_cache *cache, struct nl_object *obj)
 {
 	struct nl_object *new;
+	int ret = 0;
 
 	if (cache->c_ops->co_obj_ops != obj->ce_ops)
 		return -NLE_OBJ_MISMATCH;
@@ -424,7 +456,11 @@ int nl_cache_add(struct nl_cache *cache, struct nl_object *obj)
 		new = obj;
 	}
 
-	return __cache_add(cache, new);
+	ret = __cache_add(cache, new);
+	if (ret < 0)
+		nl_object_put(new);
+
+	return ret;
 }
 
 /**
@@ -474,10 +510,18 @@ int nl_cache_move(struct nl_cache *cache, struct nl_object *obj)
  */
 void nl_cache_remove(struct nl_object *obj)
 {
+	int ret;
 	struct nl_cache *cache = obj->ce_cache;
 
 	if (cache == NULL)
 		return;
+
+	if (cache->hashtable) {
+		ret = nl_hash_table_del(cache->hashtable, obj);
+		if (ret < 0)
+			NL_DBG(3, "Failed to delete %p from cache %p <%s>.\n",
+			       obj, cache, nl_cache_name(cache));
+	}
 
 	nl_list_del(&obj->ce_list);
 	obj->ce_cache = NULL;
@@ -566,8 +610,13 @@ struct update_xdata {
 static int update_msg_parser(struct nl_msg *msg, void *arg)
 {
 	struct update_xdata *x = arg;
-	
-	return nl_cache_parse(x->ops, &msg->nm_src, msg->nm_nlh, x->params);
+	int ret = 0;
+
+	ret = nl_cache_parse(x->ops, &msg->nm_src, msg->nm_nlh, x->params);
+	if (ret == -NLE_EXIST)
+		return NL_SKIP;
+	else
+		return ret;
 }
 /** @endcond */
 
@@ -842,6 +891,19 @@ restart:
  * @name Utillities
  * @{
  */
+static struct nl_object *__cache_fast_lookup(struct nl_cache *cache,
+					     struct nl_object *needle)
+{
+	struct nl_object *obj;
+
+	obj = nl_hash_table_lookup(cache->hashtable, needle);
+	if (obj) {
+	    nl_object_get(obj);
+	    return obj;
+	}
+
+	return NULL;
+}
 
 /**
  * Search object in cache
@@ -862,6 +924,9 @@ struct nl_object *nl_cache_search(struct nl_cache *cache,
 				  struct nl_object *needle)
 {
 	struct nl_object *obj;
+
+	if (cache->hashtable)
+		return __cache_fast_lookup(cache, needle);
 
 	nl_list_for_each_entry(obj, &cache->c_items, ce_list) {
 		if (nl_object_identical(obj, needle)) {

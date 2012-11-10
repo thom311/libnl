@@ -14,6 +14,25 @@
 #include <netlink/hash.h>
 #include <netlink/hashtable.h>
 
+/**
+ * @ingroup core_types
+ * @defgroup hashtable Hashtable
+ *
+ * @{
+ *
+ * Header
+ * ------
+ * ~~~~{.c}
+ * #include <netlink/hashtable.h>
+ * ~~~~
+ */
+
+/**
+ * Allocate hashtable
+ * @arg size		Size of hashtable in number of elements
+ *
+ * @return Allocated hashtable or NULL.
+ */
 nl_hash_table_t *nl_hash_table_alloc(int size)
 {
 	nl_hash_table_t *ht;
@@ -35,6 +54,10 @@ errout:
 	return NULL;
 }
 
+/**
+ * Free hashtable including all nodes
+ * @arg ht		Hashtable
+ */
 void nl_hash_table_free(nl_hash_table_t *ht)
 {
 	int i;
@@ -54,6 +77,16 @@ void nl_hash_table_free(nl_hash_table_t *ht)
 	free(ht);
 }
 
+/**
+ * Lookup identical object in hashtable
+ * @arg ht		Hashtable
+ * @arg	obj		Object to lookup
+ *
+ * Generates hashkey for `obj` and traverses the corresponding chain calling
+ * `nl_object_identical()` on each trying to find a match.
+ *
+ * @return Pointer to object if match was found or NULL.
+ */
 struct nl_object* nl_hash_table_lookup(nl_hash_table_t *ht,
 				       struct nl_object *obj)
 {
@@ -72,6 +105,19 @@ struct nl_object* nl_hash_table_lookup(nl_hash_table_t *ht,
 	return NULL;
 }
 
+/**
+ * Add object to hashtable
+ * @arg ht		Hashtable
+ * @arg obj		Object to add
+ *
+ * Adds `obj` to the hashtable. Object type must support hashing, otherwise all
+ * objects will be added to the chain `0`.
+ *
+ * @note The reference counter of the object is incremented.
+ *
+ * @return 0 on success or a negative error code
+ * @retval -NLE_EXIST Identical object already present in hashtable
+ */
 int nl_hash_table_add(nl_hash_table_t *ht, struct nl_object *obj)
 {
 	nl_hash_node_t *node;
@@ -104,6 +150,18 @@ int nl_hash_table_add(nl_hash_table_t *ht, struct nl_object *obj)
 	return 0;
 }
 
+/**
+ * Remove object from hashtable
+ * @arg ht		Hashtable
+ * @arg obj		Object to remove
+ *
+ * Remove `obj` from hashtable if it exists.
+ *
+ * @note Reference counter of object will be decremented.
+ *
+ * @return 0 on success or a negative error code.
+ * @retval -NLE_OBJ_NOTFOUND Object not present in hashtable.
+ */
 int nl_hash_table_del(nl_hash_table_t *ht, struct nl_object *obj)
 {
 	nl_hash_node_t *node, *prev;
@@ -132,10 +190,12 @@ int nl_hash_table_del(nl_hash_table_t *ht, struct nl_object *obj)
 		node = node->next;
 	}
 
-	return -1;
+	return -NLE_OBJ_NOTFOUND;
 }
 
 uint32_t nl_hash(void *k, size_t length, uint32_t initval)
 {
 	return(__nl_hash(k, length, initval));
 }
+
+/** @} */

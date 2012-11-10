@@ -57,6 +57,8 @@ errout:
 /**
  * Free hashtable including all nodes
  * @arg ht		Hashtable
+ *
+ * @note Reference counter of all objects in the hashtable will be decremented.
  */
 void nl_hash_table_free(nl_hash_table_t *ht)
 {
@@ -69,6 +71,7 @@ void nl_hash_table_free(nl_hash_table_t *ht)
 	    while (node) {
 		   saved_node = node;
 		   node = node->next;
+		   nl_object_put(saved_node->obj);
 		   free(saved_node);
 	    }
 	}

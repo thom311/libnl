@@ -473,7 +473,7 @@ static uint32_t hashbig( const void *key, size_t length, uint32_t *val2)
   return c;
 }
 
-uint32_t hash_any(const void *key, size_t length, uint32_t base)
+uint32_t nl_hash_any(const void *key, size_t length, uint32_t base)
 {
 	if (HASH_BIG_ENDIAN)
 		return hashbig(key, length, &base);

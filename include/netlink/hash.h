@@ -55,15 +55,15 @@
  *		if (argc != 3)
  *			err(1, "Usage: %s <string1> <string2>", argv[0]);
  *
- *		hash1 = hash(argv[1], strlen(argv[1]), 0);
- *		hash2 = hash(argv[2], strlen(argv[2]), 0);
+ *		hash1 = __nl_hash(argv[1], strlen(argv[1]), 0);
+ *		hash2 = __nl_hash(argv[2], strlen(argv[2]), 0);
  *		printf("Hash is %s\n", hash1 == hash2 ? "same" : "different");
  *		return 0;
  *	}
  */
-#define hash(p, num, base) hash_any((p), (num)*sizeof(*(p)), (base))
+#define __nl_hash(p, num, base) nl_hash_any((p), (num)*sizeof(*(p)), (base))
 
 /* Our underlying operations. */
-uint32_t hash_any(const void *key, size_t length, uint32_t base);
+uint32_t nl_hash_any(const void *key, size_t length, uint32_t base);
 
 #endif /* HASH_H */

@@ -137,5 +137,5 @@ int nl_hash_table_del(nl_hash_table_t *ht, struct nl_object *obj)
 
 uint32_t nl_hash(void *k, size_t length, uint32_t initval)
 {
-	return(hash(k, length, initval));
+	return(__nl_hash(k, length, initval));
 }

@@ -4,18 +4,18 @@
     <tab type="mainpage" visible="yes" title=""/>
     <tab type="pages" visible="yes" title="" intro=""/>
     <tab type="modules" visible="yes" title="" intro=""/>
-    <tab type="namespaces" visible="no" title="">
-      <tab type="namespaces" visible="yes" title="" intro=""/>
+    <tab type="namespaces" visible="yes" title="">
+      <tab type="namespacelist" visible="yes" title="" intro=""/>
       <tab type="namespacemembers" visible="yes" title="" intro=""/>
     </tab>
-    <tab type="classes" visible="no" title="">
-      <tab type="classes" visible="yes" title="" intro=""/>
+    <tab type="classes" visible="yes" title="">
+      <tab type="classlist" visible="yes" title="" intro=""/>
       <tab type="classindex" visible="$ALPHABETICAL_INDEX" title=""/> 
       <tab type="hierarchy" visible="yes" title="" intro=""/>
       <tab type="classmembers" visible="yes" title="" intro=""/>
     </tab>
-    <tab type="files" visible="no" title="">
-      <tab type="files" visible="yes" title="" intro=""/>
+    <tab type="files" visible="yes" title="">
+      <tab type="filelist" visible="yes" title="" intro=""/>
       <tab type="globals" visible="yes" title="" intro=""/>
     </tab>
     <tab type="examples" visible="yes" title="" intro=""/>  
@@ -62,14 +62,15 @@
     </memberdecl>
     <detaileddescription title=""/>
     <memberdef>
+      <inlineclasses title=""/>
       <typedefs title=""/>
+      <enums title=""/>
       <constructors title=""/>
       <functions title=""/>
       <related title=""/>
       <variables title=""/>
       <properties title=""/>
       <events title=""/>
-      <enums title=""/>
     </memberdef>
     <usedfiles visible="$SHOW_USED_FILES"/>
     <authorsection visible="yes"/>
@@ -89,6 +90,7 @@
     </memberdecl>
     <detaileddescription title=""/>
     <memberdef>
+      <inlineclasses title=""/>
       <typedefs title=""/>
       <enums title=""/>
       <functions title=""/>
@@ -116,6 +118,7 @@
     </memberdecl>
     <detaileddescription title=""/>
     <memberdef>
+      <inlineclasses title=""/>
       <defines title=""/>
       <typedefs title=""/>
       <enums title=""/>
@@ -129,15 +132,15 @@
   <group>
     <briefdescription visible="yes"/>
     <groupgraph visible="$GROUP_GRAPHS"/>
-    <detaileddescription title=""/>
     <memberdecl>
-      <namespaces visible="yes" title=""/>
-      <dirs visible="yes" title=""/>
       <nestedgroups visible="yes" title=""/>
-      <classes visible="yes" title=""/>
+      <dirs visible="yes" title=""/>
       <files visible="yes" title=""/>
+      <namespaces visible="yes" title=""/>
+      <classes visible="yes" title=""/>
       <defines title=""/>
       <typedefs title=""/>
+      <enums title=""/>
       <enumvalues title=""/>
       <functions title=""/>
       <variables title=""/>
@@ -149,8 +152,8 @@
       <properties title=""/>
       <friends title=""/>
       <membergroups visible="yes"/>
-      <enums title=""/>
     </memberdecl>
+    <detaileddescription title=""/>
     <memberdef>
       <pagedocs/>
       <inlineclasses title=""/>

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2003-2006 Baruch Even <baruch@ev-en.org>,
  *                         Mediatrix Telecom, inc. <ericb@mediatrix.com>
  */
@@ -227,6 +227,7 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		addr->ce_mask |= ADDR_ATTR_LABEL;
 	}
 
+	/* IPv6 only */
 	if (tb[IFA_CACHEINFO]) {
 		struct ifa_cacheinfo *ca;
 		
@@ -269,6 +270,7 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	nl_addr_set_prefixlen(peer_prefix ? addr->a_peer : addr->a_local,
 			      addr->a_prefixlen);
 
+	/* IPv4 only */
 	if (tb[IFA_BROADCAST]) {
 		addr->a_bcast = nl_addr_alloc_attr(tb[IFA_BROADCAST], family);
 		if (!addr->a_bcast)
@@ -277,6 +279,7 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		addr->ce_mask |= ADDR_ATTR_BROADCAST;
 	}
 
+	/* IPv6 only */
 	if (tb[IFA_MULTICAST]) {
 		addr->a_multicast = nl_addr_alloc_attr(tb[IFA_MULTICAST],
 						       family);
@@ -286,6 +289,7 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		addr->ce_mask |= ADDR_ATTR_MULTICAST;
 	}
 
+	/* IPv6 only */
 	if (tb[IFA_ANYCAST]) {
 		addr->a_anycast = nl_addr_alloc_attr(tb[IFA_ANYCAST],
 						       family);
@@ -899,6 +903,9 @@ struct nl_addr *rtnl_addr_get_peer(struct rtnl_addr *addr)
 
 int rtnl_addr_set_broadcast(struct rtnl_addr *addr, struct nl_addr *bcast)
 {
+	if (bcast->a_family != AF_INET)
+		return -NLE_AF_NOSUPPORT;
+
 	return __assign_addr(addr, &addr->a_bcast, bcast, ADDR_ATTR_BROADCAST);
 }
 
@@ -909,6 +916,9 @@ struct nl_addr *rtnl_addr_get_broadcast(struct rtnl_addr *addr)
 
 int rtnl_addr_set_multicast(struct rtnl_addr *addr, struct nl_addr *multicast)
 {
+	if (multicast->a_family != AF_INET6)
+		return -NLE_AF_NOSUPPORT;
+
 	return __assign_addr(addr, &addr->a_multicast, multicast,
 			     ADDR_ATTR_MULTICAST);
 }
@@ -920,6 +930,9 @@ struct nl_addr *rtnl_addr_get_multicast(struct rtnl_addr *addr)
 
 int rtnl_addr_set_anycast(struct rtnl_addr *addr, struct nl_addr *anycast)
 {
+	if (anycast->a_family != AF_INET6)
+		return -NLE_AF_NOSUPPORT;
+
 	return __assign_addr(addr, &addr->a_anycast, anycast,
 			     ADDR_ATTR_ANYCAST);
 }

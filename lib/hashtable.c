@@ -17,14 +17,7 @@
 /**
  * @ingroup core_types
  * @defgroup hashtable Hashtable
- *
  * @{
- *
- * Header
- * ------
- * ~~~~{.c}
- * #include <netlink/hashtable.h>
- * ~~~~
  */
 
 /**

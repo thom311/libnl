@@ -893,6 +893,9 @@ struct nl_addr *rtnl_addr_get_local(struct rtnl_addr *addr)
 
 int rtnl_addr_set_peer(struct rtnl_addr *addr, struct nl_addr *peer)
 {
+	if (peer->a_family != AF_INET)
+		return -NLE_AF_NOSUPPORT;
+
 	return __assign_addr(addr, &addr->a_peer, peer, ADDR_ATTR_PEER);
 }
 

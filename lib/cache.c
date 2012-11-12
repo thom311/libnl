@@ -567,16 +567,6 @@ void nl_cache_set_arg2(struct nl_cache *cache, int arg)
 }
 
 /**
- * Set cache ops flags
- * @arg ops		Cache ops
- * @arg arg		flags
- */
-void nl_cache_ops_set_flags(struct nl_cache_ops *ops, unsigned int flags)
-{
-	ops->co_flags |= flags;
-}
-
-/**
  * Set cache flags
  * @arg cache		Cache
  * @arg flags		Flags

@@ -130,6 +130,19 @@ void nl_cache_ops_foreach(void (*cb)(struct nl_cache_ops *, void *), void *arg)
 }
 
 /**
+ * Set default flags for caches of this type
+ * @arg ops		Cache ops
+ * @arg flags		Flags to set
+ *
+ * The cache operation flags will be derived to all caches allocates
+ * based on this set of cache operations.
+ */
+void nl_cache_ops_set_flags(struct nl_cache_ops *ops, unsigned int flags)
+{
+	ops->co_flags |= flags;
+}
+
+/**
  * Register a set of cache operations
  * @arg ops		cache operations
  *

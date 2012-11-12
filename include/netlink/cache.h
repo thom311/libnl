@@ -124,6 +124,9 @@ extern int			nl_cache_mngr_add(struct nl_cache_mngr *,
 						  change_func_t,
 						  void *,
 						  struct nl_cache **);
+extern int			nl_cache_mngr_add_cache(struct nl_cache_mngr *mngr,
+							struct nl_cache *cache,
+							change_func_t cb, void *data);
 extern int			nl_cache_mngr_get_fd(struct nl_cache_mngr *);
 extern int			nl_cache_mngr_poll(struct nl_cache_mngr *,
 						   int);

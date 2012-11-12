@@ -183,18 +183,16 @@ errout:
 }
 
 /**
- * Add cache responsibility to cache manager
+ * Add cache to cache manager
  * @arg mngr		Cache manager.
- * @arg name		Name of cache to keep track of
+ * @arg cache		Cache to be added to cache manager
  * @arg cb		Function to be called upon changes.
  * @arg data		Argument passed on to change callback
- * @arg result		Pointer to store added cache (optional)
  *
- * Allocates a new cache of the specified type and adds it to the manager.
- * The operation will trigger a full dump request from the kernel to
- * initially fill the contents of the cache. The manager will subscribe
- * to the notification group of the cache and keep track of any further
- * changes.
+ * Adds cache to the manager. The operation will trigger a full
+ * dump request from the kernel to initially fill the contents
+ * of the cache. The manager will subscribe to the notification group
+ * of the cache and keep track of any further changes.
  *
  * The user is responsible for calling nl_cache_mngr_poll() or monitor
  * the socket and call nl_cache_mngr_data_ready() to allow the library
@@ -204,23 +202,21 @@ errout:
  * @see nl_cache_mngr_data_ready()
  *
  * @return 0 on success or a negative error code.
- * @return -NLE_NOCACHE Unknown cache type
  * @return -NLE_PROTO_MISMATCH Protocol mismatch between cache manager and
  * 			       cache type
  * @return -NLE_OPNOTSUPP Cache type does not support updates
  * @return -NLE_EXIST Cache of this type already being managed
  */
-int nl_cache_mngr_add(struct nl_cache_mngr *mngr, const char *name,
-		      change_func_t cb, void *data, struct nl_cache **result)
+int nl_cache_mngr_add_cache(struct nl_cache_mngr *mngr, struct nl_cache *cache,
+		      change_func_t cb, void *data)
 {
 	struct nl_cache_ops *ops;
-	struct nl_cache *cache;
 	struct nl_af_group *grp;
 	int err, i;
 
-	ops = nl_cache_ops_lookup(name);
+	ops = cache->c_ops;
 	if (!ops)
-		return -NLE_NOCACHE;
+		return -NLE_INVAL;
 
 	if (ops->co_protocol != mngr->cm_protocol)
 		return -NLE_PROTO_MISMATCH;
@@ -254,14 +250,10 @@ retry:
 		goto retry;
 	}
 
-	cache = nl_cache_alloc(ops);
-	if (!cache)
-		return -NLE_NOMEM;
-
 	for (grp = ops->co_groups; grp->ag_group; grp++) {
 		err = nl_socket_add_membership(mngr->cm_sock, grp->ag_group);
 		if (err < 0)
-			goto errout_free_cache;
+			return err;
 	}
 
 	err = nl_cache_refill(mngr->cm_sock, cache);
@@ -278,13 +270,65 @@ retry:
 	NL_DBG(1, "Added cache %p <%s> to cache manager %p\n",
 	       cache, nl_cache_name(cache), mngr);
 
-	if (result)
-		*result = cache;
 	return 0;
 
 errout_drop_membership:
 	for (grp = ops->co_groups; grp->ag_group; grp++)
 		nl_socket_drop_membership(mngr->cm_sock, grp->ag_group);
+
+	return err;
+}
+
+/**
+ * Add cache to cache manager
+ * @arg mngr		Cache manager.
+ * @arg name		Name of cache to keep track of
+ * @arg cb		Function to be called upon changes.
+ * @arg data		Argument passed on to change callback
+ * @arg result		Pointer to store added cache (optional)
+ *
+ * Allocates a new cache of the specified type and adds it to the manager.
+ * The operation will trigger a full dump request from the kernel to
+ * initially fill the contents of the cache. The manager will subscribe
+ * to the notification group of the cache and keep track of any further
+ * changes.
+ *
+ * The user is responsible for calling nl_cache_mngr_poll() or monitor
+ * the socket and call nl_cache_mngr_data_ready() to allow the library
+ * to process netlink notification events.
+ *
+ * @see nl_cache_mngr_poll()
+ * @see nl_cache_mngr_data_ready()
+ *
+ * @return 0 on success or a negative error code.
+ * @return -NLE_NOCACHE Unknown cache type
+ * @return -NLE_PROTO_MISMATCH Protocol mismatch between cache manager and
+ * 			       cache type
+ * @return -NLE_OPNOTSUPP Cache type does not support updates
+ * @return -NLE_EXIST Cache of this type already being managed
+ */
+int nl_cache_mngr_add(struct nl_cache_mngr *mngr, const char *name,
+		      change_func_t cb, void *data, struct nl_cache **result)
+{
+	struct nl_cache_ops *ops;
+	struct nl_cache *cache;
+	int err;
+
+	ops = nl_cache_ops_lookup(name);
+	if (!ops)
+		return -NLE_NOCACHE;
+
+	cache = nl_cache_alloc(ops);
+	if (!cache)
+		return -NLE_NOMEM;
+
+	err = nl_cache_mngr_add_cache(mngr, cache, cb, data);
+	if (err < 0)
+		goto errout_free_cache;
+
+	*result = cache;
+	return 0;
+
 errout_free_cache:
 	nl_cache_free(cache);
 

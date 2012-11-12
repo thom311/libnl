@@ -855,17 +855,25 @@ unsigned int rtnl_addr_get_flags(struct rtnl_addr *addr)
 static inline int __assign_addr(struct rtnl_addr *addr, struct nl_addr **pos,
 			        struct nl_addr *new, int flag)
 {
-	if (addr->ce_mask & ADDR_ATTR_FAMILY) {
-		if (new->a_family != addr->a_family)
-			return -NLE_AF_MISMATCH;
-	} else
-		addr->a_family = new->a_family;
+	if (new) {
+		if (addr->ce_mask & ADDR_ATTR_FAMILY) {
+			if (new->a_family != addr->a_family)
+				return -NLE_AF_MISMATCH;
+		} else
+			addr->a_family = new->a_family;
 
-	if (*pos)
-		nl_addr_put(*pos);
+		if (*pos)
+			nl_addr_put(*pos);
 
-	*pos = nl_addr_get(new);
-	addr->ce_mask |= (flag | ADDR_ATTR_FAMILY);
+		*pos = nl_addr_get(new);
+		addr->ce_mask |= (flag | ADDR_ATTR_FAMILY);
+	} else {
+		if (*pos)
+			nl_addr_put(*pos);
+
+		*pos = NULL;
+		addr->ce_mask &= ~flag;
+	}
 
 	return 0;
 }
@@ -874,14 +882,18 @@ int rtnl_addr_set_local(struct rtnl_addr *addr, struct nl_addr *local)
 {
 	int err;
 
+	/* Prohibit local address with prefix length if peer address is present */
+	if ((addr->ce_mask & ADDR_ATTR_PEER) && local &&
+	    nl_addr_get_prefixlen(local))
+		return -NLE_INVAL;
+
 	err = __assign_addr(addr, &addr->a_local, local, ADDR_ATTR_LOCAL);
 	if (err < 0)
 		return err;
 
-	if (!(addr->ce_mask & ADDR_ATTR_PEER)) {
-		addr->a_prefixlen = nl_addr_get_prefixlen(addr->a_local);
-		addr->ce_mask |= ADDR_ATTR_PREFIXLEN;
-	}
+	/* Never overwrite the prefix length if a peer address is present */
+	if (!(addr->ce_mask & ADDR_ATTR_PEER))
+		rtnl_addr_set_prefixlen(addr, local ? nl_addr_get_prefixlen(local) : 0);
 
 	return 0;
 }
@@ -893,10 +905,18 @@ struct nl_addr *rtnl_addr_get_local(struct rtnl_addr *addr)
 
 int rtnl_addr_set_peer(struct rtnl_addr *addr, struct nl_addr *peer)
 {
-	if (peer->a_family != AF_INET)
+	int err;
+
+	if (peer && peer->a_family != AF_INET)
 		return -NLE_AF_NOSUPPORT;
 
-	return __assign_addr(addr, &addr->a_peer, peer, ADDR_ATTR_PEER);
+	err = __assign_addr(addr, &addr->a_peer, peer, ADDR_ATTR_PEER);
+	if (err < 0)
+		return err;
+
+	rtnl_addr_set_prefixlen(addr, peer ? nl_addr_get_prefixlen(peer) : 0);
+
+	return 0;
 }
 
 struct nl_addr *rtnl_addr_get_peer(struct rtnl_addr *addr)
@@ -906,7 +926,7 @@ struct nl_addr *rtnl_addr_get_peer(struct rtnl_addr *addr)
 
 int rtnl_addr_set_broadcast(struct rtnl_addr *addr, struct nl_addr *bcast)
 {
-	if (bcast->a_family != AF_INET)
+	if (bcast && bcast->a_family != AF_INET)
 		return -NLE_AF_NOSUPPORT;
 
 	return __assign_addr(addr, &addr->a_bcast, bcast, ADDR_ATTR_BROADCAST);
@@ -919,7 +939,7 @@ struct nl_addr *rtnl_addr_get_broadcast(struct rtnl_addr *addr)
 
 int rtnl_addr_set_multicast(struct rtnl_addr *addr, struct nl_addr *multicast)
 {
-	if (multicast->a_family != AF_INET6)
+	if (multicast && multicast->a_family != AF_INET6)
 		return -NLE_AF_NOSUPPORT;
 
 	return __assign_addr(addr, &addr->a_multicast, multicast,
@@ -933,7 +953,7 @@ struct nl_addr *rtnl_addr_get_multicast(struct rtnl_addr *addr)
 
 int rtnl_addr_set_anycast(struct rtnl_addr *addr, struct nl_addr *anycast)
 {
-	if (anycast->a_family != AF_INET6)
+	if (anycast && anycast->a_family != AF_INET6)
 		return -NLE_AF_NOSUPPORT;
 
 	return __assign_addr(addr, &addr->a_anycast, anycast,

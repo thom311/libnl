@@ -779,6 +779,7 @@ int nl_cache_resync(struct nl_sock *sk, struct nl_cache *cache,
 		    change_func_t change_cb, void *data)
 {
 	struct nl_object *obj, *next;
+	struct nl_af_group *grp;
 	struct nl_cache_assoc ca = {
 		.ca_cache = cache,
 		.ca_change = change_cb,
@@ -792,19 +793,28 @@ int nl_cache_resync(struct nl_sock *sk, struct nl_cache *cache,
 
 	NL_DBG(1, "Resyncing cache %p <%s>...\n", cache, nl_cache_name(cache));
 
-restart:
 	/* Mark all objects so we can see if some of them are obsolete */
 	nl_cache_mark_all(cache);
 
-	err = nl_cache_request_full_dump(sk, cache);
-	if (err < 0)
-		goto errout;
+	grp = cache->c_ops->co_groups;
+	do {
+		if (grp && grp->ag_group &&
+			(cache->c_flags & NL_CACHE_AF_ITER))
+			nl_cache_set_arg1(cache, grp->ag_family);
 
-	err = __cache_pickup(sk, cache, &p);
-	if (err == -NLE_DUMP_INTR)
-		goto restart;
-	else if (err < 0)
-		goto errout;
+restart:
+		err = nl_cache_request_full_dump(sk, cache);
+		if (err < 0)
+			goto errout;
+
+		err = __cache_pickup(sk, cache, &p);
+		if (err == -NLE_DUMP_INTR)
+			goto restart;
+		else if (err < 0)
+			goto errout;
+		grp++;
+	} while (grp && grp->ag_group &&
+		(cache->c_flags & NL_CACHE_AF_ITER));
 
 	nl_list_for_each_entry_safe(obj, next, &cache->c_items, ce_list) {
 		if (nl_object_is_marked(obj)) {
@@ -886,23 +896,35 @@ int nl_cache_parse_and_add(struct nl_cache *cache, struct nl_msg *msg)
  */
 int nl_cache_refill(struct nl_sock *sk, struct nl_cache *cache)
 {
+	struct nl_af_group *grp;
 	int err;
 
+	nl_cache_clear(cache);
+	grp = cache->c_ops->co_groups;
+	do {
+		if (grp && grp->ag_group &&
+			(cache->c_flags & NL_CACHE_AF_ITER))
+			nl_cache_set_arg1(cache, grp->ag_family);
+
 restart:
-	err = nl_cache_request_full_dump(sk, cache);
-	if (err < 0)
-		return err;
+		err = nl_cache_request_full_dump(sk, cache);
+		if (err < 0)
+			return err;
+
+		err = nl_cache_pickup(sk, cache);
+		if (err == -NLE_DUMP_INTR) {
+			fprintf(stderr, "dump interrupted, restarting!\n");
+			goto restart;
+		} else if (err < 0)
+			break;
+
+		grp++;
+	} while (grp && grp->ag_group &&
+			(cache->c_flags & NL_CACHE_AF_ITER));
 
 	NL_DBG(2, "Upading cache %p <%s>, request sent, waiting for dump...\n",
 	       cache, nl_cache_name(cache));
-	nl_cache_clear(cache);
 
-	err = nl_cache_pickup(sk, cache);
-	if (err == -NLE_DUMP_INTR) {
-		fprintf(stderr, "dump interrupted, restarting!\n");
-		goto restart;
-	}
-	
 	return err;
 }
 

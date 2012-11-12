@@ -579,7 +579,7 @@ void nl_cache_ops_set_flags(struct nl_cache_ops *ops, unsigned int flags)
 /**
  * Set cache flags
  * @arg cache		Cache
- * @arg arg		flags
+ * @arg flags		Flags
  */
 void nl_cache_set_flags(struct nl_cache *cache, unsigned int flags)
 {

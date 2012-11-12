@@ -190,6 +190,7 @@ struct nl_cache *nl_cache_alloc(struct nl_cache_ops *ops)
 
 	nl_init_list_head(&cache->c_items);
 	cache->c_ops = ops;
+	cache->c_flags |= ops->co_flags;
 
 	/*
 	 * If object type provides a hash keygen
@@ -563,6 +564,26 @@ void nl_cache_set_arg1(struct nl_cache *cache, int arg)
 void nl_cache_set_arg2(struct nl_cache *cache, int arg)
 {
         cache->c_iarg2 = arg;
+}
+
+/**
+ * Set cache ops flags
+ * @arg ops		Cache ops
+ * @arg arg		flags
+ */
+void nl_cache_ops_set_flags(struct nl_cache_ops *ops, unsigned int flags)
+{
+	ops->co_flags |= flags;
+}
+
+/**
+ * Set cache flags
+ * @arg cache		Cache
+ * @arg arg		flags
+ */
+void nl_cache_set_flags(struct nl_cache *cache, unsigned int flags)
+{
+	cache->c_flags |= flags;
 }
 
 /**

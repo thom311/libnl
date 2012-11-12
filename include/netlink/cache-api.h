@@ -169,11 +169,6 @@ struct nl_parser_param
 };
 
 /**
- * Cache flags
- */
-#define NL_CACHE_AF_ITER	0x0001
-
-/**
  * Cache Operations
  *
  * This structure defines the characterstics of a cache type. It contains

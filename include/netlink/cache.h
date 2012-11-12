@@ -24,6 +24,12 @@ extern "C" {
 
 struct nl_cache;
 
+/**
+ * @ingroup cache
+ * Explicitely iterate over all address families when updating the cache
+ */
+#define NL_CACHE_AF_ITER	0x0001
+
 /* Access Functions */
 extern int			nl_cache_nitems(struct nl_cache *);
 extern int			nl_cache_nitems_filter(struct nl_cache *,

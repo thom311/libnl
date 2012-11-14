@@ -155,6 +155,7 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/neighbour.h>
 #include <netlink/route/link.h>
+#include <netlink/hashtable.h>
 
 /** @cond SKIP */
 #define NEIGH_ATTR_FLAGS        0x01
@@ -211,8 +212,12 @@ static void neigh_keygen(struct nl_object *obj, uint32_t *hashkey,
 	} __attribute__((packed)) *nkey;
 	char buf[INET6_ADDRSTRLEN+5];
 
-	if (neigh->n_dst)
+	if (neigh->n_family == AF_BRIDGE) {
+		if (neigh->n_lladdr)
+			addr = neigh->n_lladdr;
+	} else if (neigh->n_dst) {
 		addr = neigh->n_dst;
+	}
 
 	nkey_sz = sizeof(*nkey);
 	if (addr)
@@ -224,7 +229,8 @@ static void neigh_keygen(struct nl_object *obj, uint32_t *hashkey,
 		return;
 	}
 	nkey->n_family = neigh->n_family;
-	nkey->n_ifindex = neigh->n_ifindex;
+	if (neigh->n_family != AF_BRIDGE)
+		nkey->n_ifindex = neigh->n_ifindex;
 	if (addr)
 		memcpy(nkey->n_addr,
 			nl_addr_get_binary_addr(addr),
@@ -288,6 +294,16 @@ static char *neigh_attrs2str(int attrs, char *buf, size_t len)
 {
 	return __flags2str(attrs, buf, len, neigh_attrs,
 			   ARRAY_SIZE(neigh_attrs));
+}
+
+static uint32_t neigh_id_attrs_get(struct nl_object *obj)
+{
+	struct rtnl_neigh *neigh = (struct rtnl_neigh *)obj;
+
+	if (neigh->n_family == AF_BRIDGE)
+		return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY);
+	else
+		return (NEIGH_ATTR_IFINDEX | NEIGH_ATTR_DST | NEIGH_ATTR_FAMILY);
 }
 
 static struct nla_policy neigh_policy[NDA_MAX+1] = {
@@ -387,7 +403,9 @@ errout:
 
 static int neigh_request_update(struct nl_cache *c, struct nl_sock *h)
 {
-	return nl_rtgen_request(h, RTM_GETNEIGH, AF_UNSPEC, NLM_F_DUMP);
+	int family = c->c_iarg1;
+
+	return nl_rtgen_request(h, RTM_GETNEIGH, family, NLM_F_DUMP);
 }
 
 
@@ -400,7 +418,8 @@ static void neigh_dump_line(struct nl_object *a, struct nl_dump_params *p)
 
 	link_cache = nl_cache_mngt_require("route/link");
 
-	nl_dump_line(p, "%s ", nl_addr2str(n->n_dst, dst, sizeof(dst)));
+	if (n->n_family != AF_BRIDGE)
+		nl_dump_line(p, "%s ", nl_addr2str(n->n_dst, dst, sizeof(dst)));
 
 	if (link_cache)
 		nl_dump(p, "dev %s ",
@@ -496,7 +515,8 @@ struct rtnl_neigh * rtnl_neigh_get(struct nl_cache *cache, int ifindex,
 	struct rtnl_neigh *neigh;
 
 	nl_list_for_each_entry(neigh, &cache->c_items, ce_list) {
-		if (neigh->n_ifindex == ifindex &&
+		if (neigh->n_family == AF_UNSPEC &&
+		    neigh->n_ifindex == ifindex &&
 		    !nl_addr_cmp(neigh->n_dst, dst)) {
 			nl_object_get((struct nl_object *) neigh);
 			return neigh;
@@ -522,10 +542,13 @@ static int build_neigh_msg(struct rtnl_neigh *tmpl, int cmd, int flags,
 		.ndm_state = NUD_PERMANENT,
 	};
 
-	if (!(tmpl->ce_mask & NEIGH_ATTR_DST))
-		return -NLE_MISSING_ATTR;
-
-	nhdr.ndm_family = nl_addr_get_family(tmpl->n_dst);
+	if (tmpl->n_family != AF_BRIDGE) {
+		if (!(tmpl->ce_mask & NEIGH_ATTR_DST))
+			return -NLE_MISSING_ATTR;
+		nhdr.ndm_family = nl_addr_get_family(tmpl->n_dst);
+	}
+	else
+		nhdr.ndm_family = AF_BRIDGE;
 
 	if (tmpl->ce_mask & NEIGH_ATTR_FLAGS)
 		nhdr.ndm_flags = tmpl->n_flags;
@@ -540,7 +563,8 @@ static int build_neigh_msg(struct rtnl_neigh *tmpl, int cmd, int flags,
 	if (nlmsg_append(msg, &nhdr, sizeof(nhdr), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
 
-	NLA_PUT_ADDR(msg, NDA_DST, tmpl->n_dst);
+	if (tmpl->n_family != AF_BRIDGE)
+		NLA_PUT_ADDR(msg, NDA_DST, tmpl->n_dst);
 
 	if (tmpl->ce_mask & NEIGH_ATTR_LLADDR)
 		NLA_PUT_ADDR(msg, NDA_LLADDR, tmpl->n_lladdr);
@@ -873,10 +897,12 @@ static struct nl_object_ops neigh_obj_ops = {
 	.oo_keygen		= neigh_keygen,
 	.oo_attrs2str		= neigh_attrs2str,
 	.oo_id_attrs		= (NEIGH_ATTR_IFINDEX | NEIGH_ATTR_DST | NEIGH_ATTR_FAMILY),
+	.oo_id_attrs_get	= neigh_id_attrs_get
 };
 
 static struct nl_af_group neigh_groups[] = {
 	{ AF_UNSPEC, RTNLGRP_NEIGH },
+	{ AF_BRIDGE, RTNLGRP_NEIGH },
 	{ END_OF_GROUP_LIST },
 };
 

@@ -205,6 +205,7 @@ struct rtnl_neigh
 	struct rtnl_ncacheinfo n_cacheinfo;
 	uint32_t                n_state_mask;
 	uint32_t                n_flag_mask;
+	uint32_t		n_master;
 };
 
 

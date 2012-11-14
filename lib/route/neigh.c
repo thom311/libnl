@@ -167,6 +167,7 @@
 #define NEIGH_ATTR_FAMILY       0x40
 #define NEIGH_ATTR_TYPE         0x80
 #define NEIGH_ATTR_PROBES       0x100
+#define NEIGH_ATTR_MASTER       0x200
 
 static struct nl_cache_ops rtnl_neigh_ops;
 static struct nl_object_ops neigh_obj_ops;
@@ -229,7 +230,9 @@ static void neigh_keygen(struct nl_object *obj, uint32_t *hashkey,
 		return;
 	}
 	nkey->n_family = neigh->n_family;
-	if (neigh->n_family != AF_BRIDGE)
+	if (neigh->n_family == AF_BRIDGE)
+		nkey->n_ifindex = neigh->n_master;
+	else
 		nkey->n_ifindex = neigh->n_ifindex;
 	if (addr)
 		memcpy(nkey->n_addr,
@@ -262,6 +265,7 @@ static int neigh_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= NEIGH_DIFF(TYPE,	a->n_type != b->n_type);
 	diff |= NEIGH_DIFF(LLADDR,	nl_addr_cmp(a->n_lladdr, b->n_lladdr));
 	diff |= NEIGH_DIFF(DST,		nl_addr_cmp(a->n_dst, b->n_dst));
+	diff |= NEIGH_DIFF(MASTER,	a->n_master != b->n_master);
 
 	if (flags & LOOSE_COMPARISON) {
 		diff |= NEIGH_DIFF(STATE,
@@ -301,7 +305,7 @@ static uint32_t neigh_id_attrs_get(struct nl_object *obj)
 	struct rtnl_neigh *neigh = (struct rtnl_neigh *)obj;
 
 	if (neigh->n_family == AF_BRIDGE)
-		return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY);
+		return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY | NEIGH_ATTR_MASTER);
 	else
 		return (NEIGH_ATTR_IFINDEX | NEIGH_ATTR_DST | NEIGH_ATTR_FAMILY);
 }
@@ -391,6 +395,22 @@ int rtnl_neigh_parse(struct nlmsghdr *n, struct rtnl_neigh **result)
 	if (tb[NDA_PROBES]) {
 		neigh->n_probes = nla_get_u32(tb[NDA_PROBES]);
 		neigh->ce_mask |= NEIGH_ATTR_PROBES;
+	}
+
+	/*
+	 * Get the bridge index for AF_BRIDGE family entries
+	 */
+	if (neigh->n_family == AF_BRIDGE) {
+		struct nl_cache *lcache = nl_cache_mngt_require("route/link");
+		if (lcache ) {
+			struct rtnl_link *link = rtnl_link_get(lcache,
+							neigh->n_ifindex);
+			if (link) {
+				neigh->n_master = link->l_master;
+				rtnl_link_put(link);
+				neigh->ce_mask |= NEIGH_ATTR_MASTER;
+			}
+		}
 	}
 
 	*result = neigh;

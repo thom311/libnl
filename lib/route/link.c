@@ -571,19 +571,6 @@ errout:
 	return err;
 }
 
-static int link_event_filter(struct nl_cache *cache, struct nl_object *obj)
-{
-	struct rtnl_link *link = (struct rtnl_link *) obj;
-
-	/*
-	 * Ignore bridging messages when keeping the cache manager up to date.
-	 */
-	if (link->l_family == AF_BRIDGE)
-		return NL_SKIP;
-
-	return NL_OK;
-}
-
 static int link_request_update(struct nl_cache *cache, struct nl_sock *sk)
 {
 	int family = cache->c_iarg1;
@@ -808,15 +795,17 @@ static void link_keygen(struct nl_object *obj, uint32_t *hashkey,
 	unsigned int lkey_sz;
 	struct link_hash_key {
 		uint32_t	l_index;
+		uint32_t	l_family;
 	} __attribute__((packed)) lkey;
 
 	lkey_sz = sizeof(lkey);
 	lkey.l_index = link->l_index;
+	lkey.l_family = link->l_family;
 
 	*hashkey = nl_hash(&lkey, lkey_sz, 0) % table_sz;
 
-	NL_DBG(5, "link %p key (dev %d) keysz %d, hash 0x%x\n",
-	       link, lkey.l_index, lkey_sz, *hashkey);
+	NL_DBG(5, "link %p key (dev %d fam %d) keysz %d, hash 0x%x\n",
+	       link, lkey.l_index, lkey.l_family, lkey_sz, *hashkey);
 
 	return;
 }
@@ -966,7 +955,7 @@ struct rtnl_link *rtnl_link_get(struct nl_cache *cache, int ifindex)
 		return NULL;
 
 	nl_list_for_each_entry(link, &cache->c_items, ce_list) {
-		if (link->l_index == ifindex) {
+		if (link->l_family == AF_UNSPEC && link->l_index == ifindex) {
 			nl_object_get((struct nl_object *) link);
 			return link;
 		}
@@ -999,7 +988,8 @@ struct rtnl_link *rtnl_link_get_by_name(struct nl_cache *cache,
 		return NULL;
 
 	nl_list_for_each_entry(link, &cache->c_items, ce_list) {
-		if (!strcmp(name, link->l_name)) {
+		if (link->l_family == AF_UNSPEC &&
+			!strcmp(name, link->l_name)) {
 			nl_object_get((struct nl_object *) link);
 			return link;
 		}
@@ -2524,11 +2514,12 @@ static struct nl_object_ops link_obj_ops = {
 	.oo_compare		= link_compare,
 	.oo_keygen		= link_keygen,
 	.oo_attrs2str		= link_attrs2str,
-	.oo_id_attrs		= LINK_ATTR_IFINDEX,
+	.oo_id_attrs		= LINK_ATTR_IFINDEX | LINK_ATTR_FAMILY,
 };
 
 static struct nl_af_group link_groups[] = {
 	{ AF_UNSPEC,	RTNLGRP_LINK },
+	{ AF_BRIDGE,    RTNLGRP_LINK },
 	{ END_OF_GROUP_LIST },
 };
 
@@ -2546,7 +2537,6 @@ static struct nl_cache_ops rtnl_link_ops = {
 	.co_groups		= link_groups,
 	.co_request_update	= link_request_update,
 	.co_msg_parser		= link_msg_parser,
-	.co_event_filter	= link_event_filter,
 	.co_obj_ops		= &link_obj_ops,
 };
 

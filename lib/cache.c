@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -191,6 +191,7 @@ struct nl_cache *nl_cache_alloc(struct nl_cache_ops *ops)
 	nl_init_list_head(&cache->c_items);
 	cache->c_ops = ops;
 	cache->c_flags |= ops->co_flags;
+	cache->c_refcnt = 1;
 
 	/*
 	 * If object type provides a hash keygen
@@ -365,6 +366,26 @@ void nl_cache_clear(struct nl_cache *cache)
 		nl_cache_remove(obj);
 }
 
+static void __nl_cache_free(struct nl_cache *cache)
+{
+	nl_cache_clear(cache);
+
+	if (cache->hashtable)
+		nl_hash_table_free(cache->hashtable);
+
+	NL_DBG(1, "Freeing cache %p <%s>...\n", cache, nl_cache_name(cache));
+	free(cache);
+}
+
+/**
+ * Increase reference counter of cache
+ * @arg cache		Cache
+ */
+void nl_cache_get(struct nl_cache *cache)
+{
+	cache->c_refcnt++;
+}
+
 /**
  * Free a cache.
  * @arg cache		Cache to free.
@@ -379,13 +400,12 @@ void nl_cache_free(struct nl_cache *cache)
 	if (!cache)
 		return;
 
-	nl_cache_clear(cache);
+	cache->c_refcnt--;
+	NL_DBG(4, "Returned cache reference %p, %d remaining\n",
+	       cache, cache->c_refcnt);
 
-	if (cache->hashtable)
-		nl_hash_table_free(cache->hashtable);
-
-	NL_DBG(1, "Freeing cache %p <%s>...\n", cache, nl_cache_name(cache));
-	free(cache);
+	if (cache->c_refcnt <= 0)
+		__nl_cache_free(cache);
 }
 
 /** @} */

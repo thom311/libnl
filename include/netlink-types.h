@@ -79,6 +79,7 @@ struct nl_cache
 	int			c_nitems;
 	int                     c_iarg1;
 	int                     c_iarg2;
+	int			c_refcnt;
 	unsigned int		c_flags;
 	struct nl_hash_table *	hashtable;
 	struct nl_cache_ops *   c_ops;

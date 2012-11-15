@@ -335,6 +335,14 @@ void nl_cache_mngt_provide(struct nl_cache *cache)
 		BUG();
 	else {
 		nl_cache_get(cache);
+
+		/*
+		 * Hold a reference to the cache operations to ensure the
+		 * ops don't go away while we use it to store the cache pointer.
+		 */
+		if (!ops->co_major_cache)
+			nl_cache_ops_get(ops);
+
 		ops->co_major_cache = cache;
 	}
 
@@ -360,6 +368,7 @@ void nl_cache_mngt_unprovide(struct nl_cache *cache)
 		BUG();
 	else if (ops->co_major_cache == cache) {
 		nl_cache_free(ops->co_major_cache);
+		nl_cache_ops_put(ops);
 		ops->co_major_cache = NULL;
 	}
 
@@ -369,12 +378,15 @@ void nl_cache_mngt_unprovide(struct nl_cache *cache)
 struct nl_cache *__nl_cache_mngt_require(const char *name)
 {
 	struct nl_cache_ops *ops;
+	struct nl_cache *cache = NULL;
 
-	ops = nl_cache_ops_lookup(name);
-	if (ops)
-		return ops->co_major_cache;
+	ops = nl_cache_ops_lookup_safe(name);
+	if (ops) {
+		cache = ops->co_major_cache;
+		nl_cache_ops_put(ops);
+	}
 	
-	return NULL;
+	return cache;
 }
 
 /**

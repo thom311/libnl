@@ -31,11 +31,23 @@
 #include <netlink/utils.h>
 
 static struct nl_cache_ops *cache_ops;
+static NL_RW_LOCK(cache_ops_lock);
 
 /**
  * @name Cache Operations Sets
  * @{
  */
+
+struct nl_cache_ops *__nl_cache_ops_lookup(const char *name)
+{
+	struct nl_cache_ops *ops;
+
+	for (ops = cache_ops; ops; ops = ops->co_next)
+		if (!strcmp(ops->co_name, name))
+			return ops;
+
+	return NULL;
+}
 
 /**
  * Lookup the set cache operations of a certain cache type
@@ -48,11 +60,11 @@ struct nl_cache_ops *nl_cache_ops_lookup(const char *name)
 {
 	struct nl_cache_ops *ops;
 
-	for (ops = cache_ops; ops; ops = ops->co_next)
-		if (!strcmp(ops->co_name, name))
-			return ops;
+	nl_read_lock(&cache_ops_lock);
+	ops = __nl_cache_ops_lookup(name);
+	nl_read_unlock(&cache_ops_lock);
 
-	return NULL;
+	return ops;
 }
 
 /**
@@ -71,14 +83,19 @@ struct nl_cache_ops *nl_cache_ops_associate(int protocol, int msgtype)
 	int i;
 	struct nl_cache_ops *ops;
 
+	nl_read_lock(&cache_ops_lock);
 	for (ops = cache_ops; ops; ops = ops->co_next) {
 		if (ops->co_protocol != protocol)
 			continue;
 
-		for (i = 0; ops->co_msgtypes[i].mt_id >= 0; i++)
-			if (ops->co_msgtypes[i].mt_id == msgtype)
+		for (i = 0; ops->co_msgtypes[i].mt_id >= 0; i++) {
+			if (ops->co_msgtypes[i].mt_id == msgtype) {
+				nl_read_unlock(&cache_ops_lock);
 				return ops;
+			}
+		}
 	}
+	nl_read_unlock(&cache_ops_lock);
 
 	return NULL;
 }
@@ -104,6 +121,7 @@ struct nl_msgtype *nl_msgtype_lookup(struct nl_cache_ops *ops, int msgtype)
 	return NULL;
 }
 
+/* Must hold cache_ops_lock */
 static struct nl_cache_ops *cache_ops_lookup_for_obj(struct nl_object_ops *obj_ops)
 {
 	struct nl_cache_ops *ops;
@@ -125,8 +143,10 @@ void nl_cache_ops_foreach(void (*cb)(struct nl_cache_ops *, void *), void *arg)
 {
 	struct nl_cache_ops *ops;
 
+	nl_read_lock(&cache_ops_lock);
 	for (ops = cache_ops; ops; ops = ops->co_next)
 		cb(ops, arg);
+	nl_read_unlock(&cache_ops_lock);
 }
 
 /**
@@ -156,11 +176,15 @@ int nl_cache_mngt_register(struct nl_cache_ops *ops)
 	if (!ops->co_name || !ops->co_obj_ops)
 		return -NLE_INVAL;
 
-	if (nl_cache_ops_lookup(ops->co_name))
+	nl_write_lock(&cache_ops_lock);
+	if (__nl_cache_ops_lookup(ops->co_name)) {
+		nl_write_unlock(&cache_ops_lock);
 		return -NLE_EXIST;
+	}
 
 	ops->co_next = cache_ops;
 	cache_ops = ops;
+	nl_write_unlock(&cache_ops_lock);
 
 	NL_DBG(1, "Registered cache operations %s\n", ops->co_name);
 
@@ -182,16 +206,22 @@ int nl_cache_mngt_unregister(struct nl_cache_ops *ops)
 {
 	struct nl_cache_ops *t, **tp;
 
+	nl_write_lock(&cache_ops_lock);
+
 	for (tp = &cache_ops; (t=*tp) != NULL; tp = &t->co_next)
 		if (t == ops)
 			break;
 
-	if (!t)
+	if (!t) {
+		nl_write_unlock(&cache_ops_lock);
 		return -NLE_NOCACHE;
+	}
 
 	NL_DBG(1, "Unregistered cache operations %s\n", ops->co_name);
 
 	*tp = t->co_next;
+	nl_write_unlock(&cache_ops_lock);
+
 	return 0;
 }
 
@@ -214,6 +244,8 @@ void nl_cache_mngt_provide(struct nl_cache *cache)
 {
 	struct nl_cache_ops *ops;
 
+	nl_write_lock(&cache_ops_lock);
+
 	ops = cache_ops_lookup_for_obj(cache->c_ops->co_obj_ops);
 	if (!ops)
 		BUG();
@@ -221,6 +253,8 @@ void nl_cache_mngt_provide(struct nl_cache *cache)
 		nl_cache_get(cache);
 		ops->co_major_cache = cache;
 	}
+
+	nl_write_unlock(&cache_ops_lock);
 }
 
 /**
@@ -235,6 +269,8 @@ void nl_cache_mngt_unprovide(struct nl_cache *cache)
 {
 	struct nl_cache_ops *ops;
 
+	nl_write_lock(&cache_ops_lock);
+
 	ops = cache_ops_lookup_for_obj(cache->c_ops->co_obj_ops);
 	if (!ops)
 		BUG();
@@ -242,6 +278,8 @@ void nl_cache_mngt_unprovide(struct nl_cache *cache)
 		nl_cache_free(ops->co_major_cache);
 		ops->co_major_cache = NULL;
 	}
+
+	nl_write_unlock(&cache_ops_lock);
 }
 
 struct nl_cache *__nl_cache_mngt_require(const char *name)

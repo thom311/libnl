@@ -192,6 +192,9 @@ struct nl_cache_ops
 	/** cache flags */
 	unsigned int		co_flags;
 
+	/** Reference counter */
+	unsigned int		co_refcnt;
+
 	/** Group definition */
 	struct nl_af_group *	co_groups;
 	
@@ -261,6 +264,9 @@ struct nl_cache_ops
 	/* Message type definition */
 	struct nl_msgtype	co_msgtypes[];
 };
+
+extern void	nl_cache_ops_get(struct nl_cache_ops *);
+extern void	nl_cache_ops_put(struct nl_cache_ops *);
 
 /** @} */
 

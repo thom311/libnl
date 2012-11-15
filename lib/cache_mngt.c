@@ -50,6 +50,24 @@ struct nl_cache_ops *__nl_cache_ops_lookup(const char *name)
 }
 
 /**
+ * Increment reference counter
+ * @arg ops		Cache operations
+ */
+void nl_cache_ops_get(struct nl_cache_ops *ops)
+{
+	ops->co_refcnt++;
+}
+
+/**
+ * Decrement reference counter
+ * @arg ops		Cache operations
+ */
+void nl_cache_ops_put(struct nl_cache_ops *ops)
+{
+	ops->co_refcnt--;
+}
+
+/**
  * Lookup the set cache operations of a certain cache type
  * @arg name		name of the cache type
  *
@@ -182,6 +200,7 @@ int nl_cache_mngt_register(struct nl_cache_ops *ops)
 		return -NLE_EXIST;
 	}
 
+	ops->co_refcnt = 0;
 	ops->co_next = cache_ops;
 	cache_ops = ops;
 	nl_write_unlock(&cache_ops_lock);
@@ -205,24 +224,31 @@ int nl_cache_mngt_register(struct nl_cache_ops *ops)
 int nl_cache_mngt_unregister(struct nl_cache_ops *ops)
 {
 	struct nl_cache_ops *t, **tp;
+	int err = 0;
 
 	nl_write_lock(&cache_ops_lock);
+
+	if (ops->co_refcnt > 0) {
+		err = -NLE_BUSY;
+		goto errout;
+	}
 
 	for (tp = &cache_ops; (t=*tp) != NULL; tp = &t->co_next)
 		if (t == ops)
 			break;
 
 	if (!t) {
-		nl_write_unlock(&cache_ops_lock);
-		return -NLE_NOCACHE;
+		err = -NLE_NOCACHE;
+		goto errout;
 	}
 
 	NL_DBG(1, "Unregistered cache operations %s\n", ops->co_name);
 
 	*tp = t->co_next;
+errout:
 	nl_write_unlock(&cache_ops_lock);
 
-	return 0;
+	return err;
 }
 
 /** @} */

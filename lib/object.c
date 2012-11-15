@@ -85,11 +85,13 @@ int nl_object_alloc_name(const char *kind, struct nl_object **result)
 {
 	struct nl_cache_ops *ops;
 
-	ops = nl_cache_ops_lookup(kind);
+	ops = nl_cache_ops_lookup_safe(kind);
 	if (!ops)
 		return -NLE_OPNOTSUPP;
 
-	if (!(*result = nl_object_alloc(ops->co_obj_ops)))
+	*result = nl_object_alloc(ops->co_obj_ops);
+	nl_cache_ops_put(ops);
+	if (!*result)
 		return -NLE_NOMEM;
 
 	return 0;

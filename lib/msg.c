@@ -733,14 +733,18 @@ int nl_msg_parse(struct nl_msg *msg, void (*cb)(struct nl_object *, void *),
 		.cb = cb,
 		.arg = arg,
 	};
+	int err;
 
-	ops = nl_cache_ops_associate(nlmsg_get_proto(msg),
-				     nlmsg_hdr(msg)->nlmsg_type);
+	ops = nl_cache_ops_associate_safe(nlmsg_get_proto(msg),
+					  nlmsg_hdr(msg)->nlmsg_type);
 	if (ops == NULL)
 		return -NLE_MSGTYPE_NOSUPPORT;
 	p.pp_arg = &x;
 
-	return nl_cache_parse(ops, NULL, nlmsg_hdr(msg), &p);
+	err = nl_cache_parse(ops, NULL, nlmsg_hdr(msg), &p);
+	nl_cache_ops_put(ops);
+
+	return err;
 }
 
 /** @} */
@@ -801,13 +805,14 @@ static void print_hdr(FILE *ofd, struct nl_msg *msg)
 
 	fprintf(ofd, "    .nlmsg_len = %d\n", nlh->nlmsg_len);
 
-	ops = nl_cache_ops_associate(nlmsg_get_proto(msg), nlh->nlmsg_type);
+	ops = nl_cache_ops_associate_safe(nlmsg_get_proto(msg), nlh->nlmsg_type);
 	if (ops) {
 		mt = nl_msgtype_lookup(ops, nlh->nlmsg_type);
 		if (!mt)
 			BUG();
 
 		snprintf(buf, sizeof(buf), "%s::%s", ops->co_name, mt->mt_name);
+		nl_cache_ops_put(ops);
 	} else
 		nl_nlmsgtype2str(nlh->nlmsg_type, buf, sizeof(buf));
 
@@ -888,8 +893,8 @@ void nl_msg_dump(struct nl_msg *msg, FILE *ofd)
 		int payloadlen = nlmsg_len(hdr);
 		int attrlen = 0;
 
-		ops = nl_cache_ops_associate(nlmsg_get_proto(msg),
-					     hdr->nlmsg_type);
+		ops = nl_cache_ops_associate_safe(nlmsg_get_proto(msg),
+						  hdr->nlmsg_type);
 		if (ops) {
 			attrlen = nlmsg_attrlen(hdr, ops->co_hdrsize);
 			payloadlen -= attrlen;
@@ -906,6 +911,9 @@ void nl_msg_dump(struct nl_msg *msg, FILE *ofd)
 			attrlen = nlmsg_attrlen(hdr, ops->co_hdrsize);
 			dump_attrs(ofd, attrs, attrlen, 0);
 		}
+
+		if (ops)
+			nl_cache_ops_put(ops);
 	}
 
 	fprintf(ofd, 

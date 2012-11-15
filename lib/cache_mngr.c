@@ -314,11 +314,12 @@ int nl_cache_mngr_add(struct nl_cache_mngr *mngr, const char *name,
 	struct nl_cache *cache;
 	int err;
 
-	ops = nl_cache_ops_lookup(name);
+	ops = nl_cache_ops_lookup_safe(name);
 	if (!ops)
 		return -NLE_NOCACHE;
 
 	cache = nl_cache_alloc(ops);
+	nl_cache_ops_put(ops);
 	if (!cache)
 		return -NLE_NOMEM;
 

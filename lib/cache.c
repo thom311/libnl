@@ -266,11 +266,13 @@ int nl_cache_alloc_name(const char *kind, struct nl_cache **result)
 	struct nl_cache_ops *ops;
 	struct nl_cache *cache;
 
-	ops = nl_cache_ops_lookup(kind);
+	ops = nl_cache_ops_lookup_safe(kind);
 	if (!ops)
 		return -NLE_NOCACHE;
 
-	if (!(cache = nl_cache_alloc(ops)))
+	cache = nl_cache_alloc(ops);
+	nl_cache_ops_put(ops);
+	if (!cache)
 		return -NLE_NOMEM;
 
 	*result = cache;

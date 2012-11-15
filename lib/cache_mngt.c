@@ -68,11 +68,13 @@ void nl_cache_ops_put(struct nl_cache_ops *ops)
 }
 
 /**
- * Lookup the set cache operations of a certain cache type
+ * Lookup cache operations by name
  * @arg name		name of the cache type
  *
- * @return The cache operations or NULL if no operations
- *         have been registered under the specified name.
+ * @attention This function is not safe, it does not increment the reference
+ *            counter. Please use nl_cache_ops_lookup_safe().
+ *
+ * @return The cache operations or NULL if not found.
  */
 struct nl_cache_ops *nl_cache_ops_lookup(const char *name)
 {
@@ -86,36 +88,89 @@ struct nl_cache_ops *nl_cache_ops_lookup(const char *name)
 }
 
 /**
- * Associate a message type to a set of cache operations
- * @arg protocol		netlink protocol
- * @arg msgtype			netlink message type
+ * Lookup cache operations by name
+ * @arg name		name of the cache type
  *
- * Associates the specified netlink message type with
- * a registered set of cache operations.
+ * @note The reference counter of the returned cache operation is incremented
+ *       and must be decremented after use with nl_cache_ops_put().
  *
- * @return The cache operations or NULL if no association
- *         could be made.
+ * @return The cache operations or NULL if not found.
  */
-struct nl_cache_ops *nl_cache_ops_associate(int protocol, int msgtype)
+struct nl_cache_ops *nl_cache_ops_lookup_safe(const char *name)
+{
+	struct nl_cache_ops *ops;
+
+	nl_write_lock(&cache_ops_lock);
+	if ((ops = __nl_cache_ops_lookup(name)))
+		nl_cache_ops_get(ops);
+	nl_write_unlock(&cache_ops_lock);
+
+	return ops;
+}
+
+static struct nl_cache_ops *__cache_ops_associate(int protocol, int msgtype)
 {
 	int i;
 	struct nl_cache_ops *ops;
 
-	nl_read_lock(&cache_ops_lock);
 	for (ops = cache_ops; ops; ops = ops->co_next) {
 		if (ops->co_protocol != protocol)
 			continue;
 
-		for (i = 0; ops->co_msgtypes[i].mt_id >= 0; i++) {
-			if (ops->co_msgtypes[i].mt_id == msgtype) {
-				nl_read_unlock(&cache_ops_lock);
+		for (i = 0; ops->co_msgtypes[i].mt_id >= 0; i++)
+			if (ops->co_msgtypes[i].mt_id == msgtype)
 				return ops;
-			}
-		}
 	}
-	nl_read_unlock(&cache_ops_lock);
 
 	return NULL;
+}
+
+/**
+ * Associate protocol and message type to cache operations
+ * @arg protocol		netlink protocol
+ * @arg msgtype			netlink message type
+ *
+ * @attention This function is not safe, it does not increment the reference
+ *            counter. Please use nl_cache_ops_associate_safe().
+ *
+ * @see nl_cache_ops_associate_safe()
+ *
+ * @return The cache operations or NULL if no match found.
+ */
+struct nl_cache_ops *nl_cache_ops_associate(int protocol, int msgtype)
+{
+	struct nl_cache_ops *ops;
+
+	nl_read_lock(&cache_ops_lock);
+	ops = __cache_ops_associate(protocol, msgtype);
+	nl_read_unlock(&cache_ops_lock);
+
+	return ops;
+}
+
+/**
+ * Associate protocol and message type to cache operations
+ * @arg protocol		netlink protocol
+ * @arg msgtype			netlink message type
+ *
+ * Searches the registered cache operations for a matching protocol
+ * and message type.
+ *
+ * @note The reference counter of the returned cache operation is incremented
+ *       and must be decremented after use with nl_cache_ops_put().
+ *
+ * @return The cache operations or NULL if no no match was found.
+ */
+struct nl_cache_ops *nl_cache_ops_associate_safe(int protocol, int msgtype)
+{
+	struct nl_cache_ops *ops;
+
+	nl_write_lock(&cache_ops_lock);
+	if ((ops = __cache_ops_associate(protocol, msgtype)))
+		nl_cache_ops_get(ops);
+	nl_write_unlock(&cache_ops_lock);
+
+	return ops;
 }
 
 /**
@@ -125,6 +180,9 @@ struct nl_cache_ops *nl_cache_ops_associate(int protocol, int msgtype)
  *
  * Searches for a matching message type association ing the specified
  * cache operations.
+ *
+ * @attention The guranteed lifetime of the returned message type is bound
+ *            to the lifetime of the underlying cache operations.
  *
  * @return A message type association or NULL.
  */

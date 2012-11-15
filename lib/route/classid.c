@@ -441,7 +441,7 @@ static void __init classid_init(void)
 		nl_init_list_head(&tbl_name[i]);
 
 	if ((err = rtnl_tc_read_classid_file()) < 0)
-		fprintf(stderr, "Failed to read classid file: %s\n", nl_geterror(err));
+		NL_DBG(1, "Failed to read classid file: %s\n", nl_geterror(err));
 }
 
 static void free_map(void *map) {

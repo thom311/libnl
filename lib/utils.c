@@ -426,7 +426,7 @@ static void __init get_psched_settings(void)
 
 			if (fscanf(fd, "%08x %08x %08x %08x",
 			       &ns_per_usec, &ns_per_tick, &nom, &denom) != 4) {
-                            fprintf(stderr, "Fatal error: can not read psched settings from \"%s\". " \
+                            NL_DBG(1, "Fatal error: can not read psched settings from \"%s\". " \
                                     "Try to set TICKS_PER_USEC, PROC_NET_PSCHED or PROC_ROOT " \
                                     "environment variables\n", name);
                             exit(1);

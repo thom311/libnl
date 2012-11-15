@@ -404,10 +404,10 @@ struct nl_cache *nl_cache_mngt_require(const char *name)
 	struct nl_cache *cache;
 
 	if (!(cache = __nl_cache_mngt_require(name)))
-		fprintf(stderr, "Application BUG: Your application must "
-			"call nl_cache_mngt_provide() and\nprovide a valid "
-			"%s cache to be used for internal lookups.\nSee the "
-			" API documentation for more details.\n", name);
+		NL_DBG(1, "Application BUG: Your application must "
+		       "call nl_cache_mngt_provide() and\nprovide a valid "
+		       "%s cache to be used for internal lookups.\nSee the "
+		       " API documentation for more details.\n", name);
 	
 	return cache;
 }

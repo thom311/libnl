@@ -253,7 +253,7 @@ int nla_parse(struct nlattr *tb[], int maxtype, struct nlattr *head, int len,
 		int type = nla_type(nla);
 
 		if (type == 0) {
-			fprintf(stderr, "Illegal nla->nla_type == 0\n");
+			NL_DBG(1, "Illegal nla->nla_type == 0\n");
 			continue;
 		}
 
@@ -269,7 +269,7 @@ int nla_parse(struct nlattr *tb[], int maxtype, struct nlattr *head, int len,
 	}
 
 	if (rem > 0)
-		fprintf(stderr, "netlink: %d bytes leftover after parsing "
+		NL_DBG(1, "netlink: %d bytes leftover after parsing "
 		       "attributes.\n", rem);
 
 	err = 0;

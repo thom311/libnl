@@ -925,7 +925,7 @@ restart:
 
 		err = nl_cache_pickup(sk, cache);
 		if (err == -NLE_DUMP_INTR) {
-			fprintf(stderr, "dump interrupted, restarting!\n");
+			NL_DBG(1, "dump interrupted, restarting!\n");
 			goto restart;
 		} else if (err < 0)
 			break;

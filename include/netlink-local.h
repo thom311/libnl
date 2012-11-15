@@ -86,16 +86,16 @@ struct trans_list {
 			fprintf(stderr, "DBG<" #LVL ">: " FMT, ##ARG); \
 	} while (0)
 
-#define BUG()                            \
-	do {                                 \
-		fprintf(stderr, "BUG: %s:%d\n",  \
-			__FILE__, __LINE__);         \
-		assert(0);	\
+#define BUG()                            				\
+	do {                                 				\
+		NL_DBG(1, "BUG: %s:%d\n",  				\
+			__FILE__, __LINE__);         			\
+		assert(0);						\
 	} while (0)
 
 #define APPBUG(msg)							\
 	do {								\
-		fprintf(stderr, "APPLICATION BUG: %s:%d:%s: %s\n",	\
+		NL_DBG(1, "APPLICATION BUG: %s:%d:%s: %s\n",		\
 			__FILE__, __LINE__, __PRETTY_FUNCTION__, msg);	\
 		assert(0);						\
 	} while(0)

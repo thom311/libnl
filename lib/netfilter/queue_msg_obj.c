@@ -66,7 +66,7 @@ static void nfnl_queue_msg_dump(struct nl_object *a, struct nl_dump_params *p)
 	struct nl_cache *link_cache;
 	char buf[64];
 
-	link_cache = nl_cache_mngt_require("route/link");
+	link_cache = nl_cache_mngt_require_safe("route/link");
 
 	nl_new_line(p);
 
@@ -152,6 +152,9 @@ static void nfnl_queue_msg_dump(struct nl_object *a, struct nl_dump_params *p)
 					 buf, sizeof(buf)));
 
 	nl_dump(p, "\n");
+
+	if (link_cache)
+		nl_cache_put(link_cache);
 }
 
 /**

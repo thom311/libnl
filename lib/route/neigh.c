@@ -401,7 +401,7 @@ int rtnl_neigh_parse(struct nlmsghdr *n, struct rtnl_neigh **result)
 	 * Get the bridge index for AF_BRIDGE family entries
 	 */
 	if (neigh->n_family == AF_BRIDGE) {
-		struct nl_cache *lcache = nl_cache_mngt_require("route/link");
+		struct nl_cache *lcache = nl_cache_mngt_require_safe("route/link");
 		if (lcache ) {
 			struct rtnl_link *link = rtnl_link_get(lcache,
 							neigh->n_ifindex);
@@ -410,6 +410,8 @@ int rtnl_neigh_parse(struct nlmsghdr *n, struct rtnl_neigh **result)
 				rtnl_link_put(link);
 				neigh->ce_mask |= NEIGH_ATTR_MASTER;
 			}
+
+			nl_cache_put(lcache);
 		}
 	}
 
@@ -436,7 +438,7 @@ static void neigh_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	struct nl_cache *link_cache;
 	char state[128], flags[64];
 
-	link_cache = nl_cache_mngt_require("route/link");
+	link_cache = nl_cache_mngt_require_safe("route/link");
 
 	if (n->n_family != AF_BRIDGE)
 		nl_dump_line(p, "%s ", nl_addr2str(n->n_dst, dst, sizeof(dst)));
@@ -462,6 +464,9 @@ static void neigh_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	if (state[0] || flags[0])
 		nl_dump(p, ">");
 	nl_dump(p, "\n");
+
+	if (link_cache)
+		nl_cache_put(link_cache);
 }
 
 static void neigh_dump_details(struct nl_object *a, struct nl_dump_params *p)

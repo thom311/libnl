@@ -65,7 +65,7 @@ static void env_dump(struct nl_object *obj, void *arg)
 		     nl_addr2str(rtnl_addr_get_local(addr), buf, sizeof(buf)));
 
 	nl_dump_line(p, "%s_IFINDEX=%u\n", pfx, rtnl_addr_get_ifindex(addr));
-	link_cache = nl_cache_mngt_require("route/link");
+	link_cache = nl_cache_mngt_require_safe("route/link");
 	if (link_cache)
 		nl_dump_line(p, "%s_IFNAME=%s\n", pfx,
 			     rtnl_link_i2name(link_cache,
@@ -93,6 +93,9 @@ static void env_dump(struct nl_object *obj, void *arg)
 
 	nl_dump_line(p, "%s_CACHEINFO_VALID=%u\n", pfx,
 		     rtnl_addr_get_valid_lifetime(addr));
+
+	if (link_cache)
+		nl_cache_put(link_cache);
 
 #if 0
 	if (addr->ce_mask & ADDR_ATTR_CACHEINFO) {

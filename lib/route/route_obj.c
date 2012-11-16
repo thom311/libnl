@@ -210,7 +210,7 @@ static void route_dump_details(struct nl_object *a, struct nl_dump_params *p)
 	char buf[128];
 	int i;
 
-	link_cache = nl_cache_mngt_require("route/link");
+	link_cache = nl_cache_mngt_require_safe("route/link");
 
 	route_dump_line(a, p);
 	nl_dump_line(p, "    ");
@@ -271,6 +271,9 @@ static void route_dump_details(struct nl_object *a, struct nl_dump_params *p)
 					r->rt_metrics[i]);
 		nl_dump(p, "]\n");
 	}
+
+	if (link_cache)
+		nl_cache_put(link_cache);
 }
 
 static void route_dump_stats(struct nl_object *obj, struct nl_dump_params *p)

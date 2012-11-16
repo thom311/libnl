@@ -822,7 +822,7 @@ void rtnl_tc_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 
 	nl_dump(p, "%s ", tc->tc_kind);
 
-	if ((link_cache = nl_cache_mngt_require("route/link"))) {
+	if ((link_cache = nl_cache_mngt_require_safe("route/link"))) {
 		nl_dump(p, "dev %s ",
 			rtnl_link_i2name(link_cache, tc->tc_ifindex,
 					 buf, sizeof(buf)));
@@ -837,6 +837,9 @@ void rtnl_tc_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 
 	tc_dump(tc, NL_DUMP_LINE, p);
 	nl_dump(p, "\n");
+
+	if (link_cache)
+		nl_cache_put(link_cache);
 }
 
 void rtnl_tc_dump_details(struct nl_object *obj, struct nl_dump_params *p)

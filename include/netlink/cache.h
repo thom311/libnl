@@ -52,6 +52,7 @@ extern struct nl_cache *	nl_cache_clone(struct nl_cache *);
 extern void			nl_cache_clear(struct nl_cache *);
 extern void			nl_cache_get(struct nl_cache *);
 extern void			nl_cache_free(struct nl_cache *);
+extern void			nl_cache_put(struct nl_cache *cache);
 
 /* Cache modification */
 extern int			nl_cache_add(struct nl_cache *,
@@ -118,6 +119,7 @@ extern int			nl_cache_mngt_unregister(struct nl_cache_ops *);
 extern void			nl_cache_mngt_provide(struct nl_cache *);
 extern void			nl_cache_mngt_unprovide(struct nl_cache *);
 extern struct nl_cache *	nl_cache_mngt_require(const char *);
+extern struct nl_cache *	nl_cache_mngt_require_safe(const char *);
 extern struct nl_cache *	__nl_cache_mngt_require(const char *);
 
 struct nl_cache_mngr;

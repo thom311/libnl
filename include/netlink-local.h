@@ -117,14 +117,6 @@ extern int __str2flags(const char *, const struct trans_tbl *, size_t);
 
 extern void dump_from_ops(struct nl_object *, struct nl_dump_params *);
 
-static inline struct nl_cache *dp_cache(struct nl_object *obj)
-{
-	if (obj->ce_cache == NULL)
-		return nl_cache_mngt_require(obj->ce_ops->oo_name);
-
-	return obj->ce_cache;
-}
-
 static inline int nl_cb_call(struct nl_cb *cb, int type, struct nl_msg *msg)
 {
 	return cb->cb_set[type](msg, cb->cb_args[type]);

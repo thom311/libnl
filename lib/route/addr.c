@@ -332,7 +332,7 @@ static void addr_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 	struct nl_cache *link_cache;
 	char buf[128];
 
-	link_cache = nl_cache_mngt_require("route/link");
+	link_cache = nl_cache_mngt_require_safe("route/link");
 
 	if (addr->ce_mask & ADDR_ATTR_LOCAL)
 		nl_dump_line(p, "%s",
@@ -361,6 +361,9 @@ static void addr_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 		nl_dump(p, " <%s>", buf);
 
 	nl_dump(p, "\n");
+
+	if (link_cache)
+		nl_cache_put(link_cache);
 }
 
 static void addr_dump_details(struct nl_object *obj, struct nl_dump_params *p)

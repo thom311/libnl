@@ -109,7 +109,7 @@ static void nh_dump_line(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 	struct nl_cache *link_cache;
 	char buf[128];
 
-	link_cache = nl_cache_mngt_require("route/link");
+	link_cache = nl_cache_mngt_require_safe("route/link");
 
 	nl_dump(dp, "via");
 
@@ -128,6 +128,9 @@ static void nh_dump_line(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 	}
 
 	nl_dump(dp, " ");
+
+	if (link_cache)
+		nl_cache_put(link_cache);
 }
 
 static void nh_dump_details(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
@@ -135,7 +138,7 @@ static void nh_dump_details(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 	struct nl_cache *link_cache;
 	char buf[128];
 
-	link_cache = nl_cache_mngt_require("route/link");
+	link_cache = nl_cache_mngt_require_safe("route/link");
 
 	nl_dump(dp, "nexthop");
 
@@ -164,6 +167,9 @@ static void nh_dump_details(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 	if (nh->ce_mask & NH_ATTR_FLAGS)
 		nl_dump(dp, " <%s>", rtnl_route_nh_flags2str(nh->rtnh_flags,
 							buf, sizeof(buf)));
+
+	if (link_cache)
+		nl_cache_put(link_cache);
 }
 
 void rtnl_route_nh_dump(struct rtnl_nexthop *nh, struct nl_dump_params *dp)

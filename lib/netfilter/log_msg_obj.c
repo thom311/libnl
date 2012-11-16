@@ -76,7 +76,7 @@ static void log_msg_dump(struct nl_object *a, struct nl_dump_params *p)
 	struct nl_cache *link_cache;
 	char buf[64];
 
-	link_cache = nl_cache_mngt_require("route/link");
+	link_cache = nl_cache_mngt_require_safe("route/link");
 
 	nl_new_line(p);
 
@@ -167,6 +167,9 @@ static void log_msg_dump(struct nl_object *a, struct nl_dump_params *p)
 		nl_dump(p, "SEQGLOBAL=%d ", msg->log_msg_seq_global);
 
 	nl_dump(p, "\n");
+
+	if (link_cache)
+		nl_cache_put(link_cache);
 }
 
 /**

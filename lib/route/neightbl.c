@@ -237,7 +237,7 @@ static void neightbl_dump_line(struct nl_object *arg, struct nl_dump_params *p)
 	if (ntbl->nt_parms.ntp_mask & NEIGHTBLPARM_ATTR_IFINDEX) {
 		struct nl_cache *link_cache;
 		
-		link_cache = nl_cache_mngt_require("route/link");
+		link_cache = nl_cache_mngt_require_safe("route/link");
 
 		if (link_cache) {
 			char buf[32];
@@ -245,6 +245,7 @@ static void neightbl_dump_line(struct nl_object *arg, struct nl_dump_params *p)
 				rtnl_link_i2name(link_cache,
 						 ntbl->nt_parms.ntp_ifindex,
 						 buf, sizeof(buf)));
+			nl_cache_put(link_cache);
 		} else
 			nl_dump(p, "<%u> ", ntbl->nt_parms.ntp_ifindex);
 	} else

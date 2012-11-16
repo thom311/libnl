@@ -390,14 +390,15 @@ struct nl_cache *__nl_cache_mngt_require(const char *name)
 }
 
 /**
- * Demand the use of a global cache
- * @arg name		name of the required object type
+ * Return cache previously provided via nl_cache_mngt_provide()
+ * @arg name		Name of cache to lookup
  *
- * Trys to find a cache of the specified type for global
- * use.
+ * @attention This function is not safe, it does not increment the reference
+ *            counter. Please use nl_cache_mngt_require_safe().
  *
- * @return A cache provided by another subsystem of the
- *         specified type marked to be available.
+ * @see nl_cache_mngt_require_safe()
+ *
+ * @return Pointer to cache or NULL if none registered
  */
 struct nl_cache *nl_cache_mngt_require(const char *name)
 {
@@ -408,6 +409,25 @@ struct nl_cache *nl_cache_mngt_require(const char *name)
 		       "call nl_cache_mngt_provide() and\nprovide a valid "
 		       "%s cache to be used for internal lookups.\nSee the "
 		       " API documentation for more details.\n", name);
+	
+	return cache;
+}
+
+/**
+ * Return cache previously provided via nl_cache_mngt_provide()
+ * @arg name		Name of cache to lookup
+ *
+ * @note The reference counter of the returned cache is incremented
+ *       and must be decremented after use with nl_cache_put().
+ *
+ * @return Pointer to cache or NULL if none registered
+ */
+struct nl_cache *nl_cache_mngt_require_safe(const char *name)
+{
+	struct nl_cache *cache;
+
+	if ((cache = nl_cache_mngt_require(name)))
+		nl_cache_get(cache);
 	
 	return cache;
 }

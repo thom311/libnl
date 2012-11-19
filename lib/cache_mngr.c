@@ -171,12 +171,21 @@ int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 	if ((err = nl_socket_set_nonblocking(mngr->cm_sock) < 0))
 		goto errout;
 
+	/* Create and allocate socket for sync cache fills */
+	mngr->cm_sync_sock = nl_socket_alloc();
+	if (!mngr->cm_sync_sock)
+		goto errout;
+	if ((err = nl_connect(mngr->cm_sync_sock, protocol)) < 0)
+		goto errout_free_sync_sock;
+
 	NL_DBG(1, "Allocated cache manager %p, protocol %d, %d caches\n",
 	       mngr, protocol, mngr->cm_nassocs);
 
 	*result = mngr;
 	return 0;
 
+errout_free_sync_sock:
+	nl_socket_free(mngr->cm_sync_sock);
 errout:
 	nl_cache_mngr_free(mngr);
 	return err;
@@ -256,7 +265,7 @@ retry:
 			return err;
 	}
 
-	err = nl_cache_refill(mngr->cm_sock, cache);
+	err = nl_cache_refill(mngr->cm_sync_sock, cache);
 	if (err < 0)
 		goto errout_drop_membership;
 
@@ -489,6 +498,11 @@ void nl_cache_mngr_free(struct nl_cache_mngr *mngr)
 
 	if (mngr->cm_sock)
 		nl_close(mngr->cm_sock);
+
+	if (mngr->cm_sync_sock) {
+		nl_close(mngr->cm_sync_sock);
+		nl_socket_free(mngr->cm_sync_sock);
+	}
 
 	if (mngr->cm_flags & NL_ALLOCATED_SOCK)
 		nl_socket_free(mngr->cm_sock);

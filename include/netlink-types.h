@@ -98,6 +98,7 @@ struct nl_cache_mngr
 	int			cm_flags;
 	int			cm_nassocs;
 	struct nl_sock *	cm_sock;
+	struct nl_sock *	cm_sync_sock;
 	struct nl_cache_assoc *	cm_assocs;
 };
 

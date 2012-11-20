@@ -68,7 +68,7 @@ AM_PROG_CC_C_O
 AC_PROG_INSTALL
 AM_PROG_LIBTOOL
 AM_PROG_LEX
-AC_PROG_YACC
+AC_CHECK_PROGS(YACC, 'bison -y')
 
 AC_C_CONST
 AC_C_INLINE
@@ -117,6 +117,19 @@ python/netlink/Makefile
 python/netlink/route/Makefile
 include/netlink/version.h
 ])
+
+ac_errcount=0
+if test -z "$YACC"; then
+    AC_MSG_WARN(bison not found. Please install before continuing.)
+    ac_errcount=$((ac_errcount + 1))
+fi
+if test -z "$LEXLIB"; then
+    AC_MSG_WARN(flex or lex not found. Please install before continuing.)
+    ac_errcount=$((ac_errcount + 1))
+fi
+if test $ac_errcount -gt 0; then
+    AC_MSG_ERROR(Required packages are missing. Please install them and rerun ./configure)
+fi
 
 AC_OUTPUT
 

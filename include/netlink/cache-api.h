@@ -252,6 +252,15 @@ struct nl_cache_ops
 	int   (*co_include_event)(struct nl_cache *cache, struct nl_object *obj,
 				  change_func_t change_cb, void *data);
 
+	void (*reserved_1)(void);
+	void (*reserved_2)(void);
+	void (*reserved_3)(void);
+	void (*reserved_4)(void);
+	void (*reserved_5)(void);
+	void (*reserved_6)(void);
+	void (*reserved_7)(void);
+	void (*reserved_8)(void);
+
 	/** Object operations */
 	struct nl_object_ops *	co_obj_ops;
 

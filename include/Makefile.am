@@ -24,6 +24,8 @@ nobase_libnlinclude_HEADERS = \
 	netlink/data.h \
 	netlink/errno.h \
 	netlink/handlers.h \
+	netlink/hash.h \
+	netlink/hashtable.h \
 	netlink/list.h \
 	netlink/msg.h \
 	netlink/netlink-compat.h \
@@ -81,6 +83,7 @@ nobase_libnlinclude_HEADERS += \
 	netlink/cli/class.h \
 	netlink/cli/cls.h \
 	netlink/cli/ct.h \
+	netlink/cli/exp.h \
 	netlink/cli/link.h \
 	netlink/cli/neigh.h \
 	netlink/cli/qdisc.h \

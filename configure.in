@@ -67,7 +67,7 @@ AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_INSTALL
 AM_PROG_LIBTOOL
-AM_PROG_LEX
+AC_CHECK_PROGS(FLEX, 'flex')
 AC_CHECK_PROGS(YACC, 'bison -y')
 
 AC_C_CONST
@@ -123,8 +123,8 @@ if test -z "$YACC"; then
     AC_MSG_WARN(bison not found. Please install before continuing.)
     ac_errcount=$((ac_errcount + 1))
 fi
-if test -z "$LEXLIB"; then
-    AC_MSG_WARN(flex or lex not found. Please install before continuing.)
+if test -z "$FLEX"; then
+    AC_MSG_WARN(flex not found. Please install before continuing.)
     ac_errcount=$((ac_errcount + 1))
 fi
 if test $ac_errcount -gt 0; then

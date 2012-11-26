@@ -17,13 +17,9 @@ cscope.*
 
 /aclocal.m4
 /autom4te.cache
-/compile
+/build-aux/
 /config.*
 /configure
-/depcomp
 /libtool
-/ltmain.sh
-/install-sh
-/missing
 /*.pc
 

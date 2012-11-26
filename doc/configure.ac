@@ -11,7 +11,8 @@
 
 AC_INIT(libnl-doc, [3.2.16], [http://www.infradead.org/~tgr/libnl/])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE
+AC_CONFIG_AUX_DIR([build-aux])
+AM_INIT_AUTOMAKE([foreign])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES(yes)], [])
 
 m4_include([m4/ax_python.m4])

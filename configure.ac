@@ -46,6 +46,7 @@ AC_CONFIG_HEADERS([lib/defs.h])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wall foreign subdir-objects])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES(yes)], [])
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 MAJ_VERSION=libnl_major_version
 AC_SUBST(MAJ_VERSION)

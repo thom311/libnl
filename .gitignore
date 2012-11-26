@@ -16,6 +16,7 @@ defs.h.in~
 cscope.*
 
 /aclocal.m4
+/ar-lib
 /autom4te.cache
 /compile
 /config.*

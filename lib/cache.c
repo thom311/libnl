@@ -829,7 +829,9 @@ restart:
 			goto restart;
 		else if (err < 0)
 			goto errout;
-		grp++;
+
+		if (grp)
+			grp++;
 	} while (grp && grp->ag_group &&
 		(cache->c_flags & NL_CACHE_AF_ITER));
 
@@ -935,7 +937,8 @@ restart:
 		} else if (err < 0)
 			break;
 
-		grp++;
+		if (grp)
+			grp++;
 	} while (grp && grp->ag_group &&
 			(cache->c_flags & NL_CACHE_AF_ITER));
 

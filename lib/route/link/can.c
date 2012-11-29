@@ -363,6 +363,365 @@ int rtnl_link_is_can(struct rtnl_link *link)
 	return link->l_info_ops && !strcmp(link->l_info_ops->io_name, "can");
 }
 
+/**
+ * Restart CAN device
+ * @arg link            Link object
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_restart(struct rtnl_link *link)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+
+	ci->ci_restart = 1;
+	ci->ci_restart |= CAN_HAS_RESTART;
+
+	return 0;
+}
+
+/**
+ * Get CAN base frequency
+ * @arg link            Link object
+ * @arg freq		frequency in Hz
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_freq(struct rtnl_link *link, uint32_t *freq)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+	if (!freq)
+		return -NLE_INVAL;
+
+	if (ci->ci_mask & CAN_HAS_CLOCK)
+		*freq = ci->ci_clock.freq;
+	else
+		return -NLE_AGAIN;
+
+	return 0;
+}
+
+/**
+ * Get CAN RX bus error count
+ * @arg link            Link object
+ *
+ * @return RX bus error count on success or a negative error code
+ */
+int rtnl_link_can_berr_rx(struct rtnl_link *link)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+
+	if (ci->ci_mask & CAN_HAS_BERR_COUNTER)
+		return ci->ci_berr_counter.rxerr;
+	else
+		return -NLE_AGAIN;
+}
+
+/**
+ * Get CAN TX bus error count
+ * @arg link            Link object
+ *
+ * @return TX bus error count on success or a negative error code
+ */
+int rtnl_link_can_berr_tx(struct rtnl_link *link)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+
+	if (ci->ci_mask & CAN_HAS_BERR_COUNTER)
+		return ci->ci_berr_counter.txerr;
+	else
+		return -NLE_AGAIN;
+}
+
+/**
+ * Get CAN bus error count
+ * @arg link            Link object
+ * @arg berr		Bus error count
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_berr(struct rtnl_link *link, struct can_berr_counter *berr)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+	if (!berr)
+		return -NLE_INVAL;
+
+	if (ci->ci_mask & CAN_HAS_BERR_COUNTER)
+		*berr = ci->ci_berr_counter;
+	else
+		return -NLE_AGAIN;
+
+	return 0;
+}
+
+/**
+ * Get CAN harware-dependent bit-timing constant
+ * @arg link            Link object
+ * @arg bt_const	Bit-timing constant
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_get_bt_const(struct rtnl_link *link,
+			       struct can_bittiming_const *bt_const)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+	if (!bt_const)
+		return -NLE_INVAL;
+
+	if (ci->ci_mask & CAN_HAS_BITTIMING_CONST)
+		*bt_const = ci->ci_bittiming_const;
+	else
+		return -NLE_AGAIN;
+
+	return 0;
+}
+
+/**
+ * Get CAN device bit-timing
+ * @arg link            Link object
+ * @arg bit_timing	CAN bit-timing
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_get_bittiming(struct rtnl_link *link,
+				struct can_bittiming *bit_timing)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+	if (!bit_timing)
+		return -NLE_INVAL;
+
+	if (ci->ci_mask & CAN_HAS_BITTIMING)
+		*bit_timing = ci->ci_bittiming;
+	else
+		return -NLE_AGAIN;
+
+	return 0;
+}
+
+/**
+ * Set CAN device bit-timing
+ * @arg link            Link object
+ * @arg bit_timing	CAN bit-timing
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_set_bittiming(struct rtnl_link *link,
+				struct can_bittiming *bit_timing)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+	if (!bit_timing)
+		return -NLE_INVAL;
+
+	ci->ci_bittiming = *bit_timing;
+	ci->ci_mask |= CAN_HAS_BITTIMING;
+
+	return 0;
+}
+
+/**
+ * Get CAN device bit-timing
+ * @arg link            Link object
+ * @arg bitrate		CAN bitrate
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_get_bitrate(struct rtnl_link *link, uint32_t *bitrate)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+	if (!bitrate)
+		return -NLE_INVAL;
+
+	if (ci->ci_mask & CAN_HAS_BITTIMING)
+		*bitrate = ci->ci_bittiming.bitrate;
+	else
+		return -NLE_AGAIN;
+
+	return 0;
+}
+
+/**
+ * Set CAN device bit-rate
+ * @arg link            Link object
+ * @arg bitrate		CAN bitrate
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_set_bitrate(struct rtnl_link *link, uint32_t bitrate)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+
+	ci->ci_bittiming.bitrate = bitrate;
+	ci->ci_mask |= CAN_HAS_BITTIMING;
+
+	return 0;
+}
+
+/**
+ * Get CAN device sample point
+ * @arg link            Link object
+ * @arg sp		CAN sample point
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_get_sample_point(struct rtnl_link *link, uint32_t *sp)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+	if (!sp)
+		return -NLE_INVAL;
+
+	if (ci->ci_mask & CAN_HAS_BITTIMING)
+		*sp = ci->ci_bittiming.sample_point;
+	else
+		return -NLE_AGAIN;
+
+	return 0;
+}
+
+/**
+ * Set CAN device sample point
+ * @arg link            Link object
+ * @arg sp		CAN sample point
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_set_sample_point(struct rtnl_link *link, uint32_t sp)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+
+	ci->ci_bittiming.sample_point = sp;
+	ci->ci_mask |= CAN_HAS_BITTIMING;
+
+	return 0;
+}
+
+/**
+ * Get CAN device restart intervall
+ * @arg link            Link object
+ * @arg interval	Restart intervall in ms
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_get_restart_ms(struct rtnl_link *link, uint32_t *interval)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+	if (!interval)
+		return -NLE_INVAL;
+
+	if (ci->ci_mask & CAN_HAS_RESTART_MS)
+		*interval = ci->ci_restart_ms;
+	else
+		return -NLE_AGAIN;
+
+	return 0;
+}
+
+/**
+ * Set CAN device restart intervall
+ * @arg link            Link object
+ * @arg interval	Restart intervall in ms
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_set_restart_ms(struct rtnl_link *link, uint32_t interval)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+
+	ci->ci_restart_ms = interval;
+	ci->ci_mask |= CAN_HAS_RESTART_MS;
+
+	return 0;
+}
+
+/**
+ * Get CAN control mode
+ * @arg link            Link object
+ * @arg ctrlmode	CAN control mode
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_get_ctrlmode(struct rtnl_link *link, uint32_t *ctrlmode)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+	if (!ctrlmode)
+		return -NLE_INVAL;
+
+	if (ci->ci_mask & CAN_HAS_CTRLMODE)
+		*ctrlmode = ci->ci_ctrlmode.flags;
+	else
+		return -NLE_AGAIN;
+
+	return 0;
+}
+
+/**
+ * Set a CAN Control Mode
+ * @arg link            Link object
+ * @arg ctrlmode	CAN control mode
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_set_ctrlmode(struct rtnl_link *link, uint32_t ctrlmode)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+
+	ci->ci_ctrlmode.flags |= ctrlmode;
+	ci->ci_ctrlmode.mask |= ctrlmode;
+	ci->ci_mask |= CAN_HAS_CTRLMODE;
+
+	return 0;
+}
+
+/**
+ * Unset a CAN Control Mode
+ * @arg link            Link object
+ * @arg ctrlmode	CAN control mode
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_unset_ctrlmode(struct rtnl_link *link, uint32_t ctrlmode)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+
+	ci->ci_ctrlmode.flags &= ~ctrlmode;
+	ci->ci_ctrlmode.mask |= ctrlmode;
+	ci->ci_mask |= CAN_HAS_CTRLMODE;
+
+	return 0;
+}
+
 /** @} */
 
 /**

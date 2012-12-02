@@ -20,7 +20,3 @@ pkgsysconf_DATA = etc/pktloc etc/classid
 
 EXTRA_DIST = \
 	$(pkgsysconf_DATA)
-
-.PHONY: cscope
-cscope:
-	cscope -b -q -R -Iinclude -slib -ssrc;

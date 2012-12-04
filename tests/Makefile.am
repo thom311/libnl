@@ -3,21 +3,25 @@
 AM_CPPFLAGS  = -Wall -I${top_srcdir}/include -I${top_builddir}/include -D_GNU_SOURCE -DSYSCONFDIR=\"$(sysconfdir)/libnl\"
 
 LDADD = \
-	${top_builddir}/src/lib/libnl-cli-3.la \
 	${top_builddir}/lib/libnl-3.la \
 	${top_builddir}/lib/libnl-nf-3.la \
 	${top_builddir}/lib/libnl-genl-3.la \
 	${top_builddir}/lib/libnl-route-3.la
 
 check_PROGRAMS = \
-	test-cache-mngr \
 	test-create-bond \
 	test-create-vlan \
 	test-delete-link \
-	test-genl \
-	test-nf-cache-mngr \
 	test-socket-creation \
 	test-complex-HTB-with-hash-filters
+
+if ENABLE_CLI
+LDADD += ${top_builddir}/src/lib/libnl-cli-3.la
+check_PROGRAMS += \
+	test-cache-mngr \
+	test-genl \
+	test-nf-cache-mngr
+endif
 
 # Eventually add these to TESTS once converted to be real
 # test programs

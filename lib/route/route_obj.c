@@ -441,6 +441,101 @@ nh_mismatch:
 #undef ROUTE_DIFF
 }
 
+static int route_update(struct nl_object *old_obj, struct nl_object *new_obj)
+{
+	struct rtnl_route *new_route = (struct rtnl_route *) new_obj;
+	struct rtnl_route *old_route = (struct rtnl_route *) old_obj;
+	struct rtnl_nexthop *new_nh;
+	char buf[INET6_ADDRSTRLEN+5];
+	int action = new_obj->ce_msgtype;
+
+	/*
+	 * ipv6 ECMP route notifications from the kernel come as
+	 * separate notifications, one for every nexthop. This update
+	 * function collapses such route msgs into a single
+	 * route with multiple nexthops. The resulting object looks
+	 * similar to a ipv4 ECMP route
+	 */
+	if (new_route->rt_family != AF_INET6 ||
+	    new_route->rt_table == RT_TABLE_LOCAL)
+		return -NLE_OPNOTSUPP;
+
+	/*
+	 * For routes that are already multipath,
+	 * or dont have a nexthop dont do anything
+	 */
+	if (rtnl_route_get_nnexthops(new_route) != 1)
+		return -NLE_OPNOTSUPP;
+
+	/*
+	 * Get the only nexthop entry from the new route. For
+	 * IPv6 we always get a route with a 0th NH
+	 * filled or nothing at all
+	 */
+	new_nh = rtnl_route_nexthop_n(new_route, 0);
+	if (!new_nh || !rtnl_route_nh_get_gateway(new_nh))
+		return -NLE_OPNOTSUPP;
+
+	switch(action) {
+	case RTM_NEWROUTE : {
+		struct rtnl_nexthop *cloned_nh;
+
+		/*
+		 * Add the nexthop to old route
+		 */
+		cloned_nh = rtnl_route_nh_clone(new_nh);
+		if (!cloned_nh)
+			return -NLE_NOMEM;
+		rtnl_route_add_nexthop(old_route, cloned_nh);
+
+		NL_DBG(2, "Route obj %p updated. Added "
+			"nexthop %p via %s\n", old_route, cloned_nh,
+			nl_addr2str(cloned_nh->rtnh_gateway, buf,
+					sizeof(buf)));
+	}
+		break;
+	case RTM_DELROUTE : {
+		struct rtnl_nexthop *old_nh;
+
+		/*
+		 * Only take care of nexthop deletes and not
+		 * route deletes. So, if there is only one nexthop
+		 * quite likely we did not update it. So dont do
+		 * anything and return
+		 */
+		if (rtnl_route_get_nnexthops(old_route) <= 1)
+			return -NLE_OPNOTSUPP;
+
+		/*
+		 * Find the next hop in old route and delete it
+		 */
+		nl_list_for_each_entry(old_nh, &old_route->rt_nexthops,
+			rtnh_list) {
+			if (!rtnl_route_nh_compare(old_nh, new_nh, ~0, 0)) {
+
+				rtnl_route_remove_nexthop(old_route, old_nh);
+
+				NL_DBG(2, "Route obj %p updated. Removed "
+					"nexthop %p via %s\n", old_route,
+					old_nh,
+					nl_addr2str(old_nh->rtnh_gateway, buf,
+					sizeof(buf)));
+
+				rtnl_route_nh_free(old_nh);
+				break;
+			}
+		}
+	}
+		break;
+	default:
+		NL_DBG(2, "Unknown action associated "
+			"to object %p during route update\n", new_obj);
+		return -NLE_OPNOTSUPP;
+	}
+
+	return NLE_SUCCESS;
+}
+
 static const struct trans_tbl route_attrs[] = {
 	__ADD(ROUTE_ATTR_FAMILY, family)
 	__ADD(ROUTE_ATTR_TOS, tos)
@@ -1201,6 +1296,7 @@ struct nl_object_ops route_obj_ops = {
 	},
 	.oo_compare		= route_compare,
 	.oo_keygen		= route_keygen,
+	.oo_update		= route_update,
 	.oo_attrs2str		= route_attrs2str,
 	.oo_id_attrs		= (ROUTE_ATTR_FAMILY | ROUTE_ATTR_TOS |
 				   ROUTE_ATTR_TABLE | ROUTE_ATTR_DST),

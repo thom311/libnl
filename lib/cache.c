@@ -736,7 +736,7 @@ static int cache_include(struct nl_cache *cache, struct nl_object *obj,
 			 */
 			if (nl_object_update(old, obj) == 0) {
 				cb(cache, old, NL_ACT_CHANGE, data);
-				nl_object_put(obj);
+				nl_object_put(old);
 				return 0;
 			}
 

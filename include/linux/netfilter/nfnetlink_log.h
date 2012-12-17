@@ -5,6 +5,10 @@
  * and not any kind of function definitions.  It is shared between kernel and
  * userspace.  Don't put kernel specific stuff in here */
 
+#ifndef __aligned_be64
+#define __aligned_be64 u_int64_t __attribute__((aligned(8)))
+#endif
+
 #include <linux/types.h>
 #include <linux/netfilter/nfnetlink.h>
 

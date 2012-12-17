@@ -4,6 +4,10 @@
 #include <linux/types.h>
 #include <linux/netfilter/nfnetlink.h>
 
+#ifndef __aligned_be64
+#define __aligned_be64 u_int64_t __attribute__((aligned(8)))
+#endif
+
 enum nfqnl_msg_types {
 	NFQNL_MSG_PACKET,		/* packet from kernel to userspace */
 	NFQNL_MSG_VERDICT,		/* verdict from userspace to kernel */

@@ -235,7 +235,9 @@ void nl_cache_ops_foreach(void (*cb)(struct nl_cache_ops *, void *), void *arg)
  */
 void nl_cache_ops_set_flags(struct nl_cache_ops *ops, unsigned int flags)
 {
+	nl_write_lock(&cache_ops_lock);
 	ops->co_flags |= flags;
+	nl_write_unlock(&cache_ops_lock);
 }
 
 /**

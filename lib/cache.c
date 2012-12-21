@@ -696,7 +696,21 @@ static int __cache_pickup(struct nl_sock *sk, struct nl_cache *cache,
 
 static int pickup_cb(struct nl_object *c, struct nl_parser_param *p)
 {
-	return nl_cache_add((struct nl_cache *) p->pp_arg, c);
+	struct nl_cache *cache = (struct nl_cache *)p->pp_arg;
+	struct nl_object *old;
+
+	old = nl_cache_search(cache, c);
+	if (old) {
+		if (nl_object_update(old, c) == 0) {
+			nl_object_put(old);
+			return 0;
+		}
+
+		nl_cache_remove(old);
+		nl_object_put(old);
+	}
+
+	return nl_cache_add(cache, c);
 }
 
 /**
@@ -705,7 +719,10 @@ static int pickup_cb(struct nl_object *c, struct nl_parser_param *p)
  * @arg cache		Cache to put items into.
  *
  * Waits for netlink messages to arrive, parses them and puts them into
- * the specified cache.
+ * the specified cache. If an old object with same key attributes is
+ * present in the cache, it is replaced with the new object.
+ * If the old object type supports an update operation, an update is
+ * attempted before a replace.
  *
  * @return 0 on success or a negative error code.
  */
@@ -889,7 +906,10 @@ errout:
  * @arg msg		netlink message
  *
  * Parses a netlink message by calling the cache specific message parser
- * and adds the new element to the cache.
+ * and adds the new element to the cache. If an old object with same key
+ * attributes is present in the cache, it is replaced with the new object.
+ * If the old object type supports an update operation, an update is
+ * attempted before a replace.
  *
  * @return 0 or a negative error code.
  */

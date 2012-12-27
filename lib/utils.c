@@ -84,24 +84,32 @@ int __nl_read_num_str_file(const char *path, int (*cb)(long, const char *))
 			continue;
 
 		num = strtol(buf, &end, 0);
-		if (end == buf)
+		if (end == buf) {
+			fclose(fd);
 			return -NLE_INVAL;
+		}
 
-		if (num == LONG_MIN || num == LONG_MAX)
+		if (num == LONG_MIN || num == LONG_MAX) {
+			fclose(fd);
 			return -NLE_RANGE;
+		}
 
 		while (*end == ' ' || *end == '\t')
 			end++;
 
 		goodlen = strcspn(end, "#\r\n\t ");
-		if (goodlen == 0)
+		if (goodlen == 0) {
+			fclose(fd);
 			return -NLE_INVAL;
+		}
 
 		end[goodlen] = '\0';
 
 		err = cb(num, end);
-		if (err < 0)
+		if (err < 0) {
+			fclose(fd);
 			return err;
+		}
 	}
 
 	fclose(fd);

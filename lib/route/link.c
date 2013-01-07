@@ -54,6 +54,7 @@
 #define LINK_ATTR_NUM_TX_QUEUES	(1 << 22)
 #define LINK_ATTR_NUM_RX_QUEUES	(1 << 23)
 #define LINK_ATTR_GROUP		(1 << 24)
+#define LINK_ATTR_CARRIER	(1 << 25)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -263,6 +264,7 @@ static struct nla_policy link_policy[IFLA_MAX+1] = {
 	[IFLA_NUM_TX_QUEUES]	= { .type = NLA_U32 },
 	[IFLA_NUM_RX_QUEUES]	= { .type = NLA_U32 },
 	[IFLA_GROUP]		= { .type = NLA_U32 },
+	[IFLA_CARRIER]		= { .type = NLA_U8 },
 };
 
 static struct nla_policy link_info_policy[IFLA_INFO_MAX+1] = {
@@ -454,6 +456,11 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (tb[IFLA_MASTER]) {
 		link->l_master = nla_get_u32(tb[IFLA_MASTER]);
 		link->ce_mask |= LINK_ATTR_MASTER;
+	}
+
+	if (tb[IFLA_CARRIER]) {
+		link->l_carrier = nla_get_u8(tb[IFLA_CARRIER]);
+		link->ce_mask |= LINK_ATTR_CARRIER;
 	}
 
 	if (tb[IFLA_OPERSTATE]) {
@@ -667,8 +674,13 @@ static void link_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 	if (link->ce_mask & LINK_ATTR_NUM_VF)
 		nl_dump(p, "num-vf %u ", link->l_num_vf);
 
-	nl_dump(p, "mode %s\n",
+	nl_dump(p, "mode %s ",
 		rtnl_link_mode2str(link->l_linkmode, buf, sizeof(buf)));
+
+	nl_dump(p, "carrier %s",
+		rtnl_link_carrier2str(link->l_carrier, buf, sizeof(buf)));
+
+	nl_dump(p, "\n");
 
 	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_DETAILS])
 		link->l_info_ops->io_dump[NL_DUMP_DETAILS](link, p);
@@ -875,6 +887,7 @@ static const struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_NUM_TX_QUEUES, num_tx_queues)
 	__ADD(LINK_ATTR_NUM_RX_QUEUES, num_rx_queues)
 	__ADD(LINK_ATTR_GROUP, group)
+	__ADD(LINK_ATTR_CARRIER, carrier)
 };
 
 static char *link_attrs2str(int attrs, char *buf, size_t len)
@@ -1175,6 +1188,9 @@ static int build_link_msg(int cmd, struct ifinfomsg *hdr,
 
 	if (link->ce_mask & LINK_ATTR_OPERSTATE)
 		NLA_PUT_U8(msg, IFLA_OPERSTATE, link->l_operstate);
+
+	if (link->ce_mask & LINK_ATTR_CARRIER)
+		NLA_PUT_U8(msg, IFLA_CARRIER, link->l_carrier);
 
 	if (link->ce_mask & LINK_ATTR_LINKMODE)
 		NLA_PUT_U8(msg, IFLA_LINKMODE, link->l_linkmode);
@@ -1866,6 +1882,31 @@ int rtnl_link_get_master(struct rtnl_link *link)
 }
 
 /**
+ * Set carrier of link object
+ * @arg link		Link object
+ * @arg status		New carrier status
+ *
+ * @see rtnl_link_get_carrier()
+ */
+void rtnl_link_set_carrier(struct rtnl_link *link, uint8_t status)
+{
+	link->l_carrier = status;
+	link->ce_mask |= LINK_ATTR_CARRIER;
+}
+
+/**
+ * Return carrier status of link object
+ * @arg link		Link object
+ *
+ * @see rtnl_link_set_master()
+ * @return Carrier state.
+ */
+uint8_t rtnl_link_get_carrier(struct rtnl_link *link)
+{
+	return link->l_carrier;
+}
+
+/**
  * Set operational status of link object
  * @arg link		Link object
  * @arg status		New opertional status
@@ -2450,6 +2491,11 @@ static const struct trans_tbl link_modes[] = {
 	__ADD(IF_LINK_MODE_DORMANT, dormant)
 };
 
+static const struct trans_tbl carrier_states[] = {
+	__ADD(IF_CARRIER_DOWN, down)
+	__ADD(IF_CARRIER_UP, up)
+};
+
 char *rtnl_link_mode2str(uint8_t st, char *buf, size_t len)
 {
 	return __type2str(st, buf, len, link_modes, ARRAY_SIZE(link_modes));
@@ -2458,6 +2504,17 @@ char *rtnl_link_mode2str(uint8_t st, char *buf, size_t len)
 int rtnl_link_str2mode(const char *name)
 {
 	return __str2type(name, link_modes, ARRAY_SIZE(link_modes));
+}
+
+char *rtnl_link_carrier2str(uint8_t st, char *buf, size_t len)
+{
+	return __type2str(st, buf, len, carrier_states,
+			  ARRAY_SIZE(carrier_states));
+}
+
+int rtnl_link_str2carrier(const char *name)
+{
+	return __str2type(name, carrier_states, ARRAY_SIZE(carrier_states));
 }
 
 /** @} */

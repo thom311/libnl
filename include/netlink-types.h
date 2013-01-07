@@ -182,6 +182,7 @@ struct rtnl_link
 	uint32_t			l_num_tx_queues;
 	uint32_t			l_num_rx_queues;
 	uint32_t			l_group;
+	uint8_t				l_carrier;
 };
 
 struct rtnl_ncacheinfo

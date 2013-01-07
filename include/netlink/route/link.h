@@ -141,6 +141,10 @@ extern int	rtnl_link_str2operstate(const char *);
 extern char *	rtnl_link_mode2str(uint8_t, char *, size_t);
 extern int	rtnl_link_str2mode(const char *);
 
+/* Carrier State Translations */
+extern char *	rtnl_link_carrier2str(uint8_t, char *, size_t);
+extern int	rtnl_link_str2carrier(const char *);
+
 /* Access Functions */
 extern void	rtnl_link_set_qdisc(struct rtnl_link *, const char *);
 extern char *	rtnl_link_get_qdisc(struct rtnl_link *);
@@ -181,6 +185,9 @@ extern int	rtnl_link_get_link(struct rtnl_link *);
 
 extern void	rtnl_link_set_master(struct rtnl_link *, int);
 extern int	rtnl_link_get_master(struct rtnl_link *);
+
+extern void	rtnl_link_set_carrier(struct rtnl_link *, uint8_t);
+extern uint8_t	rtnl_link_get_carrier(struct rtnl_link *);
 
 extern void	rtnl_link_set_operstate(struct rtnl_link *, uint8_t);
 extern uint8_t	rtnl_link_get_operstate(struct rtnl_link *);

@@ -117,6 +117,12 @@ enum {
 	IF_LINK_MODE_DORMANT,	/* limit upward transition to dormant */
 };
 
+/* carrier state */
+enum {
+	IF_CARRIER_DOWN,
+	IF_CARRIER_UP
+};
+
 /*
  *	Device mapping structure. I'd just gone off and designed a 
  *	beautiful scheme using only loadable modules with arguments

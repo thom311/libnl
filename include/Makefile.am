@@ -109,8 +109,9 @@ noinst_HEADERS = \
 	linux/ipv6.h \
 	linux/neighbour.h \
 	linux/netfilter.h \
-	linux/netfilter/nfnetlink_conntrack.h \
+	linux/netfilter/nf_conntrack_common.h \
 	linux/netfilter/nfnetlink.h \
+	linux/netfilter/nfnetlink_conntrack.h \
 	linux/netfilter/nfnetlink_log.h \
 	linux/netfilter/nfnetlink_queue.h \
 	linux/netlink.h \

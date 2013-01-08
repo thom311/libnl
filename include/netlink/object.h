@@ -64,6 +64,7 @@ extern struct nl_cache *	nl_object_get_cache(struct nl_object *);
 extern const char *		nl_object_get_type(const struct nl_object *);
 extern int			nl_object_get_msgtype(const struct nl_object *);
 struct nl_object_ops *		nl_object_get_ops(const struct nl_object *);
+uint32_t			nl_object_get_id_attrs(struct nl_object *obj);
 
 
 static inline void *		nl_object_priv(struct nl_object *obj)

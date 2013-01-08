@@ -506,6 +506,28 @@ struct nl_object_ops *nl_object_get_ops(const struct nl_object *obj)
 	return obj->ce_ops;
 }
 
+/**
+ * Return object id attribute mask
+ * @arg obj		object
+ *
+ * @return object id attribute mask
+ */
+uint32_t nl_object_get_id_attrs(struct nl_object *obj)
+{
+	struct nl_object_ops *ops = obj_ops(obj);
+	uint32_t id_attrs;
+
+	if (!ops)
+		return 0;
+
+	if (ops->oo_id_attrs_get)
+		id_attrs = ops->oo_id_attrs_get(obj);
+	else
+		id_attrs = ops->oo_id_attrs;
+
+	return id_attrs;
+}
+
 /** @} */
 
 /** @} */

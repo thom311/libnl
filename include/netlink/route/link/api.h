@@ -119,6 +119,19 @@ struct rtnl_link_af_ops
 	void		      (*ao_dump[NL_DUMP_MAX+1])(struct rtnl_link *,
 							struct nl_dump_params *,
 							void *);
+
+	/** Comparison function
+	 *
+	 * Will be called when two links are compared for their af data. It
+	 * takes two link objects in question, an object specific bitmask
+	 * defining which attributes should be compared and flags to control
+	 * the behaviour
+	 *
+	 * The function must return a bitmask with the relevant bit set for
+	 * each attribute that mismatches
+	 */
+	int		      (*ao_compare)(struct rtnl_link *,
+					    struct rtnl_link *, int, uint32_t, int);
 };
 
 extern struct rtnl_link_af_ops *rtnl_link_af_ops_lookup(unsigned int);

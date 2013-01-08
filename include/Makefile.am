@@ -10,13 +10,13 @@ nobase_libnlinclude_HEADERS = \
 	netlink/genl/genl.h \
 	netlink/genl/mngt.h \
 	netlink/netfilter/ct.h \
+	netlink/netfilter/exp.h \
 	netlink/netfilter/log.h \
 	netlink/netfilter/log_msg.h \
 	netlink/netfilter/netfilter.h \
 	netlink/netfilter/nfnl.h \
 	netlink/netfilter/queue.h \
 	netlink/netfilter/queue_msg.h \
-	netlink/netfilter/exp.h \
 	netlink/addr.h \
 	netlink/attr.h \
 	netlink/cache-api.h \
@@ -110,8 +110,9 @@ noinst_HEADERS = \
 	linux/neighbour.h \
 	linux/netfilter.h \
 	linux/netfilter/nf_conntrack_common.h \
-	linux/netfilter/nfnetlink.h \
+	linux/netfilter/nfnetlink_compat.h \
 	linux/netfilter/nfnetlink_conntrack.h \
+	linux/netfilter/nfnetlink.h \
 	linux/netfilter/nfnetlink_log.h \
 	linux/netfilter/nfnetlink_queue.h \
 	linux/netlink.h \

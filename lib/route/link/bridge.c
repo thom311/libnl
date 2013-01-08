@@ -15,9 +15,12 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/api.h>
 
+#define BRIDGE_ATTR_PORT_STATE	0x0001
+
 struct bridge_data
 {
 	uint8_t			b_port_state;
+	uint32_t                ce_mask; /* HACK to support attr macros */
 };
 
 static void *bridge_alloc(struct rtnl_link *link)
@@ -46,6 +49,7 @@ static int bridge_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 	struct bridge_data *bd = data;
 
 	bd->b_port_state = nla_get_u8(attr);
+	bd->ce_mask |= BRIDGE_ATTR_PORT_STATE;
 
 	return 0;
 }
@@ -55,7 +59,22 @@ static void bridge_dump_details(struct rtnl_link *link,
 {
 	struct bridge_data *bd = data;
 
-	nl_dump(p, "port-state %u ", bd->b_port_state);
+	if (bd->ce_mask & BRIDGE_ATTR_PORT_STATE)
+		nl_dump(p, "port-state %u ", bd->b_port_state);
+}
+
+static int bridge_compare(struct rtnl_link *_a, struct rtnl_link *_b,
+			  int family, uint32_t attrs, int flags)
+{
+	struct bridge_data *a = (struct bridge_data *)_a->l_af_data;
+	struct bridge_data *b = (struct bridge_data *)_b->l_af_data;
+	int diff = 0;
+
+#define BRIDGE_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, BRIDGE_ATTR_##ATTR, a, b, EXPR)
+	diff |= BRIDGE_DIFF(PORT_STATE,	a->b_port_state != b->b_port_state);
+
+	return diff;
+#undef BRIDGE_DIFF
 }
 
 static const struct nla_policy protinfo_policy = {
@@ -70,6 +89,7 @@ static struct rtnl_link_af_ops bridge_ops = {
 	.ao_parse_protinfo		= &bridge_parse_protinfo,
 	.ao_dump[NL_DUMP_DETAILS]	= &bridge_dump_details,
 	.ao_protinfo_policy		= &protinfo_policy,
+	.ao_compare			= &bridge_compare,
 };
 
 static void __init bridge_init(void)

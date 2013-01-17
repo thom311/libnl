@@ -13,7 +13,7 @@
 # copied from glib
 m4_define([libnl_major_version], [3])
 m4_define([libnl_minor_version], [2])
-m4_define([libnl_micro_version], [18])
+m4_define([libnl_micro_version], [19])
 
 
 # If either revision or age are omitted, they default to 0. Also note that age
@@ -34,9 +34,9 @@ m4_define([libnl_micro_version], [18])
 # 6. If any interfaces have been removed since the last public release, then
 #    set age to 0.
 
-m4_define([libnl_lt_current],    [214])
-m4_define([libnl_lt_revision],	 [1])
-m4_define([libnl_lt_age],        [13])
+m4_define([libnl_lt_current],    [215])
+m4_define([libnl_lt_revision],	 [0])
+m4_define([libnl_lt_age],        [14])
 
 m4_define([libnl_version],
 	  [libnl_major_version.libnl_minor_version.libnl_micro_version])

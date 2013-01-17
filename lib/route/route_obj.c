@@ -71,6 +71,7 @@ static void route_constructor(struct nl_object *c)
 	r->rt_table = RT_TABLE_MAIN;
 	r->rt_protocol = RTPROT_STATIC;
 	r->rt_type = RTN_UNICAST;
+	r->rt_prio = 0;
 
 	nl_init_list_head(&r->rt_nexthops);
 }
@@ -303,6 +304,7 @@ static void route_keygen(struct nl_object *obj, uint32_t *hashkey,
 		uint8_t		rt_family;
 		uint8_t		rt_tos;
 		uint32_t	rt_table;
+		uint32_t	rt_prio;
 		char 		rt_addr[0];
 	} __attribute__((packed)) *rkey;
 	char buf[INET6_ADDRSTRLEN+5];
@@ -322,6 +324,7 @@ static void route_keygen(struct nl_object *obj, uint32_t *hashkey,
 	rkey->rt_family = route->rt_family;
 	rkey->rt_tos = route->rt_tos;
 	rkey->rt_table = route->rt_table;
+	rkey->rt_prio = route->rt_prio;
 	if (addr)
 		memcpy(rkey->rt_addr, nl_addr_get_binary_addr(addr),
 			nl_addr_get_len(addr));
@@ -1026,11 +1029,12 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 	route->rt_scope = rtm->rtm_scope;
 	route->rt_protocol = rtm->rtm_protocol;
 	route->rt_flags = rtm->rtm_flags;
+	route->rt_prio = 0;
 
 	route->ce_mask |= ROUTE_ATTR_FAMILY | ROUTE_ATTR_TOS |
 			  ROUTE_ATTR_TABLE | ROUTE_ATTR_TYPE |
 			  ROUTE_ATTR_SCOPE | ROUTE_ATTR_PROTOCOL |
-			  ROUTE_ATTR_FLAGS;
+			  ROUTE_ATTR_FLAGS | ROUTE_ATTR_PRIO;
 
 	if (tb[RTA_DST]) {
 		if (!(dst = nl_addr_alloc_attr(tb[RTA_DST], family)))
@@ -1299,7 +1303,8 @@ struct nl_object_ops route_obj_ops = {
 	.oo_update		= route_update,
 	.oo_attrs2str		= route_attrs2str,
 	.oo_id_attrs		= (ROUTE_ATTR_FAMILY | ROUTE_ATTR_TOS |
-				   ROUTE_ATTR_TABLE | ROUTE_ATTR_DST),
+				   ROUTE_ATTR_TABLE | ROUTE_ATTR_DST |
+				   ROUTE_ATTR_PRIO),
 };
 /** @endcond */
 

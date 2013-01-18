@@ -142,6 +142,9 @@ extern void *			rtnl_link_af_data(const struct rtnl_link *,
 						const struct rtnl_link_af_ops *);
 extern int			rtnl_link_af_register(struct rtnl_link_af_ops *);
 extern int			rtnl_link_af_unregister(struct rtnl_link_af_ops *);
+extern int			rtnl_link_af_data_compare(struct rtnl_link *a,
+							  struct rtnl_link *b,
+							  int family);
 
 #ifdef __cplusplus
 }

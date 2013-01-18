@@ -350,6 +350,38 @@ errout:
 	return err;
 }
 
+/**
+ * Compare af data for a link address family
+ * @arg a		Link object a
+ * @arg b		Link object b
+ * @arg family		af data family
+ *
+ * This function will compare af_data between two links
+ * a and b of family given by arg family
+ *
+ * @return 0 if address family specific data matches or is not present
+ * or != 0 if it mismatches.
+ */
+int rtnl_link_af_data_compare(struct rtnl_link *a, struct rtnl_link *b,
+			      int family)
+{
+	struct rtnl_link_af_ops *af_ops = rtnl_link_af_ops_lookup(family);
+
+	if (!af_ops)
+		return ~0;
+
+	if (!a->l_af_data[family] && !b->l_af_data[family])
+		return 0;
+
+	if (!a->l_af_data[family] || !b->l_af_data[family])
+		return ~0;
+
+	if (af_ops->ao_compare)
+		return af_ops->ao_compare(a, b, family, ~0, 0);
+
+	return 0;
+}
+
 /** @} */
 
 /** @} */

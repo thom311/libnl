@@ -55,6 +55,8 @@
 #define LINK_ATTR_NUM_RX_QUEUES	(1 << 23)
 #define LINK_ATTR_GROUP		(1 << 24)
 #define LINK_ATTR_CARRIER	(1 << 25)
+#define LINK_ATTR_PROTINFO	(1 << 26)
+#define LINK_ATTR_AF_SPEC	(1 << 27)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -522,6 +524,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 				}
 			}
 		}
+		link->ce_mask |= LINK_ATTR_LINKINFO;
 	}
 
 	if (tb[IFLA_PROTINFO] && af_ops && af_ops->ao_parse_protinfo) {
@@ -529,6 +532,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 						link->l_af_data[link->l_family]);
 		if (err < 0)
 			goto errout;
+		link->ce_mask |= LINK_ATTR_PROTINFO;
 	}
 
 	if (tb[IFLA_AF_SPEC]) {
@@ -549,6 +553,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			}
 
 		}
+		link->ce_mask |= LINK_ATTR_AF_SPEC;
 	}
 
 	if (tb[IFLA_PROMISCUITY]) {
@@ -851,15 +856,28 @@ static int link_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= LINK_DIFF(NUM_RX_QUEUES,a->l_num_rx_queues != b->l_num_rx_queues);
 	diff |= LINK_DIFF(GROUP,	a->l_group != b->l_group);
 
+	/*
+	 * Compare LINK_ATTR_PROTINFO af_data
+	 */
+	if (a->l_family == b->l_family) {
+		if (rtnl_link_af_data_compare(a, b, a->l_family) != 0)
+			goto protinfo_mismatch;
+	}
+
 	if (flags & LOOSE_COMPARISON)
 		diff |= LINK_DIFF(FLAGS,
 				  (a->l_flags ^ b->l_flags) & b->l_flag_mask);
 	else
 		diff |= LINK_DIFF(FLAGS, a->l_flags != b->l_flags);
 
-#undef LINK_DIFF
-
+out:
 	return diff;
+
+protinfo_mismatch:
+	diff |= LINK_DIFF(PROTINFO, 1);
+	goto out;
+
+#undef LINK_DIFF
 }
 
 static const struct trans_tbl link_attrs[] = {

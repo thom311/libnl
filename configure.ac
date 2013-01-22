@@ -34,9 +34,9 @@ m4_define([libnl_micro_version], [19])
 # 6. If any interfaces have been removed since the last public release, then
 #    set age to 0.
 
-m4_define([libnl_lt_current],    [215])
+m4_define([libnl_lt_current],    [216])
 m4_define([libnl_lt_revision],	 [0])
-m4_define([libnl_lt_age],        [14])
+m4_define([libnl_lt_age],        [16])
 
 m4_define([libnl_version],
 	  [libnl_major_version.libnl_minor_version.libnl_micro_version])

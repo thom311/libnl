@@ -19,7 +19,6 @@ nobase_libnlinclude_HEADERS = \
 	netlink/netfilter/queue_msg.h \
 	netlink/addr.h \
 	netlink/attr.h \
-	netlink/cache-api.h \
 	netlink/cache.h \
 	netlink/data.h \
 	netlink/errno.h \
@@ -31,7 +30,6 @@ nobase_libnlinclude_HEADERS = \
 	netlink/netlink-compat.h \
 	netlink/netlink-kernel.h \
 	netlink/netlink.h \
-	netlink/object-api.h \
 	netlink/object.h \
 	netlink/route/cls/ematch/cmp.h \
 	netlink/route/cls/ematch/meta.h \
@@ -43,10 +41,8 @@ nobase_libnlinclude_HEADERS = \
 	netlink/route/cls/fw.h \
 	netlink/route/cls/police.h \
 	netlink/route/cls/u32.h \
-	netlink/route/link/api.h \
 	netlink/route/link/bonding.h \
 	netlink/route/link/can.h \
-	netlink/route/link/info-api.h \
 	netlink/route/link/inet.h \
 	netlink/route/link/vlan.h \
 	netlink/route/qdisc/cbq.h \
@@ -72,7 +68,6 @@ nobase_libnlinclude_HEADERS = \
 	netlink/route/rtnl.h \
 	netlink/route/rule.h \
 	netlink/route/tc.h \
-	netlink/route/tc-api.h \
 	netlink/socket.h \
 	netlink/types.h \
 	netlink/utils.h \
@@ -124,4 +119,9 @@ noinst_HEADERS = \
 	netlink-generic.h \
 	netlink-local.h \
 	netlink-tc.h \
-	netlink-types.h
+	netlink-types.h \
+	netlink/cache-api.h \
+	netlink/object-api.h \
+	netlink/route/link/api.h \
+	netlink/route/link/info-api.h \
+	netlink/route/tc-api.h

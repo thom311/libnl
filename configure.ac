@@ -13,7 +13,7 @@
 # copied from glib
 m4_define([libnl_major_version], [3])
 m4_define([libnl_minor_version], [2])
-m4_define([libnl_micro_version], [19])
+m4_define([libnl_micro_version], [20])
 
 
 # If either revision or age are omitted, they default to 0. Also note that age

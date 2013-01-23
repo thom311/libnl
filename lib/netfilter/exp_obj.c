@@ -589,7 +589,7 @@ const char * nfnl_exp_get_fn(const struct nfnl_exp *exp)
 	return exp->exp_fn;
 }
 
-void nfnl_exp_set_nat_dir(struct nfnl_exp *exp, uint8_t nat_dir)
+void nfnl_exp_set_nat_dir(struct nfnl_exp *exp, uint32_t nat_dir)
 {
 	exp->exp_nat_dir = nat_dir;
 	exp->ce_mask |= EXP_ATTR_NAT_DIR;
@@ -600,7 +600,7 @@ int nfnl_exp_test_nat_dir(const struct nfnl_exp *exp)
 	return !!(exp->ce_mask & EXP_ATTR_NAT_DIR);
 }
 
-uint8_t nfnl_exp_get_nat_dir(const struct nfnl_exp *exp)
+uint32_t nfnl_exp_get_nat_dir(const struct nfnl_exp *exp)
 {
 	return exp->exp_nat_dir;
 }

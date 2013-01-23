@@ -92,9 +92,9 @@ extern int  nfnl_exp_set_fn(struct nfnl_exp *, void *);
 extern int  nfnl_exp_test_fn(const struct nfnl_exp *);
 extern const char * nfnl_exp_get_fn(const struct nfnl_exp *);
 
-extern void nfnl_exp_set_nat_dir(struct nfnl_exp *, uint8_t);
+extern void nfnl_exp_set_nat_dir(struct nfnl_exp *, uint32_t);
 extern int  nfnl_exp_test_nat_dir(const struct nfnl_exp *);
-extern uint8_t nfnl_exp_get_nat_dir(const struct nfnl_exp *);
+extern uint32_t nfnl_exp_get_nat_dir(const struct nfnl_exp *);
 
 // The int argument specifies which nfnl_exp_dir (expect, master, mask or nat)
 // Expectation objects only use orig, not reply

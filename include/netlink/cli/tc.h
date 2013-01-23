@@ -12,7 +12,9 @@
 #ifndef __NETLINK_CLI_TC_H_
 #define __NETLINK_CLI_TC_H_
 
-#include <netlink/route/tc-api.h>
+#include <netlink/route/tc.h>
+
+struct rtnl_tc_ops;
 
 extern void nl_cli_tc_parse_dev(struct rtnl_tc *, struct nl_cache *, char *);
 extern void nl_cli_tc_parse_parent(struct rtnl_tc *, char *);

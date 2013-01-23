@@ -13,12 +13,11 @@
 #define NETLINK_CACHE_API_H_
 
 #include <netlink/netlink.h>
+#include <netlink/cache.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef void (*change_func_t)(struct nl_cache *, struct nl_object *, int, void *);
 
 /**
  * @ingroup cache

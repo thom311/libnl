@@ -86,6 +86,12 @@ int main(int argc, char *argv[])
 			ARG_MASK_SPORT,
 			ARG_MASK_DST,
 			ARG_MASK_DPORT,
+            ARG_NAT_PROTO,
+            ARG_NAT_SRC,
+            ARG_NAT_SPORT,
+            ARG_NAT_DST,
+            ARG_NAT_DPORT,
+            ARG_NAT_DIR,
 			ARG_TIMEOUT,
 			ARG_HELPER_NAME,
 			ARG_REPLACE,
@@ -112,6 +118,12 @@ int main(int argc, char *argv[])
 			{ "mask-sport", 1, 0, ARG_MASK_SPORT },
 			{ "mask-dst", 1, 0, ARG_MASK_DST },
 			{ "mask-dport", 1, 0, ARG_MASK_DPORT },
+            { "nat-proto", 1, 0, ARG_NAT_PROTO },
+            { "nat-src", 1, 0, ARG_NAT_SRC },
+            { "nat-sport", 1, 0, ARG_NAT_SPORT },
+            { "nat-dst", 1, 0, ARG_NAT_DST },
+            { "nat-dport", 1, 0, ARG_NAT_DPORT },
+            { "nat-dir", 1, 0, ARG_NAT_DIR },
 			{ "family", 1, 0, 'F' },
 			{ "timeout", 1, 0, ARG_TIMEOUT },
 			{ "helper", 1, 0, ARG_HELPER_NAME },
@@ -147,6 +159,12 @@ int main(int argc, char *argv[])
 		case ARG_MASK_SPORT: nl_cli_exp_parse_src_port(exp, NFNL_EXP_TUPLE_MASK, optarg); break;
 		case ARG_MASK_DST: nl_cli_exp_parse_dst(exp, NFNL_EXP_TUPLE_MASK, optarg); break;
 		case ARG_MASK_DPORT: nl_cli_exp_parse_dst_port(exp, NFNL_EXP_TUPLE_MASK, optarg); break;
+        case ARG_NAT_PROTO: nl_cli_exp_parse_l4protonum(exp, NFNL_EXP_TUPLE_NAT, optarg); break;
+        case ARG_NAT_SRC: nl_cli_exp_parse_src(exp, NFNL_EXP_TUPLE_NAT, optarg); break;
+        case ARG_NAT_SPORT: nl_cli_exp_parse_src_port(exp, NFNL_EXP_TUPLE_NAT, optarg); break;
+        case ARG_NAT_DST: nl_cli_exp_parse_dst(exp, NFNL_EXP_TUPLE_NAT, optarg); break;
+        case ARG_NAT_DPORT: nl_cli_exp_parse_dst_port(exp, NFNL_EXP_TUPLE_NAT, optarg); break;
+        case ARG_NAT_DIR: nl_cli_exp_parse_nat_dir(exp, optarg); break;
 		case 'F': nl_cli_exp_parse_family(exp, optarg); break;
 		case ARG_TIMEOUT: nl_cli_exp_parse_timeout(exp, optarg); break;
 		case ARG_HELPER_NAME: nl_cli_exp_parse_helper_name(exp, optarg); break;

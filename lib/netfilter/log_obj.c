@@ -12,7 +12,7 @@
  * Copyright (c) 2008 Patrick McHardy <kaber@trash.net>
  */
 
-#include <netlink-local.h>
+#include <netlink-private/netlink.h>
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/log.h>
 

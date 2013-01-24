@@ -19,9 +19,9 @@
  * @{
  */
 
-#include <netlink-local.h>
+#include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
-#include <netlink/route/link/api.h>
+#include <netlink-private/route/link/api.h>
 
 static struct rtnl_link_info_ops dummy_info_ops = {
 	.io_name		= "dummy",

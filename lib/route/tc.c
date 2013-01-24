@@ -15,14 +15,14 @@
  * @{
  */
 
-#include <netlink-local.h>
-#include <netlink-tc.h>
+#include <netlink-private/netlink.h>
+#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link.h>
 #include <netlink/route/tc.h>
-#include <netlink/route/tc-api.h>
+#include <netlink-private/route/tc-api.h>
 
 /** @cond SKIP */
 

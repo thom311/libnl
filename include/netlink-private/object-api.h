@@ -1,12 +1,12 @@
 /*
- * netlink/object-api.c		Object API
+ * netlink-private/object-api.c		Object API
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2007 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2013 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_OBJECT_API_H_
@@ -14,6 +14,7 @@
 
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
+#include <netlink/object.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -57,11 +57,11 @@
  */
 
 
-#include <netlink-local.h>
+#include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/route/rtnl.h>
-#include <netlink/route/link/api.h>
+#include <netlink-private/route/link/api.h>
 
 /** @cond SKIP */
 struct inet_data

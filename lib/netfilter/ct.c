@@ -23,7 +23,7 @@
 #include <sys/types.h>
 #include <linux/netfilter/nfnetlink_conntrack.h>
 
-#include <netlink-local.h>
+#include <netlink-private/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/ct.h>

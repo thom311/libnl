@@ -106,7 +106,7 @@
  * @{
  */
 
-#include <netlink-local.h>
+#include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/addr.h>

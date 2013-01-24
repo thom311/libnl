@@ -9,7 +9,7 @@
  * Copyright (c) 2008 Thomas Graf <tgraf@suug.ch>
  */
 
-#include <netlink-local.h>
+#include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
 
 static const char *errmsg[NLE_MAX+1] = {

@@ -30,6 +30,8 @@ enum rtnl_tc_type {
 	__RTNL_TC_TYPE_MAX,
 };
 
+#define RTNL_TC_TYPE_MAX (__RTNL_TC_TYPE_MAX - 1)
+
 /**
  * Compute tc handle based on major and minor parts
  * @ingroup tc

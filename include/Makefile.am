@@ -116,12 +116,11 @@ noinst_HEADERS = \
 	linux/rtnetlink.h \
 	linux/snmp.h \
 	linux/tc_ematch/tc_em_meta.h \
-	netlink-generic.h \
-	netlink-local.h \
-	netlink-tc.h \
-	netlink-types.h \
-	netlink/cache-api.h \
-	netlink/object-api.h \
-	netlink/route/link/api.h \
-	netlink/route/link/info-api.h \
-	netlink/route/tc-api.h
+	netlink-private/genl.h \
+	netlink-private/netlink.h \
+	netlink-private/tc.h \
+	netlink-private/types.h \
+	netlink-private/cache-api.h \
+	netlink-private/object-api.h \
+	netlink-private/route/link/api.h \
+	netlink-private/route/tc-api.h

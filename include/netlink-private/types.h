@@ -1,12 +1,12 @@
 /*
- * netlink-types.h	Netlink Types (Private)
+ * netlink-private/types.h	Netlink Types (Private)
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2013 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_LOCAL_TYPES_H_
@@ -17,7 +17,7 @@
 #include <netlink/route/qdisc.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/route.h>
-#include <netlink/route/tc-api.h>
+#include <netlink-private/route/tc-api.h>
 
 #define NL_SOCK_BUFSIZE_SET	(1<<0)
 #define NL_SOCK_PASSCRED	(1<<1)

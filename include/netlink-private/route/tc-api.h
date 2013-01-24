@@ -1,12 +1,12 @@
 /*
- * netlink/route/tc-api.h	Traffic Control API
+ * netlink-private/route/tc-api.h	Traffic Control API
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2011 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2011-2013 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_TC_API_H_
@@ -19,8 +19,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define RTNL_TC_TYPE_MAX (__RTNL_TC_TYPE_MAX - 1)
 
 /**
  * Traffic control object operations

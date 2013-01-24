@@ -11,7 +11,7 @@
 
 #include <netlink/cli/utils.h>
 #include <netlink/cli/tc.h>
-#include <netlink/route/tc-api.h>
+#include <netlink-private/route/tc-api.h>
 
 /**
  * @ingroup cli

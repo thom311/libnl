@@ -9,7 +9,7 @@
  * Copyright (c) 2008 Patrick McHardy <kaber@trash.net>
  */
 
-#include <netlink-local.h>
+#include <netlink-private/netlink.h>
 #include <netlink/netfilter/netfilter.h>
 #include <linux/netfilter.h>
 

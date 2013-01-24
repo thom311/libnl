@@ -9,7 +9,7 @@
  * Copyright (c) 2012 Cumulus Networks, Inc
  */
 #include <string.h>
-#include <netlink-local.h>
+#include <netlink-private/netlink.h>
 #include <netlink/object.h>
 #include <netlink/hash.h>
 #include <netlink/hashtable.h>

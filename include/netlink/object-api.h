@@ -16,6 +16,4 @@
 #include <netlink/utils.h>
 #include <netlink/object.h>
 
-#warning "You are including a deprecated header file, include <netlink/object.h>."
-
 #endif

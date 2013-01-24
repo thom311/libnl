@@ -13,6 +13,8 @@
 #include <netlink/cli/cls.h>
 #include <netlink/cli/link.h>
 
+#include <netlink-private/route/tc-api.h>
+
 static int quiet = 0;
 
 static void print_usage(void)

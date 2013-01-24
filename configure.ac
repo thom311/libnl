@@ -6,14 +6,14 @@
 #	License as published by the Free Software Foundation version 2.1
 #	of the License.
 #
-# Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
+# Copyright (c) 2003-2013 Thomas Graf <tgraf@suug.ch>
 #
 
 
 # copied from glib
 m4_define([libnl_major_version], [3])
 m4_define([libnl_minor_version], [2])
-m4_define([libnl_micro_version], [20])
+m4_define([libnl_micro_version], [21])
 
 
 # The following explanation may help to understand the above rules a bit
@@ -35,7 +35,7 @@ m4_define([libnl_micro_version], [20])
 #    the new version. Bump current, set revision and age to 0.
 
 m4_define([libnl_lt_current],    [216])
-m4_define([libnl_lt_revision],	 [0])
+m4_define([libnl_lt_revision],	 [1])
 m4_define([libnl_lt_age],        [16])
 
 m4_define([libnl_version],

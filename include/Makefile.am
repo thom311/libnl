@@ -71,7 +71,13 @@ nobase_libnlinclude_HEADERS = \
 	netlink/socket.h \
 	netlink/types.h \
 	netlink/utils.h \
-	netlink/version.h
+	netlink/version.h \
+	netlink/cache-api.h \
+	netlink/object-api.h \
+	netlink/route/link/api.h \
+	netlink/route/link/info-api.h \
+	netlink/route/tc-api.h
+
 
 if ENABLE_CLI
 nobase_libnlinclude_HEADERS += \

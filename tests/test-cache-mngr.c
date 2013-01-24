@@ -3,6 +3,8 @@
 #include <netlink/cli/utils.h>
 #include <signal.h>
 
+#include <netlink-private/cache-api.h>
+
 static int quit = 0;
 
 static struct nl_dump_params dp = {

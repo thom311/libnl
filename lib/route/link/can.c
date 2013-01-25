@@ -405,6 +405,25 @@ int rtnl_link_can_freq(struct rtnl_link *link, uint32_t *freq)
 }
 
 /**
+ * Get CAN state
+ * @arg link            Link object
+ * @arg state		CAN bus state
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_state(struct rtnl_link *link, uint32_t *state)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+	if (!state)
+		return -NLE_INVAL;
+
+	*state = ci->ci_state;
+
+	return 0;
+}
+
+/**
  * Get CAN RX bus error count
  * @arg link            Link object
  *

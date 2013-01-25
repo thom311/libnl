@@ -27,6 +27,7 @@ extern int rtnl_link_can_str2ctrlmode(const char *);
 
 extern int rtnl_link_can_restart(struct rtnl_link *);
 extern int rtnl_link_can_freq(struct rtnl_link *, uint32_t *);
+extern int rtnl_link_can_state(struct rtnl_link *, uint32_t *);
 
 extern int rtnl_link_can_berr_rx(struct rtnl_link *);
 extern int rtnl_link_can_berr_tx(struct rtnl_link *);

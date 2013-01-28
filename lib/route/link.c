@@ -986,7 +986,7 @@ struct rtnl_link *rtnl_link_get(struct nl_cache *cache, int ifindex)
 		return NULL;
 
 	nl_list_for_each_entry(link, &cache->c_items, ce_list) {
-		if (link->l_family == AF_UNSPEC && link->l_index == ifindex) {
+		if (link->l_index == ifindex) {
 			nl_object_get((struct nl_object *) link);
 			return link;
 		}
@@ -1019,8 +1019,7 @@ struct rtnl_link *rtnl_link_get_by_name(struct nl_cache *cache,
 		return NULL;
 
 	nl_list_for_each_entry(link, &cache->c_items, ce_list) {
-		if (link->l_family == AF_UNSPEC &&
-			!strcmp(name, link->l_name)) {
+		if (!strcmp(name, link->l_name)) {
 			nl_object_get((struct nl_object *) link);
 			return link;
 		}

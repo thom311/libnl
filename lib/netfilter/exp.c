@@ -351,7 +351,11 @@ static int nfnl_exp_build_tuple(struct nl_msg *msg, const struct nfnl_exp *exp,
 
 	int type = exp_get_tuple_attr(cta);
 
-	tuple = nla_nest_start(msg, cta);
+    if (cta == CTA_EXPECT_NAT)
+        tuple = nla_nest_start(msg, CTA_EXPECT_NAT_TUPLE);
+    else
+        tuple = nla_nest_start(msg, cta);
+
 	if (!tuple)
 		goto nla_put_failure;
 
@@ -420,7 +424,7 @@ static int nfnl_exp_build_nat(struct nl_msg *msg, const struct nfnl_exp *exp)
 				nfnl_exp_get_nat_dir(exp));
 	}
 
-	if ((err = nfnl_exp_build_tuple(msg, exp, CTA_EXPECT_NAT_TUPLE)) < 0)
+	if ((err = nfnl_exp_build_tuple(msg, exp, CTA_EXPECT_NAT)) < 0)
 		goto nla_put_failure;
 
 	nla_nest_end(msg, nat);

@@ -525,8 +525,8 @@ int nl_addr_cmp_prefix(struct nl_addr *a, struct nl_addr *b)
 		int bytes = len / 8;
 
 		d = memcmp(a->a_addr, b->a_addr, bytes);
-		if (d == 0) {
-			int mask = (1UL << (len % 8)) - 1UL;
+		if (d == 0 && (len % 8) != 0) {
+			int mask = (0xFF00 >> (len % 8)) & 0xFF;
 
 			d = (a->a_addr[bytes] & mask) -
 			    (b->a_addr[bytes] & mask);

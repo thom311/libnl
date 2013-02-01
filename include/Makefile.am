@@ -108,6 +108,7 @@ noinst_HEADERS = \
 	linux/inetdevice.h \
 	linux/ip_mp_alg.h \
 	linux/ipv6.h \
+	linux/can/netlink.h \
 	linux/neighbour.h \
 	linux/netfilter.h \
 	linux/netfilter/nf_conntrack_common.h \

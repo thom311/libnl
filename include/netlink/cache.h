@@ -21,6 +21,18 @@
 extern "C" {
 #endif
 
+enum {
+	NL_ACT_UNSPEC,
+	NL_ACT_NEW,
+	NL_ACT_DEL,
+	NL_ACT_GET,
+	NL_ACT_SET,
+	NL_ACT_CHANGE,
+	__NL_ACT_MAX,
+};
+
+#define NL_ACT_MAX (__NL_ACT_MAX - 1)
+
 struct nl_cache;
 typedef void (*change_func_t)(struct nl_cache *, struct nl_object *, int, void *);
 
@@ -145,6 +157,9 @@ extern int			nl_cache_mngr_data_ready(struct nl_cache_mngr *);
 extern void			nl_cache_mngr_info(struct nl_cache_mngr *,
 						   struct nl_dump_params *);
 extern void			nl_cache_mngr_free(struct nl_cache_mngr *);
+
+extern void			nl_cache_ops_get(struct nl_cache_ops *);
+extern void			nl_cache_ops_put(struct nl_cache_ops *);
 
 #ifdef __cplusplus
 }

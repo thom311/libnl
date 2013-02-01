@@ -109,18 +109,6 @@ extern "C" {
  * @{
  */
 
-enum {
-	NL_ACT_UNSPEC,
-	NL_ACT_NEW,
-	NL_ACT_DEL,
-	NL_ACT_GET,
-	NL_ACT_SET,
-	NL_ACT_CHANGE,
-	__NL_ACT_MAX,
-};
-
-#define NL_ACT_MAX (__NL_ACT_MAX - 1)
-
 #define END_OF_MSGTYPES_LIST	{ -1, -1, NULL }
 
 /**
@@ -272,9 +260,6 @@ struct nl_cache_ops
 	/* Message type definition */
 	struct nl_msgtype	co_msgtypes[];
 };
-
-extern void	nl_cache_ops_get(struct nl_cache_ops *);
-extern void	nl_cache_ops_put(struct nl_cache_ops *);
 
 /** @} */
 

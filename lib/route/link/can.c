@@ -321,6 +321,8 @@ static int can_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 		NLA_PUT(msg, CAN_HAS_CLOCK, sizeof(ci->ci_clock),
 			&ci->ci_clock);
 
+	nla_nest_end(msg, data);
+
 nla_put_failure:
 
 	return 0;

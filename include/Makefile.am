@@ -42,6 +42,7 @@ nobase_libnlinclude_HEADERS = \
 	netlink/route/cls/police.h \
 	netlink/route/cls/u32.h \
 	netlink/route/link/bonding.h \
+	netlink/route/link/bridge.h \
 	netlink/route/link/can.h \
 	netlink/route/link/inet.h \
 	netlink/route/link/vlan.h \
@@ -103,6 +104,7 @@ noinst_HEADERS = \
 	linux/if_arp.h \
 	linux/if_ether.h \
 	linux/if.h \
+	linux/if_bridge.h \
 	linux/if_link.h \
 	linux/if_vlan.h \
 	linux/inetdevice.h \

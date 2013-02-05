@@ -287,6 +287,9 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct nlattr *tb[IFLA_MAX+1];
 	struct rtnl_link_af_ops *af_ops = NULL;
 	int err, family;
+	struct nla_policy real_link_policy[IFLA_MAX+1];
+
+	memcpy(&real_link_policy, link_policy, sizeof(link_policy));
 
 	link = rtnl_link_alloc();
 	if (link == NULL) {
@@ -311,7 +314,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	if ((af_ops = af_lookup_and_alloc(link, family))) {
 		if (af_ops->ao_protinfo_policy) {
-			memcpy(&link_policy[IFLA_PROTINFO],
+			memcpy(&real_link_policy[IFLA_PROTINFO],
 			       af_ops->ao_protinfo_policy,
 			       sizeof(struct nla_policy));
 		}
@@ -319,7 +322,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		link->l_af_ops = af_ops;
 	}
 
-	err = nlmsg_parse(n, sizeof(*ifi), tb, IFLA_MAX, link_policy);
+	err = nlmsg_parse(n, sizeof(*ifi), tb, IFLA_MAX, real_link_policy);
 	if (err < 0)
 		goto errout;
 

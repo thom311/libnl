@@ -171,7 +171,11 @@ static int do_foreach_af(struct rtnl_link *link,
 			if (!(ops = rtnl_link_af_ops_lookup(i)))
 				BUG();
 
-			if ((err = cb(link, ops, link->l_af_data[i], arg)) < 0)
+			err = cb(link, ops, link->l_af_data[i], arg);
+
+			rtnl_link_af_ops_put(ops);
+
+			if (err < 0)
 				return err;
 		}
 	}
@@ -201,6 +205,7 @@ static void link_free_data(struct nl_object *c)
 		if ((io = link->l_info_ops) != NULL)
 			release_link_info(link);
 
+		/* proto info af reference */
 		rtnl_link_af_ops_put(link->l_af_ops);
 
 		nl_addr_put(link->l_addr);
@@ -554,9 +559,6 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 				char *af_data = link->l_af_data[nla_type(af_attr)];
 
 				err = af_ops->ao_parse_af(link, af_attr, af_data);
-
-				rtnl_link_af_ops_put(af_ops);
-
 				if (err < 0)
 					goto errout;
 			}

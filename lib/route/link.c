@@ -201,6 +201,8 @@ static void link_free_data(struct nl_object *c)
 		if ((io = link->l_info_ops) != NULL)
 			release_link_info(link);
 
+		rtnl_link_af_ops_put(link->l_af_ops);
+
 		nl_addr_put(link->l_addr);
 		nl_addr_put(link->l_bcast);
 
@@ -313,6 +315,8 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			       af_ops->ao_protinfo_policy,
 			       sizeof(struct nla_policy));
 		}
+
+		link->l_af_ops = af_ops;
 	}
 
 	err = nlmsg_parse(n, sizeof(*ifi), tb, IFLA_MAX, link_policy);

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2013 Thomas Graf <tgraf@suug.ch>
  */
 
 #include <netlink-private/netlink.h>
@@ -866,6 +866,17 @@ int nla_parse_nested(struct nlattr *tb[], int maxtype, struct nlattr *nla,
 		     struct nla_policy *policy)
 {
 	return nla_parse(tb, maxtype, nla_data(nla), nla_len(nla), policy);
+}
+
+/**
+ * Return true if attribute has NLA_F_NESTED flag set
+ * @arg attr		Netlink attribute
+ *
+ * @return True if attribute has NLA_F_NESTED flag set, oterhwise False.
+ */
+int nla_is_nested(struct nlattr *attr)
+{
+	return !!(nla_type(attr) & NLA_F_NESTED);
 }
 
 /** @} */

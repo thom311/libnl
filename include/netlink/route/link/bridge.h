@@ -30,6 +30,8 @@ enum rtnl_link_bridge_flags {
 	RTNL_BRIDGE_FAST_LEAVE		= 0x0008,
 };
 
+extern struct rtnl_link *rtnl_link_bridge_alloc(void);
+
 extern int	rtnl_link_is_bridge(struct rtnl_link *);
 extern int	rtnl_link_bridge_has_ext_info(struct rtnl_link *);
 

@@ -184,6 +184,27 @@ static int bridge_compare(struct rtnl_link *_a, struct rtnl_link *_b,
 /** @endcond */
 
 /**
+ * Allocate link object of type bridge
+ *
+ * @return Allocated link object or NULL.
+ */
+struct rtnl_link *rtnl_link_bridge_alloc(void)
+{
+	struct rtnl_link *link;
+	int err;
+
+	if (!(link = rtnl_link_alloc()))
+		return NULL;
+
+	if ((err = rtnl_link_set_type(link, "bridge")) < 0) {
+		rtnl_link_put(link);
+		return NULL;
+	}
+
+	return link;
+}
+
+/**
  * Check if a link is a bridge
  * @arg link		Link object
  *

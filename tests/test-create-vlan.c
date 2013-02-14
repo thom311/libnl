@@ -25,14 +25,9 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	link = rtnl_link_alloc();
+	link = rtnl_link_vlan_alloc();
 
 	rtnl_link_set_link(link, master_index);
-
-	if ((err = rtnl_link_set_type(link, "vlan")) < 0) {
-		nl_perror(err, "Unable to set link info type");
-		return err;
-	}
 
 	rtnl_link_vlan_set_id(link, 10);
 

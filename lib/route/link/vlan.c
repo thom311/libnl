@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2013 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -339,6 +339,27 @@ static struct rtnl_link_info_ops vlan_info_ops = {
  * @name VLAN Object
  * @{
  */
+
+/**
+ * Allocate link object of type VLAN
+ *
+ * @return Allocated link object or NULL.
+ */
+struct rtnl_link *rtnl_link_vlan_alloc(void)
+{
+	struct rtnl_link *link;
+	int err;
+
+	if (!(link = rtnl_link_alloc()))
+		return NULL;
+
+	if ((err = rtnl_link_set_type(link, "vlan")) < 0) {
+		rtnl_link_put(link);
+		return NULL;
+	}
+
+	return link;
+}
 
 /**
  * Check if link is a VLAN link

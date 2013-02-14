@@ -693,14 +693,11 @@ int master_index;
 if (!(master_index = rtnl_link_name2i(link_cache, "eth0")))
 	/* error */
 
-/* allocate new link object to configure the vlan device */
-link = rtnl_link_alloc();
+/* allocate new link object of type vlan */
+link = rtnl_link_vlan_alloc();
 
 /* set eth0 to be our master device */
 rtnl_link_set_link(link, master_index);
-
-if ((err = rtnl_link_set_type(link, "vlan")) < 0)
-	/* error */
 
 rtnl_link_vlan_set_id(link, 10);
 

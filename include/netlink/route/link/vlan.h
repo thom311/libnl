@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2013 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_LINK_VLAN_H_
@@ -26,6 +26,8 @@ struct vlan_map
 };
 
 #define VLAN_PRIO_MAX 7
+
+extern struct rtnl_link *rtnl_link_vlan_alloc(void);
 
 extern int		rtnl_link_is_vlan(struct rtnl_link *);
 

@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2011 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2011-2013 Thomas Graf <tgraf@suug.ch>
  */
 
 #ifndef NETLINK_LINK_BONDING_H_
@@ -18,6 +18,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+extern struct rtnl_link *rtnl_link_bond_alloc(void);
 
 extern int	rtnl_link_bond_add(struct nl_sock *, const char *,
 				   struct rtnl_link *);

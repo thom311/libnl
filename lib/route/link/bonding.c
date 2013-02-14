@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2011 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2011-2013 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -23,6 +23,27 @@
 #include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
 #include <netlink-private/route/link/api.h>
+
+/**
+ * Allocate link object of type bond
+ *
+ * @return Allocated link object or NULL.
+ */
+struct rtnl_link *rtnl_link_bond_alloc(void)
+{
+	struct rtnl_link *link;
+	int err;
+
+	if (!(link = rtnl_link_alloc()))
+		return NULL;
+
+	if ((err = rtnl_link_set_type(link, "bond")) < 0) {
+		rtnl_link_put(link);
+		return NULL;
+	}
+
+	return link;
+}
 
 /**
  * Create a new kernel bonding device
@@ -54,22 +75,17 @@ int rtnl_link_bond_add(struct nl_sock *sock, const char *name,
 	struct rtnl_link *link;
 	int err;
 
-	if (!(link = rtnl_link_alloc()))
+	if (!(link = rtnl_link_bond_alloc()))
 		return -NLE_NOMEM;
 
-	if (!name) {
-		if (opts)
-			name = rtnl_link_get_name(opts);
-	}
-
-	if ((err = rtnl_link_set_type(link, "bond")) < 0)
-		goto errout;
+	if (!name && opts)
+		name = rtnl_link_get_name(opts);
 
 	if (name)
 		rtnl_link_set_name(link, name);
 
 	err = rtnl_link_add(sock, link, NLM_F_CREATE);
-errout:
+
 	rtnl_link_put(link);
 
 	return err;
@@ -94,11 +110,8 @@ int rtnl_link_bond_enslave_ifindex(struct nl_sock *sock, int master,
 	struct rtnl_link *link;
 	int err;
 
-	if (!(link = rtnl_link_alloc()))
+	if (!(link = rtnl_link_bond_alloc()))
 		return -NLE_NOMEM;
-
-	if ((err = rtnl_link_set_type(link, "bond")) < 0)
-		goto errout;
 
 	rtnl_link_set_ifindex(link, slave);
 	rtnl_link_set_master(link, master);

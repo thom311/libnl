@@ -1,5 +1,6 @@
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>
+#include <netlink/route/link/bonding.h>
 
 int main(int argc, char *argv[])
 {
@@ -13,13 +14,8 @@ int main(int argc, char *argv[])
 		return err;
 	}
 
-	link = rtnl_link_alloc();
+	link = rtnl_link_bond_alloc();
 	rtnl_link_set_name(link, "my_bond");
-
-	if ((err = rtnl_link_set_type(link, "bond")) < 0) {
-		nl_perror(err, "Unable to set link info type");
-		return err;
-	}
 
 	if ((err = rtnl_link_add(sk, link, NLM_F_CREATE)) < 0) {
 		nl_perror(err, "Unable to add link");

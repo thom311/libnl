@@ -645,9 +645,8 @@ This attribute is unused and obsoleted in all recent kernels.
 
 struct rtnl_link *link;
 
-link = rtnl_link_alloc();
+link = rtnl_link_bond_alloc();
 rtnl_link_set_name(link, "my_bond");
-rtnl_link_set_type(link, "bond");
 
 /* requires admin privileges */
 if (rtnl_link_add(sk, link, NLM_F_CREATE) < 0)

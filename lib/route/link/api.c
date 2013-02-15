@@ -365,22 +365,26 @@ errout:
 int rtnl_link_af_data_compare(struct rtnl_link *a, struct rtnl_link *b,
 			      int family)
 {
-	struct rtnl_link_af_ops *af_ops = rtnl_link_af_ops_lookup(family);
+	struct rtnl_link_af_ops *af_ops;
 	int ret = 0;
 
+	if (!a->l_af_data[family] && !b->l_af_data[family])
+		return 0;
+
+	if (!a->l_af_data[family] || !b->l_af_data[family])
+		return ~0;
+
+	af_ops = rtnl_link_af_ops_lookup(family);
 	if (!af_ops)
 		return ~0;
 
-	if (!a->l_af_data[family] && !b->l_af_data[family])
-		goto out;
-
-	if (!a->l_af_data[family] || !b->l_af_data[family]) {
+	if (af_ops->ao_compare == NULL) {
 		ret = ~0;
 		goto out;
 	}
 
-	if (af_ops->ao_compare)
-		ret = af_ops->ao_compare(a, b, family, ~0, 0);
+	ret = af_ops->ao_compare(a, b, family, ~0, 0);
+
 out:
 	rtnl_link_af_ops_put(af_ops);
 

@@ -867,6 +867,12 @@ static int link_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= LINK_DIFF(NUM_RX_QUEUES,a->l_num_rx_queues != b->l_num_rx_queues);
 	diff |= LINK_DIFF(GROUP,	a->l_group != b->l_group);
 
+	if (flags & LOOSE_COMPARISON)
+		diff |= LINK_DIFF(FLAGS,
+				  (a->l_flags ^ b->l_flags) & b->l_flag_mask);
+	else
+		diff |= LINK_DIFF(FLAGS, a->l_flags != b->l_flags);
+
 	/*
 	 * Compare LINK_ATTR_PROTINFO af_data
 	 */
@@ -874,12 +880,6 @@ static int link_compare(struct nl_object *_a, struct nl_object *_b,
 		if (rtnl_link_af_data_compare(a, b, a->l_family) != 0)
 			goto protinfo_mismatch;
 	}
-
-	if (flags & LOOSE_COMPARISON)
-		diff |= LINK_DIFF(FLAGS,
-				  (a->l_flags ^ b->l_flags) & b->l_flag_mask);
-	else
-		diff |= LINK_DIFF(FLAGS, a->l_flags != b->l_flags);
 
 out:
 	return diff;

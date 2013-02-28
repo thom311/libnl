@@ -70,6 +70,7 @@ void nl_cli_print_version(void)
 void nl_cli_fatal(int err, const char *fmt, ...)
 {
 	va_list ap;
+	char buf[256];
 
 	fprintf(stderr, "Error: ");
 
@@ -79,7 +80,7 @@ void nl_cli_fatal(int err, const char *fmt, ...)
 		va_end(ap);
 		fprintf(stderr, "\n");
 	} else
-		fprintf(stderr, "%s\n", strerror(err));
+		fprintf(stderr, "%s\n", strerror_r(err, buf, sizeof(buf)));
 
 	exit(abs(err));
 }

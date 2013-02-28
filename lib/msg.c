@@ -879,10 +879,11 @@ void nl_msg_dump(struct nl_msg *msg, FILE *ofd)
 	    hdr->nlmsg_len >= nlmsg_msg_size(sizeof(struct nlmsgerr))) {
 		struct nl_msg *errmsg;
 		struct nlmsgerr *err = nlmsg_data(hdr);
+		char buf[256];
 
 		fprintf(ofd, "  [ERRORMSG] %zu octets\n", sizeof(*err));
 		fprintf(ofd, "    .error = %d \"%s\"\n", err->error,
-			strerror(-err->error));
+			strerror_r(-err->error, buf, sizeof(buf)));
 		fprintf(ofd, "  [ORIGINAL MESSAGE] %zu octets\n", sizeof(*hdr));
 
 		errmsg = nlmsg_inherit(&err->msg);

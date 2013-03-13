@@ -820,8 +820,7 @@ int nla_nest_end(struct nl_msg *msg, struct nlattr *start)
 		 * Kernel can't handle empty nested attributes, trim the
 		 * attribute header again
 		 */
-		msg->nm_nlh->nlmsg_len -= NLA_HDRLEN;
-		memset(nlmsg_tail(msg->nm_nlh), 0, NLA_HDRLEN);
+		nla_nest_cancel(msg, start);
 
 		return 0;
 	}
@@ -847,6 +846,28 @@ int nla_nest_end(struct nl_msg *msg, struct nlattr *start)
 		msg, start, start->nla_type, start->nla_len);
 
 	return 0;
+}
+
+/**
+ * Cancel the addition of a nested attribute
+ * @arg msg		Netlink message
+ * @arg attr		Nested netlink attribute
+ *
+ * Removes any partially added nested Netlink attribute from the message
+ * by resetting the message to the size before the call to nla_nest_start()
+ * and by overwriting any potentially touched message segments with 0.
+ */
+void nla_nest_cancel(struct nl_msg *msg, struct nlattr *attr)
+{
+	ssize_t len;
+
+	len = (void *) nlmsg_tail(msg->nm_nlh) - (void *) attr;
+	if (len < 0)
+		BUG();
+	else if (len > 0) {
+		msg->nm_nlh->nlmsg_len -= len;
+		memset(nlmsg_tail(msg->nm_nlh), 0, len);
+	}
 }
 
 /**

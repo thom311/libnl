@@ -2316,6 +2316,7 @@ int put_opts(struct nl_msg *msg)
 	return 0;
 
 nla_put_failure:
+	nla_nest_cancel(msg, opts);
 	return -EMSGSIZE;
 }
 --------

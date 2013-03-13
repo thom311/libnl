@@ -124,6 +124,7 @@ extern int		nla_put_msecs(struct nl_msg *, int, unsigned long);
 extern int		nla_put_nested(struct nl_msg *, int, struct nl_msg *);
 extern struct nlattr *	nla_nest_start(struct nl_msg *, int);
 extern int		nla_nest_end(struct nl_msg *, struct nlattr *);
+extern void		nla_nest_cancel(struct nl_msg *, struct nlattr *);
 extern int		nla_parse_nested(struct nlattr **, int, struct nlattr *,
 					 struct nla_policy *);
 extern int		nla_is_nested(struct nlattr *);

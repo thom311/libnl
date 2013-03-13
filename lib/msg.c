@@ -834,9 +834,13 @@ static void dump_attrs(FILE *ofd, struct nlattr *attrs, int attrlen,
 		int padlen, alen = nla_len(nla);
 
 		prefix_line(ofd, prefix);
-		fprintf(ofd, "  [ATTR %02d%s] %d octets\n", nla_type(nla),
-			nla->nla_type & NLA_F_NESTED ? " NESTED" : "",
-			alen);
+
+		if (nla->nla_type == 0)
+			fprintf(ofd, "  [ATTR PADDING] %d octets\n", alen);
+		else
+			fprintf(ofd, "  [ATTR %02d%s] %d octets\n", nla_type(nla),
+				nla->nla_type & NLA_F_NESTED ? " NESTED" : "",
+				alen);
 
 		if (nla->nla_type & NLA_F_NESTED)
 			dump_attrs(ofd, nla_data(nla), alen, prefix+1);

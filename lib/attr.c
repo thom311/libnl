@@ -254,15 +254,20 @@ int nla_parse(struct nlattr *tb[], int maxtype, struct nlattr *head, int len,
 		if (type == 0)
 			continue;
 
-		if (type <= maxtype) {
-			if (policy) {
-				err = validate_nla(nla, maxtype, policy);
-				if (err < 0)
-					goto errout;
-			}
+		if (type > maxtype)
+			continue;
 
-			tb[type] = nla;
+		if (policy) {
+			err = validate_nla(nla, maxtype, policy);
+			if (err < 0)
+				goto errout;
 		}
+
+		if (tb[type])
+			NL_DBG(1, "Attribute of type %#x found multiple times in message, "
+				  "previous attribute is being ignored.\n", type);
+
+		tb[type] = nla;
 	}
 
 	if (rem > 0)

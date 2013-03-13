@@ -863,6 +863,27 @@ static void dump_attrs(FILE *ofd, struct nlattr *attrs, int attrlen,
 	}
 }
 
+static void dump_error_msg(struct nl_msg *msg, FILE *ofd)
+{
+	struct nlmsghdr *hdr = nlmsg_hdr(msg);
+	struct nlmsgerr *err = nlmsg_data(hdr);
+
+	fprintf(ofd, "  [ERRORMSG] %zu octets\n", sizeof(*err));
+
+	if (nlmsg_len(hdr) >= sizeof(*err)) {
+		char buf[256];
+		struct nl_msg *errmsg;
+
+		fprintf(ofd, "    .error = %d \"%s\"\n", err->error,
+			strerror_r(-err->error, buf, sizeof(buf)));
+		fprintf(ofd, "  [ORIGINAL MESSAGE] %zu octets\n", sizeof(*hdr));
+
+		errmsg = nlmsg_inherit(&err->msg);
+		print_hdr(ofd, errmsg);
+		nlmsg_free(errmsg);
+	}
+}
+
 /**
  * Dump message in human readable format to file descriptor
  * @arg msg		Message to print
@@ -879,21 +900,9 @@ void nl_msg_dump(struct nl_msg *msg, FILE *ofd)
 	fprintf(ofd, "  [HEADER] %zu octets\n", sizeof(struct nlmsghdr));
 	print_hdr(ofd, msg);
 
-	if (hdr->nlmsg_type == NLMSG_ERROR &&
-	    hdr->nlmsg_len >= nlmsg_msg_size(sizeof(struct nlmsgerr))) {
-		struct nl_msg *errmsg;
-		struct nlmsgerr *err = nlmsg_data(hdr);
-		char buf[256];
-
-		fprintf(ofd, "  [ERRORMSG] %zu octets\n", sizeof(*err));
-		fprintf(ofd, "    .error = %d \"%s\"\n", err->error,
-			strerror_r(-err->error, buf, sizeof(buf)));
-		fprintf(ofd, "  [ORIGINAL MESSAGE] %zu octets\n", sizeof(*hdr));
-
-		errmsg = nlmsg_inherit(&err->msg);
-		print_hdr(ofd, errmsg);
-		nlmsg_free(errmsg);
-	} else if (nlmsg_len(hdr) > 0) {
+	if (hdr->nlmsg_type == NLMSG_ERROR)
+		dump_error_msg(msg, ofd);
+	else if (nlmsg_len(hdr) > 0) {
 		struct nl_cache_ops *ops;
 		int payloadlen = nlmsg_len(hdr);
 		int attrlen = 0;

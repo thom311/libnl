@@ -182,6 +182,7 @@ static uint16_t nla_attr_minlen[NLA_TYPE_MAX+1] = {
 	[NLA_U32]	= sizeof(uint32_t),
 	[NLA_U64]	= sizeof(uint64_t),
 	[NLA_STRING]	= 1,
+	[NLA_FLAG]	= 0,
 };
 
 static int validate_nla(struct nlattr *nla, int maxtype,
@@ -203,9 +204,6 @@ static int validate_nla(struct nlattr *nla, int maxtype,
 		minlen = pt->minlen;
 	else if (pt->type != NLA_UNSPEC)
 		minlen = nla_attr_minlen[pt->type];
-
-	if (pt->type == NLA_FLAG && nla_len(nla) > 0)
-		return -NLE_RANGE;
 
 	if (nla_len(nla) < minlen)
 		return -NLE_RANGE;

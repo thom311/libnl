@@ -814,10 +814,39 @@ int rtnl_addr_get_family(struct rtnl_addr *addr)
 	return addr->a_family;
 }
 
-void rtnl_addr_set_prefixlen(struct rtnl_addr *addr, int prefix)
+/**
+ * Set the prefix length / netmask
+ * @arg addr		Address
+ * @arg prefixlen	Length of prefix (netmask)
+ *
+ * Modifies the length of the prefix. If the address object contains a peer
+ * address the prefix length will apply to it, otherwise the prefix length
+ * will apply to the local address of the address.
+ *
+ * If the address object contains a peer or local address the corresponding
+ * `struct nl_addr` will be updated with the new prefix length.
+ *
+ * @note Specifying a length of 0 will remove the prefix length alltogether.
+ *
+ * @see rtnl_addr_get_prefixlen()
+ */
+void rtnl_addr_set_prefixlen(struct rtnl_addr *addr, int prefixlen)
 {
-	addr->a_prefixlen = prefix;
-	addr->ce_mask |= ADDR_ATTR_PREFIXLEN;
+	addr->a_prefixlen = prefixlen;
+
+	if (prefixlen)
+		addr->ce_mask |= ADDR_ATTR_PREFIXLEN;
+	else
+		addr->ce_mask &= ~ADDR_ATTR_PREFIXLEN;
+
+	/*
+	 * The prefix length always applies to the peer address if
+	 * a peer address is present.
+	 */
+	if (addr->a_peer)
+		nl_addr_set_prefixlen(addr->a_peer, prefixlen);
+	else if (addr->a_local)
+		nl_addr_set_prefixlen(addr->a_local, prefixlen);
 }
 
 int rtnl_addr_get_prefixlen(struct rtnl_addr *addr)

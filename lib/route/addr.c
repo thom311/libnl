@@ -199,8 +199,9 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct rtnl_addr *addr;
 	struct ifaddrmsg *ifa;
 	struct nlattr *tb[IFA_MAX+1];
-	int err, peer_prefix = 0, family;
+	int err, family;
 	struct nl_cache *link_cache;
+	struct nl_addr *plen_addr = NULL;
 
 	addr = rtnl_addr_alloc();
 	if (!addr)
@@ -244,6 +245,7 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		if (!addr->a_local)
 			goto errout_nomem;
 		addr->ce_mask |= ADDR_ATTR_LOCAL;
+		plen_addr = addr->a_local;
 	}
 
 	if (tb[IFA_ADDRESS]) {
@@ -263,12 +265,13 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		} else {
 			addr->a_peer = a;
 			addr->ce_mask |= ADDR_ATTR_PEER;
-			peer_prefix = 1;
 		}
+
+		plen_addr = a;
 	}
 
-	nl_addr_set_prefixlen(peer_prefix ? addr->a_peer : addr->a_local,
-			      addr->a_prefixlen);
+	if (plen_addr)
+		nl_addr_set_prefixlen(plen_addr, addr->a_prefixlen);
 
 	/* IPv4 only */
 	if (tb[IFA_BROADCAST]) {

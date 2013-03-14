@@ -766,7 +766,10 @@ int nl_addr_set_binary_addr(struct nl_addr *addr, void *buf, size_t len)
 		return -NLE_RANGE;
 
 	addr->a_len = len;
-	memcpy(addr->a_addr, buf, len);
+	memset(addr->a_addr, 0, addr->a_maxsize);
+
+	if (len)
+		memcpy(addr->a_addr, buf, len);
 
 	return 0;
 }

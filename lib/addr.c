@@ -6,7 +6,7 @@
  *	License as published by the Free Software Foundation version 2.1
  *	of the License.
  *
- * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2013 Thomas Graf <tgraf@suug.ch>
  */
 
 /**
@@ -170,9 +170,17 @@ static void addr_destroy(struct nl_addr *addr)
  */
 
 /**
- * Allocate new abstract address object.
- * @arg maxsize		Maximum size of the binary address.
- * @return Newly allocated address object or NULL
+ * Allocate empty abstract address
+ * @arg maxsize		Upper limit of the binary address to be stored
+ *
+ * The new address object will be empty with a prefix length of 0 and will
+ * be capable of holding binary addresses up to the specified limit.
+ *
+ * @see nl_addr_build()
+ * @see nl_addr_parse()
+ * @see nl_addr_put()
+ *
+ * @return Allocated address object or NULL upon failure.
  */
 struct nl_addr *nl_addr_alloc(size_t maxsize)
 {
@@ -189,11 +197,21 @@ struct nl_addr *nl_addr_alloc(size_t maxsize)
 }
 
 /**
- * Allocate new abstract address object based on a binary address.
- * @arg family		Address family.
- * @arg buf		Buffer containing the binary address.
- * @arg size		Length of binary address buffer.
- * @return Newly allocated address handle or NULL
+ * Allocate abstract address based on a binary address.
+ * @arg family		Address family
+ * @arg buf		Binary address
+ * @arg size		Length of binary address
+ *
+ * This function will allocate an abstract address capable of holding the
+ * binary address specified. The prefix length will be set to the full
+ * length of the binary address provided.
+ *
+ * @see nl_addr_alloc()
+ * @see nl_addr_alloc_attr()
+ * @see nl_addr_parse()
+ * @see nl_addr_put()
+ *
+ * @return Allocated address object or NULL upon failure.
  */
 struct nl_addr *nl_addr_build(int family, void *buf, size_t size)
 {
@@ -214,14 +232,25 @@ struct nl_addr *nl_addr_build(int family, void *buf, size_t size)
 }
 
 /**
- * Allocate abstract address based on netlink attribute.
- * @arg nla		Netlink attribute of unspecific type.
+ * Allocate abstract address based on Netlink attribute.
+ * @arg nla		Netlink attribute
  * @arg family		Address family.
  *
- * Considers the netlink attribute payload a address of the specified
- * family and allocates a new abstract address based on it.
+ * Allocates an abstract address based on the specified Netlink attribute
+ * by interpreting the payload of the Netlink attribute as the binary
+ * address.
  *
- * @return Newly allocated address handle or NULL.
+ * This function is identical to:
+ * @code
+ * nl_addr_build(family, nla_data(nla), nla_len(nla));
+ * @endcode
+ *
+ * @see nl_addr_alloc()
+ * @see nl_addr_build()
+ * @see nl_addr_parse()
+ * @see nl_addr_put()
+ *
+ * @return Allocated address object or NULL upon failure.
  */
 struct nl_addr *nl_addr_alloc_attr(struct nlattr *nla, int family)
 {
@@ -229,13 +258,13 @@ struct nl_addr *nl_addr_alloc_attr(struct nlattr *nla, int family)
 }
 
 /**
- * Allocate abstract address object based on a character string
+ * Allocate abstract address based on character string
  * @arg addrstr		Address represented as character string.
  * @arg hint		Address family hint or AF_UNSPEC.
  * @arg result		Pointer to store resulting address.
  *
  * Regognizes the following address formats:
- *@code
+ * @code
  *  Format                      Len                Family
  *  ----------------------------------------------------------------
  *  IPv6 address format         16                 AF_INET6
@@ -252,6 +281,10 @@ struct nl_addr *nl_addr_alloc_attr(struct nlattr *nla, int family)
  *
  * The prefix length may be appened at the end prefixed with a
  * slash, e.g. 10.0.0.0/8.
+ *
+ * @see nl_addr_alloc()
+ * @see nl_addr_build()
+ * @see nl_addr_put()
  *
  * @return 0 on success or a negative error code.
  */
@@ -424,10 +457,16 @@ errout:
 }
 
 /**
- * Clone existing abstract address object.
- * @arg addr		Abstract address object.
- * @return Newly allocated abstract address object being a duplicate of the
- *         specified address object or NULL if a failure occured.
+ * Clone existing abstract address object
+ * @arg addr		Abstract address object
+ *
+ * Allocates new abstract address representing an identical clone of an
+ * existing address.
+ *
+ * @see nl_addr_alloc()
+ * @see nl_addr_put()
+ *
+ * @return Allocated abstract address or NULL upon failure.
  */
 struct nl_addr *nl_addr_clone(struct nl_addr *addr)
 {
@@ -447,6 +486,18 @@ struct nl_addr *nl_addr_clone(struct nl_addr *addr)
  * @{
  */
 
+/**
+ * Increase the reference counter of an abstract address
+ * @arg addr		Abstract address
+ *
+ * Increases the reference counter of the address and thus prevents the
+ * release of the memory resources until the reference is given back
+ * using the function nl_addr_put().
+ *
+ * @see nl_addr_put()
+ *
+ * @return Pointer to the existing abstract address
+ */
 struct nl_addr *nl_addr_get(struct nl_addr *addr)
 {
 	addr->a_refcnt++;
@@ -454,6 +505,15 @@ struct nl_addr *nl_addr_get(struct nl_addr *addr)
 	return addr;
 }
 
+/**
+ * Decrease the reference counter of an abstract address
+ * @arg addr		Abstract addr
+ *
+ * @note The resources of the abstract address will be freed after the
+ *       last reference to the address has been returned.
+ *
+ * @see nl_addr_get()
+ */
 void nl_addr_put(struct nl_addr *addr)
 {
 	if (!addr)
@@ -466,9 +526,10 @@ void nl_addr_put(struct nl_addr *addr)
 }
 
 /**
- * Check whether an abstract address object is shared.
+ * Check whether an abstract address is shared.
  * @arg addr		Abstract address object.
- * @return Non-zero if the abstract address object is shared, otherwise 0.
+ *
+ * @return Non-zero if the abstract address is shared, otherwise 0.
  */
 int nl_addr_shared(struct nl_addr *addr)
 {
@@ -483,12 +544,21 @@ int nl_addr_shared(struct nl_addr *addr)
  */
 
 /**
- * Compares two abstract address objects.
- * @arg a		A abstract address object.
- * @arg b		Another abstract address object.
+ * Compare abstract addresses
+ * @arg a		An abstract address
+ * @arg b		Another abstract address
  *
- * @return Integer less than, equal to or greather than zero if \c is found,
- *         respectively to be less than, to, or be greater than \c b.
+ * Verifies whether the address family, address length, prefix length, and
+ * binary addresses of two abstract addresses matches.
+ *
+ * @note This function will *not* respect the prefix length in the sense
+ *       that only the actual prefix will be compared. Please refer to the
+ *       nl_addr_cmp_prefix() function if you require this functionality.
+ *
+ * @see nl_addr_cmp_prefix()
+ *
+ * @return Integer less than, equal to or greather than zero if the two
+ *         addresses match.
  */
 int nl_addr_cmp(struct nl_addr *a, struct nl_addr *b)
 {
@@ -509,12 +579,17 @@ int nl_addr_cmp(struct nl_addr *a, struct nl_addr *b)
 }
 
 /**
- * Compares the prefix of two abstract address objects.
- * @arg a		A abstract address object.
- * @arg b		Another abstract address object.
+ * Compare the prefix of two abstract addresses
+ * @arg a		An abstract address
+ * @arg b		Another abstract address
  *
- * @return Integer less than, equal to or greather than zero if \c is found,
- *         respectively to be less than, to, or be greater than \c b.
+ * Verifies whether the address family and the binary address covered by
+ * the smaller prefix length of the two abstract addresses matches.
+ *
+ * @see nl_addr_cmp()
+ *
+ * @return Integer less than, equal to or greather than zero if the two
+ *         addresses match.
  */
 int nl_addr_cmp_prefix(struct nl_addr *a, struct nl_addr *b)
 {
@@ -538,7 +613,9 @@ int nl_addr_cmp_prefix(struct nl_addr *a, struct nl_addr *b)
 
 /**
  * Returns true if the address consists of all zeros
- * @arg addr		Address to look at.
+ * @arg addr		Abstract address
+ *
+ * @return 1 if the binary address consists of all zeros, 0 otherwise.
  */
 int nl_addr_iszero(struct nl_addr *addr)
 {
@@ -552,11 +629,11 @@ int nl_addr_iszero(struct nl_addr *addr)
 }
 
 /**
- * Check if an address matches a certain family.
+ * Check if address string is parseable for a specific address family
  * @arg addr		Address represented as character string.
  * @arg family		Desired address family.
  *
- * @return 1 if the address is of the desired address family,
+ * @return 1 if the address is parseable assuming the specified address family,
  *         otherwise 0 is returned.
  */
 int nl_addr_valid(char *addr, int family)
@@ -588,9 +665,10 @@ int nl_addr_valid(char *addr, int family)
 }
 
 /**
- * Guess address family of an abstract address object based on address size.
+ * Guess address family of abstract address based on address size
  * @arg addr		Abstract address object.
- * @return Address family or AF_UNSPEC if guessing wasn't successful.
+ *
+ * @return Numeric address family or AF_UNSPEC
  */
 int nl_addr_guess_family(struct nl_addr *addr)
 {
@@ -666,7 +744,7 @@ int nl_addr_fill_sockaddr(struct nl_addr *addr, struct sockaddr *sa,
  * Call getaddrinfo() for an abstract address object.
  * @arg addr		Abstract address object.
  * @arg result		Pointer to store resulting address list.
- * 
+ *
  * Calls getaddrinfo() for the specified abstract address in AI_NUMERICHOST
  * mode.
  *
@@ -744,11 +822,26 @@ int nl_addr_resolve(struct nl_addr *addr, char *host, size_t hostlen)
  * @{
  */
 
+/**
+ * Set address family
+ * @arg addr		Abstract address object
+ * @arg family		Address family
+ *
+ * @see nl_addr_get_family()
+ */
 void nl_addr_set_family(struct nl_addr *addr, int family)
 {
 	addr->a_family = family;
 }
 
+/**
+ * Return address family
+ * @arg addr		Abstract address object
+ *
+ * @see nl_addr_set_family()
+ *
+ * @return The numeric address family or `AF_UNSPEC`
+ */
 int nl_addr_get_family(struct nl_addr *addr)
 {
 	return addr->a_family;
@@ -759,6 +852,20 @@ int nl_addr_get_family(struct nl_addr *addr)
  * @arg addr		Abstract address object.
  * @arg buf		Buffer containing binary address.
  * @arg len		Length of buffer containing binary address.
+ *
+ * Modifies the binary address portion of the abstract address. The
+ * abstract address must be capable of holding the required amount
+ * or this function will fail.
+ *
+ * @note This function will *not* modify the prefix length. It is within
+ *       the responsibility of the caller to set the prefix length to the
+ *       desirable length.
+ *
+ * @see nl_addr_alloc()
+ * @see nl_addr_get_binary_addr()
+ * @see nl_addr_get_len()
+ *
+ * @return 0 on success or a negative error code.
  */
 int nl_addr_set_binary_addr(struct nl_addr *addr, void *buf, size_t len)
 {
@@ -777,6 +884,11 @@ int nl_addr_set_binary_addr(struct nl_addr *addr, void *buf, size_t len)
 /**
  * Get binary address of abstract address object.
  * @arg addr		Abstract address object.
+ *
+ * @see nl_addr_set_binary_addr()
+ * @see nl_addr_get_len()
+ *
+ * @return Pointer to binary address of length nl_addr_get_len()
  */
 void *nl_addr_get_binary_addr(struct nl_addr *addr)
 {
@@ -786,20 +898,32 @@ void *nl_addr_get_binary_addr(struct nl_addr *addr)
 /**
  * Get length of binary address of abstract address object.
  * @arg addr		Abstract address object.
+ *
+ * @see nl_addr_get_binary_addr()
+ * @see nl_addr_set_binary_addr()
  */
 unsigned int nl_addr_get_len(struct nl_addr *addr)
 {
 	return addr->a_len;
 }
 
+/**
+ * Set the prefix length of an abstract address
+ * @arg addr		Abstract address object
+ * @arg prefixlen	New prefix length
+ *
+ * @see nl_addr_get_prefixlen()
+ */
 void nl_addr_set_prefixlen(struct nl_addr *addr, int prefixlen)
 {
 	addr->a_prefixlen = prefixlen;
 }
 
 /**
- * Get prefix length of abstract address object.
- * @arg addr		Abstract address object.
+ * Return prefix length of abstract address object.
+ * @arg addr		Abstract address object
+ *
+ * @see nl_addr_set_prefixlen()
  */
 unsigned int nl_addr_get_prefixlen(struct nl_addr *addr)
 {

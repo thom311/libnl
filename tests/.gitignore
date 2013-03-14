@@ -6,3 +6,4 @@ test-delete-link
 test-genl
 test-nf-cache-mngr
 test-socket-creation
+check-all

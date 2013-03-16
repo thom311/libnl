@@ -99,7 +99,6 @@ typedef enum {
 
 extern struct rtnl_link *rtnl_link_alloc(void);
 extern void	rtnl_link_put(struct rtnl_link *);
-extern void	rtnl_link_free(struct rtnl_link *);
 
 extern int	rtnl_link_alloc_cache(struct nl_sock *, int, struct nl_cache **);
 extern struct rtnl_link *rtnl_link_get(struct nl_cache *, int);

@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if ((err = rtnl_route_add(sock, route, 0)) < 0)
+	if ((err = rtnl_route_add(sock, route, NLM_F_EXCL)) < 0)
 		nl_cli_fatal(err, "Unable to add route: %s", nl_geterror(err));
 
 	if (!quiet) {

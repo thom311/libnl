@@ -17,4 +17,6 @@
 
 #define GENL_HDRSIZE(hdrlen) (GENL_HDRLEN + (hdrlen))
 
+extern int		genl_resolve_id(struct genl_ops *ops);
+
 #endif

@@ -295,6 +295,10 @@ static int __genl_ops_resolve(struct nl_cache *ctrl, struct genl_ops *ops)
 	family = genl_ctrl_search_by_name(ctrl, ops->o_name);
 	if (family != NULL) {
 		ops->o_id = genl_family_get_id(family);
+
+		if (ops->o_cache_ops)
+			ops->o_cache_ops->co_msgtypes[0].mt_id = ops->o_id;
+
 		genl_family_put(family);
 
 		return 0;

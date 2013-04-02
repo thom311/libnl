@@ -239,7 +239,7 @@ static struct genl_family *genl_ctrl_probe_by_name(struct nl_sock *sk,
 {
 	struct nl_msg *msg;
 	struct genl_family *ret;
-	struct nl_cb *cb;
+	struct nl_cb *cb, *orig;
 	int rc;
 
 	ret = genl_family_alloc();
@@ -252,7 +252,12 @@ static struct genl_family *genl_ctrl_probe_by_name(struct nl_sock *sk,
 	if (!msg)
 		goto out_fam_free;
 
-	if (!(cb = nl_cb_clone(nl_socket_get_cb(sk))))
+	if (!(orig = nl_socket_get_cb(sk)))
+		goto out_msg_free;
+
+	cb = nl_cb_clone(orig);
+	nl_cb_put(orig);
+	if (!cb)
 		goto out_msg_free;
 
 	if (!genlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, GENL_ID_CTRL,

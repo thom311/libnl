@@ -627,11 +627,6 @@ retry:
 			NL_DBG(3, "recvmsg() returned EINTR, retrying\n");
 			goto retry;
 		}
-		if (errno == EAGAIN || errno == EWOULDBLOCK) {
-			NL_DBG(3, "recvmsg() returned EAGAIN||EWOULDBLOCK, aborting\n");
-			retval = 0;
-			goto abort;
-		}
 		retval = -nl_syserr2nlerr(errno);
 		goto abort;
 	}

@@ -49,6 +49,7 @@
 int nl_debug = 0;
 
 /** @cond SKIP */
+#ifdef NL_DEBUG
 struct nl_dump_params nl_debug_dp = {
 	.dp_type = NL_DUMP_DETAILS,
 };
@@ -65,6 +66,7 @@ static void __init nl_debug_init(void)
 
 	nl_debug_dp.dp_fd = stderr;
 }
+#endif
 
 int __nl_read_num_str_file(const char *path, int (*cb)(long, const char *))
 {

@@ -80,24 +80,29 @@ struct trans_list {
 	struct nl_list_head list;
 };
 
-#define NL_DEBUG	1
-
-#define NL_DBG(LVL,FMT,ARG...) \
-	do {	\
-		if (LVL <= nl_debug) \
-			fprintf(stderr, "DBG<" #LVL ">: " FMT, ##ARG); \
+#ifdef NL_DEBUG
+#define NL_DBG(LVL,FMT,ARG...)						\
+	do {								\
+		if (LVL <= nl_debug)					\
+			fprintf(stderr,					\
+				"DBG<" #LVL ">%20s:%-4u %s: " FMT,	\
+				__FILE__, __LINE__,			\
+				__PRETTY_FUNCTION__, ##ARG);		\
 	} while (0)
+#else /* NL_DEBUG */
+#define NL_DBG(LVL,FMT,ARG...) do { } while(0)
+#endif /* NL_DEBUG */
 
 #define BUG()                            				\
 	do {                                 				\
-		NL_DBG(1, "BUG: %s:%d\n",  				\
-			__FILE__, __LINE__);         			\
+		fprintf(stderr, "BUG at file position %s:%d:%s\n",  	\
+			__FILE__, __LINE__, __PRETTY_FUNCTION__); 	\
 		assert(0);						\
 	} while (0)
 
 #define APPBUG(msg)							\
 	do {								\
-		NL_DBG(1, "APPLICATION BUG: %s:%d:%s: %s\n",		\
+		fprintf(stderr, "APPLICATION BUG: %s:%d:%s: %s\n",	\
 			__FILE__, __LINE__, __PRETTY_FUNCTION__, msg);	\
 		assert(0);						\
 	} while(0)

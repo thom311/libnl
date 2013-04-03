@@ -165,7 +165,12 @@ int nl_object_update(struct nl_object *dst, struct nl_object *src)
  */
 void nl_object_free(struct nl_object *obj)
 {
-	struct nl_object_ops *ops = obj_ops(obj);
+	struct nl_object_ops *ops;
+
+	if (!obj)
+		return;
+
+	ops = obj_ops(obj);
 
 	if (obj->ce_refcnt > 0)
 		NL_DBG(1, "Warning: Freeing object in use...\n");

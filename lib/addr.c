@@ -1037,10 +1037,18 @@ static const struct trans_tbl afs[] = {
 	__ADD(AF_RXRPC,rxrpc)
 	__ADD(AF_ISDN,isdn)
 	__ADD(AF_PHONET,phonet)
+#ifdef AF_IEEE802154
 	__ADD(AF_IEEE802154,ieee802154)
+#endif
+#ifdef AF_CAIF
 	__ADD(AF_CAIF,caif)
+#endif
+#ifdef AF_ALG
 	__ADD(AF_ALG,alg)
+#endif
+#ifdef AF_NFC
 	__ADD(AF_NFC,nfc)
+#endif
 };
 
 char *nl_af2str(int family, char *buf, size_t size)

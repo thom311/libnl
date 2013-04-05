@@ -685,7 +685,9 @@ static const struct trans_tbl llprotos[] = {
 	__ADD(ARPHRD_IEEE802_TR,tr)
 	__ADD(ARPHRD_IEEE80211,ieee802.11)
 	__ADD(ARPHRD_PHONET,phonet)
+#ifdef ARPHRD_CAIF
 	__ADD(ARPHRD_CAIF, caif)
+#endif
 #ifdef ARPHRD_IEEE80211_PRISM
 	__ADD(ARPHRD_IEEE80211_PRISM, ieee802.11_prism)
 #endif

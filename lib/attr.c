@@ -464,7 +464,7 @@ struct nlattr *nla_reserve(struct nl_msg *msg, int attrtype, int attrlen)
 	
 	tlen = NLMSG_ALIGN(msg->nm_nlh->nlmsg_len) + nla_total_size(attrlen);
 
-	if ((tlen + msg->nm_nlh->nlmsg_len) > msg->nm_size)
+	if (tlen > msg->nm_size)
 		return NULL;
 
 	nla = (struct nlattr *) nlmsg_tail(msg->nm_nlh);

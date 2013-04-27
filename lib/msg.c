@@ -886,10 +886,10 @@ static void dump_attrs(FILE *ofd, struct nlattr *attrs, int attrlen,
 			fprintf(ofd, "  [ATTR PADDING] %d octets\n", alen);
 		else
 			fprintf(ofd, "  [ATTR %02d%s] %d octets\n", nla_type(nla),
-				nla->nla_type & NLA_F_NESTED ? " NESTED" : "",
+				nla_is_nested(nla) ? " NESTED" : "",
 				alen);
 
-		if (nla->nla_type & NLA_F_NESTED)
+		if (nla_is_nested(nla))
 			dump_attrs(ofd, nla_data(nla), alen, prefix+1);
 		else
 			dump_attr(ofd, nla, prefix);

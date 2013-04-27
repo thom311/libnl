@@ -1,5 +1,7 @@
 # -*- Makefile -*-
 
+if ENABLE_UNIT_TESTS
+
 AM_CPPFLAGS  = -Wall -I${top_srcdir}/include -I${top_builddir}/include -D_GNU_SOURCE -DSYSCONFDIR=\"$(sysconfdir)/libnl\"
 
 LDADD = \
@@ -45,3 +47,4 @@ test_complex_HTB_with_hash_filters_SOURCES = test-complex-HTB-with-hash-filters.
 check_all_SOURCES = \
 	check-all.c \
 	check-addr.c
+endif

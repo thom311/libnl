@@ -75,7 +75,12 @@ AC_CHECK_PROGS(YACC, 'bison -y')
 AC_C_CONST
 AC_C_INLINE
 
-PKG_CHECK_MODULES([CHECK], [check >= 0.9.0])
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.0],
+	[AC_DEFINE([ENABLE_UNIT_TESTS], [1], [Do unit tests])],
+	[AC_MSG_WARN([*** Disabling building of unit tests])
+	 AC_DEFINE([ENABLE_UNIT_TESTS], [0], [Do not do unit tests])])
+
+AM_CONDITIONAL([ENABLE_UNIT_TESTS], [test "x$ENABLE_UNIT_TESTS" = "xyes"])
 
 AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
 	[Path to the pkgconfig directory [[LIBDIR/pkgconfig]]]),

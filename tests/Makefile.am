@@ -46,5 +46,6 @@ test_complex_HTB_with_hash_filters_SOURCES = test-complex-HTB-with-hash-filters.
 # Unit tests
 check_all_SOURCES = \
 	check-all.c \
-	check-addr.c
+	check-addr.c \
+	check-attr.c
 endif

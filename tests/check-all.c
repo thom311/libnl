@@ -12,6 +12,7 @@
 #include <check.h>
 
 extern Suite *make_nl_addr_suite(void);
+extern Suite *make_nl_attr_suite(void);
 
 static Suite *main_suite(void)
 {
@@ -30,6 +31,7 @@ int main(int argc, char *argv[])
 	/* Add testsuites below */
 
 	srunner_add_suite(runner, make_nl_addr_suite());
+	srunner_add_suite(runner, make_nl_attr_suite());
 
 	/* Do not add testsuites below this line */
 

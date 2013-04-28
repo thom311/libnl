@@ -899,7 +899,7 @@ int nla_parse_nested(struct nlattr *tb[], int maxtype, struct nlattr *nla,
  */
 int nla_is_nested(struct nlattr *attr)
 {
-	return !!(nla->nla_type & NLA_F_NESTED);
+	return !!(attr->nla_type & NLA_F_NESTED);
 }
 
 /** @} */

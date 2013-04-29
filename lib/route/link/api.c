@@ -326,7 +326,7 @@ int rtnl_link_af_unregister(struct rtnl_link_af_ops *ops)
 	int err = -NLE_INVAL;
 
 	if (!ops)
-		goto errout;
+		return err;
 
 	nl_write_lock(&info_lock);
 	if (!af_ops[ops->ao_family]) {
@@ -345,7 +345,7 @@ int rtnl_link_af_unregister(struct rtnl_link_af_ops *ops)
 		ops->ao_family);
 
 errout:
-	nl_write_lock(&info_lock);
+	nl_write_unlock(&info_lock);
 
 	return err;
 }

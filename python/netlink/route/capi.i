@@ -3,6 +3,7 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link.h>
 #include <netlink/route/link/vlan.h>
+#include <netlink/route/link/macvlan.h>
 #include <netlink/route/link/inet.h>
 
 #include <netlink/route/tc.h>
@@ -168,6 +169,21 @@ extern uint32_t *rtnl_link_vlan_get_ingress_map(struct rtnl_link *);
 
 extern int rtnl_link_vlan_set_egress_map(struct rtnl_link *, uint32_t, int);
 extern struct vlan_map *rtnl_link_vlan_get_egress_map(struct rtnl_link *, int *);
+
+/* <netlink/route/link/macvlan.h> */
+
+%cstring_output_maxsize(char *buf, size_t len)
+extern struct rtnl_link *rtnl_link_macvlan_alloc(void);
+extern int		rtnl_link_is_macvlan(struct rtnl_link *);
+extern char *		rtnl_link_macvlan_mode2str(int, char *, size_t);
+extern int		rtnl_link_macvlan_str2mode(const char *);
+extern char *		rtnl_link_macvlan_flags2str(int, char *, size_t);
+extern int		rtnl_link_macvlan_str2flags(const char *);
+extern int		rtnl_link_macvlan_set_mode(struct rtnl_link *, uint32_t);
+extern uint32_t		rtnl_link_macvlan_get_mode(struct rtnl_link *);
+extern int		rtnl_link_macvlan_set_flags(struct rtnl_link *, uint16_t);
+extern int		rtnl_link_macvlan_unset_flags(struct rtnl_link *, uint16_t);
+extern uint16_t		rtnl_link_macvlan_get_flags(struct rtnl_link *);
 
 /* <netlink/route/link/inet.h> */
 %cstring_output_maxsize(char *buf, size_t len)

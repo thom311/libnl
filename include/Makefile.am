@@ -46,6 +46,7 @@ nobase_libnlinclude_HEADERS = \
 	netlink/route/link/can.h \
 	netlink/route/link/inet.h \
 	netlink/route/link/vlan.h \
+	netlink/route/link/macvlan.h \
 	netlink/route/qdisc/cbq.h \
 	netlink/route/qdisc/dsmark.h \
 	netlink/route/qdisc/fifo.h \

@@ -435,7 +435,7 @@ int nl_cache_mngr_data_ready(struct nl_cache_mngr *mngr)
 	}
 
 	nl_cb_put(cb);
-	if (err < 0)
+	if (err < 0 && err != -NLE_AGAIN)
 		return err;
 
 	return nread;

@@ -199,6 +199,12 @@ nfnl_queue_msg_build_verdict(const struct nfnl_queue_msg *msg)
 	return __nfnl_queue_msg_build_verdict(msg, NFQNL_MSG_VERDICT);
 }
 
+struct nl_msg *
+nfnl_queue_msg_build_verdict_batch(const struct nfnl_queue_msg *msg)
+{
+	return __nfnl_queue_msg_build_verdict(msg, NFQNL_MSG_VERDICT_BATCH);
+}
+
 /**
 * Send a message verdict/mark
 * @arg nlh            netlink messsage header
@@ -212,6 +218,29 @@ int nfnl_queue_msg_send_verdict(struct nl_sock *nlh,
 	int err;
 
 	nlmsg = nfnl_queue_msg_build_verdict(msg);
+	if (nlmsg == NULL)
+		return -NLE_NOMEM;
+
+	err = nl_send_auto_complete(nlh, nlmsg);
+	nlmsg_free(nlmsg);
+	if (err < 0)
+		return err;
+	return wait_for_ack(nlh);
+}
+
+/**
+* Send a message batched verdict/mark
+* @arg nlh            netlink messsage header
+* @arg msg            queue msg
+* @return 0 on OK or error code
+*/
+int nfnl_queue_msg_send_verdict_batch(struct nl_sock *nlh,
+									  const struct nfnl_queue_msg *msg)
+{
+	struct nl_msg *nlmsg;
+	int err;
+
+	nlmsg = nfnl_queue_msg_build_verdict_batch(msg);
 	if (nlmsg == NULL)
 		return -NLE_NOMEM;
 

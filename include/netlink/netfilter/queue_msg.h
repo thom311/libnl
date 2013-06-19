@@ -93,6 +93,8 @@ extern unsigned int		nfnl_queue_msg_get_verdict(const struct nfnl_queue_msg *);
 extern struct nl_msg *		nfnl_queue_msg_build_verdict(const struct nfnl_queue_msg *);
 extern int			nfnl_queue_msg_send_verdict(struct nl_sock *,
 							    const struct nfnl_queue_msg *);
+extern int			nfnl_queue_msg_send_verdict_batch(struct nl_sock *,
+							    const struct nfnl_queue_msg *);
 extern int			nfnl_queue_msg_send_verdict_payload(struct nl_sock *,
 						const struct nfnl_queue_msg *,
 						const void *, unsigned );

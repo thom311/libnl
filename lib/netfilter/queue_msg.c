@@ -163,12 +163,14 @@ errout:
 
 /** @} */
 
-struct nl_msg *nfnl_queue_msg_build_verdict(const struct nfnl_queue_msg *msg)
+static struct nl_msg *
+__nfnl_queue_msg_build_verdict(const struct nfnl_queue_msg *msg,
+							   uint8_t type)
 {
 	struct nl_msg *nlmsg;
 	struct nfqnl_msg_verdict_hdr verdict;
 
-	nlmsg = nfnlmsg_alloc_simple(NFNL_SUBSYS_QUEUE, NFQNL_MSG_VERDICT, 0,
+	nlmsg = nfnlmsg_alloc_simple(NFNL_SUBSYS_QUEUE, type, 0,
 				     nfnl_queue_msg_get_family(msg),
 				     nfnl_queue_msg_get_group(msg));
 	if (nlmsg == NULL)
@@ -189,6 +191,12 @@ struct nl_msg *nfnl_queue_msg_build_verdict(const struct nfnl_queue_msg *msg)
 nla_put_failure:
 	nlmsg_free(nlmsg);
 	return NULL;
+}
+
+struct nl_msg *
+nfnl_queue_msg_build_verdict(const struct nfnl_queue_msg *msg)
+{
+	return __nfnl_queue_msg_build_verdict(msg, NFQNL_MSG_VERDICT);
 }
 
 /**

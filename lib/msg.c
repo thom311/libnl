@@ -153,7 +153,7 @@ struct nlattr *nlmsg_attrdata(const struct nlmsghdr *nlh, int hdrlen)
  */
 int nlmsg_attrlen(const struct nlmsghdr *nlh, int hdrlen)
 {
-	return nlmsg_len(nlh) - NLMSG_ALIGN(hdrlen);
+	return max_t(int, nlmsg_len(nlh) - NLMSG_ALIGN(hdrlen), 0);
 }
 
 /** @} */

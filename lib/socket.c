@@ -89,6 +89,7 @@ static uint32_t generate_local_port(void)
 	nl_write_unlock(&port_map_lock);
 
 	/* Out of sockets in our own PID namespace, what to do? FIXME */
+	NL_DBG(1, "Warning: Ran out of unique local port namespace\n");
 	return UINT_MAX;
 }
 

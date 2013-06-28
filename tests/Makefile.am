@@ -14,7 +14,7 @@ LDADD = \
 	${top_builddir}/lib/libnl-route-3.la \
 	@CHECK_LIBS@
 
-CFLAGS += @CHECK_CFLAGS@
+AM_CFLAGS = @CHECK_CFLAGS@
 
 UNIT_TESTS = check-all
 

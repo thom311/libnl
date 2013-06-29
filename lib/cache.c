@@ -642,6 +642,9 @@ void nl_cache_set_flags(struct nl_cache *cache, unsigned int flags)
 static int nl_cache_request_full_dump(struct nl_sock *sk,
 				      struct nl_cache *cache)
 {
+	if (sk->s_proto != cache->c_ops->co_protocol)
+		return -NLE_PROTO_MISMATCH;
+
 	if (cache->c_ops->co_request_update == NULL)
 		return -NLE_OPNOTSUPP;
 
@@ -744,6 +747,9 @@ int nl_cache_pickup(struct nl_sock *sk, struct nl_cache *cache)
 		.pp_arg = cache,
 	};
 
+	if (sk->s_proto != cache->c_ops->co_protocol)
+		return -NLE_PROTO_MISMATCH;
+
 	return __cache_pickup(sk, cache, &p);
 }
 
@@ -839,6 +845,9 @@ int nl_cache_resync(struct nl_sock *sk, struct nl_cache *cache,
 		.pp_arg = &ca,
 	};
 	int err;
+
+	if (sk->s_proto != cache->c_ops->co_protocol)
+		return -NLE_PROTO_MISMATCH;
 
 	NL_DBG(1, "Resyncing cache %p <%s>...\n", cache, nl_cache_name(cache));
 
@@ -952,6 +961,9 @@ int nl_cache_refill(struct nl_sock *sk, struct nl_cache *cache)
 {
 	struct nl_af_group *grp;
 	int err;
+
+	if (sk->s_proto != cache->c_ops->co_protocol)
+		return -NLE_PROTO_MISMATCH;
 
 	nl_cache_clear(cache);
 	grp = cache->c_ops->co_groups;

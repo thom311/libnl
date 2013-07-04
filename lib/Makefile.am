@@ -13,12 +13,17 @@ AM_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 
 lib_LTLIBRARIES = \
-	libnl-3.la libnl-genl-3.la libnl-route-3.la libnl-nf-3.la
+	libnl-3.la libnl-genl-3.la libnl-route-3.la libnl-nf-3.la libnl-idiag-3.la
 
 libnl_3_la_SOURCES = \
 	addr.c attr.c cache.c cache_mngr.c cache_mngt.c data.c \
 	error.c handlers.c msg.c nl.c object.c socket.c utils.c \
 	version.c hash.c hashtable.c
+
+libnl_idiag_3_la_LIBADD = libnl-3.la
+libnl_idiag_3_la_SOURCES = \
+	idiag/idiag_meminfo_obj.c idiag/idiag_vegasinfo_obj.c \
+	idiag/idiag_msg_obj.c idiag/idiag_req_obj.c idiag/idiag.c
 
 libnl_genl_3_la_LIBADD  = libnl-3.la
 libnl_genl_3_la_SOURCES = \

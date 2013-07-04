@@ -78,8 +78,12 @@ nobase_libnlinclude_HEADERS = \
 	netlink/object-api.h \
 	netlink/route/link/api.h \
 	netlink/route/link/info-api.h \
-	netlink/route/tc-api.h
-
+	netlink/route/tc-api.h \
+	netlink/idiag/idiagnl.h \
+	netlink/idiag/meminfo.h \
+	netlink/idiag/msg.h \
+	netlink/idiag/req.h \
+	netlink/idiag/vegasinfo.h
 
 if ENABLE_CLI
 nobase_libnlinclude_HEADERS += \

@@ -998,7 +998,7 @@ char *__flags2str(int flags, char *buf, size_t len,
 	int tmp = flags;
 
 	memset(buf, 0, len);
-	
+
 	for (i = 0; i < tbl_len; i++) {
 		if (tbl[i].i & tmp) {
 			tmp &= ~tbl[i].i;

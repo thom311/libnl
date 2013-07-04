@@ -13,12 +13,15 @@ AM_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 
 lib_LTLIBRARIES = \
-	libnl-3.la libnl-genl-3.la libnl-route-3.la libnl-nf-3.la
+	libnl-3.la libnl-genl-3.la libnl-route-3.la libnl-nf-3.la libnl-inetdiag-3.la
 
 libnl_3_la_SOURCES = \
 	addr.c attr.c cache.c cache_mngr.c cache_mngt.c data.c \
 	error.c handlers.c msg.c nl.c object.c socket.c utils.c \
 	version.c hash.c hashtable.c
+
+libnl_inetdiag_3_la_LIBADD = libnl-3.la
+libnl_inetdiag_3_la_SOURCES = inetdiag/inetdiag.c
 
 libnl_genl_3_la_LIBADD  = libnl-3.la
 libnl_genl_3_la_SOURCES = \

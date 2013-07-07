@@ -328,6 +328,11 @@ char *nl_size2str(const size_t size, char *buf, const size_t len)
 {
 	size_t i;
 
+	if (size == 0) {
+		snprintf(buf, len, "0B");
+		return buf;
+	}
+
 	for (i = 0; i < ARRAY_SIZE(size_units); i++) {
 		if (size >= size_units[i].limit) {
 			snprintf(buf, len, "%.2g%s",

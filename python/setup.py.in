@@ -19,12 +19,19 @@ route_capi = Extension('netlink/route/_capi',
 			 libraries = ['nl-3', 'nl-route-3'],
 			)
 
+genl_capi = Extension('netlink/genl/_capi',
+			 sources = ['netlink/genl/capi.i'],
+			 include_dirs = include,
+			 swig_opts = opts,
+			 libraries = ['nl-3', 'nl-genl-3'],
+			)
+
 setup(name = 'netlink',
       version = '1.0',
       description = 'Python wrapper for netlink protocols',
       author = 'Thomas Graf',
       author_email = 'tgraf@suug.ch',
-      ext_modules = [netlink_capi, route_capi],
-      packages = ['netlink', 'netlink.route', 'netlink.route.links',
-      		  'netlink.route.qdisc'],
+      ext_modules = [netlink_capi, route_capi, genl_capi],
+      packages = ['netlink', 'netlink.genl', 'netlink.route',
+		  'netlink.route.links', 'netlink.route.qdisc'],
      )

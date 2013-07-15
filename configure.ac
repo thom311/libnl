@@ -132,6 +132,7 @@ man/Makefile
 python/Makefile
 python/setup.py
 python/netlink/Makefile
+python/netlink/genl/Makefile
 python/netlink/route/Makefile
 include/netlink/version.h
 ])

@@ -1,6 +1,6 @@
 # -*- Makefile -*-
 
-SUBDIRS = route
+SUBDIRS = route genl
 
 EXTRA_DIST = \
 	capi.i \

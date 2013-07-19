@@ -559,6 +559,11 @@ char * nl_msec2str(uint64_t msec, char *buf, size_t len)
 #undef  _SPLIT
 	split[4] = msec;
 
+	if (msec == 0) {
+		snprintf(buf, len, "0msec");
+		return buf_orig;
+	}
+
 	for (i = 0; i < ARRAY_SIZE(split) && len; i++) {
 		int l;
 		if (split[i] == 0)

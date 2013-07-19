@@ -7,6 +7,7 @@
  *	of the License.
  *
  * Copyright (c) 2003-2013 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2013 Sassano Systems LLC <joe@sassanosystems.com>
  */
 
 #ifndef NETLINK_LOCAL_TYPES_H_
@@ -17,6 +18,7 @@
 #include <netlink/route/qdisc.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/route.h>
+#include <netlink/idiag/idiagnl.h>
 #include <netlink-private/route/tc-api.h>
 
 #define NL_SOCK_BUFSIZE_SET	(1<<0)
@@ -909,4 +911,61 @@ struct ematch_quoted {
 	int	index;
 };
 
+struct idiagnl_meminfo {
+	NLHDR_COMMON
+
+	uint32_t idiag_rmem;
+	uint32_t idiag_wmem;
+	uint32_t idiag_fmem;
+	uint32_t idiag_tmem;
+};
+
+struct idiagnl_vegasinfo {
+	NLHDR_COMMON
+
+	uint32_t tcpv_enabled;
+	uint32_t tcpv_rttcnt;
+	uint32_t tcpv_rtt;
+	uint32_t tcpv_minrtt;
+};
+
+struct idiagnl_msg {
+	NLHDR_COMMON
+
+	uint8_t			    idiag_family;
+	uint8_t			    idiag_state;
+	uint8_t			    idiag_timer;
+	uint8_t			    idiag_retrans;
+	uint16_t		    idiag_sport;
+	uint16_t		    idiag_dport;
+	struct nl_addr *	    idiag_src;
+	struct nl_addr *	    idiag_dst;
+	uint32_t		    idiag_ifindex;
+	uint32_t		    idiag_expires;
+	uint32_t		    idiag_rqueue;
+	uint32_t		    idiag_wqueue;
+	uint32_t		    idiag_uid;
+	uint32_t		    idiag_inode;
+
+	uint8_t			    idiag_tos;
+	uint8_t			    idiag_tclass;
+	uint8_t			    idiag_shutdown;
+	char *			    idiag_cong;
+	struct idiagnl_meminfo *    idiag_meminfo;
+	struct idiagnl_vegasinfo *  idiag_vegasinfo;
+	struct tcp_info		    idiag_tcpinfo;
+	uint32_t		    idiag_skmeminfo[IDIAG_SK_MEMINFO_VARS];
+};
+
+struct idiagnl_req {
+	NLHDR_COMMON
+
+	uint8_t			idiag_family;
+	uint8_t			idiag_ext;
+	struct nl_addr *	idiag_src;
+	struct nl_addr *	idiag_dst;
+	uint32_t		idiag_ifindex;
+	uint32_t		idiag_states;
+	uint32_t		idiag_dbs;
+};
 #endif

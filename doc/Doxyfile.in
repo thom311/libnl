@@ -197,8 +197,10 @@ ALIASES                = arg=\param \
                          "ref_asciidoc{3}=<a href=\"../\1.html#\2\"><b>\3</b></a>" \
                          "ref_core{2}=\ref_asciidoc{core,\1,\2 (Netlink Core Library Development Guide)}" \
                          "ref_route{2}=\ref_asciidoc{route,\1,\2 (Netlink Routing Development Guide)}" \
+                         "ref_idiagnl{2}=\ref_asciidoc{idiag,\1,\2 (Netlink Inet Diag Development Guide)}" \
                          "core_doc{2}=\ref_core{\1,\2}" \
                          "route_doc{2}=\ref_route{\1,\2}" \
+                         "idiagnl_doc{2}=\ref_idiagnl{\1,\2}" \
 			 "callback=\par Callback Invocation:\n" \
 			 "lowlevel=\copydoc low_level_api"
 

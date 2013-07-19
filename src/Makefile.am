@@ -9,7 +9,8 @@ LDADD = \
 	${top_builddir}/lib/libnl-3.la \
 	${top_builddir}/lib/libnl-nf-3.la \
 	${top_builddir}/lib/libnl-genl-3.la \
-	${top_builddir}/lib/libnl-route-3.la
+	${top_builddir}/lib/libnl-route-3.la \
+	${top_builddir}/lib/libnl-idiag-3.la
 
 sbin_PROGRAMS = \
 	genl-ctrl-list \

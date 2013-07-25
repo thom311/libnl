@@ -37,7 +37,8 @@ noinst_PROGRAMS = \
 	nl-list-caches nl-list-sockets \
 	nl-util-addr \
 	nl-link-enslave \
-	nl-link-release
+	nl-link-release \
+	idiag-socket-details
 
 genl_ctrl_list_SOURCES = genl-ctrl-list.c 
 
@@ -99,3 +100,5 @@ nl_util_addr_SOURCES = nl-util-addr.c
 nl_pktloc_lookup_SOURCES = nl-pktloc-lookup.c
 
 nl_classid_lookup_SOURCES = nl-classid-lookup.c
+
+idiag_socket_details_SOURCES = idiag-socket-details.c

@@ -24,6 +24,7 @@
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/hashtable.h>
+#include <netlink/data.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link.h>
 #include <netlink-private/route/link/api.h>
@@ -57,6 +58,7 @@
 #define LINK_ATTR_CARRIER	(1 << 25)
 #define LINK_ATTR_PROTINFO	(1 << 26)
 #define LINK_ATTR_AF_SPEC	(1 << 27)
+#define LINK_ATTR_PHYS_PORT_ID	(1 << 28)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -215,6 +217,8 @@ static void link_free_data(struct nl_object *c)
 		free(link->l_info_kind);
 
 		do_foreach_af(link, af_free, NULL);
+
+		nl_data_free(link->l_phys_port_id);
 	}
 }
 
@@ -249,6 +253,10 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 	if ((err = do_foreach_af(src, af_clone, dst)) < 0)
 		return err;
 
+	if (src->l_phys_port_id)
+		if (!(dst->l_phys_port_id = nl_data_clone(src->l_phys_port_id)))
+			return -NLE_NOMEM;
+
 	return 0;
 }
 
@@ -276,6 +284,7 @@ static struct nla_policy link_policy[IFLA_MAX+1] = {
 	[IFLA_NUM_RX_QUEUES]	= { .type = NLA_U32 },
 	[IFLA_GROUP]		= { .type = NLA_U32 },
 	[IFLA_CARRIER]		= { .type = NLA_U8 },
+	[IFLA_PHYS_PORT_ID]	= { .type = NLA_UNSPEC },
 };
 
 static struct nla_policy link_info_policy[IFLA_INFO_MAX+1] = {
@@ -585,6 +594,15 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (tb[IFLA_GROUP]) {
 		link->l_group = nla_get_u32(tb[IFLA_GROUP]);
 		link->ce_mask |= LINK_ATTR_GROUP;
+	}
+
+	if (tb[IFLA_PHYS_PORT_ID]) {
+		link->l_phys_port_id = nl_data_alloc_attr(tb[IFLA_PHYS_PORT_ID]);
+		if (link->l_phys_port_id == NULL) {
+			err = -NLE_NOMEM;
+			goto errout;
+		}
+		link->ce_mask |= LINK_ATTR_PHYS_PORT_ID;
 	}
 
 	err = pp->pp_cb((struct nl_object *) link, pp);
@@ -917,6 +935,7 @@ static const struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_NUM_RX_QUEUES, num_rx_queues)
 	__ADD(LINK_ATTR_GROUP, group)
 	__ADD(LINK_ATTR_CARRIER, carrier)
+	__ADD(LINK_ATTR_PHYS_PORT_ID, phys_port_id)
 };
 
 static char *link_attrs2str(int attrs, char *buf, size_t len)
@@ -2263,6 +2282,17 @@ void rtnl_link_set_num_rx_queues(struct rtnl_link *link, uint32_t nqueues)
 uint32_t rtnl_link_get_num_rx_queues(struct rtnl_link *link)
 {
 	return link->l_num_rx_queues;
+}
+
+/**
+ * Return physical port id of link object
+ * @arg link		Link object
+ *
+ * @return Physical port id or NULL if not set.
+ */
+struct nl_data *rtnl_link_get_phys_port_id(struct rtnl_link *link)
+{
+	return link->l_phys_port_id;
 }
 
 /** @} */

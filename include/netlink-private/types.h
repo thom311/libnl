@@ -187,6 +187,7 @@ struct rtnl_link
 	uint8_t				l_carrier;
 	/* 3 byte hole */
 	struct rtnl_link_af_ops *	l_af_ops;
+	struct nl_data *		l_phys_port_id;
 };
 
 struct rtnl_ncacheinfo

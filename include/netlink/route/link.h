@@ -215,6 +215,8 @@ extern uint32_t	rtnl_link_get_num_tx_queues(struct rtnl_link *);
 extern void	rtnl_link_set_num_rx_queues(struct rtnl_link *, uint32_t);
 extern uint32_t	rtnl_link_get_num_rx_queues(struct rtnl_link *);
 
+extern struct nl_data *	rtnl_link_get_phys_port_id(struct rtnl_link *);
+
 extern int	rtnl_link_enslave_ifindex(struct nl_sock *, int, int);
 extern int	rtnl_link_enslave(struct nl_sock *, struct rtnl_link *,
 				  struct rtnl_link *);

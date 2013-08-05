@@ -659,33 +659,39 @@ int idiagnl_msg_parse(struct nlmsghdr *nlh, struct idiagnl_msg **result)
 				sizeof(msg->idiag_tcpinfo));
 
 	if (tb[IDIAG_ATTR_MEMINFO]) {
-		msg->idiag_meminfo = idiagnl_meminfo_alloc();
-		if (!msg->idiag_meminfo)
+		struct idiagnl_meminfo *minfo = idiagnl_meminfo_alloc();
+		struct inet_diag_meminfo *raw_minfo = NULL;
+
+		if (!minfo)
 			goto errout_nomem;
 
-		/* This memcpy works only because struct idiagnl_meminfo lines
-		 * up perfectly with inet_diag_meminfo.
-		 *
-		 * If you change one or the other, this must also change.
-		 */
-		nla_memcpy(msg->idiag_meminfo, tb[IDIAG_ATTR_MEMINFO],
-				sizeof(msg->idiag_meminfo));
-		idiagnl_meminfo_get(msg->idiag_meminfo);
+		raw_minfo = (struct inet_diag_meminfo *)
+			nla_data(tb[IDIAG_ATTR_MEMINFO]);
+
+		idiagnl_meminfo_set_rmem(minfo, raw_minfo->idiag_rmem);
+		idiagnl_meminfo_set_wmem(minfo, raw_minfo->idiag_wmem);
+		idiagnl_meminfo_set_fmem(minfo, raw_minfo->idiag_fmem);
+		idiagnl_meminfo_set_tmem(minfo, raw_minfo->idiag_tmem);
+
+		msg->idiag_meminfo = minfo;
 	}
 
 	if (tb[IDIAG_ATTR_VEGASINFO]) {
-		msg->idiag_vegasinfo = idiagnl_vegasinfo_alloc();
-		if (!msg->idiag_vegasinfo)
+		struct idiagnl_vegasinfo *vinfo = idiagnl_vegasinfo_alloc();
+		struct tcpvegas_info *raw_vinfo = NULL;
+
+		if (!vinfo)
 			goto errout_nomem;
 
-		/* This memcpy works only because struct idiagnl_vegasinfo lines
-		 * up perfectly with inet_diag_vegasinfo.
-		 *
-		 * If you change one or the other, this must also change.
-		 */
-		nla_memcpy(&msg->idiag_vegasinfo, tb[IDIAG_ATTR_VEGASINFO],
-				sizeof(msg->idiag_vegasinfo));
-		idiagnl_vegasinfo_get(msg->idiag_vegasinfo);
+		raw_vinfo = (struct tcpvegas_info *)
+			nla_data(tb[IDIAG_ATTR_VEGASINFO]);
+
+		idiagnl_vegasinfo_set_enabled(vinfo, raw_vinfo->tcpv_enabled);
+		idiagnl_vegasinfo_set_rttcnt(vinfo, raw_vinfo->tcpv_rttcnt);
+		idiagnl_vegasinfo_set_rtt(vinfo, raw_vinfo->tcpv_rtt);
+		idiagnl_vegasinfo_set_minrtt(vinfo, raw_vinfo->tcpv_minrtt);
+
+		msg->idiag_vegasinfo = vinfo;
 	}
 
 	if (tb[IDIAG_ATTR_SKMEMINFO])

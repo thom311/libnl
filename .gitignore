@@ -22,4 +22,4 @@ cscope.*
 /configure
 /libtool
 /*.pc
-
+/libnl.sym

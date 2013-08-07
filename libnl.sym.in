@@ -1,0 +1,4 @@
+libnl_@MAJ_VERSION@ {
+global:
+	*;
+};

@@ -214,17 +214,20 @@ int rtnl_tc_msg_build(struct rtnl_tc *tc, int type, int flags,
 	    NLA_PUT_STRING(msg, TCA_KIND, tc->tc_kind);
 
 	ops = rtnl_tc_get_ops(tc);
-	if (ops && ops->to_msg_fill) {
+	if (ops && (ops->to_msg_fill || ops->to_msg_fill_raw)) {
 		struct nlattr *opts;
 		void *data = rtnl_tc_data(tc);
 
-		if (!(opts = nla_nest_start(msg, TCA_OPTIONS)))
-			goto nla_put_failure;
+		if (ops->to_msg_fill) {
+			if (!(opts = nla_nest_start(msg, TCA_OPTIONS)))
+				goto nla_put_failure;
 
-		if ((err = ops->to_msg_fill(tc, data, msg)) < 0)
-			goto nla_put_failure;
+			if ((err = ops->to_msg_fill(tc, data, msg)) < 0)
+				goto nla_put_failure;
 
-		nla_nest_end(msg, opts);
+			nla_nest_end(msg, opts);
+		} else if ((err = ops->to_msg_fill_raw(tc, data, msg)) < 0)
+			goto nla_put_failure;
 	}
 
 	*result = msg;

@@ -1762,9 +1762,11 @@ void rtnl_link_set_family(struct rtnl_link *link, int family)
 	link->l_family = family;
 	link->ce_mask |= LINK_ATTR_FAMILY;
 
-	if (link->l_af_ops)
+	if (link->l_af_ops) {
 		af_free(link, link->l_af_ops,
 			link->l_af_data[link->l_af_ops->ao_family], NULL);
+		link->l_af_data[link->l_af_ops->ao_family] = NULL;
+	}
 
 	link->l_af_ops = af_lookup_and_alloc(link, family);
 }

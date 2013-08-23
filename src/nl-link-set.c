@@ -56,7 +56,7 @@ static void set_cb(struct nl_object *obj, void *arg)
 	};
 	int err;
 
-	if ((err = rtnl_link_change(sock, link, change, 0) < 0))
+	if ((err = rtnl_link_change(sock, link, change, 0)) < 0)
 		nl_cli_fatal(err, "Unable to change link: %s",
 			     nl_geterror(err));
 

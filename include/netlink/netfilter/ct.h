@@ -25,6 +25,11 @@ extern "C" {
 
 struct nfnl_ct;
 
+struct nfnl_ct_timestamp {
+	uint64_t		start;
+	uint64_t		stop;
+};
+
 extern struct nl_object_ops ct_obj_ops;
 
 extern struct nfnl_ct *	nfnl_ct_alloc(void);
@@ -118,6 +123,10 @@ extern uint64_t	nfnl_ct_get_packets(const struct nfnl_ct *,int);
 extern void	nfnl_ct_set_bytes(struct nfnl_ct *, int, uint64_t);
 extern int	nfnl_ct_test_bytes(const struct nfnl_ct *, int);
 extern uint64_t	nfnl_ct_get_bytes(const struct nfnl_ct *, int);
+
+extern void nfnl_ct_set_timestamp(struct nfnl_ct *, uint64_t, uint64_t);
+extern int nfnl_ct_test_timestamp(const struct nfnl_ct *);
+extern const struct nfnl_ct_timestamp *nfnl_ct_get_timestamp(const struct nfnl_ct *);
 
 #ifdef __cplusplus
 }

@@ -67,6 +67,8 @@
 #include <netlink-private/cache-api.h>
 #include <netlink-private/types.h>
 
+#define NSEC_PER_SEC	1000000000L
+
 struct trans_tbl {
 	int i;
 	const char *a;

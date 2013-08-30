@@ -51,6 +51,7 @@
 #define CT_ATTR_REPL_ICMP_CODE	(1UL << 23)
 #define CT_ATTR_REPL_PACKETS	(1UL << 24)
 #define CT_ATTR_REPL_BYTES	(1UL << 25)
+#define CT_ATTR_TIMESTAMP	(1UL << 26)
 /** @endcond */
 
 static void ct_free_data(struct nl_object *c)
@@ -191,6 +192,17 @@ static void ct_dump_line(struct nl_object *a, struct nl_dump_params *p)
 
 	if (nfnl_ct_test_mark(ct) && nfnl_ct_get_mark(ct))
 		nl_dump(p, "mark %u ", nfnl_ct_get_mark(ct));
+
+	if (nfnl_ct_test_timestamp(ct)) {
+		const struct nfnl_ct_timestamp *tstamp = nfnl_ct_get_timestamp(ct);
+		int64_t delta_time = tstamp->stop - tstamp->start;
+
+		if (delta_time > 0)
+			delta_time /= NSEC_PER_SEC;
+		else
+			delta_time = 0;
+		nl_dump(p, "delta-time %llu ", delta_time);
+	}
 
 	nl_dump(p, "\n");
 }
@@ -775,6 +787,23 @@ uint64_t nfnl_ct_get_bytes(const struct nfnl_ct *ct, int repl)
 	const struct nfnl_ct_dir *dir = repl ? &ct->ct_repl : &ct->ct_orig;
 
 	return dir->bytes;
+}
+
+void nfnl_ct_set_timestamp(struct nfnl_ct *ct, uint64_t start, uint64_t stop)
+{
+	ct->ct_tstamp.start = start;
+	ct->ct_tstamp.stop = stop;
+	ct->ce_mask |= CT_ATTR_TIMESTAMP;
+}
+
+int nfnl_ct_test_timestamp(const struct nfnl_ct *ct)
+{
+	return !!(ct->ce_mask & CT_ATTR_TIMESTAMP);
+}
+
+const struct nfnl_ct_timestamp *nfnl_ct_get_timestamp(const struct nfnl_ct *ct)
+{
+	return &ct->ct_tstamp;
 }
 
 /** @} */

@@ -102,6 +102,11 @@ static struct nla_policy ct_counters_policy[CTA_COUNTERS_MAX+1] = {
 	[CTA_COUNTERS32_BYTES]	= { .type = NLA_U32 },
 };
 
+static struct nla_policy ct_timestamp_policy[CTA_TIMESTAMP_MAX + 1] = {
+	[CTA_TIMESTAMP_START]	= { .type = NLA_U64 },
+	[CTA_TIMESTAMP_STOP]	= { .type = NLA_U64 },
+};
+
 static int ct_parse_ip(struct nfnl_ct *ct, int repl, struct nlattr *attr)
 {
 	struct nlattr *tb[CTA_IP_MAX+1];
@@ -300,6 +305,24 @@ int nfnlmsg_ct_group(struct nlmsghdr *nlh)
 	}
 }
 
+static int ct_parse_timestamp(struct nfnl_ct *ct, struct nlattr *attr)
+{
+	struct nlattr *tb[CTA_TIMESTAMP_MAX + 1];
+	int err;
+
+	err = nla_parse_nested(tb, CTA_TIMESTAMP_MAX, attr,
+			       ct_timestamp_policy);
+	if (err < 0)
+		return err;
+
+	if (tb[CTA_TIMESTAMP_START] && tb[CTA_TIMESTAMP_STOP])
+		nfnl_ct_set_timestamp(ct,
+			      ntohll(nla_get_u64(tb[CTA_TIMESTAMP_START])),
+			      ntohll(nla_get_u64(tb[CTA_TIMESTAMP_STOP])));
+
+	return 0;
+}
+
 int nfnlmsg_ct_parse(struct nlmsghdr *nlh, struct nfnl_ct **result)
 {
 	struct nfnl_ct *ct;
@@ -355,6 +378,12 @@ int nfnlmsg_ct_parse(struct nlmsghdr *nlh, struct nfnl_ct **result)
 
 	if (tb[CTA_COUNTERS_REPLY]) {
 		err = ct_parse_counters(ct, 1, tb[CTA_COUNTERS_REPLY]);
+		if (err < 0)
+			goto errout;
+	}
+
+	if (tb[CTA_TIMESTAMP]) {
+		err = ct_parse_timestamp(ct, tb[CTA_TIMESTAMP]);
 		if (err < 0)
 			goto errout;
 	}

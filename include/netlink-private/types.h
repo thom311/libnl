@@ -19,6 +19,7 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/route.h>
 #include <netlink/idiag/idiagnl.h>
+#include <netlink/netfilter/ct.h>
 #include <netlink-private/route/tc-api.h>
 
 #define NL_SOCK_BUFSIZE_SET	(1<<0)
@@ -794,6 +795,8 @@ struct nfnl_ct {
 
 	struct nfnl_ct_dir	ct_orig;
 	struct nfnl_ct_dir	ct_repl;
+
+	struct nfnl_ct_timestamp ct_tstamp;
 };
 
 union nfnl_exp_protodata {

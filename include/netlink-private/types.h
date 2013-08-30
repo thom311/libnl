@@ -792,6 +792,7 @@ struct nfnl_ct {
 	uint32_t		ct_mark;
 	uint32_t		ct_use;
 	uint32_t		ct_id;
+	uint16_t		ct_zone;
 
 	struct nfnl_ct_dir	ct_orig;
 	struct nfnl_ct_dir	ct_repl;

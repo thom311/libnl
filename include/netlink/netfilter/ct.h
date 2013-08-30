@@ -90,6 +90,10 @@ extern void	nfnl_ct_set_id(struct nfnl_ct *, uint32_t);
 extern int	nfnl_ct_test_id(const struct nfnl_ct *);
 extern uint32_t	nfnl_ct_get_id(const struct nfnl_ct *);
 
+extern void	nfnl_ct_set_zone(struct nfnl_ct *, uint16_t);
+extern int	nfnl_ct_test_zone(const struct nfnl_ct *);
+extern uint16_t	nfnl_ct_get_zone(const struct nfnl_ct *);
+
 extern int	nfnl_ct_set_src(struct nfnl_ct *, int, struct nl_addr *);
 extern struct nl_addr *	nfnl_ct_get_src(const struct nfnl_ct *, int);
 

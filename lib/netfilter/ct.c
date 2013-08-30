@@ -55,6 +55,7 @@ static struct nla_policy ct_policy[CTA_MAX+1] = {
 	[CTA_COUNTERS_REPLY]	= { .type = NLA_NESTED },
 	[CTA_USE]		= { .type = NLA_U32 },
 	[CTA_ID]		= { .type = NLA_U32 },
+	[CTA_ZONE]		= { .type = NLA_U16 },
 	//[CTA_NAT_DST]
 };
 
@@ -369,6 +370,8 @@ int nfnlmsg_ct_parse(struct nlmsghdr *nlh, struct nfnl_ct **result)
 		nfnl_ct_set_use(ct, ntohl(nla_get_u32(tb[CTA_USE])));
 	if (tb[CTA_ID])
 		nfnl_ct_set_id(ct, ntohl(nla_get_u32(tb[CTA_ID])));
+	if (tb[CTA_ZONE])
+		nfnl_ct_set_zone(ct, ntohs(nla_get_u16(tb[CTA_ZONE])));
 
 	if (tb[CTA_COUNTERS_ORIG]) {
 		err = ct_parse_counters(ct, 0, tb[CTA_COUNTERS_ORIG]);

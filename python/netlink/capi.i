@@ -8,6 +8,8 @@
 #include <netlink/cache.h>
 #include <netlink/attr.h>
 #include <net/if.h>
+
+#include "utils.h"
 %}
 
 %include <stdint.i>
@@ -529,8 +531,6 @@ enum nl_cb_type {
 
 extern struct nl_cb *nl_cb_alloc(enum nl_cb_kind);
 extern struct nl_cb *nl_cb_clone(struct nl_cb *);
-extern struct nl_cb *nl_cb_get(struct nl_cb *);
-extern void nl_cb_put(struct nl_cb *);
 
 struct nlmsgerr {
 	int error;
@@ -560,6 +560,52 @@ struct pynl_callback {
 	PyObject *cbf;
 	PyObject *cba;
 };
+
+struct pynl_cbinfo {
+	struct nl_cb *cb;
+	struct pynl_callback cbtype[NL_CB_TYPE_MAX+1];
+	struct pynl_callback cberr;
+	struct list_head list;
+};
+
+LIST_HEAD(callback_list);
+
+static struct pynl_cbinfo *pynl_find_cbinfo(struct nl_cb *cb, int unlink)
+{
+	struct list_head *pos, *prev;
+	struct pynl_cbinfo *info;
+
+	list_for_each_safe(pos, prev, &callback_list) {
+		info = container_of(pos, struct pynl_cbinfo, list);
+		if (info->cb == cb) {
+			if (unlink)
+				list_del(pos, prev);
+			pynl_dbg("cb=%p: found=%p\n", cb, info);
+			return info;
+		}
+	}
+	pynl_dbg("cb=%p: not found\n", cb);
+	return NULL;
+}
+
+static struct pynl_cbinfo *pynl_get_cbinfo(struct nl_cb *cb, int unlink)
+{
+	struct pynl_cbinfo *info;
+
+	info = pynl_find_cbinfo(cb, unlink);
+
+	if (info || unlink) {
+		/* found or no need to allocate a new one */
+		pynl_dbg("cb=%p: done\n", cb);
+		return info;
+	}
+
+	info = calloc(1, sizeof(*info));
+	info->cb = cb;
+	list_add(&info->list, &callback_list);
+	pynl_dbg("cb=%p: added %p\n", cb, info);
+	return info;
+}
 
 static int nl_recv_msg_handler(struct nl_msg *msg, void *arg)
 {
@@ -610,52 +656,132 @@ static int nl_recv_err_handler(struct sockaddr_nl *nla, struct nlmsgerr *err,
 
 %}
 %inline %{
+struct nl_cb *py_nl_cb_clone(struct nl_cb *cb)
+{
+	struct pynl_cbinfo *info, *clone_info;
+	struct nl_cb *clone;
+	int i;
+
+	clone = nl_cb_clone(cb);
+	info = pynl_find_cbinfo(cb, 0);
+	if (info) {
+		clone_info = pynl_get_cbinfo(clone, 0);
+		/* increase refcnt to callback parameters and copy them */
+		for (i = 0; info && i <= NL_CB_TYPE_MAX; i++) {
+			Py_XINCREF(info->cbtype[i].cbf);
+			Py_XINCREF(info->cbtype[i].cba);
+			clone_info->cbtype[i].cbf = info->cbtype[i].cbf;
+			clone_info->cbtype[i].cba = info->cbtype[i].cba;
+		}
+		Py_XINCREF(info->cberr.cbf);
+		Py_XINCREF(info->cberr.cba);
+		clone_info->cberr.cbf = info->cberr.cbf;
+		clone_info->cberr.cba = info->cberr.cba;
+	}
+	return clone;
+}
+
+void py_nl_cb_put(struct nl_cb *cb)
+{
+	struct pynl_cbinfo *info;
+	int i;
+
+	/* obtain callback info (and unlink) */
+	info = pynl_get_cbinfo(cb, 1);
+	pynl_dbg("cb=%p, info=%p\n", cb, info);
+	/* decrease refcnt for callback type handlers */
+	for (i = 0; info && i <= NL_CB_TYPE_MAX; i++) {
+		Py_XDECREF(info->cbtype[i].cbf);
+		Py_XDECREF(info->cbtype[i].cba);
+	}
+	/* decrease refcnt for error handler and free callback info */
+	if (info) {
+		Py_XDECREF(info->cberr.cbf);
+		Py_XDECREF(info->cberr.cba);
+		free(info);
+	}
+	nl_cb_put(cb);
+}
+
 int py_nl_cb_set(struct nl_cb *cb, enum nl_cb_type t, enum nl_cb_kind k,
 		PyObject *func, PyObject *a)
 {
-	struct pynl_callback *cbd;
+	struct pynl_cbinfo *info;
 
+	/* obtain callback info */
+	info = pynl_get_cbinfo(cb, 0);
+
+	/* clear existing handlers (if any) */
+	Py_XDECREF(info->cbtype[t].cbf);
+	Py_XDECREF(info->cbtype[t].cba);
+	info->cbtype[t].cbf = NULL;
+	info->cbtype[t].cba = NULL;
+	pynl_dbg("cb=%p, info=%p, type=%d, kind=%d\n", cb, info, t, k);
+	/* handle custom callback */
 	if (k == NL_CB_CUSTOM) {
-		cbd = calloc(1, sizeof(*cbd));
 		Py_XINCREF(func);
 		Py_XINCREF(a);
-		cbd->cbf = func;
-		cbd->cba = a;
-		return nl_cb_set(cb, t, k, nl_recv_msg_handler, cbd);
+		info->cbtype[t].cbf = func;
+		info->cbtype[t].cba = a;
+		return nl_cb_set(cb, t, k,
+				 nl_recv_msg_handler, &info->cbtype[t]);
 	}
-	return nl_cb_set(cb, t, k, NULL, NULL);
+	return nl_cb_set(cb, t, k,  NULL, NULL);
 }
 
 int py_nl_cb_set_all(struct nl_cb *cb, enum nl_cb_kind k,
 		    PyObject *func , PyObject *a)
 {
-	struct pynl_callback *cbd;
+	struct pynl_cbinfo *info;
+	int t;
 
-	if (k == NL_CB_CUSTOM) {
-		cbd = calloc(1, sizeof(*cbd));
-		Py_XINCREF(func);
-		Py_XINCREF(a);
-		cbd->cbf = func;
-		cbd->cba = a;
-		return nl_cb_set_all(cb, k, nl_recv_msg_handler, cbd);
+	info = pynl_get_cbinfo(cb, 0);
+	pynl_dbg("cb=%p, info=%p, kind=%d\n", cb, info, k);
+	for (t = 0; t <= NL_CB_TYPE_MAX; t++) {
+		/* (possibly) free existing handler */
+		Py_XDECREF(info->cbtype[t].cbf);
+		Py_XDECREF(info->cbtype[t].cba);
+		info->cbtype[t].cbf = NULL;
+		info->cbtype[t].cba = NULL;
+		if (k == NL_CB_CUSTOM) {
+			Py_XINCREF(func);
+			Py_XINCREF(a);
+			info->cbtype[t].cbf = func;
+			info->cbtype[t].cba = a;
+		}
 	}
-	return nl_cb_set_all(cb, k, NULL, NULL);
+	if (k == NL_CB_CUSTOM)
+		/* callback argument is same for all so using idx 0 here */
+		return nl_cb_set_all(cb, k, nl_recv_msg_handler,
+				     &info->cbtype[0]);
+	else
+		return nl_cb_set_all(cb, k, NULL, NULL);
 }
 
 int py_nl_cb_err(struct nl_cb *cb, enum nl_cb_kind k,
 		PyObject *func, PyObject *a)
 {
-	struct pynl_callback *cbd;
+	struct pynl_cbinfo *info;
 
+	/* obtain callback info */
+	info = pynl_get_cbinfo(cb, 0);
+	pynl_dbg("cb=%p, info=%p, kind=%d\n", cb, info, k);
+	/* clear existing handlers (if any) */
+	Py_XDECREF(info->cberr.cbf);
+	Py_XDECREF(info->cberr.cba);
+	info->cberr.cbf = NULL;
+	info->cberr.cba = NULL;
+
+	/* handle custom callback */
 	if (k == NL_CB_CUSTOM) {
-		cbd = calloc(1, sizeof(*cbd));
 		Py_XINCREF(func);
 		Py_XINCREF(a);
-		cbd->cbf = func;
-		cbd->cba = a;
-		return nl_cb_err(cb, k, nl_recv_err_handler, cbd);
+		info->cberr.cbf = func;
+		info->cberr.cba = a;
+		return nl_cb_err(cb, k,
+				 nl_recv_err_handler, &info->cberr);
 	}
-	return nl_cb_err(cb, k, NULL, NULL);
+	return nl_cb_err(cb, k,  NULL, NULL);
 }
 %}
 

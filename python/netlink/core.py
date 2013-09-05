@@ -241,6 +241,21 @@ class Socket(object):
         else:
             return ret
 
+    def send_auto_complete(self, msg):
+        if not isinstance(msg, Message):
+            raise Exception('must provide Message instance')
+        ret = capi.nl_send_auto_complete(self._sock, msg._msg)
+        if ret < 0:
+            raise Exception('send_auto_complete failed: ret=%d' % ret)
+        return ret
+
+    def recvmsgs(self, recv_cb):
+        if not isinstance(recv_cb, Callback):
+            raise Exception('must provide Callback instance')
+        ret = capi.nl_recvmsgs(self._sock, recv_cb._cb)
+        if ret < 0:
+            raise Exception('recvmsg failed: ret=%d' % ret)
+
 _sockets = {}
 
 def lookup_socket(protocol):

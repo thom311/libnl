@@ -139,6 +139,8 @@ extern void nl_cb_overwrite_send(struct nl_cb *,
 				 int (*func)(struct nl_sock *,
 					     struct nl_msg *));
 
+extern enum nl_cb_type nl_cb_active_type(struct nl_cb *cb);
+
 #ifdef __cplusplus
 }
 #endif

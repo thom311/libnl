@@ -128,7 +128,12 @@ extern void dump_from_ops(struct nl_object *, struct nl_dump_params *);
 
 static inline int nl_cb_call(struct nl_cb *cb, int type, struct nl_msg *msg)
 {
-	return cb->cb_set[type](msg, cb->cb_args[type]);
+	int ret;
+
+	cb->cb_active = type;
+	ret = cb->cb_set[type](msg, cb->cb_args[type]);
+	cb->cb_active = __NL_CB_TYPE_MAX;
+	return ret;
 }
 
 #define ARRAY_SIZE(X) (sizeof(X) / sizeof((X)[0]))

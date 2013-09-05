@@ -39,7 +39,7 @@ struct nl_cb
 {
 	nl_recvmsg_msg_cb_t	cb_set[NL_CB_TYPE_MAX+1];
 	void *			cb_args[NL_CB_TYPE_MAX+1];
-	
+
 	nl_recvmsg_err_cb_t	cb_err;
 	void *			cb_err_arg;
 
@@ -61,6 +61,8 @@ struct nl_cb
 					      struct nl_msg *);
 
 	int			cb_refcnt;
+	/** indicates the callback that is currently active */
+	enum nl_cb_type		cb_active;
 };
 
 struct nl_sock
@@ -166,7 +168,7 @@ struct rtnl_link
 	uint32_t			l_txqlen;
 	uint32_t			l_weight;
 	uint32_t			l_master;
-	struct nl_addr *		l_addr;	
+	struct nl_addr *		l_addr;
 	struct nl_addr *		l_bcast;
 	char				l_qdisc[IFQDISCSIZ];
 	struct rtnl_link_map		l_map;
@@ -207,9 +209,9 @@ struct rtnl_neigh
 	uint32_t	n_ifindex;
 	uint16_t	n_state;
 	uint8_t		n_flags;
-	uint8_t		n_type;	
+	uint8_t		n_type;
 	struct nl_addr *n_lladdr;
-	struct nl_addr *n_dst;	
+	struct nl_addr *n_dst;
 	uint32_t	n_probes;
 	struct rtnl_ncacheinfo n_cacheinfo;
 	uint32_t                n_state_mask;
@@ -243,14 +245,14 @@ struct rtnl_addr
 	uint8_t		a_scope;
 	uint32_t	a_ifindex;
 
-	struct nl_addr *a_peer;	
+	struct nl_addr *a_peer;
 	struct nl_addr *a_local;
 	struct nl_addr *a_bcast;
 	struct nl_addr *a_anycast;
 	struct nl_addr *a_multicast;
 
 	struct rtnl_addr_cacheinfo a_cacheinfo;
-	
+
 	char a_label[IFNAMSIZ];
 	uint32_t a_flag_mask;
 	struct rtnl_link *a_link;
@@ -402,7 +404,7 @@ struct rtnl_neightbl_parms
 	 * Queue length for the delayed proxy arp requests.
 	 */
 	uint32_t		ntp_proxy_qlen;
-	
+
 	/**
 	 * Mask of available parameter attributes
 	 */

@@ -9,6 +9,7 @@
 #include <netlink/attr.h>
 #include <net/if.h>
 
+#define DEBUG
 #include "utils.h"
 %}
 
@@ -613,14 +614,27 @@ static int nl_recv_msg_handler(struct nl_msg *msg, void *arg)
 	PyObject *msgobj;
 	PyObject *cbparobj;
 	PyObject *resobj;
+	PyObject *funcobj;
 	int result;
 
 	if (!cbd)
 		return NL_STOP;
 	msgobj = SWIG_NewPointerObj(SWIG_as_voidptr(msg),
 				    SWIGTYPE_p_nl_msg, 0 |  0 );
-	cbparobj = Py_BuildValue("(OO)", msgobj, cbd->cba);
-	resobj = PyObject_CallObject(cbd->cbf, cbparobj);
+	/* add selfobj if callback is a method */
+	if (cbd->cbf && PyMethod_Check(cbd->cbf)) {
+		PyObject *selfobj = PyMethod_Self(cbd->cbf);
+		cbparobj = Py_BuildValue("(OOO)", selfobj ? selfobj : cbd->cba,
+					 msgobj, cbd->cba);
+		funcobj = PyMethod_Function(cbd->cbf);
+		pynl_dbg("callback %sbounded instance method %p\n",
+			 selfobj ? "" : "un", funcobj);
+	} else {
+		cbparobj = Py_BuildValue("(OO)", msgobj, cbd->cba);
+		funcobj = cbd->cbf;
+		pynl_dbg("callback function %p\n", funcobj);
+	}
+	resobj = PyObject_CallObject(funcobj, cbparobj);
 	Py_DECREF(cbparobj);
 	if (resobj == NULL)
 		return NL_STOP;
@@ -637,14 +651,24 @@ static int nl_recv_err_handler(struct sockaddr_nl *nla, struct nlmsgerr *err,
 	PyObject *errobj;
 	PyObject *cbparobj;
 	PyObject *resobj;
+	PyObject *funcobj;
 	int result;
 
 	if (!cbd)
 		return NL_STOP;
 	errobj = SWIG_NewPointerObj(SWIG_as_voidptr(err),
 				    SWIGTYPE_p_nlmsgerr, 0 |  0 );
-	cbparobj = Py_BuildValue("(OO)", errobj, cbd->cba);
-	resobj = PyObject_CallObject(cbd->cbf, cbparobj);
+	/* add selfobj if callback is a method */
+	if (cbd->cbf && PyMethod_Check(cbd->cbf)) {
+		PyObject *selfobj = PyMethod_Self(cbd->cbf);
+		cbparobj = Py_BuildValue("(OOO)", selfobj ? selfobj : cbd->cba,
+					 errobj, cbd->cba);
+		funcobj = PyMethod_Function(cbd->cbf);
+	} else {
+		cbparobj = Py_BuildValue("(OO)", errobj, cbd->cba);
+		funcobj = cbd->cbf;
+	}
+	resobj = PyObject_CallObject(funcobj, cbparobj);
 	Py_DECREF(cbparobj);
 	if (resobj == NULL)
 		return NL_STOP;

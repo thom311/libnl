@@ -184,10 +184,12 @@ class Socket(object):
     """Netlink socket"""
 
     def __init__(self, cb=None):
-        if cb is None:
+        if isinstance(cb, Callback):
+            self._sock = capi.nl_socket_alloc_cb(cb._cb)
+        elif cb == None:
             self._sock = capi.nl_socket_alloc()
         else:
-            self._sock = capi.nl_socket_alloc_cb(cb)
+            raise Exception('\'cb\' parameter has wrong type')
 
         if self._sock is None:
             raise Exception('NULL pointer returned while allocating socket')

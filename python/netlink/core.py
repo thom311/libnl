@@ -198,7 +198,7 @@ class Socket(object):
         capi.nl_socket_free(self._sock)
 
     def __str__(self):
-        return 'nlsock<{0}>'.format(self.localPort)
+        return 'nlsock<{0}>'.format(self.local_port)
 
     @property
     def local_port(self):

@@ -539,24 +539,6 @@ struct nlmsgerr {
 
 %{
 
-/**
- * nl_recvmsgs() callback for message processing customization
- * @ingroup cb
- * @arg msg		netlink message being processed
- * @arg arg		argument passwd on through caller
- */
-typedef int (*nl_recvmsg_msg_cb_t)(struct nl_msg *msg, void *arg);
-
-/**
- * nl_recvmsgs() callback for error message processing customization
- * @ingroup cb
- * @arg nla		netlink address of the peer
- * @arg nlerr		netlink error message being processed
- * @arg arg		argument passed on through caller
- */
-typedef int (*nl_recvmsg_err_cb_t)(struct sockaddr_nl *nla,
-				   struct nlmsgerr *nlerr, void *arg);
-
 struct pynl_callback {
 	PyObject *cbf;
 	PyObject *cba;

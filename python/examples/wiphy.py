@@ -127,7 +127,7 @@ try:
 	family = genl.genl_ctrl_resolve(s, 'nl80211')
 	m = nl.nlmsg_alloc()
 	genl.genlmsg_put(m, 0, 0, family, 0, 0, nl80211.NL80211_CMD_GET_WIPHY, 0)
-	nl.nla_put_u32(m, nl80211.NL80211_ATTR_WIPHY, 0)
+	nl.nla_put_u32(m, nl80211.NL80211_ATTR_WIPHY, 7)
 
 	err = nl.nl_send_auto_complete(s, m);
 	if err < 0:

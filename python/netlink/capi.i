@@ -599,8 +599,10 @@ static int nl_recv_msg_handler(struct nl_msg *msg, void *arg)
 	PyObject *funcobj;
 	int result;
 
-	if (!cbd)
-		return NL_STOP;
+	if (!cbd) {
+		result = NL_STOP;
+		goto done;
+	}
 	msgobj = SWIG_NewPointerObj(SWIG_as_voidptr(msg),
 				    SWIGTYPE_p_nl_msg, 0 |  0 );
 	/* add selfobj if callback is a method */
@@ -618,11 +620,13 @@ static int nl_recv_msg_handler(struct nl_msg *msg, void *arg)
 	}
 	resobj = PyObject_CallObject(funcobj, cbparobj);
 	Py_DECREF(cbparobj);
-	if (resobj == NULL)
-		return NL_STOP;
-	if (!PyArg_ParseTuple(resobj, "i:nl_recv_msg_handler", &result))
+	if (resobj && PyInt_Check(resobj))
+		result = (int)PyInt_AsLong(resobj);
+	else
 		result = NL_STOP;
-	Py_DECREF(resobj);
+	Py_XDECREF(resobj);
+done:
+	pynl_dbg("result=%d\n", result);
 	return result;
 }
 
@@ -652,11 +656,12 @@ static int nl_recv_err_handler(struct sockaddr_nl *nla, struct nlmsgerr *err,
 	}
 	resobj = PyObject_CallObject(funcobj, cbparobj);
 	Py_DECREF(cbparobj);
-	if (resobj == NULL)
-		return NL_STOP;
-	result = (int)PyInt_AsLong(resobj);
-	Py_DECREF(resobj);
-	printf("error: err=%d ret=%d\n", err->error, result);
+	if (resobj && PyInt_Check(resobj))
+		result = (int)PyInt_AsLong(resobj);
+	else
+		result = NL_STOP;
+	Py_XDECREF(resobj);
+	pynl_dbg("error: err=%d ret=%d\n", err->error, result);
 	return result;
 }
 

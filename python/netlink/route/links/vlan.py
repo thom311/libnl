@@ -67,5 +67,5 @@ class VLANLink(object):
         return 'vlan-id {0}'.format(self.id)
 
 def init(link):
-    link.vlan = VLANLink(link._link)
+    link.vlan = VLANLink(link._rtnl_link)
     return link.vlan

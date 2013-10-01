@@ -829,7 +829,7 @@ continue_reading:
 			}
 		}
 
-		/* messages terminates a multpart message, this is
+		/* messages terminates a multipart message, this is
 		 * usually the end of a message and therefore we slip
 		 * out of the loop by default. the user may overrule
 		 * this action by skipping this packet. */

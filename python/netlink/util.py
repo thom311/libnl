@@ -17,8 +17,9 @@ import types
 
 __version__ = '1.0'
 
+#rename into colored_output
 def _color(t, c):
-    return b'{esc}[{color}m{text}{esc}[0m'.format(esc=b'\x1b', color=c, text=t)
+    return '{esc}[{color}m{text}{esc}[0m'.format(esc=b'\x1b'.decode(), color=c, text=t)
 
 def black(t):
     return _color(t, 30)

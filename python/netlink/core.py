@@ -449,6 +449,9 @@ class ObjIterator(object):
         return capi.nl_cache_get_next(self._nl_object)
 
     def next(self):
+        return self.__next__(self)
+
+    def __next__(self):
         if self._end:
             raise StopIteration()
 
@@ -566,12 +569,12 @@ class Cache(object):
         capi.nl_cache_refill(socket._sock, self._nl_cache)
         return self
 
-    def resync(self, socket=None, cb=None):
+    def resync(self, socket=None, cb=None, args=None):
         """Synchronize cache with content in kernel"""
         if socket is None:
             socket = lookup_socket(self._protocol)
 
-        capi.nl_cache_resync(socket._sock, self._nl_cache, cb)
+        capi.nl_cache_resync(socket._sock, self._nl_cache, cb, args)
 
     def provide(self):
         """Provide this cache to others
@@ -668,6 +671,8 @@ class AbstractAddress(object):
         self._nl_addr = None
 
         if isinstance(addr, str):
+            # returns None on success I guess
+            # TO CORRECT 
             addr = capi.addr_parse(addr, socket.AF_UNSPEC)
             if addr is None:
                 raise ValueError('Invalid address format')

@@ -523,6 +523,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		if (li[IFLA_INFO_KIND]) {
 			struct rtnl_link_info_ops *ops;
 			char *kind;
+			int af;
 
 			kind = nla_strdup(li[IFLA_INFO_KIND]);
 			if (kind == NULL) {
@@ -531,6 +532,16 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			}
 			link->l_info_kind = kind;
 			link->ce_mask |= LINK_ATTR_LINKINFO;
+
+			if ((af = nl_str2af(kind)) >= 0 &&
+				!af_ops && (af_ops = af_lookup_and_alloc(link, af))) {
+
+				if (af_ops->ao_protinfo_policy) {
+					tb[IFLA_PROTINFO] = (struct nlattr *)af_ops->ao_protinfo_policy;
+				}
+				link->l_family = family = af;
+				link->l_af_ops = af_ops;
+			}
 
 			ops = rtnl_link_info_ops_lookup(kind);
 			link->l_info_ops = ops;

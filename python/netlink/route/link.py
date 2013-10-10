@@ -374,6 +374,18 @@ class Link(netlink.Object):
 
         return capi.rtnl_link_get_stat(self._rtnl_link, stat)
 
+    def enslave(self, slave, sock=None):
+        if not sock:
+            sock = netlink.lookup_socket(netlink.NETLINK_ROUTE)
+
+        return capi.rtnl_link_enslave(sock._sock, self._rtnl_link, slave._rtnl_link)
+
+    def release(self, slave, sock=None):
+        if not sock:
+            sock = netlink.lookup_socket(netlink.NETLINK_ROUTE)
+
+        return capi.rtnl_link_release(sock._sock, self._rtnl_link, slave._rtnl_link)
+
     def add(self, sock=None, flags=None):
         if not sock:
             sock = netlink.lookup_socket(netlink.NETLINK_ROUTE)

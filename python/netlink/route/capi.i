@@ -5,6 +5,7 @@
 #include <netlink/route/link/vlan.h>
 #include <netlink/route/link/macvlan.h>
 #include <netlink/route/link/vxlan.h>
+#include <netlink/route/link/bridge.h>
 #include <netlink/route/link/inet.h>
 
 #include <netlink/route/tc.h>
@@ -144,6 +145,9 @@ extern int rtnl_link_set_stat(struct rtnl_link *, const unsigned int, const uint
 extern int rtnl_link_set_type(struct rtnl_link *, const char *);
 extern char *rtnl_link_get_type(struct rtnl_link *);
 
+extern int rtnl_link_enslave(struct nl_sock * sock, struct rtnl_link * master, struct rtnl_link * slave);
+extern int rtnl_link_release(struct nl_sock * sock, struct rtnl_link * slave);
+
 /* <netlink/route/link/vlan.h> */
 
 struct vlan_map
@@ -247,6 +251,24 @@ extern int rtnl_link_vxlan_set_l3miss(struct rtnl_link *, uint8_t);
 extern int rtnl_link_vxlan_get_l3miss(struct rtnl_link *);
 extern int rtnl_link_vxlan_enable_l3miss(struct rtnl_link *);
 extern int rtnl_link_vxlan_disable_l3miss(struct rtnl_link *);
+
+/* <netlink/route/link/bridge.h> */
+
+extern int	rtnl_link_is_bridge(struct rtnl_link *);
+extern int	rtnl_link_bridge_has_ext_info(struct rtnl_link *);
+
+extern int	rtnl_link_bridge_set_port_state(struct rtnl_link *, uint8_t );
+extern int	rtnl_link_bridge_get_port_state(struct rtnl_link *);
+
+extern int	rtnl_link_bridge_set_priority(struct rtnl_link *, uint16_t);
+extern int	rtnl_link_bridge_get_priority(struct rtnl_link *);
+
+extern int	rtnl_link_bridge_set_cost(struct rtnl_link *, uint32_t);
+extern int	rtnl_link_bridge_get_cost(struct rtnl_link *, uint32_t *);
+
+extern int	rtnl_link_bridge_unset_flags(struct rtnl_link *, unsigned int);
+extern int	rtnl_link_bridge_set_flags(struct rtnl_link *, unsigned int);
+extern int	rtnl_link_bridge_get_flags(struct rtnl_link *);
 
 /* <netlink/route/link/inet.h> */
 %cstring_output_maxsize(char *buf, size_t len)

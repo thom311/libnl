@@ -254,6 +254,13 @@ extern int rtnl_link_vxlan_disable_l3miss(struct rtnl_link *);
 
 /* <netlink/route/link/bridge.h> */
 
+enum rtnl_link_bridge_flags {
+	RTNL_BRIDGE_HAIRPIN_MODE	= 0x0001,
+	RTNL_BRIDGE_BPDU_GUARD		= 0x0002,
+	RTNL_BRIDGE_ROOT_BLOCK		= 0x0004,
+	RTNL_BRIDGE_FAST_LEAVE		= 0x0008,
+};
+
 extern int	rtnl_link_is_bridge(struct rtnl_link *);
 extern int	rtnl_link_bridge_has_ext_info(struct rtnl_link *);
 
@@ -269,6 +276,9 @@ extern int	rtnl_link_bridge_get_cost(struct rtnl_link *, uint32_t *);
 extern int	rtnl_link_bridge_unset_flags(struct rtnl_link *, unsigned int);
 extern int	rtnl_link_bridge_set_flags(struct rtnl_link *, unsigned int);
 extern int	rtnl_link_bridge_get_flags(struct rtnl_link *);
+
+extern char * rtnl_link_bridge_flags2str(int, char *, size_t);
+extern int	rtnl_link_bridge_str2flags(const char *);
 
 /* <netlink/route/link/inet.h> */
 %cstring_output_maxsize(char *buf, size_t len)

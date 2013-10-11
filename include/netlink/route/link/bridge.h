@@ -48,6 +48,9 @@ extern int	rtnl_link_bridge_unset_flags(struct rtnl_link *, unsigned int);
 extern int	rtnl_link_bridge_set_flags(struct rtnl_link *, unsigned int);
 extern int	rtnl_link_bridge_get_flags(struct rtnl_link *);
 
+extern char * rtnl_link_bridge_flags2str(int, char *, size_t);
+extern int	rtnl_link_bridge_str2flags(const char *);
+
 #ifdef __cplusplus
 }
 #endif

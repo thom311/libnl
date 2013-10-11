@@ -451,6 +451,30 @@ int rtnl_link_bridge_get_flags(struct rtnl_link *link)
 	return bd->b_flags;
 }
 
+static const struct trans_tbl bridge_flags[] = {
+	__ADD(RTNL_BRIDGE_HAIRPIN_MODE, hairpin_mode)
+	__ADD(RTNL_BRIDGE_BPDU_GUARD, 	bpdu_guard)
+	__ADD(RTNL_BRIDGE_ROOT_BLOCK,	root_block)
+	__ADD(RTNL_BRIDGE_FAST_LEAVE,	fast_leave)
+};
+
+/**
+ * @name Flag Translation
+ * @{
+ */
+
+char *rtnl_link_bridge_flags2str(int flags, char *buf, size_t len)
+{
+	return __flags2str(flags, buf, len, bridge_flags, ARRAY_SIZE(bridge_flags));
+}
+
+int rtnl_link_bridge_str2flags(const char *name)
+{
+	return __str2flags(name, bridge_flags, ARRAY_SIZE(bridge_flags));
+}
+
+/** @} */
+
 static struct rtnl_link_af_ops bridge_ops = {
 	.ao_family			= AF_BRIDGE,
 	.ao_alloc			= &bridge_alloc,

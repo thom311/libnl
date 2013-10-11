@@ -76,6 +76,41 @@ class BRIDGELink(object):
             raise ValueError()
         capi.rtnl_link_bridge_set_cost(self._link, int(cost))
 
+    @property
+    @netlink.nlattr(type=str)
+    def flags(self):
+        """ BRIDGE flags
+        Setting this property will *Not* reset flags to value you supply in
+        Examples:
+        link.flags = '+xxx' # add xxx flag
+        link.flags = 'xxx'  # exactly the same
+        link.flags = '-xxx' # remove xxx flag
+        link.flags = [ '+xxx', '-yyy' ] # list operation
+        """
+        self.bridge_assert_ext_info()
+        flags = capi.rtnl_link_bridge_get_flags(self._link)
+        return capi.rtnl_link_bridge_flags2str(flags, 256)[0].split(',')
+
+    def _set_flag(self, flag):
+        if flag.startswith('-'):
+            i = capi.rtnl_link_bridge_str2flags(flag[1:])
+            capi.rtnl_link_bridge_unset_flags(self._link, i)
+        elif flag.startswith('+'):
+            i = capi.rtnl_link_bridge_str2flags(flag[1:])
+            capi.rtnl_link_bridge_set_flags(self._link, i)
+        else:
+            i = capi.rtnl_link_bridge_str2flags(flag)
+            capi.rtnl_link_bridge_set_flags(self._link, i)
+
+    @flags.setter
+    def flags(self, value):
+        self.bridge_assert_ext_info()
+        if type(value) is list:
+            for flag in value:
+                self._set_flag(flag)
+        else:
+            self._set_flag(value)
+
     def brief(self):
         return 'bridge-has-ext-info {0}'.format(self._has_ext_info)
 

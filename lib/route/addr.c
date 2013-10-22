@@ -552,6 +552,7 @@ static int build_addr_msg(struct rtnl_addr *tmpl, int cmd, int flags,
 		.ifa_family = tmpl->a_family,
 		.ifa_index = tmpl->a_ifindex,
 		.ifa_prefixlen = tmpl->a_prefixlen,
+		.ifa_flags = tmpl->a_flags,
 	};
 
 	if (tmpl->ce_mask & ADDR_ATTR_SCOPE)

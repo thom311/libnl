@@ -114,6 +114,9 @@ struct nl_object *nl_object_clone(struct nl_object *obj)
 	int doff = offsetof(struct nl_derived_object, data);
 	int size;
 
+	if (!obj)
+		return NULL;
+
 	new = nl_object_alloc(ops);
 	if (!new)
 		return NULL;

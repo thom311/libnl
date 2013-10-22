@@ -17,4 +17,4 @@ def translate(match):
 
 rc = re.compile('|'.join(map(re.escape, sorted(links, reverse=True))))
 for line in open(sys.argv[2], 'r'):
-	print rc.sub(translate, line),
+	print(rc.sub(translate, line))

@@ -13,7 +13,7 @@
 # copied from glib
 m4_define([libnl_major_version], [3])
 m4_define([libnl_minor_version], [2])
-m4_define([libnl_micro_version], [22])
+m4_define([libnl_micro_version], [23-rc1])
 
 
 # The following explanation may help to understand the above rules a bit
@@ -34,9 +34,9 @@ m4_define([libnl_micro_version], [22])
 # 3. Programs may need to be changed, recompiled, relinked in order to use
 #    the new version. Bump current, set revision and age to 0.
 
-m4_define([libnl_lt_current],    [217])
+m4_define([libnl_lt_current],    [218])
 m4_define([libnl_lt_revision],	 [0])
-m4_define([libnl_lt_age],        [17])
+m4_define([libnl_lt_age],        [18])
 
 m4_define([libnl_version],
 	  [libnl_major_version.libnl_minor_version.libnl_micro_version])

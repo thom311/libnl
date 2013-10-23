@@ -41,12 +41,15 @@ nobase_libnlinclude_HEADERS = \
 	netlink/route/cls/fw.h \
 	netlink/route/cls/police.h \
 	netlink/route/cls/u32.h \
+	netlink/route/link/api.h \
 	netlink/route/link/bonding.h \
 	netlink/route/link/bridge.h \
 	netlink/route/link/can.h \
 	netlink/route/link/inet.h \
-	netlink/route/link/vlan.h \
+	netlink/route/link/info-api.h \
 	netlink/route/link/macvlan.h \
+	netlink/route/link/vlan.h \
+	netlink/route/link/vxlan.h \
 	netlink/route/qdisc/cbq.h \
 	netlink/route/qdisc/dsmark.h \
 	netlink/route/qdisc/fifo.h \
@@ -76,8 +79,6 @@ nobase_libnlinclude_HEADERS = \
 	netlink/version.h \
 	netlink/cache-api.h \
 	netlink/object-api.h \
-	netlink/route/link/api.h \
-	netlink/route/link/info-api.h \
 	netlink/route/tc-api.h \
 	netlink/idiag/idiagnl.h \
 	netlink/idiag/meminfo.h \

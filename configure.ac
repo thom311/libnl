@@ -39,7 +39,7 @@ m4_define([libnl_lt_revision],	 [0])
 m4_define([libnl_lt_age],        [18])
 
 m4_define([libnl_version],
-	  [libnl_major_version.libnl_minor_version.libnl_micro_version-rc1])
+	  [libnl_major_version.libnl_minor_version.libnl_micro_version-rc2])
 
 AC_INIT(libnl, [libnl_version], [], [], [http://www.infradead.org/~tgr/libnl/])
 AC_CONFIG_HEADERS([lib/defs.h])

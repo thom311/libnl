@@ -21,6 +21,7 @@ UNIT_TESTS = check-all
 check_PROGRAMS = \
 	test-create-bond \
 	test-create-vlan \
+	test-create-vxlan \
 	test-create-bridge \
 	test-delete-link \
 	test-socket-creation \
@@ -41,6 +42,7 @@ endif
 test_cache_mngr_SOURCES = test-cache-mngr.c
 test_create_bond_SOURCES = test-create-bond.c
 test_create_vlan_SOURCES = test-create-vlan.c
+test_create_vxlan_SOURCES = test-create-vxlan.c
 test_create_bridge_SOURCES = test-create-bridge.c
 test_delete_link_SOURCES = test-delete-link.c
 test_genl_SOURCES = test-genl.c

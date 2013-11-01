@@ -1213,19 +1213,8 @@ int rtnl_link_name2i(struct nl_cache *cache, const char *name)
 
 /** @} */
 
-static int build_link_msg(int cmd, struct ifinfomsg *hdr,
-			  struct rtnl_link *link, int flags, struct nl_msg **result)
+int rtnl_link_fill_info(struct nl_msg *msg, struct rtnl_link *link)
 {
-	struct nl_msg *msg;
-	struct nlattr *af_spec;
-
-	msg = nlmsg_alloc_simple(cmd, flags);
-	if (!msg)
-		return -NLE_NOMEM;
-
-	if (nlmsg_append(msg, hdr, sizeof(*hdr), NLMSG_ALIGNTO) < 0)
-		goto nla_put_failure;
-
 	if (link->ce_mask & LINK_ATTR_ADDR)
 		NLA_PUT_ADDR(msg, IFLA_ADDRESS, link->l_addr);
 
@@ -1270,6 +1259,28 @@ static int build_link_msg(int cmd, struct ifinfomsg *hdr,
 
 	if (link->ce_mask & LINK_ATTR_GROUP)
 		NLA_PUT_U32(msg, IFLA_GROUP, link->l_group);
+
+	return 0;
+
+nla_put_failure:
+	return -NLE_MSGSIZE;
+}
+
+static int build_link_msg(int cmd, struct ifinfomsg *hdr,
+			  struct rtnl_link *link, int flags, struct nl_msg **result)
+{
+	struct nl_msg *msg;
+	struct nlattr *af_spec;
+
+	msg = nlmsg_alloc_simple(cmd, flags);
+	if (!msg)
+		return -NLE_NOMEM;
+
+	if (nlmsg_append(msg, hdr, sizeof(*hdr), NLMSG_ALIGNTO) < 0)
+		goto nla_put_failure;
+
+	if (rtnl_link_fill_info(msg, link))
+		goto nla_put_failure;
 
 	if (link->ce_mask & LINK_ATTR_LINKINFO) {
 		struct nlattr *info;

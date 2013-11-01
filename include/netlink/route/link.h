@@ -97,6 +97,8 @@ typedef enum {
 
 #define RTNL_LINK_STATS_MAX (__RTNL_LINK_STATS_MAX - 1)
 
+extern struct nla_policy link_policy[];
+
 extern struct rtnl_link *rtnl_link_alloc(void);
 extern void	rtnl_link_put(struct rtnl_link *);
 

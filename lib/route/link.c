@@ -260,7 +260,7 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 	return 0;
 }
 
-static struct nla_policy link_policy[IFLA_MAX+1] = {
+struct nla_policy link_policy[IFLA_MAX+1] = {
 	[IFLA_IFNAME]		= { .type = NLA_STRING,
 				    .maxlen = IFNAMSIZ },
 	[IFLA_MTU]		= { .type = NLA_U32 },

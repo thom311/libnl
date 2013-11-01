@@ -16,6 +16,7 @@
 #include <netlink/cache.h>
 #include <netlink/addr.h>
 #include <linux/if.h>
+#include <sys/types.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -218,6 +219,11 @@ extern void	rtnl_link_set_num_rx_queues(struct rtnl_link *, uint32_t);
 extern uint32_t	rtnl_link_get_num_rx_queues(struct rtnl_link *);
 
 extern struct nl_data *	rtnl_link_get_phys_port_id(struct rtnl_link *);
+
+extern void	rtnl_link_set_ns_fd(struct rtnl_link *, int);
+extern int	rtnl_link_get_ns_fd(struct rtnl_link *);
+extern void	rtnl_link_set_ns_pid(struct rtnl_link *, pid_t);
+extern pid_t	rtnl_link_get_ns_pid(struct rtnl_link *);
 
 extern int	rtnl_link_enslave_ifindex(struct nl_sock *, int, int);
 extern int	rtnl_link_enslave(struct nl_sock *, struct rtnl_link *,

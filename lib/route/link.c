@@ -59,6 +59,8 @@
 #define LINK_ATTR_PROTINFO	(1 << 26)
 #define LINK_ATTR_AF_SPEC	(1 << 27)
 #define LINK_ATTR_PHYS_PORT_ID	(1 << 28)
+#define LINK_ATTR_NS_FD		(1 << 29)
+#define LINK_ATTR_NS_PID	(1 << 30)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -285,6 +287,8 @@ struct nla_policy link_policy[IFLA_MAX+1] = {
 	[IFLA_GROUP]		= { .type = NLA_U32 },
 	[IFLA_CARRIER]		= { .type = NLA_U8 },
 	[IFLA_PHYS_PORT_ID]	= { .type = NLA_UNSPEC },
+	[IFLA_NET_NS_PID]	= { .type = NLA_U32 },
+	[IFLA_NET_NS_FD]	= { .type = NLA_U32 },
 };
 
 static struct nla_policy link_info_policy[IFLA_INFO_MAX+1] = {
@@ -605,6 +609,16 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (tb[IFLA_GROUP]) {
 		link->l_group = nla_get_u32(tb[IFLA_GROUP]);
 		link->ce_mask |= LINK_ATTR_GROUP;
+	}
+
+	if (tb[IFLA_NET_NS_FD]) {
+		link->l_ns_fd = nla_get_u32(tb[IFLA_NET_NS_FD]);
+		link->ce_mask |= LINK_ATTR_NS_FD;
+	}
+
+	if (tb[IFLA_NET_NS_FD]) {
+		link->l_ns_pid = nla_get_u32(tb[IFLA_NET_NS_PID]);
+		link->ce_mask |= LINK_ATTR_NS_PID;
 	}
 
 	if (tb[IFLA_PHYS_PORT_ID]) {
@@ -2317,6 +2331,28 @@ uint32_t rtnl_link_get_num_rx_queues(struct rtnl_link *link)
 struct nl_data *rtnl_link_get_phys_port_id(struct rtnl_link *link)
 {
 	return link->l_phys_port_id;
+}
+
+void rtnl_link_set_ns_fd(struct rtnl_link *link, int fd)
+{
+	link->l_ns_fd = fd;
+	link->ce_mask |= LINK_ATTR_NS_FD;
+}
+
+int rtnl_link_get_ns_fd(struct rtnl_link *link)
+{
+	return link->l_ns_fd;
+}
+
+void rtnl_link_set_ns_pid(struct rtnl_link *link, pid_t pid)
+{
+	link->l_ns_pid = pid;
+	link->ce_mask |= LINK_ATTR_NS_PID;
+}
+
+pid_t rtnl_link_get_ns_pid(struct rtnl_link *link)
+{
+	return link->l_ns_pid;
 }
 
 /** @} */

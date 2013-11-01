@@ -231,6 +231,8 @@ extern int	rtnl_link_enslave(struct nl_sock *, struct rtnl_link *,
 extern int	rtnl_link_release_ifindex(struct nl_sock *, int);
 extern int	rtnl_link_release(struct nl_sock *, struct rtnl_link *);
 extern int	rtnl_link_fill_info(struct nl_msg *, struct rtnl_link *);
+extern int	rtnl_link_info_parse(struct rtnl_link *, struct nlattr **);
+
 
 /* deprecated */
 extern int	rtnl_link_set_info_type(struct rtnl_link *, const char *) __attribute__((deprecated));

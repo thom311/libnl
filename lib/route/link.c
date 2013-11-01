@@ -297,57 +297,10 @@ static struct nla_policy link_info_policy[IFLA_INFO_MAX+1] = {
 	[IFLA_INFO_XSTATS]	= { .type = NLA_NESTED },
 };
 
-static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
-			   struct nlmsghdr *n, struct nl_parser_param *pp)
+int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 {
-	struct rtnl_link *link;
-	struct ifinfomsg *ifi;
-	struct nlattr *tb[IFLA_MAX+1];
-	struct rtnl_link_af_ops *af_ops = NULL;
-	int err, family;
-	struct nla_policy real_link_policy[IFLA_MAX+1];
-
-	memcpy(&real_link_policy, link_policy, sizeof(link_policy));
-
-	link = rtnl_link_alloc();
-	if (link == NULL) {
-		err = -NLE_NOMEM;
-		goto errout;
-	}
-		
-	link->ce_msgtype = n->nlmsg_type;
-
-	if (!nlmsg_valid_hdr(n, sizeof(*ifi)))
-		return -NLE_MSG_TOOSHORT;
-
-	ifi = nlmsg_data(n);
-	link->l_family = family = ifi->ifi_family;
-	link->l_arptype = ifi->ifi_type;
-	link->l_index = ifi->ifi_index;
-	link->l_flags = ifi->ifi_flags;
-	link->l_change = ifi->ifi_change;
-	link->ce_mask = (LINK_ATTR_IFNAME | LINK_ATTR_FAMILY |
-			  LINK_ATTR_ARPTYPE| LINK_ATTR_IFINDEX |
-			  LINK_ATTR_FLAGS | LINK_ATTR_CHANGE);
-
-	if ((af_ops = af_lookup_and_alloc(link, family))) {
-		if (af_ops->ao_protinfo_policy) {
-			memcpy(&real_link_policy[IFLA_PROTINFO],
-			       af_ops->ao_protinfo_policy,
-			       sizeof(struct nla_policy));
-		}
-
-		link->l_af_ops = af_ops;
-	}
-
-	err = nlmsg_parse(n, sizeof(*ifi), tb, IFLA_MAX, real_link_policy);
-	if (err < 0)
-		goto errout;
-
-	if (tb[IFLA_IFNAME] == NULL) {
-		err = -NLE_MISSING_ATTR;
-		goto errout;
-	}
+	if (tb[IFLA_IFNAME] == NULL)
+		return -NLE_MISSING_ATTR;
 
 	nla_strlcpy(link->l_name, tb[IFLA_IFNAME], IFNAMSIZ);
 
@@ -440,10 +393,8 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	if (tb[IFLA_ADDRESS]) {
 		link->l_addr = nl_addr_alloc_attr(tb[IFLA_ADDRESS], AF_UNSPEC);
-		if (link->l_addr == NULL) {
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+		if (link->l_addr == NULL)
+			return -NLE_NOMEM;
 		nl_addr_set_family(link->l_addr,
 				   nl_addr_guess_family(link->l_addr));
 		link->ce_mask |= LINK_ATTR_ADDR;
@@ -452,10 +403,8 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (tb[IFLA_BROADCAST]) {
 		link->l_bcast = nl_addr_alloc_attr(tb[IFLA_BROADCAST],
 						   AF_UNSPEC);
-		if (link->l_bcast == NULL) {
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+		if (link->l_bcast == NULL)
+			return -NLE_NOMEM;
 		nl_addr_set_family(link->l_bcast,
 				   nl_addr_guess_family(link->l_bcast));
 		link->ce_mask |= LINK_ATTR_BRD;
@@ -504,12 +453,64 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	if (tb[IFLA_IFALIAS]) {
 		link->l_ifalias = nla_strdup(tb[IFLA_IFALIAS]);
-		if (link->l_ifalias == NULL) {
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+		if (link->l_ifalias == NULL)
+			return -NLE_NOMEM;
 		link->ce_mask |= LINK_ATTR_IFALIAS;
 	}
+
+	return 0;
+}
+
+static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
+			   struct nlmsghdr *n, struct nl_parser_param *pp)
+{
+	struct rtnl_link *link;
+	struct ifinfomsg *ifi;
+	struct nlattr *tb[IFLA_MAX+1];
+	struct rtnl_link_af_ops *af_ops = NULL;
+	int err, family;
+	struct nla_policy real_link_policy[IFLA_MAX+1];
+
+	memcpy(&real_link_policy, link_policy, sizeof(link_policy));
+
+	link = rtnl_link_alloc();
+	if (link == NULL) {
+		err = -NLE_NOMEM;
+		goto errout;
+	}
+
+	link->ce_msgtype = n->nlmsg_type;
+
+	if (!nlmsg_valid_hdr(n, sizeof(*ifi)))
+		return -NLE_MSG_TOOSHORT;
+
+	ifi = nlmsg_data(n);
+	link->l_family = family = ifi->ifi_family;
+	link->l_arptype = ifi->ifi_type;
+	link->l_index = ifi->ifi_index;
+	link->l_flags = ifi->ifi_flags;
+	link->l_change = ifi->ifi_change;
+	link->ce_mask = (LINK_ATTR_IFNAME | LINK_ATTR_FAMILY |
+			  LINK_ATTR_ARPTYPE| LINK_ATTR_IFINDEX |
+			  LINK_ATTR_FLAGS | LINK_ATTR_CHANGE);
+
+	if ((af_ops = af_lookup_and_alloc(link, family))) {
+		if (af_ops->ao_protinfo_policy) {
+			memcpy(&real_link_policy[IFLA_PROTINFO],
+			       af_ops->ao_protinfo_policy,
+			       sizeof(struct nla_policy));
+		}
+
+		link->l_af_ops = af_ops;
+	}
+
+	err = nlmsg_parse(n, sizeof(*ifi), tb, IFLA_MAX, real_link_policy);
+	if (err < 0)
+		return err;
+
+	err = rtnl_link_info_parse(link, tb);
+	if (err < 0)
+		return err;
 
 	if (tb[IFLA_NUM_VF]) {
 		link->l_num_vf = nla_get_u32(tb[IFLA_NUM_VF]);

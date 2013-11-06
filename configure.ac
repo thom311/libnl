@@ -132,9 +132,12 @@ tests/Makefile
 man/Makefile
 python/Makefile
 python/setup.py
+python/doc/Makefile
+python/examples/Makefile
 python/netlink/Makefile
 python/netlink/genl/Makefile
 python/netlink/route/Makefile
+python/tests/Makefile
 include/netlink/version.h
 ])
 

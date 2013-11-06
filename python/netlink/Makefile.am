@@ -7,4 +7,5 @@ EXTRA_DIST = \
 	fixes.h \
 	__init__.py \
 	core.py \
-	util.py
+	util.py \
+	utils.h

@@ -1,3 +1,3 @@
 # -*- Makefile -*-
 
-SUBDIRS = netlink
+SUBDIRS = doc examples netlink tests

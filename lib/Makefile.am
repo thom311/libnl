@@ -68,6 +68,8 @@ libnl_route_3_la_SOURCES = \
 	route/cls/fw.c route/cls/police.c route/cls/u32.c route/cls/basic.c \
 	route/cls/cgroup.c \
 	\
+	route/act/mirred.c \
+	\
 	route/cls/ematch.c \
 	route/cls/ematch/container.c route/cls/ematch/cmp.c \
 	route/cls/ematch/nbyte.c route/cls/ematch/text.c \

@@ -27,6 +27,7 @@
 #include <netlink/netlink.h>
 #include <netlink-private/route/tc-api.h>
 #include <netlink/route/classifier.h>
+#include <netlink/route/action.h>
 #include <netlink/route/cls/basic.h>
 #include <netlink/route/cls/ematch.h>
 
@@ -35,11 +36,13 @@ struct rtnl_basic
 	uint32_t			b_target;
 	struct rtnl_ematch_tree *	b_ematch;
 	int				b_mask;
+	struct rtnl_act *		b_act;
 };
 
 /** @cond SKIP */
 #define BASIC_ATTR_TARGET	0x001
 #define BASIC_ATTR_EMATCH	0x002
+#define BASIC_ATTR_ACTION	0x004
 /** @endcond */
 
 static struct nla_policy basic_policy[TCA_BASIC_MAX+1] = {
@@ -59,6 +62,8 @@ static void basic_free_data(struct rtnl_tc *tc, void *data)
 	if (!b)
 		return;
 
+	if (b->b_act)
+		rtnl_act_put_all(&b->b_act);
 	rtnl_ematch_tree_free(b->b_ematch);
 }
 
@@ -84,6 +89,12 @@ static int basic_msg_parser(struct rtnl_tc *tc, void *data)
 
 		if (b->b_ematch)
 			b->b_mask |= BASIC_ATTR_EMATCH;
+	}
+	if (tb[TCA_BASIC_ACT]) {
+		b->b_mask |= BASIC_ATTR_ACTION;
+		err = rtnl_act_parse(&b->b_act, tb[TCA_BASIC_ACT]);
+		if (err)
+			return err;
 	}
 
 	return 0;
@@ -139,7 +150,15 @@ static int basic_msg_fill(struct rtnl_tc *tc, void *data,
 	if (b->b_mask & BASIC_ATTR_EMATCH &&
 	    rtnl_ematch_fill_attr(msg, TCA_BASIC_EMATCHES, b->b_ematch) < 0)
 		goto nla_put_failure;
-	
+
+	if (b->b_mask & BASIC_ATTR_ACTION) {
+		int err;
+
+		err = rtnl_act_fill(msg, TCA_BASIC_ACT, b->b_act);
+		if (err)
+			return err;
+	}
+
 	return 0;
 
 nla_put_failure:
@@ -200,6 +219,19 @@ struct rtnl_ematch_tree *rtnl_basic_get_ematch(struct rtnl_cls *cls)
 	return b->b_ematch;
 }
 
+int rtnl_basic_add_action(struct rtnl_cls *cls, struct rtnl_act *act)
+{
+	struct rtnl_basic *b;
+
+	if (!act)
+		return 0;
+
+	if (!(b = rtnl_tc_data(TC_CAST(cls))))
+		return -NLE_NOMEM;
+
+	b->b_mask |= BASIC_ATTR_ACTION;
+	return rtnl_act_append(&b->b_act, act);
+}
 /** @} */
 
 static struct rtnl_tc_ops basic_ops = {

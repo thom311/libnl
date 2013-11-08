@@ -508,6 +508,12 @@ struct rtnl_cls
 	uint16_t		c_protocol;
 };
 
+struct rtnl_act
+{
+	NL_TC_GENERIC(c);
+	struct rtnl_act *	a_next;
+};
+
 struct rtnl_u32
 {
 	uint32_t		cu_divisor;

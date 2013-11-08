@@ -27,6 +27,7 @@ enum rtnl_tc_type {
 	RTNL_TC_TYPE_QDISC,
 	RTNL_TC_TYPE_CLASS,
 	RTNL_TC_TYPE_CLS,
+	RTNL_TC_TYPE_ACT,
 	__RTNL_TC_TYPE_MAX,
 };
 

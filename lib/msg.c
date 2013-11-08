@@ -275,8 +275,6 @@ static struct nl_msg *__nlmsg_alloc(size_t len)
 	if (!nm->nm_nlh)
 		goto errout;
 
-	memset(nm->nm_nlh, 0, sizeof(struct nlmsghdr));
-
 	nm->nm_protocol = -1;
 	nm->nm_size = len;
 	nm->nm_nlh->nlmsg_len = nlmsg_total_size(0);

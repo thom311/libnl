@@ -27,6 +27,7 @@ check_PROGRAMS = \
 	test-delete-link \
 	test-socket-creation \
 	test-complex-HTB-with-hash-filters \
+	test-u32-filter-with-actions \
 	${UNIT_TESTS}
 
 TESTS = \
@@ -51,6 +52,7 @@ test_genl_SOURCES = test-genl.c
 test_nf_cache_mngr_SOURCES = test-nf-cache-mngr.c
 test_socket_creation_SOURCES = test-socket-creation.c
 test_complex_HTB_with_hash_filters_SOURCES = test-complex-HTB-with-hash-filters.c
+test_u32_filter_with_actions_SOURCES = test-u32-filter-with-actions.c
 
 # Unit tests
 check_all_SOURCES = \

@@ -1024,19 +1024,33 @@ static const struct trans_tbl afs[] = {
 	__ADD(AF_ASH,ash)
 	__ADD(AF_ECONET,econet)
 	__ADD(AF_ATMSVC,atmsvc)
+#ifdef AF_RDS
 	__ADD(AF_RDS,rds)
+#endif
 	__ADD(AF_SNA,sna)
 	__ADD(AF_IRDA,irda)
 	__ADD(AF_PPPOX,pppox)
 	__ADD(AF_WANPIPE,wanpipe)
 	__ADD(AF_LLC,llc)
+#ifdef AF_CAN
 	__ADD(AF_CAN,can)
+#endif
+#ifdef AF_TIPC
 	__ADD(AF_TIPC,tipc)
+#endif
 	__ADD(AF_BLUETOOTH,bluetooth)
+#ifdef AF_IUCV
 	__ADD(AF_IUCV,iucv)
+#endif
+#ifdef AF_RXRPC
 	__ADD(AF_RXRPC,rxrpc)
+#endif
+#ifdef AF_ISDN
 	__ADD(AF_ISDN,isdn)
+#endif
+#ifdef AF_PHONET
 	__ADD(AF_PHONET,phonet)
+#endif
 #ifdef AF_IEEE802154
 	__ADD(AF_IEEE802154,ieee802154)
 #endif

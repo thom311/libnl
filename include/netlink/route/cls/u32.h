@@ -15,6 +15,7 @@
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/route/classifier.h>
+#include <netlink/route/action.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,6 +42,7 @@ extern int	rtnl_u32_add_key_in_addr(struct rtnl_cls *, struct in_addr *,
 					 uint8_t, int, int);
 extern int	rtnl_u32_add_key_in6_addr(struct rtnl_cls *, struct in6_addr *,
 					  uint8_t, int, int);
+extern int	rtnl_u32_add_action(struct rtnl_cls *, struct rtnl_act *);
 
 #ifdef __cplusplus
 }

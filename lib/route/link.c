@@ -650,6 +650,12 @@ static void link_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 	char buf[128];
 	struct nl_cache *cache = obj->ce_cache;
 	struct rtnl_link *link = (struct rtnl_link *) obj;
+	int fetched_cache = 0;
+
+	if (!cache) {
+		cache = nl_cache_mngt_require_safe("route/link");
+		fetched_cache = 1;
+	}
 
 	nl_dump_line(p, "%s %s ", link->l_name,
 		     nl_llproto2str(link->l_arptype, buf, sizeof(buf)));
@@ -658,10 +664,13 @@ static void link_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 		nl_dump(p, "%s ", nl_addr2str(link->l_addr, buf, sizeof(buf)));
 
 	if (link->ce_mask & LINK_ATTR_MASTER) {
-		struct rtnl_link *master = rtnl_link_get(cache, link->l_master);
-		nl_dump(p, "master %s ", master ? master->l_name : "inv");
-		if (master)
-			rtnl_link_put(master);
+		if (cache) {
+			struct rtnl_link *master = rtnl_link_get(cache, link->l_master);
+			nl_dump(p, "master %s ", master ? master->l_name : "inv");
+			if (master)
+				rtnl_link_put(master);
+		} else
+			nl_dump(p, "master %d ", link->l_master);
 	}
 
 	rtnl_link_flags2str(link->l_flags, buf, sizeof(buf));
@@ -669,10 +678,13 @@ static void link_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 		nl_dump(p, "<%s> ", buf);
 
 	if (link->ce_mask & LINK_ATTR_LINK) {
-		struct rtnl_link *ll = rtnl_link_get(cache, link->l_link);
-		nl_dump(p, "slave-of %s ", ll ? ll->l_name : "NONE");
-		if (ll)
-			rtnl_link_put(ll);
+		if (cache) {
+			struct rtnl_link *ll = rtnl_link_get(cache, link->l_link);
+			nl_dump(p, "slave-of %s ", ll ? ll->l_name : "NONE");
+			if (ll)
+				rtnl_link_put(ll);
+		} else
+			nl_dump(p, "slave-of %d ", link->l_link);
 	}
 
 	if (link->ce_mask & LINK_ATTR_GROUP)
@@ -684,6 +696,9 @@ static void link_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 	do_foreach_af(link, af_dump_line, p);
 
 	nl_dump(p, "\n");
+
+	if (fetched_cache)
+		nl_cache_put(cache);
 }
 
 static void link_dump_details(struct nl_object *obj, struct nl_dump_params *p)

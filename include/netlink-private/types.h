@@ -21,6 +21,7 @@
 #include <netlink/idiag/idiagnl.h>
 #include <netlink/netfilter/ct.h>
 #include <netlink-private/route/tc-api.h>
+#include <linux/tc_act/tc_mirred.h>
 
 #define NL_SOCK_BUFSIZE_SET	(1<<0)
 #define NL_SOCK_PASSCRED	(1<<1)
@@ -512,6 +513,11 @@ struct rtnl_act
 {
 	NL_TC_GENERIC(c);
 	struct rtnl_act *	a_next;
+};
+
+struct rtnl_mirred
+{
+	struct tc_mirred m_parm;
 };
 
 struct rtnl_u32

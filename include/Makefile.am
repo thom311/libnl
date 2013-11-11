@@ -130,6 +130,7 @@ noinst_HEADERS = \
 	linux/netfilter/nfnetlink_queue.h \
 	linux/netlink.h \
 	linux/pkt_cls.h \
+	linux/tc_act/tc_mirred.h \
 	linux/pkt_sched.h \
 	linux/rtnetlink.h \
 	linux/snmp.h \

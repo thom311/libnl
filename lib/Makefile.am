@@ -84,6 +84,7 @@ libnl_route_3_la_SOURCES = \
 	route/qdisc/fifo.c route/qdisc/htb.c route/qdisc/netem.c \
 	route/qdisc/prio.c route/qdisc/red.c route/qdisc/sfq.c \
 	route/qdisc/tbf.c route/qdisc/plug.c route/qdisc/ingress.c \
+	route/qdisc/fq_codel.c \
 	\
 	fib_lookup/lookup.c fib_lookup/request.c \
 	\

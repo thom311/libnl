@@ -710,6 +710,17 @@ struct rtnl_plug
 	uint32_t        limit;
 };
 
+struct rtnl_fq_codel
+{
+	int		fq_limit;
+	uint32_t	fq_target;
+	uint32_t	fq_interval;
+	int		fq_flows;
+	uint32_t	fq_quantum;
+	int		fq_ecn;
+	uint32_t	fq_mask;
+};
+
 struct flnl_request
 {
 	NLHDR_COMMON

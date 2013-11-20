@@ -462,6 +462,21 @@ enum {
 
 #define TCA_DSMARK_MAX (__TCA_DSMARK_MAX - 1)
 
+/* fq_codel section */
+
+enum {
+        TCA_FQ_CODEL_UNSPEC,
+        TCA_FQ_CODEL_TARGET,
+        TCA_FQ_CODEL_LIMIT,
+        TCA_FQ_CODEL_INTERVAL,
+        TCA_FQ_CODEL_ECN,
+        TCA_FQ_CODEL_FLOWS,
+        TCA_FQ_CODEL_QUANTUM,
+        __TCA_FQ_CODEL_MAX
+};
+
+#define TCA_FQ_CODEL_MAX        (__TCA_FQ_CODEL_MAX - 1)
+
 /* ATM  section */
 
 enum {

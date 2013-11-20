@@ -116,6 +116,7 @@ nobase_pkglib_LTLIBRARIES = \
 	cli/qdisc/plug.la \
 	cli/qdisc/bfifo.la \
 	cli/qdisc/ingress.la \
+	cli/qdisc/fq_codel.la \
 	cli/cls/basic.la \
 	cli/cls/cgroup.la
 
@@ -125,6 +126,7 @@ cli_qdisc_pfifo_la_LDFLAGS = -module -avoid-version
 cli_qdisc_plug_la_LDFLAGS = -module -avoid-version
 cli_qdisc_bfifo_la_LDFLAGS = -module -avoid-version
 cli_qdisc_ingress_la_LDFLAGS = -module -avoid-version
+cli_qdisc_fq_codel_la_LDFLAGS = -module -avoid-version
 cli_cls_basic_la_LDFLAGS = -module -avoid-version
 cli_cls_cgroup_la_LDFLAGS = -module -avoid-version
 endif

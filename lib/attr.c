@@ -250,10 +250,6 @@ int nla_parse(struct nlattr *tb[], int maxtype, struct nlattr *head, int len,
 	nla_for_each_attr(nla, head, len, rem) {
 		int type = nla_type(nla);
 
-		/* Padding attributes */
-		if (type == 0)
-			continue;
-
 		if (type > maxtype)
 			continue;
 

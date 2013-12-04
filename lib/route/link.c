@@ -458,6 +458,16 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 		link->ce_mask |= LINK_ATTR_IFALIAS;
 	}
 
+	if (tb[IFLA_NET_NS_FD]) {
+		link->l_ns_fd = nla_get_u32(tb[IFLA_NET_NS_FD]);
+		link->ce_mask |= LINK_ATTR_NS_FD;
+	}
+
+	if (tb[IFLA_NET_NS_PID]) {
+		link->l_ns_pid = nla_get_u32(tb[IFLA_NET_NS_PID]);
+		link->ce_mask |= LINK_ATTR_NS_PID;
+	}
+
 	return 0;
 }
 
@@ -610,16 +620,6 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (tb[IFLA_GROUP]) {
 		link->l_group = nla_get_u32(tb[IFLA_GROUP]);
 		link->ce_mask |= LINK_ATTR_GROUP;
-	}
-
-	if (tb[IFLA_NET_NS_FD]) {
-		link->l_ns_fd = nla_get_u32(tb[IFLA_NET_NS_FD]);
-		link->ce_mask |= LINK_ATTR_NS_FD;
-	}
-
-	if (tb[IFLA_NET_NS_FD]) {
-		link->l_ns_pid = nla_get_u32(tb[IFLA_NET_NS_PID]);
-		link->ce_mask |= LINK_ATTR_NS_PID;
 	}
 
 	if (tb[IFLA_PHYS_PORT_ID]) {
@@ -1287,8 +1287,11 @@ int rtnl_link_fill_info(struct nl_msg *msg, struct rtnl_link *link)
 	if (link->ce_mask & LINK_ATTR_NUM_RX_QUEUES)
 		NLA_PUT_U32(msg, IFLA_NUM_RX_QUEUES, link->l_num_rx_queues);
 
-	if (link->ce_mask & LINK_ATTR_GROUP)
-		NLA_PUT_U32(msg, IFLA_GROUP, link->l_group);
+	if (link->ce_mask & LINK_ATTR_NS_FD)
+		NLA_PUT_U32(msg, IFLA_NET_NS_FD, link->l_ns_fd);
+
+	if (link->ce_mask & LINK_ATTR_NS_PID)
+		NLA_PUT_U32(msg, IFLA_NET_NS_PID, link->l_ns_pid);
 
 	return 0;
 
@@ -1311,6 +1314,9 @@ static int build_link_msg(int cmd, struct ifinfomsg *hdr,
 
 	if (rtnl_link_fill_info(msg, link))
 		goto nla_put_failure;
+
+	if (link->ce_mask & LINK_ATTR_GROUP)
+		NLA_PUT_U32(msg, IFLA_GROUP, link->l_group);
 
 	if (link->ce_mask & LINK_ATTR_LINKINFO) {
 		struct nlattr *info;

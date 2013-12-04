@@ -300,6 +300,8 @@ void rtnl_tc_set_link(struct rtnl_tc *tc, struct rtnl_link *link)
 
 	if (!link)
 		return;
+	if (!link->l_index)
+		BUG();
 
 	nl_object_get(OBJ_CAST(link));
 	tc->tc_link = link;

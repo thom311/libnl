@@ -236,15 +236,17 @@ int rtnl_link_is_veth(struct rtnl_link *link)
  * @arg sock		netlink socket
  * @arg name		name of the veth device or NULL
  * @arg peer_name	name of its peer or NULL
+ * @arg pid		pid of the process in the new netns
  *
- * Creates a new veth device pair in the kernel. If no name is
+ * Creates a new veth device pair in the kernel and move the peer
+ * to the network namespace where the process is. If no name is
  * provided, the kernel will automatically pick a name of the
  * form "veth%d" (e.g. veth0, veth1, etc.)
  *
  * @return 0 on success or a negative error code
  */
 int rtnl_link_veth_add(struct nl_sock *sock, const char *name,
-                       const char *peer_name)
+                       const char *peer_name, pid_t pid)
 {
 	struct rtnl_link *link, *peer;
 	int err = -NLE_NOMEM;
@@ -258,6 +260,7 @@ int rtnl_link_veth_add(struct nl_sock *sock, const char *name,
 		rtnl_link_set_name(peer, peer_name);
 	}
 
+	rtnl_link_set_ns_pid(peer, pid);
 	err = rtnl_link_add(sock, link, NLM_F_CREATE);
 
 	rtnl_link_put(peer);

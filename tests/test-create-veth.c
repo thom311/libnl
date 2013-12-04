@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	}
 
 #if 0
-	rtnl_link_veth_add(sk, "veth2", "veth3");
+	rtnl_link_veth_add(sk, "veth2", "veth3", getpid());
 #else
 	link = rtnl_link_veth_alloc();
 	if (!link) {

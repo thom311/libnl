@@ -14,6 +14,7 @@
 
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>
+#include <sys/types.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,7 +27,7 @@ extern int rtnl_link_is_veth(struct rtnl_link *);
 
 extern struct rtnl_link *rtnl_link_veth_get_peer(struct rtnl_link *);
 extern int rtnl_link_veth_add(struct nl_sock *sock, const char *name,
-			      const char *peer);
+			      const char *peer, pid_t pid);
 
 #ifdef __cplusplus
 }

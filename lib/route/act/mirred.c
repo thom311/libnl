@@ -151,14 +151,14 @@ int rtnl_mirred_set_action(struct rtnl_act *act, int action)
 	return 0;
 }
 
-int rtnl_mirred_set_index(struct rtnl_act *act, uint32_t link)
+int rtnl_mirred_set_ifindex(struct rtnl_act *act, uint32_t ifindex)
 {
 	struct rtnl_mirred *u;
 
 	if (!(u = (struct rtnl_mirred *) rtnl_tc_data(TC_CAST(act))))
 		return -NLE_NOMEM;
 
-	u->m_parm.ifindex = link;
+	u->m_parm.ifindex = ifindex;
 	return 0;
 }
 

@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 extern int rtnl_mirred_set_action(struct rtnl_act *, int);
-extern int rtnl_mirred_set_index(struct rtnl_act *, uint32_t);
+extern int rtnl_mirred_set_ifindex(struct rtnl_act *, uint32_t);
 extern int rtnl_mirred_set_policy(struct rtnl_act *, int);
 
 #ifdef __cplusplus

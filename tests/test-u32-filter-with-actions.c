@@ -382,7 +382,7 @@ int main(void)
     rtnl_tc_set_kind(TC_CAST(act), "mirred");
     rtnl_mirred_set_action(act, TCA_EGRESS_REDIR);
     rtnl_mirred_set_policy(act, TC_ACT_STOLEN);
-    rtnl_mirred_set_index(act, rtnl_link_name2i(link_cache, "eth1"));
+    rtnl_mirred_set_ifindex(act, rtnl_link_name2i(link_cache, "eth1"));
     // /8 check
 
     // 10.0.0.0/8

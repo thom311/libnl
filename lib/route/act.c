@@ -97,7 +97,7 @@ int rtnl_act_fill(struct nl_msg *msg, int attrtype, struct rtnl_act *act)
 		return -NLE_MSGSIZE;
 
 	while (p_act) {
-		err = rtnl_act_fill_one(msg, act, ++order);
+		err = rtnl_act_fill_one(msg, p_act, ++order);
 		if (err)
 			return err;
 		p_act = p_act->a_next;

@@ -481,6 +481,25 @@ int rtnl_u32_add_action(struct rtnl_cls *cls, struct rtnl_act *act)
 	return rtnl_act_append(&u->cu_act, act);
 }
 
+int rtnl_u32_del_action(struct rtnl_cls *cls, struct rtnl_act *act)
+{
+	struct rtnl_u32 *u;
+	int ret;
+
+	if (!act)
+		return 0;
+
+	if (!(u = rtnl_tc_data(TC_CAST(cls))))
+		return -NLE_NOMEM;
+
+	if (!(u->cu_mask & U32_ATTR_ACTION))
+		return -NLE_INVAL;
+
+	ret = rtnl_act_remove(&u->cu_act, act);
+	if (!u->cu_act)
+		u->cu_mask &= ~U32_ATTR_ACTION;
+	return ret;
+}
 /** @} */
 
 /**

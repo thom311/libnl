@@ -38,6 +38,7 @@ extern int		rtnl_act_build_delete_request(struct rtnl_act *, int,
 extern int		rtnl_act_delete(struct nl_sock *, struct rtnl_act *,
 					int);
 extern int		rtnl_act_append(struct rtnl_act **, struct rtnl_act *);
+extern int		rtnl_act_remove(struct rtnl_act **, struct rtnl_act *);
 extern int		rtnl_act_fill(struct nl_msg *, int, struct rtnl_act *);
 extern void		rtnl_act_put_all(struct rtnl_act **);
 extern int		rtnl_act_parse(struct rtnl_act **, struct nlattr *);

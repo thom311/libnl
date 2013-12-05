@@ -49,6 +49,22 @@ int rtnl_act_append(struct rtnl_act **head, struct rtnl_act *new)
 	return 0;
 }
 
+int rtnl_act_remove(struct rtnl_act **head, struct rtnl_act *act)
+{
+	struct rtnl_act *a, **ap;
+
+        for (ap = head; (a = *ap) != NULL; ap = &a->a_next)
+                if (a == act)
+                        break;
+        if (a) {
+                *ap = a->a_next;
+                a->a_next = NULL;
+                return 0;
+        }
+
+	return -NLE_OBJ_NOTFOUND;
+}
+
 static int rtnl_act_fill_one(struct nl_msg *msg, struct rtnl_act *act, int order)
 {
 	struct rtnl_tc *tc = TC_CAST(act);

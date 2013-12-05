@@ -151,6 +151,15 @@ int rtnl_mirred_set_action(struct rtnl_act *act, int action)
 	return 0;
 }
 
+int rtnl_mirred_get_action(struct rtnl_act *act)
+{
+	struct rtnl_mirred *u;
+
+	if (!(u = (struct rtnl_mirred *) rtnl_tc_data(TC_CAST(act))))
+		return -NLE_NOMEM;
+	return u->m_parm.eaction;
+}
+
 int rtnl_mirred_set_ifindex(struct rtnl_act *act, uint32_t ifindex)
 {
 	struct rtnl_mirred *u;
@@ -159,6 +168,15 @@ int rtnl_mirred_set_ifindex(struct rtnl_act *act, uint32_t ifindex)
 		return -NLE_NOMEM;
 
 	u->m_parm.ifindex = ifindex;
+	return 0;
+}
+
+uint32_t rtnl_mirred_get_ifindex(struct rtnl_act *act)
+{
+	struct rtnl_mirred *u;
+
+	if ((u = (struct rtnl_mirred *) rtnl_tc_data(TC_CAST(act))))
+		return u->m_parm.ifindex;
 	return 0;
 }
 
@@ -184,6 +202,16 @@ int rtnl_mirred_set_policy(struct rtnl_act *act, int policy)
 	}
 	return 0;
 }
+
+int rtnl_mirred_get_policy(struct rtnl_act *act)
+{
+	struct rtnl_mirred *u;
+
+	if (!(u = (struct rtnl_mirred *) rtnl_tc_data(TC_CAST(act))))
+		return -NLE_NOMEM;
+	return u->m_parm.action;
+}
+
 /** @} */
 
 static struct rtnl_tc_ops mirred_ops = {

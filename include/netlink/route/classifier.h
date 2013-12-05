@@ -30,6 +30,7 @@ extern int		rtnl_cls_alloc_cache(struct nl_sock *, int, uint32_t,
 extern int		rtnl_cls_build_add_request(struct rtnl_cls *, int,
 						   struct nl_msg **);
 extern int		rtnl_cls_add(struct nl_sock *, struct rtnl_cls *, int);
+extern int		rtnl_cls_change(struct nl_sock *, struct rtnl_cls *, int);
 
 extern int		rtnl_cls_build_change_request(struct rtnl_cls *, int,
 						      struct nl_msg **);

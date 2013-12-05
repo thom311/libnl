@@ -232,6 +232,25 @@ int rtnl_basic_add_action(struct rtnl_cls *cls, struct rtnl_act *act)
 	b->b_mask |= BASIC_ATTR_ACTION;
 	return rtnl_act_append(&b->b_act, act);
 }
+
+int rtnl_basic_del_action(struct rtnl_cls *cls, struct rtnl_act *act)
+{
+	struct rtnl_basic *b;
+	int ret;
+
+	if (!act)
+		return 0;
+
+	if (!(b = rtnl_tc_data(TC_CAST(cls))))
+		return -NLE_NOMEM;
+
+	if (!(b->b_mask & BASIC_ATTR_ACTION))
+		return -NLE_INVAL;
+	ret = rtnl_act_remove(&b->b_act, act);
+	if (!b->b_act)
+		b->b_mask &= ~BASIC_ATTR_ACTION;
+	return ret;
+}
 /** @} */
 
 static struct rtnl_tc_ops basic_ops = {

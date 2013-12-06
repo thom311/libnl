@@ -216,7 +216,7 @@ int rtnl_act_build_add_request(struct rtnl_act *act, int flags,
  * @arg act		Action to add/update
  * @arg flags		Additional netlink message flags
  *
- * Builds a \c RTM_NEWTFILTER netlink message requesting the addition
+ * Builds a \c RTM_NEWACTION netlink message requesting the addition
  * of a new action and sends the message to the kernel. The
  * configuration of the action is derived from the attributes of
  * the specified traffic class.
@@ -316,7 +316,7 @@ int rtnl_act_change(struct nl_sock *sk, struct rtnl_act *act, int flags)
 int rtnl_act_build_delete_request(struct rtnl_act *act, int flags,
 				  struct nl_msg **result)
 {
-	return act_build(act, RTM_DELTFILTER, flags, result);
+	return act_build(act, RTM_DELACTION, flags, result);
 }
 
 /**
@@ -325,7 +325,7 @@ int rtnl_act_build_delete_request(struct rtnl_act *act, int flags,
  * @arg act		Action to delete
  * @arg flags		Additional netlink message flags
  *
- * Builds a \c RTM_DELTFILTER netlink message requesting the deletion
+ * Builds a \c RTM_DELACTION netlink message requesting the deletion
  * of an action and sends the message to the kernel.
  *
  * The message is constructed out of the following attributes:

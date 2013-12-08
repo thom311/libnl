@@ -244,8 +244,8 @@ struct rtnl_addr
 
 	uint8_t		a_family;
 	uint8_t		a_prefixlen;
-	uint8_t		a_flags;
 	uint8_t		a_scope;
+	uint32_t	a_flags;
 	uint32_t	a_ifindex;
 
 	struct nl_addr *a_peer;

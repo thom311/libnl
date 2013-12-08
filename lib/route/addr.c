@@ -216,8 +216,9 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	ifa = nlmsg_data(nlh);
 	addr->a_family = family = ifa->ifa_family;
 	addr->a_prefixlen = ifa->ifa_prefixlen;
-	addr->a_flags = ifa->ifa_flags;
 	addr->a_scope = ifa->ifa_scope;
+	addr->a_flags = tb[IFA_FLAGS] ? nla_get_u32(tb[IFA_FLAGS]) :
+					ifa->ifa_flags;
 	addr->a_ifindex = ifa->ifa_index;
 
 	addr->ce_mask = (ADDR_ATTR_FAMILY | ADDR_ATTR_PREFIXLEN |
@@ -597,6 +598,7 @@ static int build_addr_msg(struct rtnl_addr *tmpl, int cmd, int flags,
 		NLA_PUT(msg, IFA_CACHEINFO, sizeof(ca), &ca);
 	}
 
+	NLA_PUT_U32(msg, IFA_FLAGS, tmpl->a_flags);
 
 	*result = msg;
 	return 0;

@@ -570,6 +570,42 @@ int rtnl_u32_add_key(struct rtnl_cls *cls, uint32_t val, uint32_t mask,
 	return 0;
 }
 
+/**
+ * Get the 32-bit key from the selector
+ *
+ * @arg cls	classifier to be retrieve
+ * @arg index	the index of the array of keys, start with 0
+ * @arg val	pointer to store value after masked (network byte-order)
+ * @arg mask	pointer to store the mask (network byte-order)
+ * @arg off	pointer to store the offset
+ * @arg offmask	pointer to store offset mask
+ *
+*/
+int rtnl_u32_get_key(struct rtnl_cls *cls, uint8_t index,
+		     uint32_t *val, uint32_t *mask, int *off, int *offmask)
+{
+	struct tc_u32_sel *sel;
+	struct rtnl_u32 *u;
+
+	if (!(u = rtnl_tc_data(TC_CAST(cls))))
+		return -NLE_NOMEM;
+
+	if (!(u->cu_mask & U32_ATTR_SELECTOR))
+		return -NLE_INVAL;
+
+	/* the selector might have been moved by realloc */
+	sel = u32_selector(u);
+	if (index >= sel->nkeys)
+		return -NLE_RANGE;
+
+	*mask = sel->keys[index].mask;
+	*val = sel->keys[index].val;
+	*off = sel->keys[index].off;
+	*offmask = sel->keys[index].offmask;
+	return 0;
+}
+
+
 int rtnl_u32_add_key_uint8(struct rtnl_cls *cls, uint8_t val, uint8_t mask,
 			   int off, int offmask)
 {

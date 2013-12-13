@@ -32,6 +32,8 @@ extern int	rtnl_u32_set_cls_terminal(struct rtnl_cls *);
 extern int	rtnl_u32_set_flags(struct rtnl_cls *, int);
 extern int	rtnl_u32_add_key(struct rtnl_cls *, uint32_t, uint32_t,
 				 int, int);
+extern int	rtnl_u32_get_key(struct rtnl_cls *, uint8_t, uint32_t *, uint32_t *,
+				 int *, int *);
 extern int	rtnl_u32_add_key_uint8(struct rtnl_cls *, uint8_t, uint8_t,
 				       int, int);
 extern int	rtnl_u32_add_key_uint16(struct rtnl_cls *, uint16_t, uint16_t,

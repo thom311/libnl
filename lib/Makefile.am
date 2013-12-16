@@ -11,7 +11,7 @@ AM_CPPFLAGS  =			 	\
 
 AM_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
-	-Wl,--version-script=$(top_srcdir)/libnl.sym
+	-Wl,--version-script=$(top_builddir)/libnl.sym
 
 lib_LTLIBRARIES = \
 	libnl-3.la libnl-genl-3.la libnl-route-3.la libnl-nf-3.la libnl-idiag-3.la

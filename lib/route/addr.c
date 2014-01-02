@@ -1056,6 +1056,7 @@ static const struct trans_tbl addr_flags[] = {
 	__ADD(IFA_F_DEPRECATED, deprecated)
 	__ADD(IFA_F_TENTATIVE, tentative)
 	__ADD(IFA_F_PERMANENT, permanent)
+	__ADD(IFA_F_MANAGETEMPADDR, mngtmpaddr)
 };
 
 char *rtnl_addr_flags2str(int flags, char *buf, size_t size)

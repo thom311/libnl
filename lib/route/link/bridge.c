@@ -203,6 +203,34 @@ struct rtnl_link *rtnl_link_bridge_alloc(void)
 
 	return link;
 }
+		
+/** 
+ * Create a new kernel bridge device
+ * @arg sock            netlink socket
+ * @arg name            name of the bridge device or NULL
+ *
+ * Creates a new bridge device in the kernel. If no name is
+ * provided, the kernel will automatically pick a name of the
+ * form "type%d" (e.g. bridge0, vlan1, etc.)
+ *
+ * @return 0 on success or a negative error code
+*/
+int rtnl_link_bridge_add(struct nl_sock *sk, const char *name)
+{
+	int err;
+	struct rtnl_link *link;
+
+	if (!(link = rtnl_link_bridge_alloc()))
+		return -NLE_NOMEM;
+
+	if(name)
+		rtnl_link_set_name(link, name);
+
+	err = rtnl_link_add(sk, link, NLM_F_CREATE);
+	rtnl_link_put(link);
+
+	return err;
+}
 
 /**
  * Check if a link is a bridge

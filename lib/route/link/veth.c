@@ -65,7 +65,7 @@ static int veth_parse(struct rtnl_link *link, struct nlattr *data,
 		err = nla_parse(peer_tb, IFLA_MAX,
 				nla_data(nla_peer) + sizeof(struct ifinfomsg),
 				nla_len(nla_peer) - sizeof(struct ifinfomsg),
-				link_policy);
+				rtln_link_policy);
 		if (err < 0)
 			goto errout;
 

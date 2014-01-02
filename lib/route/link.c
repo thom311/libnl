@@ -262,7 +262,7 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 	return 0;
 }
 
-struct nla_policy link_policy[IFLA_MAX+1] = {
+struct nla_policy rtln_link_policy[IFLA_MAX+1] = {
 	[IFLA_IFNAME]		= { .type = NLA_STRING,
 				    .maxlen = IFNAMSIZ },
 	[IFLA_MTU]		= { .type = NLA_U32 },
@@ -481,7 +481,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	int err, family;
 	struct nla_policy real_link_policy[IFLA_MAX+1];
 
-	memcpy(&real_link_policy, link_policy, sizeof(link_policy));
+	memcpy(&real_link_policy, rtln_link_policy, sizeof(rtln_link_policy));
 
 	link = rtnl_link_alloc();
 	if (link == NULL) {

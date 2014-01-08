@@ -2526,7 +2526,7 @@ Message processing callback functions are set with nl_cb_set():
 #include <netlink/handlers.h>
 
 int nl_cb_set(struct nl_cb *cb, enum nl_cb_type type, enum nl_cb_kind kind,
-              nl_recvmsg_msg_cb_t func, void *cb);
+              nl_recvmsg_msg_cb_t func, void *arg);
 
 typedef int (*nl_recvmsg_msg_cb_t)(struct nl_msg *msg, void *arg);
 --------
@@ -2539,7 +2539,7 @@ A special function prototype is used for the error message callback hook:
 --------
 #include <netlink/handlers.h>
 
-int nl_cb_err(struct nl_cb *cb, enum nl_cb_kind kind, nl_recvmsg_err_cb_t func, void * arg);
+int nl_cb_err(struct nl_cb *cb, enum nl_cb_kind kind, nl_recvmsg_err_cb_t func, void *arg);
 
 typedef int(* nl_recvmsg_err_cb_t)(struct sockaddr_nl *nla, struct nlmsgerr *nlerr, void *arg);
 --------

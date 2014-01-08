@@ -231,7 +231,7 @@ struct rtnl_addr_cacheinfo
 	/* Valid lifetime in seconds */
 	uint32_t aci_valid;
 
-	/* Timestamp of creation in 1/100s seince boottime */
+	/* Timestamp of creation in 1/100s since boottime */
 	uint32_t aci_cstamp;
 
 	/* Timestamp of last update in 1/100s since boottime */

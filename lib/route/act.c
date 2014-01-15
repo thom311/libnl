@@ -363,48 +363,6 @@ int rtnl_act_delete(struct nl_sock *sk, struct rtnl_act *act, int flags)
 
 /** @} */
 
-/**
- * @name Cache Related Functions
- * @{
- */
-
-/**
- * Allocate a cache and fill it with all configured actions
- * @arg sk		Netlink socket
- * @arg ifindex		Interface index of the network device
- * @arg parent		Parent qdisc/traffic class class
- * @arg result		Pointer to store the created cache
- *
- * Allocates a new action cache and fills it with a list of all
- * configured action attached to the specified parent qdisc/traffic
- * class on the specified network device. Release the cache with
- * nl_cache_free().
- *
- * @return 0 on success or a negative error code.
- */
-int rtnl_act_alloc_cache(struct nl_sock *sk, int ifindex, uint32_t parent,
-			 struct nl_cache **result)
-{
-	struct nl_cache * cache;
-	int err;
-
-	if (!(cache = nl_cache_alloc(&rtnl_act_ops)))
-		return -NLE_NOMEM;
-
-	cache->c_iarg1 = ifindex;
-	cache->c_iarg2 = parent;
-
-	if (sk && (err = nl_cache_refill(sk, cache)) < 0) {
-		nl_cache_free(cache);
-		return err;
-	}
-
-	*result = cache;
-	return 0;
-}
-
-/** @} */
-
 static void act_dump_line(struct rtnl_tc *tc, struct nl_dump_params *p)
 {
 }

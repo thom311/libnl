@@ -23,10 +23,6 @@ extern "C" {
 
 extern struct rtnl_act *rtnl_act_alloc(void);
 extern void		rtnl_act_put(struct rtnl_act *);
-
-extern int		rtnl_act_alloc_cache(struct nl_sock *, int, uint32_t,
-					     struct nl_cache **);
-
 extern int		rtnl_act_build_add_request(struct rtnl_act *, int,
 						   struct nl_msg **);
 extern int		rtnl_act_add(struct nl_sock *, struct rtnl_act *, int);

@@ -9,7 +9,7 @@
 # Copyright (c) 2003-2013 Thomas Graf <tgraf@suug.ch>
 #
 
-AC_INIT(libnl-doc, [3.2.24-rc1], [http://www.infradead.org/~tgr/libnl/])
+AC_INIT(libnl-doc, [3.2.24], [http://www.infradead.org/~tgr/libnl/])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([foreign])

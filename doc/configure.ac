@@ -24,11 +24,11 @@ AC_ARG_ENABLE([doc],
 	      AS_HELP_STRING([--disable-doc], [Do not generate documentation]),
 	      [generate_doc="$enableval"], [generate_doc=auto])
 
+AX_PYTHON
+
 if test "x$generate_doc" != "xno"; then
 	AC_PROG_SED
 	AC_PROG_EGREP
-
-	AX_PYTHON
 
 	AC_CHECK_PROG(HAVE_DOXYGEN, [doxygen], yes, no)
 	if test "x$HAVE_DOXYGEN" = "xno" -a "x$generate_doc" = "xyes"; then

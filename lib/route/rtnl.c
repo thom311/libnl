@@ -34,15 +34,20 @@
  * Fills out a routing netlink request message and sends it out
  * using nl_send_simple().
  *
- * @return 0 on success or a negative error code.
+ * @return 0 on success or a negative error code. Due to a bug in
+ * older versions, this returned the number of bytes sent. So for
+ * compatibility, treat positive return values as success too.
  */
 int nl_rtgen_request(struct nl_sock *sk, int type, int family, int flags)
 {
+	int err;
 	struct rtgenmsg gmsg = {
 		.rtgen_family = family,
 	};
 
-	return nl_send_simple(sk, type, flags, &gmsg, sizeof(gmsg));
+	err = nl_send_simple(sk, type, flags, &gmsg, sizeof(gmsg));
+
+	return err >= 0 ? 0 : err;
 }
 
 /** @} */

@@ -1198,7 +1198,7 @@ int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)
 	if (route->rt_src)
 		rtmsg.rtm_src_len = nl_addr_get_prefixlen(route->rt_src);
 
-	if (rtmsg.rtm_scope == RT_SCOPE_NOWHERE)
+	if (!(route->ce_mask & ROUTE_ATTR_SCOPE))
 		rtmsg.rtm_scope = rtnl_route_guess_scope(route);
 
 	if (rtnl_route_get_nnexthops(route) == 1) {

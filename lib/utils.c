@@ -551,6 +551,11 @@ char * nl_msec2str(uint64_t msec, char *buf, size_t len)
 	static const char *units[5] = {"d", "h", "m", "s", "msec"};
 	char * const buf_orig = buf;
 
+	if (msec == 0) {
+		snprintf(buf, len, "0msec");
+		return buf_orig;
+	}
+
 #define _SPLIT(idx, unit) if ((split[idx] = msec / unit)) msec %= unit
 	_SPLIT(0, 86400000);	/* days */
 	_SPLIT(1, 3600000);	/* hours */
@@ -558,11 +563,6 @@ char * nl_msec2str(uint64_t msec, char *buf, size_t len)
 	_SPLIT(3, 1000);	/* seconds */
 #undef  _SPLIT
 	split[4] = msec;
-
-	if (msec == 0) {
-		snprintf(buf, len, "0msec");
-		return buf_orig;
-	}
 
 	for (i = 0; i < ARRAY_SIZE(split) && len; i++) {
 		int l;

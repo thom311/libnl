@@ -232,9 +232,6 @@ int rtnl_act_build_add_request(struct rtnl_act *act, int flags,
  * exists, it will be created if the flag \c NLM_F_CREATE is set,
  * otherwise the error -NLE_OBJ_NOTFOUND is returned.
  *
- * If the parent qdisc does not support classes, the error
- * \c NLE_OPNOTSUPP is returned.
- *
  * After sending, the function will wait for the ACK or an eventual
  * error message to be received and will therefore block until the
  * operation has been completed.

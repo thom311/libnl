@@ -142,10 +142,8 @@ static int basic_msg_fill(struct rtnl_tc *tc, void *data,
 	if (!b)
 		return 0;
 
-	if (!(b->b_mask & BASIC_ATTR_TARGET))
-		return -NLE_MISSING_ATTR;
-
-	NLA_PUT_U32(msg, TCA_BASIC_CLASSID, b->b_target);
+	if (b->b_mask & BASIC_ATTR_TARGET)
+		NLA_PUT_U32(msg, TCA_BASIC_CLASSID, b->b_target);
 
 	if (b->b_mask & BASIC_ATTR_EMATCH &&
 	    rtnl_ematch_fill_attr(msg, TCA_BASIC_EMATCHES, b->b_ematch) < 0)

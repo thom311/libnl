@@ -288,14 +288,6 @@ static void u32_dump_details(struct rtnl_tc *tc, void *data,
 
 	print_selector(p, s, u);
 	nl_dump(p, "\n");
-
-#if 0	
-#define U32_ATTR_ACTION       0x040
-#define U32_ATTR_POLICE       0x080
-
-	struct nl_data   act;
-	struct nl_data   police;
-#endif
 }
 
 static void u32_dump_stats(struct rtnl_tc *tc, void *data,

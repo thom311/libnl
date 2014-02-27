@@ -70,6 +70,7 @@ extern int	nfnl_ct_str2tcp_state(const char *name);
 
 extern void	nfnl_ct_set_status(struct nfnl_ct *, uint32_t);
 extern void	nfnl_ct_unset_status(struct nfnl_ct *, uint32_t);
+extern int	nfnl_ct_test_status(const struct nfnl_ct *ct);
 extern uint32_t	nfnl_ct_get_status(const struct nfnl_ct *);
 extern char *	nfnl_ct_status2str(int, char *, size_t);
 extern int	nfnl_ct_str2status(const char *);

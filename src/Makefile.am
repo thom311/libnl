@@ -23,7 +23,7 @@ sbin_PROGRAMS = \
 	nl-link-list
 
 noinst_PROGRAMS = \
-	nf-ct-list nf-log nf-queue nf-monitor \
+	nf-ct-list nf-ct-add nf-log nf-queue nf-monitor \
 	nf-exp-list nf-exp-add nf-exp-delete \
 	nl-addr-add nl-addr-delete nl-addr-list \
 	nl-link-set nl-link-stats \
@@ -44,6 +44,7 @@ noinst_PROGRAMS = \
 genl_ctrl_list_SOURCES = genl-ctrl-list.c 
 
 nf_ct_list_SOURCES = nf-ct-list.c 
+nf_ct_add_SOURCES = nf-ct-add.c
 nf_log_SOURCES = nf-log.c
 nf_queue_SOURCES = nf-queue.c 
 nf_monitor_SOURCES = nf-monitor.c

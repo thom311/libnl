@@ -137,6 +137,12 @@ void nl_cli_ct_parse_status(struct nfnl_ct *ct, char *arg)
 	nfnl_ct_set_status(ct, status);
 }
 
+void nl_cli_ct_parse_zone(struct nfnl_ct *ct, char *arg)
+{
+	uint32_t zone = nl_cli_parse_u32(arg);
+	nfnl_ct_set_zone(ct, zone);
+}
+
 #if 0
 		} else if (arg_match("origicmpid")) {
 			if (argc > ++idx)

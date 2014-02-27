@@ -494,6 +494,11 @@ void nfnl_ct_unset_status(struct nfnl_ct *ct, uint32_t status)
 	ct->ce_mask |= CT_ATTR_STATUS;
 }
 
+int nfnl_ct_test_status(const struct nfnl_ct *ct)
+{
+	return !!(ct->ce_mask & CT_ATTR_STATUS);
+}
+
 uint32_t nfnl_ct_get_status(const struct nfnl_ct *ct)
 {
 	return ct->ct_status;

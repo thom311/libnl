@@ -1111,6 +1111,49 @@ void dump_from_ops(struct nl_object *obj, struct nl_dump_params *params)
 		obj->ce_ops->oo_dump[type](obj, params);
 }
 
+/**
+ * Check for library capabilities
+ *
+ * @arg	capability	capability identifier
+ *
+ * Check whether the loaded libnl library supports a certain capability.
+ * This is useful so that applications can workaround known issues of
+ * libnl that are fixed in newer library versions, without
+ * having a hard dependency on the new version. It is also useful, for
+ * capabilities that cannot easily be detected using autoconf tests.
+ * The capabilities are integer constants with name NL_CAPABILITY_*.
+ *
+ * As this function is intended to detect capabilities at runtime,
+ * you might not want to depend during compile time on the NL_CAPABILITY_*
+ * names. Instead you can use their numeric values which are guaranteed not to
+ * change meaning.
+ *
+ * @return non zero if libnl supports a certain capability, 0 otherwise.
+ **/
+int nl_has_capability (int capability)
+{
+	static const uint8_t caps[ ( NL_CAPABILITY_MAX + 7 ) / 8  ] = {
+#define _NL_ASSERT(expr) ( 0 * sizeof(struct { unsigned int x: ( (!!(expr)) ? 1 : -1 ); }) )
+#define _NL_SETV(i, r, v) \
+		( _NL_ASSERT( (v) == 0 || (i) * 8 + (r) == (v) - 1 ) + \
+		  ( (v) == 0 ? 0 : (1 << (r)) ) )
+#define _NL_SET(i, v0, v1, v2, v3, v4, v5, v6, v7) \
+		[(i)] = ( \
+			_NL_SETV((i), 0, (v0)) | _NL_SETV((i), 4, (v4)) | \
+			_NL_SETV((i), 1, (v1)) | _NL_SETV((i), 5, (v5)) | \
+			_NL_SETV((i), 2, (v2)) | _NL_SETV((i), 6, (v6)) | \
+			_NL_SETV((i), 3, (v3)) | _NL_SETV((i), 7, (v7)) )
+#undef _NL_SET
+#undef _NL_SETV
+#undef _NL_ASSERT
+	};
+
+	if (capability <= 0 || capability > NL_CAPABILITY_MAX)
+		return 0;
+	capability--;
+	return (caps[capability / 8] & (1 << (capability % 8))) != 0;
+}
+
 /** @endcond */
 
 /** @} */

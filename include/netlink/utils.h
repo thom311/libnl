@@ -79,6 +79,14 @@ extern void	nl_new_line(struct nl_dump_params *);
 extern void	nl_dump(struct nl_dump_params *, const char *, ...);
 extern void	nl_dump_line(struct nl_dump_params *, const char *, ...);
 
+enum {
+	NL_CAPABILITY_NONE,
+
+	__NL_CAPABILITY_MAX
+#define NL_CAPABILITY_MAX                               (__NL_CAPABILITY_MAX - 1)
+};
+int nl_has_capability (int capability);
+
 #ifdef __cplusplus
 }
 #endif

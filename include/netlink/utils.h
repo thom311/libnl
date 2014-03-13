@@ -82,6 +82,14 @@ extern void	nl_dump_line(struct nl_dump_params *, const char *, ...);
 enum {
 	NL_CAPABILITY_NONE,
 
+	/**
+	 * rtnl_route_build_msg() no longer guesses the route scope
+	 * if explicitly set to RT_SCOPE_NOWHERE.
+	 * @ingroup utils
+	 */
+	NL_CAPABILITY_ROUTE_BUILD_MSG_SET_SCOPE         = 1,
+#define NL_CAPABILITY_ROUTE_BUILD_MSG_SET_SCOPE NL_CAPABILITY_ROUTE_BUILD_MSG_SET_SCOPE
+
 	__NL_CAPABILITY_MAX
 #define NL_CAPABILITY_MAX                               (__NL_CAPABILITY_MAX - 1)
 };

@@ -1143,6 +1143,15 @@ int nl_has_capability (int capability)
 			_NL_SETV((i), 1, (v1)) | _NL_SETV((i), 5, (v5)) | \
 			_NL_SETV((i), 2, (v2)) | _NL_SETV((i), 6, (v6)) | \
 			_NL_SETV((i), 3, (v3)) | _NL_SETV((i), 7, (v7)) )
+		_NL_SET(0,
+			NL_CAPABILITY_ROUTE_BUILD_MSG_SET_SCOPE,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0),
 #undef _NL_SET
 #undef _NL_SETV
 #undef _NL_ASSERT

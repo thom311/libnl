@@ -50,6 +50,84 @@ static struct nla_policy inet6_policy[IFLA_INET6_MAX+1] = {
 	[IFLA_INET6_ICMP6STATS]	= { .minlen = 8 },
 };
 
+static const uint8_t map_stat_id_from_IPSTATS_MIB_v1[__IPSTATS_MIB_MAX] = {
+	/* 14a196807482e6fc74f15fc03176d5c08880588f^:include/linux/snmp.h
+	 * version before the API change in commit 14a196807482e6fc74f15fc03176d5c08880588f.
+	 * This version was valid since commit edf391ff17232f097d72441c9ad467bcb3b5db18, which
+	 * predates support for parsing IFLA_PROTINFO in libnl3. Such an even older meaning of
+	 * the flags is not supported in libnl3. */
+	[ 1] = RTNL_LINK_IP6_INPKTS,                    /* IPSTATS_MIB_INPKTS                   */
+	[ 2] = RTNL_LINK_IP6_INHDRERRORS,               /* IPSTATS_MIB_INHDRERRORS              */
+	[ 3] = RTNL_LINK_IP6_INTOOBIGERRORS,            /* IPSTATS_MIB_INTOOBIGERRORS           */
+	[ 4] = RTNL_LINK_IP6_INNOROUTES,                /* IPSTATS_MIB_INNOROUTES               */
+	[ 5] = RTNL_LINK_IP6_INADDRERRORS,              /* IPSTATS_MIB_INADDRERRORS             */
+	[ 6] = RTNL_LINK_IP6_INUNKNOWNPROTOS,           /* IPSTATS_MIB_INUNKNOWNPROTOS          */
+	[ 7] = RTNL_LINK_IP6_INTRUNCATEDPKTS,           /* IPSTATS_MIB_INTRUNCATEDPKTS          */
+	[ 8] = RTNL_LINK_IP6_INDISCARDS,                /* IPSTATS_MIB_INDISCARDS               */
+	[ 9] = RTNL_LINK_IP6_INDELIVERS,                /* IPSTATS_MIB_INDELIVERS               */
+	[10] = RTNL_LINK_IP6_OUTFORWDATAGRAMS,          /* IPSTATS_MIB_OUTFORWDATAGRAMS         */
+	[11] = RTNL_LINK_IP6_OUTPKTS,                   /* IPSTATS_MIB_OUTPKTS                  */
+	[12] = RTNL_LINK_IP6_OUTDISCARDS,               /* IPSTATS_MIB_OUTDISCARDS              */
+	[13] = RTNL_LINK_IP6_OUTNOROUTES,               /* IPSTATS_MIB_OUTNOROUTES              */
+	[14] = RTNL_LINK_IP6_REASMTIMEOUT,              /* IPSTATS_MIB_REASMTIMEOUT             */
+	[15] = RTNL_LINK_IP6_REASMREQDS,                /* IPSTATS_MIB_REASMREQDS               */
+	[16] = RTNL_LINK_IP6_REASMOKS,                  /* IPSTATS_MIB_REASMOKS                 */
+	[17] = RTNL_LINK_IP6_REASMFAILS,                /* IPSTATS_MIB_REASMFAILS               */
+	[18] = RTNL_LINK_IP6_FRAGOKS,                   /* IPSTATS_MIB_FRAGOKS                  */
+	[19] = RTNL_LINK_IP6_FRAGFAILS,                 /* IPSTATS_MIB_FRAGFAILS                */
+	[20] = RTNL_LINK_IP6_FRAGCREATES,               /* IPSTATS_MIB_FRAGCREATES              */
+	[21] = RTNL_LINK_IP6_INMCASTPKTS,               /* IPSTATS_MIB_INMCASTPKTS              */
+	[22] = RTNL_LINK_IP6_OUTMCASTPKTS,              /* IPSTATS_MIB_OUTMCASTPKTS             */
+	[23] = RTNL_LINK_IP6_INBCASTPKTS,               /* IPSTATS_MIB_INBCASTPKTS              */
+	[24] = RTNL_LINK_IP6_OUTBCASTPKTS,              /* IPSTATS_MIB_OUTBCASTPKTS             */
+	[25] = RTNL_LINK_IP6_INOCTETS,                  /* IPSTATS_MIB_INOCTETS                 */
+	[26] = RTNL_LINK_IP6_OUTOCTETS,                 /* IPSTATS_MIB_OUTOCTETS                */
+	[27] = RTNL_LINK_IP6_INMCASTOCTETS,             /* IPSTATS_MIB_INMCASTOCTETS            */
+	[28] = RTNL_LINK_IP6_OUTMCASTOCTETS,            /* IPSTATS_MIB_OUTMCASTOCTETS           */
+	[29] = RTNL_LINK_IP6_INBCASTOCTETS,             /* IPSTATS_MIB_INBCASTOCTETS            */
+	[30] = RTNL_LINK_IP6_OUTBCASTOCTETS,            /* IPSTATS_MIB_OUTBCASTOCTETS           */
+};
+
+static const uint8_t map_stat_id_from_IPSTATS_MIB_v2[__IPSTATS_MIB_MAX] = {
+	/* d8ec26d7f8287f5788a494f56e8814210f0e64be:include/uapi/linux/snmp.h
+	 * version since the API change in commit 14a196807482e6fc74f15fc03176d5c08880588f */
+	[ 1] = RTNL_LINK_IP6_INPKTS,                    /* IPSTATS_MIB_INPKTS                   */
+	[ 2] = RTNL_LINK_IP6_INOCTETS,                  /* IPSTATS_MIB_INOCTETS                 */
+	[ 3] = RTNL_LINK_IP6_INDELIVERS,                /* IPSTATS_MIB_INDELIVERS               */
+	[ 4] = RTNL_LINK_IP6_OUTFORWDATAGRAMS,          /* IPSTATS_MIB_OUTFORWDATAGRAMS         */
+	[ 5] = RTNL_LINK_IP6_OUTPKTS,                   /* IPSTATS_MIB_OUTPKTS                  */
+	[ 6] = RTNL_LINK_IP6_OUTOCTETS,                 /* IPSTATS_MIB_OUTOCTETS                */
+	[ 7] = RTNL_LINK_IP6_INHDRERRORS,               /* IPSTATS_MIB_INHDRERRORS              */
+	[ 8] = RTNL_LINK_IP6_INTOOBIGERRORS,            /* IPSTATS_MIB_INTOOBIGERRORS           */
+	[ 9] = RTNL_LINK_IP6_INNOROUTES,                /* IPSTATS_MIB_INNOROUTES               */
+	[10] = RTNL_LINK_IP6_INADDRERRORS,              /* IPSTATS_MIB_INADDRERRORS             */
+	[11] = RTNL_LINK_IP6_INUNKNOWNPROTOS,           /* IPSTATS_MIB_INUNKNOWNPROTOS          */
+	[12] = RTNL_LINK_IP6_INTRUNCATEDPKTS,           /* IPSTATS_MIB_INTRUNCATEDPKTS          */
+	[13] = RTNL_LINK_IP6_INDISCARDS,                /* IPSTATS_MIB_INDISCARDS               */
+	[14] = RTNL_LINK_IP6_OUTDISCARDS,               /* IPSTATS_MIB_OUTDISCARDS              */
+	[15] = RTNL_LINK_IP6_OUTNOROUTES,               /* IPSTATS_MIB_OUTNOROUTES              */
+	[16] = RTNL_LINK_IP6_REASMTIMEOUT,              /* IPSTATS_MIB_REASMTIMEOUT             */
+	[17] = RTNL_LINK_IP6_REASMREQDS,                /* IPSTATS_MIB_REASMREQDS               */
+	[18] = RTNL_LINK_IP6_REASMOKS,                  /* IPSTATS_MIB_REASMOKS                 */
+	[19] = RTNL_LINK_IP6_REASMFAILS,                /* IPSTATS_MIB_REASMFAILS               */
+	[20] = RTNL_LINK_IP6_FRAGOKS,                   /* IPSTATS_MIB_FRAGOKS                  */
+	[21] = RTNL_LINK_IP6_FRAGFAILS,                 /* IPSTATS_MIB_FRAGFAILS                */
+	[22] = RTNL_LINK_IP6_FRAGCREATES,               /* IPSTATS_MIB_FRAGCREATES              */
+	[23] = RTNL_LINK_IP6_INMCASTPKTS,               /* IPSTATS_MIB_INMCASTPKTS              */
+	[24] = RTNL_LINK_IP6_OUTMCASTPKTS,              /* IPSTATS_MIB_OUTMCASTPKTS             */
+	[25] = RTNL_LINK_IP6_INBCASTPKTS,               /* IPSTATS_MIB_INBCASTPKTS              */
+	[26] = RTNL_LINK_IP6_OUTBCASTPKTS,              /* IPSTATS_MIB_OUTBCASTPKTS             */
+	[27] = RTNL_LINK_IP6_INMCASTOCTETS,             /* IPSTATS_MIB_INMCASTOCTETS            */
+	[28] = RTNL_LINK_IP6_OUTMCASTOCTETS,            /* IPSTATS_MIB_OUTMCASTOCTETS           */
+	[29] = RTNL_LINK_IP6_INBCASTOCTETS,             /* IPSTATS_MIB_INBCASTOCTETS            */
+	[30] = RTNL_LINK_IP6_OUTBCASTOCTETS,            /* IPSTATS_MIB_OUTBCASTOCTETS           */
+	[31] = RTNL_LINK_IP6_CSUMERRORS,                /* IPSTATS_MIB_CSUMERRORS               */
+	[32] = RTNL_LINK_IP6_NOECTPKTS,                 /* IPSTATS_MIB_NOECTPKTS                */
+	[33] = RTNL_LINK_IP6_ECT1PKTS,                  /* IPSTATS_MIB_ECT1PKTS                 */
+	[34] = RTNL_LINK_IP6_ECT0PKTS,                  /* IPSTATS_MIB_ECT0PKTS                 */
+	[35] = RTNL_LINK_IP6_CEPKTS,                    /* IPSTATS_MIB_CEPKTS                   */
+};
+
 static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 				void *data)
 {
@@ -86,12 +164,23 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 		unsigned char *cnt = nla_data(tb[IFLA_INET6_STATS]);
 		uint64_t stat;
 		int i;
-		int len = min_t(int, __IPSTATS_MIB_MAX, nla_len(tb[IFLA_INET6_STATS]) / 8);
+		int len = nla_len(tb[IFLA_INET6_STATS]) / 8;
+		const uint8_t *map_stat_id = map_stat_id_from_IPSTATS_MIB_v2;
 
+		if (len < 32 ||
+		    (tb[IFLA_INET6_ICMP6STATS] && nla_len(tb[IFLA_INET6_ICMP6STATS]) < 6)) {
+			/* kernel commit 14a196807482e6fc74f15fc03176d5c08880588f reordered the values.
+			 * The later commit 6a5dc9e598fe90160fee7de098fa319665f5253e added values
+			 * IPSTATS_MIB_CSUMERRORS/ICMP6_MIB_CSUMERRORS. If the netlink is shorter
+			 * then this, assume that the kernel uses the previous meaning of the
+			 * enumeration. */
+			map_stat_id = map_stat_id_from_IPSTATS_MIB_v1;
+		}
+
+		len = min_t(int, __IPSTATS_MIB_MAX, len);
 		for (i = 1; i < len; i++) {
 			memcpy(&stat, &cnt[i * sizeof(stat)], sizeof(stat));
-			rtnl_link_set_stat(link, RTNL_LINK_IP6_INPKTS + i - 1,
-					   stat);
+			rtnl_link_set_stat(link, map_stat_id[i], stat);
 		}
 	}
 
@@ -343,19 +432,29 @@ static void inet6_dump_stats(struct rtnl_link *link,
 		link->l_stats[RTNL_LINK_IP6_INADDRERRORS]);
 
 	nl_dump(p, "       InUnknownProtos     InTruncatedPkts   "
-		   "    OutNoRoutes\n");
-	nl_dump(p, "    %18" PRIu64 " %18" PRIu64 " %18" PRIu64 "\n",
+		   "    OutNoRoutes       InCsumErrors\n");
+	nl_dump(p, "    %18" PRIu64 " %18" PRIu64 " %18" PRIu64 " %18" PRIu64 "\n",
 		link->l_stats[RTNL_LINK_IP6_INUNKNOWNPROTOS],
 		link->l_stats[RTNL_LINK_IP6_INTRUNCATEDPKTS],
-		link->l_stats[RTNL_LINK_IP6_OUTNOROUTES]);
+		link->l_stats[RTNL_LINK_IP6_OUTNOROUTES],
+		link->l_stats[RTNL_LINK_IP6_CSUMERRORS]);
+
+	nl_dump(p, "           InNoECTPkts          InECT1Pkts   "
+		   "     InECT0Pkts           InCEPkts\n");
+	nl_dump(p, "    %18" PRIu64 " %18" PRIu64 " %18" PRIu64 " %18" PRIu64 "\n",
+		link->l_stats[RTNL_LINK_IP6_NOECTPKTS],
+		link->l_stats[RTNL_LINK_IP6_ECT1PKTS],
+		link->l_stats[RTNL_LINK_IP6_ECT0PKTS],
+		link->l_stats[RTNL_LINK_IP6_CEPKTS]);
 
 	nl_dump(p, "    ICMPv6:     InMsgs           InErrors        "
-		   "    OutMsgs          OutErrors\n");
-	nl_dump(p, "    %18" PRIu64 " %18" PRIu64 " %18" PRIu64 " %18" PRIu64 "\n",
+		   "    OutMsgs          OutErrors       InCsumErrors\n");
+	nl_dump(p, "    %18" PRIu64 " %18" PRIu64 " %18" PRIu64 " %18" PRIu64 " %18" PRIu64 "\n",
 		link->l_stats[RTNL_LINK_ICMP6_INMSGS],
 		link->l_stats[RTNL_LINK_ICMP6_INERRORS],
 		link->l_stats[RTNL_LINK_ICMP6_OUTMSGS],
-		link->l_stats[RTNL_LINK_ICMP6_OUTERRORS]);
+		link->l_stats[RTNL_LINK_ICMP6_OUTERRORS],
+		link->l_stats[RTNL_LINK_ICMP6_CSUMERRORS]);
 }
 
 static const struct nla_policy protinfo_policy = {

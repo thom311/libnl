@@ -2599,6 +2599,12 @@ static const struct trans_tbl link_stats[] = {
 	__ADD(RTNL_LINK_ICMP6_INERRORS, ICMP6_InErrors)
 	__ADD(RTNL_LINK_ICMP6_OUTMSGS, ICMP6_OutMsgs)
 	__ADD(RTNL_LINK_ICMP6_OUTERRORS, ICMP6_OutErrors)
+	__ADD(RTNL_LINK_ICMP6_CSUMERRORS, ICMP6_InCsumErrors)
+	__ADD(RTNL_LINK_IP6_CSUMERRORS, Ip6_InCsumErrors)
+	__ADD(RTNL_LINK_IP6_NOECTPKTS, Ip6_InNoECTPkts)
+	__ADD(RTNL_LINK_IP6_ECT1PKTS, Ip6_InECT1Pkts)
+	__ADD(RTNL_LINK_IP6_ECT0PKTS, Ip6_InECT0Pkts)
+	__ADD(RTNL_LINK_IP6_CEPKTS, Ip6_InCEPkts)
 };
 
 char *rtnl_link_stat2str(int st, char *buf, size_t len)

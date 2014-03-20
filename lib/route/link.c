@@ -997,11 +997,12 @@ static char *link_attrs2str(int attrs, char *buf, size_t len)
  * @arg family		Link address family or AF_UNSPEC
  * @arg result		Pointer to store resulting cache.
  *
- * Allocates and initializes a new link cache. A netlink message is sent to
- * the kernel requesting a full dump of all configured links. The returned
- * messages are parsed and filled into the cache. If the operation succeeds
- * the resulting cache will a link object for each link configured in the
- * kernel.
+ * Allocates and initializes a new link cache. If \c sk is valid, a netlink
+ * message is sent to the kernel requesting a full dump of all configured
+ * links. The returned messages are parsed and filled into the cache. If
+ * the operation succeeds, the resulting cache will contain a link object for
+ * each link configured in the kernel. If \c sk is NULL, returns 0 but the
+ * cache is still empty.
  *
  * If \c family is set to an address family other than \c AF_UNSPEC the
  * contents of the cache can be limited to a specific address family.

@@ -166,6 +166,9 @@ static const struct trans_tbl inet_devconf[] = {
 	__ADD(IPV4_DEVCONF_ACCEPT_LOCAL, accept_local)
 	__ADD(IPV4_DEVCONF_SRC_VMARK, src_vmark)
 	__ADD(IPV4_DEVCONF_PROXY_ARP_PVLAN, proxy_arp_pvlan)
+	__ADD(IPV4_DEVCONF_ROUTE_LOCALNET, route_localnet)
+	__ADD(IPV4_DEVCONF_IGMPV2_UNSOLICITED_REPORT_INTERVAL, igmpv2_unsolicited_report_interval)
+	__ADD(IPV4_DEVCONF_IGMPV3_UNSOLICITED_REPORT_INTERVAL, igmpv3_unsolicited_report_interval)
 };
 
 const char *rtnl_link_inet_devconf2str(int type, char *buf, size_t len)

@@ -117,7 +117,7 @@ noinst_HEADERS = \
 	linux/if_bridge.h \
 	linux/if_link.h \
 	linux/if_vlan.h \
-	linux/inetdevice.h \
+	linux/ip.h \
 	linux/ip_mp_alg.h \
 	linux/ipv6.h \
 	linux/can/netlink.h \

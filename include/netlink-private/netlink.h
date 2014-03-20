@@ -51,7 +51,7 @@
 #include <linux/gen_stats.h>
 #include <linux/ip_mp_alg.h>
 #include <linux/atm.h>
-#include <linux/inetdevice.h>
+#include <linux/ip.h>
 #include <linux/ipv6.h>
 #include <linux/snmp.h>
 

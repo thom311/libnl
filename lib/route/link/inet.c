@@ -107,8 +107,14 @@ static int inet_parse_af(struct rtnl_link *link, struct nlattr *attr, void *data
 	if (tb[IFLA_INET_CONF] && nla_len(tb[IFLA_INET_CONF]) % 4)
 		return -EINVAL;
 
-	if (tb[IFLA_INET_CONF])
+	if (tb[IFLA_INET_CONF]) {
+		int i;
+		int len = min_t(int, IPV4_DEVCONF_MAX, nla_len(tb[IFLA_INET_CONF]) / 4);
+
+		for (i = 0; i < len; i++)
+			id->i_confset[i] = 1;
 		nla_memcpy(&id->i_conf, tb[IFLA_INET_CONF], sizeof(id->i_conf));
+	}
 
 	return 0;
 }
@@ -186,7 +192,7 @@ static void inet_dump_details(struct rtnl_link *link,
 	for (i = 0; i < IPV4_DEVCONF_MAX; i++) {
 		nl_dump_line(p, "%-19s %3u",
 			rtnl_link_inet_devconf2str(i+1, buf, sizeof(buf)),
-			id->i_conf[i]);
+			id->i_confset[i] ? id->i_conf[i] : 0);
 
 		if (++n == 3) {
 			nl_dump(p, "\n");
@@ -222,6 +228,8 @@ static struct rtnl_link_af_ops inet_ops = {
  * @return 0 on success or a negative error code.
  * @return -NLE_RANGE cfgid is out of range, 1..IPV4_DEVCONF_MAX
  * @return -NLE_NOATTR configuration setting not available
+ * @return -NLE_INVAL cfgid not set. If the link was received via netlink,
+ *                    it means that the cfgid is not supported.
  */
 int rtnl_link_inet_get_conf(struct rtnl_link *link, const unsigned int cfgid,
 			    uint32_t *res)
@@ -234,6 +242,8 @@ int rtnl_link_inet_get_conf(struct rtnl_link *link, const unsigned int cfgid,
 	if (!(id = rtnl_link_af_alloc(link, &inet_ops)))
 		return -NLE_NOATTR;
 
+	if (!id->i_confset[cfgid - 1])
+		return -NLE_INVAL;
 	*res = id->i_conf[cfgid - 1];
 
 	return 0;

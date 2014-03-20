@@ -92,7 +92,7 @@ static void inet_free(struct rtnl_link *link, void *data)
 }
 
 static struct nla_policy inet_policy[IFLA_INET6_MAX+1] = {
-	[IFLA_INET_CONF]	= { .minlen = IPV4_DEVCONF_MAX * 4 },
+	[IFLA_INET_CONF]	= { .minlen = 4 },
 };
 
 static int inet_parse_af(struct rtnl_link *link, struct nlattr *attr, void *data)
@@ -104,6 +104,8 @@ static int inet_parse_af(struct rtnl_link *link, struct nlattr *attr, void *data
 	err = nla_parse_nested(tb, IFLA_INET_MAX, attr, inet_policy);
 	if (err < 0)
 		return err;
+	if (tb[IFLA_INET_CONF] && nla_len(tb[IFLA_INET_CONF]) % 4)
+		return -EINVAL;
 
 	if (tb[IFLA_INET_CONF])
 		nla_memcpy(&id->i_conf, tb[IFLA_INET_CONF], sizeof(id->i_conf));

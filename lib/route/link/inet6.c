@@ -45,9 +45,9 @@ static void inet6_free(struct rtnl_link *link, void *data)
 static struct nla_policy inet6_policy[IFLA_INET6_MAX+1] = {
 	[IFLA_INET6_FLAGS]	= { .type = NLA_U32 },
 	[IFLA_INET6_CACHEINFO]	= { .minlen = sizeof(struct ifla_cacheinfo) },
-	[IFLA_INET6_CONF]	= { .minlen = DEVCONF_MAX * 4 },
-	[IFLA_INET6_STATS]	= { .minlen = __IPSTATS_MIB_MAX * 8 },
-	[IFLA_INET6_ICMP6STATS]	= { .minlen = __ICMP6_MIB_MAX * 8 },
+	[IFLA_INET6_CONF]	= { .minlen = 4 },
+	[IFLA_INET6_STATS]	= { .minlen = 8 },
+	[IFLA_INET6_ICMP6STATS]	= { .minlen = 8 },
 };
 
 static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
@@ -60,6 +60,12 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 	err = nla_parse_nested(tb, IFLA_INET6_MAX, attr, inet6_policy);
 	if (err < 0)
 		return err;
+	if (tb[IFLA_INET6_CONF] && nla_len(tb[IFLA_INET6_CONF]) % 4)
+		return -EINVAL;
+	if (tb[IFLA_INET6_STATS] && nla_len(tb[IFLA_INET6_STATS]) % 8)
+		return -EINVAL;
+	if (tb[IFLA_INET6_ICMP6STATS] && nla_len(tb[IFLA_INET6_ICMP6STATS]) % 8)
+		return -EINVAL;
 
 	if (tb[IFLA_INET6_FLAGS])
 		i6->i6_flags = nla_get_u32(tb[IFLA_INET6_FLAGS]);
@@ -80,8 +86,9 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 		unsigned char *cnt = nla_data(tb[IFLA_INET6_STATS]);
 		uint64_t stat;
 		int i;
+		int len = min_t(int, __IPSTATS_MIB_MAX, nla_len(tb[IFLA_INET6_STATS]) / 8);
 
-		for (i = 1; i < __IPSTATS_MIB_MAX; i++) {
+		for (i = 1; i < len; i++) {
 			memcpy(&stat, &cnt[i * sizeof(stat)], sizeof(stat));
 			rtnl_link_set_stat(link, RTNL_LINK_IP6_INPKTS + i - 1,
 					   stat);
@@ -92,8 +99,9 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 		unsigned char *cnt = nla_data(tb[IFLA_INET6_ICMP6STATS]);
 		uint64_t stat;
 		int i;
+		int len = min_t(int, __ICMP6_MIB_MAX, nla_len(tb[IFLA_INET6_ICMP6STATS]) / 8);
 
-		for (i = 1; i < __ICMP6_MIB_MAX; i++) {
+		for (i = 1; i < len; i++) {
 			memcpy(&stat, &cnt[i * sizeof(stat)], sizeof(stat));
 			rtnl_link_set_stat(link, RTNL_LINK_ICMP6_INMSGS + i - 1,
 					   stat);

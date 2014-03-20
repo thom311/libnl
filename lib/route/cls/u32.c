@@ -645,14 +645,14 @@ int rtnl_u32_add_key_uint32(struct rtnl_cls *cls, uint32_t val, uint32_t mask,
 				off & ~3, offmask);
 }
 
-int rtnl_u32_add_key_in_addr(struct rtnl_cls *cls, struct in_addr *addr,
+int rtnl_u32_add_key_in_addr(struct rtnl_cls *cls, const struct in_addr *addr,
 			     uint8_t bitmask, int off, int offmask)
 {
 	uint32_t mask = 0xFFFFFFFF << (32 - bitmask);
 	return rtnl_u32_add_key(cls, addr->s_addr, htonl(mask), off, offmask);
 }
 
-int rtnl_u32_add_key_in6_addr(struct rtnl_cls *cls, struct in6_addr *addr,
+int rtnl_u32_add_key_in6_addr(struct rtnl_cls *cls, const struct in6_addr *addr,
 			      uint8_t bitmask, int off, int offmask)
 {
 	int i, err;

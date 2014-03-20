@@ -40,9 +40,9 @@ extern int	rtnl_u32_add_key_uint16(struct rtnl_cls *, uint16_t, uint16_t,
 					int, int);
 extern int	rtnl_u32_add_key_uint32(struct rtnl_cls *, uint32_t, uint32_t,
 					int, int);
-extern int	rtnl_u32_add_key_in_addr(struct rtnl_cls *, struct in_addr *,
+extern int	rtnl_u32_add_key_in_addr(struct rtnl_cls *, const struct in_addr *,
 					 uint8_t, int, int);
-extern int	rtnl_u32_add_key_in6_addr(struct rtnl_cls *, struct in6_addr *,
+extern int	rtnl_u32_add_key_in6_addr(struct rtnl_cls *, const struct in6_addr *,
 					  uint8_t, int, int);
 extern int	rtnl_u32_add_action(struct rtnl_cls *, struct rtnl_act *);
 extern int	rtnl_u32_del_action(struct rtnl_cls *, struct rtnl_act *);

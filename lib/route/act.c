@@ -454,7 +454,7 @@ err_free:
 
 static int rtnl_act_msg_parse(struct nlmsghdr *n, struct rtnl_act **act)
 {
-	struct rtnl_tc *tc = TC_CAST(act);
+	struct rtnl_tc *tc = TC_CAST(*act);
 	struct nl_cache *link_cache;
 	struct nlattr *tb[TCAA_MAX + 1];
 	struct tcamsg *tm;

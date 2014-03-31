@@ -102,6 +102,13 @@ struct trans_list {
 		assert(0);						\
 	} while (0)
 
+#define BUG_ON(condition)						\
+	do {								\
+		if (condition)						\
+			BUG();						\
+	} while (0)
+
+
 #define APPBUG(msg)							\
 	do {								\
 		fprintf(stderr, "APPLICATION BUG: %s:%d:%s: %s\n",	\

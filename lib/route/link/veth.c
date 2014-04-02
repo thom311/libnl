@@ -165,6 +165,18 @@ static int veth_alloc(struct rtnl_link *link)
 	return 0;
 }
 
+static void veth_free(struct rtnl_link *link)
+{
+	struct rtnl_link *peer = rtnl_link_veth_get_peer(link);
+	if (peer) {
+		link->l_info = NULL;
+		/* avoid calling this recursively */
+		peer->l_info = NULL;
+		rtnl_link_put(peer);
+	}
+	/* the caller should finally free link */
+}
+
 static struct rtnl_link_info_ops veth_info_ops = {
 	.io_name		= "veth",
 	.io_parse		= veth_parse,
@@ -175,6 +187,7 @@ static struct rtnl_link_info_ops veth_info_ops = {
 	.io_alloc		= veth_alloc,
 	.io_clone		= veth_clone,
 	.io_put_attrs		= veth_put_attrs,
+	.io_free		= veth_free,
 };
 
 /** @cond SKIP */
@@ -228,8 +241,7 @@ struct rtnl_link *rtnl_link_veth_get_peer(struct rtnl_link *link)
  */
 void rtnl_link_veth_release(struct rtnl_link *link)
 {
-	struct rtnl_link *peer = rtnl_link_veth_get_peer(link);
-	rtnl_link_put(peer);
+	veth_free(link);
 	rtnl_link_put(link);
 }
 
@@ -276,9 +288,7 @@ int rtnl_link_veth_add(struct nl_sock *sock, const char *name,
 	rtnl_link_set_ns_pid(peer, pid);
 	err = rtnl_link_add(sock, link, NLM_F_CREATE);
 
-	rtnl_link_put(peer);
 	rtnl_link_put(link);
-
         return err;
 }
 

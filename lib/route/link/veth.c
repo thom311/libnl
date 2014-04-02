@@ -140,6 +140,31 @@ static int veth_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	return 0;
 }
 
+static int veth_alloc(struct rtnl_link *link)
+{
+	struct rtnl_link *peer;
+	int err;
+
+	/* return early if we are in recursion */
+	if (link->l_info)
+		return 0;
+
+	if (!(peer = rtnl_link_alloc()))
+		return -NLE_NOMEM;
+
+	/* We don't need to hold a reference here, as link and
+	 * its peer should always be freed together.
+	 */
+	peer->l_info = link;
+	if ((err = rtnl_link_set_type(peer, "veth")) < 0) {
+		rtnl_link_put(peer);
+		return err;
+	}
+
+	link->l_info = peer;
+	return 0;
+}
+
 static struct rtnl_link_info_ops veth_info_ops = {
 	.io_name		= "veth",
 	.io_parse		= veth_parse,
@@ -147,6 +172,7 @@ static struct rtnl_link_info_ops veth_info_ops = {
 	    [NL_DUMP_LINE]	= veth_dump_line,
 	    [NL_DUMP_DETAILS]	= veth_dump_details,
 	},
+	.io_alloc		= veth_alloc,
 	.io_clone		= veth_clone,
 	.io_put_attrs		= veth_put_attrs,
 };
@@ -172,29 +198,16 @@ static struct rtnl_link_info_ops veth_info_ops = {
  */
 struct rtnl_link *rtnl_link_veth_alloc(void)
 {
-	struct rtnl_link *link, *peer;
+	struct rtnl_link *link;
 	int err;
 
 	if (!(link = rtnl_link_alloc()))
 		return NULL;
-	if (!(peer = rtnl_link_alloc())) {
-		rtnl_link_put(link);
-		return NULL;
-	}
-
 	if ((err = rtnl_link_set_type(link, "veth")) < 0) {
-		rtnl_link_put(peer);
-		rtnl_link_put(link);
-		return NULL;
-	}
-	if ((err = rtnl_link_set_type(peer, "veth")) < 0) {
-		rtnl_link_put(peer);
 		rtnl_link_put(link);
 		return NULL;
 	}
 
-	link->l_info = peer;
-	peer->l_info = link;
 	return link;
 }
 

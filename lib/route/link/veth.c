@@ -286,10 +286,10 @@ int rtnl_link_veth_add(struct nl_sock *sock, const char *name,
 	}
 
 	rtnl_link_set_ns_pid(peer, pid);
-	err = rtnl_link_add(sock, link, NLM_F_CREATE);
+	err = rtnl_link_add(sock, link, NLM_F_CREATE | NLM_F_EXCL);
 
 	rtnl_link_put(link);
-        return err;
+	return err;
 }
 
 /** @} */

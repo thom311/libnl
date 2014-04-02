@@ -98,19 +98,19 @@ static void veth_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 static int veth_clone(struct rtnl_link *dst, struct rtnl_link *src)
 {
-	struct rtnl_link *dst_peer , *src_peer = src->l_info;
-	int err;
+	struct rtnl_link *dst_peer = NULL, *src_peer = src->l_info;
 
-	dst_peer = dst->l_info = rtnl_link_alloc();
-	if (!dst_peer || !src_peer)
-		return -NLE_NOMEM;
-	if ((err = rtnl_link_set_type(dst, "veth")) < 0) {
-		rtnl_link_put(dst_peer);
-		return err;
+	/* we are calling nl_object_clone() recursively, this should
+	 * happen only once */
+	if (src_peer) {
+		src_peer->l_info = NULL;
+		dst_peer = (struct rtnl_link *)nl_object_clone(OBJ_CAST(src_peer));
+		if (!dst_peer)
+			return -NLE_NOMEM;
+		src_peer->l_info = src;
+		dst_peer->l_info = dst;
 	}
-
-	memcpy(dst_peer, src_peer, sizeof(struct rtnl_link));
-
+	dst->l_info = dst_peer;
 	return 0;
 }
 

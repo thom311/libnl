@@ -225,16 +225,16 @@ struct rtnl_neigh
 
 struct rtnl_addr_cacheinfo
 {
-	/* Preferred lifetime in seconds */
+	/* Preferred lifetime in seconds, ticking from when the message gets constructed */
 	uint32_t aci_prefered;
 
-	/* Valid lifetime in seconds */
+	/* Valid lifetime in seconds, ticking from when the message gets constructed */
 	uint32_t aci_valid;
 
-	/* Timestamp of creation in 1/100s since boottime */
+	/* Timestamp of creation in 1/100s since boottime, clock_gettime(CLOCK_MONOTONIC) */
 	uint32_t aci_cstamp;
 
-	/* Timestamp of last update in 1/100s since boottime */
+	/* Timestamp of last update in 1/100s since boottime, clock_gettime(CLOCK_MONOTONIC) */
 	uint32_t aci_tstamp;
 };
 

@@ -598,7 +598,19 @@ static int build_addr_msg(struct rtnl_addr *tmpl, int cmd, int flags,
 		NLA_PUT(msg, IFA_CACHEINFO, sizeof(ca), &ca);
 	}
 
-	NLA_PUT_U32(msg, IFA_FLAGS, tmpl->a_flags);
+	if (tmpl->a_flags & ~0xFF) {
+		/* only set the IFA_FLAGS attribute, if they actually contain additional
+		 * flags that are not already set to am.ifa_flags.
+		 *
+		 * Older kernels refuse RTM_NEWADDR and RTM_NEWROUTE messages with EINVAL
+		 * if they contain unknown netlink attributes. See net/core/rtnetlink.c, which
+		 * was fixed by kernel commit 661d2967b3f1b34eeaa7e212e7b9bbe8ee072b59.
+		 *
+		 * With this workaround, libnl will function correctly with older kernels,
+		 * unless there is a new libnl user that wants to set these flags. In this
+		 * case it's up to the user to workaround this issue. */
+		NLA_PUT_U32(msg, IFA_FLAGS, tmpl->a_flags);
+	}
 
 	*result = msg;
 	return 0;

@@ -26,6 +26,7 @@
  */
 
 #include <netlink-private/netlink.h>
+#include <netlink-private/socket.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/handlers.h>
@@ -75,6 +76,16 @@
  *       be closed automatically if any of the `exec` family functions succeed.
  *       This is essential for multi threaded programs.
  *
+ * @note The local port (`nl_socket_get_local_port()`) is unspecified after
+ *       creating a new socket. It only gets determined when accessing the
+ *       port the first time or during `nl_connect()`. When nl_connect()
+ *       fails during `bind()` due to `ADDRINUSE`, it will retry with
+ *       different ports if the port is unspecified. Unless you want to enforce
+ *       the use of a specific local port, don't access the local port (or
+ *       reset it to `unspecified` by calling `nl_socket_set_local_port(sk, 0)`).
+ *       This capability is indicated by
+ *       `%NL_CAPABILITY_NL_CONNECT_RETRY_GENERATE_PORT_ON_ADDRINUSE`.
+ *
  * @see nl_socket_alloc()
  * @see nl_close()
  *
@@ -85,6 +96,7 @@
 int nl_connect(struct nl_sock *sk, int protocol)
 {
 	int err, flags = 0;
+	int errsv;
 	socklen_t addrlen;
 
 #ifdef SOCK_CLOEXEC
@@ -96,7 +108,9 @@ int nl_connect(struct nl_sock *sk, int protocol)
 
 	sk->s_fd = socket(AF_NETLINK, SOCK_RAW | flags, protocol);
 	if (sk->s_fd < 0) {
-		err = -nl_syserr2nlerr(errno);
+		errsv = errno;
+		NL_DBG(4, "nl_connect(%p): socket() failed with %d\n", sk, errsv);
+		err = -nl_syserr2nlerr(errsv);
 		goto errout;
 	}
 
@@ -106,11 +120,45 @@ int nl_connect(struct nl_sock *sk, int protocol)
 			goto errout;
 	}
 
-	err = bind(sk->s_fd, (struct sockaddr*) &sk->s_local,
-		   sizeof(sk->s_local));
-	if (err < 0) {
-		err = -nl_syserr2nlerr(errno);
-		goto errout;
+	if (_nl_socket_is_local_port_unspecified (sk)) {
+		uint32_t port;
+		uint32_t used_ports[32] = { 0 };
+
+		while (1) {
+			port = _nl_socket_generate_local_port_no_release(sk);
+
+			if (port == UINT32_MAX) {
+				NL_DBG(4, "nl_connect(%p): no more unused local ports.\n", sk);
+				_nl_socket_used_ports_release_all(used_ports);
+				err = -NLE_EXIST;
+				goto errout;
+			}
+			err = bind(sk->s_fd, (struct sockaddr*) &sk->s_local,
+				   sizeof(sk->s_local));
+			if (err == 0)
+				break;
+
+			errsv = errno;
+			if (errsv == EADDRINUSE) {
+				NL_DBG(4, "nl_connect(%p): local port %u already in use. Retry.\n", sk, (unsigned) port);
+				_nl_socket_used_ports_set(used_ports, port);
+			} else {
+				NL_DBG(4, "nl_connect(%p): bind() for port %u failed with %d\n", sk, (unsigned) port, errsv);
+				_nl_socket_used_ports_release_all(used_ports);
+				err = -nl_syserr2nlerr(errsv);
+				goto errout;
+			}
+		}
+		_nl_socket_used_ports_release_all(used_ports);
+	} else {
+		err = bind(sk->s_fd, (struct sockaddr*) &sk->s_local,
+			   sizeof(sk->s_local));
+		if (err != 0) {
+			errsv = errno;
+			NL_DBG(4, "nl_connect(%p): bind() failed with %d\n", sk, errsv);
+			err = -nl_syserr2nlerr(errsv);
+			goto errout;
+		}
 	}
 
 	addrlen = sizeof(sk->s_local);
@@ -405,7 +453,7 @@ void nl_complete_msg(struct nl_sock *sk, struct nl_msg *msg)
 
 	nlh = nlmsg_hdr(msg);
 	if (nlh->nlmsg_pid == NL_AUTO_PORT)
-		nlh->nlmsg_pid = sk->s_local.nl_pid;
+		nlh->nlmsg_pid = nl_socket_get_local_port(sk);
 
 	if (nlh->nlmsg_seq == NL_AUTO_SEQ)
 		nlh->nlmsg_seq = sk->s_seq_next++;

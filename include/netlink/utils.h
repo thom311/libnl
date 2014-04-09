@@ -104,6 +104,15 @@ enum {
 	NL_CAPABILITY_ROUTE_LINK_CLS_ADD_ACT_OWN_REFERENCE = 3,
 #define NL_CAPABILITY_ROUTE_LINK_CLS_ADD_ACT_OWN_REFERENCE NL_CAPABILITY_ROUTE_LINK_CLS_ADD_ACT_OWN_REFERENCE
 
+	/**
+	 * Indicate that the local port is unspecified until the user accesses
+	 * it (via nl_socket_get_local_port()) or until nl_connect(). More importantly,
+	 * if the port is left unspecified, nl_connect() will retry generating another
+	 * port when bind() fails with ADDRINUSE.
+	 */
+	NL_CAPABILITY_NL_CONNECT_RETRY_GENERATE_PORT_ON_ADDRINUSE = 4,
+#define NL_CAPABILITY_NL_CONNECT_RETRY_GENERATE_PORT_ON_ADDRINUSE NL_CAPABILITY_NL_CONNECT_RETRY_GENERATE_PORT_ON_ADDRINUSE
+
 	__NL_CAPABILITY_MAX
 #define NL_CAPABILITY_MAX                               (__NL_CAPABILITY_MAX - 1)
 };

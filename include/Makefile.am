@@ -142,6 +142,7 @@ noinst_HEADERS = \
 	linux/tc_ematch/tc_em_meta.h \
 	netlink-private/genl.h \
 	netlink-private/netlink.h \
+	netlink-private/socket.h \
 	netlink-private/tc.h \
 	netlink-private/types.h \
 	netlink-private/cache-api.h \

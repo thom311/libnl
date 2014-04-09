@@ -126,10 +126,6 @@ static struct nl_sock *__alloc_socket(struct nl_cb *cb)
 	sk->s_peer.nl_family = AF_NETLINK;
 	sk->s_seq_expect = sk->s_seq_next = time(0);
 	sk->s_local.nl_pid = generate_local_port();
-	if (sk->s_local.nl_pid == UINT32_MAX) {
-		nl_socket_free(sk);
-		return NULL;
-	}
 
 	return sk;
 }

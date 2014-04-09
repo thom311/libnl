@@ -82,7 +82,7 @@ static uint32_t generate_local_port(void)
 
 			nl_write_unlock(&port_map_lock);
 
-			return pid + (n << 22);
+			return pid + (((uint32_t)n) << 22);
 		}
 	}
 
@@ -90,14 +90,14 @@ static uint32_t generate_local_port(void)
 
 	/* Out of sockets in our own PID namespace, what to do? FIXME */
 	NL_DBG(1, "Warning: Ran out of unique local port namespace\n");
-	return UINT_MAX;
+	return UINT32_MAX;
 }
 
 static void release_local_port(uint32_t port)
 {
 	int nr;
 
-	if (port == UINT_MAX)
+	if (port == UINT32_MAX)
 		return;
 	
 	nr = port >> 22;
@@ -126,7 +126,7 @@ static struct nl_sock *__alloc_socket(struct nl_cb *cb)
 	sk->s_peer.nl_family = AF_NETLINK;
 	sk->s_seq_expect = sk->s_seq_next = time(0);
 	sk->s_local.nl_pid = generate_local_port();
-	if (sk->s_local.nl_pid == UINT_MAX) {
+	if (sk->s_local.nl_pid == UINT32_MAX) {
 		nl_socket_free(sk);
 		return NULL;
 	}

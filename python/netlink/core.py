@@ -449,7 +449,7 @@ class ObjIterator(object):
         return capi.nl_cache_get_next(self._nl_object)
 
     def next(self):
-        return self.__next__(self)
+        return self.__next__()
 
     def __next__(self):
         if self._end:

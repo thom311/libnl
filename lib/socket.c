@@ -62,16 +62,39 @@ static NL_RW_LOCK(port_map_lock);
 
 static uint32_t generate_local_port(void)
 {
-	int i, n;
+	int i, j, n, m;
+	static uint16_t idx_state = 0;
 	uint32_t pid = getpid() & 0x3FFFFF;
 
 	nl_write_lock(&port_map_lock);
 
-	for (i = 0; i < 32; i++) {
+	if (idx_state == 0) {
+		uint32_t t = time(NULL);
+
+		/* from time to time (on average each 2^15 calls), the idx_state will
+		 * be zero again. No problem, just "seed" anew with time(). */
+		idx_state = t ^ (t >> 16) ^ 0x3047;
+	} else
+		idx_state = idx_state + 20011; /* add prime number */
+
+	i = idx_state >> 5;
+	n = idx_state;
+	for (j = 0; j < 32; j++) {
+		/* walk the index somewhat randomized, with always leaving the block
+		 * #0 as last. The reason is that libnl-1 will start at block #0,
+		 * so just leave the first 32 ports preferably for libnl-1 owned sockets
+		 * (this is relevant only if the applications ends up using both versions
+		 * of the library and doesn't hurt otherwise). */
+		if (j == 31)
+			i = 0;
+		else
+			i = (((i-1) + 7) % 31) + 1;
+
 		if (used_ports_map[i] == 0xFFFFFFFF)
 			continue;
 
-		for (n = 0; n < 32; n++) {
+		for (m = 0; m < 32; m++) {
+			n = (n + 13) % 32;
 			if (1UL & (used_ports_map[i] >> n))
 				continue;
 

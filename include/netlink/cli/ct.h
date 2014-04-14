@@ -30,5 +30,6 @@ extern void nl_cli_ct_parse_src_port(struct nfnl_ct *, int, char *);
 extern void nl_cli_ct_parse_dst_port(struct nfnl_ct *, int, char *);
 extern void nl_cli_ct_parse_tcp_state(struct nfnl_ct *, char *);
 extern void nl_cli_ct_parse_status(struct nfnl_ct *, char *);
+extern void nl_cli_ct_parse_zone(struct nfnl_ct *, char *);
 
 #endif

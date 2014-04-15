@@ -396,8 +396,11 @@ int rtnl_act_parse(struct rtnl_act **head, struct nlattr *tb)
 	if (err < 0)
 		return err;
 
-	for (i = 0; i < TCA_ACT_MAX_PRIO && nla[i]; i++) {
+	for (i = 0; i < TCA_ACT_MAX_PRIO; i++) {
 		struct rtnl_tc *tc;
+
+		if (nla[i] == NULL)
+			continue;
 
 		act = rtnl_act_alloc();
 		if (!act) {

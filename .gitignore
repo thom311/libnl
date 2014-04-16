@@ -5,6 +5,7 @@
 *.lo
 *.o
 *.swp
+*.patch
 Makefile
 Makefile.in
 defs.h.in

@@ -14,6 +14,7 @@ defs.h.in~
 /libnl-1.pc
 /lib/defs.h
 cscope.*
+/tags
 
 /aclocal.m4
 /autom4te.cache

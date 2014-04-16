@@ -232,10 +232,10 @@ an error message or a success notification.
 msc {
   App1,App2,Kernel;
   App1=>Kernel [label="request (src=11, dst=0)"];
-  Kernel<=App1 [label="reply (src=0, dst=11)"];
+  App1<=Kernel [label="reply (src=0, dst=11)"];
   ...;
   App2=>Kernel [label="request (src=21, dst=0)"];
-  Kernel<=App2 [label="reply (src=0, dst=21)"];
+  App2<=Kernel [label="reply (src=0, dst=21)"];
 }
 --------
 

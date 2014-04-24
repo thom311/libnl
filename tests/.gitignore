@@ -7,6 +7,7 @@
 /test-complex-HTB-with-hash-filters
 /test-create-bond
 /test-create-bridge
+/test-create-ipip
 /test-create-veth
 /test-create-vlan
 /test-create-vxlan

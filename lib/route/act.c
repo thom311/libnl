@@ -178,6 +178,11 @@ struct rtnl_act *rtnl_act_alloc(void)
 	return (struct rtnl_act *) tc;
 }
 
+void rtnl_act_get(struct rtnl_act *act)
+{
+	nl_object_get(OBJ_CAST(act));
+}
+
 void rtnl_act_put(struct rtnl_act *act)
 {
 	nl_object_put((struct nl_object *) act);

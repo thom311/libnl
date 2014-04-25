@@ -53,6 +53,7 @@ nobase_libnlinclude_HEADERS = \
 	netlink/route/link/vlan.h \
 	netlink/route/link/vxlan.h \
 	netlink/route/link/veth.h \
+	netlink/route/link/ipgre.h \
 	netlink/route/link/ipip.h \
 	netlink/route/qdisc/cbq.h \
 	netlink/route/qdisc/dsmark.h \

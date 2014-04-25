@@ -24,6 +24,7 @@ check_PROGRAMS = \
 	test-create-vxlan \
 	test-create-veth \
 	test-create-bridge \
+	test-create-ipgre \
 	test-create-ipip \
 	test-delete-link \
 	test-socket-creation \

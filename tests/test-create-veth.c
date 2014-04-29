@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
 		return err;
 	}
 	printf("peer is %s\n", rtnl_link_get_name(peer));
+	rtnl_link_put(peer);
 	rtnl_link_put(link);
 #endif
 	nl_close(sk);

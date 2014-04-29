@@ -1145,7 +1145,7 @@ int nl_has_capability (int capability)
 			_NL_SETV((i), 3, (v3)) | _NL_SETV((i), 7, (v7)) )
 		_NL_SET(0,
 			NL_CAPABILITY_ROUTE_BUILD_MSG_SET_SCOPE,
-			0,
+			NL_CAPABILITY_ROUTE_LINK_VETH_GET_PEER_OWN_REFERENCE,
 			0,
 			0,
 			0,

@@ -167,7 +167,7 @@ static int veth_alloc(struct rtnl_link *link)
 
 static void veth_free(struct rtnl_link *link)
 {
-	struct rtnl_link *peer = rtnl_link_veth_get_peer(link);
+	struct rtnl_link *peer = link->l_info;
 	if (peer) {
 		link->l_info = NULL;
 		/* avoid calling this recursively */
@@ -232,6 +232,7 @@ struct rtnl_link *rtnl_link_veth_alloc(void)
 struct rtnl_link *rtnl_link_veth_get_peer(struct rtnl_link *link)
 {
 	IS_VETH_LINK_ASSERT(link);
+	nl_object_get(OBJ_CAST(link->l_info));
 	return link->l_info;
 }
 
@@ -278,7 +279,7 @@ int rtnl_link_veth_add(struct nl_sock *sock, const char *name,
 
 	if (!(link = rtnl_link_veth_alloc()))
 		return -NLE_NOMEM;
-	peer = rtnl_link_veth_get_peer(link);
+	peer = link->l_info;
 
 	if (name && peer_name) {
 		rtnl_link_set_name(link, name);

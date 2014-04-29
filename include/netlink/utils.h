@@ -90,6 +90,13 @@ enum {
 	NL_CAPABILITY_ROUTE_BUILD_MSG_SET_SCOPE         = 1,
 #define NL_CAPABILITY_ROUTE_BUILD_MSG_SET_SCOPE NL_CAPABILITY_ROUTE_BUILD_MSG_SET_SCOPE
 
+	/**
+	 * rtnl_link_veth_get_peer() now returns a reference that is owned by the
+	 * caller and must be released by the caller with rtnl_link_put().
+	 */
+	NL_CAPABILITY_ROUTE_LINK_VETH_GET_PEER_OWN_REFERENCE = 2,
+#define NL_CAPABILITY_ROUTE_LINK_VETH_GET_PEER_OWN_REFERENCE NL_CAPABILITY_ROUTE_LINK_VETH_GET_PEER_OWN_REFERENCE
+
 	__NL_CAPABILITY_MAX
 #define NL_CAPABILITY_MAX                               (__NL_CAPABILITY_MAX - 1)
 };

@@ -384,6 +384,7 @@ void rtnl_act_put_all(struct rtnl_act **head)
 
 int rtnl_act_parse(struct rtnl_act **head, struct nlattr *tb)
 {
+	struct rtnl_act *act;
 	struct rtnl_tc_ops *ops;
 	struct nlattr *tb2[TCA_ACT_MAX + 1];
 	struct nlattr *nla[TCA_ACT_MAX_PRIO + 1];
@@ -396,7 +397,6 @@ int rtnl_act_parse(struct rtnl_act **head, struct nlattr *tb)
 		return err;
 
 	for (i = 0; i < TCA_ACT_MAX_PRIO && nla[i]; i++) {
-		struct rtnl_act *act;
 		struct rtnl_tc *tc;
 
 		act = rtnl_act_alloc();
@@ -447,6 +447,7 @@ int rtnl_act_parse(struct rtnl_act **head, struct nlattr *tb)
 	return 0;
 
 err_free:
+	rtnl_act_put (act);
 	rtnl_act_put_all(head);
 
 	return err;

@@ -1,4 +1,5 @@
 genl-ctrl-list
+/nf-ct-add
 nf-ct-list
 nf-exp-list
 nf-exp-add

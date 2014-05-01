@@ -206,7 +206,7 @@ struct rtnl_link *rtnl_link_bridge_alloc(void)
 		
 /** 
  * Create a new kernel bridge device
- * @arg sock            netlink socket
+ * @arg sk              netlink socket
  * @arg name            name of the bridge device or NULL
  *
  * Creates a new bridge device in the kernel. If no name is

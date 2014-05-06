@@ -9,6 +9,7 @@
 /test-create-bridge
 /test-create-ipgre
 /test-create-ipip
+/test-create-ipvti
 /test-create-sit
 /test-create-veth
 /test-create-vlan

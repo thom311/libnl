@@ -179,7 +179,7 @@ static int ipgre_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (ipgre->ipgre_mask & IPGRE_ATTR_IKEY)
 		NLA_PUT_U32(msg, IFLA_GRE_IKEY, ipgre->ikey);
 
-	if (ipgre->ipgre_mask & IFLA_GRE_OKEY)
+	if (ipgre->ipgre_mask & IPGRE_ATTR_OKEY)
 		NLA_PUT_U32(msg, IFLA_GRE_OKEY, ipgre->okey);
 
 	if (ipgre->ipgre_mask & IPGRE_ATTR_LOCAL)

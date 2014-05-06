@@ -30,6 +30,7 @@
 #include "defs.h"
 
 #include <netlink-private/netlink.h>
+#include <netlink-private/socket.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/handlers.h>
@@ -61,16 +62,39 @@ static NL_RW_LOCK(port_map_lock);
 
 static uint32_t generate_local_port(void)
 {
-	int i, n;
+	int i, j, n, m;
+	static uint16_t idx_state = 0;
 	uint32_t pid = getpid() & 0x3FFFFF;
 
 	nl_write_lock(&port_map_lock);
 
-	for (i = 0; i < 32; i++) {
+	if (idx_state == 0) {
+		uint32_t t = time(NULL);
+
+		/* from time to time (on average each 2^15 calls), the idx_state will
+		 * be zero again. No problem, just "seed" anew with time(). */
+		idx_state = t ^ (t >> 16) ^ 0x3047;
+	} else
+		idx_state = idx_state + 20011; /* add prime number */
+
+	i = idx_state >> 5;
+	n = idx_state;
+	for (j = 0; j < 32; j++) {
+		/* walk the index somewhat randomized, with always leaving the block
+		 * #0 as last. The reason is that libnl-1 will start at block #0,
+		 * so just leave the first 32 ports preferably for libnl-1 owned sockets
+		 * (this is relevant only if the applications ends up using both versions
+		 * of the library and doesn't hurt otherwise). */
+		if (j == 31)
+			i = 0;
+		else
+			i = (((i-1) + 7) % 31) + 1;
+
 		if (used_ports_map[i] == 0xFFFFFFFF)
 			continue;
 
-		for (n = 0; n < 32; n++) {
+		for (m = 0; m < 32; m++) {
+			n = (n + 13) % 32;
 			if (1UL & (used_ports_map[i] >> n))
 				continue;
 
@@ -82,7 +106,7 @@ static uint32_t generate_local_port(void)
 
 			nl_write_unlock(&port_map_lock);
 
-			return pid + (n << 22);
+			return pid + (((uint32_t)n) << 22);
 		}
 	}
 
@@ -90,22 +114,64 @@ static uint32_t generate_local_port(void)
 
 	/* Out of sockets in our own PID namespace, what to do? FIXME */
 	NL_DBG(1, "Warning: Ran out of unique local port namespace\n");
-	return UINT_MAX;
+	return UINT32_MAX;
 }
 
 static void release_local_port(uint32_t port)
 {
 	int nr;
+	uint32_t mask;
 
-	if (port == UINT_MAX)
+	if (port == UINT32_MAX)
 		return;
-	
+
+	BUG_ON(port == 0);
+
 	nr = port >> 22;
+	mask = 1UL << (nr % 32);
+	nr /= 32;
 
 	nl_write_lock(&port_map_lock);
-	used_ports_map[nr / 32] &= ~(1 << (nr % 32));
+	BUG_ON((used_ports_map[nr] & mask) != mask);
+	used_ports_map[nr] &= ~mask;
 	nl_write_unlock(&port_map_lock);
 }
+
+/** \cond skip */
+void _nl_socket_used_ports_release_all(const uint32_t *used_ports)
+{
+	int i;
+
+	for (i = 0; i < 32; i++) {
+		if (used_ports[i] != 0) {
+			nl_write_lock(&port_map_lock);
+			for (; i < 32; i++) {
+				BUG_ON((used_ports_map[i] & used_ports[i]) != used_ports[i]);
+				used_ports_map[i] &= ~(used_ports[i]);
+			}
+			nl_write_unlock(&port_map_lock);
+			return;
+		}
+	}
+}
+
+void _nl_socket_used_ports_set(uint32_t *used_ports, uint32_t port)
+{
+	int nr;
+	int32_t mask;
+
+	nr = port >> 22;
+	mask = 1UL << (nr % 32);
+	nr /= 32;
+
+	/*
+	BUG_ON(port == UINT32_MAX || port == 0 || (getpid() & 0x3FFFFF) != (port & 0x3FFFFF));
+	BUG_ON(used_ports[nr] & mask);
+	*/
+
+	used_ports[nr] |= mask;
+}
+/** \endcond */
 
 /**
  * @name Allocation
@@ -125,11 +191,9 @@ static struct nl_sock *__alloc_socket(struct nl_cb *cb)
 	sk->s_local.nl_family = AF_NETLINK;
 	sk->s_peer.nl_family = AF_NETLINK;
 	sk->s_seq_expect = sk->s_seq_next = time(0);
-	sk->s_local.nl_pid = generate_local_port();
-	if (sk->s_local.nl_pid == UINT_MAX) {
-		nl_socket_free(sk);
-		return NULL;
-	}
+
+	/* the port is 0 (unspecified), meaning NL_OWN_PORT */
+	sk->s_flags = NL_OWN_PORT;
 
 	return sk;
 }
@@ -265,6 +329,26 @@ void nl_socket_enable_auto_ack(struct nl_sock *sk)
 
 /** @} */
 
+/** \cond skip */
+int _nl_socket_is_local_port_unspecified(struct nl_sock *sk)
+{
+	return (sk->s_local.nl_pid == 0);
+}
+
+uint32_t _nl_socket_generate_local_port_no_release(struct nl_sock *sk)
+{
+	uint32_t port;
+
+	/* reset the port to generate_local_port(), but do not release
+	 * the previously generated port. */
+
+	port = generate_local_port();
+	sk->s_flags &= ~NL_OWN_PORT;
+	sk->s_local.nl_pid = port;
+	return port;
+}
+/** \endcond */
+
 /**
  * @name Source Idenficiation
  * @{
@@ -272,6 +356,18 @@ void nl_socket_enable_auto_ack(struct nl_sock *sk)
 
 uint32_t nl_socket_get_local_port(const struct nl_sock *sk)
 {
+	if (sk->s_local.nl_pid == 0) {
+		/* modify the const argument sk. This is justified, because
+		 * nobody ever saw the local_port from externally. So, we
+		 * initilize it on first use.
+		 *
+		 * Note that this also means that you cannot call this function
+		 * from multiple threads without synchronization. But nl_sock
+		 * is not automatically threadsafe anyway, so the user is not
+		 * allowed to do that.
+		 */
+		return _nl_socket_generate_local_port_no_release((struct nl_sock *) sk);
+	}
 	return sk->s_local.nl_pid;
 }
 
@@ -280,27 +376,18 @@ uint32_t nl_socket_get_local_port(const struct nl_sock *sk)
  * @arg sk		Netlink socket.
  * @arg port		Local port identifier
  *
- * Assigns a local port identifier to the socket. If port is 0
- * a unique port identifier will be generated automatically.
+ * Assigns a local port identifier to the socket.
+ *
+ * If port is 0, the port is reset to 'unspecified' as it is after newly
+ * calling nl_socket_alloc().
+ * Unspecified means, that the port will be generated automatically later
+ * on first use (either on nl_socket_get_local_port() or nl_connect()).
  */
 void nl_socket_set_local_port(struct nl_sock *sk, uint32_t port)
 {
-	if (port == 0) {
-		port = generate_local_port(); 
-		/*
-		 * Release local port after generation of a new one to be
-		 * able to change local port using nl_socket_set_local_port(, 0)
-		 */
-		if (!(sk->s_flags & NL_OWN_PORT))
-			release_local_port(sk->s_local.nl_pid);
-		else
-			sk->s_flags &= ~NL_OWN_PORT;
-	} else  {
-		if (!(sk->s_flags & NL_OWN_PORT))
-			release_local_port(sk->s_local.nl_pid);
-		sk->s_flags |= NL_OWN_PORT;
-	}
-
+	if (!(sk->s_flags & NL_OWN_PORT))
+		release_local_port(sk->s_local.nl_pid);
+	sk->s_flags |= NL_OWN_PORT;
 	sk->s_local.nl_pid = port;
 }
 

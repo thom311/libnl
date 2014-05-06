@@ -26,6 +26,7 @@ check_PROGRAMS = \
 	test-create-bridge \
 	test-create-ipgre \
 	test-create-ipip \
+	test-create-ipvti \
 	test-create-sit \
 	test-delete-link \
 	test-socket-creation \

@@ -34,6 +34,9 @@ extern int		rtnl_link_is_vlan(struct rtnl_link *);
 extern char *		rtnl_link_vlan_flags2str(int, char *, size_t);
 extern int		rtnl_link_vlan_str2flags(const char *);
 
+extern int		rtnl_link_vlan_set_protocol(struct rtnl_link *link, uint16_t);
+extern int		rtnl_link_vlan_get_protocol(struct rtnl_link *link);
+
 extern int		rtnl_link_vlan_set_id(struct rtnl_link *, uint16_t);
 extern int		rtnl_link_vlan_get_id(struct rtnl_link *);
 

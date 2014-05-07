@@ -38,10 +38,12 @@
 #define VLAN_HAS_FLAGS		(1<<1)
 #define VLAN_HAS_INGRESS_QOS	(1<<2)
 #define VLAN_HAS_EGRESS_QOS	(1<<3)
+#define VLAN_HAS_PROTOCOL	(1<<4)
 
 struct vlan_info
 {
 	uint16_t		vi_vlan_id;
+	uint16_t		vi_protocol;
 	uint32_t		vi_flags;
 	uint32_t		vi_flags_mask;
 	uint32_t		vi_ingress_qos[VLAN_PRIO_MAX+1];
@@ -58,6 +60,7 @@ static struct nla_policy vlan_policy[IFLA_VLAN_MAX+1] = {
 	[IFLA_VLAN_FLAGS]	= { .minlen = sizeof(struct ifla_vlan_flags) },
 	[IFLA_VLAN_INGRESS_QOS]	= { .type = NLA_NESTED },
 	[IFLA_VLAN_EGRESS_QOS]	= { .type = NLA_NESTED },
+	[IFLA_VLAN_PROTOCOL]	= { .type = NLA_U16 },
 };
 
 static int vlan_alloc(struct rtnl_link *link)
@@ -92,6 +95,11 @@ static int vlan_parse(struct rtnl_link *link, struct nlattr *data,
 	if (tb[IFLA_VLAN_ID]) {
 		vi->vi_vlan_id = nla_get_u16(tb[IFLA_VLAN_ID]);
 		vi->vi_mask |= VLAN_HAS_ID;
+	}
+
+	if (tb[IFLA_VLAN_PROTOCOL]) {
+		vi->vi_protocol = nla_get_u16(tb[IFLA_VLAN_PROTOCOL]);
+		vi->vi_mask |= VLAN_HAS_PROTOCOL;
 	}
 
 	if (tb[IFLA_VLAN_FLAGS]) {
@@ -186,7 +194,12 @@ static void vlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 	char buf[64];
 
 	rtnl_link_vlan_flags2str(vi->vi_flags, buf, sizeof(buf));
-	nl_dump_line(p, "    vlan-info id %d <%s>\n", vi->vi_vlan_id, buf);
+	nl_dump_line(p, "    vlan-info id %d <%s>", vi->vi_vlan_id, buf);
+
+	if (vi->vi_mask & VLAN_HAS_PROTOCOL)
+		nl_dump_line(p, "    vlan protocol <%d>", vi->vi_protocol);
+
+	nl_dump(p, "\n");
 
 	if (vi->vi_mask & VLAN_HAS_INGRESS_QOS) {
 		nl_dump_line(p, 
@@ -405,6 +418,43 @@ int rtnl_link_vlan_get_id(struct rtnl_link *link)
 
 	if (vi->vi_mask & VLAN_HAS_ID)
 		return vi->vi_vlan_id;
+	else
+		return 0;
+}
+
+/**
+ * Set VLAN protocol
+ * @arg link		Link object
+ * @arg protocol	VLAN protocol
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_vlan_set_protocol(struct rtnl_link *link, uint16_t protocol)
+{
+	struct vlan_info *vi = link->l_info;
+
+	IS_VLAN_LINK_ASSERT(link);
+
+	vi->vi_protocol = protocol;
+	vi->vi_mask |= VLAN_HAS_PROTOCOL;
+
+	return 0;
+}
+
+/**
+ * Get VLAN protocol
+ * @arg link		Link object
+ *
+ * @return VLAN protocol, 0 if not set or a negative error code.
+ */
+int rtnl_link_vlan_get_protocol(struct rtnl_link *link)
+{
+	struct vlan_info *vi = link->l_info;
+
+	IS_VLAN_LINK_ASSERT(link);
+
+	if (vi->vi_mask & VLAN_HAS_PROTOCOL)
+		return vi->vi_protocol;
 	else
 		return 0;
 }

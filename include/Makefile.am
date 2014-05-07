@@ -120,6 +120,7 @@ noinst_HEADERS = \
 	linux/if.h \
 	linux/if_bridge.h \
 	linux/if_link.h \
+	linux/if_tunnel.h \
 	linux/if_vlan.h \
 	linux/ip.h \
 	linux/ip_mp_alg.h \

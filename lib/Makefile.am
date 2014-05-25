@@ -47,16 +47,16 @@ CLEANFILES = \
 # Hack to avoid using ylwrap. It does not function correctly in combination
 # with --header-file=
 route/pktloc_grammar.c: route/pktloc_grammar.l
-	$(AM_V_GEN) $(FLEX) --header-file=route/pktloc_grammar.h $(LFLAGS) -o $@ $^
+	$(AM_V_GEN) $(MKDIR_P) route; $(FLEX) --header-file=route/pktloc_grammar.h $(LFLAGS) -o $@ $^
 
 route/pktloc_syntax.c: route/pktloc_syntax.y
-	$(AM_V_GEN) $(YACC) -d $(YFLAGS) -o $@ $^
+	$(AM_V_GEN) $(MKDIR_P) route; $(YACC) -d $(YFLAGS) -o $@ $^
 
 route/cls/ematch_grammar.c: route/cls/ematch_grammar.l
-	$(AM_V_GEN) $(FLEX) --header-file=route/cls/ematch_grammar.h $(LFLAGS) -o $@ $^
+	$(AM_V_GEN) $(MKDIR_P) route/cls; $(FLEX) --header-file=route/cls/ematch_grammar.h $(LFLAGS) -o $@ $^
 
 route/cls/ematch_syntax.c: route/cls/ematch_syntax.y
-	$(AM_V_GEN) $(YACC) -d $(YFLAGS) -o $@ $^
+	$(AM_V_GEN) $(MKDIR_P) route/cls; $(YACC) -d $(YFLAGS) -o $@ $^
 
 libnl_route_3_la_LIBADD  = libnl-3.la
 libnl_route_3_la_SOURCES = \

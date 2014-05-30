@@ -385,14 +385,11 @@ struct nl_msg *nlmsg_convert(struct nlmsghdr *hdr)
 
 	nm = __nlmsg_alloc(NLMSG_ALIGN(hdr->nlmsg_len));
 	if (!nm)
-		goto errout;
+		return NULL;
 
 	memcpy(nm->nm_nlh, hdr, hdr->nlmsg_len);
 
 	return nm;
-errout:
-	nlmsg_free(nm);
-	return NULL;
 }
 
 /**

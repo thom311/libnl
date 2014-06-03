@@ -110,13 +110,14 @@ struct nl_derived_object {
 struct nl_object *nl_object_clone(struct nl_object *obj)
 {
 	struct nl_object *new;
-	struct nl_object_ops *ops = obj_ops(obj);
+	struct nl_object_ops *ops;
 	int doff = offsetof(struct nl_derived_object, data);
 	int size;
 
 	if (!obj)
 		return NULL;
 
+	ops = obj_ops(obj);
 	new = nl_object_alloc(ops);
 	if (!new)
 		return NULL;

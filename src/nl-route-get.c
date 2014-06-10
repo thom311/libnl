@@ -65,8 +65,12 @@ int main(int argc, char *argv[])
 		};
 
 		m = nlmsg_alloc_simple(RTM_GETROUTE, 0);
-		nlmsg_append(m, &rmsg, sizeof(rmsg), NLMSG_ALIGNTO);
-		nla_put_addr(m, RTA_DST, dst);
+		if (!m)
+			nl_cli_fatal(ENOMEM, "out of memory");
+		if (nlmsg_append(m, &rmsg, sizeof(rmsg), NLMSG_ALIGNTO) < 0)
+			nl_cli_fatal(ENOMEM, "out of memory");
+		if (nla_put_addr(m, RTA_DST, dst) < 0)
+			nl_cli_fatal(ENOMEM, "out of memory");
 
 		err = nl_send_auto_complete(sock, m);
 		nlmsg_free(m);

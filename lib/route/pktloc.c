@@ -138,8 +138,7 @@ static int read_pktlocs(void)
 	last_read = st.st_mtime;
 
 errout_scanner:
-	if (scanner)
-		pktloc_lex_destroy(scanner);
+	pktloc_lex_destroy(scanner);
 errout_close:
 	fclose(fd);
 errout:

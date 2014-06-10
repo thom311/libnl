@@ -654,9 +654,7 @@ int rtnl_ematch_parse_expr(const char *expr, char **errp,
 		goto errout;
 	}
 
-	if (scanner)
-		ematch_lex_destroy(scanner);
-
+	ematch_lex_destroy(scanner);
 	*result = tree;
 
 	return 0;

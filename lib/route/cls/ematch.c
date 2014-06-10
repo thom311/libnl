@@ -692,7 +692,7 @@ static const char *operand_txt[] = {
 char *rtnl_ematch_opnd2txt(uint8_t opnd, char *buf, size_t len)
 {
 	snprintf(buf, len, "%s",
-		opnd <= ARRAY_SIZE(operand_txt) ? operand_txt[opnd] : "?");
+		opnd < ARRAY_SIZE(operand_txt) ? operand_txt[opnd] : "?");
 
 	return buf;
 }

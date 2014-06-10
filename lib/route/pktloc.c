@@ -144,7 +144,7 @@ errout_close:
 errout:
 	free(path);
 
-	return 0;
+	return err;
 }
 
 /** @endcond */

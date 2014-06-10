@@ -174,10 +174,9 @@ static int log_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	int err;
 
 	if ((err = nfnlmsg_log_msg_parse(nlh, &msg)) < 0)
-		goto errout;
+		return err;
 
 	err = pp->pp_cb((struct nl_object *) msg, pp);
-errout:
 	nfnl_log_msg_put(msg);
 	return err;
 }

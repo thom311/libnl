@@ -569,8 +569,8 @@ void nlmsg_free(struct nl_msg *msg)
 
 	if (msg->nm_refcnt <= 0) {
 		free(msg->nm_nlh);
-		free(msg);
 		NL_DBG(2, "msg %p: Freed\n", msg);
+		free(msg);
 	}
 }
 

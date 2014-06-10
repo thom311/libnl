@@ -515,9 +515,10 @@ void nl_cache_mngr_free(struct nl_cache_mngr *mngr)
 	}
 
 	free(mngr->cm_assocs);
-	free(mngr);
 
 	NL_DBG(1, "Cache manager %p freed\n", mngr);
+
+	free(mngr);
 }
 
 /** @} */

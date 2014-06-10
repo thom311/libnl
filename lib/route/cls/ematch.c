@@ -282,9 +282,10 @@ void rtnl_ematch_tree_free(struct rtnl_ematch_tree *tree)
 		return;
 
 	free_ematch_list(&tree->et_list);
-	free(tree);
 
 	NL_DBG(2, "Freed ematch tree %p\n", tree);
+
+	free(tree);
 }
 
 /**

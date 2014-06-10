@@ -282,9 +282,10 @@ void rtnl_ematch_tree_free(struct rtnl_ematch_tree *tree)
 		return;
 
 	free_ematch_list(&tree->et_list);
-	free(tree);
 
 	NL_DBG(2, "Freed ematch tree %p\n", tree);
+
+	free(tree);
 }
 
 /**
@@ -653,9 +654,7 @@ int rtnl_ematch_parse_expr(const char *expr, char **errp,
 		goto errout;
 	}
 
-	if (scanner)
-		ematch_lex_destroy(scanner);
-
+	ematch_lex_destroy(scanner);
 	*result = tree;
 
 	return 0;
@@ -693,7 +692,7 @@ static const char *operand_txt[] = {
 char *rtnl_ematch_opnd2txt(uint8_t opnd, char *buf, size_t len)
 {
 	snprintf(buf, len, "%s",
-		opnd <= ARRAY_SIZE(operand_txt) ? operand_txt[opnd] : "?");
+		opnd < ARRAY_SIZE(operand_txt) ? operand_txt[opnd] : "?");
 
 	return buf;
 }

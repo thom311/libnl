@@ -1154,7 +1154,7 @@ void nl_cache_dump_filter(struct nl_cache *cache,
 	if (!ops->oo_dump[type])
 		return;
 
-	if (params->dp_buf)
+	if (params && params->dp_buf)
 		memset(params->dp_buf, 0, params->dp_buflen);
 
 	nl_list_for_each_entry(obj, &cache->c_items, ce_list) {

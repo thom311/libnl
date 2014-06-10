@@ -185,9 +185,9 @@ void nl_object_free(struct nl_object *obj)
 	if (ops->oo_free_data)
 		ops->oo_free_data(obj);
 
-	free(obj);
-
 	NL_DBG(4, "Freed object %p\n", obj);
+
+	free(obj);
 }
 
 /** @} */

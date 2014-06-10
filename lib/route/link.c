@@ -2102,11 +2102,13 @@ const char *rtnl_link_get_ifalias(struct rtnl_link *link)
 void rtnl_link_set_ifalias(struct rtnl_link *link, const char *alias)
 {
 	free(link->l_ifalias);
-	link->ce_mask &= ~LINK_ATTR_IFALIAS;
 
 	if (alias) {
 		link->l_ifalias = strdup(alias);
 		link->ce_mask |= LINK_ATTR_IFALIAS;
+	} else {
+		link->l_ifalias = NULL;
+		link->ce_mask &= ~LINK_ATTR_IFALIAS;
 	}
 }
 

@@ -298,10 +298,9 @@ static int exp_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	int err;
 
 	if ((err = nfnlmsg_exp_parse(nlh, &exp)) < 0)
-		goto errout;
+		return err;
 
 	err = pp->pp_cb((struct nl_object *) exp, pp);
-errout:
 	nfnl_exp_put(exp);
 	return err;
 }

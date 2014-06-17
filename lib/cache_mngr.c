@@ -165,10 +165,10 @@ int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 	/* Required to receive async event notifications */
 	nl_socket_disable_seq_check(mngr->cm_sock);
 
-	if ((err = nl_connect(mngr->cm_sock, protocol) < 0))
+	if ((err = nl_connect(mngr->cm_sock, protocol)) < 0)
 		goto errout;
 
-	if ((err = nl_socket_set_nonblocking(mngr->cm_sock) < 0))
+	if ((err = nl_socket_set_nonblocking(mngr->cm_sock)) < 0)
 		goto errout;
 
 	/* Create and allocate socket for sync cache fills */

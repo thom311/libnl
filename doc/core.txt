@@ -2709,7 +2709,7 @@ struct nl_cache_mngr *mngr;
 
 // Allocate a new cache manager for RTNETLINK and automatically
 // provide the caches added to the manager.
-mngr = nl_cache_mngr_alloc(NETLINK_ROUTE, NL_AUTO_PROVIDE);
+err = nl_cache_mngr_alloc(NULL, NETLINK_ROUTE, NL_AUTO_PROVIDE, &mngr);
 ----
 
 .Keep track of a cache

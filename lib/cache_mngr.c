@@ -173,8 +173,10 @@ int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 
 	/* Create and allocate socket for sync cache fills */
 	mngr->cm_sync_sock = nl_socket_alloc();
-	if (!mngr->cm_sync_sock)
+	if (!mngr->cm_sync_sock) {
+		err = -NLE_NOMEM;
 		goto errout;
+	}
 	if ((err = nl_connect(mngr->cm_sync_sock, protocol)) < 0)
 		goto errout_free_sync_sock;
 

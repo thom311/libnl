@@ -25,7 +25,7 @@ struct rtnl_neigh *nl_cli_neigh_alloc(void)
 
 	neigh = rtnl_neigh_alloc();
 	if (!neigh)
-		nl_cli_fatal(ENOMEM, "Unable to allocate neighbout object");
+		nl_cli_fatal(ENOMEM, "Unable to allocate neighbour object");
 
 	return neigh;
 }

@@ -71,6 +71,8 @@ extern int			nl_cache_add(struct nl_cache *,
 					     struct nl_object *);
 extern int			nl_cache_parse_and_add(struct nl_cache *,
 						       struct nl_msg *);
+extern int			nl_cache_move(struct nl_cache *,
+					      struct nl_object *);
 extern void			nl_cache_remove(struct nl_object *);
 extern int			nl_cache_refill(struct nl_sock *,
 						struct nl_cache *);

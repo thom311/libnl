@@ -205,7 +205,7 @@ extern int		nla_is_nested(struct nlattr *);
  * @arg value		NUL terminated character string.
  */
 #define NLA_PUT_STRING(msg, attrtype, value) \
-	NLA_PUT(msg, attrtype, strlen(value) + 1, value)
+	NLA_PUT(msg, attrtype, (int) strlen(value) + 1, value)
 
 /**
  * Add flag attribute to netlink message.

@@ -170,9 +170,12 @@ static int u32_clone(void *_dst, void *_src)
 	    !(dst->cu_selector = nl_data_clone(src->cu_selector)))
 		return -NLE_NOMEM;
 
-	if (src->cu_act && !(dst->cu_act = rtnl_act_alloc()))
-		return -NLE_NOMEM;
-	memcpy(dst->cu_act, src->cu_act, sizeof(struct rtnl_act));
+	if (src->cu_act) {
+		if (!(dst->cu_act = rtnl_act_alloc()))
+			return -NLE_NOMEM;
+
+		memcpy(dst->cu_act, src->cu_act, sizeof(struct rtnl_act));
+	}
 
 	if (src->cu_police && !(dst->cu_police = nl_data_clone(src->cu_police)))
 		return -NLE_NOMEM;

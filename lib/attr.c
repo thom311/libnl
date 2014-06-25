@@ -648,7 +648,7 @@ int nla_put_u64(struct nl_msg *msg, int attrtype, uint64_t value)
  */
 uint64_t nla_get_u64(struct nlattr *nla)
 {
-	uint64_t tmp;
+	uint64_t tmp = 0;
 
 	nla_memcpy(&tmp, nla, sizeof(tmp));
 

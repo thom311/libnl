@@ -13,7 +13,7 @@
 # copied from glib
 m4_define([libnl_major_version], [3])
 m4_define([libnl_minor_version], [2])
-m4_define([libnl_micro_version], [24])
+m4_define([libnl_micro_version], [25])
 
 
 # The following explanation may help to understand the above rules a bit
@@ -34,12 +34,12 @@ m4_define([libnl_micro_version], [24])
 # 3. Programs may need to be changed, recompiled, relinked in order to use
 #    the new version. Bump current, set revision and age to 0.
 
-m4_define([libnl_lt_current],    [219])
+m4_define([libnl_lt_current],    [220])
 m4_define([libnl_lt_revision],	 [0])
-m4_define([libnl_lt_age],        [19])
+m4_define([libnl_lt_age],        [20])
 
 m4_define([libnl_version],
-	  [libnl_major_version.libnl_minor_version.libnl_micro_version])
+	  [libnl_major_version.libnl_minor_version.libnl_micro_version-rc1])
 
 AC_INIT(libnl, [libnl_version], [], [], [http://www.infradead.org/~tgr/libnl/])
 AC_CONFIG_HEADERS([lib/defs.h])

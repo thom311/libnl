@@ -650,7 +650,8 @@ uint64_t nla_get_u64(struct nlattr *nla)
 {
 	uint64_t tmp = 0;
 
-	nla_memcpy(&tmp, nla, sizeof(tmp));
+	if (nla && nla_len(nla) >= sizeof(tmp))
+		memcpy(&tmp, nla_data(nla), sizeof(tmp));
 
 	return tmp;
 }

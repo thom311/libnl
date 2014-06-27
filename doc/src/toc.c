@@ -20,8 +20,8 @@ even though the core library provides a caching system which allows to
 easly manage objects of any kind, no application is required to use this
 caching system if it has no need for it.
 
-The library was developed and tested on 2.6.x kernel releases. It may
-or may not work with older kernel series. Also, although all netlink
+The library was developed and tested on 2.6.x and 3.x kernel releases. It
+may or may not work with older kernel series. Also, although all netlink
 protocols are required to maintain backwards compatibility, this has not
 always achieved and undesired side effects can occur if a recent libnl
 version is used with a considerably older kernel.

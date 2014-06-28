@@ -30,7 +30,7 @@
 #include <netlink/route/rtnl.h>
 #include <netlink-private/route/link/api.h>
 #include <linux/if_tunnel.h>
-#include <linux/in6.h>
+#include <netinet/in.h>
 
 #define IP6_TNL_ATTR_LINK          (1 << 0)
 #define IP6_TNL_ATTR_LOCAL         (1 << 1)

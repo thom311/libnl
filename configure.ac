@@ -14,6 +14,7 @@
 m4_define([libnl_major_version], [3])
 m4_define([libnl_minor_version], [2])
 m4_define([libnl_micro_version], [25])
+m4_define([libnl_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./.git/)" = "$(readlink -f "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
 
 
 # The following explanation may help to understand the above rules a bit
@@ -55,6 +56,7 @@ MIN_VERSION=libnl_minor_version
 AC_SUBST(MIN_VERSION)
 MIC_VERSION=libnl_micro_version
 AC_SUBST(MIC_VERSION)
+LIBNL_GIT_SHA=libnl_git_sha
 LIBNL_VERSION=libnl_version
 AC_SUBST(LIBNL_VERSION)
 

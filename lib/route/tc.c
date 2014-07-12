@@ -1056,6 +1056,12 @@ void *rtnl_tc_data_check(struct rtnl_tc *tc, struct rtnl_tc_ops *ops)
 	return rtnl_tc_data(tc);
 }
 
+struct nl_af_group tc_groups[] = {
+	{ AF_UNSPEC,	RTNLGRP_TC },
+	{ END_OF_GROUP_LIST },
+};
+
+
 void rtnl_tc_type_register(struct rtnl_tc_type_ops *ops)
 {
 	if (ops->tt_type > RTNL_TC_TYPE_MAX)

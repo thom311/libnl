@@ -541,6 +541,7 @@ static struct nl_cache_ops rtnl_qdisc_ops = {
 					END_OF_MSGTYPES_LIST,
 				  },
 	.co_protocol		= NETLINK_ROUTE,
+	.co_groups		= tc_groups,
 	.co_request_update	= qdisc_request_update,
 	.co_msg_parser		= qdisc_msg_parser,
 	.co_obj_ops		= &qdisc_obj_ops,

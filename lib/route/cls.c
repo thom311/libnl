@@ -411,6 +411,7 @@ static struct nl_cache_ops rtnl_cls_ops = {
 					END_OF_MSGTYPES_LIST,
 				  },
 	.co_protocol		= NETLINK_ROUTE,
+	.co_groups		= tc_groups,
 	.co_request_update	= cls_request_update,
 	.co_msg_parser		= cls_msg_parser,
 	.co_obj_ops		= &cls_obj_ops,

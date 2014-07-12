@@ -48,6 +48,8 @@ static inline void *tca_xstats(struct rtnl_tc *tca)
 	return tca->tc_xstats->d_data;
 }
 
+extern struct nl_af_group tc_groups[];
+
 #ifdef __cplusplus
 }
 #endif

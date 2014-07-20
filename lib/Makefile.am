@@ -14,7 +14,7 @@ AM_LDFLAGS = \
 	-Wl,--version-script=$(top_builddir)/libnl.sym
 
 lib_LTLIBRARIES = \
-	libnl-3.la libnl-genl-3.la libnl-route-3.la libnl-nf-3.la libnl-idiag-3.la
+	libnl-3.la libnl-genl-3.la libnl-route-3.la libnl-nf-3.la libnl-idiag-3.la libnl-xfrm-3.la
 
 libnl_3_la_SOURCES = \
 	addr.c attr.c cache.c cache_mngr.c cache_mngt.c data.c \
@@ -109,6 +109,15 @@ EXTRA_DIST = \
 	route/pktloc_syntax.y \
 	route/cls/ematch_grammar.l \
 	route/cls/ematch_syntax.y
+
+libnl_xfrm_3_la_LIBADD  = libnl-3.la
+libnl_xfrm_3_la_SOURCES = \
+	xfrm/ae.c \
+	xfrm/lifetime.c \
+	xfrm/sa.c \
+	xfrm/selector.c \
+	xfrm/sp.c \
+	xfrm/template.c
 
 if ENABLE_CLI
 nobase_pkglib_LTLIBRARIES = \

@@ -127,6 +127,7 @@ libnl-route-3.0.pc
 libnl-genl-3.0.pc
 libnl-nf-3.0.pc
 libnl-cli-3.0.pc
+libnl-xfrm-3.0.pc
 lib/Makefile
 include/Makefile
 src/Makefile

@@ -45,7 +45,7 @@ extern "C" {
 
 struct xfrmnl_ae;
 
-extern struct xfrmnl_ae*        xfrmnl_ae_alloc(void);
+extern struct xfrmnl_ae*xfrmnl_ae_alloc(void);
 extern void             xfrmnl_ae_put(struct xfrmnl_ae *);
 
 extern int              xfrmnl_ae_get_kernel(struct nl_sock*, struct nl_addr*, unsigned int, unsigned int,

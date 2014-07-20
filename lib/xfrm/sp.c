@@ -68,111 +68,111 @@ static struct nl_object_ops xfrm_sp_obj_ops;
 
 static void xfrm_sp_alloc_data(struct nl_object *c)
 {
-        struct xfrmnl_sp* sp =   nl_object_priv (c);
+	struct xfrmnl_sp* sp =   nl_object_priv (c);
 
-        if ((sp->sel = xfrmnl_sel_alloc ()) == NULL)
-                return;
+	if ((sp->sel = xfrmnl_sel_alloc ()) == NULL)
+		return;
 
-        if ((sp->lft = xfrmnl_ltime_cfg_alloc ()) == NULL)
-                return;
+	if ((sp->lft = xfrmnl_ltime_cfg_alloc ()) == NULL)
+		return;
 
-        nl_init_list_head(&sp->usertmpl_list);
+	nl_init_list_head(&sp->usertmpl_list);
 
-        return;
+	return;
 }
 
 static void xfrm_sp_free_data(struct nl_object *c)
 {
-        struct xfrmnl_sp* sp =   nl_object_priv (c);
-        struct xfrmnl_user_tmpl *utmpl, *tmp;
+	struct xfrmnl_sp* sp =   nl_object_priv (c);
+	struct xfrmnl_user_tmpl *utmpl, *tmp;
 
-        if (sp == NULL)
-                return;
+	if (sp == NULL)
+		return;
 
-        xfrmnl_sel_put (sp->sel);
-        xfrmnl_ltime_cfg_put (sp->lft);
+	xfrmnl_sel_put (sp->sel);
+	xfrmnl_ltime_cfg_put (sp->lft);
 
-        if(sp->sec_ctx)
-        {
-                free (sp->sec_ctx->ctx);
-                free (sp->sec_ctx);
-        }
+	if(sp->sec_ctx)
+	{
+		free (sp->sec_ctx->ctx);
+		free (sp->sec_ctx);
+	}
 
-        nl_list_for_each_entry_safe(utmpl, tmp, &sp->usertmpl_list, utmpl_list) {
-                xfrmnl_sp_remove_usertemplate (sp, utmpl);
-                xfrmnl_user_tmpl_free (utmpl);
-        }
+	nl_list_for_each_entry_safe(utmpl, tmp, &sp->usertmpl_list, utmpl_list) {
+		xfrmnl_sp_remove_usertemplate (sp, utmpl);
+		xfrmnl_user_tmpl_free (utmpl);
+	}
 }
 
 static int xfrm_sp_clone(struct nl_object *_dst, struct nl_object *_src)
 {
-        struct xfrmnl_sp*       dst = nl_object_priv(_dst);
-        struct xfrmnl_sp*       src = nl_object_priv(_src);
-        uint32_t                len = 0;
-        struct xfrmnl_user_tmpl *utmpl, *new;
+	struct xfrmnl_sp*       dst = nl_object_priv(_dst);
+	struct xfrmnl_sp*       src = nl_object_priv(_src);
+	uint32_t                len = 0;
+	struct xfrmnl_user_tmpl *utmpl, *new;
 
-        if (src->sel)
-                if ((dst->sel = xfrmnl_sel_clone (src->sel)) == NULL)
-                        return -NLE_NOMEM;
+	if (src->sel)
+		if ((dst->sel = xfrmnl_sel_clone (src->sel)) == NULL)
+			return -NLE_NOMEM;
 
-        if (src->lft)
-                if ((dst->lft = xfrmnl_ltime_cfg_clone (src->lft)) == NULL)
-                        return -NLE_NOMEM;
+	if (src->lft)
+		if ((dst->lft = xfrmnl_ltime_cfg_clone (src->lft)) == NULL)
+			return -NLE_NOMEM;
 
-        if(src->sec_ctx)
-        {
-                len =   sizeof (struct xfrmnl_user_sec_ctx) + src->sec_ctx->ctx_len;
-                if ((dst->sec_ctx = calloc (1, len)) == NULL)
-                        return -NLE_NOMEM;
-                memcpy ((void *)dst->sec_ctx, (void *)src->sec_ctx, len);
-        }
+	if(src->sec_ctx)
+	{
+		len =   sizeof (struct xfrmnl_user_sec_ctx) + src->sec_ctx->ctx_len;
+		if ((dst->sec_ctx = calloc (1, len)) == NULL)
+			return -NLE_NOMEM;
+		memcpy ((void *)dst->sec_ctx, (void *)src->sec_ctx, len);
+	}
 
-        nl_init_list_head(&dst->usertmpl_list);
-        nl_list_for_each_entry(utmpl, &src->usertmpl_list, utmpl_list) {
-                new = xfrmnl_user_tmpl_clone (utmpl);
-                if (!new)
-                        return -NLE_NOMEM;
+	nl_init_list_head(&dst->usertmpl_list);
+	nl_list_for_each_entry(utmpl, &src->usertmpl_list, utmpl_list) {
+		new = xfrmnl_user_tmpl_clone (utmpl);
+		if (!new)
+			return -NLE_NOMEM;
 
-                xfrmnl_sp_add_usertemplate(dst, new);
-        }
+		xfrmnl_sp_add_usertemplate(dst, new);
+	}
 
-        return 0;
+	return 0;
 }
 
 static int xfrm_sp_compare(struct nl_object *_a, struct nl_object *_b, uint32_t attrs, int flags)
 {
-        struct xfrmnl_sp* a  =   (struct xfrmnl_sp *) _a;
-        struct xfrmnl_sp* b  =   (struct xfrmnl_sp *) _b;
-        struct xfrmnl_user_tmpl *tmpl_a, *tmpl_b;
-        int diff = 0;
+	struct xfrmnl_sp* a  =   (struct xfrmnl_sp *) _a;
+	struct xfrmnl_sp* b  =   (struct xfrmnl_sp *) _b;
+	struct xfrmnl_user_tmpl *tmpl_a, *tmpl_b;
+	int diff = 0;
 
 #define XFRM_SP_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, XFRM_SP_ATTR_##ATTR, a, b, EXPR)
-        diff |= XFRM_SP_DIFF(SEL,   xfrmnl_sel_cmp(a->sel, b->sel));
-        diff |= XFRM_SP_DIFF(LTIME_CFG, xfrmnl_ltime_cfg_cmp(a->lft, b->lft));
-        diff |= XFRM_SP_DIFF(PRIO,  a->priority != b->priority);
-        diff |= XFRM_SP_DIFF(INDEX, a->index != b->index);
-        diff |= XFRM_SP_DIFF(DIR,   a->dir != b->dir);
-        diff |= XFRM_SP_DIFF(ACTION,    a->action != b->action);
-        diff |= XFRM_SP_DIFF(FLAGS, a->flags != b->flags);
-        diff |= XFRM_SP_DIFF(SHARE, a->share != b->share);
-        diff |= XFRM_SP_DIFF(SECCTX,((a->sec_ctx->len != b->sec_ctx->len) ||
-                                    (a->sec_ctx->exttype != b->sec_ctx->exttype) ||
-                                    (a->sec_ctx->ctx_alg != b->sec_ctx->ctx_alg) ||
-                                    (a->sec_ctx->ctx_doi != b->sec_ctx->ctx_doi) ||
-                                    (a->sec_ctx->ctx_len != b->sec_ctx->ctx_len) ||
-                                    strcmp(a->sec_ctx->ctx, b->sec_ctx->ctx)));
-        diff |= XFRM_SP_DIFF(POLTYPE,(a->uptype.type != b->uptype.type));
-        diff |= XFRM_SP_DIFF(TMPL,(a->nr_user_tmpl != b->nr_user_tmpl));
-        diff |= XFRM_SP_DIFF(MARK,(a->mark.m != b->mark.m) ||
-                                  (a->mark.v != b->mark.v));
+	diff |= XFRM_SP_DIFF(SEL,	xfrmnl_sel_cmp(a->sel, b->sel));
+	diff |= XFRM_SP_DIFF(LTIME_CFG,	xfrmnl_ltime_cfg_cmp(a->lft, b->lft));
+	diff |= XFRM_SP_DIFF(PRIO,	a->priority != b->priority);
+	diff |= XFRM_SP_DIFF(INDEX,	a->index != b->index);
+	diff |= XFRM_SP_DIFF(DIR,	a->dir != b->dir);
+	diff |= XFRM_SP_DIFF(ACTION,	a->action != b->action);
+	diff |= XFRM_SP_DIFF(FLAGS,	a->flags != b->flags);
+	diff |= XFRM_SP_DIFF(SHARE,	a->share != b->share);
+	diff |= XFRM_SP_DIFF(SECCTX,((a->sec_ctx->len != b->sec_ctx->len) ||
+	                            (a->sec_ctx->exttype != b->sec_ctx->exttype) ||
+	                            (a->sec_ctx->ctx_alg != b->sec_ctx->ctx_alg) ||
+	                            (a->sec_ctx->ctx_doi != b->sec_ctx->ctx_doi) ||
+	                            (a->sec_ctx->ctx_len != b->sec_ctx->ctx_len) ||
+	                            strcmp(a->sec_ctx->ctx, b->sec_ctx->ctx)));
+	diff |= XFRM_SP_DIFF(POLTYPE,(a->uptype.type != b->uptype.type));
+	diff |= XFRM_SP_DIFF(TMPL,(a->nr_user_tmpl != b->nr_user_tmpl));
+	diff |= XFRM_SP_DIFF(MARK,(a->mark.m != b->mark.m) ||
+	                          (a->mark.v != b->mark.v));
 
-        /* Compare the templates */
-        nl_list_for_each_entry(tmpl_b, &b->usertmpl_list, utmpl_list)
-                nl_list_for_each_entry(tmpl_a, &a->usertmpl_list, utmpl_list)
-                diff |= xfrmnl_user_tmpl_cmp (tmpl_a, tmpl_b);
+	/* Compare the templates */
+	nl_list_for_each_entry(tmpl_b, &b->usertmpl_list, utmpl_list)
+	nl_list_for_each_entry(tmpl_a, &a->usertmpl_list, utmpl_list)
+	diff |= xfrmnl_user_tmpl_cmp (tmpl_a, tmpl_b);
 #undef XFRM_SP_DIFF
 
-        return diff;
+	return diff;
 }
 
 /**
@@ -180,24 +180,24 @@ static int xfrm_sp_compare(struct nl_object *_a, struct nl_object *_b, uint32_t 
  * @{
  */
 static const struct trans_tbl sp_attrs[] = {
-        __ADD(XFRM_SP_ATTR_SEL, selector)
-        __ADD(XFRM_SP_ATTR_LTIME_CFG, lifetime_cfg)
-        __ADD(XFRM_SP_ATTR_LTIME_CUR, lifetime_cur)
-        __ADD(XFRM_SP_ATTR_PRIO, priority)
-        __ADD(XFRM_SP_ATTR_INDEX, index)
-        __ADD(XFRM_SP_ATTR_DIR, direction)
-        __ADD(XFRM_SP_ATTR_ACTION, action)
-        __ADD(XFRM_SP_ATTR_FLAGS, flags)
-        __ADD(XFRM_SP_ATTR_SHARE, share)
-        __ADD(XFRM_SP_ATTR_POLTYPE, policy_type)
-        __ADD(XFRM_SP_ATTR_SECCTX, security_context)
-        __ADD(XFRM_SP_ATTR_TMPL, user_template)
-        __ADD(XFRM_SP_ATTR_MARK, mark)
+	__ADD(XFRM_SP_ATTR_SEL, selector)
+	__ADD(XFRM_SP_ATTR_LTIME_CFG, lifetime_cfg)
+	__ADD(XFRM_SP_ATTR_LTIME_CUR, lifetime_cur)
+	__ADD(XFRM_SP_ATTR_PRIO, priority)
+	__ADD(XFRM_SP_ATTR_INDEX, index)
+	__ADD(XFRM_SP_ATTR_DIR, direction)
+	__ADD(XFRM_SP_ATTR_ACTION, action)
+	__ADD(XFRM_SP_ATTR_FLAGS, flags)
+	__ADD(XFRM_SP_ATTR_SHARE, share)
+	__ADD(XFRM_SP_ATTR_POLTYPE, policy_type)
+	__ADD(XFRM_SP_ATTR_SECCTX, security_context)
+	__ADD(XFRM_SP_ATTR_TMPL, user_template)
+	__ADD(XFRM_SP_ATTR_MARK, mark)
 };
 
 static char* xfrm_sp_attrs2str(int attrs, char *buf, size_t len)
 {
-        return __flags2str (attrs, buf, len, sp_attrs, ARRAY_SIZE(sp_attrs));
+	return __flags2str (attrs, buf, len, sp_attrs, ARRAY_SIZE(sp_attrs));
 }
 /** @} */
 
@@ -206,18 +206,18 @@ static char* xfrm_sp_attrs2str(int attrs, char *buf, size_t len)
  * @{
  */
 static const struct trans_tbl sa_actions[] = {
-        __ADD(XFRM_POLICY_ALLOW, allow)
-        __ADD(XFRM_POLICY_BLOCK, block)
+	__ADD(XFRM_POLICY_ALLOW, allow)
+	__ADD(XFRM_POLICY_BLOCK, block)
 };
 
 char* xfrmnl_sp_action2str(int action, char *buf, size_t len)
 {
-        return __type2str (action, buf, len, sa_actions, ARRAY_SIZE(sa_actions));
+	return __type2str (action, buf, len, sa_actions, ARRAY_SIZE(sa_actions));
 }
 
 int xfrmnl_sp_str2action(const char *name)
 {
-        return __str2type (name, sa_actions, ARRAY_SIZE(sa_actions));
+	return __str2type (name, sa_actions, ARRAY_SIZE(sa_actions));
 }
 /** @} */
 
@@ -226,18 +226,18 @@ int xfrmnl_sp_str2action(const char *name)
  * @{
  */
 static const struct trans_tbl sp_flags[] = {
-        __ADD(XFRM_POLICY_LOCALOK, allow policy override by user)
-        __ADD(XFRM_POLICY_ICMP, auto include ICMP in policy)
+	__ADD(XFRM_POLICY_LOCALOK, allow policy override by user)
+	__ADD(XFRM_POLICY_ICMP, auto include ICMP in policy)
 };
 
 char* xfrmnl_sp_flags2str(int flags, char *buf, size_t len)
 {
-        return __flags2str (flags, buf, len, sp_flags, ARRAY_SIZE(sp_flags));
+	return __flags2str (flags, buf, len, sp_flags, ARRAY_SIZE(sp_flags));
 }
 
 int xfrmnl_sp_str2flag(const char *name)
 {
-        return __str2flags(name, sp_flags, ARRAY_SIZE(sp_flags));
+	return __str2flags(name, sp_flags, ARRAY_SIZE(sp_flags));
 }
 /** @} */
 
@@ -246,20 +246,20 @@ int xfrmnl_sp_str2flag(const char *name)
  * @{
  */
 static const struct trans_tbl sp_types[] = {
-        __ADD(XFRM_POLICY_TYPE_MAIN, main)
-        __ADD(XFRM_POLICY_TYPE_SUB, sub)
-        __ADD(XFRM_POLICY_TYPE_MAX, max)
-        __ADD(XFRM_POLICY_TYPE_ANY, any)
+	__ADD(XFRM_POLICY_TYPE_MAIN, main)
+	__ADD(XFRM_POLICY_TYPE_SUB, sub)
+	__ADD(XFRM_POLICY_TYPE_MAX, max)
+	__ADD(XFRM_POLICY_TYPE_ANY, any)
 };
 
 char* xfrmnl_sp_type2str(int type, char *buf, size_t len)
 {
-        return __type2str(type, buf, len, sp_types, ARRAY_SIZE(sp_types));
+	return __type2str(type, buf, len, sp_types, ARRAY_SIZE(sp_types));
 }
 
 int xfrmnl_sp_str2type(const char *name)
 {
-        return __str2type(name, sp_types, ARRAY_SIZE(sp_types));
+	return __str2type(name, sp_types, ARRAY_SIZE(sp_types));
 }
 /** @} */
 
@@ -268,25 +268,25 @@ int xfrmnl_sp_str2type(const char *name)
  * @{
  */
 static const struct trans_tbl sp_dir[] = {
-        __ADD(XFRM_POLICY_IN, in)
-        __ADD(XFRM_POLICY_OUT, out)
-        __ADD(XFRM_POLICY_FWD, fwd)
-        __ADD(XFRM_POLICY_MASK, mask)
+	__ADD(XFRM_POLICY_IN, in)
+	__ADD(XFRM_POLICY_OUT, out)
+	__ADD(XFRM_POLICY_FWD, fwd)
+	__ADD(XFRM_POLICY_MASK, mask)
 };
 
 char* xfrmnl_sp_dir2str(int dir, char *buf, size_t len)
 {
-        return __type2str (dir, buf, len, sp_dir, ARRAY_SIZE(sp_dir));
+	return __type2str (dir, buf, len, sp_dir, ARRAY_SIZE(sp_dir));
 }
 
 int xfrmnl_sp_str2dir(const char *name)
 {
-        return __str2type (name, sp_dir, ARRAY_SIZE(sp_dir));
+	return __str2type (name, sp_dir, ARRAY_SIZE(sp_dir));
 }
 
 int xfrmnl_sp_index2dir (unsigned int index)
 {
-        return index & 0x7;
+	return index & 0x7;
 }
 /** @} */
 
@@ -295,139 +295,139 @@ int xfrmnl_sp_index2dir (unsigned int index)
  * @{
  */
 static const struct trans_tbl sp_share[] = {
-        __ADD(XFRM_SHARE_ANY, any)
-        __ADD(XFRM_SHARE_SESSION, session)
-        __ADD(XFRM_SHARE_USER, user)
-        __ADD(XFRM_SHARE_UNIQUE, unique)
+	__ADD(XFRM_SHARE_ANY, any)
+	__ADD(XFRM_SHARE_SESSION, session)
+	__ADD(XFRM_SHARE_USER, user)
+	__ADD(XFRM_SHARE_UNIQUE, unique)
 };
 
 char* xfrmnl_sp_share2str(int share, char *buf, size_t len)
 {
-        return __type2str (share, buf, len, sp_share, ARRAY_SIZE(sp_share));
+	return __type2str (share, buf, len, sp_share, ARRAY_SIZE(sp_share));
 }
 
 int xfrmnl_sp_str2share(const char *name)
 {
-        return __str2type (name, sp_share, ARRAY_SIZE(sp_share));
+	return __str2type (name, sp_share, ARRAY_SIZE(sp_share));
 }
 /** @} */
 
 static void xfrm_sp_dump_line(struct nl_object *a, struct nl_dump_params *p)
 {
-        struct xfrmnl_sp*   sp  =   (struct xfrmnl_sp *) a;
-        char                dir[32], action[32], share[32], flags[32];
-        char                dst[INET6_ADDRSTRLEN+5], src[INET6_ADDRSTRLEN+5];
-        time_t              add_time, use_time;
-        struct tm           *add_time_tm, *use_time_tm;
+	struct xfrmnl_sp*   sp  =   (struct xfrmnl_sp *) a;
+	char                dir[32], action[32], share[32], flags[32];
+	char                dst[INET6_ADDRSTRLEN+5], src[INET6_ADDRSTRLEN+5];
+	time_t              add_time, use_time;
+	struct tm           *add_time_tm, *use_time_tm;
 
-        nl_addr2str(xfrmnl_sel_get_saddr (sp->sel), src, sizeof(src));
-        nl_addr2str (xfrmnl_sel_get_daddr (sp->sel), dst, sizeof (dst));
-        nl_af2str (xfrmnl_sel_get_family (sp->sel), dir, 32);
-        nl_dump_line(p, "src %s dst %s family: %s\n", src, dst, dir);
-        nl_dump_line (p, "src port/mask: %d/%d dst port/mask: %d/%d\n",
-                        xfrmnl_sel_get_dport (sp->sel), xfrmnl_sel_get_dportmask (sp->sel),
-                        xfrmnl_sel_get_sport (sp->sel), xfrmnl_sel_get_sportmask (sp->sel));
-        nl_dump_line (p, "protocol: %s ifindex: %u uid: %u\n",
-                        nl_ip_proto2str (xfrmnl_sel_get_proto (sp->sel), dir, sizeof(dir)),
-                        xfrmnl_sel_get_ifindex (sp->sel),
-                        xfrmnl_sel_get_userid (sp->sel));
+	nl_addr2str(xfrmnl_sel_get_saddr (sp->sel), src, sizeof(src));
+	nl_addr2str (xfrmnl_sel_get_daddr (sp->sel), dst, sizeof (dst));
+	nl_af2str (xfrmnl_sel_get_family (sp->sel), dir, 32);
+	nl_dump_line(p, "src %s dst %s family: %s\n", src, dst, dir);
+	nl_dump_line (p, "src port/mask: %d/%d dst port/mask: %d/%d\n",
+	              xfrmnl_sel_get_dport (sp->sel), xfrmnl_sel_get_dportmask (sp->sel),
+	              xfrmnl_sel_get_sport (sp->sel), xfrmnl_sel_get_sportmask (sp->sel));
+	nl_dump_line (p, "protocol: %s ifindex: %u uid: %u\n",
+	              nl_ip_proto2str (xfrmnl_sel_get_proto (sp->sel), dir, sizeof(dir)),
+	              xfrmnl_sel_get_ifindex (sp->sel),
+	              xfrmnl_sel_get_userid (sp->sel));
 
-        xfrmnl_sp_dir2str (sp->dir, dir, 32);
-        xfrmnl_sp_action2str (sp->action, action, 32);
-        xfrmnl_sp_share2str (sp->share, share, 32);
-        xfrmnl_sp_flags2str (sp->flags, flags, 32);
-        nl_dump_line(p, "\tdir: %s action: %s index: %u priority: %u share: %s flags: %s(0x%x) \n",
-                        dir, action, sp->index, sp->priority, share, flags, sp->flags);
+	xfrmnl_sp_dir2str (sp->dir, dir, 32);
+	xfrmnl_sp_action2str (sp->action, action, 32);
+	xfrmnl_sp_share2str (sp->share, share, 32);
+	xfrmnl_sp_flags2str (sp->flags, flags, 32);
+	nl_dump_line(p, "\tdir: %s action: %s index: %u priority: %u share: %s flags: %s(0x%x) \n",
+	             dir, action, sp->index, sp->priority, share, flags, sp->flags);
 
-        nl_dump_line(p, "\tlifetime configuration: \n");
-        if (sp->lft->soft_byte_limit == XFRM_INF)
-                sprintf (dir, "INF");
-        else
-                sprintf (dir, "%llu", sp->lft->soft_byte_limit);
-        if (sp->lft->soft_packet_limit == XFRM_INF)
-                sprintf (action, "INF");
-        else
-                sprintf (action, "%llu", sp->lft->soft_packet_limit);
-        if (sp->lft->hard_byte_limit == XFRM_INF)
-                sprintf (flags, "INF");
-        else
-                sprintf (flags, "%llu", sp->lft->hard_byte_limit);
-        if (sp->lft->hard_packet_limit == XFRM_INF)
-                sprintf (share, "INF");
-        else
-                sprintf (share, "%llu", sp->lft->hard_packet_limit);
-        nl_dump_line(p, "\t\tsoft limit: %s (bytes), %s (packets) \n", dir, action);
-        nl_dump_line(p, "\t\thard limit: %s (bytes), %s (packets) \n", flags, share);
-        nl_dump_line(p, "\t\tsoft add_time: %llu (seconds), soft use_time: %llu (seconds) \n",
-                        sp->lft->soft_add_expires_seconds, sp->lft->soft_use_expires_seconds);
-        nl_dump_line(p, "\t\thard add_time: %llu (seconds), hard use_time: %llu (seconds) \n",
-                        sp->lft->hard_add_expires_seconds, sp->lft->hard_use_expires_seconds);
+	nl_dump_line(p, "\tlifetime configuration: \n");
+	if (sp->lft->soft_byte_limit == XFRM_INF)
+		sprintf (dir, "INF");
+	else
+		sprintf (dir, "%llu", sp->lft->soft_byte_limit);
+	if (sp->lft->soft_packet_limit == XFRM_INF)
+		sprintf (action, "INF");
+	else
+		sprintf (action, "%llu", sp->lft->soft_packet_limit);
+	if (sp->lft->hard_byte_limit == XFRM_INF)
+		sprintf (flags, "INF");
+	else
+		sprintf (flags, "%llu", sp->lft->hard_byte_limit);
+	if (sp->lft->hard_packet_limit == XFRM_INF)
+		sprintf (share, "INF");
+	else
+		sprintf (share, "%llu", sp->lft->hard_packet_limit);
+	nl_dump_line(p, "\t\tsoft limit: %s (bytes), %s (packets) \n", dir, action);
+	nl_dump_line(p, "\t\thard limit: %s (bytes), %s (packets) \n", flags, share);
+	nl_dump_line(p, "\t\tsoft add_time: %llu (seconds), soft use_time: %llu (seconds) \n",
+	             sp->lft->soft_add_expires_seconds, sp->lft->soft_use_expires_seconds);
+	nl_dump_line(p, "\t\thard add_time: %llu (seconds), hard use_time: %llu (seconds) \n",
+	             sp->lft->hard_add_expires_seconds, sp->lft->hard_use_expires_seconds);
 
-        nl_dump_line(p, "\tlifetime current: \n");
-        nl_dump_line(p, "\t\t%llu bytes, %llu packets\n", sp->curlft.bytes, sp->curlft.packets);
+	nl_dump_line(p, "\tlifetime current: \n");
+	nl_dump_line(p, "\t\t%llu bytes, %llu packets\n", sp->curlft.bytes, sp->curlft.packets);
 
-        if (sp->curlft.add_time != 0)
-        {
-                add_time = sp->curlft.add_time;
-                add_time_tm = gmtime (&add_time);
-                strftime (dst, INET6_ADDRSTRLEN+5, "%Y-%m-%d %H-%M-%S", add_time_tm);
-        }
-        else
-        {
-                sprintf (dst, "%s", "-");
-        }
+	if (sp->curlft.add_time != 0)
+	{
+		add_time = sp->curlft.add_time;
+		add_time_tm = gmtime (&add_time);
+		strftime (dst, INET6_ADDRSTRLEN+5, "%Y-%m-%d %H-%M-%S", add_time_tm);
+	}
+	else
+	{
+		sprintf (dst, "%s", "-");
+	}
 
-        if (sp->curlft.use_time != 0)
-        {
-                use_time = sp->curlft.use_time;
-                use_time_tm = gmtime (&use_time);
-                strftime (src, INET6_ADDRSTRLEN+5, "%Y-%m-%d %H-%M-%S", use_time_tm);
-        }
-        else
-        {
-                sprintf (src, "%s", "-");
-        }
-        nl_dump_line(p, "\t\tadd_time: %s, use_time: %s\n", dst, src);
+	if (sp->curlft.use_time != 0)
+	{
+		use_time = sp->curlft.use_time;
+		use_time_tm = gmtime (&use_time);
+		strftime (src, INET6_ADDRSTRLEN+5, "%Y-%m-%d %H-%M-%S", use_time_tm);
+	}
+	else
+	{
+		sprintf (src, "%s", "-");
+	}
+	nl_dump_line(p, "\t\tadd_time: %s, use_time: %s\n", dst, src);
 
-        if (sp->ce_mask & XFRM_SP_ATTR_SECCTX)
-        {
-                nl_dump_line(p, "\tUser security context: \n");
-                nl_dump_line(p, "\t\tlen: %d exttype: %d Algo: %d DOI: %d ctxlen: %d\n",
-                                sp->sec_ctx->len, sp->sec_ctx->exttype,
-                                sp->sec_ctx->ctx_alg, sp->sec_ctx->ctx_doi, sp->sec_ctx->ctx_len);
-                nl_dump_line (p, "\t\tctx: %s \n", sp->sec_ctx->ctx);
-        }
+	if (sp->ce_mask & XFRM_SP_ATTR_SECCTX)
+	{
+		nl_dump_line(p, "\tUser security context: \n");
+		nl_dump_line(p, "\t\tlen: %d exttype: %d Algo: %d DOI: %d ctxlen: %d\n",
+		             sp->sec_ctx->len, sp->sec_ctx->exttype,
+		             sp->sec_ctx->ctx_alg, sp->sec_ctx->ctx_doi, sp->sec_ctx->ctx_len);
+		nl_dump_line (p, "\t\tctx: %s \n", sp->sec_ctx->ctx);
+	}
 
-        xfrmnl_sp_type2str (sp->uptype.type, flags, 32);
-        if (sp->ce_mask & XFRM_SP_ATTR_POLTYPE)
-                nl_dump_line(p, "\tUser policy type: %s\n", flags);
+	xfrmnl_sp_type2str (sp->uptype.type, flags, 32);
+	if (sp->ce_mask & XFRM_SP_ATTR_POLTYPE)
+		nl_dump_line(p, "\tUser policy type: %s\n", flags);
 
-        if (sp->ce_mask & XFRM_SP_ATTR_TMPL)
-        {
-                struct xfrmnl_user_tmpl*    utmpl;
+	if (sp->ce_mask & XFRM_SP_ATTR_TMPL)
+	{
+		struct xfrmnl_user_tmpl*    utmpl;
 
-                nl_dump_line(p, "\tUser template: \n");
+		nl_dump_line(p, "\tUser template: \n");
 
-                nl_list_for_each_entry(utmpl, &sp->usertmpl_list, utmpl_list)
-                        xfrmnl_user_tmpl_dump (utmpl, p);
-        }
+		nl_list_for_each_entry(utmpl, &sp->usertmpl_list, utmpl_list)
+	        xfrmnl_user_tmpl_dump (utmpl, p);
+	}
 
-        if (sp->ce_mask & XFRM_SP_ATTR_MARK)
-                nl_dump_line(p, "\tMark mask: 0x%x Mark value: 0x%x\n", sp->mark.m, sp->mark.v);
+	if (sp->ce_mask & XFRM_SP_ATTR_MARK)
+		nl_dump_line(p, "\tMark mask: 0x%x Mark value: 0x%x\n", sp->mark.m, sp->mark.v);
 
-        nl_dump(p, "\n");
+	nl_dump(p, "\n");
 }
 
 static void xfrm_sp_dump_details(struct nl_object *a, struct nl_dump_params *p)
 {
-        xfrm_sp_dump_line(a, p);
+	xfrm_sp_dump_line(a, p);
 }
 
 static void xfrm_sp_dump_stats(struct nl_object *a, struct nl_dump_params *p)
 {
-        xfrm_sp_dump_details(a, p);
+	xfrm_sp_dump_details(a, p);
 
-        return;
+	return;
 }
 
 /**
@@ -437,12 +437,12 @@ static void xfrm_sp_dump_stats(struct nl_object *a, struct nl_dump_params *p)
 
 struct xfrmnl_sp* xfrmnl_sp_alloc(void)
 {
-        return (struct xfrmnl_sp*) nl_object_alloc(&xfrm_sp_obj_ops);
+	return (struct xfrmnl_sp*) nl_object_alloc(&xfrm_sp_obj_ops);
 }
 
 void xfrmnl_sp_put(struct xfrmnl_sp* sp)
 {
-        nl_object_put((struct nl_object *) sp);
+	nl_object_put((struct nl_object *) sp);
 }
 
 /** @} */
@@ -454,8 +454,8 @@ void xfrmnl_sp_put(struct xfrmnl_sp* sp)
 
 /**
  * Build a SP cache including all SPs currently configured in the kernel.
- * @arg sock        Netlink socket.
- * @arg result      Pointer to store resulting cache.
+ * @arg sock		Netlink socket.
+ * @arg result		Pointer to store resulting cache.
  *
  * Allocates a new SP cache, initializes it properly and updates it
  * to include all SPs currently configured in the kernel.
@@ -464,33 +464,33 @@ void xfrmnl_sp_put(struct xfrmnl_sp* sp)
  */
 int xfrmnl_sp_alloc_cache(struct nl_sock *sock, struct nl_cache **result)
 {
-        return nl_cache_alloc_and_fill(&xfrmnl_sp_ops, sock, result);
+	return nl_cache_alloc_and_fill(&xfrmnl_sp_ops, sock, result);
 }
 
 /**
  * Look up a SP by policy id and direction
- * @arg cache       SP cache
- * @arg index       Policy Id
+ * @arg cache		SP cache
+ * @arg index		Policy Id
  * @arg dir         direction
  * @return sp handle or NULL if no match was found.
  */
 struct xfrmnl_sp* xfrmnl_sp_get(struct nl_cache* cache, unsigned int index, unsigned int dir)
 {
-        struct xfrmnl_sp *sp;
+	struct xfrmnl_sp *sp;
 
-        //nl_list_for_each_entry(sp, &cache->c_items, ce_list) {
-        for (sp = (struct xfrmnl_sp*)nl_cache_get_first (cache);
-             sp != NULL;
-             sp = (struct xfrmnl_sp*)nl_cache_get_next ((struct nl_object*)sp))
-        {
-                if (sp->index == index && sp->dir == dir)
-                {
-                        nl_object_get((struct nl_object *) sp);
-                        return sp;
-                }
-        }
+	//nl_list_for_each_entry(sp, &cache->c_items, ce_list) {
+	for (sp = (struct xfrmnl_sp*)nl_cache_get_first (cache);
+	     sp != NULL;
+	     sp = (struct xfrmnl_sp*)nl_cache_get_next ((struct nl_object*)sp))
+	{
+		if (sp->index == index && sp->dir == dir)
+		{
+			nl_object_get((struct nl_object *) sp);
+			return sp;
+		}
+	}
 
-        return NULL;
+	return NULL;
 }
 
 
@@ -498,198 +498,198 @@ struct xfrmnl_sp* xfrmnl_sp_get(struct nl_cache* cache, unsigned int index, unsi
 
 
 static struct nla_policy xfrm_sp_policy[XFRMA_MAX+1] = {
-        [XFRMA_POLICY]      = { .minlen = sizeof(struct xfrm_userpolicy_info)},
-        [XFRMA_SEC_CTX]     = { .minlen = sizeof(struct xfrm_sec_ctx) },
-        [XFRMA_TMPL]        = { .minlen = sizeof(struct xfrm_user_tmpl) },
-        [XFRMA_POLICY_TYPE] = { .minlen = sizeof(struct xfrm_userpolicy_type)},
-        [XFRMA_MARK]        = { .minlen = sizeof(struct xfrm_mark) },
+	[XFRMA_POLICY]          = { .minlen = sizeof(struct xfrm_userpolicy_info)},
+	[XFRMA_SEC_CTX]         = { .minlen = sizeof(struct xfrm_sec_ctx) },
+	[XFRMA_TMPL]            = { .minlen = sizeof(struct xfrm_user_tmpl) },
+	[XFRMA_POLICY_TYPE]     = { .minlen = sizeof(struct xfrm_userpolicy_type)},
+	[XFRMA_MARK]            = { .minlen = sizeof(struct xfrm_mark) },
 };
 
 static int xfrm_sp_request_update(struct nl_cache *c, struct nl_sock *h)
 {
-        struct xfrm_userpolicy_id   sp_id;
+	struct xfrm_userpolicy_id   sp_id;
 
-        memset ((void *)&sp_id, 0, sizeof (struct xfrm_userpolicy_id));
-        return nl_send_simple (h, XFRM_MSG_GETPOLICY, NLM_F_DUMP,(void*)&sp_id, sizeof (struct xfrm_userpolicy_id));
+	memset ((void *)&sp_id, 0, sizeof (struct xfrm_userpolicy_id));
+	return nl_send_simple (h, XFRM_MSG_GETPOLICY, NLM_F_DUMP,(void*)&sp_id, sizeof (struct xfrm_userpolicy_id));
 }
 
 int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 {
-        struct xfrmnl_sp                *sp;
-        struct nlattr                   *tb[XFRMA_MAX + 1];
-        struct xfrm_userpolicy_info     *sp_info;
-        struct xfrm_userpolicy_id       *sp_id;
-        int                             len, err;
-        struct nl_addr*                 addr;
+	struct xfrmnl_sp                *sp;
+	struct nlattr                   *tb[XFRMA_MAX + 1];
+	struct xfrm_userpolicy_info     *sp_info;
+	struct xfrm_userpolicy_id       *sp_id;
+	int                             len, err;
+	struct nl_addr*                 addr;
 
-        sp = xfrmnl_sp_alloc();
-        if (!sp) {
-                err = -NLE_NOMEM;
-                goto errout;
-        }
+	sp = xfrmnl_sp_alloc();
+	if (!sp) {
+		err = -NLE_NOMEM;
+		goto errout;
+	}
 
-        sp->ce_msgtype = n->nlmsg_type;
-        if (n->nlmsg_type == XFRM_MSG_DELPOLICY)
-        {
-                sp_id = nlmsg_data(n);
-                sp_info = (struct xfrm_userpolicy_info*)(nlmsg_data(n) + sizeof (struct xfrm_userpolicy_id) + NLA_HDRLEN);
-        }
-        else
-        {
-                sp_info = nlmsg_data(n);
-        }
+	sp->ce_msgtype = n->nlmsg_type;
+	if (n->nlmsg_type == XFRM_MSG_DELPOLICY)
+	{
+		sp_id = nlmsg_data(n);
+		sp_info = (struct xfrm_userpolicy_info*)(nlmsg_data(n) + sizeof (struct xfrm_userpolicy_id) + NLA_HDRLEN);
+	}
+	else
+	{
+		sp_info = nlmsg_data(n);
+	}
 
-        err = nlmsg_parse(n, sizeof(struct xfrm_userpolicy_info), tb, XFRMA_MAX, xfrm_sp_policy);
-        if (err < 0)
-        {
-                printf ("parse error: %d \n", err);
-                goto errout;
-        }
+	err = nlmsg_parse(n, sizeof(struct xfrm_userpolicy_info), tb, XFRMA_MAX, xfrm_sp_policy);
+	if (err < 0)
+	{
+		printf ("parse error: %d \n", err);
+		goto errout;
+	}
 
-        if (sp_info->sel.family == AF_INET)
-                addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.daddr.a4, sizeof (sp_info->sel.daddr.a4));
-        else
-                addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.daddr.a6, sizeof (sp_info->sel.daddr.a6));
-        nl_addr_set_prefixlen (addr, sp_info->sel.prefixlen_d);
-        xfrmnl_sel_set_daddr (sp->sel, addr);
-        xfrmnl_sel_set_prefixlen_d (sp->sel, sp_info->sel.prefixlen_d);
+	if (sp_info->sel.family == AF_INET)
+		addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.daddr.a4, sizeof (sp_info->sel.daddr.a4));
+	else
+		addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.daddr.a6, sizeof (sp_info->sel.daddr.a6));
+	nl_addr_set_prefixlen (addr, sp_info->sel.prefixlen_d);
+	xfrmnl_sel_set_daddr (sp->sel, addr);
+	xfrmnl_sel_set_prefixlen_d (sp->sel, sp_info->sel.prefixlen_d);
 
-        if (sp_info->sel.family == AF_INET)
-                addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.saddr.a4, sizeof (sp_info->sel.saddr.a4));
-        else
-                addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.saddr.a6, sizeof (sp_info->sel.saddr.a6));
-        nl_addr_set_prefixlen (addr, sp_info->sel.prefixlen_s);
-        xfrmnl_sel_set_saddr (sp->sel, addr);
-        xfrmnl_sel_set_prefixlen_s (sp->sel, sp_info->sel.prefixlen_s);
+	if (sp_info->sel.family == AF_INET)
+		addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.saddr.a4, sizeof (sp_info->sel.saddr.a4));
+	else
+		addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.saddr.a6, sizeof (sp_info->sel.saddr.a6));
+	nl_addr_set_prefixlen (addr, sp_info->sel.prefixlen_s);
+	xfrmnl_sel_set_saddr (sp->sel, addr);
+	xfrmnl_sel_set_prefixlen_s (sp->sel, sp_info->sel.prefixlen_s);
 
-        xfrmnl_sel_set_dport (sp->sel, ntohs (sp_info->sel.dport));
-        xfrmnl_sel_set_dportmask (sp->sel, ntohs (sp_info->sel.dport_mask));
-        xfrmnl_sel_set_sport (sp->sel, ntohs (sp_info->sel.sport));
-        xfrmnl_sel_set_sportmask (sp->sel, ntohs (sp_info->sel.sport_mask));
-        xfrmnl_sel_set_family (sp->sel, sp_info->sel.family);
-        xfrmnl_sel_set_proto (sp->sel, sp_info->sel.proto);
-        xfrmnl_sel_set_ifindex (sp->sel, sp_info->sel.ifindex);
-        xfrmnl_sel_set_userid (sp->sel, sp_info->sel.user);
-        sp->ce_mask             |= XFRM_SP_ATTR_SEL;
+	xfrmnl_sel_set_dport (sp->sel, ntohs (sp_info->sel.dport));
+	xfrmnl_sel_set_dportmask (sp->sel, ntohs (sp_info->sel.dport_mask));
+	xfrmnl_sel_set_sport (sp->sel, ntohs (sp_info->sel.sport));
+	xfrmnl_sel_set_sportmask (sp->sel, ntohs (sp_info->sel.sport_mask));
+	xfrmnl_sel_set_family (sp->sel, sp_info->sel.family);
+	xfrmnl_sel_set_proto (sp->sel, sp_info->sel.proto);
+	xfrmnl_sel_set_ifindex (sp->sel, sp_info->sel.ifindex);
+	xfrmnl_sel_set_userid (sp->sel, sp_info->sel.user);
+	sp->ce_mask             |= XFRM_SP_ATTR_SEL;
 
-        sp->lft->soft_byte_limit    =   sp_info->lft.soft_byte_limit;
-        sp->lft->hard_byte_limit    =   sp_info->lft.hard_byte_limit;
-        sp->lft->soft_packet_limit  =   sp_info->lft.soft_packet_limit;
-        sp->lft->hard_packet_limit  =   sp_info->lft.hard_packet_limit;
-        sp->lft->soft_add_expires_seconds   =   sp_info->lft.soft_add_expires_seconds;
-        sp->lft->hard_add_expires_seconds   =   sp_info->lft.hard_add_expires_seconds;
-        sp->lft->soft_use_expires_seconds   =   sp_info->lft.soft_use_expires_seconds;
-        sp->lft->hard_use_expires_seconds   =   sp_info->lft.hard_use_expires_seconds;
-        sp->ce_mask             |= XFRM_SP_ATTR_LTIME_CFG;
+	sp->lft->soft_byte_limit    =   sp_info->lft.soft_byte_limit;
+	sp->lft->hard_byte_limit    =   sp_info->lft.hard_byte_limit;
+	sp->lft->soft_packet_limit  =   sp_info->lft.soft_packet_limit;
+	sp->lft->hard_packet_limit  =   sp_info->lft.hard_packet_limit;
+	sp->lft->soft_add_expires_seconds   =   sp_info->lft.soft_add_expires_seconds;
+	sp->lft->hard_add_expires_seconds   =   sp_info->lft.hard_add_expires_seconds;
+	sp->lft->soft_use_expires_seconds   =   sp_info->lft.soft_use_expires_seconds;
+	sp->lft->hard_use_expires_seconds   =   sp_info->lft.hard_use_expires_seconds;
+	sp->ce_mask             |= XFRM_SP_ATTR_LTIME_CFG;
 
-        sp->curlft.bytes        = sp_info->curlft.bytes;
-        sp->curlft.packets      = sp_info->curlft.packets;
-        sp->curlft.add_time     = sp_info->curlft.add_time;
-        sp->curlft.use_time     = sp_info->curlft.use_time;
-        sp->ce_mask             |= XFRM_SP_ATTR_LTIME_CUR;
+	sp->curlft.bytes        = sp_info->curlft.bytes;
+	sp->curlft.packets      = sp_info->curlft.packets;
+	sp->curlft.add_time     = sp_info->curlft.add_time;
+	sp->curlft.use_time     = sp_info->curlft.use_time;
+	sp->ce_mask             |= XFRM_SP_ATTR_LTIME_CUR;
 
-        sp->priority            = sp_info->priority;
-        sp->index               = sp_info->index;
-        sp->dir                 = sp_info->dir;
-        sp->action              = sp_info->action;
-        sp->flags               = sp_info->flags;
-        sp->share               = sp_info->share;
-        sp->ce_mask             |= (XFRM_SP_ATTR_PRIO | XFRM_SP_ATTR_INDEX |
-                        XFRM_SP_ATTR_DIR | XFRM_SP_ATTR_ACTION |
-                        XFRM_SP_ATTR_FLAGS | XFRM_SP_ATTR_SHARE);
+	sp->priority            = sp_info->priority;
+	sp->index               = sp_info->index;
+	sp->dir                 = sp_info->dir;
+	sp->action              = sp_info->action;
+	sp->flags               = sp_info->flags;
+	sp->share               = sp_info->share;
+	sp->ce_mask             |= (XFRM_SP_ATTR_PRIO | XFRM_SP_ATTR_INDEX |
+	                            XFRM_SP_ATTR_DIR | XFRM_SP_ATTR_ACTION |
+	                            XFRM_SP_ATTR_FLAGS | XFRM_SP_ATTR_SHARE);
 
-        if (tb[XFRMA_SEC_CTX]) {
-                struct xfrm_user_sec_ctx* ctx = nla_data(tb[XFRMA_SEC_CTX]);
-                len = sizeof (struct xfrmnl_user_sec_ctx) + ctx->ctx_len;
-                if ((sp->sec_ctx = calloc (1, len)) == NULL)
-                {
-                        err = -NLE_NOMEM;
-                        goto errout;
-                }
-                memcpy ((void *)sp->sec_ctx, (void *)ctx, len);
-                sp->ce_mask     |= XFRM_SP_ATTR_SECCTX;
-        }
+	if (tb[XFRMA_SEC_CTX]) {
+		struct xfrm_user_sec_ctx* ctx = nla_data(tb[XFRMA_SEC_CTX]);
+		len = sizeof (struct xfrmnl_user_sec_ctx) + ctx->ctx_len;
+		if ((sp->sec_ctx = calloc (1, len)) == NULL)
+		{
+			err = -NLE_NOMEM;
+			goto errout;
+		}
+		memcpy ((void *)sp->sec_ctx, (void *)ctx, len);
+		sp->ce_mask     |= XFRM_SP_ATTR_SECCTX;
+	}
 
-        if (tb[XFRMA_POLICY_TYPE]) {
-                struct xfrm_userpolicy_type* up = nla_data(tb[XFRMA_POLICY_TYPE]);
-                memcpy ((void *)&sp->uptype, (void *)up, sizeof (struct xfrm_userpolicy_type));
-                sp->ce_mask     |= XFRM_SP_ATTR_POLTYPE;
-        }
+	if (tb[XFRMA_POLICY_TYPE]) {
+		struct xfrm_userpolicy_type* up = nla_data(tb[XFRMA_POLICY_TYPE]);
+		memcpy ((void *)&sp->uptype, (void *)up, sizeof (struct xfrm_userpolicy_type));
+		sp->ce_mask     |= XFRM_SP_ATTR_POLTYPE;
+	}
 
-        if (tb[XFRMA_TMPL]) {
-                struct xfrm_user_tmpl*      tmpl = nla_data(tb[XFRMA_TMPL]);
-                struct xfrmnl_user_tmpl*    sputmpl;
-                uint32_t                    i;
-                uint32_t                    num_tmpls = nla_len(tb[XFRMA_TMPL]) / sizeof (*tmpl);
-                struct  nl_addr*            addr;
+	if (tb[XFRMA_TMPL]) {
+		struct xfrm_user_tmpl*      tmpl = nla_data(tb[XFRMA_TMPL]);
+		struct xfrmnl_user_tmpl*    sputmpl;
+		uint32_t                    i;
+		uint32_t                    num_tmpls = nla_len(tb[XFRMA_TMPL]) / sizeof (*tmpl);
+		struct  nl_addr*            addr;
 
-                for (i = 0; (i < num_tmpls) && (tmpl); i ++, tmpl++)
-                {
-                        if ((sputmpl = xfrmnl_user_tmpl_alloc ()) == NULL)
-                        {
-                                err = -NLE_NOMEM;
-                                goto errout;
-                        }
+		for (i = 0; (i < num_tmpls) && (tmpl); i ++, tmpl++)
+		{
+			if ((sputmpl = xfrmnl_user_tmpl_alloc ()) == NULL)
+			{
+				err = -NLE_NOMEM;
+				goto errout;
+			}
 
-                        if (tmpl->family == AF_INET)
-                                addr = nl_addr_build(tmpl->family, &tmpl->id.daddr.a4, sizeof (tmpl->id.daddr.a4));
-                        else
-                                addr = nl_addr_build(tmpl->family, &tmpl->id.daddr.a6, sizeof (tmpl->id.daddr.a6));
-                        xfrmnl_user_tmpl_set_daddr (sputmpl, addr);
-                        xfrmnl_user_tmpl_set_spi (sputmpl, ntohl(tmpl->id.spi));
-                        xfrmnl_user_tmpl_set_proto (sputmpl, tmpl->id.proto);
-                        xfrmnl_user_tmpl_set_family (sputmpl, tmpl->family);
+			if (tmpl->family == AF_INET)
+				addr = nl_addr_build(tmpl->family, &tmpl->id.daddr.a4, sizeof (tmpl->id.daddr.a4));
+			else
+				addr = nl_addr_build(tmpl->family, &tmpl->id.daddr.a6, sizeof (tmpl->id.daddr.a6));
+			xfrmnl_user_tmpl_set_daddr (sputmpl, addr);
+			xfrmnl_user_tmpl_set_spi (sputmpl, ntohl(tmpl->id.spi));
+			xfrmnl_user_tmpl_set_proto (sputmpl, tmpl->id.proto);
+			xfrmnl_user_tmpl_set_family (sputmpl, tmpl->family);
 
-                        if (tmpl->family == AF_INET)
-                                addr = nl_addr_build(tmpl->family, &tmpl->saddr.a4, sizeof (tmpl->saddr.a4));
-                        else
-                                addr = nl_addr_build(tmpl->family, &tmpl->saddr.a6, sizeof (tmpl->saddr.a6));
-                        xfrmnl_user_tmpl_set_saddr (sputmpl, addr);
+			if (tmpl->family == AF_INET)
+				addr = nl_addr_build(tmpl->family, &tmpl->saddr.a4, sizeof (tmpl->saddr.a4));
+			else
+				addr = nl_addr_build(tmpl->family, &tmpl->saddr.a6, sizeof (tmpl->saddr.a6));
+			xfrmnl_user_tmpl_set_saddr (sputmpl, addr);
 
-                        xfrmnl_user_tmpl_set_reqid (sputmpl, tmpl->reqid);
-                        xfrmnl_user_tmpl_set_mode (sputmpl, tmpl->mode);
-                        xfrmnl_user_tmpl_set_share (sputmpl, tmpl->share);
-                        xfrmnl_user_tmpl_set_optional (sputmpl, tmpl->optional);
-                        xfrmnl_user_tmpl_set_aalgos (sputmpl, tmpl->aalgos);
-                        xfrmnl_user_tmpl_set_ealgos (sputmpl, tmpl->ealgos);
-                        xfrmnl_user_tmpl_set_calgos (sputmpl, tmpl->calgos);
-                        xfrmnl_sp_add_usertemplate (sp, sputmpl);
+			xfrmnl_user_tmpl_set_reqid (sputmpl, tmpl->reqid);
+			xfrmnl_user_tmpl_set_mode (sputmpl, tmpl->mode);
+			xfrmnl_user_tmpl_set_share (sputmpl, tmpl->share);
+			xfrmnl_user_tmpl_set_optional (sputmpl, tmpl->optional);
+			xfrmnl_user_tmpl_set_aalgos (sputmpl, tmpl->aalgos);
+			xfrmnl_user_tmpl_set_ealgos (sputmpl, tmpl->ealgos);
+			xfrmnl_user_tmpl_set_calgos (sputmpl, tmpl->calgos);
+			xfrmnl_sp_add_usertemplate (sp, sputmpl);
 
-                        sp->ce_mask     |=  XFRM_SP_ATTR_TMPL;
-                }
-        }
+			sp->ce_mask     |=  XFRM_SP_ATTR_TMPL;
+		}
+	}
 
-        if (tb[XFRMA_MARK]) {
-                struct xfrm_mark* m =   nla_data(tb[XFRMA_MARK]);
-                sp->mark.m  =   m->m;
-                sp->mark.v  =   m->v;
-                sp->ce_mask |= XFRM_SP_ATTR_MARK;
-        }
+	if (tb[XFRMA_MARK]) {
+		struct xfrm_mark* m =   nla_data(tb[XFRMA_MARK]);
+		sp->mark.m  =   m->m;
+		sp->mark.v  =   m->v;
+		sp->ce_mask |= XFRM_SP_ATTR_MARK;
+	}
 
-        *result = sp;
-        return 0;
+	*result = sp;
+	return 0;
 
 errout:
-        xfrmnl_sp_put(sp);
-        return err;
+	xfrmnl_sp_put(sp);
+	return err;
 }
 
 static int xfrm_sp_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
-                struct nlmsghdr *n, struct nl_parser_param *pp)
+				struct nlmsghdr *n, struct nl_parser_param *pp)
 {
-        struct xfrmnl_sp*   sp;
-        int                 err;
+	struct xfrmnl_sp*   sp;
+	int                 err;
 
-        if ((err = xfrmnl_sp_parse(n, &sp)) < 0)
-        {
-                printf ("received error: %d \n", err);
-                return err;
-        }
+	if ((err = xfrmnl_sp_parse(n, &sp)) < 0)
+	{
+		printf ("received error: %d \n", err);
+		return err;
+	}
 
-        err = pp->pp_cb((struct nl_object *) sp, pp);
+	err = pp->pp_cb((struct nl_object *) sp, pp);
 
-        xfrmnl_sp_put(sp);
-        return err;
+	xfrmnl_sp_put(sp);
+	return err;
 }
 
 /**
@@ -699,189 +699,189 @@ static int xfrm_sp_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 int xfrmnl_sp_build_get_request(unsigned int index, unsigned int dir, unsigned int mark_v, unsigned int mark_m, struct nl_msg **result)
 {
-        struct nl_msg               *msg;
-        struct xfrm_userpolicy_id   spid;
-        struct xfrm_mark            mark;
+	struct nl_msg               *msg;
+	struct xfrm_userpolicy_id   spid;
+	struct xfrm_mark            mark;
 
-        memset(&spid, 0, sizeof(spid));
-        spid.index          = index;
-        spid.dir            = dir;
+	memset(&spid, 0, sizeof(spid));
+	spid.index          = index;
+	spid.dir            = dir;
 
-        if (!(msg = nlmsg_alloc_simple(XFRM_MSG_GETPOLICY, 0)))
-                return -NLE_NOMEM;
+	if (!(msg = nlmsg_alloc_simple(XFRM_MSG_GETPOLICY, 0)))
+		return -NLE_NOMEM;
 
-        if (nlmsg_append(msg, &spid, sizeof(spid), NLMSG_ALIGNTO) < 0)
-                goto nla_put_failure;
+	if (nlmsg_append(msg, &spid, sizeof(spid), NLMSG_ALIGNTO) < 0)
+		goto nla_put_failure;
 
-        if ((mark_m & mark_v) != 0)
-        {
-                memset(&mark, 0, sizeof(struct xfrm_mark));
-                mark.m = mark_m;
-                mark.v = mark_v;
+	if ((mark_m & mark_v) != 0)
+	{
+		memset(&mark, 0, sizeof(struct xfrm_mark));
+		mark.m = mark_m;
+		mark.v = mark_v;
 
-                NLA_PUT (msg, XFRMA_MARK, sizeof (struct xfrm_mark), &mark);
-        }
+		NLA_PUT (msg, XFRMA_MARK, sizeof (struct xfrm_mark), &mark);
+	}
 
-        *result = msg;
-        return 0;
+	*result = msg;
+	return 0;
 
 nla_put_failure:
-        nlmsg_free(msg);
-        return -NLE_MSGSIZE;
+	nlmsg_free(msg);
+	return -NLE_MSGSIZE;
 }
 
 int xfrmnl_sp_get_kernel(struct nl_sock* sock, unsigned int index, unsigned int dir, unsigned int mark_v, unsigned int mark_m, struct xfrmnl_sp** result)
 {
-        struct nl_msg       *msg = NULL;
-        struct nl_object    *obj;
-        int err;
+	struct nl_msg       *msg = NULL;
+	struct nl_object    *obj;
+	int err;
 
-        if ((err = xfrmnl_sp_build_get_request(index, dir, mark_m, mark_v, &msg)) < 0)
-                return err;
+	if ((err = xfrmnl_sp_build_get_request(index, dir, mark_m, mark_v, &msg)) < 0)
+		return err;
 
-        err = nl_send_auto(sock, msg);
-        nlmsg_free(msg);
-        if (err < 0)
-                return err;
+	err = nl_send_auto(sock, msg);
+	nlmsg_free(msg);
+	if (err < 0)
+		return err;
 
-        if ((err = nl_pickup(sock, &xfrm_sp_msg_parser, &obj)) < 0)
-                return err;
+	if ((err = nl_pickup(sock, &xfrm_sp_msg_parser, &obj)) < 0)
+		return err;
 
-        /* We have used xfrm_sp_msg_parser(), object is definitely a xfrm ae */
-        *result = (struct xfrmnl_sp *) obj;
+	/* We have used xfrm_sp_msg_parser(), object is definitely a xfrm ae */
+	*result = (struct xfrmnl_sp *) obj;
 
-        /* If an object has been returned, we also need to wait for the ACK */
-        if (err == 0 && obj)
-                nl_wait_for_ack(sock);
+	/* If an object has been returned, we also need to wait for the ACK */
+	 if (err == 0 && obj)
+		 nl_wait_for_ack(sock);
 
-        return 0;
+	return 0;
 }
 
 /** @} */
 
 static int build_xfrm_sp_message(struct xfrmnl_sp *tmpl, int cmd, int flags, struct nl_msg **result)
 {
-        struct nl_msg*              msg;
-        struct xfrm_userpolicy_info sp_info;
-        uint32_t                    len;
-        struct nl_addr*             addr;
+	struct nl_msg*              msg;
+	struct xfrm_userpolicy_info sp_info;
+	uint32_t                    len;
+	struct nl_addr*             addr;
 
-        if (!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) ||
-                        !(tmpl->ce_mask & XFRM_SP_ATTR_DIR))
-                return -NLE_MISSING_ATTR;
+	if (!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) ||
+	    !(tmpl->ce_mask & XFRM_SP_ATTR_DIR))
+		return -NLE_MISSING_ATTR;
 
-        memset ((void*)&sp_info, 0, sizeof (sp_info));
-        if (tmpl->ce_mask & XFRM_SP_ATTR_SEL)
-        {
-                addr = xfrmnl_sel_get_daddr (tmpl->sel);
-                memcpy ((void*)&sp_info.sel.daddr, (void*)nl_addr_get_binary_addr (addr), sizeof (uint8_t) * nl_addr_get_len (addr));
-                addr = xfrmnl_sel_get_saddr (tmpl->sel);
-                memcpy ((void*)&sp_info.sel.saddr, (void*)nl_addr_get_binary_addr (addr), sizeof (uint8_t) * nl_addr_get_len (addr));
-                sp_info.sel.dport       =   htons (xfrmnl_sel_get_dport (tmpl->sel));
-                sp_info.sel.dport_mask  =   htons (xfrmnl_sel_get_dportmask (tmpl->sel));
-                sp_info.sel.sport       =   htons (xfrmnl_sel_get_sport (tmpl->sel));
-                sp_info.sel.sport_mask  =   htons (xfrmnl_sel_get_sportmask (tmpl->sel));
-                sp_info.sel.family      =   xfrmnl_sel_get_family (tmpl->sel);
-                sp_info.sel.prefixlen_d =   xfrmnl_sel_get_prefixlen_d (tmpl->sel);
-                sp_info.sel.prefixlen_s =   xfrmnl_sel_get_prefixlen_s (tmpl->sel);
-                sp_info.sel.proto       =   xfrmnl_sel_get_proto (tmpl->sel);
-                sp_info.sel.ifindex     =   xfrmnl_sel_get_ifindex (tmpl->sel);
-                sp_info.sel.user        =   xfrmnl_sel_get_userid (tmpl->sel);
-        }
+	memset ((void*)&sp_info, 0, sizeof (sp_info));
+	if (tmpl->ce_mask & XFRM_SP_ATTR_SEL)
+	{
+		addr = xfrmnl_sel_get_daddr (tmpl->sel);
+		memcpy ((void*)&sp_info.sel.daddr, (void*)nl_addr_get_binary_addr (addr), sizeof (uint8_t) * nl_addr_get_len (addr));
+		addr = xfrmnl_sel_get_saddr (tmpl->sel);
+		memcpy ((void*)&sp_info.sel.saddr, (void*)nl_addr_get_binary_addr (addr), sizeof (uint8_t) * nl_addr_get_len (addr));
+		sp_info.sel.dport       =   htons (xfrmnl_sel_get_dport (tmpl->sel));
+		sp_info.sel.dport_mask  =   htons (xfrmnl_sel_get_dportmask (tmpl->sel));
+		sp_info.sel.sport       =   htons (xfrmnl_sel_get_sport (tmpl->sel));
+		sp_info.sel.sport_mask  =   htons (xfrmnl_sel_get_sportmask (tmpl->sel));
+		sp_info.sel.family      =   xfrmnl_sel_get_family (tmpl->sel);
+		sp_info.sel.prefixlen_d =   xfrmnl_sel_get_prefixlen_d (tmpl->sel);
+		sp_info.sel.prefixlen_s =   xfrmnl_sel_get_prefixlen_s (tmpl->sel);
+		sp_info.sel.proto       =   xfrmnl_sel_get_proto (tmpl->sel);
+		sp_info.sel.ifindex     =   xfrmnl_sel_get_ifindex (tmpl->sel);
+		sp_info.sel.user        =   xfrmnl_sel_get_userid (tmpl->sel);
+	}
 
-        if (tmpl->ce_mask & XFRM_SP_ATTR_LTIME_CFG)
-        {
-                sp_info.lft.soft_byte_limit = xfrmnl_ltime_cfg_get_soft_bytelimit (tmpl->lft);
-                sp_info.lft.hard_byte_limit = xfrmnl_ltime_cfg_get_hard_bytelimit (tmpl->lft);
-                sp_info.lft.soft_packet_limit = xfrmnl_ltime_cfg_get_soft_packetlimit (tmpl->lft);
-                sp_info.lft.hard_packet_limit = xfrmnl_ltime_cfg_get_hard_packetlimit (tmpl->lft);
-                sp_info.lft.soft_add_expires_seconds = xfrmnl_ltime_cfg_get_soft_addexpires (tmpl->lft);
-                sp_info.lft.hard_add_expires_seconds = xfrmnl_ltime_cfg_get_hard_addexpires (tmpl->lft);
-                sp_info.lft.soft_use_expires_seconds = xfrmnl_ltime_cfg_get_soft_useexpires (tmpl->lft);
-                sp_info.lft.hard_use_expires_seconds = xfrmnl_ltime_cfg_get_hard_useexpires (tmpl->lft);
-        }
+	if (tmpl->ce_mask & XFRM_SP_ATTR_LTIME_CFG)
+	{
+		sp_info.lft.soft_byte_limit = xfrmnl_ltime_cfg_get_soft_bytelimit (tmpl->lft);
+		sp_info.lft.hard_byte_limit = xfrmnl_ltime_cfg_get_hard_bytelimit (tmpl->lft);
+		sp_info.lft.soft_packet_limit = xfrmnl_ltime_cfg_get_soft_packetlimit (tmpl->lft);
+		sp_info.lft.hard_packet_limit = xfrmnl_ltime_cfg_get_hard_packetlimit (tmpl->lft);
+		sp_info.lft.soft_add_expires_seconds = xfrmnl_ltime_cfg_get_soft_addexpires (tmpl->lft);
+		sp_info.lft.hard_add_expires_seconds = xfrmnl_ltime_cfg_get_hard_addexpires (tmpl->lft);
+		sp_info.lft.soft_use_expires_seconds = xfrmnl_ltime_cfg_get_soft_useexpires (tmpl->lft);
+		sp_info.lft.hard_use_expires_seconds = xfrmnl_ltime_cfg_get_hard_useexpires (tmpl->lft);
+	}
 
-        //Skip current lifetime: cur lifetime can be updated only via AE
+	//Skip current lifetime: cur lifetime can be updated only via AE
 
-        if (tmpl->ce_mask & XFRM_SP_ATTR_PRIO)
-                sp_info.priority    = tmpl->priority;
+	if (tmpl->ce_mask & XFRM_SP_ATTR_PRIO)
+		sp_info.priority    = tmpl->priority;
 
-        if (tmpl->ce_mask & XFRM_SP_ATTR_INDEX)
-                sp_info.index       = tmpl->index;
+	if (tmpl->ce_mask & XFRM_SP_ATTR_INDEX)
+		sp_info.index       = tmpl->index;
 
-        if (tmpl->ce_mask & XFRM_SP_ATTR_DIR)
-                sp_info.dir         = tmpl->dir;
+	if (tmpl->ce_mask & XFRM_SP_ATTR_DIR)
+		sp_info.dir         = tmpl->dir;
 
-        if (tmpl->ce_mask & XFRM_SP_ATTR_ACTION)
-                sp_info.action      = tmpl->action;
+	if (tmpl->ce_mask & XFRM_SP_ATTR_ACTION)
+		sp_info.action      = tmpl->action;
 
-        if (tmpl->ce_mask & XFRM_SP_ATTR_FLAGS)
-                sp_info.flags       = tmpl->flags;
+	if (tmpl->ce_mask & XFRM_SP_ATTR_FLAGS)
+		sp_info.flags       = tmpl->flags;
 
-        if (tmpl->ce_mask & XFRM_SP_ATTR_SHARE)
-                sp_info.share       = tmpl->share;
+	if (tmpl->ce_mask & XFRM_SP_ATTR_SHARE)
+		sp_info.share       = tmpl->share;
 
-        msg = nlmsg_alloc_simple(cmd, flags);
-        if (!msg)
-                return -NLE_NOMEM;
+	msg = nlmsg_alloc_simple(cmd, flags);
+	if (!msg)
+		return -NLE_NOMEM;
 
-        if (nlmsg_append(msg, &sp_info, sizeof(sp_info), NLMSG_ALIGNTO) < 0)
-                goto nla_put_failure;
+	if (nlmsg_append(msg, &sp_info, sizeof(sp_info), NLMSG_ALIGNTO) < 0)
+		goto nla_put_failure;
 
-        if (tmpl->ce_mask & XFRM_SP_ATTR_SECCTX) {
-                len = (sizeof (struct xfrm_user_sec_ctx)) + tmpl->sec_ctx->ctx_len;
-                NLA_PUT (msg, XFRMA_SEC_CTX, len, tmpl->sec_ctx);
-        }
+	if (tmpl->ce_mask & XFRM_SP_ATTR_SECCTX) {
+		len = (sizeof (struct xfrm_user_sec_ctx)) + tmpl->sec_ctx->ctx_len;
+		NLA_PUT (msg, XFRMA_SEC_CTX, len, tmpl->sec_ctx);
+	}
 
-        if (tmpl->ce_mask & XFRM_SP_ATTR_POLTYPE) {
-                len = sizeof (struct xfrm_userpolicy_type);
-                NLA_PUT (msg, XFRMA_POLICY_TYPE, len, &tmpl->uptype);
-        }
+	if (tmpl->ce_mask & XFRM_SP_ATTR_POLTYPE) {
+		len = sizeof (struct xfrm_userpolicy_type);
+		NLA_PUT (msg, XFRMA_POLICY_TYPE, len, &tmpl->uptype);
+	}
 
-        if (tmpl->ce_mask & XFRM_SP_ATTR_TMPL) {
-                struct nlattr*              tmpls;
-                struct xfrmnl_user_tmpl*    utmpl;
-                struct nl_addr*             addr;
+	if (tmpl->ce_mask & XFRM_SP_ATTR_TMPL) {
+		struct nlattr*              tmpls;
+		struct xfrmnl_user_tmpl*    utmpl;
+		struct nl_addr*             addr;
 
-                if (!(tmpls = nla_nest_start(msg, XFRMA_TMPL)))
-                        goto nla_put_failure;
+		if (!(tmpls = nla_nest_start(msg, XFRMA_TMPL)))
+			goto nla_put_failure;
 
-                nl_list_for_each_entry(utmpl, &tmpl->usertmpl_list, utmpl_list) {
-                        struct xfrm_user_tmpl*  tmpl;
+		nl_list_for_each_entry(utmpl, &tmpl->usertmpl_list, utmpl_list) {
+			struct xfrm_user_tmpl*  tmpl;
 
-                        tmpl = nlmsg_reserve(msg, sizeof(*tmpl), NLMSG_ALIGNTO);
-                        if (!tmpl)
-                                goto nla_put_failure;
-                        addr = xfrmnl_user_tmpl_get_daddr (utmpl);
-                        memcpy ((void *)&tmpl->id.daddr, nl_addr_get_binary_addr (addr),
-                                        nl_addr_get_len (addr));
-                        tmpl->id.spi    =   htonl(xfrmnl_user_tmpl_get_spi (utmpl));
-                        tmpl->id.proto  =   xfrmnl_user_tmpl_get_proto (utmpl);
-                        tmpl->family    =   xfrmnl_user_tmpl_get_family (utmpl);
-                        addr = xfrmnl_user_tmpl_get_saddr (utmpl);
-                        memcpy ((void *)&tmpl->saddr, nl_addr_get_binary_addr (addr),
-                                        nl_addr_get_len (addr));
-                        tmpl->reqid     =   xfrmnl_user_tmpl_get_reqid (utmpl);
-                        tmpl->mode      =   xfrmnl_user_tmpl_get_mode (utmpl);
-                        tmpl->share     =   xfrmnl_user_tmpl_get_share (utmpl);
-                        tmpl->optional  =   xfrmnl_user_tmpl_get_optional (utmpl);
-                        tmpl->aalgos    =   xfrmnl_user_tmpl_get_aalgos (utmpl);
-                        tmpl->ealgos    =   xfrmnl_user_tmpl_get_ealgos (utmpl);
-                        tmpl->calgos    =   xfrmnl_user_tmpl_get_calgos (utmpl);
-                }
-                nla_nest_end(msg, tmpls);
-        }
+			tmpl = nlmsg_reserve(msg, sizeof(*tmpl), NLMSG_ALIGNTO);
+			if (!tmpl)
+				goto nla_put_failure;
+			addr = xfrmnl_user_tmpl_get_daddr (utmpl);
+			memcpy ((void *)&tmpl->id.daddr, nl_addr_get_binary_addr (addr),
+			         nl_addr_get_len (addr));
+			tmpl->id.spi    =   htonl(xfrmnl_user_tmpl_get_spi (utmpl));
+			tmpl->id.proto  =   xfrmnl_user_tmpl_get_proto (utmpl);
+			tmpl->family    =   xfrmnl_user_tmpl_get_family (utmpl);
+			addr = xfrmnl_user_tmpl_get_saddr (utmpl);
+			memcpy ((void *)&tmpl->saddr, nl_addr_get_binary_addr (addr),
+			        nl_addr_get_len (addr));
+			tmpl->reqid     =   xfrmnl_user_tmpl_get_reqid (utmpl);
+			tmpl->mode      =   xfrmnl_user_tmpl_get_mode (utmpl);
+			tmpl->share     =   xfrmnl_user_tmpl_get_share (utmpl);
+			tmpl->optional  =   xfrmnl_user_tmpl_get_optional (utmpl);
+			tmpl->aalgos    =   xfrmnl_user_tmpl_get_aalgos (utmpl);
+			tmpl->ealgos    =   xfrmnl_user_tmpl_get_ealgos (utmpl);
+			tmpl->calgos    =   xfrmnl_user_tmpl_get_calgos (utmpl);
+		}
+		nla_nest_end(msg, tmpls);
+	}
 
-        if (tmpl->ce_mask & XFRM_SP_ATTR_MARK) {
-                NLA_PUT (msg, XFRMA_MARK, sizeof (struct xfrm_mark), &tmpl->mark);
-        }
+	if (tmpl->ce_mask & XFRM_SP_ATTR_MARK) {
+		NLA_PUT (msg, XFRMA_MARK, sizeof (struct xfrm_mark), &tmpl->mark);
+	}
 
-        *result = msg;
-        return 0;
+	*result = msg;
+	return 0;
 
 nla_put_failure:
-        nlmsg_free(msg);
-        return -NLE_MSGSIZE;
+	nlmsg_free(msg);
+	return -NLE_MSGSIZE;
 }
 
 /**
@@ -891,23 +891,23 @@ nla_put_failure:
 
 int xfrmnl_sp_build_add_request(struct xfrmnl_sp* tmpl, int flags, struct nl_msg **result)
 {
-        return build_xfrm_sp_message (tmpl, XFRM_MSG_NEWPOLICY, flags, result);
+	return build_xfrm_sp_message (tmpl, XFRM_MSG_NEWPOLICY, flags, result);
 }
 
 int xfrmnl_sp_add(struct nl_sock* sk, struct xfrmnl_sp* tmpl, int flags)
 {
-        int             err;
-        struct nl_msg   *msg;
+	int             err;
+	struct nl_msg   *msg;
 
-        if ((err = xfrmnl_sp_build_add_request(tmpl, flags, &msg)) < 0)
-                return err;
+	if ((err = xfrmnl_sp_build_add_request(tmpl, flags, &msg)) < 0)
+		return err;
 
-        err = nl_send_auto_complete(sk, msg);
-        nlmsg_free(msg);
-        if (err < 0)
-                return err;
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
+		return err;
 
-        return nl_wait_for_ack(sk);
+	return nl_wait_for_ack(sk);
 }
 
 /**
@@ -917,57 +917,57 @@ int xfrmnl_sp_add(struct nl_sock* sk, struct xfrmnl_sp* tmpl, int flags)
 
 int xfrmnl_sp_build_update_request(struct xfrmnl_sp* tmpl, int flags, struct nl_msg **result)
 {
-        return build_xfrm_sp_message (tmpl, XFRM_MSG_UPDPOLICY, flags, result);
+	return build_xfrm_sp_message (tmpl, XFRM_MSG_UPDPOLICY, flags, result);
 }
 
 int xfrmnl_sp_update(struct nl_sock* sk, struct xfrmnl_sp* tmpl, int flags)
 {
-        int             err;
-        struct nl_msg   *msg;
+	int             err;
+	struct nl_msg   *msg;
 
-        if ((err = xfrmnl_sp_build_update_request(tmpl, flags, &msg)) < 0)
-                return err;
+	if ((err = xfrmnl_sp_build_update_request(tmpl, flags, &msg)) < 0)
+		return err;
 
-        err = nl_send_auto_complete(sk, msg);
-        nlmsg_free(msg);
-        if (err < 0)
-                return err;
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
+		return err;
 
-        return nl_wait_for_ack(sk);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */
 
 static int build_xfrm_sp_delete_message(struct xfrmnl_sp *tmpl, int cmd, int flags, struct nl_msg **result)
 {
-        struct nl_msg*              msg;
-        struct xfrm_userpolicy_id   spid;
+	struct nl_msg*              msg;
+	struct xfrm_userpolicy_id   spid;
 
-        if (!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) ||
-                        !(tmpl->ce_mask & XFRM_SP_ATTR_DIR))
-                return -NLE_MISSING_ATTR;
+	if (!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) ||
+	    !(tmpl->ce_mask & XFRM_SP_ATTR_DIR))
+		return -NLE_MISSING_ATTR;
 
-        memset(&spid, 0, sizeof(spid));
-        spid.index          = tmpl->index;
-        spid.dir            = tmpl->dir;
+	memset(&spid, 0, sizeof(spid));
+	spid.index          = tmpl->index;
+	spid.dir            = tmpl->dir;
 
-        msg = nlmsg_alloc_simple(cmd, flags);
-        if (!msg)
-                return -NLE_NOMEM;
+	msg = nlmsg_alloc_simple(cmd, flags);
+	if (!msg)
+		return -NLE_NOMEM;
 
-        if (nlmsg_append(msg, &spid, sizeof(spid), NLMSG_ALIGNTO) < 0)
-                goto nla_put_failure;
+	if (nlmsg_append(msg, &spid, sizeof(spid), NLMSG_ALIGNTO) < 0)
+		goto nla_put_failure;
 
-        if (tmpl->ce_mask & XFRM_SP_ATTR_MARK) {
-                NLA_PUT (msg, XFRMA_MARK, sizeof (struct xfrm_mark), &tmpl->mark);
-        }
+	if (tmpl->ce_mask & XFRM_SP_ATTR_MARK) {
+		NLA_PUT (msg, XFRMA_MARK, sizeof (struct xfrm_mark), &tmpl->mark);
+	}
 
-        *result = msg;
-        return 0;
+	*result = msg;
+	return 0;
 
 nla_put_failure:
-        nlmsg_free(msg);
-        return -NLE_MSGSIZE;
+	nlmsg_free(msg);
+	return -NLE_MSGSIZE;
 }
 
 /**
@@ -977,23 +977,23 @@ nla_put_failure:
 
 int xfrmnl_sp_build_delete_request(struct xfrmnl_sp* tmpl, int flags, struct nl_msg **result)
 {
-        return build_xfrm_sp_delete_message (tmpl, XFRM_MSG_DELPOLICY, flags, result);
+	return build_xfrm_sp_delete_message (tmpl, XFRM_MSG_DELPOLICY, flags, result);
 }
 
 int xfrmnl_sp_delete(struct nl_sock* sk, struct xfrmnl_sp* tmpl, int flags)
 {
-        int             err;
-        struct nl_msg   *msg;
+	int             err;
+	struct nl_msg   *msg;
 
-        if ((err = xfrmnl_sp_build_delete_request(tmpl, flags, &msg)) < 0)
-                return err;
+	if ((err = xfrmnl_sp_build_delete_request(tmpl, flags, &msg)) < 0)
+		return err;
 
-        err = nl_send_auto_complete(sk, msg);
-        nlmsg_free(msg);
-        if (err < 0)
-                return err;
+	err = nl_send_auto_complete(sk, msg);
+	nlmsg_free(msg);
+	if (err < 0)
+		return err;
 
-        return nl_wait_for_ack(sk);
+	return nl_wait_for_ack(sk);
 }
 
 /** @} */
@@ -1006,349 +1006,349 @@ int xfrmnl_sp_delete(struct nl_sock* sk, struct xfrmnl_sp* tmpl, int flags)
 
 struct xfrmnl_sel* xfrmnl_sp_get_sel (struct xfrmnl_sp* sp)
 {
-        if (sp->ce_mask & XFRM_SP_ATTR_SEL)
-                return sp->sel;
-        else
-                return NULL;
+	if (sp->ce_mask & XFRM_SP_ATTR_SEL)
+		return sp->sel;
+	else
+		return NULL;
 }
 
 int xfrmnl_sp_set_sel (struct xfrmnl_sp* sp, struct xfrmnl_sel* sel)
 {
-        /* Release any previously held selector object from the SP */
-        if (sp->sel)
-                xfrmnl_sel_put (sp->sel);
+	/* Release any previously held selector object from the SP */
+	if (sp->sel)
+		xfrmnl_sel_put (sp->sel);
 
-        /* Increment ref count on new selector and save it in the SP */
-        xfrmnl_sel_get (sel);
-        sp->sel     =   sel;
-        sp->ce_mask |=  XFRM_SP_ATTR_SEL;
+	/* Increment ref count on new selector and save it in the SP */
+	xfrmnl_sel_get (sel);
+	sp->sel     =   sel;
+	sp->ce_mask |=  XFRM_SP_ATTR_SEL;
 
-        return 0;
+	return 0;
 }
 
 struct xfrmnl_ltime_cfg* xfrmnl_sp_get_lifetime_cfg (struct xfrmnl_sp* sp)
 {
-        if (sp->ce_mask & XFRM_SP_ATTR_LTIME_CFG)
-                return sp->lft;
-        else
-                return NULL;
+	if (sp->ce_mask & XFRM_SP_ATTR_LTIME_CFG)
+		return sp->lft;
+	else
+		return NULL;
 }
 
 int xfrmnl_sp_set_lifetime_cfg (struct xfrmnl_sp* sp, struct xfrmnl_ltime_cfg* ltime)
 {
-        /* Release any previously held lifetime cfg object from the SP */
-        if (sp->lft)
-                xfrmnl_ltime_cfg_put (sp->lft);
+	/* Release any previously held lifetime cfg object from the SP */
+	if (sp->lft)
+		xfrmnl_ltime_cfg_put (sp->lft);
 
-        /* Increment ref count on new lifetime object and save it in the SP */
-        xfrmnl_ltime_cfg_get (ltime);
-        sp->lft     =   ltime;
-        sp->ce_mask |=  XFRM_SP_ATTR_LTIME_CFG;
+	/* Increment ref count on new lifetime object and save it in the SP */
+	xfrmnl_ltime_cfg_get (ltime);
+	sp->lft     =   ltime;
+	sp->ce_mask |=  XFRM_SP_ATTR_LTIME_CFG;
 
-        return 0;
+	return 0;
 }
 
 int xfrmnl_sp_get_curlifetime (struct xfrmnl_sp* sa, unsigned long long int* curr_bytes,
-                unsigned long long int* curr_packets, unsigned long long int* curr_add_time, unsigned long long int* curr_use_time)
+                               unsigned long long int* curr_packets, unsigned long long int* curr_add_time, unsigned long long int* curr_use_time)
 {
-        if (sa == NULL || curr_bytes == NULL || curr_packets == NULL || curr_add_time == NULL || curr_use_time == NULL)
-                return -1;
+	if (sa == NULL || curr_bytes == NULL || curr_packets == NULL || curr_add_time == NULL || curr_use_time == NULL)
+		return -1;
 
-        *curr_bytes     =   sa->curlft.bytes;
-        *curr_packets   =   sa->curlft.packets;
-        *curr_add_time  =   sa->curlft.add_time;
-        *curr_use_time  =   sa->curlft.use_time;
+	*curr_bytes     =   sa->curlft.bytes;
+	*curr_packets   =   sa->curlft.packets;
+	*curr_add_time  =   sa->curlft.add_time;
+	*curr_use_time  =   sa->curlft.use_time;
 
-        return 0;
+	return 0;
 }
 
 int xfrmnl_sp_get_priority (struct xfrmnl_sp* sp)
 {
-        if (sp->ce_mask & XFRM_SP_ATTR_PRIO)
-                return sp->priority;
-        else
-                return -1;
+	if (sp->ce_mask & XFRM_SP_ATTR_PRIO)
+		return sp->priority;
+	else
+		return -1;
 }
 
 int xfrmnl_sp_set_priority (struct xfrmnl_sp* sp, unsigned int prio)
 {
-        sp->priority    = prio;
-        sp->ce_mask     |= XFRM_SP_ATTR_PRIO;
+	sp->priority    = prio;
+	sp->ce_mask     |= XFRM_SP_ATTR_PRIO;
 
-        return 0;
+	return 0;
 }
 
 int xfrmnl_sp_get_index (struct xfrmnl_sp* sp)
 {
-        if (sp->ce_mask & XFRM_SP_ATTR_INDEX)
-                return sp->index;
-        else
-                return -1;
+	if (sp->ce_mask & XFRM_SP_ATTR_INDEX)
+		return sp->index;
+	else
+		return -1;
 }
 
 int xfrmnl_sp_set_index (struct xfrmnl_sp* sp, unsigned int index)
 {
-        sp->index       = index;
-        sp->ce_mask     |= XFRM_SP_ATTR_INDEX;
+	sp->index       = index;
+	sp->ce_mask     |= XFRM_SP_ATTR_INDEX;
 
-        return 0;
+	return 0;
 }
 
 int xfrmnl_sp_get_dir (struct xfrmnl_sp* sp)
 {
-        if (sp->ce_mask & XFRM_SP_ATTR_DIR)
-                return sp->dir;
-        else
-                return -1;
+	if (sp->ce_mask & XFRM_SP_ATTR_DIR)
+		return sp->dir;
+	else
+		return -1;
 }
 
 int xfrmnl_sp_set_dir (struct xfrmnl_sp* sp, unsigned int dir)
 {
-        sp->dir         = dir;
-        sp->ce_mask     |= XFRM_SP_ATTR_DIR;
+	sp->dir         = dir;
+	sp->ce_mask     |= XFRM_SP_ATTR_DIR;
 
-        return 0;
+	return 0;
 }
 
 int xfrmnl_sp_get_action (struct xfrmnl_sp* sp)
 {
-        if (sp->ce_mask & XFRM_SP_ATTR_ACTION)
-                return sp->action;
-        else
-                return -1;
+	if (sp->ce_mask & XFRM_SP_ATTR_ACTION)
+		return sp->action;
+	else
+		return -1;
 }
 
 int xfrmnl_sp_set_action (struct xfrmnl_sp* sp, unsigned int action)
 {
-        sp->action      = action;
-        sp->ce_mask     |= XFRM_SP_ATTR_ACTION;
+	sp->action      = action;
+	sp->ce_mask     |= XFRM_SP_ATTR_ACTION;
 
-        return 0;
+	return 0;
 }
 
 int xfrmnl_sp_get_flags (struct xfrmnl_sp* sp)
 {
-        if (sp->ce_mask & XFRM_SP_ATTR_FLAGS)
-                return sp->flags;
-        else
-                return -1;
+	if (sp->ce_mask & XFRM_SP_ATTR_FLAGS)
+		return sp->flags;
+	else
+		return -1;
 }
 
 int xfrmnl_sp_set_flags (struct xfrmnl_sp* sp, unsigned int flags)
 {
-        sp->flags       = flags;
-        sp->ce_mask     |= XFRM_SP_ATTR_FLAGS;
+	sp->flags       = flags;
+	sp->ce_mask     |= XFRM_SP_ATTR_FLAGS;
 
-        return 0;
+	return 0;
 }
 
 int xfrmnl_sp_get_share (struct xfrmnl_sp* sp)
 {
-        if (sp->ce_mask & XFRM_SP_ATTR_SHARE)
-                return sp->share;
-        else
-                return -1;
+	if (sp->ce_mask & XFRM_SP_ATTR_SHARE)
+		return sp->share;
+	else
+		return -1;
 }
 
 int xfrmnl_sp_set_share (struct xfrmnl_sp* sp, unsigned int share)
 {
-        sp->share       = share;
-        sp->ce_mask     |= XFRM_SP_ATTR_SHARE;
+	sp->share       = share;
+	sp->ce_mask     |= XFRM_SP_ATTR_SHARE;
 
-        return 0;
+	return 0;
 }
 
 int xfrmnl_sp_get_sec_ctx (struct xfrmnl_sp* sp, unsigned int* len, unsigned int* exttype, unsigned int* alg, unsigned int* doi, unsigned int* ctx_len, char* ctx_str)
 {
-        if (sp->ce_mask & XFRM_SP_ATTR_SECCTX)
-        {
-                *len    =   sp->sec_ctx->len;
-                *exttype=   sp->sec_ctx->exttype;
-                *alg    =   sp->sec_ctx->ctx_alg;
-                *doi    =   sp->sec_ctx->ctx_doi;
-                *ctx_len=   sp->sec_ctx->ctx_len;
-                memcpy ((void *)ctx_str, (void *)sp->sec_ctx->ctx, sizeof (uint8_t) * sp->sec_ctx->ctx_len);
-        }
-        else
-                return -1;
+	if (sp->ce_mask & XFRM_SP_ATTR_SECCTX)
+	{
+		*len    =   sp->sec_ctx->len;
+		*exttype=   sp->sec_ctx->exttype;
+		*alg    =   sp->sec_ctx->ctx_alg;
+		*doi    =   sp->sec_ctx->ctx_doi;
+		*ctx_len=   sp->sec_ctx->ctx_len;
+		memcpy ((void *)ctx_str, (void *)sp->sec_ctx->ctx, sizeof (uint8_t) * sp->sec_ctx->ctx_len);
+	}
+	else
+		return -1;
 
-        return 0;
+	return 0;
 }
 
 int xfrmnl_sp_set_sec_ctx (struct xfrmnl_sp* sp, unsigned int len, unsigned int exttype, unsigned int alg, unsigned int doi, unsigned int ctx_len, char* ctx_str)
 {
-        /* Free up the old context string and allocate new one */
-        if (sp->sec_ctx)
-                free (sp->sec_ctx);
-        if ((sp->sec_ctx = calloc (1, sizeof (struct xfrmnl_user_sec_ctx) + (sizeof (uint8_t) * ctx_len))) == NULL)
-                return -1;
+	/* Free up the old context string and allocate new one */
+	if (sp->sec_ctx)
+		free (sp->sec_ctx);
+	if ((sp->sec_ctx = calloc (1, sizeof (struct xfrmnl_user_sec_ctx) + (sizeof (uint8_t) * ctx_len))) == NULL)
+		return -1;
 
-        /* Save the new info */
-        sp->sec_ctx->len        =   len;
-        sp->sec_ctx->exttype    =   exttype;
-        sp->sec_ctx->ctx_alg    =   alg;
-        sp->sec_ctx->ctx_doi    =   doi;
-        sp->sec_ctx->ctx_len    =   len;
-        memcpy ((void *)sp->sec_ctx->ctx, (void *)ctx_str, sizeof (uint8_t) * ctx_len);
+	/* Save the new info */
+	sp->sec_ctx->len        =   len;
+	sp->sec_ctx->exttype    =   exttype;
+	sp->sec_ctx->ctx_alg    =   alg;
+	sp->sec_ctx->ctx_doi    =   doi;
+	sp->sec_ctx->ctx_len    =   len;
+	memcpy ((void *)sp->sec_ctx->ctx, (void *)ctx_str, sizeof (uint8_t) * ctx_len);
 
-        sp->ce_mask |= XFRM_SP_ATTR_SECCTX;
+	sp->ce_mask |= XFRM_SP_ATTR_SECCTX;
 
-        return 0;
+	return 0;
 }
 
 int xfrmnl_sp_get_userpolicy_type (struct xfrmnl_sp* sp)
 {
-        if (sp->ce_mask & XFRM_SP_ATTR_POLTYPE)
-                return sp->uptype.type;
-        else
-                return -1;
+	if (sp->ce_mask & XFRM_SP_ATTR_POLTYPE)
+		return sp->uptype.type;
+	else
+		return -1;
 }
 
 int xfrmnl_sp_set_userpolicy_type (struct xfrmnl_sp* sp, unsigned int type)
 {
-        sp->uptype.type = type;
-        sp->ce_mask     |= XFRM_SP_ATTR_POLTYPE;
+	sp->uptype.type = type;
+	sp->ce_mask     |= XFRM_SP_ATTR_POLTYPE;
 
-        return 0;
+	return 0;
 }
 
 void xfrmnl_sp_add_usertemplate(struct xfrmnl_sp *sp, struct xfrmnl_user_tmpl *utmpl)
 {
-        nl_list_add_tail(&utmpl->utmpl_list, &sp->usertmpl_list);
-        sp->nr_user_tmpl++;
-        sp->ce_mask |= XFRM_SP_ATTR_TMPL;
+	nl_list_add_tail(&utmpl->utmpl_list, &sp->usertmpl_list);
+	sp->nr_user_tmpl++;
+	sp->ce_mask |= XFRM_SP_ATTR_TMPL;
 }
 
 void xfrmnl_sp_remove_usertemplate(struct xfrmnl_sp *sp, struct xfrmnl_user_tmpl *utmpl)
 {
-        if (sp->ce_mask & XFRM_SP_ATTR_TMPL) {
-                sp->nr_user_tmpl--;
-                nl_list_del(&utmpl->utmpl_list);
-        }
+	if (sp->ce_mask & XFRM_SP_ATTR_TMPL) {
+		sp->nr_user_tmpl--;
+		nl_list_del(&utmpl->utmpl_list);
+	}
 }
 
 struct nl_list_head *xfrmnl_sp_get_usertemplates(struct xfrmnl_sp *sp)
 {
-        if (sp->ce_mask & XFRM_SP_ATTR_TMPL)
-                return &sp->usertmpl_list;
+	if (sp->ce_mask & XFRM_SP_ATTR_TMPL)
+		return &sp->usertmpl_list;
 
-        return NULL;
+	return NULL;
 }
 
 int xfrmnl_sp_get_nusertemplates(struct xfrmnl_sp *sp)
 {
-        if (sp->ce_mask & XFRM_SP_ATTR_TMPL)
-                return sp->nr_user_tmpl;
+	if (sp->ce_mask & XFRM_SP_ATTR_TMPL)
+		return sp->nr_user_tmpl;
 
-        return 0;
+	return 0;
 }
 
 void xfrmnl_sp_foreach_usertemplate(struct xfrmnl_sp *r,
-                void (*cb)(struct xfrmnl_user_tmpl *, void *),
-                void *arg)
+                                    void (*cb)(struct xfrmnl_user_tmpl *, void *),
+                                    void *arg)
 {
-        struct xfrmnl_user_tmpl *utmpl;
+	struct xfrmnl_user_tmpl *utmpl;
 
-        if (r->ce_mask & XFRM_SP_ATTR_TMPL) {
-                nl_list_for_each_entry(utmpl, &r->usertmpl_list, utmpl_list) {
-                        cb(utmpl, arg);
-                }
-        }
+	if (r->ce_mask & XFRM_SP_ATTR_TMPL) {
+		nl_list_for_each_entry(utmpl, &r->usertmpl_list, utmpl_list) {
+			cb(utmpl, arg);
+		}
+	}
 }
 
 struct xfrmnl_user_tmpl *xfrmnl_sp_usertemplate_n(struct xfrmnl_sp *r, int n)
 {
-        struct xfrmnl_user_tmpl *utmpl;
-        uint32_t i;
+	struct xfrmnl_user_tmpl *utmpl;
+	uint32_t i;
 
-        if (r->ce_mask & XFRM_SP_ATTR_TMPL && r->nr_user_tmpl > n) {
-                i = 0;
-                nl_list_for_each_entry(utmpl, &r->usertmpl_list, utmpl_list) {
-                        if (i == n) return utmpl;
-                        i++;
-                }
-        }
-        return NULL;
+	if (r->ce_mask & XFRM_SP_ATTR_TMPL && r->nr_user_tmpl > n) {
+		i = 0;
+		nl_list_for_each_entry(utmpl, &r->usertmpl_list, utmpl_list) {
+			if (i == n) return utmpl;
+			i++;
+		}
+	}
+		return NULL;
 }
 
 int xfrmnl_sp_get_mark (struct xfrmnl_sp* sp, unsigned int* mark_mask, unsigned int* mark_value)
 {
-        if (mark_mask == NULL || mark_value == NULL)
-                return -1;
+	if (mark_mask == NULL || mark_value == NULL)
+		return -1;
 
-        if (sp->ce_mask & XFRM_SP_ATTR_MARK)
-        {
-                *mark_mask  =   sp->mark.m;
-                *mark_value  =   sp->mark.v;
+	if (sp->ce_mask & XFRM_SP_ATTR_MARK)
+	{
+		*mark_mask  =   sp->mark.m;
+		*mark_value  =   sp->mark.v;
 
-                return 0;
-        }
-        else
-                return -1;
+		return 0;
+	}
+	else
+		return -1;
 }
 
 int xfrmnl_sp_set_mark (struct xfrmnl_sp* sp, unsigned int value, unsigned int mask)
 {
-        sp->mark.v  = value;
-        sp->mark.m  = mask;
-        sp->ce_mask |= XFRM_SP_ATTR_MARK;
+	sp->mark.v  = value;
+	sp->mark.m  = mask;
+	sp->ce_mask |= XFRM_SP_ATTR_MARK;
 
-        return 0;
+	return 0;
 }
 
 static inline int __assign_addr(struct xfrmnl_sp* sp, struct nl_addr **pos,
-                struct nl_addr *new, int flag)
+                                struct nl_addr *new, int flag)
 {
-        if (*pos)
-                nl_addr_put(*pos);
+	if (*pos)
+		nl_addr_put(*pos);
 
-        nl_addr_get(new);
-        *pos = new;
+	nl_addr_get(new);
+	*pos = new;
 
-        sp->ce_mask |= flag;
+	sp->ce_mask |= flag;
 
-        return 0;
+	return 0;
 }
 
 
 /** @} */
 
 static struct nl_object_ops xfrm_sp_obj_ops = {
-        .oo_name                =       "xfrm/sp",
-        .oo_size        =       sizeof(struct xfrmnl_sp),
-        .oo_constructor         =       xfrm_sp_alloc_data,
-        .oo_free_data           =       xfrm_sp_free_data,
-        .oo_clone       =       xfrm_sp_clone,
-        .oo_dump                =       {
-                [NL_DUMP_LINE]          =   xfrm_sp_dump_line,
-                [NL_DUMP_DETAILS]   =   xfrm_sp_dump_details,
-                [NL_DUMP_STATS]         =   xfrm_sp_dump_stats,
-        },
-        .oo_compare     =       xfrm_sp_compare,
-        .oo_attrs2str           =       xfrm_sp_attrs2str,
-        .oo_id_attrs            =       (XFRM_SP_ATTR_SEL | XFRM_SP_ATTR_INDEX | XFRM_SP_ATTR_DIR),
+	.oo_name        =   "xfrm/sp",
+	.oo_size        =   sizeof(struct xfrmnl_sp),
+	.oo_constructor =   xfrm_sp_alloc_data,
+	.oo_free_data   =   xfrm_sp_free_data,
+	.oo_clone       =   xfrm_sp_clone,
+	.oo_dump        =   {
+	                        [NL_DUMP_LINE]      =   xfrm_sp_dump_line,
+	                        [NL_DUMP_DETAILS]   =   xfrm_sp_dump_details,
+	                        [NL_DUMP_STATS]     =   xfrm_sp_dump_stats,
+	                    },
+	.oo_compare     =   xfrm_sp_compare,
+	.oo_attrs2str   =   xfrm_sp_attrs2str,
+	.oo_id_attrs    =   (XFRM_SP_ATTR_SEL | XFRM_SP_ATTR_INDEX | XFRM_SP_ATTR_DIR),
 };
 
 static struct nl_af_group xfrm_sp_groups[] = {
-        { AF_UNSPEC, XFRMNLGRP_POLICY },
-        { END_OF_GROUP_LIST },
+	{ AF_UNSPEC, XFRMNLGRP_POLICY },
+	{ END_OF_GROUP_LIST },
 };
 
 static struct nl_cache_ops xfrmnl_sp_ops = {
-        .co_name        =       "xfrm/sp",
-        .co_hdrsize     =       sizeof(struct xfrm_userpolicy_info),
-        .co_msgtypes            = {
-                { XFRM_MSG_NEWPOLICY, NL_ACT_NEW, "new" },
-                { XFRM_MSG_DELPOLICY, NL_ACT_DEL, "del" },
-                { XFRM_MSG_GETPOLICY, NL_ACT_GET, "get" },
-                { XFRM_MSG_UPDPOLICY, NL_ACT_NEW, "update" },
-                END_OF_MSGTYPES_LIST,
-        },
-        .co_protocol            =       NETLINK_XFRM,
-        .co_groups      =       xfrm_sp_groups,
-        .co_request_update  =       xfrm_sp_request_update,
-        .co_msg_parser      =       xfrm_sp_msg_parser,
-        .co_obj_ops     =       &xfrm_sp_obj_ops,
+	.co_name            = "xfrm/sp",
+	.co_hdrsize         = sizeof(struct xfrm_userpolicy_info),
+	.co_msgtypes        = {
+	                        { XFRM_MSG_NEWPOLICY, NL_ACT_NEW, "new" },
+	                        { XFRM_MSG_DELPOLICY, NL_ACT_DEL, "del" },
+	                        { XFRM_MSG_GETPOLICY, NL_ACT_GET, "get" },
+	                        { XFRM_MSG_UPDPOLICY, NL_ACT_NEW, "update" },
+	                        END_OF_MSGTYPES_LIST,
+	                     },
+	.co_protocol        = NETLINK_XFRM,
+	.co_groups          = xfrm_sp_groups,
+	.co_request_update  = xfrm_sp_request_update,
+	.co_msg_parser      = xfrm_sp_msg_parser,
+	.co_obj_ops         = &xfrm_sp_obj_ops,
 };
 
 /**
@@ -1358,12 +1358,12 @@ static struct nl_cache_ops xfrmnl_sp_ops = {
 
 static void __attribute__ ((constructor)) xfrm_sp_init(void)
 {
-        nl_cache_mngt_register(&xfrmnl_sp_ops);
+	nl_cache_mngt_register(&xfrmnl_sp_ops);
 }
 
 static void __attribute__ ((destructor)) xfrm_sp_exit(void)
 {
-        nl_cache_mngt_unregister(&xfrmnl_sp_ops);
+	nl_cache_mngt_unregister(&xfrmnl_sp_ops);
 }
 
 /** @} */

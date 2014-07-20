@@ -1005,226 +1005,226 @@ struct idiagnl_req {
 
 /* Selector, used as selector both on policy rules (SPD) and SAs. */
 struct xfrmnl_sel {
-        uint32_t                refcnt;
-        struct nl_addr*         daddr;
-        struct nl_addr*         saddr;
-        uint16_t                dport;
-        uint16_t                dport_mask;
-        uint16_t                sport;
-        uint16_t                sport_mask;
-        uint16_t                family;
-        uint8_t                 prefixlen_d;
-        uint8_t                 prefixlen_s;
-        uint8_t                 proto;
-        int32_t                 ifindex;
-        uint32_t                user;
+	uint32_t        refcnt;
+	struct nl_addr* daddr;
+	struct nl_addr* saddr;
+	uint16_t        dport;
+	uint16_t        dport_mask;
+	uint16_t        sport;
+	uint16_t        sport_mask;
+	uint16_t        family;
+	uint8_t         prefixlen_d;
+	uint8_t         prefixlen_s;
+	uint8_t         proto;
+	int32_t         ifindex;
+	uint32_t        user;
 };
 
 /* Lifetime configuration, used for both policy rules (SPD) and SAs. */
 struct xfrmnl_ltime_cfg {
-        uint32_t                refcnt;
-        uint64_t                soft_byte_limit;
-        uint64_t                hard_byte_limit;
-        uint64_t                soft_packet_limit;
-        uint64_t                hard_packet_limit;
-        uint64_t                soft_add_expires_seconds;
-        uint64_t                hard_add_expires_seconds;
-        uint64_t                soft_use_expires_seconds;
-        uint64_t                hard_use_expires_seconds;
+	uint32_t        refcnt;
+	uint64_t        soft_byte_limit;
+	uint64_t        hard_byte_limit;
+	uint64_t        soft_packet_limit;
+	uint64_t        hard_packet_limit;
+	uint64_t        soft_add_expires_seconds;
+	uint64_t        hard_add_expires_seconds;
+	uint64_t        soft_use_expires_seconds;
+	uint64_t        hard_use_expires_seconds;
 };
 
 /* Current lifetime, used for both policy rules (SPD) and SAs. */
 struct xfrmnl_lifetime_cur {
-        uint64_t                bytes;
-        uint64_t                packets;
-        uint64_t                add_time;
-        uint64_t                use_time;
+	uint64_t        bytes;
+	uint64_t        packets;
+	uint64_t        add_time;
+	uint64_t        use_time;
 };
 
 struct xfrmnl_replay_state {
-        uint32_t                oseq;
-        uint32_t                seq;
-        uint32_t                bitmap;
+	uint32_t        oseq;
+	uint32_t        seq;
+	uint32_t        bitmap;
 };
 
 struct xfrmnl_replay_state_esn {
-        uint32_t                bmp_len;
-        uint32_t                oseq;
-        uint32_t                seq;
-        uint32_t                oseq_hi;
-        uint32_t                seq_hi;
-        uint32_t                replay_window;
-        uint32_t                bmp[0];
+	uint32_t        bmp_len;
+	uint32_t        oseq;
+	uint32_t        seq;
+	uint32_t        oseq_hi;
+	uint32_t        seq_hi;
+	uint32_t        replay_window;
+	uint32_t        bmp[0];
 };
 
 struct xfrmnl_mark {
-        uint32_t                v; /* value */
-        uint32_t                m; /* mask */
+	uint32_t        v; /* value */
+	uint32_t        m; /* mask */
 };
 
 /* XFRM AE related definitions */
 
 struct xfrmnl_sa_id {
-        struct nl_addr*         daddr;
-        uint32_t                spi;
-        uint16_t                family;
-        uint8_t                 proto;
+	struct nl_addr* daddr;
+	uint32_t        spi;
+	uint16_t        family;
+	uint8_t         proto;
 };
 
 struct xfrmnl_ae {
-        NLHDR_COMMON
+	NLHDR_COMMON
 
-        struct xfrmnl_sa_id             sa_id;
-        struct nl_addr*                 saddr;
-        uint32_t                        flags;
-        uint32_t                        reqid;
-        struct xfrmnl_mark              mark;
-        struct xfrmnl_lifetime_cur      lifetime_cur;
-        uint32_t                        replay_maxage;
-        uint32_t                        replay_maxdiff;
-        struct xfrmnl_replay_state      replay_state;
-        struct xfrmnl_replay_state_esn* replay_state_esn;
+	struct xfrmnl_sa_id             sa_id;
+	struct nl_addr*                 saddr;
+	uint32_t                        flags;
+	uint32_t                        reqid;
+	struct xfrmnl_mark              mark;
+	struct xfrmnl_lifetime_cur      lifetime_cur;
+	uint32_t                        replay_maxage;
+	uint32_t                        replay_maxdiff;
+	struct xfrmnl_replay_state      replay_state;
+	struct xfrmnl_replay_state_esn* replay_state_esn;
 };
 
 /* XFRM SA related definitions */
 
 struct xfrmnl_id {
-        struct nl_addr*         daddr;
-        uint32_t                spi;
-        uint8_t                 proto;
+	struct nl_addr* daddr;
+	uint32_t        spi;
+	uint8_t         proto;
 };
 
 struct xfrmnl_stats {
-        uint32_t                replay_window;
-        uint32_t                replay;
-        uint32_t                integrity_failed;
+	uint32_t        replay_window;
+	uint32_t        replay;
+	uint32_t        integrity_failed;
 };
 
 struct xfrmnl_algo_aead {
-        char                    alg_name[64];
-        uint32_t                alg_key_len;    /* in bits */
-        uint32_t                alg_icv_len;    /* in bits */
-        char                    alg_key[0];
+	char            alg_name[64];
+	uint32_t        alg_key_len;    /* in bits */
+	uint32_t        alg_icv_len;    /* in bits */
+	char            alg_key[0];
 };
 
 struct xfrmnl_algo_auth {
-        char                    alg_name[64];
-        uint32_t                alg_key_len;    /* in bits */
-        uint32_t                alg_trunc_len;  /* in bits */
-        char                    alg_key[0];
+	char            alg_name[64];
+	uint32_t        alg_key_len;    /* in bits */
+	uint32_t        alg_trunc_len;  /* in bits */
+	char            alg_key[0];
 };
 
 struct xfrmnl_algo {
-        char                    alg_name[64];
-        uint32_t                alg_key_len;    /* in bits */
-        char                    alg_key[0];
+	char            alg_name[64];
+	uint32_t        alg_key_len;    /* in bits */
+	char            alg_key[0];
 };
 
 struct xfrmnl_encap_tmpl {
-        uint16_t                encap_type;
-        uint16_t                encap_sport;
-        uint16_t                encap_dport;
-        struct nl_addr*         encap_oa;
+	uint16_t        encap_type;
+	uint16_t        encap_sport;
+	uint16_t        encap_dport;
+	struct nl_addr* encap_oa;
 };
 
 struct xfrmnl_sec_ctx {
-        uint8_t                 ctx_doi;
-        uint8_t                 ctx_alg;
-        uint16_t                ctx_len;
-        uint32_t                ctx_sid;
-        char                    ctx_str[0];
+	uint8_t         ctx_doi;
+	uint8_t         ctx_alg;
+	uint16_t        ctx_len;
+	uint32_t        ctx_sid;
+	char            ctx_str[0];
 };
 
 struct xfrmnl_sa {
-        NLHDR_COMMON
+	NLHDR_COMMON
 
-        struct xfrmnl_sel*              sel;
-        struct xfrmnl_id                id;
-        struct nl_addr*                 saddr;
-        struct xfrmnl_ltime_cfg*        lft;
-        struct xfrmnl_lifetime_cur      curlft;
-        struct xfrmnl_stats             stats;
-        uint32_t                        seq;
-        uint32_t                        reqid;
-        uint16_t                        family;
-        uint8_t                         mode;           /* XFRM_MODE_xxx */
-        uint8_t                         replay_window;
-        uint8_t                         flags;
-        struct xfrmnl_algo_aead*        aead;
-        struct xfrmnl_algo_auth*        auth;
-        struct xfrmnl_algo*             crypt;
-        struct xfrmnl_algo*             comp;
-        struct xfrmnl_encap_tmpl*       encap;
-        uint32_t                        tfcpad;
-        struct nl_addr*                 coaddr;
-        struct xfrmnl_mark              mark;
-        struct xfrmnl_sec_ctx*          sec_ctx;
-        uint32_t                        replay_maxage;
-        uint32_t                        replay_maxdiff;
-        struct xfrmnl_replay_state      replay_state;
-        struct xfrmnl_replay_state_esn* replay_state_esn;
-        uint8_t                         hard;
+	struct xfrmnl_sel*              sel;
+	struct xfrmnl_id                id;
+	struct nl_addr*                 saddr;
+	struct xfrmnl_ltime_cfg*        lft;
+	struct xfrmnl_lifetime_cur      curlft;
+	struct xfrmnl_stats             stats;
+	uint32_t                        seq;
+	uint32_t                        reqid;
+	uint16_t                        family;
+	uint8_t                         mode;        /* XFRM_MODE_xxx */
+	uint8_t                         replay_window;
+	uint8_t                         flags;
+	struct xfrmnl_algo_aead*        aead;
+	struct xfrmnl_algo_auth*        auth;
+	struct xfrmnl_algo*             crypt;
+	struct xfrmnl_algo*             comp;
+	struct xfrmnl_encap_tmpl*       encap;
+	uint32_t                        tfcpad;
+	struct nl_addr*                 coaddr;
+	struct xfrmnl_mark              mark;
+	struct xfrmnl_sec_ctx*          sec_ctx;
+	uint32_t                        replay_maxage;
+	uint32_t                        replay_maxdiff;
+	struct xfrmnl_replay_state      replay_state;
+	struct xfrmnl_replay_state_esn* replay_state_esn;
+	uint8_t                         hard;
 };
 
 struct xfrmnl_usersa_flush {
-        uint8_t                         proto;
+	uint8_t                         proto;
 };
 
 
 /* XFRM SP related definitions */
 
 struct xfrmnl_userpolicy_id {
-        struct xfrmnl_sel               sel;
-        uint32_t                        index;
-        uint8_t                         dir;
+	struct xfrmnl_sel               sel;
+	uint32_t                        index;
+	uint8_t                         dir;
 };
 
 struct xfrmnl_user_sec_ctx {
-        uint16_t                        len;
-        uint16_t                        exttype;
-        uint8_t                         ctx_alg;
-        uint8_t                         ctx_doi;
-        uint16_t                        ctx_len;
-        char                            ctx[0];
+	uint16_t                        len;
+	uint16_t                        exttype;
+	uint8_t                         ctx_alg;
+	uint8_t                         ctx_doi;
+	uint16_t                        ctx_len;
+	char                            ctx[0];
 };
 
 struct xfrmnl_userpolicy_type {
-        uint8_t                         type;
-        uint16_t                        reserved1;
-        uint16_t                        reserved2;
+	uint8_t                         type;
+	uint16_t                        reserved1;
+	uint16_t                        reserved2;
 };
 
 struct xfrmnl_user_tmpl {
-        struct xfrmnl_id                id;
-        uint16_t                        family;
-        struct nl_addr*                 saddr;
-        uint32_t                        reqid;
-        uint8_t                         mode;
-        uint8_t                         share;
-        uint8_t                         optional;
-        uint32_t                        aalgos;
-        uint32_t                        ealgos;
-        uint32_t                        calgos;
-        struct nl_list_head             utmpl_list;
+	struct xfrmnl_id                id;
+	uint16_t                        family;
+	struct nl_addr*                 saddr;
+	uint32_t                        reqid;
+	uint8_t                         mode;
+	uint8_t                         share;
+	uint8_t                         optional;
+	uint32_t                        aalgos;
+	uint32_t                        ealgos;
+	uint32_t                        calgos;
+	struct nl_list_head             utmpl_list;
 };
 
 struct xfrmnl_sp {
-        NLHDR_COMMON
+	NLHDR_COMMON
 
-        struct xfrmnl_sel*              sel;
-        struct xfrmnl_ltime_cfg*        lft;
-        struct xfrmnl_lifetime_cur      curlft;
-        uint32_t                        priority;
-        uint32_t                        index;
-        uint8_t                         dir;
-        uint8_t                         action;
-        uint8_t                         flags;
-        uint8_t                         share;
-        struct xfrmnl_user_sec_ctx*     sec_ctx;
-        struct xfrmnl_userpolicy_type   uptype;
-        uint32_t                        nr_user_tmpl;
-        struct nl_list_head             usertmpl_list;
-        struct xfrmnl_mark              mark;
+	struct xfrmnl_sel*              sel;
+	struct xfrmnl_ltime_cfg*        lft;
+	struct xfrmnl_lifetime_cur      curlft;
+	uint32_t                        priority;
+	uint32_t                        index;
+	uint8_t                         dir;
+	uint8_t                         action;
+	uint8_t                         flags;
+	uint8_t                         share;
+	struct xfrmnl_user_sec_ctx*     sec_ctx;
+	struct xfrmnl_userpolicy_type   uptype;
+	uint32_t                        nr_user_tmpl;
+	struct nl_list_head             usertmpl_list;
+	struct xfrmnl_mark              mark;
 };
 
 #endif

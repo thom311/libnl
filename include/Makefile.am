@@ -93,7 +93,13 @@ nobase_libnlinclude_HEADERS = \
 	netlink/idiag/meminfo.h \
 	netlink/idiag/msg.h \
 	netlink/idiag/req.h \
-	netlink/idiag/vegasinfo.h
+	netlink/idiag/vegasinfo.h \
+	netlink/xfrm/ae.h \
+	netlink/xfrm/lifetime.h \
+	netlink/xfrm/sa.h \
+	netlink/xfrm/selector.h \
+	netlink/xfrm/sp.h \
+	netlink/xfrm/template.h
 
 if ENABLE_CLI
 nobase_libnlinclude_HEADERS += \
@@ -141,6 +147,7 @@ noinst_HEADERS = \
 	linux/pkt_sched.h \
 	linux/rtnetlink.h \
 	linux/snmp.h \
+	linux/xfrm.h \
 	linux/tc_ematch/tc_em_meta.h \
 	netlink-private/genl.h \
 	netlink-private/netlink.h \

@@ -54,6 +54,7 @@
 #include <linux/ip.h>
 #include <linux/ipv6.h>
 #include <linux/snmp.h>
+#include <linux/xfrm.h>
 
 #ifndef DISABLE_PTHREADS
 #include <pthread.h>

@@ -343,19 +343,19 @@ static void xfrm_sp_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	if (sp->lft->soft_byte_limit == XFRM_INF)
 		sprintf (dir, "INF");
 	else
-		sprintf (dir, "%llu", sp->lft->soft_byte_limit);
+		sprintf (dir, "%" PRIu64, sp->lft->soft_byte_limit);
 	if (sp->lft->soft_packet_limit == XFRM_INF)
 		sprintf (action, "INF");
 	else
-		sprintf (action, "%llu", sp->lft->soft_packet_limit);
+		sprintf (action, "%" PRIu64, sp->lft->soft_packet_limit);
 	if (sp->lft->hard_byte_limit == XFRM_INF)
 		sprintf (flags, "INF");
 	else
-		sprintf (flags, "%llu", sp->lft->hard_byte_limit);
+		sprintf (flags, "%" PRIu64, sp->lft->hard_byte_limit);
 	if (sp->lft->hard_packet_limit == XFRM_INF)
 		sprintf (share, "INF");
 	else
-		sprintf (share, "%llu", sp->lft->hard_packet_limit);
+		sprintf (share, "%" PRIu64, sp->lft->hard_packet_limit);
 	nl_dump_line(p, "\t\tsoft limit: %s (bytes), %s (packets) \n", dir, action);
 	nl_dump_line(p, "\t\thard limit: %s (bytes), %s (packets) \n", flags, share);
 	nl_dump_line(p, "\t\tsoft add_time: %llu (seconds), soft use_time: %llu (seconds) \n",

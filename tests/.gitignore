@@ -15,6 +15,7 @@
 /test-create-veth
 /test-create-vlan
 /test-create-vxlan
+/test-create-ifb
 /test-delete-link
 /test-genl
 /test-nf-cache-mngr

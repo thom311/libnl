@@ -32,6 +32,7 @@
 #include <netlink/route/link/veth.h>
 
 #include <linux/if_link.h>
+#include <linux/veth.h>
 
 static struct nla_policy veth_policy[VETH_INFO_MAX+1] = {
 	[VETH_INFO_PEER]	= { .minlen = sizeof(struct ifinfomsg) },

@@ -313,14 +313,6 @@ struct ifla_vxlan_port_range {
 	__be16	high;
 };
 
-enum {
-	VETH_INFO_UNSPEC,
-	VETH_INFO_PEER,
-
-	__VETH_INFO_MAX
-#define VETH_INFO_MAX   (__VETH_INFO_MAX - 1)
-};
-
 /* SR-IOV virtual function management section */
 
 enum {

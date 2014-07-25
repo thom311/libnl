@@ -242,7 +242,7 @@ int rtnl_link_inet_get_conf(struct rtnl_link *link, const unsigned int cfgid,
 	if (cfgid == 0 || cfgid > IPV4_DEVCONF_MAX)
 		return -NLE_RANGE;
 
-	if (!(id = rtnl_link_af_alloc(link, &inet_ops)))
+	if (!(id = rtnl_link_af_data(link, &inet_ops)))
 		return -NLE_NOATTR;
 
 	if (!id->i_confset[cfgid - 1])

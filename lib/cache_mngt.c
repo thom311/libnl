@@ -38,7 +38,7 @@ static NL_RW_LOCK(cache_ops_lock);
  * @{
  */
 
-struct nl_cache_ops *__nl_cache_ops_lookup(const char *name)
+static struct nl_cache_ops *__nl_cache_ops_lookup(const char *name)
 {
 	struct nl_cache_ops *ops;
 

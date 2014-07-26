@@ -162,6 +162,8 @@ extern void			nl_cache_mngr_free(struct nl_cache_mngr *);
 
 extern void			nl_cache_ops_get(struct nl_cache_ops *);
 extern void			nl_cache_ops_put(struct nl_cache_ops *);
+extern void			nl_cache_ops_set_flags(struct nl_cache_ops *,
+						       unsigned int);
 
 #ifdef __cplusplus
 }

@@ -61,6 +61,7 @@
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/route/rtnl.h>
+#include <netlink/route/link/inet.h>
 #include <netlink-private/route/link/api.h>
 
 /** @cond SKIP */

@@ -180,19 +180,19 @@ static int xfrm_sp_compare(struct nl_object *_a, struct nl_object *_b, uint32_t 
  * @{
  */
 static const struct trans_tbl sp_attrs[] = {
-	__ADD(XFRM_SP_ATTR_SEL, selector)
-	__ADD(XFRM_SP_ATTR_LTIME_CFG, lifetime_cfg)
-	__ADD(XFRM_SP_ATTR_LTIME_CUR, lifetime_cur)
-	__ADD(XFRM_SP_ATTR_PRIO, priority)
-	__ADD(XFRM_SP_ATTR_INDEX, index)
-	__ADD(XFRM_SP_ATTR_DIR, direction)
-	__ADD(XFRM_SP_ATTR_ACTION, action)
-	__ADD(XFRM_SP_ATTR_FLAGS, flags)
-	__ADD(XFRM_SP_ATTR_SHARE, share)
-	__ADD(XFRM_SP_ATTR_POLTYPE, policy_type)
-	__ADD(XFRM_SP_ATTR_SECCTX, security_context)
-	__ADD(XFRM_SP_ATTR_TMPL, user_template)
-	__ADD(XFRM_SP_ATTR_MARK, mark)
+	__ADD(XFRM_SP_ATTR_SEL, selector),
+	__ADD(XFRM_SP_ATTR_LTIME_CFG, lifetime_cfg),
+	__ADD(XFRM_SP_ATTR_LTIME_CUR, lifetime_cur),
+	__ADD(XFRM_SP_ATTR_PRIO, priority),
+	__ADD(XFRM_SP_ATTR_INDEX, index),
+	__ADD(XFRM_SP_ATTR_DIR, direction),
+	__ADD(XFRM_SP_ATTR_ACTION, action),
+	__ADD(XFRM_SP_ATTR_FLAGS, flags),
+	__ADD(XFRM_SP_ATTR_SHARE, share),
+	__ADD(XFRM_SP_ATTR_POLTYPE, policy_type),
+	__ADD(XFRM_SP_ATTR_SECCTX, security_context),
+	__ADD(XFRM_SP_ATTR_TMPL, user_template),
+	__ADD(XFRM_SP_ATTR_MARK, mark),
 };
 
 static char* xfrm_sp_attrs2str(int attrs, char *buf, size_t len)
@@ -206,8 +206,8 @@ static char* xfrm_sp_attrs2str(int attrs, char *buf, size_t len)
  * @{
  */
 static const struct trans_tbl sa_actions[] = {
-	__ADD(XFRM_POLICY_ALLOW, allow)
-	__ADD(XFRM_POLICY_BLOCK, block)
+	__ADD(XFRM_POLICY_ALLOW, allow),
+	__ADD(XFRM_POLICY_BLOCK, block),
 };
 
 char* xfrmnl_sp_action2str(int action, char *buf, size_t len)
@@ -226,8 +226,8 @@ int xfrmnl_sp_str2action(const char *name)
  * @{
  */
 static const struct trans_tbl sp_flags[] = {
-	__ADD(XFRM_POLICY_LOCALOK, allow policy override by user)
-	__ADD(XFRM_POLICY_ICMP, auto include ICMP in policy)
+	__ADD(XFRM_POLICY_LOCALOK, allow policy override by user),
+	__ADD(XFRM_POLICY_ICMP, auto include ICMP in policy),
 };
 
 char* xfrmnl_sp_flags2str(int flags, char *buf, size_t len)
@@ -246,10 +246,10 @@ int xfrmnl_sp_str2flag(const char *name)
  * @{
  */
 static const struct trans_tbl sp_types[] = {
-	__ADD(XFRM_POLICY_TYPE_MAIN, main)
-	__ADD(XFRM_POLICY_TYPE_SUB, sub)
-	__ADD(XFRM_POLICY_TYPE_MAX, max)
-	__ADD(XFRM_POLICY_TYPE_ANY, any)
+	__ADD(XFRM_POLICY_TYPE_MAIN, main),
+	__ADD(XFRM_POLICY_TYPE_SUB, sub),
+	__ADD(XFRM_POLICY_TYPE_MAX, max),
+	__ADD(XFRM_POLICY_TYPE_ANY, any),
 };
 
 char* xfrmnl_sp_type2str(int type, char *buf, size_t len)
@@ -268,10 +268,10 @@ int xfrmnl_sp_str2type(const char *name)
  * @{
  */
 static const struct trans_tbl sp_dir[] = {
-	__ADD(XFRM_POLICY_IN, in)
-	__ADD(XFRM_POLICY_OUT, out)
-	__ADD(XFRM_POLICY_FWD, fwd)
-	__ADD(XFRM_POLICY_MASK, mask)
+	__ADD(XFRM_POLICY_IN, in),
+	__ADD(XFRM_POLICY_OUT, out),
+	__ADD(XFRM_POLICY_FWD, fwd),
+	__ADD(XFRM_POLICY_MASK, mask),
 };
 
 char* xfrmnl_sp_dir2str(int dir, char *buf, size_t len)
@@ -295,10 +295,10 @@ int xfrmnl_sp_index2dir (unsigned int index)
  * @{
  */
 static const struct trans_tbl sp_share[] = {
-	__ADD(XFRM_SHARE_ANY, any)
-	__ADD(XFRM_SHARE_SESSION, session)
-	__ADD(XFRM_SHARE_USER, user)
-	__ADD(XFRM_SHARE_UNIQUE, unique)
+	__ADD(XFRM_SHARE_ANY, any),
+	__ADD(XFRM_SHARE_SESSION, session),
+	__ADD(XFRM_SHARE_USER, user),
+	__ADD(XFRM_SHARE_UNIQUE, unique),
 };
 
 char* xfrmnl_sp_share2str(int share, char *buf, size_t len)

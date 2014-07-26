@@ -285,15 +285,15 @@ static int neigh_compare(struct nl_object *_a, struct nl_object *_b,
 }
 
 static const struct trans_tbl neigh_attrs[] = {
-	__ADD(NEIGH_ATTR_FLAGS, flags)
-	__ADD(NEIGH_ATTR_STATE, state)
-	__ADD(NEIGH_ATTR_LLADDR, lladdr)
-	__ADD(NEIGH_ATTR_DST, dst)
-	__ADD(NEIGH_ATTR_CACHEINFO, cacheinfo)
-	__ADD(NEIGH_ATTR_IFINDEX, ifindex)
-	__ADD(NEIGH_ATTR_FAMILY, family)
-	__ADD(NEIGH_ATTR_TYPE, type)
-	__ADD(NEIGH_ATTR_PROBES, probes)
+	__ADD(NEIGH_ATTR_FLAGS, flags),
+	__ADD(NEIGH_ATTR_STATE, state),
+	__ADD(NEIGH_ATTR_LLADDR, lladdr),
+	__ADD(NEIGH_ATTR_DST, dst),
+	__ADD(NEIGH_ATTR_CACHEINFO, cacheinfo),
+	__ADD(NEIGH_ATTR_IFINDEX, ifindex),
+	__ADD(NEIGH_ATTR_FAMILY, family),
+	__ADD(NEIGH_ATTR_TYPE, type),
+	__ADD(NEIGH_ATTR_PROBES, probes),
 };
 
 static char *neigh_attrs2str(int attrs, char *buf, size_t len)
@@ -728,14 +728,14 @@ int rtnl_neigh_delete(struct nl_sock *sk, struct rtnl_neigh *neigh,
  */
 
 static const struct trans_tbl neigh_states[] = {
-	__ADD(NUD_INCOMPLETE, incomplete)
-	__ADD(NUD_REACHABLE, reachable)
-	__ADD(NUD_STALE, stale)
-	__ADD(NUD_DELAY, delay)
-	__ADD(NUD_PROBE, probe)
-	__ADD(NUD_FAILED, failed)
-	__ADD(NUD_NOARP, norarp)
-	__ADD(NUD_PERMANENT, permanent)
+	__ADD(NUD_INCOMPLETE, incomplete),
+	__ADD(NUD_REACHABLE, reachable),
+	__ADD(NUD_STALE, stale),
+	__ADD(NUD_DELAY, delay),
+	__ADD(NUD_PROBE, probe),
+	__ADD(NUD_FAILED, failed),
+	__ADD(NUD_NOARP, norarp),
+	__ADD(NUD_PERMANENT, permanent),
 };
 
 char * rtnl_neigh_state2str(int state, char *buf, size_t len)
@@ -757,9 +757,9 @@ int rtnl_neigh_str2state(const char *name)
  */
 
 static const struct trans_tbl neigh_flags[] = {
-	__ADD(NTF_USE, use)
-	__ADD(NTF_PROXY, proxy)
-	__ADD(NTF_ROUTER, router)
+	__ADD(NTF_USE, use),
+	__ADD(NTF_PROXY, proxy),
+	__ADD(NTF_ROUTER, router),
 };
 
 char * rtnl_neigh_flags2str(int flags, char *buf, size_t len)

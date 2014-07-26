@@ -75,7 +75,7 @@ struct trans_tbl {
 	const char *a;
 };
 
-#define __ADD(id, name) { .i = id, .a = #name },
+#define __ADD(id, name) { .i = id, .a = #name }
 
 struct trans_list {
 	int i;

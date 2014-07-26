@@ -310,14 +310,14 @@ uint16_t rtnl_link_macvlan_get_flags(struct rtnl_link *link)
 /** @} */
 
 static const struct trans_tbl macvlan_flags[] = {
-	__ADD(MACVLAN_FLAG_NOPROMISC, nopromisc)
+	__ADD(MACVLAN_FLAG_NOPROMISC, nopromisc),
 };
 
 static const struct trans_tbl macvlan_modes[] = {
-	__ADD(MACVLAN_MODE_PRIVATE, private)
-	__ADD(MACVLAN_MODE_VEPA, vepa)
-	__ADD(MACVLAN_MODE_BRIDGE, bridge)
-	__ADD(MACVLAN_MODE_PASSTHRU, passthru)
+	__ADD(MACVLAN_MODE_PRIVATE, private),
+	__ADD(MACVLAN_MODE_VEPA, vepa),
+	__ADD(MACVLAN_MODE_BRIDGE, bridge),
+	__ADD(MACVLAN_MODE_PASSTHRU, passthru),
 };
 
 /**

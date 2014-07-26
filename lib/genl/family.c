@@ -96,10 +96,10 @@ static void family_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 }
 
 static const struct trans_tbl ops_flags[] = {
-	__ADD(GENL_ADMIN_PERM, admin_perm)
-	__ADD(GENL_CMD_CAP_DO, has_doit)
-	__ADD(GENL_CMD_CAP_DUMP, has_dump)
-	__ADD(GENL_CMD_CAP_HASPOL, has_policy)
+	__ADD(GENL_ADMIN_PERM, admin_perm),
+	__ADD(GENL_CMD_CAP_DO, has_doit),
+	__ADD(GENL_CMD_CAP_DUMP, has_dump),
+	__ADD(GENL_CMD_CAP_HASPOL, has_policy),
 };
 
 static char *ops_flags2str(int flags, char *buf, size_t len)

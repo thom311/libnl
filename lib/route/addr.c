@@ -461,17 +461,17 @@ static int addr_compare(struct nl_object *_a, struct nl_object *_b,
 }
 
 static const struct trans_tbl addr_attrs[] = {
-	__ADD(ADDR_ATTR_FAMILY, family)
-	__ADD(ADDR_ATTR_PREFIXLEN, prefixlen)
-	__ADD(ADDR_ATTR_FLAGS, flags)
-	__ADD(ADDR_ATTR_SCOPE, scope)
-	__ADD(ADDR_ATTR_IFINDEX, ifindex)
-	__ADD(ADDR_ATTR_LABEL, label)
-	__ADD(ADDR_ATTR_CACHEINFO, cacheinfo)
-	__ADD(ADDR_ATTR_PEER, peer)
-	__ADD(ADDR_ATTR_LOCAL, local)
-	__ADD(ADDR_ATTR_BROADCAST, broadcast)
-	__ADD(ADDR_ATTR_MULTICAST, multicast)
+	__ADD(ADDR_ATTR_FAMILY, family),
+	__ADD(ADDR_ATTR_PREFIXLEN, prefixlen),
+	__ADD(ADDR_ATTR_FLAGS, flags),
+	__ADD(ADDR_ATTR_SCOPE, scope),
+	__ADD(ADDR_ATTR_IFINDEX, ifindex),
+	__ADD(ADDR_ATTR_LABEL, label),
+	__ADD(ADDR_ATTR_CACHEINFO, cacheinfo),
+	__ADD(ADDR_ATTR_PEER, peer),
+	__ADD(ADDR_ATTR_LOCAL, local),
+	__ADD(ADDR_ATTR_BROADCAST, broadcast),
+	__ADD(ADDR_ATTR_MULTICAST, multicast),
 };
 
 static char *addr_attrs2str(int attrs, char *buf, size_t len)
@@ -1061,15 +1061,15 @@ uint32_t rtnl_addr_get_last_update_time(struct rtnl_addr *addr)
  */
 
 static const struct trans_tbl addr_flags[] = {
-	__ADD(IFA_F_SECONDARY, secondary)
-	__ADD(IFA_F_NODAD, nodad)
-	__ADD(IFA_F_OPTIMISTIC, optimistic)
-	__ADD(IFA_F_HOMEADDRESS, homeaddress)
-	__ADD(IFA_F_DEPRECATED, deprecated)
-	__ADD(IFA_F_TENTATIVE, tentative)
-	__ADD(IFA_F_PERMANENT, permanent)
-	__ADD(IFA_F_MANAGETEMPADDR, mngtmpaddr)
-	__ADD(IFA_F_NOPREFIXROUTE, noprefixroute)
+	__ADD(IFA_F_SECONDARY, secondary),
+	__ADD(IFA_F_NODAD, nodad),
+	__ADD(IFA_F_OPTIMISTIC, optimistic),
+	__ADD(IFA_F_HOMEADDRESS, homeaddress),
+	__ADD(IFA_F_DEPRECATED, deprecated),
+	__ADD(IFA_F_TENTATIVE, tentative),
+	__ADD(IFA_F_PERMANENT, permanent),
+	__ADD(IFA_F_MANAGETEMPADDR, mngtmpaddr),
+	__ADD(IFA_F_NOPREFIXROUTE, noprefixroute),
 };
 
 char *rtnl_addr_flags2str(int flags, char *buf, size_t size)

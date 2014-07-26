@@ -23,12 +23,12 @@
  */
 
 static const struct trans_tbl police_types[] = {
-	__ADD(TC_POLICE_UNSPEC,unspec)
-	__ADD(TC_POLICE_OK,ok)
-	__ADD(TC_POLICE_RECLASSIFY,reclassify)
-	__ADD(TC_POLICE_SHOT,shot)
+	__ADD(TC_POLICE_UNSPEC,unspec),
+	__ADD(TC_POLICE_OK,ok),
+	__ADD(TC_POLICE_RECLASSIFY,reclassify),
+	__ADD(TC_POLICE_SHOT,shot),
 #ifdef TC_POLICE_PIPE
-	__ADD(TC_POLICE_PIPE,pipe)
+	__ADD(TC_POLICE_PIPE,pipe),
 #endif
 };
 

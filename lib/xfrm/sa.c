@@ -299,33 +299,33 @@ static int xfrm_sa_compare(struct nl_object *_a, struct nl_object *_b, uint32_t 
  * @{
  */
 static const struct trans_tbl sa_attrs[] = {
-	__ADD(XFRM_SA_ATTR_SEL, selector)
-	__ADD(XFRM_SA_ATTR_DADDR, daddr)
-	__ADD(XFRM_SA_ATTR_SPI, spi)
-	__ADD(XFRM_SA_ATTR_PROTO, proto)
-	__ADD(XFRM_SA_ATTR_SADDR, saddr)
-	__ADD(XFRM_SA_ATTR_LTIME_CFG, lifetime_cfg)
-	__ADD(XFRM_SA_ATTR_LTIME_CUR, lifetime_cur)
-	__ADD(XFRM_SA_ATTR_STATS, stats)
-	__ADD(XFRM_SA_ATTR_SEQ, seqnum)
-	__ADD(XFRM_SA_ATTR_REQID, reqid)
-	__ADD(XFRM_SA_ATTR_FAMILY, family)
-	__ADD(XFRM_SA_ATTR_MODE, mode)
-	__ADD(XFRM_SA_ATTR_REPLAY_WIN, replay_window)
-	__ADD(XFRM_SA_ATTR_FLAGS, flags)
-	__ADD(XFRM_SA_ATTR_ALG_AEAD, alg_aead)
-	__ADD(XFRM_SA_ATTR_ALG_AUTH, alg_auth)
-	__ADD(XFRM_SA_ATTR_ALG_CRYPT, alg_crypto)
-	__ADD(XFRM_SA_ATTR_ALG_COMP, alg_comp)
-	__ADD(XFRM_SA_ATTR_ENCAP, encap)
-	__ADD(XFRM_SA_ATTR_TFCPAD, tfcpad)
-	__ADD(XFRM_SA_ATTR_COADDR, coaddr)
-	__ADD(XFRM_SA_ATTR_MARK, mark)
-	__ADD(XFRM_SA_ATTR_SECCTX, sec_ctx)
-	__ADD(XFRM_SA_ATTR_REPLAY_MAXAGE, replay_maxage)
-	__ADD(XFRM_SA_ATTR_REPLAY_MAXDIFF, replay_maxdiff)
-	__ADD(XFRM_SA_ATTR_REPLAY_STATE, replay_state)
-	__ADD(XFRM_SA_ATTR_EXPIRE, expire)
+	__ADD(XFRM_SA_ATTR_SEL, selector),
+	__ADD(XFRM_SA_ATTR_DADDR, daddr),
+	__ADD(XFRM_SA_ATTR_SPI, spi),
+	__ADD(XFRM_SA_ATTR_PROTO, proto),
+	__ADD(XFRM_SA_ATTR_SADDR, saddr),
+	__ADD(XFRM_SA_ATTR_LTIME_CFG, lifetime_cfg),
+	__ADD(XFRM_SA_ATTR_LTIME_CUR, lifetime_cur),
+	__ADD(XFRM_SA_ATTR_STATS, stats),
+	__ADD(XFRM_SA_ATTR_SEQ, seqnum),
+	__ADD(XFRM_SA_ATTR_REQID, reqid),
+	__ADD(XFRM_SA_ATTR_FAMILY, family),
+	__ADD(XFRM_SA_ATTR_MODE, mode),
+	__ADD(XFRM_SA_ATTR_REPLAY_WIN, replay_window),
+	__ADD(XFRM_SA_ATTR_FLAGS, flags),
+	__ADD(XFRM_SA_ATTR_ALG_AEAD, alg_aead),
+	__ADD(XFRM_SA_ATTR_ALG_AUTH, alg_auth),
+	__ADD(XFRM_SA_ATTR_ALG_CRYPT, alg_crypto),
+	__ADD(XFRM_SA_ATTR_ALG_COMP, alg_comp),
+	__ADD(XFRM_SA_ATTR_ENCAP, encap),
+	__ADD(XFRM_SA_ATTR_TFCPAD, tfcpad),
+	__ADD(XFRM_SA_ATTR_COADDR, coaddr),
+	__ADD(XFRM_SA_ATTR_MARK, mark),
+	__ADD(XFRM_SA_ATTR_SECCTX, sec_ctx),
+	__ADD(XFRM_SA_ATTR_REPLAY_MAXAGE, replay_maxage),
+	__ADD(XFRM_SA_ATTR_REPLAY_MAXDIFF, replay_maxdiff),
+	__ADD(XFRM_SA_ATTR_REPLAY_STATE, replay_state),
+	__ADD(XFRM_SA_ATTR_EXPIRE, expire),
 };
 
 static char* xfrm_sa_attrs2str(int attrs, char *buf, size_t len)
@@ -339,14 +339,14 @@ static char* xfrm_sa_attrs2str(int attrs, char *buf, size_t len)
  * @{
  */
 static const struct trans_tbl sa_flags[] = {
-	__ADD(XFRM_STATE_NOECN, no ecn)
-	__ADD(XFRM_STATE_DECAP_DSCP, decap dscp)
-	__ADD(XFRM_STATE_NOPMTUDISC, no pmtu discovery)
-	__ADD(XFRM_STATE_WILDRECV, wild receive)
-	__ADD(XFRM_STATE_ICMP, icmp)
-	__ADD(XFRM_STATE_AF_UNSPEC, unspecified)
-	__ADD(XFRM_STATE_ALIGN4, align4)
-	__ADD(XFRM_STATE_ESN, esn)
+	__ADD(XFRM_STATE_NOECN, no ecn),
+	__ADD(XFRM_STATE_DECAP_DSCP, decap dscp),
+	__ADD(XFRM_STATE_NOPMTUDISC, no pmtu discovery),
+	__ADD(XFRM_STATE_WILDRECV, wild receive),
+	__ADD(XFRM_STATE_ICMP, icmp),
+	__ADD(XFRM_STATE_AF_UNSPEC, unspecified),
+	__ADD(XFRM_STATE_ALIGN4, align4),
+	__ADD(XFRM_STATE_ESN, esn),
 };
 
 char* xfrmnl_sa_flags2str(int flags, char *buf, size_t len)
@@ -365,11 +365,11 @@ int xfrmnl_sa_str2flag(const char *name)
  * @{
  */
 static const struct trans_tbl sa_modes[] = {
-	__ADD(XFRM_MODE_TRANSPORT, transport)
-	__ADD(XFRM_MODE_TUNNEL, tunnel)
-	__ADD(XFRM_MODE_ROUTEOPTIMIZATION, route optimization)
-	__ADD(XFRM_MODE_IN_TRIGGER, in trigger)
-	__ADD(XFRM_MODE_BEET, beet)
+	__ADD(XFRM_MODE_TRANSPORT, transport),
+	__ADD(XFRM_MODE_TUNNEL, tunnel),
+	__ADD(XFRM_MODE_ROUTEOPTIMIZATION, route optimization),
+	__ADD(XFRM_MODE_IN_TRIGGER, in trigger),
+	__ADD(XFRM_MODE_BEET, beet),
 };
 
 char* xfrmnl_sa_mode2str(int mode, char *buf, size_t len)

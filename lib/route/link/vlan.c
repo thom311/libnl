@@ -603,7 +603,7 @@ struct vlan_map *rtnl_link_vlan_get_egress_map(struct rtnl_link *link,
 /** @} */
 
 static const struct trans_tbl vlan_flags[] = {
-	__ADD(VLAN_FLAG_REORDER_HDR, reorder_hdr)
+	__ADD(VLAN_FLAG_REORDER_HDR, reorder_hdr),
 };
 
 /**

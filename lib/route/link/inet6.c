@@ -208,11 +208,11 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 #define IF_READY	0x80000000
 
 static const struct trans_tbl inet6_flags[] = {
-	__ADD(IF_RA_OTHERCONF, ra_otherconf)
-	__ADD(IF_RA_MANAGED, ra_managed)
-	__ADD(IF_RA_RCVD, ra_rcvd)
-	__ADD(IF_RS_SENT, rs_sent)
-	__ADD(IF_READY, ready)
+	__ADD(IF_RA_OTHERCONF, ra_otherconf),
+	__ADD(IF_RA_MANAGED, ra_managed),
+	__ADD(IF_RA_RCVD, ra_rcvd),
+	__ADD(IF_RS_SENT, rs_sent),
+	__ADD(IF_READY, ready),
 };
 
 static char *inet6_flags2str(int flags, char *buf, size_t len)
@@ -222,35 +222,35 @@ static char *inet6_flags2str(int flags, char *buf, size_t len)
 }
 
 static const struct trans_tbl inet6_devconf[] = {
-	__ADD(DEVCONF_FORWARDING, forwarding)
-	__ADD(DEVCONF_HOPLIMIT, hoplimit)
-	__ADD(DEVCONF_MTU6, mtu6)
-	__ADD(DEVCONF_ACCEPT_RA, accept_ra)
-	__ADD(DEVCONF_ACCEPT_REDIRECTS, accept_redirects)
-	__ADD(DEVCONF_AUTOCONF, autoconf)
-	__ADD(DEVCONF_DAD_TRANSMITS, dad_transmits)
-	__ADD(DEVCONF_RTR_SOLICITS, rtr_solicits)
-	__ADD(DEVCONF_RTR_SOLICIT_INTERVAL, rtr_solicit_interval)
-	__ADD(DEVCONF_RTR_SOLICIT_DELAY, rtr_solicit_delay)
-	__ADD(DEVCONF_USE_TEMPADDR, use_tempaddr)
-	__ADD(DEVCONF_TEMP_VALID_LFT, temp_valid_lft)
-	__ADD(DEVCONF_TEMP_PREFERED_LFT, temp_prefered_lft)
-	__ADD(DEVCONF_REGEN_MAX_RETRY, regen_max_retry)
-	__ADD(DEVCONF_MAX_DESYNC_FACTOR, max_desync_factor)
-	__ADD(DEVCONF_MAX_ADDRESSES, max_addresses)
-	__ADD(DEVCONF_FORCE_MLD_VERSION, force_mld_version)
-	__ADD(DEVCONF_ACCEPT_RA_DEFRTR, accept_ra_defrtr)
-	__ADD(DEVCONF_ACCEPT_RA_PINFO, accept_ra_pinfo)
-	__ADD(DEVCONF_ACCEPT_RA_RTR_PREF, accept_ra_rtr_pref)
-	__ADD(DEVCONF_RTR_PROBE_INTERVAL, rtr_probe_interval)
-	__ADD(DEVCONF_ACCEPT_RA_RT_INFO_MAX_PLEN, accept_ra_rt_info)
-	__ADD(DEVCONF_PROXY_NDP, proxy_ndp)
-	__ADD(DEVCONF_OPTIMISTIC_DAD, optimistic_dad)
-	__ADD(DEVCONF_ACCEPT_SOURCE_ROUTE, accept_source_route)
-	__ADD(DEVCONF_MC_FORWARDING, mc_forwarding)
-	__ADD(DEVCONF_DISABLE_IPV6, disable_ipv6)
-	__ADD(DEVCONF_ACCEPT_DAD, accept_dad)
-	__ADD(DEVCONF_FORCE_TLLAO, force_tllao)
+	__ADD(DEVCONF_FORWARDING, forwarding),
+	__ADD(DEVCONF_HOPLIMIT, hoplimit),
+	__ADD(DEVCONF_MTU6, mtu6),
+	__ADD(DEVCONF_ACCEPT_RA, accept_ra),
+	__ADD(DEVCONF_ACCEPT_REDIRECTS, accept_redirects),
+	__ADD(DEVCONF_AUTOCONF, autoconf),
+	__ADD(DEVCONF_DAD_TRANSMITS, dad_transmits),
+	__ADD(DEVCONF_RTR_SOLICITS, rtr_solicits),
+	__ADD(DEVCONF_RTR_SOLICIT_INTERVAL, rtr_solicit_interval),
+	__ADD(DEVCONF_RTR_SOLICIT_DELAY, rtr_solicit_delay),
+	__ADD(DEVCONF_USE_TEMPADDR, use_tempaddr),
+	__ADD(DEVCONF_TEMP_VALID_LFT, temp_valid_lft),
+	__ADD(DEVCONF_TEMP_PREFERED_LFT, temp_prefered_lft),
+	__ADD(DEVCONF_REGEN_MAX_RETRY, regen_max_retry),
+	__ADD(DEVCONF_MAX_DESYNC_FACTOR, max_desync_factor),
+	__ADD(DEVCONF_MAX_ADDRESSES, max_addresses),
+	__ADD(DEVCONF_FORCE_MLD_VERSION, force_mld_version),
+	__ADD(DEVCONF_ACCEPT_RA_DEFRTR, accept_ra_defrtr),
+	__ADD(DEVCONF_ACCEPT_RA_PINFO, accept_ra_pinfo),
+	__ADD(DEVCONF_ACCEPT_RA_RTR_PREF, accept_ra_rtr_pref),
+	__ADD(DEVCONF_RTR_PROBE_INTERVAL, rtr_probe_interval),
+	__ADD(DEVCONF_ACCEPT_RA_RT_INFO_MAX_PLEN, accept_ra_rt_info),
+	__ADD(DEVCONF_PROXY_NDP, proxy_ndp),
+	__ADD(DEVCONF_OPTIMISTIC_DAD, optimistic_dad),
+	__ADD(DEVCONF_ACCEPT_SOURCE_ROUTE, accept_source_route),
+	__ADD(DEVCONF_MC_FORWARDING, mc_forwarding),
+	__ADD(DEVCONF_DISABLE_IPV6, disable_ipv6),
+	__ADD(DEVCONF_ACCEPT_DAD, accept_dad),
+	__ADD(DEVCONF_FORCE_TLLAO, force_tllao),
 };
 
 static char *inet6_devconf2str(int type, char *buf, size_t len)

@@ -140,19 +140,19 @@ int rtnl_route_str2proto(const char *name)
  */
 
 static const struct trans_tbl route_metrices[] = {
-	__ADD(RTAX_UNSPEC, unspec)
-	__ADD(RTAX_LOCK, lock)
-	__ADD(RTAX_MTU, mtu)
-	__ADD(RTAX_WINDOW, window)
-	__ADD(RTAX_RTT, rtt)
-	__ADD(RTAX_RTTVAR, rttvar)
-	__ADD(RTAX_SSTHRESH, ssthresh)
-	__ADD(RTAX_CWND, cwnd)
-	__ADD(RTAX_ADVMSS, advmss)
-	__ADD(RTAX_REORDERING, reordering)
-	__ADD(RTAX_HOPLIMIT, hoplimit)
-	__ADD(RTAX_INITCWND, initcwnd)
-	__ADD(RTAX_FEATURES, features)
+	__ADD(RTAX_UNSPEC, unspec),
+	__ADD(RTAX_LOCK, lock),
+	__ADD(RTAX_MTU, mtu),
+	__ADD(RTAX_WINDOW, window),
+	__ADD(RTAX_RTT, rtt),
+	__ADD(RTAX_RTTVAR, rttvar),
+	__ADD(RTAX_SSTHRESH, ssthresh),
+	__ADD(RTAX_CWND, cwnd),
+	__ADD(RTAX_ADVMSS, advmss),
+	__ADD(RTAX_REORDERING, reordering),
+	__ADD(RTAX_HOPLIMIT, hoplimit),
+	__ADD(RTAX_INITCWND, initcwnd),
+	__ADD(RTAX_FEATURES, features),
 };
 
 char *rtnl_route_metric2str(int metric, char *buf, size_t size)

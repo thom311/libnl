@@ -751,11 +751,11 @@ int rtnl_link_can_unset_ctrlmode(struct rtnl_link *link, uint32_t ctrlmode)
  */
 
 static const struct trans_tbl can_ctrlmode[] = {
-	__ADD(CAN_CTRLMODE_LOOPBACK, loopback)
-	__ADD(CAN_CTRLMODE_LISTENONLY, listen-only)
-	__ADD(CAN_CTRLMODE_3_SAMPLES, triple-sampling)
-	__ADD(CAN_CTRLMODE_ONE_SHOT, one-shot)
-	__ADD(CAN_CTRLMODE_BERR_REPORTING, berr-reporting)
+	__ADD(CAN_CTRLMODE_LOOPBACK, loopback),
+	__ADD(CAN_CTRLMODE_LISTENONLY, listen-only),
+	__ADD(CAN_CTRLMODE_3_SAMPLES, triple-sampling),
+	__ADD(CAN_CTRLMODE_ONE_SHOT, one-shot),
+	__ADD(CAN_CTRLMODE_BERR_REPORTING, berr-reporting),
 };
 
 char *rtnl_link_can_ctrlmode2str(int ctrlmode, char *buf, size_t len)

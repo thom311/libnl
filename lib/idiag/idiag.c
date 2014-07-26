@@ -82,19 +82,19 @@ int idiagnl_send_simple(struct nl_sock *sk, int flags, uint8_t family,
  */
 
 static const struct trans_tbl idiag_states[] = {
-	__ADD(IDIAG_SS_UNKNOWN, unknown)
-	__ADD(IDIAG_SS_ESTABLISHED, established)
-	__ADD(IDIAG_SS_SYN_SENT, syn_sent)
-	__ADD(IDIAG_SS_SYN_RECV, syn_recv)
-	__ADD(IDIAG_SS_FIN_WAIT1, fin_wait)
-	__ADD(IDIAG_SS_FIN_WAIT2, fin_wait2)
-	__ADD(IDIAG_SS_TIME_WAIT, time_wait)
-	__ADD(IDIAG_SS_CLOSE, close)
-	__ADD(IDIAG_SS_CLOSE_WAIT, close_wait)
-	__ADD(IDIAG_SS_LAST_ACK, last_ack)
-	__ADD(IDIAG_SS_LISTEN, listen)
-	__ADD(IDIAG_SS_CLOSING, closing)
-	__ADD(IDIAG_SS_MAX, max)
+	__ADD(IDIAG_SS_UNKNOWN, unknown),
+	__ADD(IDIAG_SS_ESTABLISHED, established),
+	__ADD(IDIAG_SS_SYN_SENT, syn_sent),
+	__ADD(IDIAG_SS_SYN_RECV, syn_recv),
+	__ADD(IDIAG_SS_FIN_WAIT1, fin_wait),
+	__ADD(IDIAG_SS_FIN_WAIT2, fin_wait2),
+	__ADD(IDIAG_SS_TIME_WAIT, time_wait),
+	__ADD(IDIAG_SS_CLOSE, close),
+	__ADD(IDIAG_SS_CLOSE_WAIT, close_wait),
+	__ADD(IDIAG_SS_LAST_ACK, last_ack),
+	__ADD(IDIAG_SS_LISTEN, listen),
+	__ADD(IDIAG_SS_CLOSING, closing),
+	__ADD(IDIAG_SS_MAX, max),
 	{ ((1<<IDIAG_SS_MAX)-1), "all" }
 };
 
@@ -126,12 +126,12 @@ int idiagnl_str2state(const char *name)
 }
 
 static const struct trans_tbl idiag_timers[] = {
-	__ADD(IDIAG_TIMER_OFF, off)
-	__ADD(IDIAG_TIMER_ON, on)
-	__ADD(IDIAG_TIMER_KEEPALIVE, keepalive)
-	__ADD(IDIAG_TIMER_TIMEWAIT, timewait)
-	__ADD(IDIAG_TIMER_PERSIST, persist)
-	__ADD(IDIAG_TIMER_UNKNOWN, unknown)
+	__ADD(IDIAG_TIMER_OFF, off),
+	__ADD(IDIAG_TIMER_ON, on),
+	__ADD(IDIAG_TIMER_KEEPALIVE, keepalive),
+	__ADD(IDIAG_TIMER_TIMEWAIT, timewait),
+	__ADD(IDIAG_TIMER_PERSIST, persist),
+	__ADD(IDIAG_TIMER_UNKNOWN, unknown),
 };
 
 /**
@@ -160,13 +160,13 @@ int idiagnl_str2timer(const char *name)
 }
 
 static const struct trans_tbl idiag_attrs[] = {
-	__ADD(IDIAG_ATTR_NONE, none)
-	__ADD(IDIAG_ATTR_MEMINFO, meminfo)
-	__ADD(IDIAG_ATTR_INFO, info)
-	__ADD(IDIAG_ATTR_VEGASINFO, vegasinfo)
-	__ADD(IDIAG_ATTR_CONG, congestion)
-	__ADD(IDIAG_ATTR_TOS, tos)
-	__ADD(IDIAG_ATTR_TCLASS, tclass)
+	__ADD(IDIAG_ATTR_NONE, none),
+	__ADD(IDIAG_ATTR_MEMINFO, meminfo),
+	__ADD(IDIAG_ATTR_INFO, info),
+	__ADD(IDIAG_ATTR_VEGASINFO, vegasinfo),
+	__ADD(IDIAG_ATTR_CONG, congestion),
+	__ADD(IDIAG_ATTR_TOS, tos),
+	__ADD(IDIAG_ATTR_TCLASS, tclass),
 };
 
 /**
@@ -183,11 +183,11 @@ char *idiagnl_attrs2str(int attrs, char *buf, size_t len)
 }
 
 static const struct trans_tbl idiagnl_tcpstates[] = {
-	__ADD(TCP_CA_Open, open)
-	__ADD(TCP_CA_Disorder, disorder)
-	__ADD(TCP_CA_CWR, cwr)
-	__ADD(TCP_CA_Recovery, recovery)
-	__ADD(TCP_CA_Loss, loss)
+	__ADD(TCP_CA_Open, open),
+	__ADD(TCP_CA_Disorder, disorder),
+	__ADD(TCP_CA_CWR, cwr),
+	__ADD(TCP_CA_Recovery, recovery),
+	__ADD(TCP_CA_Loss, loss),
 };
 
 /**
@@ -203,10 +203,10 @@ char *idiagnl_tcpstate2str(uint8_t state, char *buf, size_t len)
 }
 
 static const struct trans_tbl idiagnl_tcpopt_attrs[] = {
-	__ADD(TCPI_OPT_TIMESTAMPS, timestamps)
-	__ADD(TCPI_OPT_SACK, sACK)
-	__ADD(TCPI_OPT_WSCALE, wscale)
-	__ADD(TCPI_OPT_ECN, ecn)
+	__ADD(TCPI_OPT_TIMESTAMPS, timestamps),
+	__ADD(TCPI_OPT_SACK, sACK),
+	__ADD(TCPI_OPT_WSCALE, wscale),
+	__ADD(TCPI_OPT_ECN, ecn),
 };
 
 /**
@@ -249,13 +249,13 @@ char * idiagnl_shutdown2str(uint8_t shutdown, char *buf, size_t len)
 }
 
 static const struct trans_tbl idiag_exts[] = {
-	__ADD(IDIAG_ATTR_NONE, none)
-	__ADD(IDIAG_ATTR_MEMINFO, meminfo)
-	__ADD(IDIAG_ATTR_INFO, info)
-	__ADD(IDIAG_ATTR_VEGASINFO, vegasinfo)
-	__ADD(IDIAG_ATTR_CONG, congestion)
-	__ADD(IDIAG_ATTR_TOS, tos)
-	__ADD(IDIAG_ATTR_TCLASS, tclass)
+	__ADD(IDIAG_ATTR_NONE, none),
+	__ADD(IDIAG_ATTR_MEMINFO, meminfo),
+	__ADD(IDIAG_ATTR_INFO, info),
+	__ADD(IDIAG_ATTR_VEGASINFO, vegasinfo),
+	__ADD(IDIAG_ATTR_CONG, congestion),
+	__ADD(IDIAG_ATTR_TOS, tos),
+	__ADD(IDIAG_ATTR_TCLASS, tclass),
 };
 
 /**

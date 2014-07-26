@@ -1003,65 +1003,65 @@ prefix:
  */
 
 static const struct trans_tbl afs[] = {
-	__ADD(AF_UNSPEC,unspec)
-	__ADD(AF_UNIX,unix)
-	__ADD(AF_INET,inet)
-	__ADD(AF_AX25,ax25)
-	__ADD(AF_IPX,ipx)
-	__ADD(AF_APPLETALK,appletalk)
-	__ADD(AF_NETROM,netrom)
-	__ADD(AF_BRIDGE,bridge)
-	__ADD(AF_ATMPVC,atmpvc)
-	__ADD(AF_X25,x25)
-	__ADD(AF_INET6,inet6)
-	__ADD(AF_ROSE,rose)
-	__ADD(AF_DECnet,decnet)
-	__ADD(AF_NETBEUI,netbeui)
-	__ADD(AF_SECURITY,security)
-	__ADD(AF_KEY,key)
-	__ADD(AF_NETLINK,netlink)
-	__ADD(AF_PACKET,packet)
-	__ADD(AF_ASH,ash)
-	__ADD(AF_ECONET,econet)
-	__ADD(AF_ATMSVC,atmsvc)
+	__ADD(AF_UNSPEC,unspec),
+	__ADD(AF_UNIX,unix),
+	__ADD(AF_INET,inet),
+	__ADD(AF_AX25,ax25),
+	__ADD(AF_IPX,ipx),
+	__ADD(AF_APPLETALK,appletalk),
+	__ADD(AF_NETROM,netrom),
+	__ADD(AF_BRIDGE,bridge),
+	__ADD(AF_ATMPVC,atmpvc),
+	__ADD(AF_X25,x25),
+	__ADD(AF_INET6,inet6),
+	__ADD(AF_ROSE,rose),
+	__ADD(AF_DECnet,decnet),
+	__ADD(AF_NETBEUI,netbeui),
+	__ADD(AF_SECURITY,security),
+	__ADD(AF_KEY,key),
+	__ADD(AF_NETLINK,netlink),
+	__ADD(AF_PACKET,packet),
+	__ADD(AF_ASH,ash),
+	__ADD(AF_ECONET,econet),
+	__ADD(AF_ATMSVC,atmsvc),
 #ifdef AF_RDS
-	__ADD(AF_RDS,rds)
+	__ADD(AF_RDS,rds),
 #endif
-	__ADD(AF_SNA,sna)
-	__ADD(AF_IRDA,irda)
-	__ADD(AF_PPPOX,pppox)
-	__ADD(AF_WANPIPE,wanpipe)
-	__ADD(AF_LLC,llc)
+	__ADD(AF_SNA,sna),
+	__ADD(AF_IRDA,irda),
+	__ADD(AF_PPPOX,pppox),
+	__ADD(AF_WANPIPE,wanpipe),
+	__ADD(AF_LLC,llc),
 #ifdef AF_CAN
-	__ADD(AF_CAN,can)
+	__ADD(AF_CAN,can),
 #endif
 #ifdef AF_TIPC
-	__ADD(AF_TIPC,tipc)
+	__ADD(AF_TIPC,tipc),
 #endif
-	__ADD(AF_BLUETOOTH,bluetooth)
+	__ADD(AF_BLUETOOTH,bluetooth),
 #ifdef AF_IUCV
-	__ADD(AF_IUCV,iucv)
+	__ADD(AF_IUCV,iucv),
 #endif
 #ifdef AF_RXRPC
-	__ADD(AF_RXRPC,rxrpc)
+	__ADD(AF_RXRPC,rxrpc),
 #endif
 #ifdef AF_ISDN
-	__ADD(AF_ISDN,isdn)
+	__ADD(AF_ISDN,isdn),
 #endif
 #ifdef AF_PHONET
-	__ADD(AF_PHONET,phonet)
+	__ADD(AF_PHONET,phonet),
 #endif
 #ifdef AF_IEEE802154
-	__ADD(AF_IEEE802154,ieee802154)
+	__ADD(AF_IEEE802154,ieee802154),
 #endif
 #ifdef AF_CAIF
-	__ADD(AF_CAIF,caif)
+	__ADD(AF_CAIF,caif),
 #endif
 #ifdef AF_ALG
-	__ADD(AF_ALG,alg)
+	__ADD(AF_ALG,alg),
 #endif
 #ifdef AF_NFC
-	__ADD(AF_NFC,nfc)
+	__ADD(AF_NFC,nfc),
 #endif
 };
 

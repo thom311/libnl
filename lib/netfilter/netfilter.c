@@ -14,12 +14,12 @@
 #include <linux/netfilter.h>
 
 static const struct trans_tbl nfnl_verdicts[] = {
-	__ADD(NF_DROP,		NF_DROP)
-	__ADD(NF_ACCEPT,	NF_ACCEPT)
-	__ADD(NF_STOLEN,	NF_STOLEN)
-	__ADD(NF_QUEUE,		NF_QUEUE)
-	__ADD(NF_REPEAT,	NF_REPEAT)
-	__ADD(NF_STOP,		NF_STOP)
+	__ADD(NF_DROP,		NF_DROP),
+	__ADD(NF_ACCEPT,	NF_ACCEPT),
+	__ADD(NF_STOLEN,	NF_STOLEN),
+	__ADD(NF_QUEUE,		NF_QUEUE),
+	__ADD(NF_REPEAT,	NF_REPEAT),
+	__ADD(NF_STOP,		NF_STOP),
 };
 
 char *nfnl_verdict2str(unsigned int verdict, char *buf, size_t len)
@@ -34,11 +34,11 @@ unsigned int nfnl_str2verdict(const char *name)
 }
 
 static const struct trans_tbl nfnl_inet_hooks[] = {
-	__ADD(NF_INET_PRE_ROUTING,	NF_INET_PREROUTING)
-	__ADD(NF_INET_LOCAL_IN,		NF_INET_LOCAL_IN)
-	__ADD(NF_INET_FORWARD,		NF_INET_FORWARD)
-	__ADD(NF_INET_LOCAL_OUT,	NF_INET_LOCAL_OUT)
-	__ADD(NF_INET_POST_ROUTING,	NF_INET_POST_ROUTING)
+	__ADD(NF_INET_PRE_ROUTING,	NF_INET_PREROUTING),
+	__ADD(NF_INET_LOCAL_IN,		NF_INET_LOCAL_IN),
+	__ADD(NF_INET_FORWARD,		NF_INET_FORWARD),
+	__ADD(NF_INET_LOCAL_OUT,	NF_INET_LOCAL_OUT),
+	__ADD(NF_INET_POST_ROUTING,	NF_INET_POST_ROUTING),
 };
 
 char *nfnl_inet_hook2str(unsigned int hook, char *buf, size_t len)

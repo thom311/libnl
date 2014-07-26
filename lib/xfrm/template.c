@@ -107,11 +107,11 @@ struct xfrmnl_user_tmpl* xfrmnl_user_tmpl_clone(struct xfrmnl_user_tmpl* utmpl)
  * @{
  */
 static const struct trans_tbl tmpl_modes[] = {
-	__ADD(XFRM_MODE_TRANSPORT, transport)
-	__ADD(XFRM_MODE_TUNNEL, tunnel)
-	__ADD(XFRM_MODE_ROUTEOPTIMIZATION, route optimization)
-	__ADD(XFRM_MODE_IN_TRIGGER, in trigger)
-	__ADD(XFRM_MODE_BEET, beet)
+	__ADD(XFRM_MODE_TRANSPORT, transport),
+	__ADD(XFRM_MODE_TUNNEL, tunnel),
+	__ADD(XFRM_MODE_ROUTEOPTIMIZATION, route optimization),
+	__ADD(XFRM_MODE_IN_TRIGGER, in trigger),
+	__ADD(XFRM_MODE_BEET, beet),
 };
 
 char* xfrmnl_user_tmpl_mode2str(int mode, char *buf, size_t len)

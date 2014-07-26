@@ -28,11 +28,11 @@
  */
 
 static const struct trans_tbl ovl_strategies[] = {
-	__ADD(TC_CBQ_OVL_CLASSIC,classic)
-	__ADD(TC_CBQ_OVL_DELAY,delay)
-	__ADD(TC_CBQ_OVL_LOWPRIO,lowprio)
-	__ADD(TC_CBQ_OVL_DROP,drop)
-	__ADD(TC_CBQ_OVL_RCLASSIC,rclassic)
+	__ADD(TC_CBQ_OVL_CLASSIC,classic),
+	__ADD(TC_CBQ_OVL_DELAY,delay),
+	__ADD(TC_CBQ_OVL_LOWPRIO,lowprio),
+	__ADD(TC_CBQ_OVL_DROP,drop),
+	__ADD(TC_CBQ_OVL_RCLASSIC,rclassic),
 };
 
 /**

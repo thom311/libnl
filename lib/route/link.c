@@ -951,32 +951,32 @@ protinfo_mismatch:
 }
 
 static const struct trans_tbl link_attrs[] = {
-	__ADD(LINK_ATTR_MTU, mtu)
-	__ADD(LINK_ATTR_LINK, link)
-	__ADD(LINK_ATTR_TXQLEN, txqlen)
-	__ADD(LINK_ATTR_WEIGHT, weight)
-	__ADD(LINK_ATTR_MASTER, master)
-	__ADD(LINK_ATTR_QDISC, qdisc)
-	__ADD(LINK_ATTR_MAP, map)
-	__ADD(LINK_ATTR_ADDR, address)
-	__ADD(LINK_ATTR_BRD, broadcast)
-	__ADD(LINK_ATTR_FLAGS, flags)
-	__ADD(LINK_ATTR_IFNAME, name)
-	__ADD(LINK_ATTR_IFINDEX, ifindex)
-	__ADD(LINK_ATTR_FAMILY, family)
-	__ADD(LINK_ATTR_ARPTYPE, arptype)
-	__ADD(LINK_ATTR_STATS, stats)
-	__ADD(LINK_ATTR_CHANGE, change)
-	__ADD(LINK_ATTR_OPERSTATE, operstate)
-	__ADD(LINK_ATTR_LINKMODE, linkmode)
-	__ADD(LINK_ATTR_IFALIAS, ifalias)
-	__ADD(LINK_ATTR_NUM_VF, num_vf)
-	__ADD(LINK_ATTR_PROMISCUITY, promiscuity)
-	__ADD(LINK_ATTR_NUM_TX_QUEUES, num_tx_queues)
-	__ADD(LINK_ATTR_NUM_RX_QUEUES, num_rx_queues)
-	__ADD(LINK_ATTR_GROUP, group)
-	__ADD(LINK_ATTR_CARRIER, carrier)
-	__ADD(LINK_ATTR_PHYS_PORT_ID, phys_port_id)
+	__ADD(LINK_ATTR_MTU, mtu),
+	__ADD(LINK_ATTR_LINK, link),
+	__ADD(LINK_ATTR_TXQLEN, txqlen),
+	__ADD(LINK_ATTR_WEIGHT, weight),
+	__ADD(LINK_ATTR_MASTER, master),
+	__ADD(LINK_ATTR_QDISC, qdisc),
+	__ADD(LINK_ATTR_MAP, map),
+	__ADD(LINK_ATTR_ADDR, address),
+	__ADD(LINK_ATTR_BRD, broadcast),
+	__ADD(LINK_ATTR_FLAGS, flags),
+	__ADD(LINK_ATTR_IFNAME, name),
+	__ADD(LINK_ATTR_IFINDEX, ifindex),
+	__ADD(LINK_ATTR_FAMILY, family),
+	__ADD(LINK_ATTR_ARPTYPE, arptype),
+	__ADD(LINK_ATTR_STATS, stats),
+	__ADD(LINK_ATTR_CHANGE, change),
+	__ADD(LINK_ATTR_OPERSTATE, operstate),
+	__ADD(LINK_ATTR_LINKMODE, linkmode),
+	__ADD(LINK_ATTR_IFALIAS, ifalias),
+	__ADD(LINK_ATTR_NUM_VF, num_vf),
+	__ADD(LINK_ATTR_PROMISCUITY, promiscuity),
+	__ADD(LINK_ATTR_NUM_TX_QUEUES, num_tx_queues),
+	__ADD(LINK_ATTR_NUM_RX_QUEUES, num_rx_queues),
+	__ADD(LINK_ATTR_GROUP, group),
+	__ADD(LINK_ATTR_CARRIER, carrier),
+	__ADD(LINK_ATTR_PHYS_PORT_ID, phys_port_id),
 };
 
 static char *link_attrs2str(int attrs, char *buf, size_t len)
@@ -2511,25 +2511,25 @@ int rtnl_link_release(struct nl_sock *sock, struct rtnl_link *slave)
  */
 
 static const struct trans_tbl link_flags[] = {
-	__ADD(IFF_LOOPBACK, loopback)
-	__ADD(IFF_BROADCAST, broadcast)
-	__ADD(IFF_POINTOPOINT, pointopoint)
-	__ADD(IFF_MULTICAST, multicast)
-	__ADD(IFF_NOARP, noarp)
-	__ADD(IFF_ALLMULTI, allmulti)
-	__ADD(IFF_PROMISC, promisc)
-	__ADD(IFF_MASTER, master)
-	__ADD(IFF_SLAVE, slave)
-	__ADD(IFF_DEBUG, debug)
-	__ADD(IFF_DYNAMIC, dynamic)
-	__ADD(IFF_AUTOMEDIA, automedia)
-	__ADD(IFF_PORTSEL, portsel)
-	__ADD(IFF_NOTRAILERS, notrailers)
-	__ADD(IFF_UP, up)
-	__ADD(IFF_RUNNING, running)
-	__ADD(IFF_LOWER_UP, lowerup)
-	__ADD(IFF_DORMANT, dormant)
-	__ADD(IFF_ECHO, echo)
+	__ADD(IFF_LOOPBACK, loopback),
+	__ADD(IFF_BROADCAST, broadcast),
+	__ADD(IFF_POINTOPOINT, pointopoint),
+	__ADD(IFF_MULTICAST, multicast),
+	__ADD(IFF_NOARP, noarp),
+	__ADD(IFF_ALLMULTI, allmulti),
+	__ADD(IFF_PROMISC, promisc),
+	__ADD(IFF_MASTER, master),
+	__ADD(IFF_SLAVE, slave),
+	__ADD(IFF_DEBUG, debug),
+	__ADD(IFF_DYNAMIC, dynamic),
+	__ADD(IFF_AUTOMEDIA, automedia),
+	__ADD(IFF_PORTSEL, portsel),
+	__ADD(IFF_NOTRAILERS, notrailers),
+	__ADD(IFF_UP, up),
+	__ADD(IFF_RUNNING, running),
+	__ADD(IFF_LOWER_UP, lowerup),
+	__ADD(IFF_DORMANT, dormant),
+	__ADD(IFF_ECHO, echo),
 };
 
 char *rtnl_link_flags2str(int flags, char *buf, size_t len)
@@ -2544,69 +2544,69 @@ int rtnl_link_str2flags(const char *name)
 }
 
 static const struct trans_tbl link_stats[] = {
-	__ADD(RTNL_LINK_RX_PACKETS, rx_packets)
-	__ADD(RTNL_LINK_TX_PACKETS, tx_packets)
-	__ADD(RTNL_LINK_RX_BYTES, rx_bytes)
-	__ADD(RTNL_LINK_TX_BYTES, tx_bytes)
-	__ADD(RTNL_LINK_RX_ERRORS, rx_errors)
-	__ADD(RTNL_LINK_TX_ERRORS, tx_errors)
-	__ADD(RTNL_LINK_RX_DROPPED, rx_dropped)
-	__ADD(RTNL_LINK_TX_DROPPED, tx_dropped)
-	__ADD(RTNL_LINK_RX_COMPRESSED, rx_compressed)
-	__ADD(RTNL_LINK_TX_COMPRESSED, tx_compressed)
-	__ADD(RTNL_LINK_RX_FIFO_ERR, rx_fifo_err)
-	__ADD(RTNL_LINK_TX_FIFO_ERR, tx_fifo_err)
-	__ADD(RTNL_LINK_RX_LEN_ERR, rx_len_err)
-	__ADD(RTNL_LINK_RX_OVER_ERR, rx_over_err)
-	__ADD(RTNL_LINK_RX_CRC_ERR, rx_crc_err)
-	__ADD(RTNL_LINK_RX_FRAME_ERR, rx_frame_err)
-	__ADD(RTNL_LINK_RX_MISSED_ERR, rx_missed_err)
-	__ADD(RTNL_LINK_TX_ABORT_ERR, tx_abort_err)
-	__ADD(RTNL_LINK_TX_CARRIER_ERR, tx_carrier_err)
-	__ADD(RTNL_LINK_TX_HBEAT_ERR, tx_hbeat_err)
-	__ADD(RTNL_LINK_TX_WIN_ERR, tx_win_err)
-	__ADD(RTNL_LINK_COLLISIONS, collisions)
-	__ADD(RTNL_LINK_MULTICAST, multicast)
-	__ADD(RTNL_LINK_IP6_INPKTS, Ip6InReceives)
-	__ADD(RTNL_LINK_IP6_INHDRERRORS, Ip6InHdrErrors)
-	__ADD(RTNL_LINK_IP6_INTOOBIGERRORS, Ip6InTooBigErrors)
-	__ADD(RTNL_LINK_IP6_INNOROUTES, Ip6InNoRoutes)
-	__ADD(RTNL_LINK_IP6_INADDRERRORS, Ip6InAddrErrors)
-	__ADD(RTNL_LINK_IP6_INUNKNOWNPROTOS, Ip6InUnknownProtos)
-	__ADD(RTNL_LINK_IP6_INTRUNCATEDPKTS, Ip6InTruncatedPkts)
-	__ADD(RTNL_LINK_IP6_INDISCARDS, Ip6InDiscards)
-	__ADD(RTNL_LINK_IP6_INDELIVERS, Ip6InDelivers)
-	__ADD(RTNL_LINK_IP6_OUTFORWDATAGRAMS, Ip6OutForwDatagrams)
-	__ADD(RTNL_LINK_IP6_OUTPKTS, Ip6OutRequests)
-	__ADD(RTNL_LINK_IP6_OUTDISCARDS, Ip6OutDiscards)
-	__ADD(RTNL_LINK_IP6_OUTNOROUTES, Ip6OutNoRoutes)
-	__ADD(RTNL_LINK_IP6_REASMTIMEOUT, Ip6ReasmTimeout)
-	__ADD(RTNL_LINK_IP6_REASMREQDS, Ip6ReasmReqds)
-	__ADD(RTNL_LINK_IP6_REASMOKS, Ip6ReasmOKs)
-	__ADD(RTNL_LINK_IP6_REASMFAILS, Ip6ReasmFails)
-	__ADD(RTNL_LINK_IP6_FRAGOKS, Ip6FragOKs)
-	__ADD(RTNL_LINK_IP6_FRAGFAILS, Ip6FragFails)
-	__ADD(RTNL_LINK_IP6_FRAGCREATES, Ip6FragCreates)
-	__ADD(RTNL_LINK_IP6_INMCASTPKTS, Ip6InMcastPkts)
-	__ADD(RTNL_LINK_IP6_OUTMCASTPKTS, Ip6OutMcastPkts)
-	__ADD(RTNL_LINK_IP6_INBCASTPKTS, Ip6InBcastPkts)
-	__ADD(RTNL_LINK_IP6_OUTBCASTPKTS, Ip6OutBcastPkts)
-	__ADD(RTNL_LINK_IP6_INOCTETS, Ip6InOctets)
-	__ADD(RTNL_LINK_IP6_OUTOCTETS, Ip6OutOctets)
-	__ADD(RTNL_LINK_IP6_INMCASTOCTETS, Ip6InMcastOctets)
-	__ADD(RTNL_LINK_IP6_OUTMCASTOCTETS, Ip6OutMcastOctets)
-	__ADD(RTNL_LINK_IP6_INBCASTOCTETS, Ip6InBcastOctets)
-	__ADD(RTNL_LINK_IP6_OUTBCASTOCTETS, Ip6OutBcastOctets)
-	__ADD(RTNL_LINK_ICMP6_INMSGS, ICMP6_InMsgs)
-	__ADD(RTNL_LINK_ICMP6_INERRORS, ICMP6_InErrors)
-	__ADD(RTNL_LINK_ICMP6_OUTMSGS, ICMP6_OutMsgs)
-	__ADD(RTNL_LINK_ICMP6_OUTERRORS, ICMP6_OutErrors)
-	__ADD(RTNL_LINK_ICMP6_CSUMERRORS, ICMP6_InCsumErrors)
-	__ADD(RTNL_LINK_IP6_CSUMERRORS, Ip6_InCsumErrors)
-	__ADD(RTNL_LINK_IP6_NOECTPKTS, Ip6_InNoECTPkts)
-	__ADD(RTNL_LINK_IP6_ECT1PKTS, Ip6_InECT1Pkts)
-	__ADD(RTNL_LINK_IP6_ECT0PKTS, Ip6_InECT0Pkts)
-	__ADD(RTNL_LINK_IP6_CEPKTS, Ip6_InCEPkts)
+	__ADD(RTNL_LINK_RX_PACKETS, rx_packets),
+	__ADD(RTNL_LINK_TX_PACKETS, tx_packets),
+	__ADD(RTNL_LINK_RX_BYTES, rx_bytes),
+	__ADD(RTNL_LINK_TX_BYTES, tx_bytes),
+	__ADD(RTNL_LINK_RX_ERRORS, rx_errors),
+	__ADD(RTNL_LINK_TX_ERRORS, tx_errors),
+	__ADD(RTNL_LINK_RX_DROPPED, rx_dropped),
+	__ADD(RTNL_LINK_TX_DROPPED, tx_dropped),
+	__ADD(RTNL_LINK_RX_COMPRESSED, rx_compressed),
+	__ADD(RTNL_LINK_TX_COMPRESSED, tx_compressed),
+	__ADD(RTNL_LINK_RX_FIFO_ERR, rx_fifo_err),
+	__ADD(RTNL_LINK_TX_FIFO_ERR, tx_fifo_err),
+	__ADD(RTNL_LINK_RX_LEN_ERR, rx_len_err),
+	__ADD(RTNL_LINK_RX_OVER_ERR, rx_over_err),
+	__ADD(RTNL_LINK_RX_CRC_ERR, rx_crc_err),
+	__ADD(RTNL_LINK_RX_FRAME_ERR, rx_frame_err),
+	__ADD(RTNL_LINK_RX_MISSED_ERR, rx_missed_err),
+	__ADD(RTNL_LINK_TX_ABORT_ERR, tx_abort_err),
+	__ADD(RTNL_LINK_TX_CARRIER_ERR, tx_carrier_err),
+	__ADD(RTNL_LINK_TX_HBEAT_ERR, tx_hbeat_err),
+	__ADD(RTNL_LINK_TX_WIN_ERR, tx_win_err),
+	__ADD(RTNL_LINK_COLLISIONS, collisions),
+	__ADD(RTNL_LINK_MULTICAST, multicast),
+	__ADD(RTNL_LINK_IP6_INPKTS, Ip6InReceives),
+	__ADD(RTNL_LINK_IP6_INHDRERRORS, Ip6InHdrErrors),
+	__ADD(RTNL_LINK_IP6_INTOOBIGERRORS, Ip6InTooBigErrors),
+	__ADD(RTNL_LINK_IP6_INNOROUTES, Ip6InNoRoutes),
+	__ADD(RTNL_LINK_IP6_INADDRERRORS, Ip6InAddrErrors),
+	__ADD(RTNL_LINK_IP6_INUNKNOWNPROTOS, Ip6InUnknownProtos),
+	__ADD(RTNL_LINK_IP6_INTRUNCATEDPKTS, Ip6InTruncatedPkts),
+	__ADD(RTNL_LINK_IP6_INDISCARDS, Ip6InDiscards),
+	__ADD(RTNL_LINK_IP6_INDELIVERS, Ip6InDelivers),
+	__ADD(RTNL_LINK_IP6_OUTFORWDATAGRAMS, Ip6OutForwDatagrams),
+	__ADD(RTNL_LINK_IP6_OUTPKTS, Ip6OutRequests),
+	__ADD(RTNL_LINK_IP6_OUTDISCARDS, Ip6OutDiscards),
+	__ADD(RTNL_LINK_IP6_OUTNOROUTES, Ip6OutNoRoutes),
+	__ADD(RTNL_LINK_IP6_REASMTIMEOUT, Ip6ReasmTimeout),
+	__ADD(RTNL_LINK_IP6_REASMREQDS, Ip6ReasmReqds),
+	__ADD(RTNL_LINK_IP6_REASMOKS, Ip6ReasmOKs),
+	__ADD(RTNL_LINK_IP6_REASMFAILS, Ip6ReasmFails),
+	__ADD(RTNL_LINK_IP6_FRAGOKS, Ip6FragOKs),
+	__ADD(RTNL_LINK_IP6_FRAGFAILS, Ip6FragFails),
+	__ADD(RTNL_LINK_IP6_FRAGCREATES, Ip6FragCreates),
+	__ADD(RTNL_LINK_IP6_INMCASTPKTS, Ip6InMcastPkts),
+	__ADD(RTNL_LINK_IP6_OUTMCASTPKTS, Ip6OutMcastPkts),
+	__ADD(RTNL_LINK_IP6_INBCASTPKTS, Ip6InBcastPkts),
+	__ADD(RTNL_LINK_IP6_OUTBCASTPKTS, Ip6OutBcastPkts),
+	__ADD(RTNL_LINK_IP6_INOCTETS, Ip6InOctets),
+	__ADD(RTNL_LINK_IP6_OUTOCTETS, Ip6OutOctets),
+	__ADD(RTNL_LINK_IP6_INMCASTOCTETS, Ip6InMcastOctets),
+	__ADD(RTNL_LINK_IP6_OUTMCASTOCTETS, Ip6OutMcastOctets),
+	__ADD(RTNL_LINK_IP6_INBCASTOCTETS, Ip6InBcastOctets),
+	__ADD(RTNL_LINK_IP6_OUTBCASTOCTETS, Ip6OutBcastOctets),
+	__ADD(RTNL_LINK_ICMP6_INMSGS, ICMP6_InMsgs),
+	__ADD(RTNL_LINK_ICMP6_INERRORS, ICMP6_InErrors),
+	__ADD(RTNL_LINK_ICMP6_OUTMSGS, ICMP6_OutMsgs),
+	__ADD(RTNL_LINK_ICMP6_OUTERRORS, ICMP6_OutErrors),
+	__ADD(RTNL_LINK_ICMP6_CSUMERRORS, ICMP6_InCsumErrors),
+	__ADD(RTNL_LINK_IP6_CSUMERRORS, Ip6_InCsumErrors),
+	__ADD(RTNL_LINK_IP6_NOECTPKTS, Ip6_InNoECTPkts),
+	__ADD(RTNL_LINK_IP6_ECT1PKTS, Ip6_InECT1Pkts),
+	__ADD(RTNL_LINK_IP6_ECT0PKTS, Ip6_InECT0Pkts),
+	__ADD(RTNL_LINK_IP6_CEPKTS, Ip6_InCEPkts),
 };
 
 char *rtnl_link_stat2str(int st, char *buf, size_t len)
@@ -2620,13 +2620,13 @@ int rtnl_link_str2stat(const char *name)
 }
 
 static const struct trans_tbl link_operstates[] = {
-	__ADD(IF_OPER_UNKNOWN, unknown)
-	__ADD(IF_OPER_NOTPRESENT, notpresent)
-	__ADD(IF_OPER_DOWN, down)
-	__ADD(IF_OPER_LOWERLAYERDOWN, lowerlayerdown)
-	__ADD(IF_OPER_TESTING, testing)
-	__ADD(IF_OPER_DORMANT, dormant)
-	__ADD(IF_OPER_UP, up)
+	__ADD(IF_OPER_UNKNOWN, unknown),
+	__ADD(IF_OPER_NOTPRESENT, notpresent),
+	__ADD(IF_OPER_DOWN, down),
+	__ADD(IF_OPER_LOWERLAYERDOWN, lowerlayerdown),
+	__ADD(IF_OPER_TESTING, testing),
+	__ADD(IF_OPER_DORMANT, dormant),
+	__ADD(IF_OPER_UP, up),
 };
 
 char *rtnl_link_operstate2str(uint8_t st, char *buf, size_t len)
@@ -2642,13 +2642,13 @@ int rtnl_link_str2operstate(const char *name)
 }
 
 static const struct trans_tbl link_modes[] = {
-	__ADD(IF_LINK_MODE_DEFAULT, default)
-	__ADD(IF_LINK_MODE_DORMANT, dormant)
+	__ADD(IF_LINK_MODE_DEFAULT, default),
+	__ADD(IF_LINK_MODE_DORMANT, dormant),
 };
 
 static const struct trans_tbl carrier_states[] = {
-	__ADD(IF_CARRIER_DOWN, down)
-	__ADD(IF_CARRIER_UP, up)
+	__ADD(IF_CARRIER_DOWN, down),
+	__ADD(IF_CARRIER_UP, up),
 };
 
 char *rtnl_link_mode2str(uint8_t st, char *buf, size_t len)

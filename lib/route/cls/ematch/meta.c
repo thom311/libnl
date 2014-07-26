@@ -165,51 +165,51 @@ static int meta_parse(struct rtnl_ematch *e, void *data, size_t len)
 }
 
 static const struct trans_tbl meta_int[] = {
-	__ADD(TCF_META_ID_RANDOM, random)
-	__ADD(TCF_META_ID_LOADAVG_0, loadavg_0)
-	__ADD(TCF_META_ID_LOADAVG_1, loadavg_1)
-	__ADD(TCF_META_ID_LOADAVG_2, loadavg_2)
-	__ADD(TCF_META_ID_DEV, dev)
-	__ADD(TCF_META_ID_PRIORITY, prio)
-	__ADD(TCF_META_ID_PROTOCOL, proto)
-	__ADD(TCF_META_ID_PKTTYPE, pkttype)
-	__ADD(TCF_META_ID_PKTLEN, pktlen)
-	__ADD(TCF_META_ID_DATALEN, datalen)
-	__ADD(TCF_META_ID_MACLEN, maclen)
-	__ADD(TCF_META_ID_NFMARK, mark)
-	__ADD(TCF_META_ID_TCINDEX, tcindex)
-	__ADD(TCF_META_ID_RTCLASSID, rtclassid)
-	__ADD(TCF_META_ID_RTIIF, rtiif)
-	__ADD(TCF_META_ID_SK_FAMILY, sk_family)
-	__ADD(TCF_META_ID_SK_STATE, sk_state)
-	__ADD(TCF_META_ID_SK_REUSE, sk_reuse)
-	__ADD(TCF_META_ID_SK_REFCNT, sk_refcnt)
-	__ADD(TCF_META_ID_SK_RCVBUF, sk_rcvbuf)
-	__ADD(TCF_META_ID_SK_SNDBUF, sk_sndbuf)
-	__ADD(TCF_META_ID_SK_SHUTDOWN, sk_sutdown)
-	__ADD(TCF_META_ID_SK_PROTO, sk_proto)
-	__ADD(TCF_META_ID_SK_TYPE, sk_type)
-	__ADD(TCF_META_ID_SK_RMEM_ALLOC, sk_rmem_alloc)
-	__ADD(TCF_META_ID_SK_WMEM_ALLOC, sk_wmem_alloc)
-	__ADD(TCF_META_ID_SK_WMEM_QUEUED, sk_wmem_queued)
-	__ADD(TCF_META_ID_SK_RCV_QLEN, sk_rcv_qlen)
-	__ADD(TCF_META_ID_SK_SND_QLEN, sk_snd_qlen)
-	__ADD(TCF_META_ID_SK_ERR_QLEN, sk_err_qlen)
-	__ADD(TCF_META_ID_SK_FORWARD_ALLOCS, sk_forward_allocs)
-	__ADD(TCF_META_ID_SK_ALLOCS, sk_allocs)
-	__ADD(TCF_META_ID_SK_ROUTE_CAPS, sk_route_caps)
-	__ADD(TCF_META_ID_SK_HASH, sk_hash)
-	__ADD(TCF_META_ID_SK_LINGERTIME, sk_lingertime)
-	__ADD(TCF_META_ID_SK_ACK_BACKLOG, sk_ack_backlog)
-	__ADD(TCF_META_ID_SK_MAX_ACK_BACKLOG, sk_max_ack_backlog)
-	__ADD(TCF_META_ID_SK_PRIO, sk_prio)
-	__ADD(TCF_META_ID_SK_RCVLOWAT, sk_rcvlowat)
-	__ADD(TCF_META_ID_SK_RCVTIMEO, sk_rcvtimeo)
-	__ADD(TCF_META_ID_SK_SNDTIMEO, sk_sndtimeo)
-	__ADD(TCF_META_ID_SK_SENDMSG_OFF, sk_sendmsg_off)
-	__ADD(TCF_META_ID_SK_WRITE_PENDING, sk_write_pending)
-	__ADD(TCF_META_ID_VLAN_TAG, vlan)
-	__ADD(TCF_META_ID_RXHASH, rxhash)
+	__ADD(TCF_META_ID_RANDOM, random),
+	__ADD(TCF_META_ID_LOADAVG_0, loadavg_0),
+	__ADD(TCF_META_ID_LOADAVG_1, loadavg_1),
+	__ADD(TCF_META_ID_LOADAVG_2, loadavg_2),
+	__ADD(TCF_META_ID_DEV, dev),
+	__ADD(TCF_META_ID_PRIORITY, prio),
+	__ADD(TCF_META_ID_PROTOCOL, proto),
+	__ADD(TCF_META_ID_PKTTYPE, pkttype),
+	__ADD(TCF_META_ID_PKTLEN, pktlen),
+	__ADD(TCF_META_ID_DATALEN, datalen),
+	__ADD(TCF_META_ID_MACLEN, maclen),
+	__ADD(TCF_META_ID_NFMARK, mark),
+	__ADD(TCF_META_ID_TCINDEX, tcindex),
+	__ADD(TCF_META_ID_RTCLASSID, rtclassid),
+	__ADD(TCF_META_ID_RTIIF, rtiif),
+	__ADD(TCF_META_ID_SK_FAMILY, sk_family),
+	__ADD(TCF_META_ID_SK_STATE, sk_state),
+	__ADD(TCF_META_ID_SK_REUSE, sk_reuse),
+	__ADD(TCF_META_ID_SK_REFCNT, sk_refcnt),
+	__ADD(TCF_META_ID_SK_RCVBUF, sk_rcvbuf),
+	__ADD(TCF_META_ID_SK_SNDBUF, sk_sndbuf),
+	__ADD(TCF_META_ID_SK_SHUTDOWN, sk_sutdown),
+	__ADD(TCF_META_ID_SK_PROTO, sk_proto),
+	__ADD(TCF_META_ID_SK_TYPE, sk_type),
+	__ADD(TCF_META_ID_SK_RMEM_ALLOC, sk_rmem_alloc),
+	__ADD(TCF_META_ID_SK_WMEM_ALLOC, sk_wmem_alloc),
+	__ADD(TCF_META_ID_SK_WMEM_QUEUED, sk_wmem_queued),
+	__ADD(TCF_META_ID_SK_RCV_QLEN, sk_rcv_qlen),
+	__ADD(TCF_META_ID_SK_SND_QLEN, sk_snd_qlen),
+	__ADD(TCF_META_ID_SK_ERR_QLEN, sk_err_qlen),
+	__ADD(TCF_META_ID_SK_FORWARD_ALLOCS, sk_forward_allocs),
+	__ADD(TCF_META_ID_SK_ALLOCS, sk_allocs),
+	__ADD(TCF_META_ID_SK_ROUTE_CAPS, sk_route_caps),
+	__ADD(TCF_META_ID_SK_HASH, sk_hash),
+	__ADD(TCF_META_ID_SK_LINGERTIME, sk_lingertime),
+	__ADD(TCF_META_ID_SK_ACK_BACKLOG, sk_ack_backlog),
+	__ADD(TCF_META_ID_SK_MAX_ACK_BACKLOG, sk_max_ack_backlog),
+	__ADD(TCF_META_ID_SK_PRIO, sk_prio),
+	__ADD(TCF_META_ID_SK_RCVLOWAT, sk_rcvlowat),
+	__ADD(TCF_META_ID_SK_RCVTIMEO, sk_rcvtimeo),
+	__ADD(TCF_META_ID_SK_SNDTIMEO, sk_sndtimeo),
+	__ADD(TCF_META_ID_SK_SENDMSG_OFF, sk_sendmsg_off),
+	__ADD(TCF_META_ID_SK_WRITE_PENDING, sk_write_pending),
+	__ADD(TCF_META_ID_VLAN_TAG, vlan),
+	__ADD(TCF_META_ID_RXHASH, rxhash),
 };
 
 static char *int_id2str(int id, char *buf, size_t size)
@@ -218,8 +218,8 @@ static char *int_id2str(int id, char *buf, size_t size)
 }
 
 static const struct trans_tbl meta_var[] = {
-	__ADD(TCF_META_ID_DEV,devname)
-	__ADD(TCF_META_ID_SK_BOUND_IF,sk_bound_if)
+	__ADD(TCF_META_ID_DEV,devname),
+	__ADD(TCF_META_ID_SK_BOUND_IF,sk_bound_if),
 };
 
 static char *var_id2str(int id, char *buf, size_t size)

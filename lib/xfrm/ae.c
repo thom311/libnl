@@ -238,17 +238,17 @@ static int xfrm_ae_compare(struct nl_object *_a, struct nl_object *_b, uint32_t 
  */
 static const struct trans_tbl ae_attrs[] =
 {
-	__ADD(XFRM_AE_ATTR_DADDR, daddr)
-	__ADD(XFRM_AE_ATTR_SPI, spi)
-	__ADD(XFRM_AE_ATTR_PROTO, protocol)
-	__ADD(XFRM_AE_ATTR_SADDR, saddr)
-	__ADD(XFRM_AE_ATTR_FLAGS, flags)
-	__ADD(XFRM_AE_ATTR_REQID, reqid)
-	__ADD(XFRM_AE_ATTR_MARK, mark)
-	__ADD(XFRM_AE_ATTR_LIFETIME, cur_lifetime)
-	__ADD(XFRM_AE_ATTR_REPLAY_MAXAGE, replay_maxage)
-	__ADD(XFRM_AE_ATTR_REPLAY_MAXDIFF, replay_maxdiff)
-	__ADD(XFRM_AE_ATTR_REPLAY_STATE, replay_state)
+	__ADD(XFRM_AE_ATTR_DADDR, daddr),
+	__ADD(XFRM_AE_ATTR_SPI, spi),
+	__ADD(XFRM_AE_ATTR_PROTO, protocol),
+	__ADD(XFRM_AE_ATTR_SADDR, saddr),
+	__ADD(XFRM_AE_ATTR_FLAGS, flags),
+	__ADD(XFRM_AE_ATTR_REQID, reqid),
+	__ADD(XFRM_AE_ATTR_MARK, mark),
+	__ADD(XFRM_AE_ATTR_LIFETIME, cur_lifetime),
+	__ADD(XFRM_AE_ATTR_REPLAY_MAXAGE, replay_maxage),
+	__ADD(XFRM_AE_ATTR_REPLAY_MAXDIFF, replay_maxdiff),
+	__ADD(XFRM_AE_ATTR_REPLAY_STATE, replay_state),
 };
 
 static char* xfrm_ae_attrs2str (int attrs, char *buf, size_t len)
@@ -263,14 +263,14 @@ static char* xfrm_ae_attrs2str (int attrs, char *buf, size_t len)
  */
 
 static const struct trans_tbl ae_flags[] = {
-	__ADD(XFRM_AE_UNSPEC, unspecified)
-	__ADD(XFRM_AE_RTHR, replay threshold)
-	__ADD(XFRM_AE_RVAL, replay value)
-	__ADD(XFRM_AE_LVAL, lifetime value)
-	__ADD(XFRM_AE_ETHR, expiry time threshold)
-	__ADD(XFRM_AE_CR, replay update event)
-	__ADD(XFRM_AE_CE, timer expiry event)
-	__ADD(XFRM_AE_CU, policy update event)
+	__ADD(XFRM_AE_UNSPEC, unspecified),
+	__ADD(XFRM_AE_RTHR, replay threshold),
+	__ADD(XFRM_AE_RVAL, replay value),
+	__ADD(XFRM_AE_LVAL, lifetime value),
+	__ADD(XFRM_AE_ETHR, expiry time threshold),
+	__ADD(XFRM_AE_CR, replay update event),
+	__ADD(XFRM_AE_CE, timer expiry event),
+	__ADD(XFRM_AE_CU, policy update event),
 };
 
 char* xfrmnl_ae_flags2str(int flags, char *buf, size_t len)

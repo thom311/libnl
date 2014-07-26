@@ -53,9 +53,9 @@ static void nfnl_queue_dump(struct nl_object *a, struct nl_dump_params *p)
 }
 
 static const struct trans_tbl copy_modes[] = {
-	__ADD(NFNL_QUEUE_COPY_NONE,	none)
-	__ADD(NFNL_QUEUE_COPY_META,	meta)
-	__ADD(NFNL_QUEUE_COPY_PACKET,	packet)
+	__ADD(NFNL_QUEUE_COPY_NONE,	none),
+	__ADD(NFNL_QUEUE_COPY_META,	meta),
+	__ADD(NFNL_QUEUE_COPY_PACKET,	packet),
 };
 
 char *nfnl_queue_copy_mode2str(enum nfnl_queue_copy_mode copy_mode, char *buf,
@@ -185,10 +185,10 @@ static int nfnl_queue_compare(struct nl_object *_a, struct nl_object *_b,
 }
 
 static const struct trans_tbl nfnl_queue_attrs[] = {
-	__ADD(QUEUE_ATTR_GROUP,		group)
-	__ADD(QUEUE_ATTR_MAXLEN,	maxlen)
-	__ADD(QUEUE_ATTR_COPY_MODE,	copy_mode)
-	__ADD(QUEUE_ATTR_COPY_RANGE,	copy_range)
+	__ADD(QUEUE_ATTR_GROUP,		group),
+	__ADD(QUEUE_ATTR_MAXLEN,	maxlen),
+	__ADD(QUEUE_ATTR_COPY_MODE,	copy_mode),
+	__ADD(QUEUE_ATTR_COPY_RANGE,	copy_range),
 };
 
 static char *nfnl_queue_attrs2str(int attrs, char *buf, size_t len)

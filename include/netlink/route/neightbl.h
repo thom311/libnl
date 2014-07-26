@@ -41,6 +41,7 @@ extern void rtnl_neightbl_set_family(struct rtnl_neightbl *, int);
 extern void rtnl_neightbl_set_gc_tresh1(struct rtnl_neightbl *, int);
 extern void rtnl_neightbl_set_gc_tresh2(struct rtnl_neightbl *, int);
 extern void rtnl_neightbl_set_gc_tresh3(struct rtnl_neightbl *, int);
+extern void rtnl_neightbl_set_gc_interval(struct rtnl_neightbl *, uint64_t);
 extern void rtnl_neightbl_set_name(struct rtnl_neightbl *, const char *);
 extern void rtnl_neightbl_set_dev(struct rtnl_neightbl *, int);
 extern void rtnl_neightbl_set_queue_len(struct rtnl_neightbl *, int);

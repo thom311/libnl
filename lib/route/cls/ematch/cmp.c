@@ -20,6 +20,7 @@
 #include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/route/cls/ematch.h>
+#include <netlink/route/cls/ematch/cmp.h>
 #include <linux/tc_ematch/tc_em_cmp.h>
 
 void rtnl_ematch_cmp_set(struct rtnl_ematch *e, struct tcf_em_cmp *cfg)

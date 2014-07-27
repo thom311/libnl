@@ -21,6 +21,7 @@
 #include <netlink/utils.h>
 #include <netlink-private/route/tc-api.h>
 #include <netlink/route/link.h>
+#include <netlink/route/action.h>
 
 
 static struct nl_object_ops act_obj_ops;

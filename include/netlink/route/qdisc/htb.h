@@ -40,6 +40,7 @@ extern uint32_t	rtnl_htb_get_cbuffer(struct rtnl_class *);
 extern int	rtnl_htb_set_cbuffer(struct rtnl_class *, uint32_t);
 extern uint32_t	rtnl_htb_get_quantum(struct rtnl_class *);
 extern int	rtnl_htb_set_quantum(struct rtnl_class *, uint32_t);
+extern int	rtnl_htb_set_level(struct rtnl_class *, int);
 extern int	rtnl_htb_get_level(struct rtnl_class *);
 
 #ifdef __cplusplus

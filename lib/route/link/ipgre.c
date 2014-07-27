@@ -28,6 +28,7 @@
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
+#include <netlink/route/link/ipgre.h>
 #include <netlink-private/route/link/api.h>
 #include <linux/if_tunnel.h>
 

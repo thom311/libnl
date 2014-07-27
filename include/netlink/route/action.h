@@ -27,6 +27,7 @@ extern void		rtnl_act_put(struct rtnl_act *);
 extern int		rtnl_act_build_add_request(struct rtnl_act *, int,
 						   struct nl_msg **);
 extern int		rtnl_act_add(struct nl_sock *, struct rtnl_act *, int);
+extern int		rtnl_act_change(struct nl_sock *, struct rtnl_act *, int);
 
 extern int		rtnl_act_build_change_request(struct rtnl_act *, int,
 						      struct nl_msg **);

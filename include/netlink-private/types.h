@@ -721,6 +721,20 @@ struct rtnl_fq_codel
 	uint32_t	fq_mask;
 };
 
+struct rtnl_hfsc_qdisc
+{
+	uint32_t		qh_defcls;
+	uint32_t		qh_mask;
+};
+
+struct rtnl_hfsc_class
+{
+	struct tc_service_curve ch_rsc;
+	struct tc_service_curve ch_fsc;
+	struct tc_service_curve ch_usc;
+	uint32_t		ch_mask;
+};
+
 struct flnl_request
 {
 	NLHDR_COMMON

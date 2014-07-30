@@ -15,16 +15,25 @@
 #include <netlink/route/rtnl.h>
 #include <netlink-private/route/link/api.h>
 
+#define I6_ADDR_GEN_MODE_UNKNOWN	UINT8_MAX
+
 struct inet6_data
 {
 	uint32_t		i6_flags;
 	struct ifla_cacheinfo	i6_cacheinfo;
 	uint32_t		i6_conf[DEVCONF_MAX];
+	uint8_t			i6_addr_gen_mode;
 };
 
 static void *inet6_alloc(struct rtnl_link *link)
 {
-	return calloc(1, sizeof(struct inet6_data));
+	struct inet6_data *i6;
+
+	i6 = calloc(1, sizeof(struct inet6_data));
+	if (i6)
+		i6->i6_addr_gen_mode = I6_ADDR_GEN_MODE_UNKNOWN;
+
+	return i6;
 }
 
 static void *inet6_clone(struct rtnl_link *link, void *data)
@@ -43,11 +52,12 @@ static void inet6_free(struct rtnl_link *link, void *data)
 }
 
 static struct nla_policy inet6_policy[IFLA_INET6_MAX+1] = {
-	[IFLA_INET6_FLAGS]	= { .type = NLA_U32 },
-	[IFLA_INET6_CACHEINFO]	= { .minlen = sizeof(struct ifla_cacheinfo) },
-	[IFLA_INET6_CONF]	= { .minlen = 4 },
-	[IFLA_INET6_STATS]	= { .minlen = 8 },
-	[IFLA_INET6_ICMP6STATS]	= { .minlen = 8 },
+	[IFLA_INET6_FLAGS]		= { .type = NLA_U32 },
+	[IFLA_INET6_CACHEINFO]		= { .minlen = sizeof(struct ifla_cacheinfo) },
+	[IFLA_INET6_CONF]		= { .minlen = 4 },
+	[IFLA_INET6_STATS]		= { .minlen = 8 },
+	[IFLA_INET6_ICMP6STATS]		= { .minlen = 8 },
+	[IFLA_INET6_ADDR_GEN_MODE]	= { .type = NLA_U8 },
 };
 
 static const uint8_t map_stat_id_from_IPSTATS_MIB_v1[__IPSTATS_MIB_MAX] = {
@@ -155,7 +165,10 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 	if (tb[IFLA_INET6_CONF])
 		nla_memcpy(&i6->i6_conf, tb[IFLA_INET6_CONF],
 			   sizeof(i6->i6_conf));
- 
+
+	if (tb[IFLA_INET6_ADDR_GEN_MODE])
+		i6->i6_addr_gen_mode = nla_get_u8 (tb[IFLA_INET6_ADDR_GEN_MODE]);
+
 	/*
 	 * Due to 32bit data alignment, these addresses must be copied to an
 	 * aligned location prior to access.
@@ -198,6 +211,19 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 	}
 
 	return 0;
+}
+
+static int inet6_fill_af(struct rtnl_link *link, struct nl_msg *msg, void *data)
+{
+	struct inet6_data *id = data;
+
+	if (id->i6_addr_gen_mode != I6_ADDR_GEN_MODE_UNKNOWN)
+		NLA_PUT_U8(msg, IFLA_INET6_ADDR_GEN_MODE, id->i6_addr_gen_mode);
+
+	return 0;
+
+nla_put_failure:
+	return -NLE_MSGSIZE;
 }
 
 /* These live in include/net/if_inet6.h and should be moved to include/linux */
@@ -259,6 +285,22 @@ static char *inet6_devconf2str(int type, char *buf, size_t len)
 			  ARRAY_SIZE(inet6_devconf));
 }
 
+static const struct trans_tbl inet6_addr_gen_mode[] = {
+	__ADD(IN6_ADDR_GEN_MODE_EUI64, eui64),
+	__ADD(IN6_ADDR_GEN_MODE_NONE, none),
+};
+
+const char *rtnl_link_inet6_addrgenmode2str(uint8_t mode, char *buf, size_t len)
+{
+	return __type2str(mode, buf, len, inet6_addr_gen_mode,
+			  ARRAY_SIZE(inet6_addr_gen_mode));
+}
+
+uint8_t rtnl_link_inet6_str2addrgenmode(const char *mode)
+{
+	return (uint8_t) __str2type(mode, inet6_addr_gen_mode,
+			            ARRAY_SIZE(inet6_addr_gen_mode));
+}
 
 static void inet6_dump_details(struct rtnl_link *link,
 				struct nl_dump_params *p, void *data)
@@ -280,6 +322,10 @@ static void inet6_dump_details(struct rtnl_link *link,
 
 	nl_dump(p, " retrans-time %s\n",
 		nl_msec2str(i6->i6_cacheinfo.retrans_time, buf, sizeof(buf)));
+
+	nl_dump(p, " link-local address mode %s\n",
+		rtnl_link_inet6_addrgenmode2str(i6->i6_addr_gen_mode,
+						buf, sizeof(buf)));
 
 	nl_dump_line(p, "      devconf:\n");
 	nl_dump_line(p, "      ");
@@ -468,10 +514,59 @@ static struct rtnl_link_af_ops inet6_ops = {
 	.ao_free			= &inet6_free,
 	.ao_parse_protinfo		= &inet6_parse_protinfo,
 	.ao_parse_af			= &inet6_parse_protinfo,
+	.ao_fill_af			= &inet6_fill_af,
 	.ao_dump[NL_DUMP_DETAILS]	= &inet6_dump_details,
 	.ao_dump[NL_DUMP_STATS]		= &inet6_dump_stats,
 	.ao_protinfo_policy		= &protinfo_policy,
 };
+
+/**
+ * Get IPv6 link-local address generation mode
+ * @arg link		Link object
+ * @arg mode		Generation mode on success
+ *
+ * Returns the link's IPv6 link-local address generation mode.
+ *
+ * @return 0 on success
+ * @return -NLE_NOATTR configuration setting not available
+ * @return -NLE_INVAL generation mode unknown. If the link was received via
+ *                    netlink, it means that address generation mode is not
+ *                    supported by the kernel.
+ */
+int rtnl_link_inet6_get_addr_gen_mode(struct rtnl_link *link, uint8_t *mode)
+{
+	struct inet6_data *id;
+
+	if (!(id = rtnl_link_af_data(link, &inet6_ops)))
+		return -NLE_NOATTR;
+
+	if (id->i6_addr_gen_mode == I6_ADDR_GEN_MODE_UNKNOWN)
+		return -NLE_INVAL;
+
+	*mode = id->i6_addr_gen_mode;
+	return 0;
+}
+
+/**
+ * Set IPv6 link-local address generation mode
+ * @arg link		Link object
+ * @arg mode		Generation mode
+ *
+ * Sets the link's IPv6 link-local address generation mode.
+ *
+ * @return 0 on success
+ * @return -NLE_NOMEM could not allocate inet6 data
+ */
+int rtnl_link_inet6_set_addr_gen_mode(struct rtnl_link *link, uint8_t mode)
+{
+	struct inet6_data *id;
+
+	if (!(id = rtnl_link_af_alloc(link, &inet6_ops)))
+		return -NLE_NOMEM;
+
+	id->i6_addr_gen_mode = mode;
+	return 0;
+}
 
 static void __init inet6_init(void)
 {

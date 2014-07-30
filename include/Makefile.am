@@ -48,6 +48,7 @@ nobase_libnlinclude_HEADERS = \
 	netlink/route/link/bridge.h \
 	netlink/route/link/can.h \
 	netlink/route/link/inet.h \
+	netlink/route/link/inet6.h \
 	netlink/route/link/info-api.h \
 	netlink/route/link/macvlan.h \
 	netlink/route/link/vlan.h \

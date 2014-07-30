@@ -86,7 +86,7 @@ libnl_route_3_la_SOURCES = \
 	route/qdisc/fifo.c route/qdisc/htb.c route/qdisc/netem.c \
 	route/qdisc/prio.c route/qdisc/red.c route/qdisc/sfq.c \
 	route/qdisc/tbf.c route/qdisc/plug.c route/qdisc/ingress.c \
-	route/qdisc/fq_codel.c \
+	route/qdisc/fq_codel.c route/qdisc/hfsc.c \
 	\
 	fib_lookup/lookup.c fib_lookup/request.c \
 	\
@@ -128,6 +128,7 @@ nobase_pkglib_LTLIBRARIES = \
 	cli/qdisc/bfifo.la \
 	cli/qdisc/ingress.la \
 	cli/qdisc/fq_codel.la \
+	cli/qdisc/hfsc.la \
 	cli/cls/basic.la \
 	cli/cls/cgroup.la
 
@@ -138,6 +139,7 @@ cli_qdisc_plug_la_LDFLAGS = -module -avoid-version
 cli_qdisc_bfifo_la_LDFLAGS = -module -avoid-version
 cli_qdisc_ingress_la_LDFLAGS = -module -avoid-version
 cli_qdisc_fq_codel_la_LDFLAGS = -module -avoid-version
+cli_qdisc_hfsc_la_LDFLAGS = -module -avoid-version
 cli_cls_basic_la_LDFLAGS = -module -avoid-version
 cli_cls_cgroup_la_LDFLAGS = -module -avoid-version
 endif

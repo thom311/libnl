@@ -1030,6 +1030,7 @@ void *rtnl_tc_data(struct rtnl_tc *tc)
  * Check traffic control object type and return private data section 
  * @arg tc		traffic control object
  * @arg ops		expected traffic control object operations
+ * @arg err		the place where saves the error code if fails
  *
  * Checks whether the traffic control object matches the type
  * specified with the traffic control object operations. If the
@@ -1040,8 +1041,10 @@ void *rtnl_tc_data(struct rtnl_tc *tc)
  *
  * @return Pointer to private tc data or NULL if type mismatches.
  */
-void *rtnl_tc_data_check(struct rtnl_tc *tc, struct rtnl_tc_ops *ops)
+void *rtnl_tc_data_check(struct rtnl_tc *tc, struct rtnl_tc_ops *ops, int *err)
 {
+	void *ret;
+
 	if (tc->tc_ops != ops) {
 		char buf[64];
 
@@ -1050,10 +1053,18 @@ void *rtnl_tc_data_check(struct rtnl_tc *tc, struct rtnl_tc_ops *ops)
 			 tc, ops->to_kind, tc->tc_ops->to_kind);
 		APPBUG(buf);
 
+		if (err)
+			*err = -NLE_OPNOTSUPP;
 		return NULL;
 	}
 
-	return rtnl_tc_data(tc);
+	ret = rtnl_tc_data(tc);
+	if (ret == NULL) {
+		if (err)
+			*err = -NLE_NOMEM;
+	}
+
+	return ret;
 }
 
 struct nl_af_group tc_groups[] = {

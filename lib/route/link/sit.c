@@ -69,11 +69,15 @@ static int sit_alloc(struct rtnl_link *link)
 {
 	struct sit_info *sit;
 
-	sit = calloc(1, sizeof(*sit));
-	if (!sit)
-		return -NLE_NOMEM;
+	if (link->l_info)
+		memset(link->l_info, 0, sizeof(*sit));
+	else {
+		sit = calloc(1, sizeof(*sit));
+		if (!sit)
+			return -NLE_NOMEM;
 
-	link->l_info = sit;
+		link->l_info = sit;
+	}
 
 	return 0;
 }

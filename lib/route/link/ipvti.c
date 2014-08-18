@@ -59,11 +59,15 @@ static int ipvti_alloc(struct rtnl_link *link)
 {
 	struct ipvti_info *ipvti;
 
-	ipvti = calloc(1, sizeof(*ipvti));
-	if (!ipvti)
-		return -NLE_NOMEM;
+	if (link->l_info)
+		memset(link->l_info, 0, sizeof(*ipvti));
+	else {
+		ipvti = calloc(1, sizeof(*ipvti));
+		if (!ipvti)
+			return -NLE_NOMEM;
 
-	link->l_info = ipvti;
+		link->l_info = ipvti;
+	}
 
 	return 0;
 }

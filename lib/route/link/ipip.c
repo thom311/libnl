@@ -62,15 +62,11 @@ static int ipip_alloc(struct rtnl_link *link)
 {
 	struct ipip_info *ipip;
 
-	if (link->l_info)
-		memset(link->l_info, 0, sizeof(*ipip));
-	else {
-		ipip = calloc(1, sizeof(*ipip));
-		if (!ipip)
-			return -NLE_NOMEM;
+	ipip = calloc(1, sizeof(*ipip));
+	if (!ipip)
+		return -NLE_NOMEM;
 
-		link->l_info = ipip;
-	}
+	link->l_info = ipip;
 
 	return 0;
 }

@@ -91,14 +91,10 @@ static int vxlan_alloc(struct rtnl_link *link)
 {
 	struct vxlan_info *vxi;
 
-	if (link->l_info)
-		memset(link->l_info, 0, sizeof(*vxi));
-	else {
-		if ((vxi = calloc(1, sizeof(*vxi))) == NULL)
-			return -NLE_NOMEM;
+	if ((vxi = calloc(1, sizeof(*vxi))) == NULL)
+		return -NLE_NOMEM;
 
-		link->l_info = vxi;
-	}
+	link->l_info = vxi;
 
 	return 0;
 }

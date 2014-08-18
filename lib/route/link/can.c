@@ -73,15 +73,11 @@ static int can_alloc(struct rtnl_link *link)
 {
 	struct can_info *ci;
 
-	if (link->l_info)
-		memset(link->l_info, 0, sizeof(*ci));
-	else {
-		ci = calloc(1, sizeof(*ci));
-		if (!ci)
-			return -NLE_NOMEM;
+	ci = calloc(1, sizeof(*ci));
+	if (!ci)
+		return -NLE_NOMEM;
 
-		link->l_info = ci;
-	}
+	link->l_info = ci;
 
 	return 0;
 }

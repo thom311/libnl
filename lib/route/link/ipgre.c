@@ -75,15 +75,11 @@ static int ipgre_alloc(struct rtnl_link *link)
 {
 	struct ipgre_info *ipgre;
 
-	if (link->l_info)
-		memset(link->l_info, 0, sizeof(*ipgre));
-	else {
-		ipgre = calloc(1, sizeof(*ipgre));
-		if (!ipgre)
-			return -NLE_NOMEM;
+	ipgre = calloc(1, sizeof(*ipgre));
+	if (!ipgre)
+		return -NLE_NOMEM;
 
-		link->l_info = ipgre;
-	}
+	link->l_info = ipgre;
 
 	return 0;
 }

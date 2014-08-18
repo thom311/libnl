@@ -11,6 +11,7 @@
 /test-create-ipgre
 /test-create-ipip
 /test-create-ipvti
+/test-create-macvlan
 /test-create-sit
 /test-create-veth
 /test-create-vlan

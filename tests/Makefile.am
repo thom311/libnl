@@ -28,6 +28,7 @@ check_PROGRAMS = \
 	test-create-ipgre \
 	test-create-ipip \
 	test-create-ipvti \
+	test-create-macvlan \
 	test-create-sit \
 	test-create-ifb \
 	test-delete-link \

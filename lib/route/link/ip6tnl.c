@@ -73,11 +73,15 @@ static int ip6_tnl_alloc(struct rtnl_link *link)
 {
 	struct ip6_tnl_info *ip6_tnl;
 
-	ip6_tnl = calloc(1, sizeof(*ip6_tnl));
-	if (!ip6_tnl)
-		return -NLE_NOMEM;
+	if (link->l_info)
+		memset(link->l_info, 0, sizeof(*ip6_tnl));
+	else {
+		ip6_tnl = calloc(1, sizeof(*ip6_tnl));
+		if (!ip6_tnl)
+			return -NLE_NOMEM;
 
-	link->l_info = ip6_tnl;
+		link->l_info = ip6_tnl;
+	}
 
 	return 0;
 }

@@ -55,10 +55,14 @@ static int macvlan_alloc(struct rtnl_link *link)
 {
 	struct macvlan_info *mvi;
 
-	if ((mvi = calloc(1, sizeof(*mvi))) == NULL)
-		return -NLE_NOMEM;
+	if (link->l_info)
+		memset(link->l_info, 0, sizeof(*mvi));
+	else {
+		if ((mvi = calloc(1, sizeof(*mvi))) == NULL)
+			return -NLE_NOMEM;
 
-	link->l_info = mvi;
+		link->l_info = mvi;
+	}
 
 	return 0;
 }

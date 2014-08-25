@@ -58,7 +58,7 @@ extern enum nfnl_log_copy_mode	nfnl_log_get_copy_mode(const struct nfnl_log *);
 
 extern char *			nfnl_log_copy_mode2str(enum nfnl_log_copy_mode,
 						       char *, size_t);
-extern enum nfnl_log_copy_mode	nfnl_log_str2copy_mode(const char *);
+extern int			nfnl_log_str2copy_mode(const char *);
 
 extern void			nfnl_log_set_copy_range(struct nfnl_log *, uint32_t);
 extern int			nfnl_log_test_copy_range(const struct nfnl_log *);

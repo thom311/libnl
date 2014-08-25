@@ -65,7 +65,7 @@ char *nfnl_queue_copy_mode2str(enum nfnl_queue_copy_mode copy_mode, char *buf,
 			   ARRAY_SIZE(copy_modes));
 }
 
-enum nfnl_queue_copy_mode nfnl_queue_str2copy_mode(const char *name)
+int nfnl_queue_str2copy_mode(const char *name)
 {
 	return __str2type(name, copy_modes, ARRAY_SIZE(copy_modes));
 }

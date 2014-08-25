@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 	struct nl_sock *rt_sock;
         struct nl_cache *link_cache;
 	struct nfnl_log *log;
-	enum nfnl_log_copy_mode copy_mode;
+	int copy_mode;
 	uint32_t copy_range;
 	int err;
 	int family;

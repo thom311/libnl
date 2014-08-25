@@ -1296,21 +1296,6 @@ int xfrmnl_sp_set_mark (struct xfrmnl_sp* sp, unsigned int value, unsigned int m
 	return 0;
 }
 
-static inline int __assign_addr(struct xfrmnl_sp* sp, struct nl_addr **pos,
-                                struct nl_addr *new, int flag)
-{
-	if (*pos)
-		nl_addr_put(*pos);
-
-	nl_addr_get(new);
-	*pos = new;
-
-	sp->ce_mask |= flag;
-
-	return 0;
-}
-
-
 /** @} */
 
 static struct nl_object_ops xfrm_sp_obj_ops = {

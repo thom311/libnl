@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 {
 	struct nl_sock *sock;
 	struct rtnl_rule *rule;
-	struct nl_cache *link_cache, *rule_cache;
+	struct nl_cache *rule_cache;
 	struct nl_dump_params params = {
 		.dp_fd = stdout,
 		.dp_type = NL_DUMP_LINE,
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
-	link_cache = nl_cli_link_alloc_cache(sock);
+	nl_cli_link_alloc_cache(sock);
 	rule_cache = nl_cli_rule_alloc_cache(sock);
 	rule = nl_cli_rule_alloc();
 

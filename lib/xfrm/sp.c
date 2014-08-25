@@ -518,7 +518,6 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 	struct xfrmnl_sp                *sp;
 	struct nlattr                   *tb[XFRMA_MAX + 1];
 	struct xfrm_userpolicy_info     *sp_info;
-	struct xfrm_userpolicy_id       *sp_id;
 	int                             len, err;
 	struct nl_addr*                 addr;
 
@@ -531,7 +530,6 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 	sp->ce_msgtype = n->nlmsg_type;
 	if (n->nlmsg_type == XFRM_MSG_DELPOLICY)
 	{
-		sp_id = nlmsg_data(n);
 		sp_info = (struct xfrm_userpolicy_info*)(nlmsg_data(n) + sizeof (struct xfrm_userpolicy_id) + NLA_HDRLEN);
 	}
 	else

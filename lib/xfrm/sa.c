@@ -655,7 +655,6 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 	struct nlattr               *tb[XFRMA_MAX + 1];
 	struct xfrm_usersa_info*    sa_info;
 	struct xfrm_user_expire*    ue;
-	struct xfrm_usersa_id*      sa_id;
 	int                         len, err;
 	struct nl_addr*             addr;
 
@@ -675,7 +674,6 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 	}
 	else if (n->nlmsg_type == XFRM_MSG_DELSA)
 	{
-		sa_id = nlmsg_data(n);
 		sa_info = (struct xfrm_usersa_info*)(nlmsg_data(n) + sizeof (struct xfrm_usersa_id) + NLA_HDRLEN);
 	}
 	else

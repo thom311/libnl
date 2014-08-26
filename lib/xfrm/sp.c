@@ -94,7 +94,6 @@ static void xfrm_sp_free_data(struct nl_object *c)
 
 	if(sp->sec_ctx)
 	{
-		free (sp->sec_ctx->ctx);
 		free (sp->sec_ctx);
 	}
 

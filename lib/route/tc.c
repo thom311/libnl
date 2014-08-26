@@ -550,7 +550,7 @@ char *rtnl_tc_get_kind(struct rtnl_tc *tc)
  */
 uint64_t rtnl_tc_get_stat(struct rtnl_tc *tc, enum rtnl_tc_stat id)
 {
-	if (id < 0 || id > RTNL_TC_STATS_MAX)
+	if ((unsigned int) id > RTNL_TC_STATS_MAX)
 		return 0;
 
 	return tc->tc_stats[id];

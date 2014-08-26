@@ -81,12 +81,13 @@ hfsc_get_sc(char *optarg, struct tc_service_curve *sc)
 {
 	unsigned int m1 = 0, d = 0, m2 = 0;
 	char *tmp = strdup(optarg);
-	char *p = tmp, *endptr;
+	char *p, *endptr;
+	char *pp = tmp;
 
 	if (!tmp)
 		return -ENOMEM;
 
-	p = strstr(p, "m1:");
+	p = strstr(pp, "m1:");
 	if (p) {
 		char *q;
 		p += 3;
@@ -99,10 +100,10 @@ hfsc_get_sc(char *optarg, struct tc_service_curve *sc)
 		m1 = strtoul(p, &endptr, 10);
 		if (endptr == p)
 			goto err;
-		p = q + 1;
-        }
+		pp = q + 1;
+	}
 
-	p = strstr(p, "d:");
+	p = strstr(pp, "d:");
 	if (p) {
 		char *q;
 		p += 2;
@@ -115,10 +116,10 @@ hfsc_get_sc(char *optarg, struct tc_service_curve *sc)
 		d = strtoul(p, &endptr, 10);
 		if (endptr == p)
 			goto err;
-		p = q + 1;
-        }
+		pp = q + 1;
+	}
 
-	p = strstr(p, "m2:");
+	p = strstr(pp, "m2:");
 	if (p) {
 		p += 3;
 		if (*p == 0)
@@ -126,7 +127,7 @@ hfsc_get_sc(char *optarg, struct tc_service_curve *sc)
 		m2 = strtoul(p, &endptr, 10);
 		if (endptr == p)
 			goto err;
-        } else
+	} else
 		goto err;
 
 	free(tmp);

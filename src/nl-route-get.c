@@ -43,7 +43,6 @@ static int cb(struct nl_msg *msg, void *arg)
 int main(int argc, char *argv[])
 {
 	struct nl_sock *sock;
-	struct nl_cache *link_cache, *route_cache;
 	struct nl_addr *dst;
 	int err = 1;
 
@@ -52,8 +51,8 @@ int main(int argc, char *argv[])
 
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
-	link_cache = nl_cli_link_alloc_cache(sock);
-	route_cache = nl_cli_route_alloc_cache(sock, 0);
+	nl_cli_link_alloc_cache(sock);
+	nl_cli_route_alloc_cache(sock, 0);
 
 	dst = nl_cli_addr_parse(argv[1], AF_INET);
 
@@ -82,8 +81,6 @@ int main(int argc, char *argv[])
 		if (nl_recvmsgs_default(sock) < 0)
 			nl_cli_fatal(err, "%s", nl_geterror(err));
 	}
-
-	//nl_cache_dump(route_cache, &params);
 
 	return 0;
 }

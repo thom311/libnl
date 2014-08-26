@@ -54,7 +54,7 @@ extern enum nfnl_queue_copy_mode nfnl_queue_get_copy_mode(const struct nfnl_queu
 
 extern char *			nfnl_queue_copy_mode2str(enum nfnl_queue_copy_mode,
 							 char *, size_t);
-extern enum nfnl_queue_copy_mode nfnl_queue_str2copy_mode(const char *);
+extern int			nfnl_queue_str2copy_mode(const char *);
 
 extern void			nfnl_queue_set_copy_range(struct nfnl_queue *,
 							  uint32_t);

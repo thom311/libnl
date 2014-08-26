@@ -35,7 +35,6 @@ static int event_input(struct nl_msg *msg, void *arg)
 int main(int argc, char *argv[])
 {
 	struct nl_sock *sock;
-	struct nl_cache *link_cache;
 	int err = 1;
 	int i, idx;
 
@@ -92,7 +91,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Warning: Unknown group: %s\n", argv[idx]);
 	}
 
-	link_cache = nl_cli_link_alloc_cache(sock);
+	nl_cli_link_alloc_cache(sock);
 
 	while (1) {
 		fd_set rfds;

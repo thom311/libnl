@@ -28,7 +28,7 @@ static void print_usage(void)
 int main(int argc, char *argv[])
 {
 	struct nl_sock *sock;
-	struct nl_cache *link_cache, *neightbl_cache;
+	struct nl_cache *neightbl_cache;
 	struct nl_dump_params params = {
 		.dp_type = NL_DUMP_LINE,
 		.dp_fd = stdout,
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
  
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
-	link_cache = nl_cli_link_alloc_cache(sock);
+	nl_cli_link_alloc_cache(sock);
 	neightbl_cache = nl_cli_alloc_cache(sock, "neighbour table",
 					    rtnl_neightbl_alloc_cache);
  

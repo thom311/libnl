@@ -69,7 +69,7 @@ char *nfnl_log_copy_mode2str(enum nfnl_log_copy_mode copy_mode, char *buf,
 			  ARRAY_SIZE(copy_modes));
 }
 
-enum nfnl_log_copy_mode nfnl_log_str2copy_mode(const char *name)
+int nfnl_log_str2copy_mode(const char *name)
 {
 	return __str2type(name, copy_modes, ARRAY_SIZE(copy_modes));
 }

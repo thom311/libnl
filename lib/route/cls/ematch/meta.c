@@ -51,7 +51,8 @@ static struct rtnl_meta_value *meta_alloc(uint8_t type, uint16_t id,
 	value->mv_shift = shift;
 	value->mv_len = len;
 
-	memcpy(value + 1, data, len);
+	if (len)
+		memcpy(value + 1, data, len);
 
 	return value;
 }

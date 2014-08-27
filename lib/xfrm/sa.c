@@ -990,7 +990,7 @@ static int xfrm_sa_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	err = pp->pp_cb((struct nl_object *) sa, pp);
 
 	xfrmnl_sa_put(sa);
-	return 0;
+	return err;
 }
 
 /**

@@ -68,7 +68,7 @@ uint32_t idiagnl_req_get_ifindex(const struct idiagnl_req *req)
 
 void idiagnl_req_set_ifindex(struct idiagnl_req *req, uint32_t ifindex)
 {
-	req->idiag_states = ifindex;
+	req->idiag_ifindex = ifindex;
 }
 
 uint32_t idiagnl_req_get_states(const struct idiagnl_req *req)

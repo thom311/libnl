@@ -2,7 +2,12 @@
 
 SUBDIRS = lib
 
-AM_CPPFLAGS  = -I${top_srcdir}/include -I${top_builddir}/include -D_GNU_SOURCE -DSYSCONFDIR=\"$(sysconfdir)/libnl\"
+AM_CPPFLAGS  = \
+	-I${top_srcdir}/include \
+	-I${top_builddir}/include \
+	-D_GNU_SOURCE \
+	-DSYSCONFDIR=\"$(sysconfdir)/libnl\"
+
 AM_CFLAGS = -Wall
 
 LDADD = \

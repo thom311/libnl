@@ -5,7 +5,12 @@ EXTRA_DIST = \
 
 if ENABLE_UNIT_TESTS
 
-AM_CPPFLAGS  = -Wall -I${top_srcdir}/include -I${top_builddir}/include -D_GNU_SOURCE -DSYSCONFDIR=\"$(sysconfdir)/libnl\"
+AM_CPPFLAGS = \
+	-Wall \
+	-I${top_srcdir}/include \
+	-I${top_builddir}/include \
+	-D_GNU_SOURCE \
+	-DSYSCONFDIR=\"$(sysconfdir)/libnl\"
 
 LDADD = \
 	${top_builddir}/lib/libnl-3.la \

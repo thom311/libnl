@@ -2,6 +2,7 @@
 
 AM_CPPFLAGS  =			 	\
 	-Wall \
+	-I${top_srcdir}/include/linux-private \
 	-I${top_srcdir}/include \
 	-I${top_builddir}/include \
 	-I${builddir}/route \

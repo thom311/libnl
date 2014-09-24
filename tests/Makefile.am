@@ -7,6 +7,7 @@ if ENABLE_UNIT_TESTS
 
 AM_CPPFLAGS = \
 	-Wall \
+	-I${top_srcdir}/include/linux-private \
 	-I${top_srcdir}/include \
 	-I${top_builddir}/include \
 	-D_GNU_SOURCE \

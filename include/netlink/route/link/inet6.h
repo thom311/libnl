@@ -24,6 +24,12 @@ const char *		rtnl_link_inet6_addrgenmode2str  (uint8_t mode,
 
 uint8_t			rtnl_link_inet6_str2addrgenmode  (const char *mode);
 
+extern int		rtnl_link_inet6_get_token(struct rtnl_link *,
+						  struct nl_addr **);
+
+extern int		rtnl_link_inet6_set_token(struct rtnl_link *,
+						  struct nl_addr *);
+
 extern int		rtnl_link_inet6_get_addr_gen_mode(struct rtnl_link *,
 							  uint8_t *);
 

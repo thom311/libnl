@@ -145,6 +145,7 @@ noinst_HEADERS = \
 	linux-private/linux/netfilter/nfnetlink_queue.h \
 	linux-private/linux/netlink.h \
 	linux-private/linux/pkt_cls.h \
+	linux-private/linux/sock_diag.h \
 	linux-private/linux/tc_act/tc_mirred.h \
 	linux-private/linux/pkt_sched.h \
 	linux-private/linux/rtnetlink.h \

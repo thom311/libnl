@@ -529,24 +529,24 @@ static void idiag_msg_dump_stats(struct nl_object *obj, struct nl_dump_params *p
 
 	nl_dump(p, "skmeminfo:  [\n");
 	nl_dump(p, "\trmem alloc: %d\n",
-			msg->idiag_skmeminfo[IDIAG_SK_MEMINFO_RMEM_ALLOC]);
+			msg->idiag_skmeminfo[SK_MEMINFO_RMEM_ALLOC]);
 	nl_dump(p, "\trcv buf: %s\n",
-			nl_size2str(msg->idiag_skmeminfo[IDIAG_SK_MEMINFO_RCVBUF],
+			nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_RCVBUF],
 				buf, sizeof(buf)));
 	nl_dump(p, "\twmem alloc: %d\n",
-			msg->idiag_skmeminfo[IDIAG_SK_MEMINFO_WMEM_ALLOC]);
+			msg->idiag_skmeminfo[SK_MEMINFO_WMEM_ALLOC]);
 	nl_dump(p, "\tsnd buf: %s\n",
-			nl_size2str(msg->idiag_skmeminfo[IDIAG_SK_MEMINFO_SNDBUF],
+			nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_SNDBUF],
 				buf, sizeof(buf)));
 	nl_dump(p, "\tfwd alloc: %d\n",
-			msg->idiag_skmeminfo[IDIAG_SK_MEMINFO_FWD_ALLOC]);
+			msg->idiag_skmeminfo[SK_MEMINFO_FWD_ALLOC]);
 	nl_dump(p, "\twmem queued: %s\n",
-			nl_size2str(msg->idiag_skmeminfo[IDIAG_SK_MEMINFO_WMEM_QUEUED],
+			nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_WMEM_QUEUED],
 				buf, sizeof(buf)));
 	nl_dump(p, "\topt mem: %d\n",
-			msg->idiag_skmeminfo[IDIAG_SK_MEMINFO_OPTMEM]);
+			msg->idiag_skmeminfo[SK_MEMINFO_OPTMEM]);
 	nl_dump(p, "\tbacklog: %d\n",
-			msg->idiag_skmeminfo[IDIAG_SK_MEMINFO_BACKLOG]);
+			msg->idiag_skmeminfo[SK_MEMINFO_BACKLOG]);
 	nl_dump(p, "]\n\n");
 }
 
@@ -586,7 +586,8 @@ static struct nla_policy ext_policy[IDIAG_ATTR_MAX] = {
 	[IDIAG_ATTR_CONG]       = { .type = NLA_STRING },
 	[IDIAG_ATTR_TOS]        = { .type = NLA_U8 },
 	[IDIAG_ATTR_TCLASS]     = { .type = NLA_U8 },
-	[IDIAG_ATTR_SKMEMINFO]  = { .minlen = (sizeof(uint32_t) * IDIAG_SK_MEMINFO_VARS)  },
+	/* Older kernel doesn't have SK_MEMINFO_BACKLOG */
+	[IDIAG_ATTR_SKMEMINFO]  = { .minlen = (sizeof(uint32_t) * (SK_MEMINFO_OPTMEM + 1)) },
 	[IDIAG_ATTR_SHUTDOWN]   = { .type = NLA_U8 },
 };
 

@@ -1001,7 +1001,7 @@ struct idiagnl_msg {
 	struct idiagnl_meminfo *    idiag_meminfo;
 	struct idiagnl_vegasinfo *  idiag_vegasinfo;
 	struct tcp_info		    idiag_tcpinfo;
-	uint32_t		    idiag_skmeminfo[IDIAG_SK_MEMINFO_VARS];
+	uint32_t		    idiag_skmeminfo[SK_MEMINFO_VARS];
 };
 
 struct idiagnl_req {

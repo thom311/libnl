@@ -10,6 +10,7 @@
  */
 
 #include <netlink-private/netlink.h>
+#include <netlink/hashtable.h>
 #include <netlink/idiag/msg.h>
 #include <netlink/idiag/meminfo.h>
 #include <netlink/idiag/vegasinfo.h>
@@ -710,6 +711,32 @@ errout_nomem:
 	goto errout;
 }
 
+static void idiagnl_keygen(struct nl_object *obj, uint32_t *hashkey,
+        uint32_t table_sz)
+{
+	struct idiagnl_msg *msg = (struct idiagnl_msg *)obj;
+	unsigned int key_sz;
+	struct idiagnl_hash_key {
+		uint8_t	family;
+		uint8_t	state;
+		uint16_t sport;
+		uint16_t dport;
+	} __attribute__((packed)) key;
+
+	key_sz = sizeof(key);
+	key.family = msg->idiag_family;
+	key.state = msg->idiag_state;
+	key.sport = msg->idiag_sport;
+	key.dport = msg->idiag_dport;
+
+	*hashkey = nl_hash(&key, key_sz, 0) % table_sz;
+
+	NL_DBG(5, "idiagnl %p key (fam %d state %d sport %d dport %d) keysz %d, hash 0x%x\n",
+	       msg, key.family, key.state, key.sport, key.dport, key_sz, *hashkey);
+
+	return;
+}
+
 /** @cond SKIP */
 struct nl_object_ops idiagnl_msg_obj_ops = {
 	.oo_name			 = "idiag/idiag_msg",
@@ -721,6 +748,7 @@ struct nl_object_ops idiagnl_msg_obj_ops = {
 		[NL_DUMP_DETAILS]	 = idiag_msg_dump_details,
 		[NL_DUMP_STATS]		 = idiag_msg_dump_stats,
 	},
+	.oo_keygen			= idiagnl_keygen,
 	.oo_attrs2str			= idiagnl_attrs2str,
 	.oo_id_attrs			= (IDIAG_ATTR_INFO)
 };

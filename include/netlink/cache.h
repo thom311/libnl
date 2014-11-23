@@ -78,6 +78,8 @@ extern int			nl_cache_refill(struct nl_sock *,
 						struct nl_cache *);
 extern int			nl_cache_pickup(struct nl_sock *,
 						struct nl_cache *);
+extern int			nl_cache_pickup_checkdup(struct nl_sock *,
+						struct nl_cache *);
 extern int			nl_cache_resync(struct nl_sock *,
 						struct nl_cache *,
 						change_func_t,

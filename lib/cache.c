@@ -708,7 +708,7 @@ static int __cache_pickup(struct nl_sock *sk, struct nl_cache *cache,
 	return err;
 }
 
-static int pickup_cb(struct nl_object *c, struct nl_parser_param *p)
+static int pickup_checkdup_cb(struct nl_object *c, struct nl_parser_param *p)
 {
 	struct nl_cache *cache = (struct nl_cache *)p->pp_arg;
 	struct nl_object *old;
@@ -727,6 +727,42 @@ static int pickup_cb(struct nl_object *c, struct nl_parser_param *p)
 	return nl_cache_add(cache, c);
 }
 
+static int pickup_cb(struct nl_object *c, struct nl_parser_param *p)
+{
+	struct nl_cache *cache = p->pp_arg;
+
+	return nl_cache_add(cache, c);
+}
+
+static int __nl_cache_pickup(struct nl_sock *sk, struct nl_cache *cache,
+			     int checkdup)
+{
+	struct nl_parser_param p;
+
+	p.pp_cb = checkdup ? pickup_checkdup_cb : pickup_cb;
+	p.pp_arg = cache;
+
+	if (sk->s_proto != cache->c_ops->co_protocol)
+		return -NLE_PROTO_MISMATCH;
+
+	return __cache_pickup(sk, cache, &p);
+}
+
+/**
+ * Pickup a netlink dump response and put it into a cache.
+ * @arg sk		Netlink socket.
+ * @arg cache		Cache to put items into.
+ *
+ * Waits for netlink messages to arrive, parses them and puts them into
+ * the specified cache.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int nl_cache_pickup_checkdup(struct nl_sock *sk, struct nl_cache *cache)
+{
+	return __nl_cache_pickup(sk, cache, 1);
+}
+
 /**
  * Pickup a netlink dump response and put it into a cache.
  * @arg sk		Netlink socket.
@@ -742,15 +778,7 @@ static int pickup_cb(struct nl_object *c, struct nl_parser_param *p)
  */
 int nl_cache_pickup(struct nl_sock *sk, struct nl_cache *cache)
 {
-	struct nl_parser_param p = {
-		.pp_cb = pickup_cb,
-		.pp_arg = cache,
-	};
-
-	if (sk->s_proto != cache->c_ops->co_protocol)
-		return -NLE_PROTO_MISMATCH;
-
-	return __cache_pickup(sk, cache, &p);
+	return __nl_cache_pickup(sk, cache, 0);
 }
 
 static int cache_include(struct nl_cache *cache, struct nl_object *obj,

@@ -270,7 +270,7 @@ int flnl_lookup(struct nl_sock *sk, struct flnl_request *req,
 	if (err < 0)
 		return err;
 
-	return nl_cache_pickup(sk, cache);
+	return nl_cache_pickup_checkdup(sk, cache);
 }
 
 /** @} */

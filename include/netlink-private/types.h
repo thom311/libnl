@@ -528,6 +528,7 @@ struct rtnl_u32
 	uint32_t		cu_link;
 	struct nl_data *	cu_pcnt;
 	struct nl_data *	cu_selector;
+	struct nl_data *	cu_mark;
 	struct rtnl_act*	cu_act;
 	struct nl_data *	cu_police;
 	char			cu_indev[IFNAMSIZ];

@@ -123,17 +123,17 @@ int idiagnl_str2state(const char *name)
 }
 
 static const struct trans_tbl idiag_timers[] = {
-	__ADD(IDIAG_TIMER_OFF, off),
-	__ADD(IDIAG_TIMER_ON, on),
-	__ADD(IDIAG_TIMER_KEEPALIVE, keepalive),
-	__ADD(IDIAG_TIMER_TIMEWAIT, timewait),
-	__ADD(IDIAG_TIMER_PERSIST, persist),
-	__ADD(IDIAG_TIMER_UNKNOWN, unknown),
+	__ADD(IDIAGNL_TIMER_OFF, off),
+	__ADD(IDIAGNL_TIMER_ON, on),
+	__ADD(IDIAGNL_TIMER_KEEPALIVE, keepalive),
+	__ADD(IDIAGNL_TIMER_TIMEWAIT, timewait),
+	__ADD(IDIAGNL_TIMER_PERSIST, persist),
+	__ADD(IDIAGNL_TIMER_UNKNOWN, unknown),
 };
 
 /**
  * Convert inet diag timer types to strings.
- * @arg timer	  inetdiag timer (e.g., IDIAG_TIMER_ON)
+ * @arg timer	  inetdiag timer (e.g., IDIAGNL_TIMER_ON)
  * @arg buf	  output buffer which will hold string result
  * @arg len	  length in bytes of the output buffer
  *

@@ -101,17 +101,25 @@ enum {
 #define	IDIAG_SK_MEMINFO_BACKLOG SK_MEMINFO_BACKLOG
 #define	IDIAG_SK_MEMINFO_VARS SK_MEMINFO_VARS
 
+/* deprecated names. */
+#define IDIAG_TIMER_OFF                 IDIAGNL_TIMER_OFF
+#define IDIAG_TIMER_ON                  IDIAGNL_TIMER_ON
+#define IDIAG_TIMER_KEEPALIVE           IDIAGNL_TIMER_KEEPALIVE
+#define IDIAG_TIMER_TIMEWAIT            IDIAGNL_TIMER_TIMEWAIT
+#define IDIAG_TIMER_PERSIST             IDIAGNL_TIMER_PERSIST
+#define IDIAG_TIMER_UNKNOWN             IDIAGNL_TIMER_UNKNOWN
+
 /**
  * Socket timer indentifiers
  * @ingroupd idiag
  */
 enum {
-	IDIAG_TIMER_OFF,
-	IDIAG_TIMER_ON,
-	IDIAG_TIMER_KEEPALIVE,
-	IDIAG_TIMER_TIMEWAIT,
-	IDIAG_TIMER_PERSIST,
-	IDIAG_TIMER_UNKNOWN,
+	IDIAGNL_TIMER_OFF               = 0,
+	IDIAGNL_TIMER_ON                = 1,
+	IDIAGNL_TIMER_KEEPALIVE         = 2,
+	IDIAGNL_TIMER_TIMEWAIT          = 3,
+	IDIAGNL_TIMER_PERSIST           = 4,
+	IDIAGNL_TIMER_UNKNOWN           = 5,
 };
 
 extern char *	idiagnl_state2str(int, char *, size_t);

@@ -17,7 +17,32 @@
 #include <linux/inet_diag.h>
 
 
+/** @cond SKIP */
+#define IDIAGNL_ATTR_FAMILY                     (0x1 << 1)
+#define IDIAGNL_ATTR_STATE                      (0x1 << 2)
+#define IDIAGNL_ATTR_TIMER                      (0x1 << 3)
+#define IDIAGNL_ATTR_RETRANS                    (0x1 << 4)
+#define IDIAGNL_ATTR_SPORT                      (0x1 << 5)
+#define IDIAGNL_ATTR_DPORT                      (0x1 << 6)
+#define IDIAGNL_ATTR_SRC                        (0x1 << 7)
+#define IDIAGNL_ATTR_DST                        (0x1 << 8)
+#define IDIAGNL_ATTR_IFINDEX                    (0x1 << 9)
+#define IDIAGNL_ATTR_EXPIRES                    (0x1 << 10)
+#define IDIAGNL_ATTR_RQUEUE                     (0x1 << 11)
+#define IDIAGNL_ATTR_WQUEUE                     (0x1 << 12)
+#define IDIAGNL_ATTR_UID                        (0x1 << 13)
+#define IDIAGNL_ATTR_INODE                      (0x1 << 14)
+#define IDIAGNL_ATTR_TOS                        (0x1 << 15)
+#define IDIAGNL_ATTR_TCLASS                     (0x1 << 16)
+#define IDIAGNL_ATTR_SHUTDOWN                   (0x1 << 17)
+#define IDIAGNL_ATTR_CONG                       (0x1 << 18)
+#define IDIAGNL_ATTR_MEMINFO                    (0x1 << 19)
+#define IDIAGNL_ATTR_VEGASINFO                  (0x1 << 20)
+#define IDIAGNL_ATTR_TCPINFO                    (0x1 << 21)
+#define IDIAGNL_ATTR_SKMEMINFO                  (0x1 << 22)
+
 #define _INET_DIAG_ALL ((1<<(INET_DIAG_MAX+1))-1)
+/** @endcond */
 
 /**
  * @ingroup idiag
@@ -143,6 +168,7 @@ uint8_t idiagnl_msg_get_family(const struct idiagnl_msg *msg)
 void idiagnl_msg_set_family(struct idiagnl_msg *msg, uint8_t family)
 {
 	msg->idiag_family = family;
+	msg->ce_mask |= IDIAGNL_ATTR_FAMILY;
 }
 
 uint8_t idiagnl_msg_get_state(const struct idiagnl_msg *msg)
@@ -153,6 +179,7 @@ uint8_t idiagnl_msg_get_state(const struct idiagnl_msg *msg)
 void idiagnl_msg_set_state(struct idiagnl_msg *msg, uint8_t state)
 {
 	msg->idiag_state = state;
+	msg->ce_mask |= IDIAGNL_ATTR_STATE;
 }
 
 uint8_t idiagnl_msg_get_timer(const struct idiagnl_msg *msg)
@@ -163,6 +190,7 @@ uint8_t idiagnl_msg_get_timer(const struct idiagnl_msg *msg)
 void idiagnl_msg_set_timer(struct idiagnl_msg *msg, uint8_t timer)
 {
 	msg->idiag_timer = timer;
+	msg->ce_mask |= IDIAGNL_ATTR_TIMER;
 }
 
 uint8_t idiagnl_msg_get_retrans(const struct idiagnl_msg *msg)
@@ -173,6 +201,7 @@ uint8_t idiagnl_msg_get_retrans(const struct idiagnl_msg *msg)
 void idiagnl_msg_set_retrans(struct idiagnl_msg *msg, uint8_t retrans)
 {
 	msg->idiag_retrans = retrans;
+	msg->ce_mask |= IDIAGNL_ATTR_RETRANS;
 }
 
 uint16_t idiagnl_msg_get_sport(struct idiagnl_msg *msg)
@@ -183,6 +212,7 @@ uint16_t idiagnl_msg_get_sport(struct idiagnl_msg *msg)
 void idiagnl_msg_set_sport(struct idiagnl_msg *msg, uint16_t port)
 {
 	msg->idiag_sport = port;
+	msg->ce_mask |= IDIAGNL_ATTR_SPORT;
 }
 
 uint16_t idiagnl_msg_get_dport(struct idiagnl_msg *msg)
@@ -193,6 +223,7 @@ uint16_t idiagnl_msg_get_dport(struct idiagnl_msg *msg)
 void idiagnl_msg_set_dport(struct idiagnl_msg *msg, uint16_t port)
 {
 	msg->idiag_dport = port;
+	msg->ce_mask |= IDIAGNL_ATTR_DPORT;
 }
 
 struct nl_addr *idiagnl_msg_get_src(const struct idiagnl_msg *msg)
@@ -207,6 +238,7 @@ int idiagnl_msg_set_src(struct idiagnl_msg *msg, struct nl_addr *addr)
 
 	nl_addr_get(addr);
 	msg->idiag_src = addr;
+	msg->ce_mask |= IDIAGNL_ATTR_SRC;
 
 	return 0;
 }
@@ -223,6 +255,7 @@ int idiagnl_msg_set_dst(struct idiagnl_msg *msg, struct nl_addr *addr)
 
 	nl_addr_get(addr);
 	msg->idiag_dst = addr;
+	msg->ce_mask |= IDIAGNL_ATTR_DST;
 
 	return 0;
 }
@@ -235,6 +268,7 @@ uint32_t idiagnl_msg_get_ifindex(const struct idiagnl_msg *msg)
 void idiagnl_msg_set_ifindex(struct idiagnl_msg *msg, uint32_t ifindex)
 {
 	msg->idiag_ifindex = ifindex;
+	msg->ce_mask |= IDIAGNL_ATTR_IFINDEX;
 }
 
 uint32_t idiagnl_msg_get_expires(const struct idiagnl_msg *msg)
@@ -245,6 +279,7 @@ uint32_t idiagnl_msg_get_expires(const struct idiagnl_msg *msg)
 void idiagnl_msg_set_expires(struct idiagnl_msg *msg, uint32_t expires)
 {
 	msg->idiag_expires = expires;
+	msg->ce_mask |= IDIAGNL_ATTR_EXPIRES;
 }
 
 uint32_t idiagnl_msg_get_rqueue(const struct idiagnl_msg *msg)
@@ -255,6 +290,7 @@ uint32_t idiagnl_msg_get_rqueue(const struct idiagnl_msg *msg)
 void idiagnl_msg_set_rqueue(struct idiagnl_msg *msg, uint32_t rqueue)
 {
 	msg->idiag_rqueue = rqueue;
+	msg->ce_mask |= IDIAGNL_ATTR_RQUEUE;
 }
 
 uint32_t idiagnl_msg_get_wqueue(const struct idiagnl_msg *msg)
@@ -265,6 +301,7 @@ uint32_t idiagnl_msg_get_wqueue(const struct idiagnl_msg *msg)
 void idiagnl_msg_set_wqueue(struct idiagnl_msg *msg, uint32_t wqueue)
 {
 	msg->idiag_wqueue = wqueue;
+	msg->ce_mask |= IDIAGNL_ATTR_WQUEUE;
 }
 
 uint32_t idiagnl_msg_get_uid(const struct idiagnl_msg *msg)
@@ -275,6 +312,7 @@ uint32_t idiagnl_msg_get_uid(const struct idiagnl_msg *msg)
 void idiagnl_msg_set_uid(struct idiagnl_msg *msg, uint32_t uid)
 {
 	msg->idiag_uid = uid;
+	msg->ce_mask |= IDIAGNL_ATTR_UID;
 }
 
 uint32_t idiagnl_msg_get_inode(const struct idiagnl_msg *msg)
@@ -285,6 +323,7 @@ uint32_t idiagnl_msg_get_inode(const struct idiagnl_msg *msg)
 void idiagnl_msg_set_inode(struct idiagnl_msg *msg, uint32_t inode)
 {
 	msg->idiag_inode = inode;
+	msg->ce_mask |= IDIAGNL_ATTR_INODE;
 }
 
 uint8_t idiagnl_msg_get_tos(const struct idiagnl_msg *msg)
@@ -295,6 +334,7 @@ uint8_t idiagnl_msg_get_tos(const struct idiagnl_msg *msg)
 void idiagnl_msg_set_tos(struct idiagnl_msg *msg, uint8_t tos)
 {
 	msg->idiag_tos = tos;
+	msg->ce_mask |= IDIAGNL_ATTR_TOS;
 }
 
 uint8_t idiagnl_msg_get_tclass(const struct idiagnl_msg *msg)
@@ -305,6 +345,7 @@ uint8_t idiagnl_msg_get_tclass(const struct idiagnl_msg *msg)
 void idiagnl_msg_set_tclass(struct idiagnl_msg *msg, uint8_t tclass)
 {
 	msg->idiag_tclass = tclass;
+	msg->ce_mask |= IDIAGNL_ATTR_TCLASS;
 }
 
 uint8_t	idiagnl_msg_get_shutdown(const struct idiagnl_msg *msg)
@@ -315,6 +356,7 @@ uint8_t	idiagnl_msg_get_shutdown(const struct idiagnl_msg *msg)
 void  idiagnl_msg_set_shutdown(struct idiagnl_msg *msg, uint8_t shutdown)
 {
 	msg->idiag_shutdown = shutdown;
+	msg->ce_mask |= IDIAGNL_ATTR_SHUTDOWN;
 }
 
 char *idiagnl_msg_get_cong(const struct idiagnl_msg *msg)
@@ -326,6 +368,7 @@ void idiagnl_msg_set_cong(struct idiagnl_msg *msg, char *cong)
 {
 	free (msg->idiag_cong);
 	msg->idiag_cong = strdup(cong);
+	msg->ce_mask |= IDIAGNL_ATTR_CONG;
 }
 
 struct idiagnl_meminfo *idiagnl_msg_get_meminfo(const struct idiagnl_msg *msg)
@@ -333,14 +376,14 @@ struct idiagnl_meminfo *idiagnl_msg_get_meminfo(const struct idiagnl_msg *msg)
 	return msg->idiag_meminfo;
 }
 
-void idiagnl_msg_set_meminfo(struct idiagnl_msg *msg, struct idiagnl_meminfo
-		*minfo)
+void idiagnl_msg_set_meminfo(struct idiagnl_msg *msg, struct idiagnl_meminfo *minfo)
 {
 	if (msg->idiag_meminfo)
 		idiagnl_meminfo_put(msg->idiag_meminfo);
 
 	idiagnl_meminfo_get(minfo);
 	msg->idiag_meminfo = minfo;
+	msg->ce_mask |= IDIAGNL_ATTR_MEMINFO;
 }
 
 struct idiagnl_vegasinfo *idiagnl_msg_get_vegasinfo(const struct idiagnl_msg *msg)
@@ -348,14 +391,14 @@ struct idiagnl_vegasinfo *idiagnl_msg_get_vegasinfo(const struct idiagnl_msg *ms
 	return msg->idiag_vegasinfo;
 }
 
-void idiagnl_msg_set_vegasinfo(struct idiagnl_msg *msg, struct idiagnl_vegasinfo
-		*vinfo)
+void idiagnl_msg_set_vegasinfo(struct idiagnl_msg *msg, struct idiagnl_vegasinfo *vinfo)
 {
 	if (msg->idiag_vegasinfo)
 		idiagnl_vegasinfo_put(msg->idiag_vegasinfo);
 
 	idiagnl_vegasinfo_get(vinfo);
 	msg->idiag_vegasinfo = vinfo;
+	msg->ce_mask |= IDIAGNL_ATTR_VEGASINFO;
 }
 
 struct tcp_info idiagnl_msg_get_tcpinfo(const struct idiagnl_msg *msg)
@@ -366,6 +409,7 @@ struct tcp_info idiagnl_msg_get_tcpinfo(const struct idiagnl_msg *msg)
 void idiagnl_msg_set_tcpinfo(struct idiagnl_msg *msg, struct tcp_info *tinfo)
 {
 	memcpy(&msg->idiag_tcpinfo, tinfo, sizeof(struct tcp_info));
+	msg->ce_mask |= IDIAGNL_ATTR_TCPINFO;
 }
 
 /** @} */
@@ -577,30 +621,40 @@ static int idiagnl_msg_clone(struct nl_object *_dst, struct nl_object *_src)
 	dst->idiag_dst = NULL;
 	dst->idiag_meminfo = NULL;
 	dst->idiag_vegasinfo = NULL;
+	dst->ce_mask &= ~(IDIAGNL_ATTR_CONG |
+	                  IDIAGNL_ATTR_SRC |
+	                  IDIAGNL_ATTR_DST |
+	                  IDIAGNL_ATTR_MEMINFO |
+	                  IDIAGNL_ATTR_VEGASINFO);
 
 	if (src->idiag_cong) {
 		if (!(dst->idiag_cong = strdup(src->idiag_cong)))
 			return -NLE_NOMEM;
+		dst->ce_mask |= IDIAGNL_ATTR_CONG;
 	}
 
 	if (src->idiag_src) {
 		if (!(dst->idiag_src = nl_addr_clone(src->idiag_src)))
 			return -NLE_NOMEM;
+		dst->ce_mask |= IDIAGNL_ATTR_SRC;
 	}
 
 	if (src->idiag_dst) {
 		if (!(dst->idiag_dst = nl_addr_clone(src->idiag_dst)))
 			return -NLE_NOMEM;
+		dst->ce_mask |= IDIAGNL_ATTR_DST;
 	}
 
 	if (src->idiag_meminfo) {
 		if (!(dst->idiag_meminfo = (struct idiagnl_meminfo *) nl_object_clone((struct nl_object *) src->idiag_meminfo)))
 			return -NLE_NOMEM;
+		dst->ce_mask |= IDIAGNL_ATTR_MEMINFO;
 	}
 
 	if (src->idiag_vegasinfo) {
 		if (!(dst->idiag_vegasinfo = (struct idiagnl_vegasinfo *) nl_object_clone((struct nl_object *) src->idiag_vegasinfo)))
 			return -NLE_NOMEM;
+		dst->ce_mask |= IDIAGNL_ATTR_VEGASINFO;
 	}
 
 	return 0;
@@ -649,6 +703,19 @@ int idiagnl_msg_parse(struct nlmsghdr *nlh, struct idiagnl_msg **result)
 	msg->idiag_dport = raw_msg->id.idiag_dport;
 	msg->idiag_ifindex = raw_msg->id.idiag_if;
 
+	msg->ce_mask = (IDIAGNL_ATTR_FAMILY |
+	                IDIAGNL_ATTR_STATE |
+	                IDIAGNL_ATTR_TIMER |
+	                IDIAGNL_ATTR_RETRANS |
+	                IDIAGNL_ATTR_EXPIRES |
+	                IDIAGNL_ATTR_RQUEUE |
+	                IDIAGNL_ATTR_WQUEUE |
+	                IDIAGNL_ATTR_UID |
+	                IDIAGNL_ATTR_INODE |
+	                IDIAGNL_ATTR_SPORT |
+	                IDIAGNL_ATTR_DPORT |
+	                IDIAGNL_ATTR_IFINDEX);
+
 	dst = nl_addr_build(raw_msg->idiag_family, raw_msg->id.idiag_dst,
 			sizeof(raw_msg->id.idiag_dst));
 	if (!dst)
@@ -671,21 +738,31 @@ int idiagnl_msg_parse(struct nlmsghdr *nlh, struct idiagnl_msg **result)
 
 	nl_addr_put(src);
 
-	if (tb[INET_DIAG_TOS])
+	if (tb[INET_DIAG_TOS]) {
 		msg->idiag_tos = nla_get_u8(tb[INET_DIAG_TOS]);
+		msg->ce_mask |= IDIAGNL_ATTR_TOS;
+	}
 
-	if (tb[INET_DIAG_TCLASS])
+	if (tb[INET_DIAG_TCLASS]) {
 		msg->idiag_tclass = nla_get_u8(tb[INET_DIAG_TCLASS]);
+		msg->ce_mask |= IDIAGNL_ATTR_TCLASS;
+	}
 
-	if (tb[INET_DIAG_SHUTDOWN])
+	if (tb[INET_DIAG_SHUTDOWN]) {
 		msg->idiag_shutdown = nla_get_u8(tb[INET_DIAG_SHUTDOWN]);
+		msg->ce_mask |= IDIAGNL_ATTR_SHUTDOWN;
+	}
 
-	if (tb[INET_DIAG_CONG])
+	if (tb[INET_DIAG_CONG]) {
 		msg->idiag_cong = nla_strdup(tb[INET_DIAG_CONG]);
+		msg->ce_mask |= IDIAGNL_ATTR_CONG;
+	}
 
-	if (tb[INET_DIAG_INFO])
+	if (tb[INET_DIAG_INFO]) {
 		nla_memcpy(&msg->idiag_tcpinfo, tb[INET_DIAG_INFO],
 				sizeof(msg->idiag_tcpinfo));
+		msg->ce_mask |= IDIAGNL_ATTR_TCPINFO;
+	}
 
 	if (tb[INET_DIAG_MEMINFO]) {
 		struct idiagnl_meminfo *minfo = idiagnl_meminfo_alloc();
@@ -703,6 +780,7 @@ int idiagnl_msg_parse(struct nlmsghdr *nlh, struct idiagnl_msg **result)
 		idiagnl_meminfo_set_tmem(minfo, raw_minfo->idiag_tmem);
 
 		msg->idiag_meminfo = minfo;
+		msg->ce_mask |= IDIAGNL_ATTR_MEMINFO;
 	}
 
 	if (tb[INET_DIAG_VEGASINFO]) {
@@ -721,11 +799,14 @@ int idiagnl_msg_parse(struct nlmsghdr *nlh, struct idiagnl_msg **result)
 		idiagnl_vegasinfo_set_minrtt(vinfo, raw_vinfo->tcpv_minrtt);
 
 		msg->idiag_vegasinfo = vinfo;
+		msg->ce_mask |= IDIAGNL_ATTR_VEGASINFO;
 	}
 
-	if (tb[INET_DIAG_SKMEMINFO])
+	if (tb[INET_DIAG_SKMEMINFO]) {
 		nla_memcpy(&msg->idiag_skmeminfo, tb[INET_DIAG_SKMEMINFO],
 				sizeof(msg->idiag_skmeminfo));
+		msg->ce_mask |= IDIAGNL_ATTR_SKMEMINFO;
+	}
 
 	*result = msg;
 	return 0;
@@ -737,6 +818,37 @@ errout:
 errout_nomem:
 	err = -NLE_NOMEM;
 	goto errout;
+}
+
+static const struct trans_tbl idiagnl_attrs[] = {
+	__ADD(IDIAGNL_ATTR_FAMILY, family),
+	__ADD(IDIAGNL_ATTR_STATE, state),
+	__ADD(IDIAGNL_ATTR_TIMER, timer),
+	__ADD(IDIAGNL_ATTR_RETRANS, retrans),
+	__ADD(IDIAGNL_ATTR_SPORT, sport),
+	__ADD(IDIAGNL_ATTR_DPORT, dport),
+	__ADD(IDIAGNL_ATTR_SRC, src),
+	__ADD(IDIAGNL_ATTR_DST, dst),
+	__ADD(IDIAGNL_ATTR_IFINDEX, ifindex),
+	__ADD(IDIAGNL_ATTR_EXPIRES, expires),
+	__ADD(IDIAGNL_ATTR_RQUEUE, rqueue),
+	__ADD(IDIAGNL_ATTR_WQUEUE, wqueue),
+	__ADD(IDIAGNL_ATTR_UID, uid),
+	__ADD(IDIAGNL_ATTR_INODE, inode),
+	__ADD(IDIAGNL_ATTR_TOS, tos),
+	__ADD(IDIAGNL_ATTR_TCLASS, tclass),
+	__ADD(IDIAGNL_ATTR_SHUTDOWN, shutdown),
+	__ADD(IDIAGNL_ATTR_CONG, cong),
+	__ADD(IDIAGNL_ATTR_MEMINFO, meminfo),
+	__ADD(IDIAGNL_ATTR_VEGASINFO, vegasinfo),
+	__ADD(IDIAGNL_ATTR_TCPINFO, tcpinfo),
+	__ADD(IDIAGNL_ATTR_SKMEMINFO, skmeminfo),
+};
+
+static char *_idiagnl_attrs2str(int attrs, char *buf, size_t len)
+{
+	return __flags2str(attrs, buf, len, idiagnl_attrs,
+	                   ARRAY_SIZE(idiagnl_attrs));
 }
 
 static void idiagnl_keygen(struct nl_object *obj, uint32_t *hashkey,
@@ -777,10 +889,11 @@ struct nl_object_ops idiagnl_msg_obj_ops = {
 		[NL_DUMP_STATS]		 = idiag_msg_dump_stats,
 	},
 	.oo_keygen			= idiagnl_keygen,
-	/* FIXME: using inet diag extended attributes as change flags (ce_mask)
-	 * is very wrong. */
-	.oo_attrs2str			= idiagnl_attrs2str,
-	.oo_id_attrs			= (INET_DIAG_INFO)
+	.oo_attrs2str			= _idiagnl_attrs2str,
+	.oo_id_attrs                    = (IDIAGNL_ATTR_FAMILY |
+	                                   IDIAGNL_ATTR_STATE |
+	                                   IDIAGNL_ATTR_SPORT |
+	                                   IDIAGNL_ATTR_DPORT),
 };
 /** @endcond */
 

@@ -324,6 +324,7 @@ char *idiagnl_msg_get_cong(const struct idiagnl_msg *msg)
 
 void idiagnl_msg_set_cong(struct idiagnl_msg *msg, char *cong)
 {
+	free (msg->idiag_cong);
 	msg->idiag_cong = strdup(cong);
 }
 

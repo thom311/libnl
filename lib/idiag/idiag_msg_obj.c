@@ -851,6 +851,22 @@ static char *_idiagnl_attrs2str(int attrs, char *buf, size_t len)
 	                   ARRAY_SIZE(idiagnl_attrs));
 }
 
+static int idiagnl_compare(struct nl_object *_a, struct nl_object *_b,
+                           uint32_t attrs, int flags)
+{
+	struct idiagnl_msg *a = (struct idiagnl_msg *) _a;
+	struct idiagnl_msg *b = (struct idiagnl_msg *) _b;
+	int diff = 0;
+
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, IDIAGNL_ATTR_##ATTR, a, b, EXPR)
+	diff |= _DIFF(FAMILY, a->idiag_family != b->idiag_family);
+	diff |= _DIFF(STATE,  a->idiag_state != b->idiag_state);
+	diff |= _DIFF(SPORT,  a->idiag_sport != b->idiag_sport);
+	diff |= _DIFF(DPORT,  a->idiag_dport != b->idiag_dport);
+#undef _DIFF
+	return diff;
+}
+
 static void idiagnl_keygen(struct nl_object *obj, uint32_t *hashkey,
         uint32_t table_sz)
 {
@@ -888,6 +904,7 @@ struct nl_object_ops idiagnl_msg_obj_ops = {
 		[NL_DUMP_DETAILS]	 = idiag_msg_dump_details,
 		[NL_DUMP_STATS]		 = idiag_msg_dump_stats,
 	},
+	.oo_compare			= idiagnl_compare,
 	.oo_keygen			= idiagnl_keygen,
 	.oo_attrs2str			= _idiagnl_attrs2str,
 	.oo_id_attrs                    = (IDIAGNL_ATTR_FAMILY |

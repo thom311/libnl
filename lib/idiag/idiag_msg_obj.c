@@ -572,13 +572,36 @@ static int idiagnl_msg_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct idiagnl_msg *dst = (struct idiagnl_msg *) _dst;
 	struct idiagnl_msg *src = (struct idiagnl_msg *) _src;
 
-	if (src->idiag_src)
+	dst->idiag_cong = NULL;
+	dst->idiag_src = NULL;
+	dst->idiag_dst = NULL;
+	dst->idiag_meminfo = NULL;
+	dst->idiag_vegasinfo = NULL;
+
+	if (src->idiag_cong) {
+		if (!(dst->idiag_cong = strdup(src->idiag_cong)))
+			return -NLE_NOMEM;
+	}
+
+	if (src->idiag_src) {
 		if (!(dst->idiag_src = nl_addr_clone(src->idiag_src)))
 			return -NLE_NOMEM;
+	}
 
-	if (src->idiag_dst)
+	if (src->idiag_dst) {
 		if (!(dst->idiag_dst = nl_addr_clone(src->idiag_dst)))
 			return -NLE_NOMEM;
+	}
+
+	if (src->idiag_meminfo) {
+		if (!(dst->idiag_meminfo = (struct idiagnl_meminfo *) nl_object_clone((struct nl_object *) src->idiag_meminfo)))
+			return -NLE_NOMEM;
+	}
+
+	if (src->idiag_vegasinfo) {
+		if (!(dst->idiag_vegasinfo = (struct idiagnl_vegasinfo *) nl_object_clone((struct nl_object *) src->idiag_vegasinfo)))
+			return -NLE_NOMEM;
+	}
 
 	return 0;
 }

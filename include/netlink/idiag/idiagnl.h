@@ -19,6 +19,11 @@
 extern "C" {
 #endif
 
+/*************************************************************
+ * The following part contains DEPRECATED names and defines.
+ * Don't use them.
+ *************************************************************/
+
 /**
  * Inet Diag message types
  *
@@ -55,12 +60,6 @@ enum {
 /**
  * Macro to represent all socket states.
  * @ingroup idiag
- */
-#define IDIAGNL_SS_ALL (((1<<12)-1))
-
-/**
- * Macro to represent all socket states.
- * @ingroup idiag
  * @deprecated
  */
 #define IDIAG_SS_ALL  IDIAGNL_SS_ALL
@@ -90,7 +89,7 @@ enum {
 };
 
 
-/* Keep these only for compatibility, DO NOT USE THEM */
+/* deprectated keep these only for compatibility, DO NOT USE THEM */
 #define	IDIAG_SK_MEMINFO_RMEM_ALLOC SK_MEMINFO_RMEM_ALLOC
 #define	IDIAG_SK_MEMINFO_RCVBUF SK_MEMINFO_RCVBUF
 #define	IDIAG_SK_MEMINFO_WMEM_ALLOC SK_MEMINFO_WMEM_ALLOC
@@ -108,6 +107,14 @@ enum {
 #define IDIAG_TIMER_TIMEWAIT            IDIAGNL_TIMER_TIMEWAIT
 #define IDIAG_TIMER_PERSIST             IDIAGNL_TIMER_PERSIST
 #define IDIAG_TIMER_UNKNOWN             IDIAGNL_TIMER_UNKNOWN
+
+/*************************************************************/
+
+/**
+ * Macro to represent all socket states.
+ * @ingroup idiag
+ */
+#define IDIAGNL_SS_ALL (((1<<12)-1))
 
 /**
  * Socket timer indentifiers

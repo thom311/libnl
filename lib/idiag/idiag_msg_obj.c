@@ -603,7 +603,7 @@ int idiagnl_msg_parse(struct nlmsghdr *nlh, struct idiagnl_msg **result)
 	if (!msg)
 		goto errout_nomem;
 
-	err = nlmsg_parse(nlh, sizeof(struct inet_diag_msg), tb, IDIAG_ATTR_MAX,
+	err = nlmsg_parse(nlh, sizeof(struct inet_diag_msg), tb, IDIAG_ATTR_MAX - 1,
 			ext_policy);
 	if (err < 0)
 		goto errout;

@@ -137,6 +137,7 @@ int rtnl_tc_msg_parse(struct nlmsghdr *n, struct rtnl_tc *tc)
 			tc->tc_xstats = nl_data_alloc_attr(tbs[TCA_STATS_APP]);
 			if (tc->tc_xstats == NULL)
 				return -NLE_NOMEM;
+			tc->ce_mask |= TCA_ATTR_XSTATS;
 		} else
 			goto compat_xstats;
 	} else {
@@ -759,16 +760,24 @@ int rtnl_tc_clone(struct nl_object *dstobj, struct nl_object *srcobj)
 		dst->tc_link = src->tc_link;
 	}
 
+	dst->tc_opts = NULL;
+	dst->tc_xstats = NULL;
+	dst->tc_subdata = NULL;
+	dst->ce_mask &= ~(TCA_ATTR_OPTS |
+	                  TCA_ATTR_XSTATS);
+
 	if (src->tc_opts) {
 		dst->tc_opts = nl_data_clone(src->tc_opts);
 		if (!dst->tc_opts)
 			return -NLE_NOMEM;
+		dst->ce_mask |= TCA_ATTR_OPTS;
 	}
-	
+
 	if (src->tc_xstats) {
 		dst->tc_xstats = nl_data_clone(src->tc_xstats);
 		if (!dst->tc_xstats)
 			return -NLE_NOMEM;
+		dst->ce_mask |= TCA_ATTR_XSTATS;
 	}
 
 	if (src->tc_subdata) {

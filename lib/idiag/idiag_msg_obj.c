@@ -71,8 +71,8 @@ static struct nl_cache_ops idiagnl_msg_ops = {
 	.co_name		= "idiag/idiag",
 	.co_hdrsize		= sizeof(struct inet_diag_msg),
 	.co_msgtypes		= {
-		{ IDIAG_TCPDIAG_GETSOCK, NL_ACT_NEW, "new" },
-		{ IDIAG_DCCPDIAG_GETSOCK, NL_ACT_NEW, "new" },
+		{ TCPDIAG_GETSOCK, NL_ACT_NEW, "new" },
+		{ DCCPDIAG_GETSOCK, NL_ACT_NEW, "new" },
 		END_OF_MSGTYPES_LIST,
 	},
 	.co_protocol		= NETLINK_INET_DIAG,

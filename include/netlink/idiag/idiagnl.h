@@ -21,6 +21,9 @@ extern "C" {
 
 /**
  * Inet Diag message types
+ *
+ * deprecated: use TCPDIAG_GETSOCK, DCCPDIAG_GETSOCK and
+ * INET_DIAG_GETSOCK_MAX from linux/inet_diag.h
  */
 #define IDIAG_TCPDIAG_GETSOCK	18
 #define IDIAG_DCCPDIAG_GETSOCK	19

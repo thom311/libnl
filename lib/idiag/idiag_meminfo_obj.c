@@ -80,21 +80,10 @@ void idiagnl_meminfo_set_tmem(struct idiagnl_meminfo *minfo, uint32_t tmem)
 }
 /** @} */
 
-static int idiagnl_meminfo_clone(struct nl_object *_dst, struct nl_object *_src)
-{
-	struct idiagnl_meminfo *dst = (struct idiagnl_meminfo *) _dst;
-	struct idiagnl_meminfo *src = (struct idiagnl_meminfo *) _src;
-
-	memcpy(dst, src, sizeof(struct idiagnl_meminfo));
-
-	return 0;
-}
-
 /** @cond SKIP */
 struct nl_object_ops idiagnl_meminfo_obj_ops = {
 	.oo_name	= "idiag/idiag_meminfo",
 	.oo_size	= sizeof(struct idiagnl_meminfo),
-	.oo_clone	= idiagnl_meminfo_clone,
 };
 /** @endcond */
 /** @} */

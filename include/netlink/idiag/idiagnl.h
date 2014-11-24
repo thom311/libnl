@@ -32,28 +32,39 @@ extern "C" {
 /**
  * Socket state identifiers
  * @ingroup idiag
+ * @deprecated: use instead the TCP_* defines from netinet/tcp.h.
  */
 enum {
-	IDIAG_SS_UNKNOWN,
-	IDIAG_SS_ESTABLISHED,
-	IDIAG_SS_SYN_SENT,
-	IDIAG_SS_SYN_RECV,
-	IDIAG_SS_FIN_WAIT1,
-	IDIAG_SS_FIN_WAIT2,
-	IDIAG_SS_TIME_WAIT,
-	IDIAG_SS_CLOSE,
-	IDIAG_SS_CLOSE_WAIT,
-	IDIAG_SS_LAST_ACK,
-	IDIAG_SS_LISTEN,
-	IDIAG_SS_CLOSING,
-	IDIAG_SS_MAX
+	IDIAG_SS_UNKNOWN           = 0,
+
+	IDIAG_SS_ESTABLISHED       = 1,  /* TCP_ESTABLISHED */
+	IDIAG_SS_SYN_SENT          = 2,  /* TCP_SYN_SENT */
+	IDIAG_SS_SYN_RECV          = 3,  /* TCP_SYN_RECV */
+	IDIAG_SS_FIN_WAIT1         = 4,  /* TCP_FIN_WAIT1 */
+	IDIAG_SS_FIN_WAIT2         = 5,  /* TCP_FIN_WAIT2 */
+	IDIAG_SS_TIME_WAIT         = 6,  /* TCP_TIME_WAIT */
+	IDIAG_SS_CLOSE             = 7,  /* TCP_CLOSE */
+	IDIAG_SS_CLOSE_WAIT        = 8,  /* TCP_CLOSE_WAIT */
+	IDIAG_SS_LAST_ACK          = 9,  /* TCP_LAST_ACK */
+	IDIAG_SS_LISTEN            = 10, /* TCP_LISTEN */
+	IDIAG_SS_CLOSING           = 11, /* TCP_CLOSING */
+
+	IDIAG_SS_MAX               = 12,
 };
 
 /**
  * Macro to represent all socket states.
  * @ingroup idiag
  */
-#define IDIAG_SS_ALL ((1<<IDIAG_SS_MAX)-1)
+#define IDIAGNL_SS_ALL (((1<<12)-1))
+
+/**
+ * Macro to represent all socket states.
+ * @ingroup idiag
+ * @deprecated
+ */
+#define IDIAG_SS_ALL  IDIAGNL_SS_ALL
+
 
 /**
  * Inet Diag extended attributes

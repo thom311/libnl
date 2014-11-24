@@ -82,25 +82,22 @@ int idiagnl_send_simple(struct nl_sock *sk, int flags, uint8_t family,
  */
 
 static const struct trans_tbl idiag_states[] = {
-	__ADD(IDIAG_SS_UNKNOWN, unknown),
-	__ADD(IDIAG_SS_ESTABLISHED, established),
-	__ADD(IDIAG_SS_SYN_SENT, syn_sent),
-	__ADD(IDIAG_SS_SYN_RECV, syn_recv),
-	__ADD(IDIAG_SS_FIN_WAIT1, fin_wait),
-	__ADD(IDIAG_SS_FIN_WAIT2, fin_wait2),
-	__ADD(IDIAG_SS_TIME_WAIT, time_wait),
-	__ADD(IDIAG_SS_CLOSE, close),
-	__ADD(IDIAG_SS_CLOSE_WAIT, close_wait),
-	__ADD(IDIAG_SS_LAST_ACK, last_ack),
-	__ADD(IDIAG_SS_LISTEN, listen),
-	__ADD(IDIAG_SS_CLOSING, closing),
-	__ADD(IDIAG_SS_MAX, max),
-	{ ((1<<IDIAG_SS_MAX)-1), "all" }
+	__ADD(TCP_ESTABLISHED, established),
+	__ADD(TCP_SYN_SENT, syn_sent),
+	__ADD(TCP_SYN_RECV, syn_recv),
+	__ADD(TCP_FIN_WAIT1, fin_wait),
+	__ADD(TCP_FIN_WAIT2, fin_wait2),
+	__ADD(TCP_TIME_WAIT, time_wait),
+	__ADD(TCP_CLOSE, close),
+	__ADD(TCP_CLOSE_WAIT, close_wait),
+	__ADD(TCP_LAST_ACK, last_ack),
+	__ADD(TCP_LISTEN, listen),
+	__ADD(TCP_CLOSING, closing),
 };
 
 /**
  * Convert inet diag socket states to strings.
- * @arg state	  inetdiag socket state (e.g., IDIAG_SS_ESTABLISHED)
+ * @arg state	  inetdiag socket state (e.g., TCP_ESTABLISHED)
  * @arg buf	  output buffer which will hold string result
  * @arg len	  length in bytes of the output buffer
  *

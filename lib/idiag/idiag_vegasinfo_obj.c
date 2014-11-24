@@ -83,22 +83,10 @@ void idiagnl_vegasinfo_set_minrtt(struct idiagnl_vegasinfo *vinfo, uint32_t
 }
 /** @} */
 
-static int idiagnl_vegasinfo_clone(struct nl_object *_dst,
-                                   struct nl_object *_src)
-{
-	struct idiagnl_vegasinfo *dst = (struct idiagnl_vegasinfo *) _dst;
-	struct idiagnl_vegasinfo *src = (struct idiagnl_vegasinfo *) _src;
-
-	memcpy(dst, src, sizeof(struct idiagnl_vegasinfo));
-
-	return 0;
-}
-
 /** @cond SKIP */
 struct nl_object_ops idiagnl_vegasinfo_obj_ops = {
 	.oo_name	= "idiag/idiag_vegasinfo",
 	.oo_size	= sizeof(struct idiagnl_vegasinfo),
-	.oo_clone	= idiagnl_vegasinfo_clone,
 };
 /** @endcond */
 /** @} */

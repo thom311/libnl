@@ -131,6 +131,7 @@ noinst_HEADERS = \
 	linux-private/linux/if_link.h \
 	linux-private/linux/if_tunnel.h \
 	linux-private/linux/if_vlan.h \
+	linux-private/linux/inet_diag.h \
 	linux-private/linux/ip.h \
 	linux-private/linux/ip_mp_alg.h \
 	linux-private/linux/ipv6.h \

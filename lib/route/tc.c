@@ -137,6 +137,7 @@ int rtnl_tc_msg_parse(struct nlmsghdr *n, struct rtnl_tc *tc)
 			tc->tc_xstats = nl_data_alloc_attr(tbs[TCA_STATS_APP]);
 			if (tc->tc_xstats == NULL)
 				return -NLE_NOMEM;
+			tc->ce_mask |= TCA_ATTR_XSTATS;
 		} else
 			goto compat_xstats;
 	} else {

@@ -55,25 +55,26 @@ enum {
 /**
  * Inet Diag extended attributes
  * @ingroup idiag
- */
+ * @deprecated These attributes should not be used. They mirror the
+ * INET_DIAG_* extension flags from kernel headers. Use those instead. */
 enum {
-	IDIAG_ATTR_NONE,
-	IDIAG_ATTR_MEMINFO,
-	IDIAG_ATTR_INFO,
-	IDIAG_ATTR_VEGASINFO,
-	IDIAG_ATTR_CONG,
-	IDIAG_ATTR_TOS,
-	IDIAG_ATTR_TCLASS,
-	IDIAG_ATTR_SKMEMINFO,
-	IDIAG_ATTR_SHUTDOWN,
-	IDIAG_ATTR_MAX,
+	IDIAG_ATTR_NONE         = 0, /* INET_DIAG_NONE */
+	IDIAG_ATTR_MEMINFO      = 1, /* INET_DIAG_MEMINFO */
+	IDIAG_ATTR_INFO         = 2, /* INET_DIAG_INFO */
+	IDIAG_ATTR_VEGASINFO    = 3, /* INET_DIAG_VEGASINFO */
+	IDIAG_ATTR_CONG         = 4, /* INET_DIAG_CONG */
+	IDIAG_ATTR_TOS          = 5, /* INET_DIAG_TOS */
+	IDIAG_ATTR_TCLASS       = 6, /* INET_DIAG_TCLASS */
+	IDIAG_ATTR_SKMEMINFO    = 7, /* INET_DIAG_SKMEMINFO */
+	IDIAG_ATTR_SHUTDOWN     = 8, /* INET_DIAG_SHUTDOWN */
+
+	/* IDIAG_ATTR_MAX was wrong, because it did not correspond to
+	 * INET_DIAG_MAX. Anyway, freeze it to the previous value. */
+	IDIAG_ATTR_MAX          = 9,
+
+	IDIAG_ATTR_ALL          = (1<<IDIAG_ATTR_MAX) - 1,
 };
 
-/**
- * Macro to represent all socket attributes.
- * @ingroup idiag
- */
-#define IDIAG_ATTR_ALL ((1<<IDIAG_ATTR_MAX)-1)
 
 /* Keep these only for compatibility, DO NOT USE THEM */
 #define	IDIAG_SK_MEMINFO_RMEM_ALLOC SK_MEMINFO_RMEM_ALLOC

@@ -16,6 +16,9 @@
 #include <netlink/idiag/vegasinfo.h>
 #include <linux/inet_diag.h>
 
+
+#define _INET_DIAG_ALL ((1<<(INET_DIAG_MAX+1))-1)
+
 /**
  * @ingroup idiag
  * @defgroup idiagnl_msg Inet Diag Messages
@@ -61,7 +64,7 @@ static int idiagnl_request_update(struct nl_cache *cache, struct nl_sock *sk)
 	int family = cache->c_iarg1;
 	int states = cache->c_iarg2;
 
-	return idiagnl_send_simple(sk, 0, family, states, IDIAG_ATTR_ALL);
+	return idiagnl_send_simple(sk, 0, family, states, _INET_DIAG_ALL);
 }
 
 static struct nl_cache_ops idiagnl_msg_ops = {
@@ -579,16 +582,16 @@ static int idiagnl_msg_clone(struct nl_object *_dst, struct nl_object *_src)
 	return 0;
 }
 
-static struct nla_policy ext_policy[IDIAG_ATTR_MAX] = {
-	[IDIAG_ATTR_MEMINFO]    = { .minlen = sizeof(struct inet_diag_meminfo) },
-	[IDIAG_ATTR_INFO]       = { .minlen = sizeof(struct tcp_info)	},
-	[IDIAG_ATTR_VEGASINFO]  = { .minlen = sizeof(struct tcpvegas_info) },
-	[IDIAG_ATTR_CONG]       = { .type = NLA_STRING },
-	[IDIAG_ATTR_TOS]        = { .type = NLA_U8 },
-	[IDIAG_ATTR_TCLASS]     = { .type = NLA_U8 },
+static struct nla_policy ext_policy[INET_DIAG_MAX+1] = {
+	[INET_DIAG_MEMINFO]    = { .minlen = sizeof(struct inet_diag_meminfo) },
+	[INET_DIAG_INFO]       = { .minlen = sizeof(struct tcp_info)	},
+	[INET_DIAG_VEGASINFO]  = { .minlen = sizeof(struct tcpvegas_info) },
+	[INET_DIAG_CONG]       = { .type = NLA_STRING },
+	[INET_DIAG_TOS]        = { .type = NLA_U8 },
+	[INET_DIAG_TCLASS]     = { .type = NLA_U8 },
 	/* Older kernel doesn't have SK_MEMINFO_BACKLOG */
-	[IDIAG_ATTR_SKMEMINFO]  = { .minlen = (sizeof(uint32_t) * (SK_MEMINFO_OPTMEM + 1)) },
-	[IDIAG_ATTR_SHUTDOWN]   = { .type = NLA_U8 },
+	[INET_DIAG_SKMEMINFO]  = { .minlen = (sizeof(uint32_t) * (SK_MEMINFO_OPTMEM + 1)) },
+	[INET_DIAG_SHUTDOWN]   = { .type = NLA_U8 },
 };
 
 int idiagnl_msg_parse(struct nlmsghdr *nlh, struct idiagnl_msg **result)
@@ -596,14 +599,14 @@ int idiagnl_msg_parse(struct nlmsghdr *nlh, struct idiagnl_msg **result)
 	struct idiagnl_msg *msg = NULL;
 	struct inet_diag_msg *raw_msg = NULL;
 	struct nl_addr *src = NULL, *dst = NULL;
-	struct nlattr *tb[IDIAG_ATTR_MAX];
+	struct nlattr *tb[INET_DIAG_MAX+1];
 	int err = 0;
 
 	msg = idiagnl_msg_alloc();
 	if (!msg)
 		goto errout_nomem;
 
-	err = nlmsg_parse(nlh, sizeof(struct inet_diag_msg), tb, IDIAG_ATTR_MAX - 1,
+	err = nlmsg_parse(nlh, sizeof(struct inet_diag_msg), tb, INET_DIAG_MAX,
 			ext_policy);
 	if (err < 0)
 		goto errout;
@@ -644,23 +647,23 @@ int idiagnl_msg_parse(struct nlmsghdr *nlh, struct idiagnl_msg **result)
 
 	nl_addr_put(src);
 
-	if (tb[IDIAG_ATTR_TOS])
-		msg->idiag_tos = nla_get_u8(tb[IDIAG_ATTR_TOS]);
+	if (tb[INET_DIAG_TOS])
+		msg->idiag_tos = nla_get_u8(tb[INET_DIAG_TOS]);
 
-	if (tb[IDIAG_ATTR_TCLASS])
-		msg->idiag_tclass = nla_get_u8(tb[IDIAG_ATTR_TCLASS]);
+	if (tb[INET_DIAG_TCLASS])
+		msg->idiag_tclass = nla_get_u8(tb[INET_DIAG_TCLASS]);
 
-	if (tb[IDIAG_ATTR_SHUTDOWN])
-		msg->idiag_shutdown = nla_get_u8(tb[IDIAG_ATTR_SHUTDOWN]);
+	if (tb[INET_DIAG_SHUTDOWN])
+		msg->idiag_shutdown = nla_get_u8(tb[INET_DIAG_SHUTDOWN]);
 
-	if (tb[IDIAG_ATTR_CONG])
-		msg->idiag_cong = nla_strdup(tb[IDIAG_ATTR_CONG]);
+	if (tb[INET_DIAG_CONG])
+		msg->idiag_cong = nla_strdup(tb[INET_DIAG_CONG]);
 
-	if (tb[IDIAG_ATTR_INFO])
-		nla_memcpy(&msg->idiag_tcpinfo, tb[IDIAG_ATTR_INFO],
+	if (tb[INET_DIAG_INFO])
+		nla_memcpy(&msg->idiag_tcpinfo, tb[INET_DIAG_INFO],
 				sizeof(msg->idiag_tcpinfo));
 
-	if (tb[IDIAG_ATTR_MEMINFO]) {
+	if (tb[INET_DIAG_MEMINFO]) {
 		struct idiagnl_meminfo *minfo = idiagnl_meminfo_alloc();
 		struct inet_diag_meminfo *raw_minfo = NULL;
 
@@ -668,7 +671,7 @@ int idiagnl_msg_parse(struct nlmsghdr *nlh, struct idiagnl_msg **result)
 			goto errout_nomem;
 
 		raw_minfo = (struct inet_diag_meminfo *)
-			nla_data(tb[IDIAG_ATTR_MEMINFO]);
+			nla_data(tb[INET_DIAG_MEMINFO]);
 
 		idiagnl_meminfo_set_rmem(minfo, raw_minfo->idiag_rmem);
 		idiagnl_meminfo_set_wmem(minfo, raw_minfo->idiag_wmem);
@@ -678,7 +681,7 @@ int idiagnl_msg_parse(struct nlmsghdr *nlh, struct idiagnl_msg **result)
 		msg->idiag_meminfo = minfo;
 	}
 
-	if (tb[IDIAG_ATTR_VEGASINFO]) {
+	if (tb[INET_DIAG_VEGASINFO]) {
 		struct idiagnl_vegasinfo *vinfo = idiagnl_vegasinfo_alloc();
 		struct tcpvegas_info *raw_vinfo = NULL;
 
@@ -686,7 +689,7 @@ int idiagnl_msg_parse(struct nlmsghdr *nlh, struct idiagnl_msg **result)
 			goto errout_nomem;
 
 		raw_vinfo = (struct tcpvegas_info *)
-			nla_data(tb[IDIAG_ATTR_VEGASINFO]);
+			nla_data(tb[INET_DIAG_VEGASINFO]);
 
 		idiagnl_vegasinfo_set_enabled(vinfo, raw_vinfo->tcpv_enabled);
 		idiagnl_vegasinfo_set_rttcnt(vinfo, raw_vinfo->tcpv_rttcnt);
@@ -696,8 +699,8 @@ int idiagnl_msg_parse(struct nlmsghdr *nlh, struct idiagnl_msg **result)
 		msg->idiag_vegasinfo = vinfo;
 	}
 
-	if (tb[IDIAG_ATTR_SKMEMINFO])
-		nla_memcpy(&msg->idiag_skmeminfo, tb[IDIAG_ATTR_SKMEMINFO],
+	if (tb[INET_DIAG_SKMEMINFO])
+		nla_memcpy(&msg->idiag_skmeminfo, tb[INET_DIAG_SKMEMINFO],
 				sizeof(msg->idiag_skmeminfo));
 
 	*result = msg;
@@ -750,8 +753,10 @@ struct nl_object_ops idiagnl_msg_obj_ops = {
 		[NL_DUMP_STATS]		 = idiag_msg_dump_stats,
 	},
 	.oo_keygen			= idiagnl_keygen,
+	/* FIXME: using inet diag extended attributes as change flags (ce_mask)
+	 * is very wrong. */
 	.oo_attrs2str			= idiagnl_attrs2str,
-	.oo_id_attrs			= (IDIAG_ATTR_INFO)
+	.oo_id_attrs			= (INET_DIAG_INFO)
 };
 /** @endcond */
 

@@ -156,7 +156,7 @@ int idiagnl_str2timer(const char *name)
 	return __str2type(name, idiag_timers, ARRAY_SIZE(idiag_timers));
 }
 
-static const struct trans_tbl idiag_exts[] = {
+static const struct trans_tbl idiag_attrs[] = {
 	__ADD(INET_DIAG_NONE, none),
 	__ADD(INET_DIAG_MEMINFO, meminfo),
 	__ADD(INET_DIAG_INFO, info),
@@ -164,27 +164,40 @@ static const struct trans_tbl idiag_exts[] = {
 	__ADD(INET_DIAG_CONG, congestion),
 	__ADD(INET_DIAG_TOS, tos),
 	__ADD(INET_DIAG_TCLASS, tclass),
+	__ADD(INET_DIAG_SKMEMINFO, skmeminfo),
+	__ADD(INET_DIAG_SHUTDOWN, shutdown),
+};
+
+/**
+ * Convert inet diag extension type to a string.
+ * @arg attrs	  inet diag extension type (e.g. INET_DIAG_MEMINFO)
+ * @arg buf	  output buffer which will hold string result
+ * @arg len	  length in bytes of the output buffer
+ *
+ * @return string representation of inet diag extension type or an empty string.
+ * @deprecated: don't use this function. It is not very useful and should
+ * never have been exposed as public API.
+ */
+char *idiagnl_attrs2str(int attrs, char *buf, size_t len)
+{
+	return __type2str(attrs, buf, len, idiag_attrs, ARRAY_SIZE(idiag_attrs));
+}
+
+static const struct trans_tbl idiag_exts[] = {
+	__ADD((1 << (INET_DIAG_MEMINFO - 1)), meminfo),
+	__ADD((1 << (INET_DIAG_INFO - 1)), info),
+	__ADD((1 << (INET_DIAG_VEGASINFO - 1)), vegasinfo),
+	__ADD((1 << (INET_DIAG_CONG - 1)), congestion),
+	__ADD((1 << (INET_DIAG_TOS - 1)), tos),
+	__ADD((1 << (INET_DIAG_TCLASS - 1)), tclass),
+	__ADD((1 << (INET_DIAG_SKMEMINFO - 1)), skmeminfo),
+	__ADD((1 << (INET_DIAG_SHUTDOWN - 1)), shutdown),
 };
 
 /**
  * Convert inet diag extension flags to a string.
- * @arg attrs	  inet diag extension flag (e.g., INET_DIAG_MEMINFO)
- * @arg buf	  output buffer which will hold string result
- * @arg len	  length in bytes of the output buffer
- *
- * @return string representation of attrs or an empty string.
- * @deprecated This function returns almost the same as idiagnl_exts2str(),
- *   except that the latter only supports @attrs of uint8_t.
- */
-char *idiagnl_attrs2str(int attrs, char *buf, size_t len)
-{
-	return __flags2str(attrs, buf, len, idiag_exts, ARRAY_SIZE(idiag_exts));
-}
-
-/**
- * Convert inet diag extension flags to a string.
- * @arg attrs	inet diag extension flags (e.g., (INET_DIAG_MEMINFO |
- *   INET_DIAG_CONG | INET_DIAG_TOS))
+ * @arg attrs	inet diag extension flags (e.g.
+ *   ( (1<<(INET_DIAG_MEMINFO-1)) | (1<<(INET_DIAG_CONG-1)) | (1<<(INET_DIAG_TOS-1)) ) )
  * @arg buf	Output buffer to hold string representation
  * @arg len	length in bytes of the output buffer
  */

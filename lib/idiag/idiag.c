@@ -164,6 +164,8 @@ static const struct trans_tbl idiag_exts[] = {
 	__ADD(INET_DIAG_CONG, congestion),
 	__ADD(INET_DIAG_TOS, tos),
 	__ADD(INET_DIAG_TCLASS, tclass),
+	__ADD(INET_DIAG_SKMEMINFO, skmeminfo),
+	__ADD(INET_DIAG_SHUTDOWN, shutdown),
 };
 
 /**

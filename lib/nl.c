@@ -867,7 +867,7 @@ continue_reading:
 				interrupted = 1;
 			}
 		}
-	
+
 		/* Other side wishes to see an ack for this message */
 		if (hdr->nlmsg_flags & NLM_F_ACK) {
 			if (cb->cb_set[NL_CB_SEND_ACK])
@@ -955,7 +955,7 @@ skip:
 		err = 0;
 		hdr = nlmsg_next(hdr, &n);
 	}
-	
+
 	nlmsg_free(msg);
 	free(buf);
 	free(creds);
@@ -1107,21 +1107,21 @@ static int __pickup_answer(struct nl_msg *msg, void *arg)
 
 /**
  * Pickup netlink answer, parse is and return object
- * @arg sk		Netlink socket
- * @arg parser		Parser function to parse answer
- * @arg result		Result pointer to return parsed object
+ * @arg sk              Netlink socket
+ * @arg parser          Parser function to parse answer
+ * @arg result          Result pointer to return parsed object
  *
  * @return 0 on success or a negative error code.
  */
 int nl_pickup(struct nl_sock *sk,
-	      int (*parser)(struct nl_cache_ops *, struct sockaddr_nl *,
-			    struct nlmsghdr *, struct nl_parser_param *),
-	      struct nl_object **result)
+              int (*parser)(struct nl_cache_ops *, struct sockaddr_nl *,
+                            struct nlmsghdr *, struct nl_parser_param *),
+              struct nl_object **result)
 {
 	struct nl_cb *cb;
 	int err;
 	struct pickup_param pp = {
-		.parser = parser,
+	        .parser = parser,
 	};
 
 	cb = nl_cb_clone(sk->s_cb);

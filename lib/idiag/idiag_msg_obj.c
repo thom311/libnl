@@ -894,21 +894,32 @@ static void idiagnl_keygen(struct nl_object *obj, uint32_t *hashkey,
 	unsigned int key_sz;
 	struct idiagnl_hash_key {
 		uint8_t	family;
-		uint8_t	state;
+		uint32_t src_hash;
+		uint32_t dst_hash;
 		uint16_t sport;
 		uint16_t dport;
 	} __attribute__((packed)) key;
 
 	key_sz = sizeof(key);
 	key.family = msg->idiag_family;
-	key.state = msg->idiag_state;
+	key.src_hash = 0;
+	key.dst_hash = 0;
 	key.sport = msg->idiag_sport;
 	key.dport = msg->idiag_dport;
 
+	if (msg->idiag_src) {
+		key.src_hash = nl_hash (nl_addr_get_binary_addr(msg->idiag_src),
+		                        nl_addr_get_len(msg->idiag_src), 0);
+	}
+	if (msg->idiag_dst) {
+		key.dst_hash = nl_hash (nl_addr_get_binary_addr(msg->idiag_dst),
+		                        nl_addr_get_len(msg->idiag_dst), 0);
+	}
+
 	*hashkey = nl_hash(&key, key_sz, 0) % table_sz;
 
-	NL_DBG(5, "idiagnl %p key (fam %d state %d sport %d dport %d) keysz %d, hash 0x%x\n",
-	       msg, key.family, key.state, key.sport, key.dport, key_sz, *hashkey);
+	NL_DBG(5, "idiagnl %p key (fam %d src_hash %d dst_hash %d sport %d dport %d) keysz %d, hash 0x%x\n",
+	       msg, key.family, key.src_hash, key.dst_hash, key.sport, key.dport, key_sz, *hashkey);
 
 	return;
 }
@@ -928,7 +939,8 @@ struct nl_object_ops idiagnl_msg_obj_ops = {
 	.oo_keygen			= idiagnl_keygen,
 	.oo_attrs2str			= _idiagnl_attrs2str,
 	.oo_id_attrs                    = (IDIAGNL_ATTR_FAMILY |
-	                                   IDIAGNL_ATTR_STATE |
+	                                   IDIAGNL_ATTR_SRC |
+	                                   IDIAGNL_ATTR_DST |
 	                                   IDIAGNL_ATTR_SPORT |
 	                                   IDIAGNL_ATTR_DPORT),
 };

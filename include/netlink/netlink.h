@@ -87,6 +87,11 @@ extern int			nl_pickup(struct nl_sock *,
 						struct nlmsghdr *,
 						struct nl_parser_param *),
 					  struct nl_object **);
+extern int                      nl_pickup_keep_syserr(struct nl_sock *sk,
+                                                      int (*parser)(struct nl_cache_ops *, struct sockaddr_nl *,
+                                                                    struct nlmsghdr *, struct nl_parser_param *),
+                                                      struct nl_object **result,
+                                                      int *syserror);
 /* Netlink Family Translations */
 extern char *			nl_nlfamily2str(int, char *, size_t);
 extern int			nl_str2nlfamily(const char *);

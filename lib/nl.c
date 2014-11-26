@@ -1077,6 +1077,7 @@ struct pickup_param
 	int (*parser)(struct nl_cache_ops *, struct sockaddr_nl *,
 		      struct nlmsghdr *, struct nl_parser_param *);
 	struct nl_object *result;
+	int *syserror;
 };
 
 static int __store_answer(struct nl_object *obj, struct nl_parser_param *p)
@@ -1103,6 +1104,13 @@ static int __pickup_answer(struct nl_msg *msg, void *arg)
 	return pp->parser(NULL, &msg->nm_src, msg->nm_nlh, &parse_arg);
 }
 
+static int __pickup_answer_syserr(struct sockaddr_nl *nla, struct nlmsgerr *nlerr, void *arg)
+{
+	*(((struct pickup_param *) arg)->syserror) = nlerr->error;
+
+	return -nl_syserr2nlerr(nlerr->error);
+}
+
 /** @endcond */
 
 /**
@@ -1118,6 +1126,24 @@ int nl_pickup(struct nl_sock *sk,
                             struct nlmsghdr *, struct nl_parser_param *),
               struct nl_object **result)
 {
+	return nl_pickup_keep_syserr(sk, parser, result, NULL);
+}
+
+/**
+ * Pickup netlink answer, parse is and return object with preserving system error
+ * @arg sk              Netlink socket
+ * @arg parser          Parser function to parse answer
+ * @arg result          Result pointer to return parsed object
+ * @arg syserr          Result pointer for the system error in case of failure
+ *
+ * @return 0 on success or a negative error code.
+ */
+int nl_pickup_keep_syserr(struct nl_sock *sk,
+                          int (*parser)(struct nl_cache_ops *, struct sockaddr_nl *,
+                                        struct nlmsghdr *, struct nl_parser_param *),
+                          struct nl_object **result,
+                          int *syserror)
+{
 	struct nl_cb *cb;
 	int err;
 	struct pickup_param pp = {
@@ -1129,6 +1155,11 @@ int nl_pickup(struct nl_sock *sk,
 		return -NLE_NOMEM;
 
 	nl_cb_set(cb, NL_CB_VALID, NL_CB_CUSTOM, __pickup_answer, &pp);
+	if (syserror) {
+		*syserror = 0;
+		pp.syserror = syserror;
+		nl_cb_err(cb, NL_CB_CUSTOM, __pickup_answer_syserr, &pp);
+	}
 
 	err = nl_recvmsgs(sk, cb);
 	if (err < 0)

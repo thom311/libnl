@@ -1160,6 +1160,11 @@ nla_put_failure:
  * pointer or -NLE_OBJ_NOTFOUND is returned if no matching link was
  * found.
  *
+ * Older kernels do not support lookup by name. In that case, libnl
+ * will fail with -NLE_OPNOTSUPP. Note that previous version of libnl
+ * failed in this case with -NLE_INVAL. You can check libnl behavior
+ * using NL_CAPABILITY_ROUTE_LINK_GET_KERNEL_FAIL_OPNOTSUPP capability.
+ *
  * @route_doc{link_direct_lookup, Lookup Single Link (Direct Lookup)}
  * @return 0 on success or a negative error code.
  */
@@ -1169,6 +1174,7 @@ int rtnl_link_get_kernel(struct nl_sock *sk, int ifindex, const char *name,
 	struct nl_msg *msg = NULL;
 	struct nl_object *obj;
 	int err;
+	int syserr;
 
 	if ((err = rtnl_link_build_get_request(ifindex, name, &msg)) < 0)
 		return err;
@@ -1178,8 +1184,18 @@ int rtnl_link_get_kernel(struct nl_sock *sk, int ifindex, const char *name,
 	if (err < 0)
 		return err;
 
-	if ((err = nl_pickup(sk, link_msg_parser, &obj)) < 0)
+	if ((err = nl_pickup_keep_syserr(sk, link_msg_parser, &obj, &syserr)) < 0) {
+		if (syserr == -EINVAL &&
+		    ifindex <= 0 &&
+		    name && *name) {
+			/* Older kernels do not support lookup by ifname. This was added
+			 * by commit kernel a3d1289126e7b14307074b76bf1677015ea5036f .
+			 * Detect this error case and return NLE_OPNOTSUPP instead of
+			 * NLE_INVAL. */
+			return -NLE_OPNOTSUPP;
+		}
 		return err;
+	}
 
 	/* We have used link_msg_parser(), object is definitely a link */
 	*result = (struct rtnl_link *) obj;

@@ -363,7 +363,7 @@ uint32_t nl_object_diff(struct nl_object *a, struct nl_object *b)
 	struct nl_object_ops *ops = obj_ops(a);
 
 	if (ops != obj_ops(b) || ops->oo_compare == NULL)
-		return UINT_MAX;
+		return UINT32_MAX;
 
 	return ops->oo_compare(a, b, ~0, 0);
 }
@@ -383,7 +383,7 @@ int nl_object_match_filter(struct nl_object *obj, struct nl_object *filter)
 
 	if (ops != obj_ops(filter) || ops->oo_compare == NULL)
 		return 0;
-	
+
 	return !(ops->oo_compare(obj, filter, filter->ce_mask,
 				 LOOSE_COMPARISON));
 }

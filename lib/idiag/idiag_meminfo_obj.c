@@ -81,9 +81,24 @@ void idiagnl_meminfo_set_tmem(struct idiagnl_meminfo *minfo, uint32_t tmem)
 /** @} */
 
 /** @cond SKIP */
+static int idiagnl_meminfo_compare(struct nl_object *_a, struct nl_object *_b,
+                                     uint32_t attrs, int flags)
+{
+	struct idiagnl_meminfo *a = (struct idiagnl_meminfo *) _a;
+	struct idiagnl_meminfo *b = (struct idiagnl_meminfo *) _b;
+
+	/* meminfo is a very simple object. It has no attribe flags (ce_mask),
+	 * hence compare just returns 0 or 1, not a bit mask of attributes. */
+	return a->idiag_rmem != b->idiag_rmem ||
+	       a->idiag_wmem != b->idiag_wmem ||
+	       a->idiag_fmem != b->idiag_fmem ||
+	       a->idiag_tmem != b->idiag_tmem;
+}
+
 struct nl_object_ops idiagnl_meminfo_obj_ops = {
 	.oo_name	= "idiag/idiag_meminfo",
 	.oo_size	= sizeof(struct idiagnl_meminfo),
+	.oo_compare     = idiagnl_meminfo_compare,
 };
 /** @endcond */
 /** @} */

@@ -84,9 +84,24 @@ void idiagnl_vegasinfo_set_minrtt(struct idiagnl_vegasinfo *vinfo, uint32_t
 /** @} */
 
 /** @cond SKIP */
+static int idiagnl_vegasinfo_compare(struct nl_object *_a, struct nl_object *_b,
+                                     uint32_t attrs, int flags)
+{
+	struct idiagnl_vegasinfo *a = (struct idiagnl_vegasinfo *) _a;
+	struct idiagnl_vegasinfo *b = (struct idiagnl_vegasinfo *) _b;
+
+	/* vegasinfo is a very simple object. It has no attribe flags (ce_mask),
+	 * hence compare just returns 0 or 1, not a bit mask of attributes. */
+	return a->tcpv_enabled != b->tcpv_enabled ||
+	       a->tcpv_rttcnt != b->tcpv_rttcnt ||
+	       a->tcpv_rtt != b->tcpv_rtt ||
+	       a->tcpv_minrtt != b->tcpv_minrtt;
+}
+
 struct nl_object_ops idiagnl_vegasinfo_obj_ops = {
 	.oo_name	= "idiag/idiag_vegasinfo",
 	.oo_size	= sizeof(struct idiagnl_vegasinfo),
+	.oo_compare     = idiagnl_vegasinfo_compare,
 };
 /** @endcond */
 /** @} */

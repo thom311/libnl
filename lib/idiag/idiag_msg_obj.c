@@ -458,7 +458,7 @@ static void idiag_msg_dump_details(struct nl_object *a, struct nl_dump_params *p
 
 	nl_dump(p, "tos: 0x%x\n", msg->idiag_tos);
 	nl_dump(p, "traffic class: %d\n", msg->idiag_tclass);
-	nl_dump(p, "congestion algorithm: %s\n", msg->idiag_cong);
+	nl_dump(p, "congestion algorithm: %s\n", msg->idiag_cong ? : "");
 }
 
 static void idiag_msg_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
@@ -575,27 +575,29 @@ static void idiag_msg_dump_stats(struct nl_object *obj, struct nl_dump_params *p
 		nl_dump(p, "]\n");
 	}
 
-	nl_dump(p, "skmeminfo:  [\n");
-	nl_dump(p, "\trmem alloc: %d\n",
-			msg->idiag_skmeminfo[SK_MEMINFO_RMEM_ALLOC]);
-	nl_dump(p, "\trcv buf: %s\n",
-			nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_RCVBUF],
-				buf, sizeof(buf)));
-	nl_dump(p, "\twmem alloc: %d\n",
-			msg->idiag_skmeminfo[SK_MEMINFO_WMEM_ALLOC]);
-	nl_dump(p, "\tsnd buf: %s\n",
-			nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_SNDBUF],
-				buf, sizeof(buf)));
-	nl_dump(p, "\tfwd alloc: %d\n",
-			msg->idiag_skmeminfo[SK_MEMINFO_FWD_ALLOC]);
-	nl_dump(p, "\twmem queued: %s\n",
-			nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_WMEM_QUEUED],
-				buf, sizeof(buf)));
-	nl_dump(p, "\topt mem: %d\n",
-			msg->idiag_skmeminfo[SK_MEMINFO_OPTMEM]);
-	nl_dump(p, "\tbacklog: %d\n",
-			msg->idiag_skmeminfo[SK_MEMINFO_BACKLOG]);
-	nl_dump(p, "]\n\n");
+	if (msg->ce_mask & IDIAGNL_ATTR_MEMINFO) {
+		nl_dump(p, "skmeminfo:  [\n");
+		nl_dump(p, "\trmem alloc: %d\n",
+				msg->idiag_skmeminfo[SK_MEMINFO_RMEM_ALLOC]);
+		nl_dump(p, "\trcv buf: %s\n",
+				nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_RCVBUF],
+					buf, sizeof(buf)));
+		nl_dump(p, "\twmem alloc: %d\n",
+				msg->idiag_skmeminfo[SK_MEMINFO_WMEM_ALLOC]);
+		nl_dump(p, "\tsnd buf: %s\n",
+				nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_SNDBUF],
+					buf, sizeof(buf)));
+		nl_dump(p, "\tfwd alloc: %d\n",
+				msg->idiag_skmeminfo[SK_MEMINFO_FWD_ALLOC]);
+		nl_dump(p, "\twmem queued: %s\n",
+				nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_WMEM_QUEUED],
+					buf, sizeof(buf)));
+		nl_dump(p, "\topt mem: %d\n",
+				msg->idiag_skmeminfo[SK_MEMINFO_OPTMEM]);
+		nl_dump(p, "\tbacklog: %d\n",
+				msg->idiag_skmeminfo[SK_MEMINFO_BACKLOG]);
+		nl_dump(p, "]\n\n");
+	}
 }
 
 static void idiagnl_msg_free(struct nl_object *a)
@@ -859,10 +861,28 @@ static int idiagnl_compare(struct nl_object *_a, struct nl_object *_b,
 	int diff = 0;
 
 #define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, IDIAGNL_ATTR_##ATTR, a, b, EXPR)
-	diff |= _DIFF(FAMILY, a->idiag_family != b->idiag_family);
-	diff |= _DIFF(STATE,  a->idiag_state != b->idiag_state);
-	diff |= _DIFF(SPORT,  a->idiag_sport != b->idiag_sport);
-	diff |= _DIFF(DPORT,  a->idiag_dport != b->idiag_dport);
+	diff |= _DIFF(FAMILY,    a->idiag_family != b->idiag_family);
+	diff |= _DIFF(STATE,     a->idiag_state != b->idiag_state);
+	diff |= _DIFF(TIMER,     a->idiag_timer != b->idiag_timer);
+	diff |= _DIFF(RETRANS,   a->idiag_retrans != b->idiag_retrans);
+	diff |= _DIFF(SPORT,     a->idiag_sport != b->idiag_sport);
+	diff |= _DIFF(DPORT,     a->idiag_dport != b->idiag_dport);
+	diff |= _DIFF(SRC,       nl_addr_cmp (a->idiag_src, b->idiag_src));
+	diff |= _DIFF(DST,       nl_addr_cmp (a->idiag_dst, b->idiag_dst));
+	diff |= _DIFF(IFINDEX,   a->idiag_ifindex != b->idiag_ifindex);
+	diff |= _DIFF(EXPIRES,   a->idiag_expires != b->idiag_expires);
+	diff |= _DIFF(RQUEUE,    a->idiag_rqueue != b->idiag_rqueue);
+	diff |= _DIFF(WQUEUE,    a->idiag_wqueue != b->idiag_wqueue);
+	diff |= _DIFF(UID,       a->idiag_uid != b->idiag_uid);
+	diff |= _DIFF(INODE,     a->idiag_inode != b->idiag_inode);
+	diff |= _DIFF(TOS,       a->idiag_tos != b->idiag_tos);
+	diff |= _DIFF(TCLASS,    a->idiag_tclass != b->idiag_tclass);
+	diff |= _DIFF(SHUTDOWN,  a->idiag_shutdown != b->idiag_shutdown);
+	diff |= _DIFF(CONG,      strcmp(a->idiag_cong, b->idiag_cong));
+	diff |= _DIFF(MEMINFO,   nl_object_diff((struct nl_object *) a->idiag_meminfo, (struct nl_object *) b->idiag_meminfo));
+	diff |= _DIFF(VEGASINFO, nl_object_diff((struct nl_object *) a->idiag_vegasinfo, (struct nl_object *) b->idiag_vegasinfo));
+	diff |= _DIFF(TCPINFO,   memcmp(&a->idiag_tcpinfo, &b->idiag_tcpinfo, sizeof(a->idiag_tcpinfo)));
+	diff |= _DIFF(SKMEMINFO, memcmp(a->idiag_skmeminfo, b->idiag_skmeminfo, sizeof(a->idiag_skmeminfo)));
 #undef _DIFF
 	return diff;
 }

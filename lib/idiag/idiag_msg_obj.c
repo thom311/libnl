@@ -458,7 +458,7 @@ static void idiag_msg_dump_details(struct nl_object *a, struct nl_dump_params *p
 
 	nl_dump(p, "tos: 0x%x\n", msg->idiag_tos);
 	nl_dump(p, "traffic class: %d\n", msg->idiag_tclass);
-	nl_dump(p, "congestion algorithm: %s\n", msg->idiag_cong);
+	nl_dump(p, "congestion algorithm: %s\n", msg->idiag_cong ? : "");
 }
 
 static void idiag_msg_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
@@ -575,27 +575,29 @@ static void idiag_msg_dump_stats(struct nl_object *obj, struct nl_dump_params *p
 		nl_dump(p, "]\n");
 	}
 
-	nl_dump(p, "skmeminfo:  [\n");
-	nl_dump(p, "\trmem alloc: %d\n",
-			msg->idiag_skmeminfo[SK_MEMINFO_RMEM_ALLOC]);
-	nl_dump(p, "\trcv buf: %s\n",
-			nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_RCVBUF],
-				buf, sizeof(buf)));
-	nl_dump(p, "\twmem alloc: %d\n",
-			msg->idiag_skmeminfo[SK_MEMINFO_WMEM_ALLOC]);
-	nl_dump(p, "\tsnd buf: %s\n",
-			nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_SNDBUF],
-				buf, sizeof(buf)));
-	nl_dump(p, "\tfwd alloc: %d\n",
-			msg->idiag_skmeminfo[SK_MEMINFO_FWD_ALLOC]);
-	nl_dump(p, "\twmem queued: %s\n",
-			nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_WMEM_QUEUED],
-				buf, sizeof(buf)));
-	nl_dump(p, "\topt mem: %d\n",
-			msg->idiag_skmeminfo[SK_MEMINFO_OPTMEM]);
-	nl_dump(p, "\tbacklog: %d\n",
-			msg->idiag_skmeminfo[SK_MEMINFO_BACKLOG]);
-	nl_dump(p, "]\n\n");
+	if (msg->ce_mask & IDIAGNL_ATTR_MEMINFO) {
+		nl_dump(p, "skmeminfo:  [\n");
+		nl_dump(p, "\trmem alloc: %d\n",
+				msg->idiag_skmeminfo[SK_MEMINFO_RMEM_ALLOC]);
+		nl_dump(p, "\trcv buf: %s\n",
+				nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_RCVBUF],
+					buf, sizeof(buf)));
+		nl_dump(p, "\twmem alloc: %d\n",
+				msg->idiag_skmeminfo[SK_MEMINFO_WMEM_ALLOC]);
+		nl_dump(p, "\tsnd buf: %s\n",
+				nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_SNDBUF],
+					buf, sizeof(buf)));
+		nl_dump(p, "\tfwd alloc: %d\n",
+				msg->idiag_skmeminfo[SK_MEMINFO_FWD_ALLOC]);
+		nl_dump(p, "\twmem queued: %s\n",
+				nl_size2str(msg->idiag_skmeminfo[SK_MEMINFO_WMEM_QUEUED],
+					buf, sizeof(buf)));
+		nl_dump(p, "\topt mem: %d\n",
+				msg->idiag_skmeminfo[SK_MEMINFO_OPTMEM]);
+		nl_dump(p, "\tbacklog: %d\n",
+				msg->idiag_skmeminfo[SK_MEMINFO_BACKLOG]);
+		nl_dump(p, "]\n\n");
+	}
 }
 
 static void idiagnl_msg_free(struct nl_object *a)

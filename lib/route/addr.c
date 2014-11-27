@@ -448,6 +448,8 @@ static int addr_compare(struct nl_object *_a, struct nl_object *_b,
 						    b->a_multicast));
 	diff |= ADDR_DIFF(BROADCAST,	nl_addr_cmp(a->a_bcast, b->a_bcast));
 	diff |= ADDR_DIFF(ANYCAST,	nl_addr_cmp(a->a_anycast, b->a_anycast));
+	diff |= ADDR_DIFF(CACHEINFO,    memcmp(&a->a_cacheinfo, &b->a_cacheinfo,
+	                                       sizeof (a->a_cacheinfo)));
 
 	if (flags & LOOSE_COMPARISON)
 		diff |= ADDR_DIFF(FLAGS,

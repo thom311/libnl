@@ -121,6 +121,14 @@ enum {
 	NL_CAPABILITY_ROUTE_LINK_GET_KERNEL_FAIL_OPNOTSUPP = 5,
 #define NL_CAPABILITY_ROUTE_LINK_GET_KERNEL_FAIL_OPNOTSUPP NL_CAPABILITY_ROUTE_LINK_GET_KERNEL_FAIL_OPNOTSUPP
 
+	/**
+	 * Also consider the a_cacheinfo field (ADDR_ATTR_CACHEINFO) that contains the
+	 * address timestamps and expiry when comparing struct rtnl_addr objects with
+	 * nl_object_diff().
+	 */
+	NL_CAPABILITY_ROUTE_ADDR_COMPARE_CACHEINFO   = 6,
+#define NL_CAPABILITY_ROUTE_ADDR_COMPARE_CACHEINFO NL_CAPABILITY_ROUTE_ADDR_COMPARE_CACHEINFO
+
 	__NL_CAPABILITY_MAX
 #define NL_CAPABILITY_MAX                               (__NL_CAPABILITY_MAX - 1)
 };

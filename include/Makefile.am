@@ -151,6 +151,7 @@ noinst_HEADERS = \
 	linux-private/linux/pkt_sched.h \
 	linux-private/linux/rtnetlink.h \
 	linux-private/linux/snmp.h \
+	linux-private/linux/veth.h \
 	linux-private/linux/xfrm.h \
 	linux-private/linux/tc_ematch/tc_em_meta.h \
 	netlink-private/genl.h \

@@ -91,7 +91,6 @@ global:
 	nl_cache_parse;
 	nl_cache_parse_and_add;
 	nl_cache_pickup;
-	nl_cache_pickup_checkdup;
 	nl_cache_put;
 	nl_cache_refill;
 	nl_cache_remove;
@@ -180,7 +179,6 @@ global:
 	nl_object_update;
 	nl_perror;
 	nl_pickup;
-	nl_pickup_keep_syserr;
 	nl_prob2int;
 	nl_rate2str;
 	nl_recv;
@@ -321,3 +319,9 @@ global:
 local:
 	*;
 };
+
+libnl_3_2_26 {
+global:
+	nl_cache_pickup_checkdup;
+	nl_pickup_keep_syserr;
+} libnl_3;

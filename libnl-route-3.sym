@@ -182,12 +182,6 @@ global:
 	rtnl_class_foreach_child;
 	rtnl_class_foreach_cls;
 	rtnl_class_get;
-	rtnl_class_hfsc_get_fsc;
-	rtnl_class_hfsc_get_rsc;
-	rtnl_class_hfsc_get_usc;
-	rtnl_class_hfsc_set_fsc;
-	rtnl_class_hfsc_set_rsc;
-	rtnl_class_hfsc_set_usc;
 	rtnl_class_leaf_qdisc;
 	rtnl_class_put;
 	rtnl_classid_generate;
@@ -363,12 +357,6 @@ global:
 	rtnl_link_get_type;
 	rtnl_link_get_weight;
 	rtnl_link_i2name;
-	rtnl_link_inet6_addrgenmode2str;
-	rtnl_link_inet6_get_addr_gen_mode;
-	rtnl_link_inet6_get_token;
-	rtnl_link_inet6_set_addr_gen_mode;
-	rtnl_link_inet6_set_token;
-	rtnl_link_inet6_str2addrgenmode;
 	rtnl_link_inet_devconf2str;
 	rtnl_link_inet_get_conf;
 	rtnl_link_inet_set_conf;
@@ -712,8 +700,6 @@ global:
 	rtnl_qdisc_fq_codel_set_target;
 	rtnl_qdisc_get;
 	rtnl_qdisc_get_by_parent;
-	rtnl_qdisc_hfsc_get_defcls;
-	rtnl_qdisc_hfsc_set_defcls;
 	rtnl_qdisc_plug_buffer;
 	rtnl_qdisc_plug_release_indefinite;
 	rtnl_qdisc_plug_release_one;
@@ -901,9 +887,7 @@ global:
 	rtnl_u32_add_key_uint16;
 	rtnl_u32_add_key_uint32;
 	rtnl_u32_add_key_uint8;
-	rtnl_u32_add_mark;
 	rtnl_u32_del_action;
-	rtnl_u32_del_mark;
 	rtnl_u32_get_key;
 	rtnl_u32_set_classid;
 	rtnl_u32_set_cls_terminal;
@@ -919,3 +903,23 @@ global:
 local:
 	*;
 };
+
+libnl_3_2_26 {
+global:
+	rtnl_class_hfsc_get_fsc;
+	rtnl_class_hfsc_get_rsc;
+	rtnl_class_hfsc_get_usc;
+	rtnl_class_hfsc_set_fsc;
+	rtnl_class_hfsc_set_rsc;
+	rtnl_class_hfsc_set_usc;
+	rtnl_link_inet6_addrgenmode2str;
+	rtnl_link_inet6_get_addr_gen_mode;
+	rtnl_link_inet6_get_token;
+	rtnl_link_inet6_set_addr_gen_mode;
+	rtnl_link_inet6_set_token;
+	rtnl_link_inet6_str2addrgenmode;
+	rtnl_qdisc_hfsc_get_defcls;
+	rtnl_qdisc_hfsc_set_defcls;
+	rtnl_u32_add_mark;
+	rtnl_u32_del_mark;
+} libnl_3;

@@ -1,4 +1,4 @@
-libnl_@MAJ_VERSION@ {
+libnl_3 {
 global:
 	*;
 local:

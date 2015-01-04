@@ -11,27 +11,46 @@ AM_CPPFLAGS  =			 	\
 	-DSYSCONFDIR=\"$(sysconfdir)/libnl\"
 
 AM_LDFLAGS = \
-	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
-	-Wl,--version-script=$(top_builddir)/libnl.sym
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 
 lib_LTLIBRARIES = \
 	libnl-3.la libnl-genl-3.la libnl-route-3.la libnl-nf-3.la libnl-idiag-3.la libnl-xfrm-3.la
 
+libnl_3_la_LDFLAGS = \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-Wl,--version-script=$(top_builddir)/libnl-3.sym
+libnl_3_la_DEPENDENCIES = \
+	$(top_builddir)/libnl-3.sym
 libnl_3_la_SOURCES = \
 	addr.c attr.c cache.c cache_mngr.c cache_mngt.c data.c \
 	error.c handlers.c msg.c nl.c object.c socket.c utils.c \
 	version.c hash.c hashtable.c
 
 libnl_idiag_3_la_LIBADD = libnl-3.la
+libnl_idiag_3_la_LDFLAGS = \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-Wl,--version-script=$(top_builddir)/libnl-idiag-3.sym
+libnl_idiag_3_la_DEPENDENCIES = \
+	$(top_builddir)/libnl-idiag-3.sym
 libnl_idiag_3_la_SOURCES = \
 	idiag/idiag_meminfo_obj.c idiag/idiag_vegasinfo_obj.c \
 	idiag/idiag_msg_obj.c idiag/idiag_req_obj.c idiag/idiag.c
 
 libnl_genl_3_la_LIBADD  = libnl-3.la
+libnl_genl_3_la_LDFLAGS = \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-Wl,--version-script=$(top_builddir)/libnl-genl-3.sym
+libnl_genl_3_la_DEPENDENCIES = \
+	$(top_builddir)/libnl-genl-3.sym
 libnl_genl_3_la_SOURCES = \
 	genl/ctrl.c genl/family.c genl/genl.c genl/mngt.c
 
 libnl_nf_3_la_LIBADD  = libnl-route-3.la
+libnl_nf_3_la_LDFLAGS = \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-Wl,--version-script=$(top_builddir)/libnl-nf-3.sym
+libnl_nf_3_la_DEPENDENCIES = \
+	$(top_builddir)/libnl-nf-3.sym
 libnl_nf_3_la_SOURCES = \
 	netfilter/ct.c netfilter/ct_obj.c netfilter/log.c \
 	netfilter/log_msg.c netfilter/log_msg_obj.c netfilter/log_obj.c \
@@ -60,6 +79,11 @@ route/cls/ematch_syntax.c: route/cls/ematch_syntax.y
 	$(AM_V_GEN) $(MKDIR_P) route/cls; $(YACC) -d $(YFLAGS) -o $@ $^
 
 libnl_route_3_la_LIBADD  = libnl-3.la
+libnl_route_3_la_LDFLAGS = \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-Wl,--version-script=$(top_builddir)/libnl-route-3.sym
+libnl_route_3_la_DEPENDENCIES = \
+	$(top_builddir)/libnl-route-3.sym
 libnl_route_3_la_SOURCES = \
 	route/addr.c route/class.c route/cls.c route/act.c route/link.c \
 	route/neigh.c route/neightbl.c route/nexthop.c route/qdisc.c \
@@ -112,6 +136,11 @@ EXTRA_DIST = \
 	route/cls/ematch_syntax.y
 
 libnl_xfrm_3_la_LIBADD  = libnl-3.la
+libnl_xfrm_3_la_LDFLAGS = \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-Wl,--version-script=$(top_builddir)/libnl-xfrm-3.sym
+libnl_xfrm_3_la_DEPENDENCIES = \
+	$(top_builddir)/libnl-xfrm-3.sym
 libnl_xfrm_3_la_SOURCES = \
 	xfrm/ae.c \
 	xfrm/lifetime.c \

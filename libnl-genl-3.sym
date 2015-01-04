@@ -1,10 +1,5 @@
 libnl_3 {
 global:
-	__bss_start;
-	_edata;
-	_end;
-	_fini;
-	_init;
 	genl_connect;
 	genl_ctrl_alloc_cache;
 	genl_ctrl_resolve;

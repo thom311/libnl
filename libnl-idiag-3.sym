@@ -1,10 +1,5 @@
 libnl_3 {
 global:
-	__bss_start;
-	_edata;
-	_end;
-	_fini;
-	_init;
 	idiagnl_attrs2str;
 	idiagnl_connect;
 	idiagnl_exts2str;

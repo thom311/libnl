@@ -1,10 +1,5 @@
 libnl_3 {
 global:
-	__bss_start;
-	_edata;
-	_end;
-	_fini;
-	_init;
 	ct_obj_ops;
 	exp_obj_ops;
 	log_msg_obj_ops;

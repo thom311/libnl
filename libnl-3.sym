@@ -1,6 +1,5 @@
 libnl_3 {
 global:
-	__bss_start;
 	__flags2str;
 	__list_str2type;
 	__list_type2str;
@@ -11,11 +10,6 @@ global:
 	__trans_list_add;
 	__trans_list_clear;
 	__type2str;
-	_edata;
-	_end;
-	_fini;
-	_init;
-	dump_from_ops;
 	nl_addr2str;
 	nl_addr_alloc;
 	nl_addr_alloc_attr;

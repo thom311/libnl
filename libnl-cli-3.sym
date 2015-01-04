@@ -1,10 +1,5 @@
 libnl_3 {
 global:
-	__bss_start;
-	_edata;
-	_end;
-	_fini;
-	_init;
 	nl_cli_addr_alloc;
 	nl_cli_addr_parse;
 	nl_cli_addr_parse_broadcast;

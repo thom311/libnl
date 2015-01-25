@@ -98,6 +98,7 @@ int nl_connect(struct nl_sock *sk, int protocol)
 	int err, flags = 0;
 	int errsv;
 	socklen_t addrlen;
+	char buf[64];
 
 #ifdef SOCK_CLOEXEC
 	flags |= SOCK_CLOEXEC;
@@ -109,7 +110,8 @@ int nl_connect(struct nl_sock *sk, int protocol)
 	sk->s_fd = socket(AF_NETLINK, SOCK_RAW | flags, protocol);
 	if (sk->s_fd < 0) {
 		errsv = errno;
-		NL_DBG(4, "nl_connect(%p): socket() failed with %d\n", sk, errsv);
+		NL_DBG(4, "nl_connect(%p): socket() failed with %d (%s)\n", sk, errsv,
+			strerror_r(errsv, buf, sizeof(buf)));
 		err = -nl_syserr2nlerr(errsv);
 		goto errout;
 	}
@@ -143,7 +145,8 @@ int nl_connect(struct nl_sock *sk, int protocol)
 				NL_DBG(4, "nl_connect(%p): local port %u already in use. Retry.\n", sk, (unsigned) port);
 				_nl_socket_used_ports_set(used_ports, port);
 			} else {
-				NL_DBG(4, "nl_connect(%p): bind() for port %u failed with %d\n", sk, (unsigned) port, errsv);
+				NL_DBG(4, "nl_connect(%p): bind() for port %u failed with %d (%s)\n",
+					sk, (unsigned) port, errsv, strerror_r(errsv, buf, sizeof(buf)));
 				_nl_socket_used_ports_release_all(used_ports);
 				err = -nl_syserr2nlerr(errsv);
 				goto errout;
@@ -155,7 +158,8 @@ int nl_connect(struct nl_sock *sk, int protocol)
 			   sizeof(sk->s_local));
 		if (err != 0) {
 			errsv = errno;
-			NL_DBG(4, "nl_connect(%p): bind() failed with %d\n", sk, errsv);
+			NL_DBG(4, "nl_connect(%p): bind() failed with %d (%s)\n",
+				sk, errsv, strerror_r(errsv, buf, sizeof(buf)));
 			err = -nl_syserr2nlerr(errsv);
 			goto errout;
 		}
@@ -165,6 +169,8 @@ int nl_connect(struct nl_sock *sk, int protocol)
 	err = getsockname(sk->s_fd, (struct sockaddr *) &sk->s_local,
 			  &addrlen);
 	if (err < 0) {
+		NL_DBG(4, "nl_connect(%p): getsockname() failed with %d (%s)\n",
+			sk, errno, strerror_r(errno, buf, sizeof(buf)));
 		err = -nl_syserr2nlerr(errno);
 		goto errout;
 	}
@@ -254,8 +260,13 @@ int nl_sendto(struct nl_sock *sk, void *buf, size_t size)
 
 	ret = sendto(sk->s_fd, buf, size, 0, (struct sockaddr *)
 		     &sk->s_peer, sizeof(sk->s_peer));
-	if (ret < 0)
+	if (ret < 0) {
+		char errbuf[64];
+
+		NL_DBG(4, "nl_sendto(%p): sendto() failed with %d (%s)\n",
+			sk, errno, strerror_r(errno, errbuf, sizeof(errbuf)));
 		return -nl_syserr2nlerr(errno);
+	}
 
 	return ret;
 }
@@ -312,8 +323,13 @@ int nl_sendmsg(struct nl_sock *sk, struct nl_msg *msg, struct msghdr *hdr)
 			return ret;
 
 	ret = sendmsg(sk->s_fd, hdr, 0);
-	if (ret < 0)
+	if (ret < 0) {
+		char errbuf[64];
+
+		NL_DBG(4, "nl_sendmsg(%p): sendmsg() failed with %d (%s)\n",
+			sk, errno, strerror_r(errno, errbuf, sizeof(errbuf)));
 		return -nl_syserr2nlerr(errno);
+	}
 
 	NL_DBG(4, "sent %d bytes\n", ret);
 	return ret;
@@ -671,10 +687,15 @@ retry:
 		goto abort;
 	}
 	if (n < 0) {
+		char errbuf[64];
+
 		if (errno == EINTR) {
 			NL_DBG(3, "recvmsg() returned EINTR, retrying\n");
 			goto retry;
 		}
+
+		NL_DBG(4, "nl_sendmsg(%p): nl_recv() failed with %d (%s)\n",
+			sk, errno, strerror_r(errno, errbuf, sizeof(errbuf)));
 		retval = -nl_syserr2nlerr(errno);
 		goto abort;
 	}
@@ -926,6 +947,11 @@ continue_reading:
 					goto out;
 				}
 			} else if (e->error) {
+				char buf[64];
+
+				NL_DBG(4, "recvmsgs(%p): RTNETLINK responded with %d (%s)\n",
+					sk, -e->error, strerror_r(-e->error, buf, sizeof(buf)));
+
 				/* Error message reported back from kernel. */
 				if (cb->cb_err) {
 					err = cb->cb_err(&nla, e,

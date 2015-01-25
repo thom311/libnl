@@ -433,7 +433,11 @@ int nl_socket_add_memberships(struct nl_sock *sk, int group, ...)
 		err = setsockopt(sk->s_fd, SOL_NETLINK, NETLINK_ADD_MEMBERSHIP,
 						 &group, sizeof(group));
 		if (err < 0) {
+			char buf[64];
+
 			va_end(ap);
+			NL_DBG(4, "nl_socket_add_memberships(%p): setsockopt() failed with %d (%s)\n",
+				sk, errno, strerror_r(errno, buf, sizeof(buf)));
 			return -nl_syserr2nlerr(errno);
 		}
 
@@ -481,7 +485,11 @@ int nl_socket_drop_memberships(struct nl_sock *sk, int group, ...)
 		err = setsockopt(sk->s_fd, SOL_NETLINK, NETLINK_DROP_MEMBERSHIP,
 						 &group, sizeof(group));
 		if (err < 0) {
+			char buf[64];
+
 			va_end(ap);
+			NL_DBG(4, "nl_socket_drop_memberships(%p): setsockopt() failed with %d (%s)\n",
+				sk, errno, strerror_r(errno, buf, sizeof(buf)));
 			return -nl_syserr2nlerr(errno);
 		}
 
@@ -575,8 +583,13 @@ int nl_socket_set_nonblocking(const struct nl_sock *sk)
 	if (sk->s_fd == -1)
 		return -NLE_BAD_SOCK;
 
-	if (fcntl(sk->s_fd, F_SETFL, O_NONBLOCK) < 0)
+	if (fcntl(sk->s_fd, F_SETFL, O_NONBLOCK) < 0) {
+		char buf[64];
+
+		NL_DBG(4, "nl_socket_set_nonblocking(%p): fcntl() failed with %d (%s)\n",
+			sk, errno, strerror_r(errno, buf, sizeof(buf)));
 		return -nl_syserr2nlerr(errno);
+	}
 
 	return 0;
 }
@@ -675,6 +688,7 @@ int nl_socket_modify_err_cb(struct nl_sock *sk, enum nl_cb_kind kind,
 int nl_socket_set_buffer_size(struct nl_sock *sk, int rxbuf, int txbuf)
 {
 	int err;
+	char buf[64];
 
 	if (rxbuf <= 0)
 		rxbuf = 32768;
@@ -687,13 +701,19 @@ int nl_socket_set_buffer_size(struct nl_sock *sk, int rxbuf, int txbuf)
 	
 	err = setsockopt(sk->s_fd, SOL_SOCKET, SO_SNDBUF,
 			 &txbuf, sizeof(txbuf));
-	if (err < 0)
+	if (err < 0) {
+		NL_DBG(4, "nl_socket_set_buffer_size(%p): setsockopt() failed with %d (%s)\n",
+			sk, errno, strerror_r(errno, buf, sizeof(buf)));
 		return -nl_syserr2nlerr(errno);
+	}
 
 	err = setsockopt(sk->s_fd, SOL_SOCKET, SO_RCVBUF,
 			 &rxbuf, sizeof(rxbuf));
-	if (err < 0)
+	if (err < 0) {
+		NL_DBG(4, "nl_socket_set_buffer_size(%p): setsockopt() failed with %d (%s)\n",
+			sk, errno, strerror_r(errno, buf, sizeof(buf)));
 		return -nl_syserr2nlerr(errno);
+	}
 
 	sk->s_flags |= NL_SOCK_BUFSIZE_SET;
 
@@ -746,8 +766,13 @@ int nl_socket_set_passcred(struct nl_sock *sk, int state)
 
 	err = setsockopt(sk->s_fd, SOL_SOCKET, SO_PASSCRED,
 			 &state, sizeof(state));
-	if (err < 0)
+	if (err < 0) {
+		char buf[64];
+
+		NL_DBG(4, "nl_socket_set_passcred(%p): setsockopt() failed with %d (%s)\n",
+			sk, errno, strerror_r(errno, buf, sizeof(buf)));
 		return -nl_syserr2nlerr(errno);
+	}
 
 	if (state)
 		sk->s_flags |= NL_SOCK_PASSCRED;
@@ -773,8 +798,13 @@ int nl_socket_recv_pktinfo(struct nl_sock *sk, int state)
 
 	err = setsockopt(sk->s_fd, SOL_NETLINK, NETLINK_PKTINFO,
 			 &state, sizeof(state));
-	if (err < 0)
+	if (err < 0) {
+		char buf[64];
+
+		NL_DBG(4, "nl_socket_recv_pktinfo(%p): setsockopt() failed with %d (%s)\n",
+			sk, errno, strerror_r(errno, buf, sizeof(buf)));
 		return -nl_syserr2nlerr(errno);
+	}
 
 	return 0;
 }

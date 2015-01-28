@@ -18,6 +18,7 @@
 #include <netlink/route/classifier.h>
 #include <netlink/route/action.h>
 #include <netlink/route/act/mirred.h>
+#include <netlink/route/act/skbedit.h>
 #include <netlink/route/class.h>
 #include <linux/if_ether.h>
 
@@ -101,7 +102,7 @@ static uint32_t get_u32_parse_handle(const char *cHandle)
 static
 int u32_add_filter_on_ht_with_hashmask(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t prio, 
 	    uint32_t keyval, uint32_t keymask, int keyoff, int keyoffmask,
-	    uint32_t htid, uint32_t htlink, uint32_t hmask, uint32_t hoffset, struct rtnl_act *act)
+	    uint32_t htid, uint32_t htlink, uint32_t hmask, uint32_t hoffset, struct rtnl_act *act, struct rtnl_act *act2)
 {
     struct rtnl_cls *cls;
     int err;
@@ -135,6 +136,8 @@ int u32_add_filter_on_ht_with_hashmask(struct nl_sock *sock, struct rtnl_link *r
     rtnl_u32_set_link(cls, htlink);
 
     rtnl_u32_add_action(cls, act);
+
+    rtnl_u32_add_action(cls, act2);
 
 
     if ((err = rtnl_cls_add(sock, cls, NLM_F_CREATE))) {
@@ -236,7 +239,7 @@ int main(void)
     char chashlink[16]="";
     int err;
     struct nl_cache *link_cache;
-    struct rtnl_act *act;
+    struct rtnl_act *act, *act2;
 
     if (!(sock = nl_socket_alloc())) {
         printf("Unable to allocate netlink socket\n");
@@ -354,7 +357,7 @@ int main(void)
 
     u32_add_filter_on_ht_with_hashmask(sock, link, 1, 
 	    0x0, 0x0, direction, 0,
-	    0, htlink, 0xff000000, direction, NULL);
+	    0, htlink, 0xff000000, direction, NULL, NULL);
 
     /*
      * For each first byte that we need to match we will create a new hash table
@@ -373,16 +376,24 @@ int main(void)
      * previous steps.
      *
      */
-    
     act = rtnl_act_alloc();
     if (!act) {
             printf("rtnl_act_alloc() returns %p\n", act);
             return -1;
-   }
-    rtnl_tc_set_kind(TC_CAST(act), "mirred");
-    rtnl_mirred_set_action(act, TCA_EGRESS_REDIR);
-    rtnl_mirred_set_policy(act, TC_ACT_STOLEN);
-    rtnl_mirred_set_ifindex(act, rtnl_link_name2i(link_cache, "eth1"));
+    }
+    rtnl_tc_set_kind(TC_CAST(act), "skbedit");
+    rtnl_skbedit_set_queue_mapping(act, 4);
+    rtnl_skbedit_set_action(act, TC_ACT_PIPE);
+
+    act2 = rtnl_act_alloc();
+    if (!act2) {
+            printf("rtnl_act_alloc() returns %p\n", act2);
+            return -1;
+    }
+    rtnl_tc_set_kind(TC_CAST(act2), "mirred");
+    rtnl_mirred_set_action(act2, TCA_EGRESS_REDIR);
+    rtnl_mirred_set_policy(act2, TC_ACT_STOLEN);
+    rtnl_mirred_set_ifindex(act2, rtnl_link_name2i(link_cache, "eth1"));
     // /8 check
 
     // 10.0.0.0/8
@@ -392,7 +403,7 @@ int main(void)
 
     u32_add_filter_on_ht_with_hashmask(sock, link, 1, 
 	    0x0a000000, 0xff000000, direction, 0,
-	    htid, htlink, 0x00ff0000, direction, act);
+	    htid, htlink, 0x00ff0000, direction, act, act2);
 
     rtnl_act_put(act);
     nl_socket_free(sock);

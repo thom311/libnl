@@ -564,6 +564,28 @@ uint64_t rtnl_tc_get_stat(struct rtnl_tc *tc, enum rtnl_tc_stat id)
  * @{
  */
 
+static const struct trans_tbl tc_stats[] = {
+	__ADD(RTNL_TC_PACKETS, packets),
+	__ADD(RTNL_TC_BYTES, bytes),
+	__ADD(RTNL_TC_RATE_BPS, rate_bps),
+	__ADD(RTNL_TC_RATE_PPS, rate_pps),
+	__ADD(RTNL_TC_QLEN, qlen),
+	__ADD(RTNL_TC_BACKLOG, backlog),
+	__ADD(RTNL_TC_DROPS, drops),
+	__ADD(RTNL_TC_REQUEUES, requeues),
+	__ADD(RTNL_TC_OVERLIMITS, overlimits),
+};
+
+char *rtnl_tc_stat2str(enum rtnl_tc_stat st, char *buf, size_t len)
+{
+	return __type2str(st, buf, len, tc_stats, ARRAY_SIZE(tc_stats));
+}
+
+int rtnl_tc_str2stat(const char *name)
+{
+	return __str2type(name, tc_stats, ARRAY_SIZE(tc_stats));
+}
+
 /**
  * Calculate time required to transmit buffer at a specific rate
  * @arg bufsize		Size of buffer to be transmited in bytes.

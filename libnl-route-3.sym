@@ -850,6 +850,8 @@ global:
 	rtnl_skbedit_set_mark;
 	rtnl_skbedit_set_priority;
 	rtnl_skbedit_set_queue_mapping;
+	rtnl_tc_stat2str;
+	rtnl_tc_str2stat;
 	rtnl_u32_add_mark;
 	rtnl_u32_del_mark;
 } libnl_3;

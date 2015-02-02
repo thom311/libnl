@@ -21,4 +21,11 @@ pkgsysconfdir = ${sysconfdir}/libnl
 pkgsysconf_DATA = etc/pktloc etc/classid
 
 EXTRA_DIST = \
-	$(pkgsysconf_DATA)
+	$(pkgsysconf_DATA) \
+	libnl-3.sym \
+	libnl-cli-3.sym \
+	libnl-genl-3.sym \
+	libnl-idiag-3.sym \
+	libnl-nf-3.sym \
+	libnl-route-3.sym \
+	libnl-xfrm-3.sym

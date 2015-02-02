@@ -121,7 +121,6 @@ AC_CONFIG_SUBDIRS([doc])
 
 AC_CONFIG_FILES([
 Makefile
-libnl.sym
 libnl-3.0.pc
 libnl-route-3.0.pc
 libnl-genl-3.0.pc

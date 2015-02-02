@@ -22,6 +22,7 @@
 #include <netlink/netfilter/ct.h>
 #include <netlink-private/route/tc-api.h>
 #include <linux/tc_act/tc_mirred.h>
+#include <linux/tc_act/tc_skbedit.h>
 
 #define NL_SOCK_BUFSIZE_SET	(1<<0)
 #define NL_SOCK_PASSCRED	(1<<1)
@@ -518,6 +519,15 @@ struct rtnl_act
 struct rtnl_mirred
 {
 	struct tc_mirred m_parm;
+};
+
+struct rtnl_skbedit
+{
+	struct tc_skbedit s_parm;
+	uint32_t	  s_flags;
+	uint32_t	  s_mark;
+	uint32_t	  s_prio;
+	uint16_t	  s_queue_mapping;
 };
 
 struct rtnl_u32

@@ -21,18 +21,19 @@ extern "C" {
 struct nl_data;
 
 /* General */
-extern struct nl_data *	nl_data_alloc(void *, size_t);
-extern struct nl_data * nl_data_alloc_attr(struct nlattr *);
-extern struct nl_data *	nl_data_clone(struct nl_data *);
-extern int		nl_data_append(struct nl_data *, void *, size_t);
+extern struct nl_data *	nl_data_alloc(const void *, size_t);
+extern struct nl_data * nl_data_alloc_attr(const struct nlattr *);
+extern struct nl_data *	nl_data_clone(const struct nl_data *);
+extern int		nl_data_append(struct nl_data *, const void *, size_t);
 extern void		nl_data_free(struct nl_data *);
 
 /* Access Functions */
-extern void *		nl_data_get(struct nl_data *);
-extern size_t		nl_data_get_size(struct nl_data *);
+extern void *		nl_data_get(const struct nl_data *);
+extern size_t		nl_data_get_size(const struct nl_data *);
 
 /* Misc */
-extern int		nl_data_cmp(struct nl_data *, struct nl_data *);
+extern int		nl_data_cmp(const struct nl_data *,
+				    const struct nl_data *);
 
 #ifdef __cplusplus
 }

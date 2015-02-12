@@ -81,12 +81,12 @@ extern int		nla_ok(const struct nlattr *, int);
 extern struct nlattr *	nla_next(const struct nlattr *, int *);
 extern int		nla_parse(struct nlattr **, int, struct nlattr *,
 				  int, struct nla_policy *);
-extern int		nla_validate(struct nlattr *, int, int,
-				     struct nla_policy *);
-extern struct nlattr *	nla_find(struct nlattr *, int, int);
+extern int		nla_validate(const struct nlattr *, int, int,
+				     const struct nla_policy *);
+extern struct nlattr *	nla_find(const struct nlattr *, int, int);
 
 /* Helper Functions */
-extern int		nla_memcpy(void *, struct nlattr *, int);
+extern int		nla_memcpy(void *, const struct nlattr *, int);
 extern size_t		nla_strlcpy(char *, const struct nlattr *, size_t);
 extern int		nla_memcmp(const struct nlattr *, const void *, size_t);
 extern int		nla_strcmp(const struct nlattr *, const char *);
@@ -94,40 +94,42 @@ extern int		nla_strcmp(const struct nlattr *, const char *);
 /* Unspecific attribute */
 extern struct nlattr *	nla_reserve(struct nl_msg *, int, int);
 extern int		nla_put(struct nl_msg *, int, int, const void *);
-extern int		nla_put_data(struct nl_msg *, int, struct nl_data *);
+extern int		nla_put_data(struct nl_msg *, int,
+				     const struct nl_data *);
 extern int		nla_put_addr(struct nl_msg *, int, struct nl_addr *);
 
 /* Integer attribute */
-extern uint8_t		nla_get_u8(struct nlattr *);
+extern uint8_t		nla_get_u8(const struct nlattr *);
 extern int		nla_put_u8(struct nl_msg *, int, uint8_t);
-extern uint16_t		nla_get_u16(struct nlattr *);
+extern uint16_t		nla_get_u16(const struct nlattr *);
 extern int		nla_put_u16(struct nl_msg *, int, uint16_t);
-extern uint32_t		nla_get_u32(struct nlattr *);
+extern uint32_t		nla_get_u32(const struct nlattr *);
 extern int		nla_put_u32(struct nl_msg *, int, uint32_t);
-extern uint64_t		nla_get_u64(struct nlattr *);
+extern uint64_t		nla_get_u64(const struct nlattr *);
 extern int		nla_put_u64(struct nl_msg *, int, uint64_t);
 
 /* String attribute */
-extern char *		nla_get_string(struct nlattr *);
-extern char *		nla_strdup(struct nlattr *);
+extern char *		nla_get_string(const struct nlattr *);
+extern char *		nla_strdup(const struct nlattr *);
 extern int		nla_put_string(struct nl_msg *, int, const char *);
 
 /* Flag attribute */
-extern int		nla_get_flag(struct nlattr *);
+extern int		nla_get_flag(const struct nlattr *);
 extern int		nla_put_flag(struct nl_msg *, int);
 
 /* Msec attribute */
-extern unsigned long	nla_get_msecs(struct nlattr *);
+extern unsigned long	nla_get_msecs(const struct nlattr *);
 extern int		nla_put_msecs(struct nl_msg *, int, unsigned long);
 
 /* Attribute nesting */
-extern int		nla_put_nested(struct nl_msg *, int, struct nl_msg *);
+extern int		nla_put_nested(struct nl_msg *, int,
+				       const struct nl_msg *);
 extern struct nlattr *	nla_nest_start(struct nl_msg *, int);
 extern int		nla_nest_end(struct nl_msg *, struct nlattr *);
-extern void		nla_nest_cancel(struct nl_msg *, struct nlattr *);
+extern void		nla_nest_cancel(struct nl_msg *, const struct nlattr *);
 extern int		nla_parse_nested(struct nlattr **, int, struct nlattr *,
 					 struct nla_policy *);
-extern int		nla_is_nested(struct nlattr *);
+extern int		nla_is_nested(const struct nlattr *);
 
 /**
  * @name Attribute Construction (Exception Based)

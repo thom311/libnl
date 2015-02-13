@@ -185,10 +185,10 @@ static uint16_t nla_attr_minlen[NLA_TYPE_MAX+1] = {
 	[NLA_FLAG]	= 0,
 };
 
-static int validate_nla(struct nlattr *nla, int maxtype,
-			struct nla_policy *policy)
+static int validate_nla(const struct nlattr *nla, int maxtype,
+			const struct nla_policy *policy)
 {
-	struct nla_policy *pt;
+	const struct nla_policy *pt;
 	unsigned int minlen = 0;
 	int type = nla_type(nla);
 
@@ -212,7 +212,7 @@ static int validate_nla(struct nlattr *nla, int maxtype,
 		return -NLE_RANGE;
 
 	if (pt->type == NLA_STRING) {
-		char *data = nla_data(nla);
+		const char *data = nla_data(nla);
 		if (data[nla_len(nla) - 1] != '\0')
 			return -NLE_INVAL;
 	}
@@ -291,10 +291,10 @@ errout:
  *
  * @return 0 on success or a negative error code.
  */
-int nla_validate(struct nlattr *head, int len, int maxtype,
-		 struct nla_policy *policy)
+int nla_validate(const struct nlattr *head, int len, int maxtype,
+		 const struct nla_policy *policy)
 {
-	struct nlattr *nla;
+	const struct nlattr *nla;
 	int rem, err;
 
 	nla_for_each_attr(nla, head, len, rem) {
@@ -320,14 +320,14 @@ errout:
  *
  * @return Pointer to attribute found or NULL.
  */
-struct nlattr *nla_find(struct nlattr *head, int len, int attrtype)
+struct nlattr *nla_find(const struct nlattr *head, int len, int attrtype)
 {
-	struct nlattr *nla;
+	const struct nlattr *nla;
 	int rem;
 
 	nla_for_each_attr(nla, head, len, rem)
 		if (nla_type(nla) == attrtype)
-			return nla;
+			return (struct nlattr*)nla;
 
 	return NULL;
 }
@@ -350,7 +350,7 @@ struct nlattr *nla_find(struct nlattr *head, int len, int attrtype)
  *
  * @return The number of bytes copied to dest.
  */
-int nla_memcpy(void *dest, struct nlattr *src, int count)
+int nla_memcpy(void *dest, const struct nlattr *src, int count)
 {
 	int minlen;
 
@@ -378,7 +378,7 @@ int nla_memcpy(void *dest, struct nlattr *src, int count)
 size_t nla_strlcpy(char *dst, const struct nlattr *nla, size_t dstsize)
 {
 	size_t srclen = nla_len(nla);
-	char *src = nla_data(nla);
+	const char *src = nla_data(nla);
 
 	if (srclen > 0 && src[srclen - 1] == '\0')
 		srclen--;
@@ -524,7 +524,7 @@ int nla_put(struct nl_msg *msg, int attrtype, int datalen, const void *data)
  * @see nla_put
  * @return 0 on success or a negative error code.
  */
-int nla_put_data(struct nl_msg *msg, int attrtype, struct nl_data *data)
+int nla_put_data(struct nl_msg *msg, int attrtype, const struct nl_data *data)
 {
 	return nla_put(msg, attrtype, nl_data_get_size(data),
 		       nl_data_get(data));
@@ -571,9 +571,9 @@ int nla_put_u8(struct nl_msg *msg, int attrtype, uint8_t value)
  *
  * @return Payload as 8 bit integer.
  */
-uint8_t nla_get_u8(struct nlattr *nla)
+uint8_t nla_get_u8(const struct nlattr *nla)
 {
-	return *(uint8_t *) nla_data(nla);
+	return *(const uint8_t *) nla_data(nla);
 }
 
 /**
@@ -596,9 +596,9 @@ int nla_put_u16(struct nl_msg *msg, int attrtype, uint16_t value)
  *
  * @return Payload as 16 bit integer.
  */
-uint16_t nla_get_u16(struct nlattr *nla)
+uint16_t nla_get_u16(const struct nlattr *nla)
 {
-	return *(uint16_t *) nla_data(nla);
+	return *(const uint16_t *) nla_data(nla);
 }
 
 /**
@@ -621,9 +621,9 @@ int nla_put_u32(struct nl_msg *msg, int attrtype, uint32_t value)
  *
  * @return Payload as 32 bit integer.
  */
-uint32_t nla_get_u32(struct nlattr *nla)
+uint32_t nla_get_u32(const struct nlattr *nla)
 {
-	return *(uint32_t *) nla_data(nla);
+	return *(const uint32_t *) nla_data(nla);
 }
 
 /**
@@ -646,7 +646,7 @@ int nla_put_u64(struct nl_msg *msg, int attrtype, uint64_t value)
  *
  * @return Payload as 64 bit integer.
  */
-uint64_t nla_get_u64(struct nlattr *nla)
+uint64_t nla_get_u64(const struct nlattr *nla)
 {
 	uint64_t tmp = 0;
 
@@ -682,12 +682,12 @@ int nla_put_string(struct nl_msg *msg, int attrtype, const char *str)
  *
  * @return Pointer to attribute payload.
  */
-char *nla_get_string(struct nlattr *nla)
+char *nla_get_string(const struct nlattr *nla)
 {
 	return (char *) nla_data(nla);
 }
 
-char *nla_strdup(struct nlattr *nla)
+char *nla_strdup(const struct nlattr *nla)
 {
 	return strdup(nla_get_string(nla));
 }
@@ -717,7 +717,7 @@ int nla_put_flag(struct nl_msg *msg, int attrtype)
  *
  * @return True if flag is set, otherwise false.
  */
-int nla_get_flag(struct nlattr *nla)
+int nla_get_flag(const struct nlattr *nla)
 {
 	return !!nla;
 }
@@ -745,7 +745,7 @@ int nla_put_msecs(struct nl_msg *n, int attrtype, unsigned long msecs)
  *
  * @return the number of milliseconds.
  */
-unsigned long nla_get_msecs(struct nlattr *nla)
+unsigned long nla_get_msecs(const struct nlattr *nla)
 {
 	return nla_get_u64(nla);
 }
@@ -769,7 +769,8 @@ unsigned long nla_get_msecs(struct nlattr *nla)
  * @see nla_put
  * @return 0 on success or a negative error code.
  */
-int nla_put_nested(struct nl_msg *msg, int attrtype, struct nl_msg *nested)
+int nla_put_nested(struct nl_msg *msg, int attrtype,
+		   const struct nl_msg *nested)
 {
 	NL_DBG(2, "msg %p: attr <> %d: adding msg %p as nested attribute\n",
 		msg, attrtype, nested);
@@ -856,7 +857,7 @@ int nla_nest_end(struct nl_msg *msg, struct nlattr *start)
  * by resetting the message to the size before the call to nla_nest_start()
  * and by overwriting any potentially touched message segments with 0.
  */
-void nla_nest_cancel(struct nl_msg *msg, struct nlattr *attr)
+void nla_nest_cancel(struct nl_msg *msg, const struct nlattr *attr)
 {
 	ssize_t len;
 
@@ -894,7 +895,7 @@ int nla_parse_nested(struct nlattr *tb[], int maxtype, struct nlattr *nla,
  *
  * @return True if attribute has NLA_F_NESTED flag set, oterhwise False.
  */
-int nla_is_nested(struct nlattr *attr)
+int nla_is_nested(const struct nlattr *attr)
 {
 	return !!(attr->nla_type & NLA_F_NESTED);
 }

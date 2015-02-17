@@ -63,6 +63,8 @@ extern int		nl_socket_get_fd(const struct nl_sock *);
 extern int		nl_socket_set_nonblocking(const struct nl_sock *);
 extern void		nl_socket_enable_msg_peek(struct nl_sock *);
 extern void		nl_socket_disable_msg_peek(struct nl_sock *);
+extern int		nl_socket_enable_cloexec(struct nl_sock *);
+extern void		nl_socket_disable_cloexec(struct nl_sock *);
 
 #ifdef __cplusplus
 }

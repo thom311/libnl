@@ -77,6 +77,7 @@ struct nl_sock
 	int			s_flags;
 	struct nl_cb *		s_cb;
 	size_t			s_bufsize;
+	int			s_cloexec;
 };
 
 struct nl_cache

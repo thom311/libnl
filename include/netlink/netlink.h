@@ -49,6 +49,8 @@ extern struct nl_dump_params nl_debug_dp;
 
 /* Connection Management */
 extern int			nl_connect(struct nl_sock *, int);
+extern int			nl_create_fd(struct nl_sock *, int);
+extern int			nl_connect_fd(struct nl_sock *, int, int);
 extern void			nl_close(struct nl_sock *);
 
 /* Send */

@@ -192,6 +192,12 @@ static struct nl_sock *__alloc_socket(struct nl_cb *cb)
 	sk->s_peer.nl_family = AF_NETLINK;
 	sk->s_seq_expect = sk->s_seq_next = time(NULL);
 
+#ifdef SOCK_CLOEXEC
+	sk->s_cloexec  = 1;
+#else
+	sk->s_cloexec = 0;
+#endif
+
 	/* the port is 0 (unspecified), meaning NL_OWN_PORT */
 	sk->s_flags = NL_OWN_PORT;
 

@@ -63,18 +63,56 @@
  */
 
 /**
- * Create file descriptor and bind socket.
+ * Create file descriptor.
  * @arg sk		Netlink socket (required)
  * @arg protocol	Netlink protocol to use (required)
+ *
+ * Creates a new Netlink socket using `socket()` . Fails if
+ * the socket is already connected.
+ */
+int nl_create_fd(struct nl_sock *sk, int protocol)
+{
+	int err, flags = 0;
+    int errsv;
+    char buf[64];
+
+
+#ifdef SOCK_CLOEXEC
+    if (sk->s_cloexec == 1)
+    	flags |= SOCK_CLOEXEC;
+#endif
+
+    if (sk->s_fd != -1)
+    		return -NLE_BAD_SOCK;
+
+    sk->s_fd = socket(AF_NETLINK, SOCK_RAW | flags, protocol);
+    if (sk->s_fd < 0) {
+		errsv = errno;
+		NL_DBG(4, "nl_connect(%p): socket() failed with %d (%s)\n", sk, errsv,
+				strerror_r(errsv, buf, sizeof(buf)));
+		err = -nl_syserr2nlerr(errsv);
+		goto errout;
+	}
+
+	return 0;
+
+errout:
+		if (sk->s_fd != -1) {
+			close(sk->s_fd);
+			sk->s_fd = -1;
+		}
+
+	return err;
+}
+
+/**
+ * Create file descriptor and bind socket.
+ * @arg sk      Netlink socket (required)
+ * @arg protocol    Netlink protocol to use (required)
  *
  * Creates a new Netlink socket using `socket()` and binds the socket to the
  * protocol and local port specified in the `sk` socket object. Fails if
  * the socket is already connected.
- *
- * @note If available, the `close-on-exec` (`SOCK_CLOEXEC`) feature is enabled
- *       automatically on the new file descriptor. This causes the socket to
- *       be closed automatically if any of the `exec` family functions succeed.
- *       This is essential for multi threaded programs.
  *
  * @note The local port (`nl_socket_get_local_port()`) is unspecified after
  *       creating a new socket. It only gets determined when accessing the
@@ -95,27 +133,47 @@
  */
 int nl_connect(struct nl_sock *sk, int protocol)
 {
-	int err, flags = 0;
+	int err = nl_create_fd(sk, protocol);
+	if (err != 0)
+		return err;
+
+	return nl_connect_fd(sk, protocol, sk->s_fd);
+}
+
+/**
+ * @arg sk      Netlink socket (required)
+ * @arg protocol    Netlink protocol to use (required)
+ * @arg fd      Socket file descriptor to use (required)
+ *
+ * @note The local port (`nl_socket_get_local_port()`) is unspecified after
+ *       creating a new socket. It only gets determined when accessing the
+ *       port the first time or during `nl_connect_fd()`. When nl_connect_fd()
+ *       fails during `bind()` due to `ADDRINUSE`, it will retry with
+ *       different ports if the port is unspecified. Unless you want to enforce
+ *       the use of a specific local port, don't access the local port (or
+ *       reset it to `unspecified` by calling `nl_socket_set_local_port(sk, 0)`).
+ *       This capability is indicated by
+ *       `%NL_CAPABILITY_NL_CONNECT_RETRY_GENERATE_PORT_ON_ADDRINUSE`.
+ *
+ * @see nl_socket_alloc()
+ * @see nl_close()
+ *
+ * @return 0 on success or a negative error code.
+ *
+ * @retval -NLE_BAD_SOCK Socket is not connected
+ */
+int nl_connect_fd(struct nl_sock *sk, int protocol, int fd)
+{
+	int err = 0;
 	int errsv;
 	socklen_t addrlen;
 	struct sockaddr_nl local = { 0 };
 	char buf[64];
 
-#ifdef SOCK_CLOEXEC
-	flags |= SOCK_CLOEXEC;
-#endif
+    if (fd < 0)
+        return -NLE_BAD_SOCK;
 
-        if (sk->s_fd != -1)
-                return -NLE_BAD_SOCK;
-
-	sk->s_fd = socket(AF_NETLINK, SOCK_RAW | flags, protocol);
-	if (sk->s_fd < 0) {
-		errsv = errno;
-		NL_DBG(4, "nl_connect(%p): socket() failed with %d (%s)\n", sk, errsv,
-			strerror_r(errsv, buf, sizeof(buf)));
-		err = -nl_syserr2nlerr(errsv);
-		goto errout;
-	}
+    sk->s_fd = fd;
 
 	err = nl_socket_set_buffer_size(sk, 0, 0);
 	if (err < 0)

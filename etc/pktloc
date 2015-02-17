@@ -58,7 +58,7 @@ tcp.flag.urg	u8		tcp+13		0x20		5
 tcp.flag.ack	u8		tcp+13		0x10		4
 tcp.flag.psh	u8		tcp+13		0x08		3
 tcp.flag.rst	u8		tcp+13		0x04		2
-tpc.flag.syn	u8		tcp+13		0x02		1
+tcp.flag.syn	u8		tcp+13		0x02		1
 tcp.flag.fin	u8		tcp+13		0x01
 
 tcp.win		u16		tcp+14

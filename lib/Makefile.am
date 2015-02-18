@@ -31,6 +31,7 @@ libnl_idiag_3_la_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
 	-Wl,--version-script=$(top_builddir)/libnl-idiag-3.sym
 libnl_idiag_3_la_DEPENDENCIES = \
+	libnl-3.la \
 	$(top_builddir)/libnl-idiag-3.sym
 libnl_idiag_3_la_SOURCES = \
 	idiag/idiag_meminfo_obj.c idiag/idiag_vegasinfo_obj.c \
@@ -41,6 +42,7 @@ libnl_genl_3_la_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
 	-Wl,--version-script=$(top_builddir)/libnl-genl-3.sym
 libnl_genl_3_la_DEPENDENCIES = \
+	libnl-3.la \
 	$(top_builddir)/libnl-genl-3.sym
 libnl_genl_3_la_SOURCES = \
 	genl/ctrl.c genl/family.c genl/genl.c genl/mngt.c
@@ -50,6 +52,7 @@ libnl_nf_3_la_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
 	-Wl,--version-script=$(top_builddir)/libnl-nf-3.sym
 libnl_nf_3_la_DEPENDENCIES = \
+	libnl-route-3.la \
 	$(top_builddir)/libnl-nf-3.sym
 libnl_nf_3_la_SOURCES = \
 	netfilter/ct.c netfilter/ct_obj.c netfilter/log.c \
@@ -83,6 +86,7 @@ libnl_route_3_la_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
 	-Wl,--version-script=$(top_builddir)/libnl-route-3.sym
 libnl_route_3_la_DEPENDENCIES = \
+	libnl-3.la \
 	$(top_builddir)/libnl-route-3.sym
 libnl_route_3_la_SOURCES = \
 	route/addr.c route/class.c route/cls.c route/act.c route/link.c \
@@ -141,6 +145,7 @@ libnl_xfrm_3_la_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
 	-Wl,--version-script=$(top_builddir)/libnl-xfrm-3.sym
 libnl_xfrm_3_la_DEPENDENCIES = \
+	libnl-3.la \
 	$(top_builddir)/libnl-xfrm-3.sym
 libnl_xfrm_3_la_SOURCES = \
 	xfrm/ae.c \

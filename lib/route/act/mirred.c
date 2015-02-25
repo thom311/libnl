@@ -1,5 +1,5 @@
 /*
- * lib/route/cls/mirred.c		mirred action
+ * lib/route/act/mirred.c		mirred action
  *
  *	This library is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU Lesser General Public

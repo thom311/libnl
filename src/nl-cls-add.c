@@ -31,7 +31,7 @@ static void print_usage(void)
 " -d, --dev=DEV             Network device the classifier should be attached to.\n"
 " -i, --id=ID               ID of new classifier (default: auto-generated)\n"
 " -p, --parent=ID           ID of parent { root | ingress | class-ID }\n"
-"     --protocol=PROTO      Protocol to match (default: all)\n"
+"     --proto=PROTO         Protocol to match (default: all)\n"
 "     --prio=PRIO           Priority (default: 0)\n"
 "     --mtu=SIZE            Overwrite MTU (default: MTU of network device)\n"
 "     --mpu=SIZE            Minimum packet size on the link (default: 0).\n"

@@ -35,7 +35,7 @@ static void print_usage(void)
 " -p, --parent=ID           Identifier of parent class.\n"
 " -i, --id=ID               Identifier.\n"
 " -k, --kind=NAME           Kind of classifier (e.g. basic, u32, fw)\n"
-"     --protocol=PROTO      Protocol to match (default: all)\n"
+"     --proto=PROTO         Protocol to match (default: all)\n"
 "     --prio=PRIO           Priority (default: 0)\n"
 "\n"
 "EXAMPLE\n"

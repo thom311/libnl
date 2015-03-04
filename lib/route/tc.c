@@ -1026,6 +1026,19 @@ void rtnl_tc_unregister(struct rtnl_tc_ops *ops)
 }
 
 /**
+ * Returns the private data of the traffic control object.
+ * Contrary to rtnl_tc_data(), this returns NULL if the data is
+ * not yet allocated
+ * @arg tc		traffic control object
+ *
+ * @return pointer to the private data or NULL if not allocated.
+ */
+void *rtnl_tc_data_peek(struct rtnl_tc *tc)
+{
+	return tc->tc_subdata ? nl_data_get(tc->tc_subdata) : NULL;
+}
+
+/**
  * Return pointer to private data of traffic control object
  * @arg tc		traffic control object
  *

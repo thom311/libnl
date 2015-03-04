@@ -864,4 +864,5 @@ global:
 	rtnl_tc_str2stat;
 	rtnl_u32_add_mark;
 	rtnl_u32_del_mark;
+	rtnl_u32_get_classid;
 } libnl_3;

@@ -415,6 +415,20 @@ int rtnl_u32_set_classid(struct rtnl_cls *cls, uint32_t classid)
 	return 0;
 }
 
+int rtnl_u32_get_classid(struct rtnl_cls *cls, uint32_t *classid)
+{
+	struct rtnl_u32 *u;
+
+	if (!(u = rtnl_tc_data_peek(TC_CAST(cls))))
+		return -NLE_INVAL;
+
+	if (!(u->cu_mask & U32_ATTR_CLASSID))
+		return -NLE_INVAL;
+
+	*classid = u->cu_classid;
+	return 0;
+}
+
 int rtnl_u32_set_divisor(struct rtnl_cls *cls, uint32_t divisor)
 {
 	struct rtnl_u32 *u;

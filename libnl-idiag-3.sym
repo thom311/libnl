@@ -1,5 +1,11 @@
 libnl_3 {
 global:
+	# ops structure
+	idiagnl_meminfo_obj_ops;
+	idiagnl_msg_obj_ops;
+	idiagnl_req_obj_ops;
+	idiagnl_vegasinfo_obj_ops;
+
 	idiagnl_attrs2str;
 	idiagnl_connect;
 	idiagnl_exts2str;
@@ -9,7 +15,6 @@ global:
 	idiagnl_meminfo_get_rmem;
 	idiagnl_meminfo_get_tmem;
 	idiagnl_meminfo_get_wmem;
-	idiagnl_meminfo_obj_ops;
 	idiagnl_meminfo_put;
 	idiagnl_meminfo_set_fmem;
 	idiagnl_meminfo_set_rmem;
@@ -39,7 +44,6 @@ global:
 	idiagnl_msg_get_uid;
 	idiagnl_msg_get_vegasinfo;
 	idiagnl_msg_get_wqueue;
-	idiagnl_msg_obj_ops;
 	idiagnl_msg_parse;
 	idiagnl_msg_put;
 	idiagnl_msg_set_cong;
@@ -72,7 +76,6 @@ global:
 	idiagnl_req_get_ifindex;
 	idiagnl_req_get_src;
 	idiagnl_req_get_states;
-	idiagnl_req_obj_ops;
 	idiagnl_req_parse;
 	idiagnl_req_put;
 	idiagnl_req_set_dbs;
@@ -96,7 +99,6 @@ global:
 	idiagnl_vegasinfo_get_minrtt;
 	idiagnl_vegasinfo_get_rtt;
 	idiagnl_vegasinfo_get_rttcnt;
-	idiagnl_vegasinfo_obj_ops;
 	idiagnl_vegasinfo_put;
 	idiagnl_vegasinfo_set_enabled;
 	idiagnl_vegasinfo_set_minrtt;

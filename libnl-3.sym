@@ -1,15 +1,28 @@
 libnl_3 {
 global:
+	# these functions are in private header files and should have never
+	# been exported. We might hide them later.
+	nl_cache_parse;
+
+	# these functions are in private header files and should have never
+	# been exported. They are used by libnl internals
 	__flags2str;
 	__list_str2type;
 	__list_type2str;
-	__nl_cache_mngt_require;
 	__nl_read_num_str_file;
 	__str2flags;
 	__str2type;
 	__trans_list_add;
 	__trans_list_clear;
 	__type2str;
+
+	# internal symbols that are in public headers
+	__nl_cache_mngt_require;
+
+	# variables
+	nl_debug;
+	nl_debug_dp;
+
 	nl_addr2str;
 	nl_addr_alloc;
 	nl_addr_alloc_attr;
@@ -82,7 +95,6 @@ global:
 	nl_cache_ops_lookup_safe;
 	nl_cache_ops_put;
 	nl_cache_ops_set_flags;
-	nl_cache_parse;
 	nl_cache_parse_and_add;
 	nl_cache_pickup;
 	nl_cache_put;
@@ -119,8 +131,6 @@ global:
 	nl_data_free;
 	nl_data_get;
 	nl_data_get_size;
-	nl_debug;
-	nl_debug_dp;
 	nl_dump;
 	nl_dump_line;
 	nl_ether_proto2str;

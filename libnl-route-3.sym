@@ -1,5 +1,45 @@
 libnl_3 {
 global:
+	# these functions are in private header files and should have never
+	# been exported. We might hide them later.
+	rtnl_link_af_alloc;
+	rtnl_link_af_data;
+	rtnl_link_af_data_compare;
+	rtnl_link_af_ops_lookup;
+	rtnl_link_af_ops_put;
+	rtnl_link_af_register;
+	rtnl_link_af_unregister;
+	rtnl_link_info_ops_lookup;
+	rtnl_link_info_ops_put;
+	rtnl_link_register_info;
+	rtnl_link_unregister_info;
+	rtnl_tc_build_rate_table;
+	rtnl_tc_clone;
+	rtnl_tc_compare;
+	rtnl_tc_data;
+	rtnl_tc_data_check;
+	rtnl_tc_dump_details;
+	rtnl_tc_dump_line;
+	rtnl_tc_dump_stats;
+	rtnl_tc_free_data;
+	rtnl_tc_msg_build;
+	rtnl_tc_msg_parse;
+	rtnl_tc_register;
+	rtnl_tc_type_register;
+	rtnl_tc_type_unregister;
+	rtnl_tc_unregister;
+
+	# these functions are in private header files and should have never
+	# been exported. They are used by libnl internals
+	rtnl_tc_get_ops;
+	rtnl_tc_lookup_ops;
+
+	# internal symbols that are in public headers
+	rtln_link_policy;
+
+	# ops structure
+	route_obj_ops;
+
 	flnl_lookup;
 	flnl_lookup_build_request;
 	flnl_request_alloc;
@@ -29,8 +69,6 @@ global:
 	nl_str2ovl_strategy;
 	nl_str2police;
 	nl_str2rtntype;
-	route_obj_ops;
-	rtln_link_policy;
 	rtnl_act_add;
 	rtnl_act_alloc;
 	rtnl_act_append;
@@ -189,13 +227,6 @@ global:
 	rtnl_htb_set_rate;
 	rtnl_htb_set_rbuffer;
 	rtnl_link_add;
-	rtnl_link_af_alloc;
-	rtnl_link_af_data;
-	rtnl_link_af_data_compare;
-	rtnl_link_af_ops_lookup;
-	rtnl_link_af_ops_put;
-	rtnl_link_af_register;
-	rtnl_link_af_unregister;
 	rtnl_link_alloc;
 	rtnl_link_alloc_cache;
 	rtnl_link_bond_add;
@@ -286,8 +317,6 @@ global:
 	rtnl_link_inet_get_conf;
 	rtnl_link_inet_set_conf;
 	rtnl_link_inet_str2devconf;
-	rtnl_link_info_ops_lookup;
-	rtnl_link_info_ops_put;
 	rtnl_link_info_parse;
 	rtnl_link_ip6_tnl_add;
 	rtnl_link_ip6_tnl_alloc;
@@ -381,7 +410,6 @@ global:
 	rtnl_link_name2i;
 	rtnl_link_operstate2str;
 	rtnl_link_put;
-	rtnl_link_register_info;
 	rtnl_link_release;
 	rtnl_link_release_ifindex;
 	rtnl_link_set_addr;
@@ -434,7 +462,6 @@ global:
 	rtnl_link_str2mode;
 	rtnl_link_str2operstate;
 	rtnl_link_str2stat;
-	rtnl_link_unregister_info;
 	rtnl_link_unset_flags;
 	rtnl_link_veth_add;
 	rtnl_link_veth_alloc;
@@ -763,18 +790,9 @@ global:
 	rtnl_sfq_set_quantum;
 	rtnl_str2prio;
 	rtnl_str2scope;
-	rtnl_tc_build_rate_table;
 	rtnl_tc_calc_bufsize;
 	rtnl_tc_calc_cell_log;
 	rtnl_tc_calc_txtime;
-	rtnl_tc_clone;
-	rtnl_tc_compare;
-	rtnl_tc_data;
-	rtnl_tc_data_check;
-	rtnl_tc_dump_details;
-	rtnl_tc_dump_line;
-	rtnl_tc_dump_stats;
-	rtnl_tc_free_data;
 	rtnl_tc_get_handle;
 	rtnl_tc_get_ifindex;
 	rtnl_tc_get_kind;
@@ -782,16 +800,11 @@ global:
 	rtnl_tc_get_linktype;
 	rtnl_tc_get_mpu;
 	rtnl_tc_get_mtu;
-	rtnl_tc_get_ops;
 	rtnl_tc_get_overhead;
 	rtnl_tc_get_parent;
 	rtnl_tc_get_stat;
 	rtnl_tc_handle2str;
-	rtnl_tc_lookup_ops;
-	rtnl_tc_msg_build;
-	rtnl_tc_msg_parse;
 	rtnl_tc_read_classid_file;
-	rtnl_tc_register;
 	rtnl_tc_set_handle;
 	rtnl_tc_set_ifindex;
 	rtnl_tc_set_kind;
@@ -802,9 +815,6 @@ global:
 	rtnl_tc_set_overhead;
 	rtnl_tc_set_parent;
 	rtnl_tc_str2handle;
-	rtnl_tc_type_register;
-	rtnl_tc_type_unregister;
-	rtnl_tc_unregister;
 	rtnl_u32_add_action;
 	rtnl_u32_add_key;
 	rtnl_u32_add_key_in6_addr;

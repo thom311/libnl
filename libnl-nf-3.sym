@@ -1,9 +1,13 @@
 libnl_3 {
 global:
+	# ops structure
 	ct_obj_ops;
 	exp_obj_ops;
 	log_msg_obj_ops;
 	log_obj_ops;
+	queue_msg_obj_ops;
+	queue_obj_ops;
+
 	nfnl_connect;
 	nfnl_ct_add;
 	nfnl_ct_alloc;
@@ -307,8 +311,6 @@ global:
 	nfnlmsg_res_id;
 	nfnlmsg_subsys;
 	nfnlmsg_subtype;
-	queue_msg_obj_ops;
-	queue_obj_ops;
 local:
 	*;
 };

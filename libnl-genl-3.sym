@@ -1,5 +1,9 @@
 libnl_3 {
 global:
+	# these functions are in private header files and should have never
+	# been exported. We might hide them later.
+	genl_resolve_id;
+
 	genl_connect;
 	genl_ctrl_alloc_cache;
 	genl_ctrl_resolve;
@@ -27,7 +31,6 @@ global:
 	genl_ops_resolve;
 	genl_register;
 	genl_register_family;
-	genl_resolve_id;
 	genl_send_simple;
 	genl_unregister;
 	genl_unregister_family;

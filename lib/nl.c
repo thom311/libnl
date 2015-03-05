@@ -98,6 +98,7 @@ int nl_connect(struct nl_sock *sk, int protocol)
 	int err, flags = 0;
 	int errsv;
 	socklen_t addrlen;
+	struct sockaddr_nl local = { 0 };
 	char buf[64];
 
 #ifdef SOCK_CLOEXEC
@@ -163,8 +164,8 @@ int nl_connect(struct nl_sock *sk, int protocol)
 		}
 	}
 
-	addrlen = sizeof(sk->s_local);
-	err = getsockname(sk->s_fd, (struct sockaddr *) &sk->s_local,
+	addrlen = sizeof(local);
+	err = getsockname(sk->s_fd, (struct sockaddr *) &local,
 			  &addrlen);
 	if (err < 0) {
 		NL_DBG(4, "nl_connect(%p): getsockname() failed with %d (%s)\n",
@@ -173,24 +174,31 @@ int nl_connect(struct nl_sock *sk, int protocol)
 		goto errout;
 	}
 
-	if (addrlen != sizeof(sk->s_local)) {
+	if (addrlen != sizeof(local)) {
 		err = -NLE_NOADDR;
 		goto errout;
 	}
 
-	if (sk->s_local.nl_family != AF_NETLINK) {
+	if (local.nl_family != AF_NETLINK) {
 		err = -NLE_AF_NOSUPPORT;
 		goto errout;
 	}
 
+	if (sk->s_local.nl_pid != local.nl_pid) {
+		/* strange, the port id is not as expected. Set the local
+		 * port id to release a possibly generated port and un-own
+		 * it. */
+		nl_socket_set_local_port (sk, local.nl_pid);
+	}
+	sk->s_local = local;
 	sk->s_proto = protocol;
 
 	return 0;
 errout:
-        if (sk->s_fd != -1) {
-    		close(sk->s_fd);
-    		sk->s_fd = -1;
-        }
+	if (sk->s_fd != -1) {
+		close(sk->s_fd);
+		sk->s_fd = -1;
+	}
 
 	return err;
 }

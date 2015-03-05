@@ -116,11 +116,9 @@ int nl_connect(struct nl_sock *sk, int protocol)
 		goto errout;
 	}
 
-	if (!(sk->s_flags & NL_SOCK_BUFSIZE_SET)) {
-		err = nl_socket_set_buffer_size(sk, 0, 0);
-		if (err < 0)
-			goto errout;
-	}
+	err = nl_socket_set_buffer_size(sk, 0, 0);
+	if (err < 0)
+		goto errout;
 
 	if (_nl_socket_is_local_port_unspecified (sk)) {
 		uint32_t port;

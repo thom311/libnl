@@ -24,7 +24,6 @@
 #include <linux/tc_act/tc_mirred.h>
 #include <linux/tc_act/tc_skbedit.h>
 
-#define NL_SOCK_BUFSIZE_SET	(1<<0)
 #define NL_SOCK_PASSCRED	(1<<1)
 #define NL_OWN_PORT		(1<<2)
 #define NL_MSG_PEEK		(1<<3)

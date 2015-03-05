@@ -715,8 +715,6 @@ int nl_socket_set_buffer_size(struct nl_sock *sk, int rxbuf, int txbuf)
 		return -nl_syserr2nlerr(errno);
 	}
 
-	sk->s_flags |= NL_SOCK_BUFSIZE_SET;
-
 	return 0;
 }
 

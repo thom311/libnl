@@ -573,6 +573,68 @@ int nl_socket_get_fd(const struct nl_sock *sk)
 }
 
 /**
+ * Set the socket file descriptor externally which initializes the
+ * socket similar to nl_connect().
+ *
+ * @arg sk         Netlink socket (required)
+ * @arg protocol   Netlink protocol to use (required)
+ * @arg fd         Socket file descriptor to use (required)
+ *
+ * Set the socket file descriptor. @fd must be valid and bind'ed.
+ *
+ * This is an alternative to nl_connect(). nl_connect() creates, binds and
+ * sets the socket. With this function you can set the socket to an externally
+ * created file descriptor.
+ *
+ * @see nl_connect()
+ *
+ * @return 0 on success or a negative error code. On error, @fd is not closed but
+ * possibly unusable.
+ *
+ * @retval -NLE_BAD_SOCK Netlink socket is already connected
+ * @retval -NLE_INVAL Socket is not connected
+ */
+int nl_socket_set_fd(struct nl_sock *sk, int protocol, int fd)
+{
+	int err = 0;
+	socklen_t addrlen;
+	char buf[64];
+	struct sockaddr_nl local = { 0 };
+
+	if (sk->s_fd != -1)
+		return -NLE_BAD_SOCK;
+	if (fd < 0)
+		return -NLE_INVAL;
+
+	addrlen = sizeof(local);
+	err = getsockname(fd, (struct sockaddr *) &local,
+	                  &addrlen);
+	if (err < 0) {
+		NL_DBG(4, "nl_socket_set_fd(%p): getsockname() failed with %d (%s)\n",
+		       sk, errno, strerror_r(errno, buf, sizeof(buf)));
+		return -nl_syserr2nlerr(errno);
+	}
+
+	if (addrlen != sizeof(local))
+		return -NLE_NOADDR;
+
+	if (local.nl_family != AF_NETLINK)
+		return -NLE_AF_NOSUPPORT;
+
+	if (sk->s_local.nl_pid != local.nl_pid) {
+		/* the port id differs. The socket is using a port id not managed by
+		 * libnl, hence reset the local port id to release a possibly generated
+		 * port. */
+		nl_socket_set_local_port (sk, local.nl_pid);
+	}
+	sk->s_local = local;
+	sk->s_fd = fd;
+	sk->s_proto = protocol;
+
+	return 0;
+}
+
+/**
  * Set file descriptor of socket to non-blocking state
  * @arg sk		Netlink socket.
  *

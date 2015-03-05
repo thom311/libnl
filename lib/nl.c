@@ -86,8 +86,13 @@
  *       This capability is indicated by
  *       `%NL_CAPABILITY_NL_CONNECT_RETRY_GENERATE_PORT_ON_ADDRINUSE`.
  *
+ * @note nl_connect() creates and sets the file descriptor. You can setup the file
+ *       descriptor yourself by creating and binding it, and then calling
+ *       nl_socket_set_fd(). The result will be the same.
+ *
  * @see nl_socket_alloc()
  * @see nl_close()
+ * @see nl_socket_set_fd()
  *
  * @return 0 on success or a negative error code.
  *
@@ -105,8 +110,8 @@ int nl_connect(struct nl_sock *sk, int protocol)
 	flags |= SOCK_CLOEXEC;
 #endif
 
-        if (sk->s_fd != -1)
-                return -NLE_BAD_SOCK;
+	if (sk->s_fd != -1)
+		return -NLE_BAD_SOCK;
 
 	sk->s_fd = socket(AF_NETLINK, SOCK_RAW | flags, protocol);
 	if (sk->s_fd < 0) {

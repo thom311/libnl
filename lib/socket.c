@@ -29,6 +29,8 @@
 
 #include "defs.h"
 
+#include "sys/socket.h"
+
 #include <netlink-private/netlink.h>
 #include <netlink-private/socket.h>
 #include <netlink/netlink.h>
@@ -577,7 +579,12 @@ int nl_socket_get_fd(const struct nl_sock *sk)
  * socket similar to nl_connect().
  *
  * @arg sk         Netlink socket (required)
- * @arg protocol   Netlink protocol to use (required)
+ * @arg protocol   The socket protocol (optional). Linux 2.6.32 supports
+ *                 the socket option SO_PROTOCOL. In this case, you can set
+ *                 protocol to a negative value and let it autodetect.
+ *                 If you set it to a non-negative value, the detected protocol
+ *                 must match the one provided.
+ *                 To support older kernels, you must specify the protocol.
  * @arg fd         Socket file descriptor to use (required)
  *
  * Set the socket file descriptor. @fd must be valid and bind'ed.
@@ -592,7 +599,7 @@ int nl_socket_get_fd(const struct nl_sock *sk)
  * possibly unusable.
  *
  * @retval -NLE_BAD_SOCK Netlink socket is already connected
- * @retval -NLE_INVAL Socket is not connected
+ * @retval -NLE_INVAL Socket is of unexpected type
  */
 int nl_socket_set_fd(struct nl_sock *sk, int protocol, int fd)
 {
@@ -600,6 +607,7 @@ int nl_socket_set_fd(struct nl_sock *sk, int protocol, int fd)
 	socklen_t addrlen;
 	char buf[64];
 	struct sockaddr_nl local = { 0 };
+	int so_type = -1, so_protocol = -1;
 
 	if (sk->s_fd != -1)
 		return -NLE_BAD_SOCK;
@@ -610,16 +618,62 @@ int nl_socket_set_fd(struct nl_sock *sk, int protocol, int fd)
 	err = getsockname(fd, (struct sockaddr *) &local,
 	                  &addrlen);
 	if (err < 0) {
-		NL_DBG(4, "nl_socket_set_fd(%p): getsockname() failed with %d (%s)\n",
-		       sk, errno, strerror_r(errno, buf, sizeof(buf)));
+		NL_DBG(4, "nl_socket_set_fd(%p,%d): getsockname() failed with %d (%s)\n",
+		       sk, fd, errno, strerror_r(errno, buf, sizeof(buf)));
 		return -nl_syserr2nlerr(errno);
 	}
-
 	if (addrlen != sizeof(local))
-		return -NLE_NOADDR;
+		return -NLE_INVAL;
+	if (local.nl_family != AF_NETLINK) {
+		NL_DBG(4, "nl_socket_set_fd(%p,%d): getsockname() returned family %d instead of %d (AF_NETLINK)\n",
+		       sk, fd, local.nl_family, AF_NETLINK);
+		return -NLE_INVAL;
+	}
 
-	if (local.nl_family != AF_NETLINK)
-		return -NLE_AF_NOSUPPORT;
+	addrlen = sizeof(so_type);
+	err = getsockopt(fd, SOL_SOCKET, SO_TYPE, &so_type, &addrlen);
+	if (err < 0) {
+		NL_DBG(4, "nl_socket_set_fd(%p,%d): getsockopt() for SO_TYPE failed with %d (%s)\n",
+		       sk, fd, errno, strerror_r(errno, buf, sizeof(buf)));
+		return -nl_syserr2nlerr(errno);
+	}
+	if (addrlen != sizeof(so_type))
+		return -NLE_INVAL;
+	if (so_type != SOCK_RAW) {
+		NL_DBG(4, "nl_socket_set_fd(%p,%d): getsockopt() returned SO_TYPE %d instead of %d (SOCK_RAW)\n",
+		       sk, fd, so_type, SOCK_RAW);
+		return -NLE_INVAL;
+	}
+
+#if SO_PROTOCOL
+	addrlen = sizeof(so_protocol);
+	err = getsockopt(fd, SOL_SOCKET, SO_PROTOCOL, &so_protocol, &addrlen);
+	if (err < 0) {
+		if (errno == ENOPROTOOPT)
+			goto no_so_protocol;
+		NL_DBG(4, "nl_socket_set_fd(%p,%d): getsockopt() for SO_PROTOCOL failed with %d (%s)\n",
+		       sk, fd, errno, strerror_r(errno, buf, sizeof(buf)));
+		return -nl_syserr2nlerr(errno);
+	}
+	if (addrlen != sizeof(so_protocol))
+		return -NLE_INVAL;
+	if (protocol >= 0 && protocol != so_protocol) {
+		NL_DBG(4, "nl_socket_set_fd(%p,%d): getsockopt() for SO_PROTOCOL returned %d instead of %d\n",
+		       sk, fd, so_protocol, protocol);
+		return -NLE_INVAL;
+	}
+
+	if (0)
+#endif
+	{
+no_so_protocol:
+		if (protocol < 0) {
+			NL_DBG(4, "nl_socket_set_fd(%p,%d): unknown protocol and unable to detect it via SO_PROTOCOL socket option\n",
+			       sk, fd);
+			return -NLE_INVAL;
+		}
+		so_protocol = protocol;
+	}
 
 	if (sk->s_local.nl_pid != local.nl_pid) {
 		/* the port id differs. The socket is using a port id not managed by
@@ -629,7 +683,7 @@ int nl_socket_set_fd(struct nl_sock *sk, int protocol, int fd)
 	}
 	sk->s_local = local;
 	sk->s_fd = fd;
-	sk->s_proto = protocol;
+	sk->s_proto = so_protocol;
 
 	return 0;
 }

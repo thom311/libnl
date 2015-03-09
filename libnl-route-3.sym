@@ -832,12 +832,9 @@ global:
 	rtnl_u32_set_hashmask;
 	rtnl_u32_set_hashtable;
 	rtnl_u32_set_link;
-local:
-	*;
-};
 
-libnl_3_2_26 {
-global:
+	# The following symbols were added during the development of 3.2.26.
+	# Keep them in libnl_3 to avoid breaking users.
 	rtnl_class_hfsc_get_fsc;
 	rtnl_class_hfsc_get_rsc;
 	rtnl_class_hfsc_get_usc;
@@ -852,6 +849,15 @@ global:
 	rtnl_link_inet6_str2addrgenmode;
 	rtnl_qdisc_hfsc_get_defcls;
 	rtnl_qdisc_hfsc_set_defcls;
+	rtnl_u32_add_mark;
+	rtnl_u32_del_mark;
+
+local:
+	*;
+};
+
+libnl_3_2_26 {
+global:
 	rtnl_skbedit_get_action;
 	rtnl_skbedit_get_mark;
 	rtnl_skbedit_get_priority;
@@ -862,7 +868,5 @@ global:
 	rtnl_skbedit_set_queue_mapping;
 	rtnl_tc_stat2str;
 	rtnl_tc_str2stat;
-	rtnl_u32_add_mark;
-	rtnl_u32_del_mark;
 	rtnl_u32_get_classid;
 } libnl_3;

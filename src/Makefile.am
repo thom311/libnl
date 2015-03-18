@@ -19,22 +19,8 @@ LDADD = \
 	${top_builddir}/lib/libnl-route-3.la \
 	${top_builddir}/lib/libnl-idiag-3.la
 
-sbin_PROGRAMS = \
+cli_programs = \
 	genl-ctrl-list \
-	nl-class-add \
-	nl-class-delete \
-	nl-classid-lookup \
-	nl-class-list \
-	nl-cls-add \
-	nl-cls-delete \
-	nl-cls-list \
-	nl-link-list \
-	nl-pktloc-lookup \
-	nl-qdisc-add \
-	nl-qdisc-delete \
-	nl-qdisc-list
-
-noinst_PROGRAMS = \
 	idiag-socket-details \
 	nf-ct-add \
 	nf-ct-list \
@@ -47,9 +33,17 @@ noinst_PROGRAMS = \
 	nl-addr-add \
 	nl-addr-delete \
 	nl-addr-list \
+	nl-class-add \
+	nl-class-delete \
+	nl-classid-lookup \
+	nl-class-list \
+	nl-cls-add \
+	nl-cls-delete \
+	nl-cls-list \
 	nl-fib-lookup \
 	nl-link-enslave \
 	nl-link-ifindex2name \
+	nl-link-list \
 	nl-link-name2ifindex \
 	nl-link-release \
 	nl-link-set \
@@ -61,6 +55,10 @@ noinst_PROGRAMS = \
 	nl-neigh-delete \
 	nl-neigh-list \
 	nl-neightbl-list \
+	nl-pktloc-lookup \
+	nl-qdisc-add \
+	nl-qdisc-delete \
+	nl-qdisc-list \
 	nl-route-add \
 	nl-route-delete \
 	nl-route-get \
@@ -68,6 +66,16 @@ noinst_PROGRAMS = \
 	nl-rule-list \
 	nl-tctree-list \
 	nl-util-addr
+
+if ENABLE_CLI_INSTALL_BIN
+bin_PROGRAMS = $(cli_programs)
+else
+if ENABLE_CLI_INSTALL_SBIN
+sbin_PROGRAMS = $(cli_programs)
+else
+noinst_PROGRAMS = $(cli_programs)
+endif
+endif
 
 genl_ctrl_list_SOURCES = genl-ctrl-list.c 
 

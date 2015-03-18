@@ -91,9 +91,16 @@ AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
 AC_SUBST([pkgconfigdir])
 
 AC_ARG_ENABLE([cli],
-	AS_HELP_STRING([--disable-cli], [Do not build command line interface utils]),
+	AS_HELP_STRING([--enable-cli=yes|no|no-inst|bin|sbin], [Whether to build command line interface utils. Defaults to 'yes' which is a synonym for 'bin'. 'no-inst' means only build, not installing. 'bin'/'sbin' means installing to bin/sbin directory]),
 	[enable_cli="$enableval"], [enable_cli="yes"])
-AM_CONDITIONAL([ENABLE_CLI], [test "$enable_cli" = "yes"])
+if test "$enable_cli" != "no" &&
+   test "$enable_cli" != "no-inst" &&
+   test "$enable_cli" != "sbin"; then
+	enable_cli="bin"
+fi
+AM_CONDITIONAL([ENABLE_CLI], [test "$enable_cli" != "no"])
+AM_CONDITIONAL([ENABLE_CLI_INSTALL_BIN], [test "$enable_cli" = "bin"])
+AM_CONDITIONAL([ENABLE_CLI_INSTALL_SBIN], [test "$enable_cli" = "sbin"])
 
 AC_ARG_ENABLE([pthreads],
 	AS_HELP_STRING([--disable-pthreads], [Disable pthreads support]),

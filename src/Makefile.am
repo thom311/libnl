@@ -21,31 +21,53 @@ LDADD = \
 
 sbin_PROGRAMS = \
 	genl-ctrl-list \
-	nl-qdisc-add nl-qdisc-list nl-qdisc-delete \
-	nl-class-add nl-class-list nl-class-delete \
-	nl-cls-add nl-cls-list nl-cls-delete \
+	nl-class-add \
+	nl-class-delete \
 	nl-classid-lookup \
+	nl-class-list \
+	nl-cls-add \
+	nl-cls-delete \
+	nl-cls-list \
+	nl-link-list \
 	nl-pktloc-lookup \
-	nl-link-list
+	nl-qdisc-add \
+	nl-qdisc-delete \
+	nl-qdisc-list
 
 noinst_PROGRAMS = \
-	nf-ct-list nf-ct-add nf-log nf-queue nf-monitor \
-	nf-exp-list nf-exp-add nf-exp-delete \
-	nl-addr-add nl-addr-delete nl-addr-list \
-	nl-link-set nl-link-stats \
-	nl-link-ifindex2name nl-link-name2ifindex \
-	nl-neigh-add nl-neigh-delete nl-neigh-list \
-	nl-rule-list \
-	nl-neightbl-list \
-	nl-monitor \
-	nl-tctree-list \
-	nl-route-add nl-route-delete nl-route-get nl-route-list \
+	idiag-socket-details \
+	nf-ct-add \
+	nf-ct-list \
+	nf-exp-add \
+	nf-exp-delete \
+	nf-exp-list \
+	nf-log \
+	nf-monitor \
+	nf-queue \
+	nl-addr-add \
+	nl-addr-delete \
+	nl-addr-list \
 	nl-fib-lookup \
-	nl-list-caches nl-list-sockets \
-	nl-util-addr \
 	nl-link-enslave \
+	nl-link-ifindex2name \
+	nl-link-name2ifindex \
 	nl-link-release \
-	idiag-socket-details
+	nl-link-set \
+	nl-link-stats \
+	nl-list-caches \
+	nl-list-sockets \
+	nl-monitor \
+	nl-neigh-add \
+	nl-neigh-delete \
+	nl-neigh-list \
+	nl-neightbl-list \
+	nl-route-add \
+	nl-route-delete \
+	nl-route-get \
+	nl-route-list \
+	nl-rule-list \
+	nl-tctree-list \
+	nl-util-addr
 
 genl_ctrl_list_SOURCES = genl-ctrl-list.c 
 

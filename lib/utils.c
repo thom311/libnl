@@ -1152,6 +1152,20 @@ int nl_has_capability (int capability)
 			NL_CAPABILITY_ROUTE_ADDR_COMPARE_CACHEINFO,
 			0,
 			0),
+		/* IMPORTANT: these capability numbers are intended to be universal and stable
+		 * for libnl3. Don't allocate new numbers on your own that differ from upstream
+		 * libnl3.
+		 *
+		 * Instead register a capability number upstream too. We will take patches
+		 * for that. We especially take patches to register a capability number that is
+		 * only implemented in your fork of libnl3.
+		 *
+		 * If you really don't want that, use capabilities in the range 0x7000 to 0x7FFF.
+		 * (NL_CAPABILITY_IS_USER_RESERVED). Upstream libnl3 will not register conflicting
+		 * capabilities in that range.
+		 *
+		 * Obviously, only backport capability numbers to libnl versions that actually
+		 * implement that capability as well. */
 #undef _NL_SET
 #undef _NL_SETV
 #undef _NL_ASSERT

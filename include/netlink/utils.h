@@ -129,8 +129,15 @@ enum {
 	NL_CAPABILITY_ROUTE_ADDR_COMPARE_CACHEINFO   = 6,
 #define NL_CAPABILITY_ROUTE_ADDR_COMPARE_CACHEINFO NL_CAPABILITY_ROUTE_ADDR_COMPARE_CACHEINFO
 
-	__NL_CAPABILITY_MAX
-#define NL_CAPABILITY_MAX                               (__NL_CAPABILITY_MAX - 1)
+	__NL_CAPABILITY_MAX,
+	NL_CAPABILITY_MAX = (__NL_CAPABILITY_MAX - 1),
+#define NL_CAPABILITY_MAX NL_CAPABILITY_MAX
+
+	/**
+	 * The range 0x7000 to 0x7FFF is reserved for private capabilities. Upstream libnl3 will
+	 * not register capabilities in this range. However, instead of adding private capabilities,
+	 * better register their number with upstream libnl3. */
+#define NL_CAPABILITY_IS_USER_RESERVED(cap)    ( ((cap) & ~0x0FFF) == 0x7000 )
 };
 int nl_has_capability (int capability);
 

@@ -220,6 +220,7 @@ struct rtnl_neigh
 	uint32_t                n_state_mask;
 	uint32_t                n_flag_mask;
 	uint32_t		n_master;
+	uint16_t	n_vlan;
 };
 
 

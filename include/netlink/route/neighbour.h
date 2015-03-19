@@ -74,6 +74,9 @@ extern int			rtnl_neigh_get_type(struct rtnl_neigh *);
 extern void			rtnl_neigh_set_family(struct rtnl_neigh *, int);
 extern int			rtnl_neigh_get_family(struct rtnl_neigh *);
 
+extern void			rtnl_neigh_set_vlan(struct rtnl_neigh *, int);
+extern int			rtnl_neigh_get_vlan(struct rtnl_neigh *);
+
 #ifdef __cplusplus
 }
 #endif

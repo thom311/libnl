@@ -331,11 +331,11 @@ static void inet6_dump_details(struct rtnl_link *link,
 		nl_msec2str(i6->i6_cacheinfo.retrans_time, buf, sizeof(buf)));
 
 	addr = nl_addr_build(AF_INET6, &i6->i6_token, sizeof(i6->i6_token));
-	nl_dump(p, " token %s\n",
+	nl_dump(p, "      token %s\n",
 		nl_addr2str(addr, buf, sizeof(buf)));
 	nl_addr_put(addr);
 
-	nl_dump(p, " link-local address mode %s\n",
+	nl_dump(p, "      link-local address mode %s\n",
 		rtnl_link_inet6_addrgenmode2str(i6->i6_addr_gen_mode,
 						buf, sizeof(buf)));
 

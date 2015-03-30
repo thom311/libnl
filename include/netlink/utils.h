@@ -126,8 +126,14 @@ enum {
 	 * address timestamps and expiry when comparing struct rtnl_addr objects with
 	 * nl_object_diff().
 	 */
-	NL_CAPABILITY_ROUTE_ADDR_COMPARE_CACHEINFO   = 6,
+	NL_CAPABILITY_ROUTE_ADDR_COMPARE_CACHEINFO = 6,
 #define NL_CAPABILITY_ROUTE_ADDR_COMPARE_CACHEINFO NL_CAPABILITY_ROUTE_ADDR_COMPARE_CACHEINFO
+
+	/**
+	 * The library version is libnl3 3.2.26 or newer. This capability should never be backported.
+	 */
+	NL_CAPABILITY_VERSION_3_2_26 = 7,
+#define NL_CAPABILITY_VERSION_3_2_26 NL_CAPABILITY_VERSION_3_2_26
 
 	__NL_CAPABILITY_MAX,
 	NL_CAPABILITY_MAX = (__NL_CAPABILITY_MAX - 1),

@@ -9,7 +9,6 @@
  * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
-#include <linux/if.h>
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>
 

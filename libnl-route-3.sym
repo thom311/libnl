@@ -1095,6 +1095,8 @@ global:
 	rtnl_link_is_geneve;
 	rtnl_link_is_xfrmi;
 	rtnl_link_set_slave_type;
+	rtnl_link_team_add;
+	rtnl_link_team_alloc;
 	rtnl_link_xfrmi_alloc;
 	rtnl_link_xfrmi_get_if_id;
 	rtnl_link_xfrmi_get_link;

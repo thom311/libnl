@@ -156,6 +156,7 @@ libnlinclude_netlink_route_link_HEADERS = \
 	include/netlink/route/link/ip6gre.h \
 	include/netlink/route/link/ipip.h \
 	include/netlink/route/link/ipvlan.h \
+	include/netlink/route/link/team.h \
 	include/netlink/route/link/ipvti.h \
 	include/netlink/route/link/macsec.h \
 	include/netlink/route/link/macvlan.h \
@@ -407,6 +408,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/link/ip6gre.c \
 	lib/route/link/ipip.c \
 	lib/route/link/ipvlan.c \
+	lib/route/link/team.c \
 	lib/route/link/ipvti.c \
 	lib/route/link/macsec.c \
 	lib/route/link/macvlan.c \

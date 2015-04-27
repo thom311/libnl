@@ -603,6 +603,8 @@ static const struct trans_tbl nlfamilies[] = {
 	__ADD(NETLINK_GENERIC,generic),
 	__ADD(NETLINK_SCSITRANSPORT,scsitransport),
 	__ADD(NETLINK_ECRYPTFS,ecryptfs),
+	__ADD(NETLINK_RDMA,rdma),
+	__ADD(NETLINK_CRYPTO,crypto),
 };
 
 char * nl_nlfamily2str(int family, char *buf, size_t size)

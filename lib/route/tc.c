@@ -1053,9 +1053,6 @@ void *rtnl_tc_data(struct rtnl_tc *tc)
 		size_t size;
 
 		if (!tc->tc_ops) {
-			if (!tc->tc_kind)
-				BUG();
-
 			if (!rtnl_tc_get_ops(tc))
 				return NULL;
 		}

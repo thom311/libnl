@@ -9,7 +9,8 @@
 #include <netlink/attr.h>
 #include <net/if.h>
 
-#define DEBUG
+/* enable define below to get swig api debug messages */
+/*#define DEBUG*/
 #include "utils.h"
 %}
 

@@ -187,6 +187,9 @@ extern void  nl_socket_set_peer_groups(struct nl_sock *sk, uint32_t groups);
 extern int nl_socket_set_buffer_size(struct nl_sock *, int, int);
 extern void nl_socket_set_cb(struct nl_sock *, struct nl_cb *);
 
+extern int nl_socket_add_membership(struct nl_sock *, int);
+extern int nl_socket_drop_membership(struct nl_sock *, int);
+
 extern int nl_send_auto_complete(struct nl_sock *, struct nl_msg *);
 extern int nl_recvmsgs(struct nl_sock *, struct nl_cb *);
 

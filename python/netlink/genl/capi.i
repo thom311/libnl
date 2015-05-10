@@ -36,8 +36,16 @@ extern void genl_family_set_maxattr(struct genl_family *, uint32_t);
 extern int genl_family_add_op(struct genl_family *, int, int);
 extern int genl_family_add_grp(struct genl_family *, uint32_t , const char *);
 
+/* #include <linux/genetlink.h> */
+struct genlmsghdr {
+	uint8_t cmd;
+	uint8_t version;
+	uint16_t reserved;
+};
+
 /* #include <netlink/genl/genl.h> */
 extern int genl_connect(struct nl_sock *);
+extern struct genlmsghdr *genlmsg_hdr(struct nlmsghdr *);
 
 extern void *genlmsg_put(struct nl_msg *, uint32_t, uint32_t,
 			 int, int, int, uint8_t, uint8_t);

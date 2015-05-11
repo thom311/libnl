@@ -97,9 +97,10 @@ struct xfrmnl_sel* xfrmnl_sel_clone(struct xfrmnl_sel* sel)
 	struct xfrmnl_sel* new;
 
 	new = xfrmnl_sel_alloc();
-	if (new)
-		memcpy ((void*)new, (void*)sel, sizeof (struct xfrmnl_sel));
+	if (!new)
+		return NULL;
 
+	memcpy(new, sel, sizeof(struct xfrmnl_sel));
 	new->daddr = nl_addr_clone(sel->daddr);
 	new->saddr = nl_addr_clone(sel->saddr);
 

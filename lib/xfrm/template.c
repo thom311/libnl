@@ -91,9 +91,10 @@ struct xfrmnl_user_tmpl* xfrmnl_user_tmpl_clone(struct xfrmnl_user_tmpl* utmpl)
 	struct xfrmnl_user_tmpl* new;
 
 	new = xfrmnl_user_tmpl_alloc();
-	if (new)
-		memcpy ((void*)new, (void*)utmpl, sizeof (struct xfrmnl_user_tmpl));
+	if (!new)
+		return NULL;
 
+	memcpy(new, utmpl, sizeof(struct xfrmnl_user_tmpl));
 	new->id.daddr = nl_addr_clone (utmpl->id.daddr);
 	new->saddr    = nl_addr_clone (utmpl->saddr);
 

@@ -643,10 +643,11 @@ static struct nla_policy xfrm_sa_policy[XFRMA_MAX+1] = {
 
 static int xfrm_sa_request_update(struct nl_cache *c, struct nl_sock *h)
 {
-	struct xfrm_id   sa_id;
+	struct xfrm_id sa_id;
 
-	memset ((void *)&sa_id, 0, sizeof (struct xfrm_id));
-	return nl_send_simple (h, XFRM_MSG_GETSA, NLM_F_DUMP,(void*)&sa_id, sizeof (struct xfrm_id));
+	memset (&sa_id, 0, sizeof (sa_id));
+	return nl_send_simple (h, XFRM_MSG_GETSA, NLM_F_DUMP,
+	                       &sa_id, sizeof (sa_id));
 }
 
 int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)

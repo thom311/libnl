@@ -79,7 +79,8 @@ int genl_connect(struct nl_sock *sk)
  *
  * @see nl_send_simple()
  *
- * @return 0 on success or a negative error code.
+ * @return 0 on success or a negative error code. Due to a bug, this function
+ * returns the number of bytes sent. Treat any non-negative number as success.
  */
 int genl_send_simple(struct nl_sock *sk, int family, int cmd,
 		     int version, int flags)

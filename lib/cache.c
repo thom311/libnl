@@ -637,7 +637,9 @@ void nl_cache_set_flags(struct nl_cache *cache, unsigned int flags)
  *
  * @see nl_cache_pickup(), nl_cache_resync()
  *
- * @return 0 on success or a negative error code.
+ * @return 0 on success or a negative error code. Some implementations
+ * of co_request_update() return a positive number on success that is
+ * the number of bytes sent. Treat any non-negative number as success too.
  */
 static int nl_cache_request_full_dump(struct nl_sock *sk,
 				      struct nl_cache *cache)

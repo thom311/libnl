@@ -305,6 +305,13 @@ static int exp_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	return err;
 }
 
+/**
+ * Send nfnl exp dump request
+ * @arg sk    Netlink socket.
+ *
+ * @return 0 on success or a negative error code. Due to a bug, this function
+ * returns the number of bytes sent. Treat any non-negative number as success.
+ */
 int nfnl_exp_dump_request(struct nl_sock *sk)
 {
 	return nfnl_send_simple(sk, NFNL_SUBSYS_CTNETLINK_EXP, IPCTNL_MSG_EXP_GET,

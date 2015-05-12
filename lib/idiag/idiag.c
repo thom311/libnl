@@ -57,7 +57,8 @@ int idiagnl_connect(struct nl_sock *sk)
  * @arg states	Socket states to query
  * @arg ext	Inet Diag attribute extensions to query
  *
- * @return Newly allocated netlink message or NULL.
+ * @return 0 on success or a negative error code. Due to a bug, this function
+ * returns the number of bytes sent. Treat any non-negative number as success.
  */
 int idiagnl_send_simple(struct nl_sock *sk, int flags, uint8_t family,
 		uint16_t states, uint16_t ext)

@@ -102,7 +102,8 @@ int nfnl_connect(struct nl_sock *sk)
  * @arg family		nfnetlink address family
  * @arg res_id		nfnetlink resource id
  *
- * @return Newly allocated netlink message or NULL.
+ * @return 0 on success or a negative error code. Due to a bug, this function
+ * returns the number of bytes sent. Treat any non-negative number as success.
  */
 int nfnl_send_simple(struct nl_sock *sk, uint8_t subsys_id, uint8_t type,
 		     int flags, uint8_t family, uint16_t res_id)

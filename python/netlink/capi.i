@@ -9,13 +9,15 @@
 #include <netlink/attr.h>
 #include <net/if.h>
 
-#define DEBUG
+/* enable define below to get swig api debug messages */
+/*#define DEBUG*/
 #include "utils.h"
 %}
 
 %include <stdint.i>
 %include <cstring.i>
 %include <cpointer.i>
+%include <exception.i>
 
 %inline %{
         struct nl_dump_params *alloc_dump_params(void)
@@ -185,6 +187,9 @@ extern void  nl_socket_set_peer_groups(struct nl_sock *sk, uint32_t groups);
 
 extern int nl_socket_set_buffer_size(struct nl_sock *, int, int);
 extern void nl_socket_set_cb(struct nl_sock *, struct nl_cb *);
+
+extern int nl_socket_add_membership(struct nl_sock *, int);
+extern int nl_socket_drop_membership(struct nl_sock *, int);
 
 extern int nl_send_auto_complete(struct nl_sock *, struct nl_msg *);
 extern int nl_recvmsgs(struct nl_sock *, struct nl_cb *);
@@ -807,6 +812,19 @@ int py_nl_cb_err(struct nl_cb *cb, enum nl_cb_kind k,
 extern void *nla_data(struct nlattr *);
 %typemap(out) void *;
 extern int		nla_type(const struct nlattr *);
+
+%typemap(in) (int, const void *) {
+	$1 = Py_SIZE($input);
+	if (PyByteArray_Check($input)) {
+		$2 = ($2_ltype)PyByteArray_AsString($input);
+	} else if (PyString_Check($input)) {
+		$2 = ($2_ltype)PyString_AsString($input);
+	} else
+		SWIG_exception(SWIG_TypeError,
+			       "pointer must be bytearray or string.");
+}
+extern int              nla_put(struct nl_msg *, int, int, const void *);
+%typemap(in) const void *;
 
 /* Integer attribute */
 extern uint8_t		nla_get_u8(struct nlattr *);

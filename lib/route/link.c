@@ -495,8 +495,10 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	link->ce_msgtype = n->nlmsg_type;
 
-	if (!nlmsg_valid_hdr(n, sizeof(*ifi)))
-		return -NLE_MSG_TOOSHORT;
+	if (!nlmsg_valid_hdr(n, sizeof(*ifi))) {
+		err = -NLE_MSG_TOOSHORT;
+		goto errout;
+	}
 
 	ifi = nlmsg_data(n);
 	link->l_family = family = ifi->ifi_family;
@@ -520,11 +522,11 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	err = nlmsg_parse(n, sizeof(*ifi), tb, IFLA_MAX, real_link_policy);
 	if (err < 0)
-		return err;
+		goto errout;
 
 	err = rtnl_link_info_parse(link, tb);
 	if (err < 0)
-		return err;
+		goto errout;
 
 	if (tb[IFLA_NUM_VF]) {
 		link->l_num_vf = nla_get_u32(tb[IFLA_NUM_VF]);

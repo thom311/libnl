@@ -641,9 +641,7 @@ static const struct trans_tbl llprotos[] = {
 	__ADD(ARPHRD_ATM,atm),
 	__ADD(ARPHRD_METRICOM,metricom),
 	__ADD(ARPHRD_IEEE1394,ieee1394),
-#ifdef ARPHRD_EUI64
 	__ADD(ARPHRD_EUI64,eui64),
-#endif
 	__ADD(ARPHRD_INFINIBAND,infiniband),
 	__ADD(ARPHRD_SLIP,slip),
 	__ADD(ARPHRD_CSLIP,cslip),
@@ -653,9 +651,7 @@ static const struct trans_tbl llprotos[] = {
 	__ADD(ARPHRD_ADAPT,adapt),
 	__ADD(ARPHRD_ROSE,rose),
 	__ADD(ARPHRD_X25,x25),
-#ifdef ARPHRD_HWX25
 	__ADD(ARPHRD_HWX25,hwx25),
-#endif
 	__ADD(ARPHRD_CAN,can),
 	__ADD(ARPHRD_PPP,ppp),
 	__ADD(ARPHRD_HDLC,hdlc),
@@ -696,19 +692,18 @@ static const struct trans_tbl llprotos[] = {
 	__ADD(ARPHRD_FCFABRIC+12,fcfb_12),
 	__ADD(ARPHRD_IEEE802_TR,tr),
 	__ADD(ARPHRD_IEEE80211,ieee802.11),
+	__ADD(ARPHRD_IEEE80211_PRISM,ieee802.11_prism),
+	__ADD(ARPHRD_IEEE80211_RADIOTAP,ieee802.11_radiotap),
+	__ADD(ARPHRD_IEEE802154,ieee802.15.4),
+	__ADD(ARPHRD_IEEE802154_MONITOR,ieee802.15.4_monitor),
 	__ADD(ARPHRD_PHONET,phonet),
-#ifdef ARPHRD_CAIF
-	__ADD(ARPHRD_CAIF, caif),
-#endif
-#ifdef ARPHRD_IEEE80211_PRISM
-	__ADD(ARPHRD_IEEE80211_PRISM, ieee802.11_prism),
-#endif
-#ifdef ARPHRD_VOID
+	__ADD(ARPHRD_PHONET_PIPE,phonet_pipe),
+	__ADD(ARPHRD_CAIF,caif),
+	__ADD(ARPHRD_IP6GRE,ip6gre),
+	__ADD(ARPHRD_NETLINK,netlink),
+	__ADD(ARPHRD_6LOWPAN,6lowpan),
 	__ADD(ARPHRD_VOID,void),
-#endif
-#ifdef ARPHRD_NONE
 	__ADD(ARPHRD_NONE,nohdr),
-#endif
 };
 
 char * nl_llproto2str(int llproto, char *buf, size_t len)

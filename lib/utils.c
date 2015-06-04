@@ -629,6 +629,7 @@ int nl_str2nlfamily(const char *name)
 
 static const struct trans_tbl llprotos[] = {
 	{0, "generic"},
+	__ADD(ARPHRD_NETROM,netrom),
 	__ADD(ARPHRD_ETHER,ether),
 	__ADD(ARPHRD_EETHER,eether),
 	__ADD(ARPHRD_AX25,ax25),
@@ -654,6 +655,7 @@ static const struct trans_tbl llprotos[] = {
 	__ADD(ARPHRD_HWX25,hwx25),
 	__ADD(ARPHRD_CAN,can),
 	__ADD(ARPHRD_PPP,ppp),
+	__ADD(ARPHRD_CISCO,cisco),
 	__ADD(ARPHRD_HDLC,hdlc),
 	__ADD(ARPHRD_LAPB,lapb),
 	__ADD(ARPHRD_DDCMP,ddcmp),

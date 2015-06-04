@@ -135,6 +135,14 @@ enum {
 	NL_CAPABILITY_VERSION_3_2_26 = 7,
 #define NL_CAPABILITY_VERSION_3_2_26 NL_CAPABILITY_VERSION_3_2_26
 
+	/**
+	 * nl_recv() fails with NLE_MSG_TRUNC if a message got truncated
+	 * with NL_MSG_PEEK disabled. Previously, the failed message was wrongly
+	 * discarded and the next message received.
+	 */
+	NL_CAPABILITY_NL_RECV_FAIL_TRUNK_NO_PEEK = 8,
+#define NL_CAPABILITY_NL_RECV_FAIL_TRUNK_NO_PEEK NL_CAPABILITY_NL_RECV_FAIL_TRUNK_NO_PEEK
+
 	__NL_CAPABILITY_MAX,
 	NL_CAPABILITY_MAX = (__NL_CAPABILITY_MAX - 1),
 #define NL_CAPABILITY_MAX NL_CAPABILITY_MAX

@@ -725,6 +725,13 @@ retry:
 
 	if (iov.iov_len < n || (msg.msg_flags & MSG_TRUNC)) {
 		void *tmp;
+
+		/* respond with error to an incomplete message */
+		if (!(sk->s_flags & NL_MSG_PEEK)) {
+			retval = -NLE_MSG_TRUNC;
+			goto abort;
+		}
+
 		/* Provided buffer is not long enough, enlarge it
 		 * to size of n (which should be total length of the message)
 		 * and try again. */

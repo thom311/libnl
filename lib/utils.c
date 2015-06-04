@@ -1150,7 +1150,7 @@ int nl_has_capability (int capability)
 			NL_CAPABILITY_ROUTE_LINK_GET_KERNEL_FAIL_OPNOTSUPP,
 			NL_CAPABILITY_ROUTE_ADDR_COMPARE_CACHEINFO,
 			NL_CAPABILITY_VERSION_3_2_26,
-			0),
+			NL_CAPABILITY_NL_RECV_FAIL_TRUNK_NO_PEEK),
 		/* IMPORTANT: these capability numbers are intended to be universal and stable
 		 * for libnl3. Don't allocate new numbers on your own that differ from upstream
 		 * libnl3.

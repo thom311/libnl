@@ -43,9 +43,9 @@ lib_LTLIBRARIES = \
 
 libnl_cli_3_la_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
-	-Wl,--version-script=$(top_builddir)/libnl-cli-3.sym
+	-Wl,--version-script=$(top_srcdir)/libnl-cli-3.sym
 libnl_cli_3_la_DEPENDENCIES = \
-	$(top_builddir)/libnl-cli-3.sym
+	$(top_srcdir)/libnl-cli-3.sym
 
 libnl_cli_3_la_LIBADD  = ${top_builddir}/lib/libnl-3.la \
 		       ${top_builddir}/lib/libnl-route-3.la \

@@ -746,7 +746,7 @@ static const struct trans_tbl neigh_states[] = {
 	__ADD(NUD_DELAY, delay),
 	__ADD(NUD_PROBE, probe),
 	__ADD(NUD_FAILED, failed),
-	__ADD(NUD_NOARP, norarp),
+	__ADD(NUD_NOARP, noarp),
 	__ADD(NUD_PERMANENT, permanent),
 };
 

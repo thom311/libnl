@@ -872,3 +872,13 @@ global:
 	rtnl_tc_str2stat;
 	rtnl_u32_get_classid;
 } libnl_3;
+
+libnl_3_2_27 {
+global:
+	rtnl_link_ipvlan_alloc;
+	rtnl_link_is_ipvlan;
+	rtnl_link_ipvlan_mode2str;
+	rtnl_link_ipvlan_str2mode;
+	rtnl_link_ipvlan_set_mode;
+	rtnl_link_ipvlan_get_mode;
+} libnl_3_2_26;

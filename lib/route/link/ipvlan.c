@@ -227,19 +227,20 @@ int rtnl_link_ipvlan_set_mode(struct rtnl_link *link, uint16_t mode)
 /**
  * Get IPVLAN Mode
  * @arg link		Link object
+ * @arg out_mode        on success, return the mode
  *
- * @return IPVLAN mode, 0 if not set or a negative error code.
+ * @return 0 on success or a negative error code.
  */
-uint16_t rtnl_link_ipvlan_get_mode(struct rtnl_link *link)
+int rtnl_link_ipvlan_get_mode(struct rtnl_link *link, uint16_t *out_mode)
 {
 	struct ipvlan_info *ipi = link->l_info;
 
 	IS_IPVLAN_LINK_ASSERT(link);
 
-	if (ipi->ipi_mask & IPVLAN_HAS_MODE)
-		return ipi->ipi_mode;
-	else
-		return 0;
+	if (!(ipi->ipi_mask & IPVLAN_HAS_MODE))
+		return -NLE_OPNOTSUPP;
+	*out_mode = ipi->ipi_mode;
+	return 0;
 }
 
 /** @} */

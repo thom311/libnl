@@ -28,7 +28,7 @@ extern int		rtnl_link_ipvlan_str2mode(const char *);
 
 extern int		rtnl_link_ipvlan_set_mode(struct rtnl_link *,
 			                           uint16_t);
-extern uint16_t		rtnl_link_ipvlan_get_mode(struct rtnl_link *);
+extern int		rtnl_link_ipvlan_get_mode(struct rtnl_link *, uint16_t *out_mode);
 
 #ifdef __cplusplus
 }

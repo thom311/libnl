@@ -215,9 +215,6 @@ int rtnl_link_ipvlan_set_mode(struct rtnl_link *link, uint16_t mode)
 
 	IS_IPVLAN_LINK_ASSERT(link);
 
-	if (mode != IPVLAN_MODE_L2 && mode != IPVLAN_MODE_L3)
-		return -NLE_INVAL;
-
 	ipi->ipi_mode = mode;
 	ipi->ipi_mask |= IPVLAN_HAS_MODE;
 

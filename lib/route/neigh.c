@@ -748,12 +748,17 @@ static const struct trans_tbl neigh_states[] = {
 	__ADD(NUD_FAILED, failed),
 	__ADD(NUD_NOARP, noarp),
 	__ADD(NUD_PERMANENT, permanent),
+
+	/* Accept this value for backward compatibility. Originally
+	 * there was a typo in the string value. This was fixed later,
+	 * but we still want to successfully parse "norarp". */
+	__ADD(NUD_NOARP, norarp),
 };
 
 char * rtnl_neigh_state2str(int state, char *buf, size_t len)
 {
 	return __flags2str(state, buf, len, neigh_states,
-	    ARRAY_SIZE(neigh_states));
+	    ARRAY_SIZE(neigh_states) - 1);
 }
 
 int rtnl_neigh_str2state(const char *name)

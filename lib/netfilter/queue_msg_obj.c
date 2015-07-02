@@ -405,12 +405,15 @@ const uint8_t *nfnl_queue_msg_get_hwaddr(const struct nfnl_queue_msg *msg,
 int nfnl_queue_msg_set_payload(struct nfnl_queue_msg *msg, uint8_t *payload,
 			       int len)
 {
-	free(msg->queue_msg_payload);
-	msg->queue_msg_payload = malloc(len);
-	if (!msg->queue_msg_payload)
-		return -NLE_NOMEM;
+	void *new_payload = malloc(len);
 
-	memcpy(msg->queue_msg_payload, payload, len);
+	if (new_payload == NULL)
+		return -NLE_NOMEM;
+	memcpy(new_payload, payload, len);
+
+	free(msg->queue_msg_payload);
+
+	msg->queue_msg_payload = new_payload;
 	msg->queue_msg_payload_len = len;
 	msg->ce_mask |= QUEUE_MSG_ATTR_PAYLOAD;
 	return 0;

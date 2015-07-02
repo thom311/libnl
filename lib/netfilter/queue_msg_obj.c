@@ -138,13 +138,13 @@ static void nfnl_queue_msg_dump(struct nl_object *a, struct nl_dump_params *p)
 					   buf, sizeof(buf)));
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_MARK)
-		nl_dump(p, "MARK=%d ", msg->queue_msg_mark);
+		nl_dump(p, "MARK=%" PRIu32 " ", msg->queue_msg_mark);
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_PAYLOAD)
-		nl_dump(p, "PAYLOADLEN=%d ", msg->queue_msg_payload_len);
+		nl_dump(p, "PAYLOADLEN=%u ", msg->queue_msg_payload_len);
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_PACKETID)
-		nl_dump(p, "PACKETID=%u ", msg->queue_msg_packetid);
+		nl_dump(p, "PACKETID=%" PRIu32 " ", msg->queue_msg_packetid);
 
 	if (msg->ce_mask & QUEUE_MSG_ATTR_VERDICT)
 		nl_dump(p, "VERDICT=%s ",
@@ -289,7 +289,7 @@ uint32_t nfnl_queue_msg_get_mark(const struct nfnl_queue_msg *msg)
 }
 
 void nfnl_queue_msg_set_timestamp(struct nfnl_queue_msg *msg,
-				  struct timeval *tv)
+				  const struct timeval *tv)
 {
 	msg->queue_msg_timestamp.tv_sec = tv->tv_sec;
 	msg->queue_msg_timestamp.tv_usec = tv->tv_usec;
@@ -374,8 +374,8 @@ uint32_t nfnl_queue_msg_get_physoutdev(const struct nfnl_queue_msg *msg)
 	return msg->queue_msg_physoutdev;
 }
 
-void nfnl_queue_msg_set_hwaddr(struct nfnl_queue_msg *msg, uint8_t *hwaddr,
-			       int len)
+void nfnl_queue_msg_set_hwaddr(struct nfnl_queue_msg *msg, const uint8_t *hwaddr,
+			       unsigned int len)
 {
 	if (len > sizeof(msg->queue_msg_hwaddr))
 		len = sizeof(msg->queue_msg_hwaddr);
@@ -391,7 +391,7 @@ int nfnl_queue_msg_test_hwaddr(const struct nfnl_queue_msg *msg)
 }
 
 const uint8_t *nfnl_queue_msg_get_hwaddr(const struct nfnl_queue_msg *msg,
-					 int *len)
+					 unsigned int *len)
 {
 	if (!(msg->ce_mask & QUEUE_MSG_ATTR_HWADDR)) {
 		*len = 0;
@@ -402,8 +402,8 @@ const uint8_t *nfnl_queue_msg_get_hwaddr(const struct nfnl_queue_msg *msg,
 	return msg->queue_msg_hwaddr;
 }
 
-int nfnl_queue_msg_set_payload(struct nfnl_queue_msg *msg, uint8_t *payload,
-			       int len)
+int nfnl_queue_msg_set_payload(struct nfnl_queue_msg *msg, const void *payload,
+			       unsigned int len)
 {
 	free(msg->queue_msg_payload);
 	msg->queue_msg_payload = malloc(len);
@@ -421,7 +421,7 @@ int nfnl_queue_msg_test_payload(const struct nfnl_queue_msg *msg)
 	return !!(msg->ce_mask & QUEUE_MSG_ATTR_PAYLOAD);
 }
 
-const void *nfnl_queue_msg_get_payload(const struct nfnl_queue_msg *msg, int *len)
+const void *nfnl_queue_msg_get_payload(const struct nfnl_queue_msg *msg, unsigned int *len)
 {
 	if (!(msg->ce_mask & QUEUE_MSG_ATTR_PAYLOAD)) {
 		*len = 0;
@@ -438,7 +438,7 @@ const void *nfnl_queue_msg_get_payload(const struct nfnl_queue_msg *msg, int *le
 * @arg verdict    NF_DROP, NF_ACCEPT, NF_REPEAT, etc
 */
 void nfnl_queue_msg_set_verdict(struct nfnl_queue_msg *msg,
-				unsigned int verdict)
+				uint32_t verdict)
 {
 	msg->queue_msg_verdict = verdict;
 	msg->ce_mask |= QUEUE_MSG_ATTR_VERDICT;
@@ -449,7 +449,7 @@ int nfnl_queue_msg_test_verdict(const struct nfnl_queue_msg *msg)
 	return !!(msg->ce_mask & QUEUE_MSG_ATTR_VERDICT);
 }
 
-unsigned int nfnl_queue_msg_get_verdict(const struct nfnl_queue_msg *msg)
+uint32_t nfnl_queue_msg_get_verdict(const struct nfnl_queue_msg *msg)
 {
 	return msg->queue_msg_verdict;
 }

@@ -260,7 +260,7 @@ int nfnl_queue_msg_send_verdict_batch(struct nl_sock *nlh,
 */
 int nfnl_queue_msg_send_verdict_payload(struct nl_sock *nlh,
 				const struct nfnl_queue_msg *msg,
-				const void *payload_data, unsigned payload_len)
+				const void *payload_data, unsigned int payload_len)
 {
 	struct nl_msg *nlmsg;
 	int err;

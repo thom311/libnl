@@ -41,11 +41,15 @@ endif
 	
 
 %.html: %.txt link_doc
+if HAVE_ASCIIDOC
 	./resolve-asciidoc-refs.py $< > asciidoc.tmp
 	asciidoc $(ASCIIDOCOPTS) -o $@ asciidoc.tmp
 if LINK_DOC
 	./doxygen-link.py libnl.dict $@ > asciidoc.tmp
 	mv asciidoc.tmp $@
+endif
+else
+	@echo "Warning: Building of asciidoc files is disabled, check autoconf logs"
 endif
 
 asciidoc: core.html route.html index.html

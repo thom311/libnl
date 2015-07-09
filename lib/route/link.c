@@ -1465,6 +1465,7 @@ int rtnl_link_build_change_request(struct rtnl_link *orig,
 	if (changes->ce_mask & LINK_ATTR_FLAGS) {
 		ifi.ifi_flags = orig->l_flags & ~changes->l_flag_mask;
 		ifi.ifi_flags |= changes->l_flags;
+		ifi.ifi_change = changes->l_flag_mask;
 	}
 
 	if (changes->l_family && changes->l_family != orig->l_family) {

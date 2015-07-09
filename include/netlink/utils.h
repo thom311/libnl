@@ -143,6 +143,14 @@ enum {
 	NL_CAPABILITY_NL_RECV_FAIL_TRUNC_NO_PEEK = 8,
 #define NL_CAPABILITY_NL_RECV_FAIL_TRUNC_NO_PEEK NL_CAPABILITY_NL_RECV_FAIL_TRUNC_NO_PEEK
 
+	/**
+	 * rtnl_link_build_change_request() and rtnl_link_change() would set ifi.ifi_flags but leave
+	 * ifi.ifi_change at zero. This was later fixed to set ifi.ifi_change to the flags that are actually
+	 * set in changes.
+	 */
+	NL_CAPABILITY_LINK_BUILD_CHANGE_REQUEST_SET_CHANGE = 9,
+#define NL_CAPABILITY_LINK_BUILD_CHANGE_REQUEST_SET_CHANGE NL_CAPABILITY_LINK_BUILD_CHANGE_REQUEST_SET_CHANGE
+
 	__NL_CAPABILITY_MAX,
 	NL_CAPABILITY_MAX = (__NL_CAPABILITY_MAX - 1),
 #define NL_CAPABILITY_MAX NL_CAPABILITY_MAX

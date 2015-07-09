@@ -15,8 +15,6 @@ AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([foreign])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES(yes)], [])
 
-m4_include([m4/ax_python.m4])
-
 #
 # Generating the documentation
 #
@@ -24,11 +22,14 @@ AC_ARG_ENABLE([doc],
 	      AS_HELP_STRING([--disable-doc], [Do not generate documentation]),
 	      [generate_doc="$enableval"], [generate_doc=auto])
 
-AX_PYTHON
-
 if test "x$generate_doc" != "xno"; then
 	AC_PROG_SED
 	AC_PROG_EGREP
+
+	AC_CHECK_PROG(HAVE_PYTHON, [python], yes, no)
+	if test "x$HAVE_PYTHON" = "xno"  -a "x$generate_doc" = "xyes"; then
+		AC_MSG_ERROR([*** python binary required to generate documentation])
+	fi
 
 	AC_CHECK_PROG(HAVE_DOXYGEN, [doxygen], yes, no)
 	if test "x$HAVE_DOXYGEN" = "xno" -a "x$generate_doc" = "xyes"; then

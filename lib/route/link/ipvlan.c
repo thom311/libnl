@@ -235,7 +235,7 @@ int rtnl_link_ipvlan_get_mode(struct rtnl_link *link, uint16_t *out_mode)
 	IS_IPVLAN_LINK_ASSERT(link);
 
 	if (!(ipi->ipi_mask & IPVLAN_HAS_MODE))
-		return -NLE_OPNOTSUPP;
+		return -NLE_INVAL;
 	*out_mode = ipi->ipi_mode;
 	return 0;
 }

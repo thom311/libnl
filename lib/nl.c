@@ -134,7 +134,7 @@ int nl_connect(struct nl_sock *sk, int protocol)
 		while (1) {
 			port = _nl_socket_generate_local_port_no_release(sk);
 
-			if (port == UINT32_MAX) {
+			if (port == 0) {
 				NL_DBG(4, "nl_connect(%p): no more unused local ports.\n", sk);
 				_nl_socket_used_ports_release_all(used_ports);
 				err = -NLE_EXIST;

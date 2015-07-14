@@ -208,10 +208,7 @@ static void link_free_data(struct nl_object *c)
 	struct rtnl_link *link = nl_object_priv(c);
 
 	if (link) {
-		struct rtnl_link_info_ops *io;
-
-		if ((io = link->l_info_ops) != NULL)
-			release_link_info(link);
+		release_link_info(link);
 
 		/* proto info af reference */
 		rtnl_link_af_ops_put(link->l_af_ops);
@@ -2237,8 +2234,7 @@ int rtnl_link_set_type(struct rtnl_link *link, const char *type)
 
 	free(link->l_info_kind);
 	link->ce_mask &= ~LINK_ATTR_LINKINFO;
-	if (link->l_info_ops)
-		release_link_info(link);
+	release_link_info(link);
 
 	if (!type)
 		return 0;

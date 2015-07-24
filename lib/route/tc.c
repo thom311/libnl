@@ -908,34 +908,25 @@ void rtnl_tc_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 
 	rtnl_tc_dump_details(OBJ_CAST(tc), p);
 
-	strcpy(fmt, "        %7.2f %s %10u %10u %10u %10u %10u\n");
+	strcpy(fmt, "       %10.2f %3s   %10u   %-10u %-10u %-10u %-10u\n");
 
-	nl_dump_line(p, 
-		"    Stats:    bytes    packets      drops overlimits" \
-		"       qlen    backlog\n");
+	nl_dump_line(p, "  stats: %-14s %-10s   %-10s %-10s %-10s %-10s\n",
+	             "bytes", "packets", "drops", "overlimits", "qlen", "backlog");
 
 	res = nl_cancel_down_bytes(tc->tc_stats[RTNL_TC_BYTES], &unit);
-	if (*unit == 'B')
-		fmt[11] = '9';
 
 	nl_dump_line(p, fmt, res, unit,
-		tc->tc_stats[RTNL_TC_PACKETS],
-		tc->tc_stats[RTNL_TC_DROPS],
-		tc->tc_stats[RTNL_TC_OVERLIMITS],
-		tc->tc_stats[RTNL_TC_QLEN],
-		tc->tc_stats[RTNL_TC_BACKLOG]);
+	             tc->tc_stats[RTNL_TC_PACKETS],
+	             tc->tc_stats[RTNL_TC_DROPS],
+	             tc->tc_stats[RTNL_TC_OVERLIMITS],
+	             tc->tc_stats[RTNL_TC_QLEN],
+	             tc->tc_stats[RTNL_TC_BACKLOG]);
 
 	res = nl_cancel_down_bytes(tc->tc_stats[RTNL_TC_RATE_BPS], &unit);
 
-	strcpy(fmt, "        %7.2f %s/s%9u pps");
-
-	if (*unit == 'B')
-		fmt[11] = '9';
+	strcpy(fmt, "       %10.2f %3s/s %10u/s\n");
 
 	nl_dump_line(p, fmt, res, unit, tc->tc_stats[RTNL_TC_RATE_PPS]);
-
-	tc_dump(tc, NL_DUMP_LINE, p);
-	nl_dump(p, "\n");
 }
 
 int rtnl_tc_compare(struct nl_object *aobj, struct nl_object *bobj,

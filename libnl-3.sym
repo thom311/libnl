@@ -229,6 +229,7 @@ global:
 	nl_socket_set_peer_groups;
 	nl_socket_set_peer_port;
 	nl_socket_use_seq;
+	nl_socket_set_ns;
 	nl_str2af;
 	nl_str2ether_proto;
 	nl_str2ip_proto;

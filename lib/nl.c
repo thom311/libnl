@@ -32,6 +32,7 @@
 #include <netlink/handlers.h>
 #include <netlink/msg.h>
 #include <netlink/attr.h>
+#include <linux/socket.h>
 
 /**
  * @defgroup core_types Data Types

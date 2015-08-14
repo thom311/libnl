@@ -686,12 +686,7 @@ no_so_protocol:
 		so_protocol = protocol;
 	}
 
-	if (sk->s_local.nl_pid != local.nl_pid) {
-		/* the port id differs. The socket is using a port id not managed by
-		 * libnl, hence reset the local port id to release a possibly generated
-		 * port. */
-		nl_socket_set_local_port (sk, local.nl_pid);
-	}
+	nl_socket_set_local_port (sk, local.nl_pid);
 	sk->s_local = local;
 	sk->s_fd = fd;
 	sk->s_proto = so_protocol;

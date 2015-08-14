@@ -103,6 +103,8 @@ extern uint8_t		nla_get_u8(const struct nlattr *);
 extern int		nla_put_u8(struct nl_msg *, int, uint8_t);
 extern uint16_t		nla_get_u16(const struct nlattr *);
 extern int		nla_put_u16(struct nl_msg *, int, uint16_t);
+extern int32_t          nla_get_s32(const struct nlattr *);
+extern int              nla_put_s32(struct nl_msg *, int, int32_t);
 extern uint32_t		nla_get_u32(const struct nlattr *);
 extern int		nla_put_u32(struct nl_msg *, int, uint32_t);
 extern uint64_t		nla_get_u64(const struct nlattr *);
@@ -181,6 +183,15 @@ extern int		nla_is_nested(const struct nlattr *);
  */
 #define NLA_PUT_U16(msg, attrtype, value) \
 	NLA_PUT_TYPE(msg, uint16_t, attrtype, value)
+
+/**
+ * Add 32 bit integer attribute to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ * @arg value		Numeric value.
+ */
+#define NLA_PUT_S32(msg, attrtype, value) \
+	NLA_PUT_TYPE(msg, int32_t, attrtype, value)
 
 /**
  * Add 32 bit integer attribute to netlink message.

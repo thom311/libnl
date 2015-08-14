@@ -903,19 +903,20 @@ void rtnl_tc_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 void rtnl_tc_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 {
 	struct rtnl_tc *tc = TC_CAST(obj);
-	char *unit, fmt[64];
+	char *unit;
 	float res;
 
 	rtnl_tc_dump_details(OBJ_CAST(tc), p);
 
-	strcpy(fmt, "       %10.2f %3s   %10u   %-10u %-10u %-10u %-10u\n");
-
-	nl_dump_line(p, "  stats: %-14s %-10s   %-10s %-10s %-10s %-10s\n",
+	nl_dump_line(p,
+	             "  stats: %-14s %-10s   %-10s %-10s %-10s %-10s\n",
 	             "bytes", "packets", "drops", "overlimits", "qlen", "backlog");
 
 	res = nl_cancel_down_bytes(tc->tc_stats[RTNL_TC_BYTES], &unit);
 
-	nl_dump_line(p, fmt, res, unit,
+	nl_dump_line(p,
+	             "       %10.2f %3s   %10u   %-10u %-10u %-10u %-10u\n",
+	             res, unit,
 	             tc->tc_stats[RTNL_TC_PACKETS],
 	             tc->tc_stats[RTNL_TC_DROPS],
 	             tc->tc_stats[RTNL_TC_OVERLIMITS],
@@ -924,9 +925,11 @@ void rtnl_tc_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 
 	res = nl_cancel_down_bytes(tc->tc_stats[RTNL_TC_RATE_BPS], &unit);
 
-	strcpy(fmt, "       %10.2f %3s/s %10u/s\n");
-
-	nl_dump_line(p, fmt, res, unit, tc->tc_stats[RTNL_TC_RATE_PPS]);
+	nl_dump_line(p,
+	             "       %10.2f %3s/s %10u/s\n",
+	             res,
+	             unit,
+	             tc->tc_stats[RTNL_TC_RATE_PPS]);
 }
 
 int rtnl_tc_compare(struct nl_object *aobj, struct nl_object *bobj,

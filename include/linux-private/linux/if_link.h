@@ -1,5 +1,5 @@
-#ifndef _UAPI_LINUX_IF_LINK_H
-#define _UAPI_LINUX_IF_LINK_H
+#ifndef _LINUX_IF_LINK_H
+#define _LINUX_IF_LINK_H
 
 #include <linux/types.h>
 #include <linux/netlink.h>
@@ -145,6 +145,9 @@ enum {
 	IFLA_CARRIER,
 	IFLA_PHYS_PORT_ID,
 	IFLA_CARRIER_CHANGES,
+	IFLA_PHYS_SWITCH_ID,
+	IFLA_LINK_NETNSID,
+	IFLA_PHYS_PORT_NAME,
 	__IFLA_MAX
 };
 
@@ -152,10 +155,8 @@ enum {
 #define IFLA_MAX (__IFLA_MAX - 1)
 
 /* backwards compatibility for userspace */
-#ifndef __KERNEL__
 #define IFLA_RTA(r)  ((struct rtattr*)(((char*)(r)) + NLMSG_ALIGN(sizeof(struct ifinfomsg))))
 #define IFLA_PAYLOAD(n) NLMSG_PAYLOAD(n,sizeof(struct ifinfomsg))
-#endif
 
 enum {
 	IFLA_INET_UNSPEC,
@@ -213,7 +214,23 @@ enum {
 enum in6_addr_gen_mode {
 	IN6_ADDR_GEN_MODE_EUI64,
 	IN6_ADDR_GEN_MODE_NONE,
+	IN6_ADDR_GEN_MODE_STABLE_PRIVACY,
 };
+
+/* Bridge section */
+
+enum {
+	IFLA_BR_UNSPEC,
+	IFLA_BR_FORWARD_DELAY,
+	IFLA_BR_HELLO_TIME,
+	IFLA_BR_MAX_AGE,
+	IFLA_BR_AGEING_TIME,
+	IFLA_BR_STP_STATE,
+	IFLA_BR_PRIORITY,
+	__IFLA_BR_MAX,
+};
+
+#define IFLA_BR_MAX	(__IFLA_BR_MAX - 1)
 
 enum {
 	BRIDGE_MODE_UNSPEC,
@@ -231,6 +248,9 @@ enum {
 	IFLA_BRPORT_FAST_LEAVE,	/* multicast fast leave    */
 	IFLA_BRPORT_LEARNING,	/* mac learning */
 	IFLA_BRPORT_UNICAST_FLOOD, /* flood unicast traffic */
+	IFLA_BRPORT_PROXYARP,	/* proxy ARP */
+	IFLA_BRPORT_LEARNING_SYNC, /* mac learning sync from device */
+	IFLA_BRPORT_PROXYARP_WIFI, /* proxy ARP for Wi-Fi */
 	__IFLA_BRPORT_MAX
 };
 #define IFLA_BRPORT_MAX (__IFLA_BRPORT_MAX - 1)
@@ -291,6 +311,10 @@ enum {
 	IFLA_MACVLAN_UNSPEC,
 	IFLA_MACVLAN_MODE,
 	IFLA_MACVLAN_FLAGS,
+	IFLA_MACVLAN_MACADDR_MODE,
+	IFLA_MACVLAN_MACADDR,
+	IFLA_MACVLAN_MACADDR_DATA,
+	IFLA_MACVLAN_MACADDR_COUNT,
 	__IFLA_MACVLAN_MAX,
 };
 
@@ -301,6 +325,14 @@ enum macvlan_mode {
 	MACVLAN_MODE_VEPA    = 2, /* talk to other ports through ext bridge */
 	MACVLAN_MODE_BRIDGE  = 4, /* talk to bridge ports directly */
 	MACVLAN_MODE_PASSTHRU = 8,/* take over the underlying device */
+	MACVLAN_MODE_SOURCE  = 16,/* use source MAC address list to assign */
+};
+
+enum macvlan_macaddr_mode {
+	MACVLAN_MACADDR_ADD,
+	MACVLAN_MACADDR_DEL,
+	MACVLAN_MACADDR_FLUSH,
+	MACVLAN_MACADDR_SET,
 };
 
 #define MACVLAN_FLAG_NOPROMISC	1
@@ -343,6 +375,10 @@ enum {
 	IFLA_VXLAN_UDP_CSUM,
 	IFLA_VXLAN_UDP_ZERO_CSUM6_TX,
 	IFLA_VXLAN_UDP_ZERO_CSUM6_RX,
+	IFLA_VXLAN_REMCSUM_TX,
+	IFLA_VXLAN_REMCSUM_RX,
+	IFLA_VXLAN_GBP,
+	IFLA_VXLAN_REMCSUM_NOPARTIAL,
 	__IFLA_VXLAN_MAX
 };
 #define IFLA_VXLAN_MAX	(__IFLA_VXLAN_MAX - 1)
@@ -427,6 +463,9 @@ enum {
 	IFLA_VF_SPOOFCHK,	/* Spoof Checking on/off switch */
 	IFLA_VF_LINK_STATE,	/* link state enable/disable/auto switch */
 	IFLA_VF_RATE,		/* Min and Max TX Bandwidth Allocation */
+	IFLA_VF_RSS_QUERY_EN,	/* RSS Redirection Table and Hash Key query
+				 * on/off switch
+				 */
 	__IFLA_VF_MAX,
 };
 
@@ -469,6 +508,11 @@ enum {
 struct ifla_vf_link_state {
 	__u32 vf;
 	__u32 link_state;
+};
+
+struct ifla_vf_rss_query_en {
+	__u32 vf;
+	__u32 setting;
 };
 
 /* VF ports management section
@@ -576,4 +620,4 @@ enum {
 
 #define IFLA_HSR_MAX (__IFLA_HSR_MAX - 1)
 
-#endif /* _UAPI_LINUX_IF_LINK_H */
+#endif /* _LINUX_IF_LINK_H */

@@ -164,8 +164,9 @@ struct rtnl_link
 	uint32_t			l_index;
 	uint32_t			l_flags;
 	uint32_t			l_change;
-	uint32_t 			l_mtu;
+	uint32_t			l_mtu;
 	uint32_t			l_link;
+	uint32_t                        l_link_netnsid;
 	uint32_t			l_txqlen;
 	uint32_t			l_weight;
 	uint32_t			l_master;

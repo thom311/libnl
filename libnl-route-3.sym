@@ -875,10 +875,12 @@ global:
 
 libnl_3_2_27 {
 global:
+	rtnl_link_get_link_netnsid;
 	rtnl_link_ipvlan_alloc;
 	rtnl_link_is_ipvlan;
 	rtnl_link_ipvlan_mode2str;
 	rtnl_link_ipvlan_str2mode;
 	rtnl_link_ipvlan_set_mode;
 	rtnl_link_ipvlan_get_mode;
+	rtnl_link_set_link_netnsid;
 } libnl_3_2_26;

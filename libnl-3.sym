@@ -334,3 +334,9 @@ libnl_3_2_26 {
 global:
 	nl_socket_set_fd;
 } libnl_3;
+
+libnl_3_2_27 {
+global:
+	nla_get_s32;
+	nla_put_s32;
+} libnl_3_2_26;

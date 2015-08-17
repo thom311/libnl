@@ -202,8 +202,8 @@ extern uint8_t	rtnl_link_get_operstate(struct rtnl_link *);
 extern void	rtnl_link_set_linkmode(struct rtnl_link *, uint8_t);
 extern uint8_t	rtnl_link_get_linkmode(struct rtnl_link *);
 
-int             rtnl_link_set_link_netnsid(struct rtnl_link *link, uint32_t link_netnsid);
-int             rtnl_link_get_link_netnsid(const struct rtnl_link *link, uint32_t *out_link_netnsid);
+int             rtnl_link_set_link_netnsid(struct rtnl_link *link, int32_t link_netnsid);
+int             rtnl_link_get_link_netnsid(const struct rtnl_link *link, int32_t *out_link_netnsid);
 
 extern const char *	rtnl_link_get_ifalias(struct rtnl_link *);
 extern void		rtnl_link_set_ifalias(struct rtnl_link *, const char *);

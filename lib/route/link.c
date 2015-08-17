@@ -418,7 +418,7 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 	}
 
 	if (tb[IFLA_LINK_NETNSID]) {
-		link->l_link_netnsid = nla_get_u32(tb[IFLA_LINK_NETNSID]);
+		link->l_link_netnsid = nla_get_s32(tb[IFLA_LINK_NETNSID]);
 		link->ce_mask |= LINK_ATTR_LINK_NETNSID;
 	}
 
@@ -693,7 +693,7 @@ static void link_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 			nl_dump(p, "slave-of %d ", link->l_link);
 	}
 	if (link->ce_mask & LINK_ATTR_LINK_NETNSID)
-		nl_dump(p, "link-netnsid %u ", link->l_link_netnsid);
+		nl_dump(p, "link-netnsid %d ", link->l_link_netnsid);
 
 	if (link->ce_mask & LINK_ATTR_GROUP)
 		nl_dump(p, "group %u ", link->l_group);
@@ -1305,7 +1305,7 @@ int rtnl_link_fill_info(struct nl_msg *msg, struct rtnl_link *link)
 		NLA_PUT_U32(msg, IFLA_LINK, link->l_link);
 
 	if (link->ce_mask & LINK_ATTR_LINK_NETNSID)
-		NLA_PUT_U32(msg, IFLA_LINK_NETNSID, link->l_link_netnsid);
+		NLA_PUT_S32(msg, IFLA_LINK_NETNSID, link->l_link_netnsid);
 
 	if (link->ce_mask & LINK_ATTR_MASTER)
 		NLA_PUT_U32(msg, IFLA_MASTER, link->l_master);
@@ -2007,7 +2007,7 @@ int rtnl_link_get_link(struct rtnl_link *link)
  * Sets the IFLA_LINK_NETNSID attribute of the link
  * @returns 0 on success
  */
-int rtnl_link_set_link_netnsid(struct rtnl_link *link, uint32_t link_netnsid)
+int rtnl_link_set_link_netnsid(struct rtnl_link *link, int32_t link_netnsid)
 {
 	link->l_link_netnsid = link_netnsid;
 	link->ce_mask |= LINK_ATTR_LINK_NETNSID;
@@ -2024,7 +2024,7 @@ int rtnl_link_set_link_netnsid(struct rtnl_link *link, uint32_t link_netnsid)
  *
  * @returns 0 on success
  */
-int rtnl_link_get_link_netnsid(const struct rtnl_link *link, uint32_t *out_link_netnsid)
+int rtnl_link_get_link_netnsid(const struct rtnl_link *link, int32_t *out_link_netnsid)
 {
 	if (!(link->ce_mask & LINK_ATTR_LINK_NETNSID))
 		return -NLE_INVAL;

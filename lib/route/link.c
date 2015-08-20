@@ -986,6 +986,9 @@ static const struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_GROUP, group),
 	__ADD(LINK_ATTR_CARRIER, carrier),
 	__ADD(LINK_ATTR_PHYS_PORT_ID, phys_port_id),
+	__ADD(LINK_ATTR_NS_FD, ns_fd),
+	__ADD(LINK_ATTR_NS_PID, ns_pid),
+	__ADD(LINK_ATTR_LINK_NETNSID, link_netnsid),
 };
 
 static char *link_attrs2str(int attrs, char *buf, size_t len)

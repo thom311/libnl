@@ -333,14 +333,17 @@ int _nl_socket_is_local_port_unspecified(struct nl_sock *sk)
 	return (sk->s_local.nl_pid == 0);
 }
 
-uint32_t _nl_socket_generate_local_port_no_release(struct nl_sock *sk)
+uint32_t _nl_socket_set_local_port_no_release(struct nl_sock *sk, int generate_other)
 {
 	uint32_t port;
 
 	/* reset the port to generate_local_port(), but do not release
 	 * the previously generated port. */
 
-	port = generate_local_port();
+	if (generate_other)
+		port = generate_local_port();
+	else
+		port = 0;
 	sk->s_local.nl_pid = port;
 	if (port == 0) {
 		/* failed to find an unsed port. Restore the socket to have an

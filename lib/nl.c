@@ -137,11 +137,11 @@ int nl_connect(struct nl_sock *sk, int protocol)
 			if (ntries++ > 5) {
 				/* try only a few times. We hit this only if many ports are already in
 				 * use but allocated *outside* libnl/generate_local_port(). */
-				nl_socket_set_local_port (sk, 0);
+				_nl_socket_set_local_port_no_release (sk, 0);
 				break;
 			}
 
-			port = _nl_socket_generate_local_port_no_release(sk);
+			port = _nl_socket_set_local_port_no_release(sk, 1);
 			if (port == 0)
 				break;
 

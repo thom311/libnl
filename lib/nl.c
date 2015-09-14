@@ -721,6 +721,13 @@ retry:
 
 	if (msg.msg_flags & MSG_CTRUNC) {
 		void *tmp;
+
+		if (msg.msg_controllen == 0) {
+			retval = -NLE_MSG_TRUNC;
+			NL_DBG(4, "recvmsg(%p): Received unexpected control data", sk);
+			goto abort;
+		}
+
 		msg.msg_controllen *= 2;
 		tmp = realloc(msg.msg_control, msg.msg_controllen);
 		if (!tmp) {

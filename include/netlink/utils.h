@@ -151,6 +151,14 @@ enum {
 	NL_CAPABILITY_LINK_BUILD_CHANGE_REQUEST_SET_CHANGE = 9,
 #define NL_CAPABILITY_LINK_BUILD_CHANGE_REQUEST_SET_CHANGE NL_CAPABILITY_LINK_BUILD_CHANGE_REQUEST_SET_CHANGE
 
+	/**
+	 * Between 3.2.14 (64fcb47a36ec12d7e7f00605f6a8952ce985dd08) and 3.2.22 (8571f58f23763d8db7365d02c9b27832ad3d7005),
+	 * rtnl_neigh_get() behaved differently and only returned objects with family AF_UNSPEC.
+	 * This capability indicates, that the function was fixed. The absense of the capability,
+	 * doesn't indicate however which behavior the function will have. So beware. */
+	NL_CAPABILITY_RTNL_NEIGH_GET_FILTER_AF_UNSPEC_FIX = 10,
+#define NL_CAPABILITY_RTNL_NEIGH_GET_FILTER_AF_UNSPEC_FIX NL_CAPABILITY_RTNL_NEIGH_GET_FILTER_AF_UNSPEC_FIX
+
 	__NL_CAPABILITY_MAX,
 	NL_CAPABILITY_MAX = (__NL_CAPABILITY_MAX - 1),
 #define NL_CAPABILITY_MAX NL_CAPABILITY_MAX

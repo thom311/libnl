@@ -52,6 +52,7 @@ nobase_libnlinclude_HEADERS = \
 	netlink/route/link/inet6.h \
 	netlink/route/link/info-api.h \
 	netlink/route/link/macvlan.h \
+	netlink/route/link/macvtap.h \
 	netlink/route/link/vlan.h \
 	netlink/route/link/vxlan.h \
 	netlink/route/link/veth.h \

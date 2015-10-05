@@ -14,6 +14,7 @@
 /test-create-ipvlan
 /test-create-ipvti
 /test-create-macvlan
+/test-create-macvtap
 /test-create-sit
 /test-create-veth
 /test-create-vlan

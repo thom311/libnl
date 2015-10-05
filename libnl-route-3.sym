@@ -888,9 +888,21 @@ global:
 libnl_3_2_28 {
 global:
 	rtnl_link_alloc_cache_flags;
+	rtnl_link_is_macvtap;
 	rtnl_link_is_vrf;
+	rtnl_link_macvtap_alloc;
+	rtnl_link_macvtap_flags2str;
+	rtnl_link_macvtap_get_flags;
+	rtnl_link_macvtap_get_mode;
+	rtnl_link_macvtap_mode2str;
+	rtnl_link_macvtap_set_flags;
+	rtnl_link_macvtap_set_mode;
+	rtnl_link_macvtap_str2flags;
+	rtnl_link_macvtap_str2mode;
+	rtnl_link_macvtap_unset_flags;
 	rtnl_link_vrf_alloc;
 	rtnl_link_vrf_get_tableid;
 	rtnl_link_vrf_set_tableid;
 	rtnl_neigh_alloc_cache_flags;
 } libnl_3_2_27;
+

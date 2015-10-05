@@ -763,6 +763,63 @@ if ((err = rtnl_link_add(sk, link, NLM_F_CREATE)) < 0)
 rtnl_link_put(link);
 -----
 
+[[link_macvtap]]
+==== MACVTAP
+
+[source,c]
+-----
+extern struct rtnl_link *rtnl_link_macvtap_alloc(void);
+
+extern int		rtnl_link_is_macvtap(struct rtnl_link *);
+
+extern char *		rtnl_link_macvtap_mode2str(int, char *, size_t);
+extern int		rtnl_link_macvtap_str2mode(const char *);
+
+extern char *		rtnl_link_macvtap_flags2str(int, char *, size_t);
+extern int		rtnl_link_macvtap_str2flags(const char *);
+
+extern int		rtnl_link_macvtap_set_mode(struct rtnl_link *,
+			                           uint32_t);
+extern uint32_t		rtnl_link_macvtap_get_mode(struct rtnl_link *);
+
+extern int		rtnl_link_macvtap_set_flags(struct rtnl_link *,
+			                            uint16_t);
+extern int		rtnl_link_macvtap_unset_flags(struct rtnl_link *,
+			                              uint16_t);
+extern uint16_t		rtnl_link_macvtap_get_flags(struct rtnl_link *);
+-----
+
+.Example: Add a MACVTAP device
+[source,c]
+-----
+struct rtnl_link *link;
+int master_index;
+struct nl_addr* addr;
+
+/* lookup interface index of eth0 */
+if (!(master_index = rtnl_link_name2i(link_cache, "eth0")))
+	/* error */
+
+/* allocate new link object of type macvtap */
+link = rtnl_link_macvtap_alloc();
+
+/* set eth0 to be our master device */
+rtnl_link_set_link(link, master_index);
+
+/* set address of virtual interface */
+addr = nl_addr_build(AF_LLC, ether_aton("00:11:22:33:44:55"), ETH_ALEN);
+rtnl_link_set_addr(link, addr);
+nl_addr_put(addr);
+
+/* set mode of virtual interface */
+rtnl_link_macvtap_set_mode(link, rtnl_link_macvtap_str2mode("bridge"));
+
+if ((err = rtnl_link_add(sk, link, NLM_F_CREATE)) < 0)
+	/* error */
+
+rtnl_link_put(link);
+-----
+
 [[link_vxlan]]
 ==== VXLAN
 

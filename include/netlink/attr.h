@@ -44,6 +44,13 @@ enum {
 	NLA_FLAG,	/**< Flag */
 	NLA_MSECS,	/**< Micro seconds (64bit) */
 	NLA_NESTED,	/**< Nested attributes */
+	NLA_NESTED_COMPAT,
+	NLA_NUL_STRING,
+	NLA_BINARY,
+	NLA_S8,
+	NLA_S16,
+	NLA_S32,
+	NLA_S64,
 	__NLA_TYPE_MAX,
 };
 
@@ -99,14 +106,20 @@ extern int		nla_put_data(struct nl_msg *, int,
 extern int		nla_put_addr(struct nl_msg *, int, struct nl_addr *);
 
 /* Integer attribute */
+extern int8_t           nla_get_s8(const struct nlattr *);
+extern int              nla_put_s8(struct nl_msg *, int, int8_t);
 extern uint8_t		nla_get_u8(const struct nlattr *);
 extern int		nla_put_u8(struct nl_msg *, int, uint8_t);
+extern int16_t          nla_get_s16(const struct nlattr *);
+extern int              nla_put_s16(struct nl_msg *, int, int16_t);
 extern uint16_t		nla_get_u16(const struct nlattr *);
 extern int		nla_put_u16(struct nl_msg *, int, uint16_t);
 extern int32_t          nla_get_s32(const struct nlattr *);
 extern int              nla_put_s32(struct nl_msg *, int, int32_t);
 extern uint32_t		nla_get_u32(const struct nlattr *);
 extern int		nla_put_u32(struct nl_msg *, int, uint32_t);
+extern int64_t          nla_get_s64(const struct nlattr *);
+extern int              nla_put_s64(struct nl_msg *, int, int64_t);
 extern uint64_t		nla_get_u64(const struct nlattr *);
 extern int		nla_put_u64(struct nl_msg *, int, uint64_t);
 
@@ -167,6 +180,15 @@ extern int		nla_is_nested(const struct nlattr *);
 	} while(0)
 
 /**
+ * Add 8 bit signed integer attribute to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ * @arg value		Numeric value.
+ */
+#define NLA_PUT_S8(msg, attrtype, value) \
+	NLA_PUT_TYPE(msg, int8_t, attrtype, value)
+
+/**
  * Add 8 bit integer attribute to netlink message.
  * @arg msg		Netlink message.
  * @arg attrtype	Attribute type.
@@ -174,6 +196,15 @@ extern int		nla_is_nested(const struct nlattr *);
  */
 #define NLA_PUT_U8(msg, attrtype, value) \
 	NLA_PUT_TYPE(msg, uint8_t, attrtype, value)
+
+/**
+ * Add 16 bit signed integer attribute to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ * @arg value		Numeric value.
+ */
+#define NLA_PUT_S16(msg, attrtype, value) \
+	NLA_PUT_TYPE(msg, int16_t, attrtype, value)
 
 /**
  * Add 16 bit integer attribute to netlink message.
@@ -185,7 +216,7 @@ extern int		nla_is_nested(const struct nlattr *);
 	NLA_PUT_TYPE(msg, uint16_t, attrtype, value)
 
 /**
- * Add 32 bit integer attribute to netlink message.
+ * Add 32 bit signed integer attribute to netlink message.
  * @arg msg		Netlink message.
  * @arg attrtype	Attribute type.
  * @arg value		Numeric value.
@@ -201,6 +232,15 @@ extern int		nla_is_nested(const struct nlattr *);
  */
 #define NLA_PUT_U32(msg, attrtype, value) \
 	NLA_PUT_TYPE(msg, uint32_t, attrtype, value)
+
+/**
+ * Add 64 bit signed integer attribute to netlink message.
+ * @arg msg		Netlink message.
+ * @arg attrtype	Attribute type.
+ * @arg value		Numeric value.
+ */
+#define NLA_PUT_S64(msg, attrtype, value) \
+	NLA_PUT_TYPE(msg, int64_t, attrtype, value)
 
 /**
  * Add 64 bit integer attribute to netlink message.

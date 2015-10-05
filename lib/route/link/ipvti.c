@@ -79,7 +79,7 @@ static int ipvti_parse(struct rtnl_link *link, struct nlattr *data,
 	struct ipvti_info *ipvti;
 	int err;
 
-	NL_DBG(3, "Parsing IPVTI link info");
+	NL_DBG(3, "Parsing IPVTI link info\n");
 
 	err = nla_parse_nested(tb, IFLA_GRE_MAX, data, ipvti_policy);
 	if (err < 0)

@@ -46,7 +46,7 @@ static int veth_parse(struct rtnl_link *link, struct nlattr *data,
 	struct rtnl_link *peer = link->l_info;
 	int err;
 
-	NL_DBG(3, "Parsing veth link info");
+	NL_DBG(3, "Parsing veth link info\n");
 
 	if ((err = nla_parse_nested(tb, VETH_INFO_MAX, data, veth_policy)) < 0)
 		goto errout;

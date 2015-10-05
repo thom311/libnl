@@ -89,7 +89,7 @@ static int sit_parse(struct rtnl_link *link, struct nlattr *data,
 	struct sit_info *sit;
 	int err;
 
-	NL_DBG(3, "Parsing SIT link info");
+	NL_DBG(3, "Parsing SIT link info\n");
 
 	err = nla_parse_nested(tb, IFLA_IPTUN_MAX, data, sit_policy);
 	if (err < 0)

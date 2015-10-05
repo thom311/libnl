@@ -82,7 +82,7 @@ static int ipip_parse(struct rtnl_link *link, struct nlattr *data,
 	struct ipip_info *ipip;
 	int err;
 
-	NL_DBG(3, "Parsing IPIP link info");
+	NL_DBG(3, "Parsing IPIP link info\n");
 
 	err = nla_parse_nested(tb, IFLA_IPTUN_MAX, data, ipip_policy);
 	if (err < 0)

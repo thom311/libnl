@@ -93,7 +93,7 @@ static int can_parse(struct rtnl_link *link, struct nlattr *data,
 	struct can_info *ci;
 	int err;
 
-	NL_DBG(3, "Parsing CAN link info");
+	NL_DBG(3, "Parsing CAN link info\n");
 
 	if ((err = nla_parse_nested(tb, IFLA_CAN_MAX, data, can_policy)) < 0)
 		goto errout;

@@ -110,7 +110,7 @@ static int vxlan_parse(struct rtnl_link *link, struct nlattr *data,
 	struct vxlan_info *vxi;
 	int err;
 
-	NL_DBG(3, "Parsing VXLAN link info");
+	NL_DBG(3, "Parsing VXLAN link info\n");
 
 	if ((err = nla_parse_nested(tb, IFLA_VXLAN_MAX, data, vxlan_policy)) < 0)
 		goto errout;

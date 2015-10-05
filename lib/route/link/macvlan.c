@@ -74,7 +74,7 @@ static int macvlan_parse(struct rtnl_link *link, struct nlattr *data,
 	struct macvlan_info *mvi;
 	int err;
 
-	NL_DBG(3, "Parsing MACVLAN link info");
+	NL_DBG(3, "Parsing MACVLAN link info\n");
 
 	if ((err = nla_parse_nested(tb, IFLA_MACVLAN_MAX, data, macvlan_policy)) < 0)
 		goto errout;

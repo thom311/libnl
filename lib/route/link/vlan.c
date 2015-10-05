@@ -88,7 +88,7 @@ static int vlan_parse(struct rtnl_link *link, struct nlattr *data,
 	struct vlan_info *vi;
 	int err;
 
-	NL_DBG(3, "Parsing VLAN link info");
+	NL_DBG(3, "Parsing VLAN link info\n");
 
 	if ((err = nla_parse_nested(tb, IFLA_VLAN_MAX, data, vlan_policy)) < 0)
 		goto errout;

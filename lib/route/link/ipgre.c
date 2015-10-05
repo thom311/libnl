@@ -95,7 +95,7 @@ static int ipgre_parse(struct rtnl_link *link, struct nlattr *data,
 	struct ipgre_info *ipgre;
 	int err;
 
-	NL_DBG(3, "Parsing IPGRE link info");
+	NL_DBG(3, "Parsing IPGRE link info\n");
 
 	err = nla_parse_nested(tb, IFLA_GRE_MAX, data, ipgre_policy);
 	if (err < 0)

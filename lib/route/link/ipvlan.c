@@ -71,7 +71,7 @@ static int ipvlan_parse(struct rtnl_link *link, struct nlattr *data,
 	struct ipvlan_info *ipi;
 	int err;
 
-	NL_DBG(3, "Parsing IPVLAN link info");
+	NL_DBG(3, "Parsing IPVLAN link info\n");
 
 	if ((err = nla_parse_nested(tb, IFLA_IPVLAN_MAX, data, ipvlan_policy)) < 0)
 		goto errout;

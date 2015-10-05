@@ -93,7 +93,7 @@ static int ip6_tnl_parse(struct rtnl_link *link, struct nlattr *data,
 	struct ip6_tnl_info *ip6_tnl;
 	int err;
 
-	NL_DBG(3, "Parsing IP6_TNL link info");
+	NL_DBG(3, "Parsing IP6_TNL link info\n");
 
 	err = nla_parse_nested(tb, IFLA_IPTUN_MAX, data, ip6_tnl_policy);
 	if (err < 0)

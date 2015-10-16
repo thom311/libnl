@@ -218,6 +218,7 @@ static void vxlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct vxlan_info *vxi = link->l_info;
 	char *name, addr[INET_ADDRSTRLEN];
+	struct rtnl_link *parent;
 
 	nl_dump_line(p, "    vxlan-id %u\n", vxi->vxi_id);
 
@@ -231,7 +232,12 @@ static void vxlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (vxi->vxi_mask & VXLAN_HAS_LINK) {
 		nl_dump(p, "      link ");
-		name = rtnl_link_get_name(link);
+
+		name = NULL;
+		parent = link_lookup(link->ce_cache, vxi->vxi_link);
+		if (parent)
+			name = rtnl_link_get_name(parent);
+
 		if (name)
 			nl_dump_line(p, "%s\n", name);
 		else

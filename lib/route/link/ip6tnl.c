@@ -218,10 +218,16 @@ static void ip6_tnl_dump_details(struct rtnl_link *link, struct nl_dump_params *
 {
 	struct ip6_tnl_info *ip6_tnl = link->l_info;
 	char *name, addr[INET6_ADDRSTRLEN];
+	struct rtnl_link *parent;
 
 	if (ip6_tnl->ip6_tnl_mask & IP6_TNL_ATTR_LINK) {
 		nl_dump(p, "      link ");
-		name = rtnl_link_get_name(link);
+
+		name = NULL;
+		parent = link_lookup(link->ce_cache, ip6_tnl->link);
+		if (parent)
+			name = rtnl_link_get_name(parent);
+
 		if (name)
 			nl_dump_line(p, "%s\n", name);
 		else

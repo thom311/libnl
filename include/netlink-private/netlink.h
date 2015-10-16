@@ -136,6 +136,7 @@ extern char *__flags2str(int, char *, size_t, const struct trans_tbl *, size_t);
 extern int __str2flags(const char *, const struct trans_tbl *, size_t);
 
 extern void dump_from_ops(struct nl_object *, struct nl_dump_params *);
+extern struct rtnl_link *link_lookup(struct nl_cache *cache, int ifindex);
 
 static inline int nl_cb_call(struct nl_cb *cb, int type, struct nl_msg *msg)
 {

@@ -279,6 +279,9 @@ static int vlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (vi->vi_mask & VLAN_HAS_ID)
 		NLA_PUT_U16(msg, IFLA_VLAN_ID, vi->vi_vlan_id);
 
+	if (vi->vi_mask & VLAN_HAS_PROTOCOL)
+		NLA_PUT_U16(msg, IFLA_VLAN_PROTOCOL, vi->vi_protocol);
+
 	if (vi->vi_mask & VLAN_HAS_FLAGS) {
 		struct ifla_vlan_flags flags = {
 			.flags = vi->vi_flags,

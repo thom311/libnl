@@ -1157,7 +1157,7 @@ int nl_has_capability (int capability)
 			NL_CAPABILITY_VERSION_3_2_27,
 			NL_CAPABILITY_RTNL_LINK_VLAN_PROTOCOL_SERIALZE,
 			NL_CAPABILITY_RTNL_LINK_PARSE_GRE_REMOTE,
-			0,
+			NL_CAPABILITY_RTNL_LINK_VLAN_INGRESS_MAP_CLEAR,
 			0,
 			0),
 		/* IMPORTANT: these capability numbers are intended to be universal and stable

@@ -44,6 +44,7 @@ struct vlan_info
 {
 	uint16_t		vi_vlan_id;
 	uint16_t		vi_protocol;
+	unsigned int            vi_ingress_qos_mask:(VLAN_PRIO_MAX+1);
 	uint32_t		vi_flags;
 	uint32_t		vi_flags_mask;
 	uint32_t		vi_ingress_qos[VLAN_PRIO_MAX+1];
@@ -121,6 +122,7 @@ static int vlan_parse(struct rtnl_link *link, struct nlattr *data,
 		struct nlattr *nla;
 		int remaining;
 
+		vi->vi_ingress_qos_mask = 0;
 		memset(vi->vi_ingress_qos, 0, sizeof(vi->vi_ingress_qos));
 
 		nla_for_each_nested(nla, tb[IFLA_VLAN_INGRESS_QOS], remaining) {
@@ -132,6 +134,17 @@ static int vlan_parse(struct rtnl_link *link, struct nlattr *data,
 				return -NLE_INVAL;
 			}
 
+			/* Kernel will not explicitly serialize mappings with "to" zero
+			 * (although they are implicitly set).
+			 *
+			 * Thus we only mark those as "set" which are explicitly sent.
+			 * That is similar to what we do with the egress map and it preserves
+			 * previous behavior before NL_CAPABILITY_RTNL_LINK_VLAN_INGRESS_MAP_CLEAR.
+			 *
+			 * It matters only when a received object is send back to kernel to modify
+			 * the link.
+			 */
+			vi->vi_ingress_qos_mask |= (1 << map->from);
 			vi->vi_ingress_qos[map->from] = map->to;
 		}
 
@@ -211,7 +224,7 @@ static void vlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 		nl_dump_line(p, 
 		"      ingress vlan prio -> qos/socket prio mapping:\n");
 		for (i = 0, printed = 0; i <= VLAN_PRIO_MAX; i++) {
-			if (vi->vi_ingress_qos[i]) {
+			if (vi->vi_ingress_qos_mask & (1 << i)) {
 				if (printed == 0)
 					nl_dump_line(p, "      ");
 				nl_dump(p, "%x -> %#08x, ",
@@ -300,7 +313,7 @@ static int vlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 			goto nla_put_failure;
 
 		for (i = 0; i <= VLAN_PRIO_MAX; i++) {
-			if (vi->vi_ingress_qos[i]) {
+			if (vi->vi_ingress_qos_mask & (1 << i)) {
 				map.from = i;
 				map.to = vi->vi_ingress_qos[i];
 
@@ -542,6 +555,7 @@ int rtnl_link_vlan_set_ingress_map(struct rtnl_link *link, int from,
 	if (from < 0 || from > VLAN_PRIO_MAX)
 		return -NLE_INVAL;
 
+	vi->vi_ingress_qos_mask |= (1 << from);
 	vi->vi_ingress_qos[from] = to;
 	vi->vi_mask |= VLAN_HAS_INGRESS_QOS;
 

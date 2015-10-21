@@ -177,6 +177,14 @@ enum {
 	NL_CAPABILITY_RTNL_LINK_PARSE_GRE_REMOTE = 13,
 #define NL_CAPABILITY_RTNL_LINK_PARSE_GRE_REMOTE NL_CAPABILITY_RTNL_LINK_PARSE_GRE_REMOTE
 
+	/**
+	 * Don't skip over vlan ingress-map entries with "to" field zero when serializing
+	 * a netlink message. Previously such entires would be ignored which inhibits the
+	 * user from clearing ingress map entries.
+	 */
+	NL_CAPABILITY_RTNL_LINK_VLAN_INGRESS_MAP_CLEAR = 14,
+#define NL_CAPABILITY_RTNL_LINK_VLAN_INGRESS_MAP_CLEAR NL_CAPABILITY_RTNL_LINK_VLAN_INGRESS_MAP_CLEAR
+
 	__NL_CAPABILITY_MAX,
 	NL_CAPABILITY_MAX = (__NL_CAPABILITY_MAX - 1),
 #define NL_CAPABILITY_MAX NL_CAPABILITY_MAX

@@ -36,6 +36,7 @@ check_PROGRAMS = \
 	test-create-ipvti \
 	test-create-macvlan \
 	test-create-ipvlan \
+	test-create-vrf \
 	test-create-sit \
 	test-create-ifb \
 	test-delete-link \

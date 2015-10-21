@@ -884,3 +884,11 @@ global:
 	rtnl_link_ipvlan_get_mode;
 	rtnl_link_set_link_netnsid;
 } libnl_3_2_26;
+
+libnl_3_2_28 {
+global:
+	rtnl_link_is_vrf;
+	rtnl_link_vrf_alloc;
+	rtnl_link_vrf_get_tableid;
+	rtnl_link_vrf_set_tableid;
+} libnl_3_2_27;

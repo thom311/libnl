@@ -111,6 +111,7 @@ libnl_route_3_la_SOURCES = \
 	route/link/vxlan.c route/link/veth.c route/link/ipip.c \
 	route/link/ipgre.c route/link/sit.c route/link/ipvti.c \
 	route/link/ip6tnl.c route/link/ifb.c route/link/ipvlan.c \
+	route/link/vrf.c \
 	\
 	route/qdisc/blackhole.c route/qdisc/cbq.c route/qdisc/dsmark.c \
 	route/qdisc/fifo.c route/qdisc/htb.c route/qdisc/netem.c \

@@ -203,7 +203,7 @@ static void vlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 	nl_dump_line(p, "    vlan-info id %d <%s>", vi->vi_vlan_id, buf);
 
 	if (vi->vi_mask & VLAN_HAS_PROTOCOL)
-		nl_dump_line(p, "    vlan protocol <%d>", vi->vi_protocol);
+		nl_dump_line(p, "    vlan protocol <%d>", ntohs(vi->vi_protocol));
 
 	nl_dump(p, "\n");
 
@@ -278,6 +278,9 @@ static int vlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 
 	if (vi->vi_mask & VLAN_HAS_ID)
 		NLA_PUT_U16(msg, IFLA_VLAN_ID, vi->vi_vlan_id);
+
+	if (vi->vi_mask & VLAN_HAS_PROTOCOL)
+		NLA_PUT_U16(msg, IFLA_VLAN_PROTOCOL, vi->vi_protocol);
 
 	if (vi->vi_mask & VLAN_HAS_FLAGS) {
 		struct ifla_vlan_flags flags = {
@@ -431,7 +434,8 @@ int rtnl_link_vlan_get_id(struct rtnl_link *link)
 /**
  * Set VLAN protocol
  * @arg link		Link object
- * @arg protocol	VLAN protocol
+ * @arg protocol	VLAN protocol in network byte order.
+ *   Probably you want to set it to something like htons(ETH_P_8021Q).
  *
  * @return 0 on success or a negative error code
  */
@@ -451,7 +455,8 @@ int rtnl_link_vlan_set_protocol(struct rtnl_link *link, uint16_t protocol)
  * Get VLAN protocol
  * @arg link		Link object
  *
- * @return VLAN protocol, 0 if not set or a negative error code.
+ * @return VLAN protocol in network byte order like htons(ETH_P_8021Q),
+ *   0 if not set or a negative error code.
  */
 int rtnl_link_vlan_get_protocol(struct rtnl_link *link)
 {

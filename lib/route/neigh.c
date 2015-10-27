@@ -233,10 +233,14 @@ static void neigh_keygen(struct nl_object *obj, uint32_t *hashkey,
 		return;
 	}
 	nkey->n_family = neigh->n_family;
-	if (neigh->n_family == AF_BRIDGE)
-		nkey->n_ifindex = neigh->n_master;
-	else
+	if (neigh->n_family == AF_BRIDGE) {
+		if (neigh->n_flags & NTF_SELF)
+			nkey->n_ifindex = neigh->n_ifindex;
+		else
+			nkey->n_ifindex = neigh->n_master;
+	} else
 		nkey->n_ifindex = neigh->n_ifindex;
+
 	if (addr)
 		memcpy(nkey->n_addr,
 			nl_addr_get_binary_addr(addr),
@@ -310,9 +314,12 @@ static uint32_t neigh_id_attrs_get(struct nl_object *obj)
 {
 	struct rtnl_neigh *neigh = (struct rtnl_neigh *)obj;
 
-	if (neigh->n_family == AF_BRIDGE)
-		return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY | NEIGH_ATTR_MASTER);
-	else
+	if (neigh->n_family == AF_BRIDGE) {
+		if (neigh->n_flags & NTF_SELF)
+			return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY | NEIGH_ATTR_IFINDEX);
+		else
+			return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY | NEIGH_ATTR_MASTER);
+	} else
 		return (NEIGH_ATTR_IFINDEX | NEIGH_ATTR_DST | NEIGH_ATTR_FAMILY);
 }
 

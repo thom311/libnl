@@ -546,6 +546,38 @@ int rtnl_neigh_alloc_cache(struct nl_sock *sock, struct nl_cache **result)
 }
 
 /**
+ * Build a neighbour cache including all neighbours currently configured in the kernel.
+ * @arg sock		Netlink socket.
+ * @arg result		Pointer to store resulting cache.
+ * @arg flags		Flags to apply to cache before filling
+ *
+ * Allocates a new neighbour cache, initializes it properly and updates it
+ * to include all neighbours currently configured in the kernel.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_neigh_alloc_cache_flags(struct nl_sock *sock, struct nl_cache **result,
+				 unsigned int flags)
+{
+	struct nl_cache * cache;
+	int err;
+
+	cache = nl_cache_alloc(&rtnl_neigh_ops);
+	if (!cache)
+		return -NLE_NOMEM;
+
+	nl_cache_set_flags(cache, flags);
+
+	if (sock && (err = nl_cache_refill(sock, cache)) < 0) {
+		nl_cache_free(cache);
+		return err;
+	}
+
+	*result = cache;
+	return 0;
+}
+
+/**
  * Look up a neighbour by interface index and destination address
  * @arg cache		neighbour cache
  * @arg ifindex		interface index the neighbour is on

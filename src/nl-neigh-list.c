@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
  
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
-	link_cache = nl_cli_link_alloc_cache(sock);
+	link_cache = nl_cli_link_alloc_cache_flags(sock, NL_CACHE_AF_ITER);
 	neigh_cache = nl_cli_neigh_alloc_cache(sock);
  	neigh = nl_cli_neigh_alloc();
  

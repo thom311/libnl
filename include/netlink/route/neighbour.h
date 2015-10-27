@@ -26,6 +26,9 @@ extern struct rtnl_neigh *rtnl_neigh_alloc(void);
 extern void	rtnl_neigh_put(struct rtnl_neigh *);
 
 extern int	rtnl_neigh_alloc_cache(struct nl_sock *, struct nl_cache **);
+extern int	rtnl_neigh_alloc_cache_flags(struct nl_sock *,
+					     struct nl_cache **,
+					     unsigned int);
 extern struct rtnl_neigh *rtnl_neigh_get(struct nl_cache *, int,
 					       struct nl_addr *);
 

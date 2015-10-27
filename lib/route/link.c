@@ -1008,6 +1008,55 @@ static char *link_attrs2str(int attrs, char *buf, size_t len)
  * @arg sk		Netlink socket.
  * @arg family		Link address family or AF_UNSPEC
  * @arg result		Pointer to store resulting cache.
+ * @arg flags		Flags to set in link cache before filling
+ *
+ * Allocates and initializes a new link cache. If \c sk is valid, a netlink
+ * message is sent to the kernel requesting a full dump of all configured
+ * links. The returned messages are parsed and filled into the cache. If
+ * the operation succeeds, the resulting cache will contain a link object for
+ * each link configured in the kernel. If \c sk is NULL, returns 0 but the
+ * cache is still empty.
+ *
+ * If \c family is set to an address family other than \c AF_UNSPEC the
+ * contents of the cache can be limited to a specific address family.
+ * Currently the following address families are supported:
+ * - AF_BRIDGE
+ * - AF_INET6
+ *
+ * @route_doc{link_list, Get List of Links}
+ * @see rtnl_link_get()
+ * @see rtnl_link_get_by_name()
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_link_alloc_cache_flags(struct nl_sock *sk, int family,
+				struct nl_cache **result, unsigned int flags)
+{
+	struct nl_cache * cache;
+	int err;
+	
+	cache = nl_cache_alloc(&rtnl_link_ops);
+	if (!cache)
+		return -NLE_NOMEM;
+
+	cache->c_iarg1 = family;
+
+	if (flags)
+		nl_cache_set_flags(cache, flags);
+
+	if (sk && (err = nl_cache_refill(sk, cache)) < 0) {
+		nl_cache_free(cache);
+		return err;
+	}
+
+	*result = cache;
+	return 0;
+}
+
+/**
+ * Allocate link cache and fill in all configured links.
+ * @arg sk		Netlink socket.
+ * @arg family		Link address family or AF_UNSPEC
+ * @arg result		Pointer to store resulting cache.
  *
  * Allocates and initializes a new link cache. If \c sk is valid, a netlink
  * message is sent to the kernel requesting a full dump of all configured
@@ -1029,23 +1078,9 @@ static char *link_attrs2str(int attrs, char *buf, size_t len)
  */
 int rtnl_link_alloc_cache(struct nl_sock *sk, int family, struct nl_cache **result)
 {
-	struct nl_cache * cache;
-	int err;
-	
-	cache = nl_cache_alloc(&rtnl_link_ops);
-	if (!cache)
-		return -NLE_NOMEM;
-
-	cache->c_iarg1 = family;
-	
-	if (sk && (err = nl_cache_refill(sk, cache)) < 0) {
-		nl_cache_free(cache);
-		return err;
-	}
-
-	*result = cache;
-	return 0;
+	return rtnl_link_alloc_cache_flags(sk, family, result, 0);
 }
+
 
 /**
  * Lookup link in cache by interface index

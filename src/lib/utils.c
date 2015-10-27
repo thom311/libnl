@@ -180,6 +180,23 @@ struct nl_cache *nl_cli_alloc_cache(struct nl_sock *sock, const char *name,
 	return cache;
 }
 
+struct nl_cache *nl_cli_alloc_cache_flags(struct nl_sock *sock,
+			    const char *name, unsigned int flags,
+			    int (*ac)(struct nl_sock *, struct nl_cache **,
+				      unsigned int))
+{
+	struct nl_cache *cache;
+	int err;
+
+	if ((err = ac(sock, &cache, flags)) < 0)
+		nl_cli_fatal(err, "Unable to allocate %s cache: %s",
+			     name, nl_geterror(err));
+
+	nl_cache_mngt_provide(cache);
+
+	return cache;
+}
+
 void nl_cli_load_module(const char *prefix, const char *name)
 {
 	char path[FILENAME_MAX+1];

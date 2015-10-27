@@ -15,7 +15,8 @@
 #include <netlink/route/neighbour.h>
 
 #define nl_cli_neigh_alloc_cache(sk) \
-		nl_cli_alloc_cache((sk), "neighbour", rtnl_neigh_alloc_cache)
+		nl_cli_alloc_cache_flags((sk), "neighbour", NL_CACHE_AF_ITER, \
+					 rtnl_neigh_alloc_cache_flags)
 
 extern struct rtnl_neigh *nl_cli_neigh_alloc(void);
 extern void nl_cli_neigh_parse_dst(struct rtnl_neigh *, char *);

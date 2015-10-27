@@ -108,3 +108,10 @@ global:
 local:
 	*;
 };
+
+libnl_3_2_28 {
+global:
+	nl_cli_alloc_cache_flags;
+	nl_cli_link_alloc_cache_flags;
+	nl_cli_link_alloc_cache_family_flags;
+} libnl_3;

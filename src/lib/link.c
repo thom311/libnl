@@ -31,12 +31,14 @@ struct rtnl_link *nl_cli_link_alloc(void)
 	return link;
 }
 
-struct nl_cache *nl_cli_link_alloc_cache_family(struct nl_sock *sock, int family)
+struct nl_cache *nl_cli_link_alloc_cache_family_flags(struct nl_sock *sock,
+						      int family,
+						      unsigned int flags)
 {
 	struct nl_cache *cache;
 	int err;
 
-	if ((err = rtnl_link_alloc_cache(sock, family, &cache)) < 0)
+	if ((err = rtnl_link_alloc_cache_flags(sock, family, &cache, flags)) < 0)
 		nl_cli_fatal(err, "Unable to allocate link cache: %s",
 			     nl_geterror(err));
 
@@ -45,9 +47,20 @@ struct nl_cache *nl_cli_link_alloc_cache_family(struct nl_sock *sock, int family
 	return cache;
 }
 
+struct nl_cache *nl_cli_link_alloc_cache_family(struct nl_sock *sock, int family)
+{
+	return nl_cli_link_alloc_cache_family_flags(sock, family, 0);
+}
+
 struct nl_cache *nl_cli_link_alloc_cache(struct nl_sock *sock)
 {
 	return nl_cli_link_alloc_cache_family(sock, AF_UNSPEC);
+}
+
+struct nl_cache *nl_cli_link_alloc_cache_flags(struct nl_sock *sock,
+						unsigned int flags)
+{
+	return nl_cli_link_alloc_cache_family_flags(sock, AF_UNSPEC, flags);
 }
 
 void nl_cli_link_parse_family(struct rtnl_link *link, char *arg)

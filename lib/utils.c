@@ -1158,7 +1158,7 @@ int nl_has_capability (int capability)
 			NL_CAPABILITY_RTNL_LINK_VLAN_PROTOCOL_SERIALZE,
 			NL_CAPABILITY_RTNL_LINK_PARSE_GRE_REMOTE,
 			NL_CAPABILITY_RTNL_LINK_VLAN_INGRESS_MAP_CLEAR,
-			0,
+			NL_CAPABILITY_RTNL_LINK_VXLAN_IO_COMPARE,
 			0),
 		/* IMPORTANT: these capability numbers are intended to be universal and stable
 		 * for libnl3. Don't allocate new numbers on your own that differ from upstream

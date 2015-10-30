@@ -445,6 +445,34 @@ nla_put_failure:
 	return 0;
 }
 
+static int vxlan_compare(struct rtnl_link *link_a, struct rtnl_link *link_b,
+			uint32_t attrs, int flags)
+{
+	struct vxlan_info *a = link_a->l_info;
+	struct vxlan_info *b = link_b->l_info;
+	int diff = 0;
+
+#define VXLAN_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, VXLAN_ATTR_##ATTR, a, b, EXPR)
+
+	diff |= VXLAN_DIFF(ID,    a->vxi_id    != b->vxi_id);
+	diff |= VXLAN_DIFF(GROUP, a->vxi_group != b->vxi_group);
+	diff |= VXLAN_DIFF(LINK,  a->vxi_link  != b->vxi_link);
+	diff |= VXLAN_DIFF(LOCAL, a->vxi_local != b->vxi_local);
+	diff |= VXLAN_DIFF(TOS,   a->vxi_tos   != b->vxi_tos);
+	diff |= VXLAN_DIFF(TTL,   a->vxi_ttl   != b->vxi_ttl);
+	diff |= VXLAN_DIFF(LEARNING, a->vxi_learning != b->vxi_learning);
+	diff |= VXLAN_DIFF(AGEING, a->vxi_ageing != b->vxi_ageing);
+	diff |= VXLAN_DIFF(PORT_RANGE,
+	                   a->vxi_port_range.low != b->vxi_port_range.low);
+	diff |= VXLAN_DIFF(PORT_RANGE,
+	                   a->vxi_port_range.high != b->vxi_port_range.high);
+	diff |= VXLAN_DIFF(GROUP6, memcmp(&a->vxi_group6, &b->vxi_group6, sizeof(a->vxi_group6)) != 0);
+	diff |= VXLAN_DIFF(LOCAL6,  memcmp(&a->vxi_local6, &b->vxi_local6, sizeof(a->vxi_local6)) != 0);
+#undef VXLAN_DIFF
+
+	return diff;
+}
+
 static struct rtnl_link_info_ops vxlan_info_ops = {
 	.io_name		= "vxlan",
 	.io_alloc		= vxlan_alloc,
@@ -456,6 +484,7 @@ static struct rtnl_link_info_ops vxlan_info_ops = {
 	.io_clone		= vxlan_clone,
 	.io_put_attrs		= vxlan_put_attrs,
 	.io_free		= vxlan_free,
+	.io_compare             = vxlan_compare,
 };
 
 /** @cond SKIP */

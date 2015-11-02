@@ -1021,6 +1021,7 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 	}
 
 	route->ce_msgtype = nlh->nlmsg_type;
+	route->ce_msgflags = nlh->nlmsg_flags;
 
 	err = nlmsg_parse(nlh, sizeof(struct rtmsg), tb, RTA_MAX, route_policy);
 	if (err < 0)

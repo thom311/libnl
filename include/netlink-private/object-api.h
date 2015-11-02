@@ -190,6 +190,7 @@ extern "C" {
 	struct nl_cache *	ce_cache;	\
 	struct nl_list_head	ce_list;	\
 	int			ce_msgtype;	\
+	int			ce_msgflags;	\
 	int			ce_flags;	\
 	uint64_t		ce_mask;
 

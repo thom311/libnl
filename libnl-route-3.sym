@@ -1063,6 +1063,8 @@ global:
 
 libnl_3_5 {
 global:
+	rtnl_addr_get_alias;
+	rtnl_addr_set_alias;
 	rtnl_class_get_by_parent;
 	rtnl_cls_cache_set_tc_params;
 	rtnl_ematch_tree_clone;

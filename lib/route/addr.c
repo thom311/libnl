@@ -128,6 +128,7 @@
 #define ADDR_ATTR_BROADCAST	0x0200
 #define ADDR_ATTR_MULTICAST	0x0400
 #define ADDR_ATTR_ANYCAST	0x0800
+#define ADDR_ATTR_ALIAS		0x1000
 
 static struct nl_cache_ops rtnl_addr_ops;
 static struct nl_object_ops addr_obj_ops;
@@ -189,6 +190,8 @@ static int addr_clone(struct nl_object *_dst, struct nl_object *_src)
 }
 
 static struct nla_policy addr_policy[IFA_MAX+1] = {
+	[IFA_ALIAS]	= { .type = NLA_STRING,
+			    .maxlen = IFNAMSIZ },
 	[IFA_LABEL]	= { .type = NLA_STRING,
 			    .maxlen = IFNAMSIZ },
 	[IFA_CACHEINFO]	= { .minlen = sizeof(struct ifa_cacheinfo) },
@@ -224,6 +227,11 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	addr->ce_mask = (ADDR_ATTR_FAMILY | ADDR_ATTR_PREFIXLEN |
 			 ADDR_ATTR_FLAGS | ADDR_ATTR_SCOPE | ADDR_ATTR_IFINDEX);
+
+	if (tb[IFA_ALIAS]) {
+		nla_strlcpy(addr->a_alias, tb[IFA_ALIAS], IFNAMSIZ);
+		addr->ce_mask |= ADDR_ATTR_ALIAS;
+	}
 
 	if (tb[IFA_LABEL]) {
 		nla_strlcpy(addr->a_label, tb[IFA_LABEL], IFNAMSIZ);
@@ -655,6 +663,9 @@ static int build_addr_msg(struct rtnl_addr *tmpl, int cmd, int flags,
 	else if (tmpl->ce_mask & ADDR_ATTR_LOCAL)
 		NLA_PUT_ADDR(msg, IFA_ADDRESS, tmpl->a_local);
 
+	if (tmpl->ce_mask & ADDR_ATTR_ALIAS)
+		NLA_PUT_STRING(msg, IFA_ALIAS, tmpl->a_alias);
+
 	if (tmpl->ce_mask & ADDR_ATTR_LABEL)
 		NLA_PUT_STRING(msg, IFA_LABEL, tmpl->a_label);
 
@@ -839,6 +850,25 @@ int rtnl_addr_delete(struct nl_sock *sk, struct rtnl_addr *addr, int flags)
  * @name Attributes
  * @{
  */
+
+int rtnl_addr_set_alias(struct rtnl_addr *addr, const char *alias)
+{
+	if (strlen(alias) > sizeof(addr->a_alias) - 1)
+		return -NLE_RANGE;
+
+	strcpy(addr->a_alias, alias);
+	addr->ce_mask |= ADDR_ATTR_ALIAS;
+
+	return 0;
+}
+
+char *rtnl_addr_get_alias(struct rtnl_addr *addr)
+{
+	if (addr->ce_mask & ADDR_ATTR_ALIAS)
+		return addr->a_alias;
+	else
+		return NULL;
+}
 
 int rtnl_addr_set_label(struct rtnl_addr *addr, const char *label)
 {

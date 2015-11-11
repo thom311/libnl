@@ -137,8 +137,8 @@ static int ipgre_parse(struct rtnl_link *link, struct nlattr *data,
 		ipgre->ipgre_mask |= IPGRE_ATTR_LOCAL;
 	}
 
-	if (tb[IFLA_GRE_LOCAL]) {
-		ipgre->remote = nla_get_u32(tb[IFLA_GRE_LOCAL]);
+	if (tb[IFLA_GRE_REMOTE]) {
+		ipgre->remote = nla_get_u32(tb[IFLA_GRE_REMOTE]);
 		ipgre->ipgre_mask |= IPGRE_ATTR_REMOTE;
 	}
 

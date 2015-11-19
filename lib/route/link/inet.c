@@ -92,7 +92,7 @@ static void inet_free(struct rtnl_link *link, void *data)
 	free(data);
 }
 
-static struct nla_policy inet_policy[IFLA_INET6_MAX+1] = {
+static struct nla_policy inet_policy[IFLA_INET_MAX+1] = {
 	[IFLA_INET_CONF]	= { .minlen = 4 },
 };
 

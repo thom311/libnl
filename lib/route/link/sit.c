@@ -204,10 +204,16 @@ static void sit_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct sit_info *sit = link->l_info;
 	char *name, addr[INET_ADDRSTRLEN];
+	struct rtnl_link *parent;
 
 	if (sit->sit_mask & SIT_ATTR_LINK) {
 		nl_dump(p, "      link ");
-		name = rtnl_link_get_name(link);
+
+		name = NULL;
+		parent = link_lookup(link->ce_cache, sit->link);
+		if (parent)
+			name = rtnl_link_get_name(parent);
+
 		if (name)
 			nl_dump_line(p, "%s\n", name);
 		else

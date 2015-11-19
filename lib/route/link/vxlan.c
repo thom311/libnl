@@ -48,13 +48,17 @@
 #define VXLAN_HAS_RSC	(1<<11)
 #define VXLAN_HAS_L2MISS	(1<<12)
 #define VXLAN_HAS_L3MISS	(1<<13)
+#define VXLAN_HAS_GROUP6	(1<<14)
+#define VXLAN_HAS_LOCAL6	(1<<15)
 
 struct vxlan_info
 {
 	uint32_t		vxi_id;
 	uint32_t		vxi_group;
+	struct in6_addr		vxi_group6;
 	uint32_t		vxi_link;
 	uint32_t		vxi_local;
+	struct in6_addr		vxi_local6;
 	uint8_t			vxi_ttl;
 	uint8_t			vxi_tos;
 	uint8_t			vxi_learning;
@@ -73,8 +77,10 @@ struct vxlan_info
 static struct nla_policy vxlan_policy[IFLA_VXLAN_MAX+1] = {
 	[IFLA_VXLAN_ID]	= { .type = NLA_U32 },
 	[IFLA_VXLAN_GROUP] = { .minlen = sizeof(uint32_t) },
+	[IFLA_VXLAN_GROUP6] = { .minlen = sizeof(struct in6_addr) },
 	[IFLA_VXLAN_LINK] = { .type = NLA_U32 },
 	[IFLA_VXLAN_LOCAL] = { .minlen = sizeof(uint32_t) },
+	[IFLA_VXLAN_LOCAL6] = { .minlen = sizeof(struct in6_addr) },
 	[IFLA_VXLAN_TTL] = { .type = NLA_U8 },
 	[IFLA_VXLAN_TOS] = { .type = NLA_U8 },
 	[IFLA_VXLAN_LEARNING] = { .type = NLA_U8 },
@@ -125,10 +131,17 @@ static int vxlan_parse(struct rtnl_link *link, struct nlattr *data,
 		vxi->vxi_mask |= VXLAN_HAS_ID;
 	}
 
+	if (tb[IFLA_VXLAN_GROUP6]) {
+		nla_memcpy(&vxi->vxi_group6, tb[IFLA_VXLAN_GROUP6],
+			   sizeof(vxi->vxi_group6));
+		vxi->vxi_mask |= VXLAN_HAS_GROUP6;
+	}
+
 	if (tb[IFLA_VXLAN_GROUP]) {
 		nla_memcpy(&vxi->vxi_group, tb[IFLA_VXLAN_GROUP],
 				   sizeof(vxi->vxi_group));
 		vxi->vxi_mask |= VXLAN_HAS_GROUP;
+		vxi->vxi_mask &= ~VXLAN_HAS_GROUP6;
 	}
 
 	if (tb[IFLA_VXLAN_LINK]) {
@@ -136,10 +149,17 @@ static int vxlan_parse(struct rtnl_link *link, struct nlattr *data,
 		vxi->vxi_mask |= VXLAN_HAS_LINK;
 	}
 
+	if (tb[IFLA_VXLAN_LOCAL6]) {
+		nla_memcpy(&vxi->vxi_local6, tb[IFLA_VXLAN_LOCAL6],
+			   sizeof(vxi->vxi_local6));
+		vxi->vxi_mask |= VXLAN_HAS_LOCAL6;
+	}
+
 	if (tb[IFLA_VXLAN_LOCAL]) {
 		nla_memcpy(&vxi->vxi_local, tb[IFLA_VXLAN_LOCAL],
 				   sizeof(vxi->vxi_local));
 		vxi->vxi_mask |= VXLAN_HAS_LOCAL;
+		vxi->vxi_mask &= ~VXLAN_HAS_LOCAL6;
 	}
 
 	if (tb[IFLA_VXLAN_TTL]) {
@@ -217,21 +237,33 @@ static void vxlan_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 static void vxlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct vxlan_info *vxi = link->l_info;
-	char *name, addr[INET_ADDRSTRLEN];
+	char *name, addr[INET6_ADDRSTRLEN];
+	struct rtnl_link *parent;
 
 	nl_dump_line(p, "    vxlan-id %u\n", vxi->vxi_id);
 
 	if (vxi->vxi_mask & VXLAN_HAS_GROUP) {
 		nl_dump(p, "      group ");
-		if(inet_ntop(AF_INET, &vxi->vxi_group, addr, sizeof(addr)))
+		if (inet_ntop(AF_INET, &vxi->vxi_group, addr, sizeof(addr)))
 			nl_dump_line(p, "%s\n", addr);
 		else
 			nl_dump_line(p, "%#x\n", ntohs(vxi->vxi_group));
+	} else if (vxi->vxi_mask & VXLAN_HAS_GROUP6) {
+		nl_dump(p, "      group ");
+		if (inet_ntop(AF_INET6, &vxi->vxi_group6, addr, sizeof(addr)))
+			nl_dump_line(p, "%s\n", addr);
+		else
+			nl_dump_line(p, "%#x\n", vxi->vxi_group6);
 	}
 
 	if (vxi->vxi_mask & VXLAN_HAS_LINK) {
 		nl_dump(p, "      link ");
-		name = rtnl_link_get_name(link);
+
+		name = NULL;
+		parent = link_lookup(link->ce_cache, vxi->vxi_link);
+		if (parent)
+			name = rtnl_link_get_name(parent);
+
 		if (name)
 			nl_dump_line(p, "%s\n", name);
 		else
@@ -240,11 +272,18 @@ static void vxlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (vxi->vxi_mask & VXLAN_HAS_LOCAL) {
 		nl_dump(p, "      local ");
-		if(inet_ntop(AF_INET, &vxi->vxi_local, addr, sizeof(addr)))
+		if (inet_ntop(AF_INET, &vxi->vxi_local, addr, sizeof(addr)))
 			nl_dump_line(p, "%s\n", addr);
 		else
 			nl_dump_line(p, "%#x\n", ntohs(vxi->vxi_local));
+	} else if (vxi->vxi_mask & VXLAN_HAS_LOCAL6) {
+		nl_dump(p, "      local ");
+		if (inet_ntop(AF_INET6, &vxi->vxi_local6, addr, sizeof(addr)))
+			nl_dump_line(p, "%s\n", addr);
+		else
+			nl_dump_line(p, "%#x\n", vxi->vxi_local6);
 	}
+
 
 	if (vxi->vxi_mask & VXLAN_HAS_TTL) {
 		nl_dump(p, "      ttl ");
@@ -356,11 +395,17 @@ static int vxlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (vxi->vxi_mask & VXLAN_HAS_GROUP)
 		NLA_PUT(msg, IFLA_VXLAN_GROUP, sizeof(vxi->vxi_group), &vxi->vxi_group);
 
+	if (vxi->vxi_mask & VXLAN_HAS_GROUP6)
+		NLA_PUT(msg, IFLA_VXLAN_GROUP6, sizeof(vxi->vxi_group6), &vxi->vxi_group6);
+
 	if (vxi->vxi_mask & VXLAN_HAS_LINK)
 		NLA_PUT_U32(msg, IFLA_VXLAN_LINK, vxi->vxi_link);
 
 	if (vxi->vxi_mask & VXLAN_HAS_LOCAL)
 		NLA_PUT(msg, IFLA_VXLAN_LOCAL, sizeof(vxi->vxi_local), &vxi->vxi_local);
+
+	if (vxi->vxi_mask & VXLAN_HAS_LOCAL6)
+		NLA_PUT(msg, IFLA_VXLAN_LOCAL6, sizeof(vxi->vxi_local6), &vxi->vxi_local6);
 
 	if (vxi->vxi_mask & VXLAN_HAS_TTL)
 		NLA_PUT_U8(msg, IFLA_VXLAN_TTL, vxi->vxi_ttl);
@@ -517,13 +562,20 @@ int rtnl_link_vxlan_set_group(struct rtnl_link *link, struct nl_addr *addr)
 
 	IS_VXLAN_LINK_ASSERT(link);
 
-	if ((nl_addr_get_family(addr) != AF_INET) ||
-		(nl_addr_get_len(addr) != sizeof(vxi->vxi_group)))
+	if ((nl_addr_get_family(addr) == AF_INET) &&
+	    (nl_addr_get_len(addr) == sizeof(vxi->vxi_group))) {
+		memcpy(&vxi->vxi_group, nl_addr_get_binary_addr(addr),
+		       sizeof(vxi->vxi_group));
+		vxi->vxi_mask |= VXLAN_HAS_GROUP;
+		vxi->vxi_mask &= ~VXLAN_HAS_GROUP6;
+	} else if ((nl_addr_get_family(addr) == AF_INET6) &&
+		   (nl_addr_get_len(addr) == sizeof(vxi->vxi_group6))) {
+		memcpy(&vxi->vxi_group6, nl_addr_get_binary_addr(addr),
+		       sizeof(vxi->vxi_group6));
+		vxi->vxi_mask |= VXLAN_HAS_GROUP6;
+		vxi->vxi_mask &= ~VXLAN_HAS_GROUP;
+	} else
 		return -NLE_INVAL;
-
-	memcpy(&vxi->vxi_group, nl_addr_get_binary_addr(addr),
-		   sizeof(vxi->vxi_group));
-	vxi->vxi_mask |= VXLAN_HAS_GROUP;
 
 	return 0;
 }
@@ -544,10 +596,12 @@ int rtnl_link_vxlan_get_group(struct rtnl_link *link, struct nl_addr **addr)
 	if (!addr)
 		return -NLE_INVAL;
 
-	if (!(vxi->vxi_mask & VXLAN_HAS_GROUP))
+	if (vxi->vxi_mask & VXLAN_HAS_GROUP)
+		*addr = nl_addr_build(AF_INET, &vxi->vxi_group, sizeof(vxi->vxi_group));
+	else if (vxi->vxi_mask & VXLAN_HAS_GROUP6)
+		*addr = nl_addr_build(AF_INET6, &vxi->vxi_group6, sizeof(vxi->vxi_group6));
+	else
 		return -NLE_AGAIN;
-
-	*addr = nl_addr_build(AF_INET, &vxi->vxi_group, sizeof(vxi->vxi_group));
 
 	return 0;
 }
@@ -608,13 +662,20 @@ int rtnl_link_vxlan_set_local(struct rtnl_link *link, struct nl_addr *addr)
 
 	IS_VXLAN_LINK_ASSERT(link);
 
-	if ((nl_addr_get_family(addr) != AF_INET) ||
-		(nl_addr_get_len(addr) != sizeof(vxi->vxi_local)))
+	if ((nl_addr_get_family(addr) == AF_INET) &&
+	    (nl_addr_get_len(addr) == sizeof(vxi->vxi_local))) {
+		memcpy(&vxi->vxi_local, nl_addr_get_binary_addr(addr),
+		       sizeof(vxi->vxi_local));
+		vxi->vxi_mask |= VXLAN_HAS_LOCAL;
+		vxi->vxi_mask &= VXLAN_HAS_LOCAL6;
+	} else if ((nl_addr_get_family(addr) == AF_INET6) &&
+		   (nl_addr_get_len(addr) == sizeof(vxi->vxi_local6))) {
+		memcpy(&vxi->vxi_local6, nl_addr_get_binary_addr(addr),
+		       sizeof(vxi->vxi_local6));
+		vxi->vxi_mask |= VXLAN_HAS_LOCAL6;
+		vxi->vxi_mask &= ~VXLAN_HAS_LOCAL;
+	} else
 		return -NLE_INVAL;
-
-	memcpy(&vxi->vxi_local, nl_addr_get_binary_addr(addr),
-		   sizeof(vxi->vxi_local));
-	vxi->vxi_mask |= VXLAN_HAS_LOCAL;
 
 	return 0;
 }
@@ -635,10 +696,12 @@ int rtnl_link_vxlan_get_local(struct rtnl_link *link, struct nl_addr **addr)
 	if (!addr)
 		return -NLE_INVAL;
 
-	if (!(vxi->vxi_mask & VXLAN_HAS_LOCAL))
+	if (vxi->vxi_mask & VXLAN_HAS_LOCAL)
+		*addr = nl_addr_build(AF_INET, &vxi->vxi_local, sizeof(vxi->vxi_local));
+	else if (vxi->vxi_mask & VXLAN_HAS_LOCAL6)
+		*addr = nl_addr_build(AF_INET6, &vxi->vxi_local6, sizeof(vxi->vxi_local6));
+	else
 		return -NLE_AGAIN;
-
-	*addr = nl_addr_build(AF_INET, &vxi->vxi_local, sizeof(vxi->vxi_local));
 
 	return 0;
 }

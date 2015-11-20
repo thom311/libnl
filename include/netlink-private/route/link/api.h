@@ -60,6 +60,10 @@ struct rtnl_link_info_ops
 	 * in either io_alloc() or io_parse(). */
 	void	      (*io_free)(struct rtnl_link *);
 
+	/** Called to compare link info parameters between two links. */
+	int	      (*io_compare)(struct rtnl_link *, struct rtnl_link *,
+				    uint32_t attrs, int flags);
+
 	struct nl_list_head		io_list;
 };
 
@@ -145,6 +149,8 @@ extern int			rtnl_link_af_unregister(struct rtnl_link_af_ops *);
 extern int			rtnl_link_af_data_compare(struct rtnl_link *a,
 							  struct rtnl_link *b,
 							  int family);
+extern int			rtnl_link_info_data_compare(struct rtnl_link *a,
+							    struct rtnl_link *b);
 
 #ifdef __cplusplus
 }

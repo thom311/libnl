@@ -384,6 +384,7 @@ int nl_send_iovec(struct nl_sock *sk, struct nl_msg *msg, struct iovec *iov, uns
 		.msg_iov = iov,
 		.msg_iovlen = iovlen,
 	};
+	char buf[CMSG_SPACE(sizeof(struct ucred))];
 
 	/* Overwrite destination if specified in the message itself, defaults
 	 * to the peer address of the socket.
@@ -395,7 +396,6 @@ int nl_send_iovec(struct nl_sock *sk, struct nl_msg *msg, struct iovec *iov, uns
 	/* Add credentials if present. */
 	creds = nlmsg_get_creds(msg);
 	if (creds != NULL) {
-		char buf[CMSG_SPACE(sizeof(struct ucred))];
 		struct cmsghdr *cmsg;
 
 		hdr.msg_control = buf;

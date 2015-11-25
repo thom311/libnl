@@ -496,6 +496,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct ifinfomsg *ifi;
 	struct nlattr *tb[IFLA_MAX+1];
 	struct rtnl_link_af_ops *af_ops = NULL;
+	struct rtnl_link_af_ops *af_ops_family;
 	int err, family;
 	struct nla_policy real_link_policy[IFLA_MAX+1];
 
@@ -524,7 +525,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			  LINK_ATTR_ARPTYPE| LINK_ATTR_IFINDEX |
 			  LINK_ATTR_FLAGS | LINK_ATTR_CHANGE);
 
-	if ((af_ops = af_lookup_and_alloc(link, family))) {
+	if ((af_ops_family = af_ops = af_lookup_and_alloc(link, family))) {
 		if (af_ops->ao_protinfo_policy) {
 			memcpy(&real_link_policy[IFLA_PROTINFO],
 			       af_ops->ao_protinfo_policy,
@@ -570,7 +571,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 				if (af_ops->ao_protinfo_policy) {
 					tb[IFLA_PROTINFO] = (struct nlattr *)af_ops->ao_protinfo_policy;
 				}
-				link->l_family = family = af;
+				link->l_family = af;
 				link->l_af_ops = af_ops;
 			}
 
@@ -601,21 +602,35 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	}
 
 	if (tb[IFLA_AF_SPEC]) {
-		struct nlattr *af_attr;
-		int remaining;
+		/* parsing of IFLA_AF_SPEC is dependent on the family used
+		 * in the request message.
+		 */
+		if (af_ops_family && af_ops_family->ao_parse_af_full) {
+			err = af_ops_family->ao_parse_af_full(link,
+			                                      tb[IFLA_AF_SPEC],
+			                                      link->l_af_data[af_ops_family->ao_family]);
+			if (err < 0)
+				goto errout;
+			link->ce_mask |= LINK_ATTR_AF_SPEC;
+		} else if (family == AF_UNSPEC) {
+			struct nlattr *af_attr;
+			int remaining;
 
-		nla_for_each_nested(af_attr, tb[IFLA_AF_SPEC], remaining) {
-			af_ops = af_lookup_and_alloc(link, nla_type(af_attr));
-			if (af_ops && af_ops->ao_parse_af) {
-				char *af_data = link->l_af_data[nla_type(af_attr)];
+			nla_for_each_nested(af_attr, tb[IFLA_AF_SPEC], remaining) {
+				af_ops = af_lookup_and_alloc(link, nla_type(af_attr));
+				if (af_ops && af_ops->ao_parse_af) {
+					char *af_data = link->l_af_data[nla_type(af_attr)];
 
-				err = af_ops->ao_parse_af(link, af_attr, af_data);
-				if (err < 0)
-					goto errout;
+					err = af_ops->ao_parse_af(link, af_attr, af_data);
+					if (err < 0)
+						goto errout;
+				}
 			}
-
+			link->ce_mask |= LINK_ATTR_AF_SPEC;
+		} else {
+			NL_DBG(3, "IFLA_AF_SPEC parsing not implemented for family %d\n",
+			          family);
 		}
-		link->ce_mask |= LINK_ATTR_AF_SPEC;
 	}
 
 	if (tb[IFLA_PROMISCUITY]) {

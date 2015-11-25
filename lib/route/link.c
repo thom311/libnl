@@ -657,8 +657,32 @@ errout:
 static int link_request_update(struct nl_cache *cache, struct nl_sock *sk)
 {
 	int family = cache->c_iarg1;
+	struct ifinfomsg hdr = { .ifi_family = family };
+	struct rtnl_link_af_ops *ops;
+	struct nl_msg *msg;
+	int err;
 
-	return nl_rtgen_request(sk, RTM_GETLINK, family, NLM_F_DUMP);
+	msg = nlmsg_alloc_simple(RTM_GETLINK, NLM_F_DUMP);
+	if (!msg)
+		return -NLE_NOMEM;
+
+	err = -NLE_MSGSIZE;
+	if (nlmsg_append(msg, &hdr, sizeof(hdr), NLMSG_ALIGNTO) < 0)
+		goto nla_put_failure;
+
+	ops = rtnl_link_af_ops_lookup(family);
+	if (ops && ops->ao_get_af) {
+		err = ops->ao_get_af(msg);
+		if (err)
+			goto nla_put_failure;
+	}
+	err = nl_send_auto(sk, msg);
+	if (err > 0)
+		err = 0;
+
+nla_put_failure:
+	nlmsg_free(msg);
+	return err;
 }
 
 static void link_dump_line(struct nl_object *obj, struct nl_dump_params *p)

@@ -172,12 +172,16 @@ static int bridge_parse_af_full(struct rtnl_link *link, struct nlattr *attr_full
 {
 	struct bridge_data *bd = data;
 	struct bridge_vlan_info *vinfo = NULL;
+	uint16_t vid_range_start = 0;
+	uint16_t vid_range_flags = -1;
+
 	struct nlattr *attr;
 	int remaining;
 
 	nla_for_each_nested(attr, attr_full, remaining) {
+
 		if (nla_type(attr) != IFLA_BRIDGE_VLAN_INFO)
-			return 0;
+			continue;
 
 		if (nla_len(attr) != sizeof(struct bridge_vlan_info))
 			return -EINVAL;
@@ -186,20 +190,35 @@ static int bridge_parse_af_full(struct rtnl_link *link, struct nlattr *attr_full
 		if (!vinfo->vid || vinfo->vid >= VLAN_VID_MASK)
 			return -EINVAL;
 
+
 		if (vinfo->flags & BRIDGE_VLAN_INFO_RANGE_BEGIN) {
-			NL_DBG(1, "Unexpected BRIDGE_VLAN_INFO_RANGE_BEGIN flag; can not handle it.\n");
-			return -EINVAL;
+			vid_range_start = vinfo->vid;
+			vid_range_flags = (vinfo->flags ^ BRIDGE_VLAN_INFO_RANGE_BEGIN);
+			continue;
 		}
 
-		if (vinfo->flags & BRIDGE_VLAN_INFO_PVID)
-			bd->vlan_info.pvid = vinfo->vid;
+		if (vinfo->flags & BRIDGE_VLAN_INFO_RANGE_END) {
+			/* sanity check the range flags */
+			if (vid_range_flags != (vinfo->flags ^ BRIDGE_VLAN_INFO_RANGE_END)) {
+				NL_DBG(1, "VLAN range flags differ; can not handle it.\n");
+				return -EINVAL;
+			}
+		} else {
+			vid_range_start = vinfo->vid;
+		}
 
-		if (vinfo->flags & BRIDGE_VLAN_INFO_UNTAGGED)
-			set_bit(vinfo->vid, bd->vlan_info.untagged_bitmap);
+		for (; vid_range_start <= vinfo->vid; vid_range_start++) {
+			if (vinfo->flags & BRIDGE_VLAN_INFO_PVID)
+				bd->vlan_info.pvid = vinfo->vid;
 
-		set_bit(vinfo->vid, bd->vlan_info.vlan_bitmap);
+			if (vinfo->flags & BRIDGE_VLAN_INFO_UNTAGGED)
+				set_bit(vid_range_start, bd->vlan_info.untagged_bitmap);
 
-		bd->ce_mask |= BRIDGE_ATTR_PORT_VLAN;
+			set_bit(vid_range_start, bd->vlan_info.vlan_bitmap);
+			bd->ce_mask |= BRIDGE_ATTR_PORT_VLAN;
+		}
+
+		vid_range_flags = -1;
 	}
 
 	return 0;

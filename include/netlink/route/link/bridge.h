@@ -19,6 +19,16 @@
 extern "C" {
 #endif
 
+#define RTNL_LINK_BRIDGE_VLAN_BITMAP_MAX 4096
+#define RTNL_LINK_BRIDGE_VLAN_BITMAP_LEN (RTNL_LINK_BRIDGE_VLAN_BITMAP_MAX / 32)
+
+struct rtnl_link_bridge_vlan
+{
+	uint16_t                pvid;
+	uint32_t                vlan_bitmap[RTNL_LINK_BRIDGE_VLAN_BITMAP_LEN];
+	uint32_t                untagged_bitmap[RTNL_LINK_BRIDGE_VLAN_BITMAP_LEN];
+};
+
 /**
  * Bridge flags
  * @ingroup bridge
@@ -52,6 +62,11 @@ extern char * rtnl_link_bridge_flags2str(int, char *, size_t);
 extern int	rtnl_link_bridge_str2flags(const char *);
 
 extern int	rtnl_link_bridge_add(struct nl_sock *sk, const char *name);
+
+extern int	rtnl_link_bridge_pvid(struct rtnl_link *link);
+extern int	rtnl_link_bridge_has_vlan(struct rtnl_link *link);
+
+extern struct bridge_vlan *rtnl_bridge_get_port_vlan(struct rtnl_link *link);
 #ifdef __cplusplus
 }
 #endif

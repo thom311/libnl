@@ -904,5 +904,8 @@ global:
 	rtnl_link_vrf_get_tableid;
 	rtnl_link_vrf_set_tableid;
 	rtnl_neigh_alloc_cache_flags;
+	rtnl_link_bridge_pvid;
+	rtnl_link_bridge_has_vlan;
+	rtnl_link_bridge_get_port_vlan;
 } libnl_3_2_27;
 

@@ -210,6 +210,7 @@ static void neigh_keygen(struct nl_object *obj, uint32_t *hashkey,
 	struct neigh_hash_key {
 		uint32_t	n_family;
 		uint32_t	n_ifindex;
+		uint16_t	n_vlan;
 		char		n_addr[0];
 	} __attribute__((packed)) *nkey;
 #ifdef NL_DEBUG
@@ -234,6 +235,7 @@ static void neigh_keygen(struct nl_object *obj, uint32_t *hashkey,
 	}
 	nkey->n_family = neigh->n_family;
 	if (neigh->n_family == AF_BRIDGE) {
+		nkey->n_vlan = neigh->n_vlan;
 		if (neigh->n_flags & NTF_SELF)
 			nkey->n_ifindex = neigh->n_ifindex;
 		else
@@ -316,9 +318,9 @@ static uint32_t neigh_id_attrs_get(struct nl_object *obj)
 
 	if (neigh->n_family == AF_BRIDGE) {
 		if (neigh->n_flags & NTF_SELF)
-			return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY | NEIGH_ATTR_IFINDEX);
+			return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY | NEIGH_ATTR_IFINDEX | NEIGH_ATTR_VLAN);
 		else
-			return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY | NEIGH_ATTR_MASTER);
+			return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY | NEIGH_ATTR_MASTER | NEIGH_ATTR_VLAN);
 	} else
 		return (NEIGH_ATTR_IFINDEX | NEIGH_ATTR_DST | NEIGH_ATTR_FAMILY);
 }
@@ -471,6 +473,9 @@ static void neigh_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	if (n->ce_mask & NEIGH_ATTR_LLADDR)
 		nl_dump(p, "lladdr %s ",
 			nl_addr2str(n->n_lladdr, lladdr, sizeof(lladdr)));
+
+	if (n->ce_mask & NEIGH_ATTR_VLAN)
+		nl_dump(p, "vlan %d ", n->n_vlan);
 
 	rtnl_neigh_state2str(n->n_state, state, sizeof(state));
 	rtnl_neigh_flags2str(n->n_flags, flags, sizeof(flags));

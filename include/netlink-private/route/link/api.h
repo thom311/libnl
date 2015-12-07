@@ -119,6 +119,15 @@ struct rtnl_link_af_ops
 	int		      (*ao_fill_af)(struct rtnl_link *,
 					    struct nl_msg *msg, void *);
 
+	/** Called if the full IFLA_AF_SPEC data needs to be parsed. Typically
+	 * stores the parsed data in the address family specific buffer. */
+	int                   (*ao_parse_af_full)(struct rtnl_link *,
+	                                          struct nlattr *, void *);
+
+	/** Called for GETLINK message to the kernel. Used to append
+	 * link address family specific attributes to the request message. */
+	int		      (*ao_get_af)(struct nl_msg *msg);
+
 	/** Dump address family specific link attributes */
 	void		      (*ao_dump[NL_DUMP_MAX+1])(struct rtnl_link *,
 							struct nl_dump_params *,

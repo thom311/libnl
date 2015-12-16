@@ -66,7 +66,7 @@ extern int	rtnl_link_bridge_add(struct nl_sock *sk, const char *name);
 extern int	rtnl_link_bridge_pvid(struct rtnl_link *link);
 extern int	rtnl_link_bridge_has_vlan(struct rtnl_link *link);
 
-extern struct bridge_vlan *rtnl_bridge_get_port_vlan(struct rtnl_link *link);
+extern struct rtnl_link_bridge_vlan *rtnl_link_bridge_get_port_vlan(struct rtnl_link *link);
 #ifdef __cplusplus
 }
 #endif

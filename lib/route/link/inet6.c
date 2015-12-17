@@ -294,6 +294,7 @@ static char *inet6_devconf2str(int type, char *buf, size_t len)
 static const struct trans_tbl inet6_addr_gen_mode[] = {
 	__ADD(IN6_ADDR_GEN_MODE_EUI64, eui64),
 	__ADD(IN6_ADDR_GEN_MODE_NONE, none),
+	__ADD(IN6_ADDR_GEN_MODE_STABLE_PRIVACY, stable_privacy),
 };
 
 const char *rtnl_link_inet6_addrgenmode2str(uint8_t mode, char *buf, size_t len)

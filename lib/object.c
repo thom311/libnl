@@ -358,14 +358,39 @@ int nl_object_identical(struct nl_object *a, struct nl_object *b)
  *
  * @return Bitmask describing differences or 0 if they are completely identical.
  */
-uint32_t nl_object_diff(struct nl_object *a, struct nl_object *b)
+uint64_t nl_object_diff64(struct nl_object *a, struct nl_object *b)
 {
 	struct nl_object_ops *ops = obj_ops(a);
 
 	if (ops != obj_ops(b) || ops->oo_compare == NULL)
-		return UINT32_MAX;
+		return UINT64_MAX;
 
 	return ops->oo_compare(a, b, ~0, 0);
+}
+
+/**
+ * Compute 32-bit bitmask representing difference in attribute values
+ * @arg a		an object
+ * @arg b		another object of same type
+ *
+ * The bitmask returned is specific to an object type, each bit set represents
+ * an attribute which mismatches in either of the two objects. Unavailability
+ * of an attribute in one object and presence in the other is regarded a
+ * mismatch as well.
+ *
+ * @return Bitmask describing differences or 0 if they are completely identical.
+ *	   32nd bit indicates if higher bits from the 64-bit compare were
+ *	   different.
+ */
+uint32_t nl_object_diff(struct nl_object *a, struct nl_object *b)
+{
+	uint64_t  diff;
+
+	diff = nl_object_diff64(a, b);
+
+	return (diff & ~((uint64_t) 0xFFFFFFFF))
+		? (uint32_t) diff | (1 << 31)
+		: (uint32_t) diff;
 }
 
 /**

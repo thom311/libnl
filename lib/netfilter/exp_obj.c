@@ -301,12 +301,12 @@ static int exp_cmp_l4proto_icmp (union nfnl_exp_protodata *a, union nfnl_exp_pro
 	return d;
 }
 
-static int exp_compare(struct nl_object *_a, struct nl_object *_b,
-							uint32_t attrs, int flags)
+static uint64_t exp_compare(struct nl_object *_a, struct nl_object *_b,
+			    uint64_t attrs, int flags)
 {
 	struct nfnl_exp *a = (struct nfnl_exp *) _a;
 	struct nfnl_exp *b = (struct nfnl_exp *) _b;
-	int diff = 0;
+	uint64_t diff = 0;
 
 #define EXP_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, EXP_ATTR_##ATTR, a, b, EXPR)
 #define EXP_DIFF_VAL(ATTR, FIELD) EXP_DIFF(ATTR, a->FIELD != b->FIELD)

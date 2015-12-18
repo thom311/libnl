@@ -205,11 +205,12 @@ static int xfrm_sa_clone(struct nl_object *_dst, struct nl_object *_src)
 	return 0;
 }
 
-static int xfrm_sa_compare(struct nl_object *_a, struct nl_object *_b, uint32_t attrs, int flags)
+static uint64_t xfrm_sa_compare(struct nl_object *_a, struct nl_object *_b,
+				uint64_t attrs, int flags)
 {
 	struct xfrmnl_sa* a  =   (struct xfrmnl_sa *) _a;
 	struct xfrmnl_sa* b  =   (struct xfrmnl_sa *) _b;
-	int diff = 0;
+	uint64_t diff = 0;
 	int found = 0;
 
 #define XFRM_SA_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, XFRM_SA_ATTR_##ATTR, a, b, EXPR)

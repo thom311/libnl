@@ -853,12 +853,12 @@ static char *_idiagnl_attrs2str(int attrs, char *buf, size_t len)
 	                   ARRAY_SIZE(idiagnl_attrs));
 }
 
-static int idiagnl_compare(struct nl_object *_a, struct nl_object *_b,
-                           uint32_t attrs, int flags)
+static uint64_t idiagnl_compare(struct nl_object *_a, struct nl_object *_b,
+                                uint64_t attrs, int flags)
 {
 	struct idiagnl_msg *a = (struct idiagnl_msg *) _a;
 	struct idiagnl_msg *b = (struct idiagnl_msg *) _b;
-	int diff = 0;
+	uint64_t diff = 0;
 
 #define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, IDIAGNL_ATTR_##ATTR, a, b, EXPR)
 	diff |= _DIFF(FAMILY,    a->idiag_family != b->idiag_family);

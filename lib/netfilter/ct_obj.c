@@ -297,12 +297,12 @@ static void ct_dump_stats(struct nl_object *a, struct nl_dump_params *p)
 	}
 }
 
-static int ct_compare(struct nl_object *_a, struct nl_object *_b,
-			uint32_t attrs, int flags)
+static uint64_t ct_compare(struct nl_object *_a, struct nl_object *_b,
+			   uint64_t attrs, int flags)
 {
 	struct nfnl_ct *a = (struct nfnl_ct *) _a;
 	struct nfnl_ct *b = (struct nfnl_ct *) _b;
-	int diff = 0;
+	uint64_t diff = 0;
 
 #define CT_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, CT_ATTR_##ATTR, a, b, EXPR)
 #define CT_DIFF_VAL(ATTR, FIELD) CT_DIFF(ATTR, a->FIELD != b->FIELD)

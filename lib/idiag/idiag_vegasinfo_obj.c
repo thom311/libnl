@@ -84,8 +84,8 @@ void idiagnl_vegasinfo_set_minrtt(struct idiagnl_vegasinfo *vinfo, uint32_t
 /** @} */
 
 /** @cond SKIP */
-static int idiagnl_vegasinfo_compare(struct nl_object *_a, struct nl_object *_b,
-                                     uint32_t attrs, int flags)
+static uint64_t idiagnl_vegasinfo_compare(struct nl_object *_a, struct nl_object *_b,
+                                          uint64_t attrs, int flags)
 {
 	struct idiagnl_vegasinfo *a = (struct idiagnl_vegasinfo *) _a;
 	struct idiagnl_vegasinfo *b = (struct idiagnl_vegasinfo *) _b;

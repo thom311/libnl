@@ -1102,6 +1102,7 @@ static struct nl_cache_ops rtnl_neigh_ops = {
 					{ RTM_NEWNEIGH, NL_ACT_NEW, "new" },
 					{ RTM_DELNEIGH, NL_ACT_DEL, "del" },
 					{ RTM_GETNEIGH, NL_ACT_GET, "get" },
+					{ RTM_LCKNEIGH, NL_ACT_GET, "lck" },
 					END_OF_MSGTYPES_LIST,
 				  },
 	.co_protocol		= NETLINK_ROUTE,

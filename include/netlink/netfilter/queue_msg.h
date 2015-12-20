@@ -57,7 +57,7 @@ extern int			nfnl_queue_msg_test_mark(const struct nfnl_queue_msg *);
 extern uint32_t			nfnl_queue_msg_get_mark(const struct nfnl_queue_msg *);
 
 extern void			nfnl_queue_msg_set_timestamp(struct nfnl_queue_msg *,
-							      struct timeval *);
+							      const struct timeval *);
 extern int			nfnl_queue_msg_test_timestamp(const struct nfnl_queue_msg *);
 extern const struct timeval *	nfnl_queue_msg_get_timestamp(const struct nfnl_queue_msg *);
 
@@ -77,18 +77,17 @@ extern void			nfnl_queue_msg_set_physoutdev(struct nfnl_queue_msg *, uint32_t);
 extern int			nfnl_queue_msg_test_physoutdev(const struct nfnl_queue_msg *);
 extern uint32_t			nfnl_queue_msg_get_physoutdev(const struct nfnl_queue_msg *);
 
-extern void			nfnl_queue_msg_set_hwaddr(struct nfnl_queue_msg *, uint8_t *, int);
+extern void			nfnl_queue_msg_set_hwaddr(struct nfnl_queue_msg *, const uint8_t *, unsigned int);
 extern int			nfnl_queue_msg_test_hwaddr(const struct nfnl_queue_msg *);
-extern const uint8_t *		nfnl_queue_msg_get_hwaddr(const struct nfnl_queue_msg *, int *);
+extern const uint8_t *		nfnl_queue_msg_get_hwaddr(const struct nfnl_queue_msg *, unsigned int *);
 
-extern int			nfnl_queue_msg_set_payload(struct nfnl_queue_msg *, uint8_t *, int);
+extern int			nfnl_queue_msg_set_payload(struct nfnl_queue_msg *, const void *, unsigned int);
 extern int			nfnl_queue_msg_test_payload(const struct nfnl_queue_msg *);
-extern const void *		nfnl_queue_msg_get_payload(const struct nfnl_queue_msg *, int *);
+extern const void *		nfnl_queue_msg_get_payload(const struct nfnl_queue_msg *, unsigned int *);
 
-extern void			nfnl_queue_msg_set_verdict(struct nfnl_queue_msg *,
-							   unsigned int);
+extern void			nfnl_queue_msg_set_verdict(struct nfnl_queue_msg *, uint32_t);
 extern int			nfnl_queue_msg_test_verdict(const struct nfnl_queue_msg *);
-extern unsigned int		nfnl_queue_msg_get_verdict(const struct nfnl_queue_msg *);
+extern uint32_t		nfnl_queue_msg_get_verdict(const struct nfnl_queue_msg *);
 
 extern struct nl_msg *		nfnl_queue_msg_build_verdict(const struct nfnl_queue_msg *);
 extern int			nfnl_queue_msg_send_verdict(struct nl_sock *,
@@ -97,7 +96,7 @@ extern int			nfnl_queue_msg_send_verdict_batch(struct nl_sock *,
 							    const struct nfnl_queue_msg *);
 extern int			nfnl_queue_msg_send_verdict_payload(struct nl_sock *,
 						const struct nfnl_queue_msg *,
-						const void *, unsigned );
+						const void *, unsigned int);
 #ifdef __cplusplus
 }
 #endif

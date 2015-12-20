@@ -957,9 +957,9 @@ struct nfnl_queue_msg {
 	uint32_t		queue_msg_physindev;
 	uint32_t		queue_msg_physoutdev;
 	uint8_t			queue_msg_hwaddr[8];
-	int			queue_msg_hwaddr_len;
+	unsigned int		queue_msg_hwaddr_len;
 	void *			queue_msg_payload;
-	int			queue_msg_payload_len;
+	unsigned int		queue_msg_payload_len;
 	uint32_t		queue_msg_verdict;
 };
 

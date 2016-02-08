@@ -1153,6 +1153,8 @@ global:
 
 libnl_3_6 {
 global:
+	rtnl_cls_get;
+	rtnl_cls_get_by_prio;
 	rtnl_link_ip6_tnl_get_fwmark;
 	rtnl_link_ip6_tnl_set_fwmark;
 	rtnl_link_ip6gre_add;
@@ -1183,14 +1185,14 @@ global:
 	rtnl_link_ip6gre_set_ttl;
 	rtnl_link_ip6vti_add;
 	rtnl_link_ip6vti_alloc;
-	rtnl_link_ip6vti_get_ikey;
 	rtnl_link_ip6vti_get_fwmark;
+	rtnl_link_ip6vti_get_ikey;
 	rtnl_link_ip6vti_get_link;
 	rtnl_link_ip6vti_get_local;
 	rtnl_link_ip6vti_get_okey;
 	rtnl_link_ip6vti_get_remote;
-	rtnl_link_ip6vti_set_ikey;
 	rtnl_link_ip6vti_set_fwmark;
+	rtnl_link_ip6vti_set_ikey;
 	rtnl_link_ip6vti_set_link;
 	rtnl_link_ip6vti_set_local;
 	rtnl_link_ip6vti_set_okey;

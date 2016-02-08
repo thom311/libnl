@@ -357,6 +357,78 @@ void rtnl_cls_cache_set_tc_params(struct nl_cache *cache,
 	cache->c_iarg2 = parent;
 }
 
+/**
+ * Search classifier by interface index, parent and handle
+ * @arg cache           Classifier cache
+ * @arg ifindex         Interface index
+ * @arg parent          Parent
+ * @arg handle          Handle
+ *
+ * Searches a classifier cache previously allocated with rtnl_cls_alloc_cache()
+ * and searches for a classifier matching the interface index, parent
+ * and handle.
+ *
+ * The reference counter is incremented before returning the classifier,
+ * therefore the reference must be given back with rtnl_cls_put() after usage.
+ *
+ * @return Classifier or NULL if no match was found.
+ */
+struct rtnl_cls *rtnl_cls_get(struct nl_cache *cache, int ifindex, uint32_t parent,
+			      uint32_t handle)
+{
+	struct rtnl_cls *cls;
+
+	if (cache->c_ops != &rtnl_cls_ops)
+		return NULL;
+
+	nl_list_for_each_entry(cls, &cache->c_items, ce_list) {
+		if ((cls->c_parent == parent) &&
+		    (cls->c_ifindex == ifindex)&&
+		    (cls->c_handle == handle)) {
+			nl_object_get((struct nl_object *) cls);
+			return cls;
+		}
+	}
+
+	return NULL;
+}
+
+/**
+ * Search classifier by interface index, parent and priority
+ * @arg cache           Classifier cache
+ * @arg ifindex         Interface index
+ * @arg parent          Parent
+ * @arg prio            Priority
+ *
+ * Searches a classifier cache previously allocated with rtnl_cls_alloc_cache()
+ * and searches for a classifier matching the interface index, parent
+ * and prio.
+ *
+ * The reference counter is incremented before returning the classifier,
+ * therefore the reference must be given back with rtnl_cls_put() after usage.
+ *
+ * @return Classifier or NULL if no match was found.
+ */
+struct rtnl_cls *rtnl_cls_get_by_prio(struct nl_cache *cache, int ifindex,
+				      uint32_t parent, uint16_t prio)
+{
+	struct rtnl_cls *cls;
+
+	if (cache->c_ops != &rtnl_cls_ops)
+		return NULL;
+
+	nl_list_for_each_entry(cls, &cache->c_items, ce_list) {
+		if ((cls->c_parent == parent) &&
+		    (cls->c_ifindex == ifindex) &&
+		    (cls->c_prio == prio)) {
+			nl_object_get((struct nl_object *) cls);
+			return cls;
+		}
+	}
+
+	return NULL;
+}
+
 /** @} */
 
 static void cls_dump_line(struct rtnl_tc *tc, struct nl_dump_params *p)

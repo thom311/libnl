@@ -40,6 +40,10 @@
 #define SIT_ATTR_PMTUDISC      (1 << 5)
 #define SIT_ATTR_FLAGS         (1 << 6)
 #define SIT_ATTR_PROTO         (1 << 7)
+#define SIT_ATTR_6RD_PREFIX          (1 << 8)
+#define SIT_ATTR_6RD_RELAY_PREFIX    (1 << 9)
+#define SIT_ATTR_6RD_PREFIXLEN       (1 << 10)
+#define SIT_ATTR_6RD_RELAY_PREFIXLEN (1 << 11)
 
 struct sit_info
 {
@@ -51,6 +55,10 @@ struct sit_info
 	uint32_t   link;
 	uint32_t   local;
 	uint32_t   remote;
+	struct in6_addr ip6rd_prefix;
+	uint32_t ip6rd_relay_prefix;
+	uint16_t ip6rd_prefixlen;
+	uint16_t ip6rd_relay_prefixlen;
 	uint32_t   sit_mask;
 };
 
@@ -63,6 +71,10 @@ static struct nla_policy sit_policy[IFLA_IPTUN_MAX + 1] = {
 	[IFLA_IPTUN_PMTUDISC]   = { .type = NLA_U8 },
 	[IFLA_IPTUN_FLAGS]      = { .type = NLA_U16 },
 	[IFLA_IPTUN_PROTO]      = { .type = NLA_U8 },
+	[IFLA_IPTUN_6RD_PREFIX]          = { .minlen = sizeof(struct in6_addr) },
+	[IFLA_IPTUN_6RD_RELAY_PREFIX]    = { .type = NLA_U32 },
+	[IFLA_IPTUN_6RD_PREFIXLEN]       = { .type = NLA_U16 },
+	[IFLA_IPTUN_6RD_RELAY_PREFIXLEN] = { .type = NLA_U16 },
 };
 
 static int sit_alloc(struct rtnl_link *link)
@@ -141,6 +153,28 @@ static int sit_parse(struct rtnl_link *link, struct nlattr *data,
 		sit->sit_mask |= SIT_ATTR_PROTO;
 	}
 
+	if (tb[IFLA_IPTUN_6RD_PREFIX]) {
+		nla_memcpy(&sit->ip6rd_prefix, tb[IFLA_IPTUN_6RD_PREFIX],
+			   sizeof(struct in6_addr));
+		sit->sit_mask |= SIT_ATTR_6RD_PREFIX;
+	}
+
+	if (tb[IFLA_IPTUN_6RD_RELAY_PREFIX]) {
+		sit->ip6rd_relay_prefix = nla_get_u32(tb[IFLA_IPTUN_6RD_RELAY_PREFIX]);
+		sit->sit_mask |= SIT_ATTR_6RD_RELAY_PREFIX;
+	}
+
+	if (tb[IFLA_IPTUN_6RD_PREFIXLEN]) {
+		sit->ip6rd_prefixlen = nla_get_u16(tb[IFLA_IPTUN_6RD_PREFIXLEN]);
+		sit->sit_mask |= SIT_ATTR_6RD_PREFIXLEN;
+	}
+
+	if (tb[IFLA_IPTUN_6RD_RELAY_PREFIXLEN]) {
+		sit->ip6rd_relay_prefixlen = nla_get_u16(tb[IFLA_IPTUN_6RD_RELAY_PREFIXLEN]);
+		sit->sit_mask |= SIT_ATTR_6RD_RELAY_PREFIXLEN;
+	}
+
+
 	err = 0;
 
  errout:
@@ -180,6 +214,18 @@ static int sit_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (sit->sit_mask & SIT_ATTR_PROTO)
 		NLA_PUT_U8(msg, IFLA_IPTUN_PROTO, sit->proto);
 
+	if (sit->sit_mask & SIT_ATTR_6RD_PREFIX)
+		NLA_PUT(msg, IFLA_IPTUN_6RD_PREFIX, sizeof(struct in6_addr), &sit->ip6rd_prefix);
+
+	if (sit->sit_mask & SIT_ATTR_6RD_RELAY_PREFIX)
+		NLA_PUT_U32(msg, IFLA_IPTUN_6RD_RELAY_PREFIX, sit->ip6rd_relay_prefix);
+
+	if (sit->sit_mask & SIT_ATTR_6RD_PREFIXLEN)
+		NLA_PUT_U16(msg, IFLA_IPTUN_6RD_PREFIXLEN, sit->ip6rd_prefixlen);
+
+	if (sit->sit_mask & SIT_ATTR_6RD_RELAY_PREFIXLEN)
+		NLA_PUT_U16(msg, IFLA_IPTUN_6RD_RELAY_PREFIXLEN, sit->ip6rd_relay_prefixlen);
+
 	nla_nest_end(msg, data);
 
 nla_put_failure:
@@ -203,7 +249,7 @@ static void sit_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 static void sit_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct sit_info *sit = link->l_info;
-	char *name, addr[INET_ADDRSTRLEN];
+	char *name, addr[INET_ADDRSTRLEN], addr6[INET6_ADDRSTRLEN];
 	struct rtnl_link *parent;
 
 	if (sit->sit_mask & SIT_ATTR_LINK) {
@@ -252,8 +298,34 @@ static void sit_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 	}
 
 	if (sit->sit_mask & SIT_ATTR_PROTO) {
-		nl_dump(p, "    proto   ");
+		nl_dump(p, "      proto   ");
 		nl_dump_line(p, " (%x)\n", sit->proto);
+	}
+
+	if (sit->sit_mask & SIT_ATTR_6RD_PREFIX) {
+		nl_dump(p, "      6rd_prefix   ");
+		if(inet_ntop(AF_INET6, &sit->ip6rd_prefix, addr6, INET6_ADDRSTRLEN))
+			nl_dump_line(p, "%s\n", addr6);
+		else
+			nl_dump_line(p, "%#x\n", sit->ip6rd_prefix);
+	}
+
+	if (sit->sit_mask & SIT_ATTR_6RD_RELAY_PREFIX) {
+		nl_dump(p, "      6rd_relay_prefix   ");
+		if(inet_ntop(AF_INET, &sit->ip6rd_relay_prefix, addr, sizeof(addr)))
+			nl_dump_line(p, "%s\n", addr);
+		else
+			nl_dump_line(p, "%#x\n", ntohs(sit->ip6rd_relay_prefix));
+	}
+
+	if (sit->sit_mask & SIT_ATTR_6RD_PREFIXLEN) {
+		nl_dump(p, "      6rd_prefixlen   ");
+		nl_dump_line(p, "%d\n", sit->ip6rd_prefixlen);
+	}
+
+	if (sit->sit_mask & SIT_ATTR_6RD_RELAY_PREFIXLEN) {
+		nl_dump(p, "      6rd_relay_prefixlen   ");
+		nl_dump_line(p, "%d\n", sit->ip6rd_relay_prefixlen);
 	}
 }
 

@@ -141,8 +141,8 @@ static void result_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 	result_dump_line(obj, p);
 }
 
-static int result_compare(struct nl_object *_a, struct nl_object *_b,
-			uint32_t attrs, int flags)
+static uint64_t result_compare(struct nl_object *_a, struct nl_object *_b,
+			uint64_t attrs, int flags)
 {
 	return 0;
 }

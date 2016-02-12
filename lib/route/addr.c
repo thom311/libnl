@@ -429,12 +429,12 @@ static void addr_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	addr_dump_details(obj, p);
 }
 
-static int addr_compare(struct nl_object *_a, struct nl_object *_b,
-			uint32_t attrs, int flags)
+static uint64_t addr_compare(struct nl_object *_a, struct nl_object *_b,
+			     uint64_t attrs, int flags)
 {
 	struct rtnl_addr *a = (struct rtnl_addr *) _a;
 	struct rtnl_addr *b = (struct rtnl_addr *) _b;
-	int diff = 0;
+	uint64_t diff = 0;
 
 #define ADDR_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ADDR_ATTR_##ATTR, a, b, EXPR)
 

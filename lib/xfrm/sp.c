@@ -138,12 +138,13 @@ static int xfrm_sp_clone(struct nl_object *_dst, struct nl_object *_src)
 	return 0;
 }
 
-static int xfrm_sp_compare(struct nl_object *_a, struct nl_object *_b, uint32_t attrs, int flags)
+static uint64_t xfrm_sp_compare(struct nl_object *_a, struct nl_object *_b,
+				uint64_t attrs, int flags)
 {
 	struct xfrmnl_sp* a  =   (struct xfrmnl_sp *) _a;
 	struct xfrmnl_sp* b  =   (struct xfrmnl_sp *) _b;
 	struct xfrmnl_user_tmpl *tmpl_a, *tmpl_b;
-	int diff = 0;
+	uint64_t diff = 0;
 
 #define XFRM_SP_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, XFRM_SP_ATTR_##ATTR, a, b, EXPR)
 	diff |= XFRM_SP_DIFF(SEL,	xfrmnl_sel_cmp(a->sel, b->sel));

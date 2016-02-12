@@ -81,8 +81,8 @@ void idiagnl_meminfo_set_tmem(struct idiagnl_meminfo *minfo, uint32_t tmem)
 /** @} */
 
 /** @cond SKIP */
-static int idiagnl_meminfo_compare(struct nl_object *_a, struct nl_object *_b,
-                                     uint32_t attrs, int flags)
+static uint64_t idiagnl_meminfo_compare(struct nl_object *_a, struct nl_object *_b,
+                                     uint64_t attrs, int flags)
 {
 	struct idiagnl_meminfo *a = (struct idiagnl_meminfo *) _a;
 	struct idiagnl_meminfo *b = (struct idiagnl_meminfo *) _b;

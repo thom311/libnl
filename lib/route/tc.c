@@ -932,12 +932,12 @@ void rtnl_tc_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	             tc->tc_stats[RTNL_TC_RATE_PPS]);
 }
 
-int rtnl_tc_compare(struct nl_object *aobj, struct nl_object *bobj,
-		    uint32_t attrs, int flags)
+uint64_t rtnl_tc_compare(struct nl_object *aobj, struct nl_object *bobj,
+			 uint64_t attrs, int flags)
 {
 	struct rtnl_tc *a = TC_CAST(aobj);
 	struct rtnl_tc *b = TC_CAST(bobj);
-	int diff = 0;
+	uint64_t diff = 0;
 
 #define TC_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, TCA_ATTR_##ATTR, a, b, EXPR)
 

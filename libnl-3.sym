@@ -346,3 +346,8 @@ global:
 	nla_get_s64;
 	nla_put_s64;
 } libnl_3_2_26;
+
+libnl_3_2_28 {
+global:
+	nl_object_diff64;
+} libnl_3_2_27;

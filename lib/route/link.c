@@ -61,7 +61,8 @@
 #define LINK_ATTR_PHYS_PORT_ID	(1 << 28)
 #define LINK_ATTR_NS_FD		(1 << 29)
 #define LINK_ATTR_NS_PID	(1 << 30)
-#define LINK_ATTR_LINK_NETNSID  (1 << 31)
+/* 31 used by 32-bit api */
+#define LINK_ATTR_LINK_NETNSID  ((uint64_t) 1 << 32)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -955,12 +956,12 @@ static void link_keygen(struct nl_object *obj, uint32_t *hashkey,
 	return;
 }
 
-static int link_compare(struct nl_object *_a, struct nl_object *_b,
-			uint32_t attrs, int flags)
+static uint64_t link_compare(struct nl_object *_a, struct nl_object *_b,
+			     uint64_t attrs, int flags)
 {
 	struct rtnl_link *a = (struct rtnl_link *) _a;
 	struct rtnl_link *b = (struct rtnl_link *) _b;
-	int diff = 0;
+	uint64_t diff = 0;
 
 #define LINK_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, LINK_ATTR_##ATTR, a, b, EXPR)
 

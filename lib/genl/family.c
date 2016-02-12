@@ -147,12 +147,12 @@ static void family_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	family_dump_details(obj, p);
 }
 
-static int family_compare(struct nl_object *_a, struct nl_object *_b,
-			  uint32_t attrs, int flags)
+static uint64_t family_compare(struct nl_object *_a, struct nl_object *_b,
+			  uint64_t attrs, int flags)
 {
 	struct genl_family *a = (struct genl_family *) _a;
 	struct genl_family *b = (struct genl_family *) _b;
-	int diff = 0;
+	uint64_t diff = 0;
 
 #define FAM_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, FAMILY_ATTR_##ATTR, a, b, EXPR)
 

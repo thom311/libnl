@@ -54,12 +54,12 @@ static struct nl_cache_ops rtnl_neightbl_ops;
 static struct nl_object_ops neightbl_obj_ops;
 /** @endcond */
 
-static int neightbl_compare(struct nl_object *_a, struct nl_object *_b,
-			uint32_t attrs, int flags)
+static uint64_t neightbl_compare(struct nl_object *_a, struct nl_object *_b,
+				 uint64_t attrs, int flags)
 {
 	struct rtnl_neightbl *a = (struct rtnl_neightbl *) _a;
 	struct rtnl_neightbl *b = (struct rtnl_neightbl *) _b;
-	int diff = 0;
+	uint64_t diff = 0;
 
 #define NT_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, NEIGHTBL_ATTR_##ATTR, a, b, EXPR)
 

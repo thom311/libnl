@@ -71,7 +71,7 @@
 #define NSEC_PER_SEC	1000000000L
 
 struct trans_tbl {
-	int i;
+	uint64_t i;
 	const char *a;
 };
 

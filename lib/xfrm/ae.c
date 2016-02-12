@@ -181,11 +181,13 @@ static int xfrm_ae_clone(struct nl_object *_dst, struct nl_object *_src)
 	return 0;
 }
 
-static int xfrm_ae_compare(struct nl_object *_a, struct nl_object *_b, uint32_t attrs, int flags)
+static uint64_t xfrm_ae_compare(struct nl_object *_a, struct nl_object *_b,
+				uint64_t attrs, int flags)
 {
 	struct xfrmnl_ae* a  =   (struct xfrmnl_ae *) _a;
 	struct xfrmnl_ae* b  =   (struct xfrmnl_ae *) _b;
-	int diff = 0, found = 0;
+	uint64_t diff = 0;
+	int found = 0;
 
 #define XFRM_AE_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, XFRM_AE_ATTR_##ATTR, a, b, EXPR)
 	diff |= XFRM_AE_DIFF(DADDR,	nl_addr_cmp(a->sa_id.daddr, b->sa_id.daddr));

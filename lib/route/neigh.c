@@ -260,12 +260,12 @@ static void neigh_keygen(struct nl_object *obj, uint32_t *hashkey,
 	return;
 }
 
-static int neigh_compare(struct nl_object *_a, struct nl_object *_b,
-			uint32_t attrs, int flags)
+static uint64_t neigh_compare(struct nl_object *_a, struct nl_object *_b,
+			      uint64_t attrs, int flags)
 {
 	struct rtnl_neigh *a = (struct rtnl_neigh *) _a;
 	struct rtnl_neigh *b = (struct rtnl_neigh *) _b;
-	int diff = 0;
+	uint64_t diff = 0;
 
 #define NEIGH_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, NEIGH_ATTR_##ATTR, a, b, EXPR)
 

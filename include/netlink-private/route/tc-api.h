@@ -110,9 +110,9 @@ extern void			rtnl_tc_dump_details(struct nl_object *,
 						     struct nl_dump_params *);
 extern void			rtnl_tc_dump_stats(struct nl_object *,
 						   struct nl_dump_params *);
-extern int			rtnl_tc_compare(struct nl_object *,
+extern uint64_t			rtnl_tc_compare(struct nl_object *,
 						struct nl_object *,
-						uint32_t, int);
+						uint64_t, int);
 
 void *                          rtnl_tc_data_peek(struct rtnl_tc *tc);
 extern void *			rtnl_tc_data(struct rtnl_tc *);

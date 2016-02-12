@@ -161,12 +161,12 @@ uint32_t nfnl_queue_get_copy_range(const struct nfnl_queue *queue)
 	return queue->queue_copy_range;
 }
 
-static int nfnl_queue_compare(struct nl_object *_a, struct nl_object *_b,
-			      uint32_t attrs, int flags)
+static uint64_t nfnl_queue_compare(struct nl_object *_a, struct nl_object *_b,
+				   uint64_t attrs, int flags)
 {
 	struct nfnl_queue *a = (struct nfnl_queue *) _a;
 	struct nfnl_queue *b = (struct nfnl_queue *) _b;
-	int diff = 0;
+	uint64_t diff = 0;
 
 #define NFNL_QUEUE_DIFF(ATTR, EXPR) \
 	ATTR_DIFF(attrs, QUEUE_ATTR_##ATTR, a, b, EXPR)

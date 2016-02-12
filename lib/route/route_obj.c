@@ -343,13 +343,14 @@ static void route_keygen(struct nl_object *obj, uint32_t *hashkey,
 	return;
 }
 
-static int route_compare(struct nl_object *_a, struct nl_object *_b,
-			uint32_t attrs, int flags)
+static uint64_t route_compare(struct nl_object *_a, struct nl_object *_b,
+			      uint64_t attrs, int flags)
 {
 	struct rtnl_route *a = (struct rtnl_route *) _a;
 	struct rtnl_route *b = (struct rtnl_route *) _b;
 	struct rtnl_nexthop *nh_a, *nh_b;
-	int i, diff = 0, found;
+	int i, found;
+	uint64_t diff = 0;
 
 #define ROUTE_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ROUTE_ATTR_##ATTR, a, b, EXPR)
 

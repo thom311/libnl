@@ -229,12 +229,12 @@ unsigned int nfnl_log_str2flags(const char *name)
 	return __str2flags(name, log_flags, ARRAY_SIZE(log_flags));
 }
 
-static int nfnl_log_compare(struct nl_object *_a, struct nl_object *_b,
-			    uint32_t attrs, int flags)
+static uint64_t nfnl_log_compare(struct nl_object *_a, struct nl_object *_b,
+				 uint64_t attrs, int flags)
 {
 	struct nfnl_log *a = (struct nfnl_log *) _a;
 	struct nfnl_log *b = (struct nfnl_log *) _b;
-	int diff = 0;
+	uint64_t diff = 0;
 
 #define NFNL_LOG_DIFF(ATTR, EXPR) \
 	ATTR_DIFF(attrs, LOG_ATTR_##ATTR, a, b, EXPR)

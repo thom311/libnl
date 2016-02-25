@@ -325,7 +325,7 @@ extern int		nla_is_nested(const struct nlattr *);
  * @arg rem	initialized to len, holds bytes currently remaining in stream
  */
 #define nla_for_each_nested(pos, nla, rem) \
-	for (pos = nla_data(nla), rem = nla_len(nla); \
+	for (pos = (struct nlattr *) nla_data(nla), rem = nla_len(nla); \
 	     nla_ok(pos, rem); \
 	     pos = nla_next(pos, &(rem)))
 

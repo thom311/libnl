@@ -1150,3 +1150,8 @@ global:
 	rtnl_vlan_set_vlan_id;
 	rtnl_vlan_set_vlan_prio;
 } libnl_3_4;
+
+libnl_3_6 {
+global:
+	rtnl_qdisc_get_by_kind;
+} libnl_3_5;

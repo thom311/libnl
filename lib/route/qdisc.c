@@ -404,6 +404,38 @@ struct rtnl_qdisc *rtnl_qdisc_get_by_parent(struct nl_cache *cache,
 }
 
 /**
+ * Search qdisc by kind
+ * @arg cache		Qdisc cache
+ * @arg ifindex		Interface index
+ * @arg kind		Qdisc kind (tbf, htb, cbq, etc)
+ *
+ * Searches a qdisc cache previously allocated with rtnl_qdisc_alloc_cache()
+ * and searches for a qdisc matching the interface index and kind.
+ *
+ * The reference counter is incremented before returning the qdisc, therefore
+ * the reference must be given back with rtnl_qdisc_put() after usage.
+ *
+ * @return pointer to qdisc inside the cache or NULL if no match was found.
+ */
+struct rtnl_qdisc *rtnl_qdisc_get_by_kind(struct nl_cache *cache,
+					    int ifindex, char *kind)
+{
+	struct rtnl_qdisc *q;
+
+	if (cache->c_ops != &rtnl_qdisc_ops)
+		return NULL;
+
+	nl_list_for_each_entry(q, &cache->c_items, ce_list) {
+		if ((q->q_ifindex == ifindex) && (!strcmp(q->q_kind, kind))) {
+			nl_object_get((struct nl_object *) q);
+			return q;
+		}
+	}
+
+	return NULL;
+}
+
+/**
  * Search qdisc by interface index and handle
  * @arg cache		Qdisc cache
  * @arg ifindex		Interface index

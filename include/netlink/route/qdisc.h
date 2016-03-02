@@ -33,6 +33,8 @@ extern struct rtnl_qdisc *
 
 extern struct rtnl_qdisc *
 		rtnl_qdisc_get_by_parent(struct nl_cache *, int, uint32_t);
+extern struct rtnl_qdisc *rtnl_qdisc_get_by_kind(struct nl_cache *cache,
+						  int ifindex, char *kind);
 
 extern int	rtnl_qdisc_build_add_request(struct rtnl_qdisc *, int,
 					     struct nl_msg **);

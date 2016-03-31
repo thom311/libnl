@@ -6,11 +6,11 @@ AM_CPPFLAGS  = \
 	-I${top_builddir}/include \
 	-D_GNU_SOURCE \
 	-DPKGLIBDIR=\"$(pkglibdir)\" \
-	-DSYSCONFDIR=\"$(sysconfdir)\" \
-	-rdynamic
+	-DSYSCONFDIR=\"$(sysconfdir)\"
 
 AM_CFLAGS = -Wall
 AM_LDFLAGS = \
+	-rdynamic \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 NL_LIBADD = \
 	-L${top_builddir}/lib \

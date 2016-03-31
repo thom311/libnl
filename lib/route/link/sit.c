@@ -56,9 +56,9 @@ struct sit_info
 	uint32_t   local;
 	uint32_t   remote;
 	struct in6_addr ip6rd_prefix;
-	uint32_t ip6rd_relay_prefix;
-	uint16_t ip6rd_prefixlen;
-	uint16_t ip6rd_relay_prefixlen;
+	uint32_t   ip6rd_relay_prefix;
+	uint16_t   ip6rd_prefixlen;
+	uint16_t   ip6rd_relay_prefixlen;
 	uint32_t   sit_mask;
 };
 
@@ -173,7 +173,6 @@ static int sit_parse(struct rtnl_link *link, struct nlattr *data,
 		sit->ip6rd_relay_prefixlen = nla_get_u16(tb[IFLA_IPTUN_6RD_RELAY_PREFIXLEN]);
 		sit->sit_mask |= SIT_ATTR_6RD_RELAY_PREFIXLEN;
 	}
-
 
 	err = 0;
 

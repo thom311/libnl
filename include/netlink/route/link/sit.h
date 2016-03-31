@@ -46,6 +46,18 @@ extern "C" {
 	int rtnl_link_sit_set_proto(struct rtnl_link *link, uint8_t proto);
 	uint8_t rtnl_link_sit_get_proto(struct rtnl_link *link);
 
+	int rtnl_link_sit_set_ip6rd_prefix(struct rtnl_link *link, const struct in6_addr *prefix);
+	int rtnl_link_sit_get_ip6rd_prefix(const struct rtnl_link *link, struct in6_addr *prefix);
+
+	int rtnl_link_sit_set_ip6rd_prefixlen(struct rtnl_link *link, uint16_t prefixlen);
+	int rtnl_link_sit_get_ip6rd_prefixlen(struct rtnl_link *link, uint16_t *prefixlen);
+
+	int rtnl_link_sit_set_ip6rd_relay_prefix(struct rtnl_link *link, uint32_t prefix);
+	int rtnl_link_sit_get_ip6rd_relay_prefix(const struct rtnl_link *link, uint32_t *prefix);
+
+	int rtnl_link_sit_set_ip6rd_relay_prefixlen(struct rtnl_link *link, uint16_t prefix);
+	int rtnl_link_sit_get_ip6rd_relay_prefixlen(struct rtnl_link *link, uint16_t *prefix);
+
 #ifdef _cplusplus
 }
 #endif

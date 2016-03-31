@@ -668,6 +668,150 @@ uint8_t rtnl_link_sit_get_proto(struct rtnl_link *link)
 	return sit->proto;
 }
 
+/**
+ * Set ip6rd prefix
+ * @arg link            Link object
+ * @arg prefix          The IPv6 prefix
+ *
+ * @return 0 on success or an error code.
+ */
+int rtnl_link_sit_set_ip6rd_prefix(struct rtnl_link *link, const struct in6_addr *prefix)
+{
+	IS_SIT_LINK_ASSERT(link, sit);
+
+	sit->ip6rd_prefix = *prefix;
+	sit->sit_mask |= SIT_ATTR_6RD_PREFIX;
+	return 0;
+}
+
+/**
+ * Get ip6rd prefix
+ * @arg link            Link object
+ * @arg prefix          The output IPv6 prefix
+ *
+ * @return 0 on success or an error code. If the property is unset,
+ *   this call fails too.
+ */
+int rtnl_link_sit_get_ip6rd_prefix(const struct rtnl_link *link, struct in6_addr *prefix)
+{
+	IS_SIT_LINK_ASSERT(link, sit);
+
+	if (!(sit->sit_mask & SIT_ATTR_6RD_PREFIX))
+		return -NLE_NOATTR;
+
+	if (prefix)
+		*prefix = sit->ip6rd_prefix;
+	return 0;
+}
+
+/**
+ * Set ip6rd prefix length
+ * @arg link            Link object
+ * @arg prefixlen       The IPv6 prefix length
+ *
+ * @return 0 on success or an error code.
+ */
+int rtnl_link_sit_set_ip6rd_prefixlen(struct rtnl_link *link, uint16_t prefixlen)
+{
+	IS_SIT_LINK_ASSERT(link, sit);
+
+	sit->sit_mask |= SIT_ATTR_6RD_PREFIXLEN;
+	sit->ip6rd_prefixlen = prefixlen;
+	return 0;
+}
+
+/**
+ * Get ip6rd prefix length
+ * @arg link            Link object
+ * @arg prefixlen       Output pointer for the prefix length
+ *
+ * @return 0 on success or an error code. If the property is unset,
+ *   this call fails.
+ */
+int rtnl_link_sit_get_ip6rd_prefixlen(struct rtnl_link *link, uint16_t *prefixlen)
+{
+	IS_SIT_LINK_ASSERT(link, sit);
+
+	if (!(sit->sit_mask & SIT_ATTR_6RD_PREFIXLEN))
+		return -NLE_NOATTR;
+
+	if (prefixlen)
+		*prefixlen = sit->ip6rd_prefixlen;
+	return 0;
+}
+
+/**
+ * Set ip6rd relay prefix
+ * @arg link            Link object
+ * @arg prefix          The IPv6 prefix length
+ *
+ * @return 0 on success or an error code.
+ */
+int rtnl_link_sit_set_ip6rd_relay_prefix(struct rtnl_link *link, uint32_t prefix)
+{
+	IS_SIT_LINK_ASSERT(link, sit);
+
+	sit->sit_mask |= SIT_ATTR_6RD_RELAY_PREFIX;
+	sit->ip6rd_relay_prefix = prefix;
+	return 0;
+}
+
+/**
+ * Get ip6rd prefix length
+ * @arg link            Link object
+ * @arg prefixlen       Output pointer for the prefix length
+ *
+ * @return 0 on success or an error code. If the property is unset,
+ *   this call fails.
+ */
+int rtnl_link_sit_get_ip6rd_relay_prefix(const struct rtnl_link *link, uint32_t *prefix)
+{
+	IS_SIT_LINK_ASSERT(link, sit);
+
+	if (!(sit->sit_mask & SIT_ATTR_6RD_RELAY_PREFIX))
+		return -NLE_NOATTR;
+
+	if (prefix)
+		*prefix = sit->ip6rd_relay_prefix;
+	return 0;
+}
+
+/**
+ * Set ip6rd relay prefix length
+ * @arg link            Link object
+ * @arg prefixlen       The IPv6 prefix length
+ *
+ * @return 0 on success or an error code.
+ */
+int rtnl_link_sit_set_ip6rd_relay_prefixlen(struct rtnl_link *link, uint16_t prefixlen)
+{
+	IS_SIT_LINK_ASSERT(link, sit);
+
+	sit->sit_mask |= SIT_ATTR_6RD_RELAY_PREFIXLEN;
+	sit->ip6rd_relay_prefixlen = prefixlen;
+	return 0;
+}
+
+/**
+ * Get ip6rd relay prefix length
+ * @arg link            Link object
+ * @arg prefixlen       Output pointer for the prefix length
+ *
+ * @return 0 on success or an error code. If the property is unset,
+ *   this call fails.
+ */
+int rtnl_link_sit_get_ip6rd_relay_prefixlen(struct rtnl_link *link, uint16_t *prefixlen)
+{
+	IS_SIT_LINK_ASSERT(link, sit);
+
+	if (!(sit->sit_mask & SIT_ATTR_6RD_RELAY_PREFIX))
+		return -NLE_NOATTR;
+
+	if (prefixlen)
+		*prefixlen = sit->ip6rd_relay_prefixlen;
+	return 0;
+}
+
 static void __init sit_init(void)
 {
 	rtnl_link_register_info(&sit_info_ops);

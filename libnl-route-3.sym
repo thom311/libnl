@@ -905,6 +905,14 @@ global:
 	rtnl_link_macvtap_str2flags;
 	rtnl_link_macvtap_str2mode;
 	rtnl_link_macvtap_unset_flags;
+	rtnl_link_sit_get_ip6rd_prefix;
+	rtnl_link_sit_get_ip6rd_prefixlen;
+	rtnl_link_sit_get_ip6rd_relay_prefix;
+	rtnl_link_sit_get_ip6rd_relay_prefixlen;
+	rtnl_link_sit_set_ip6rd_prefix;
+	rtnl_link_sit_set_ip6rd_prefixlen;
+	rtnl_link_sit_set_ip6rd_relay_prefix;
+	rtnl_link_sit_set_ip6rd_relay_prefixlen;
 	rtnl_link_vrf_alloc;
 	rtnl_link_vrf_get_tableid;
 	rtnl_link_vrf_set_tableid;

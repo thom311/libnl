@@ -20,7 +20,9 @@ extern "C" {
 #endif
 
 	extern struct rtnl_link *rtnl_link_ipgre_alloc(void);
+	extern struct rtnl_link *rtnl_link_ipgretap_alloc(void);
 	extern int rtnl_link_ipgre_add(struct nl_sock *sk, const char *name);
+	extern int rtnl_link_ipgretap_add(struct nl_sock *sk, const char *name);
 
 	extern int rtnl_link_ipgre_set_link(struct rtnl_link *link,  uint32_t index);
 	extern uint32_t rtnl_link_ipgre_get_link(struct rtnl_link *link);

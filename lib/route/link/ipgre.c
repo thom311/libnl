@@ -315,6 +315,27 @@ static int ipgre_clone(struct rtnl_link *dst, struct rtnl_link *src)
 	return 0;
 }
 
+static int ipgretap_clone(struct rtnl_link *dst, struct rtnl_link *src)
+{
+	struct ipgre_info *ipgre_dst, *ipgre_src = src->l_info;
+	int err;
+
+	dst->l_info = NULL;
+
+	err = rtnl_link_set_type(dst, "gretap");
+	if (err < 0)
+		return err;
+
+	ipgre_dst = dst->l_info;
+
+	if (!ipgre_dst || !ipgre_src)
+		BUG();
+
+	memcpy(ipgre_dst, ipgre_src, sizeof(struct ipgre_info));
+
+	return 0;
+}
+
 static struct rtnl_link_info_ops ipgre_info_ops = {
 	.io_name                = "gre",
 	.io_alloc               = ipgre_alloc,
@@ -328,10 +349,24 @@ static struct rtnl_link_info_ops ipgre_info_ops = {
 	.io_free                = ipgre_free,
 };
 
-#define IS_IPGRE_LINK_ASSERT(link)                                          \
-        if ((link)->l_info_ops != &ipgre_info_ops) {                        \
-                APPBUG("Link is not a ipgre link. set type \"gre\" first.");\
-                return -NLE_OPNOTSUPP;                                      \
+static struct rtnl_link_info_ops ipgretap_info_ops = {
+	.io_name                = "gretap",
+	.io_alloc               = ipgre_alloc,
+	.io_parse               = ipgre_parse,
+	.io_dump = {
+		[NL_DUMP_LINE]  = ipgre_dump_line,
+		[NL_DUMP_DETAILS] = ipgre_dump_details,
+	},
+	.io_clone               = ipgretap_clone,
+	.io_put_attrs           = ipgre_put_attrs,
+	.io_free                = ipgre_free,
+};
+
+#define IS_IPGRE_LINK_ASSERT(link)                                                 \
+        if ((link)->l_info_ops != &ipgre_info_ops &&                               \
+            (link)->l_info_ops != &ipgretap_info_ops) {                            \
+                APPBUG("Link is not a ipgre link. set type \"gre/gretap\" first.");\
+                return -NLE_OPNOTSUPP;                                             \
         }
 
 struct rtnl_link *rtnl_link_ipgre_alloc(void)
@@ -362,8 +397,9 @@ int rtnl_link_is_ipgre(struct rtnl_link *link)
 {
 	return link->l_info_ops && !strcmp(link->l_info_ops->io_name, "gre");
 }
+
 /**
- * Create a new ipip tunnel device
+ * Create a new IPGRE tunnel device
  * @arg sock            netlink socket
  * @arg name            name of the tunnel deviceL
  *
@@ -387,6 +423,61 @@ int rtnl_link_ipgre_add(struct nl_sock *sk, const char *name)
 
 	return err;
 }
+
+struct rtnl_link *rtnl_link_ipgretap_alloc(void)
+{
+	struct rtnl_link *link;
+	int err;
+
+	link = rtnl_link_alloc();
+	if (!link)
+		return NULL;
+
+	err = rtnl_link_set_type(link, "gretap");
+	if (err < 0) {
+		rtnl_link_put(link);
+		return NULL;
+	}
+
+	return link;
+}
+
+/**
+ * Check if link is a IPGRETAP link
+ * @arg link            Link object
+ *
+ * @return True if link is a IPGRETAP link, otherwise 0 is returned.
+ */
+int rtnl_link_is_ipgretap(struct rtnl_link *link)
+{
+	return link->l_info_ops && !strcmp(link->l_info_ops->io_name, "gretap");
+}
+/**
+ * Create a new IPGRETAP tunnel device
+ * @arg sock            netlink socket
+ * @arg name            name of the tunnel deviceL
+ *
+ * Creates a new IPGRETAP tunnel device in the kernel
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_ipgretap_add(struct nl_sock *sk, const char *name)
+{
+	struct rtnl_link *link;
+	int err;
+
+	link = rtnl_link_ipgretap_alloc();
+	if (!link)
+		return -NLE_NOMEM;
+
+	if(name)
+		rtnl_link_set_name(link, name);
+
+	err = rtnl_link_add(sk, link, NLM_F_CREATE);
+	rtnl_link_put(link);
+
+	return err;
+}
+
 /**
  * Set IPGRE tunnel interface index
  * @arg link            Link object
@@ -730,9 +821,11 @@ uint8_t rtnl_link_get_pmtudisc(struct rtnl_link *link)
 static void __init ipgre_init(void)
 {
 	rtnl_link_register_info(&ipgre_info_ops);
+	rtnl_link_register_info(&ipgretap_info_ops);
 }
 
 static void __exit ipgre_exit(void)
 {
 	rtnl_link_unregister_info(&ipgre_info_ops);
+	rtnl_link_unregister_info(&ipgretap_info_ops);
 }

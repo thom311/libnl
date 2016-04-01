@@ -893,6 +893,8 @@ global:
 	rtnl_link_bridge_pvid;
 	rtnl_link_is_macvtap;
 	rtnl_link_is_vrf;
+	rtnl_link_ipgretap_add;
+	rtnl_link_ipgretap_alloc;
 	rtnl_link_macvtap_alloc;
 	rtnl_link_macvtap_flags2str;
 	rtnl_link_macvtap_get_flags;

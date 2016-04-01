@@ -10,6 +10,7 @@
 /test-create-ifb
 /test-create-ip6tnl
 /test-create-ipgre
+/test-create-ipgretap
 /test-create-ipip
 /test-create-ipvlan
 /test-create-ipvti

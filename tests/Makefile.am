@@ -32,6 +32,7 @@ check_PROGRAMS = \
 	test-create-bridge \
 	test-create-ip6tnl \
 	test-create-ipgre \
+	test-create-ipgretap \
 	test-create-ipip \
 	test-create-ipvti \
 	test-create-macvlan \

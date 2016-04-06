@@ -1257,4 +1257,14 @@ global:
 	rtnl_flower_get_ipv4_src;
 	rtnl_flower_set_ipv4_dst;
 	rtnl_flower_set_ipv4_src;
+	rtnl_nat_get_action;
+	rtnl_nat_get_flags;
+	rtnl_nat_get_mask;
+	rtnl_nat_get_new_addr;
+	rtnl_nat_get_old_addr;
+	rtnl_nat_set_action;
+	rtnl_nat_set_flags;
+	rtnl_nat_set_mask;
+	rtnl_nat_set_new_addr;
+	rtnl_nat_set_old_addr;
 } libnl_3_6;

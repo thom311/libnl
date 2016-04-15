@@ -44,7 +44,7 @@ extern "C" {
 	extern uint16_t rtnl_link_sit_get_flags(struct rtnl_link *link);
 
 	int rtnl_link_sit_set_proto(struct rtnl_link *link, uint8_t proto);
-	uint8_t rtnl_link_get_proto(struct rtnl_link *link);
+	uint8_t rtnl_link_sit_get_proto(struct rtnl_link *link);
 
 #ifdef _cplusplus
 }

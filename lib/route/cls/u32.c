@@ -22,6 +22,8 @@
 #include <netlink/route/cls/u32.h>
 #include <netlink/route/action.h>
 
+#include "netlink-private/utils.h"
+
 /** @cond SKIP */
 #define U32_ATTR_DIVISOR      0x001
 #define U32_ATTR_HASH         0x002
@@ -177,6 +179,14 @@ static void u32_free_data(struct rtnl_tc *tc, void *data)
 static int u32_clone(void *_dst, void *_src)
 {
 	struct rtnl_u32 *dst = _dst, *src = _src;
+	_nl_auto_nl_data struct nl_data *selector = NULL;
+	_nl_auto_nl_data struct nl_data *mark = NULL;
+	_nl_auto_nl_data struct nl_data *police = NULL;
+	_nl_auto_nl_data struct nl_data *pcnt = NULL;
+	_nl_auto_nl_data struct nl_data *opts = NULL;
+	_nl_auto_nl_data struct nl_data *xstats = NULL;
+	_nl_auto_nl_data struct nl_data *subdata = NULL;
+	_nl_auto_rtnl_act struct rtnl_act *act = NULL;
 
 	dst->cu_pcnt = NULL;
 	dst->cu_selector = NULL;
@@ -184,26 +194,81 @@ static int u32_clone(void *_dst, void *_src)
 	dst->cu_act = NULL;
 	dst->cu_police = NULL;
 
-	if (src->cu_selector &&
-	    !(dst->cu_selector = nl_data_clone(src->cu_selector)))
-		return -NLE_NOMEM;
-
-	if (src->cu_mark &&
-	    !(dst->cu_mark = nl_data_clone(src->cu_mark)))
-		return -NLE_NOMEM;
-
-	if (src->cu_act) {
-		if (!(dst->cu_act = rtnl_act_alloc()))
+	if (src->cu_selector) {
+		if (!(selector = nl_data_clone(src->cu_selector)))
 			return -NLE_NOMEM;
-
-		memcpy(dst->cu_act, src->cu_act, sizeof(struct rtnl_act));
 	}
 
-	if (src->cu_police && !(dst->cu_police = nl_data_clone(src->cu_police)))
-		return -NLE_NOMEM;
+	if (src->cu_mark) {
+		if (!(mark = nl_data_clone(src->cu_mark)))
+			return -NLE_NOMEM;
+	}
 
-	if (src->cu_pcnt && !(dst->cu_pcnt = nl_data_clone(src->cu_pcnt)))
-		return -NLE_NOMEM;
+	if (src->cu_act) {
+		if (!(act = rtnl_act_alloc()))
+			return -NLE_NOMEM;
+
+		if (src->cu_act->c_opts) {
+			if (!(opts = nl_data_clone(src->cu_act->c_opts)))
+				return -NLE_NOMEM;
+		}
+
+		if (src->cu_act->c_xstats) {
+			if (!(xstats = nl_data_clone(src->cu_act->c_xstats)))
+				return -NLE_NOMEM;
+		}
+
+		if (src->cu_act->c_subdata) {
+			if (!(subdata = nl_data_clone(src->cu_act->c_subdata)))
+				return -NLE_NOMEM;
+		}
+	}
+
+	if (src->cu_police) {
+		if (!(police = nl_data_clone(src->cu_police)))
+			return -NLE_NOMEM;
+	}
+
+	if (src->cu_pcnt) {
+		if (!(pcnt = nl_data_clone(src->cu_pcnt)))
+			return -NLE_NOMEM;
+	}
+
+	/* we've passed the critical point and its safe to proceed */
+
+	if (selector)
+		dst->cu_selector = _nl_steal_pointer(&selector);
+
+	if (mark)
+		dst->cu_mark = _nl_steal_pointer(&mark);
+
+	if (police)
+		dst->cu_police = _nl_steal_pointer(&police);
+
+	if (pcnt)
+		dst->cu_pcnt = _nl_steal_pointer(&pcnt);
+
+	if (act) {
+		dst->cu_act = _nl_steal_pointer(&act);
+
+		/* action nl list next and prev pointers must be updated */
+		nl_init_list_head(&dst->cu_act->ce_list);
+
+		if (opts)
+			dst->cu_act->c_opts = _nl_steal_pointer(&opts);
+
+		if (xstats)
+			dst->cu_act->c_xstats = _nl_steal_pointer(&xstats);
+
+		if (subdata)
+			dst->cu_act->c_subdata = _nl_steal_pointer(&subdata);
+
+		if (dst->cu_act->c_link) {
+			nl_object_get(OBJ_CAST(dst->cu_act->c_link));
+		}
+
+		dst->cu_act->a_next = NULL;   /* Only clone first in chain */
+	}
 
 	return 0;
 }

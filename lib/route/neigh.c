@@ -607,6 +607,32 @@ struct rtnl_neigh * rtnl_neigh_get(struct nl_cache *cache, int ifindex,
 	return NULL;
 }
 
+/**
+ * Look up a neighbour by interface index, link layer address and vlan id
+ * @arg cache		neighbour cache
+ * @arg ifindex 	interface index the neighbour is on
+ * @arg lladdr		link layer address of the neighbour
+ * @arg vlan		vlan id of the neighbour
+ *
+ * @return neighbour handle or NULL if no match was found.
+ */
+struct rtnl_neigh * rtnl_neigh_get_by_vlan(struct nl_cache *cache, int ifindex,
+					   struct nl_addr *lladdr, int vlan)
+{
+	struct rtnl_neigh *neigh;
+
+	nl_list_for_each_entry(neigh, &cache->c_items, ce_list) {
+		if (neigh->n_ifindex == ifindex &&
+		    neigh->n_vlan == vlan &&
+		    neigh->n_lladdr && !nl_addr_cmp(neigh->n_lladdr, lladdr)) {
+			nl_object_get((struct nl_object *) neigh);
+			return neigh;
+		}
+	}
+
+	return NULL;
+}
+
 /** @} */
 
 /**

@@ -917,5 +917,6 @@ global:
 	rtnl_link_vrf_get_tableid;
 	rtnl_link_vrf_set_tableid;
 	rtnl_neigh_alloc_cache_flags;
+	rtnl_neigh_ll_get;
 } libnl_3_2_27;
 

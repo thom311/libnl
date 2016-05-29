@@ -126,7 +126,8 @@ struct rtnl_link_af_ops
 
 	/** Called for GETLINK message to the kernel. Used to append
 	 * link address family specific attributes to the request message. */
-	int		      (*ao_get_af)(struct nl_msg *msg);
+	int		      (*ao_get_af)(struct nl_msg *msg,
+					   uint32_t *ext_filter_mask);
 
 	/** Dump address family specific link attributes */
 	void		      (*ao_dump[NL_DUMP_MAX+1])(struct rtnl_link *,

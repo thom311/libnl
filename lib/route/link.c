@@ -677,7 +677,7 @@ static int link_request_update(struct nl_cache *cache, struct nl_sock *sk)
 	struct rtnl_link_af_ops *ops;
 	struct nl_msg *msg;
 	int err;
-	__u32 vf_mask = RTEXT_FILTER_VF;
+	__u32 ext_filter_mask = RTEXT_FILTER_VF;
 
 	msg = nlmsg_alloc_simple(RTM_GETLINK, NLM_F_DUMP);
 	if (!msg)
@@ -687,13 +687,15 @@ static int link_request_update(struct nl_cache *cache, struct nl_sock *sk)
 	if (nlmsg_append(msg, &hdr, sizeof(hdr), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
 
-	err = nla_put(msg, IFLA_EXT_MASK, sizeof(vf_mask), &vf_mask);
-	if (err)
-		goto nla_put_failure;
-
 	ops = rtnl_link_af_ops_lookup(family);
 	if (ops && ops->ao_get_af) {
-		err = ops->ao_get_af(msg);
+		err = ops->ao_get_af(msg, &ext_filter_mask);
+		if (err)
+			goto nla_put_failure;
+	}
+
+	if (ext_filter_mask) {
+		err = nla_put(msg, IFLA_EXT_MASK, sizeof(ext_filter_mask), &ext_filter_mask);
 		if (err)
 			goto nla_put_failure;
 	}

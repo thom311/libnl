@@ -47,6 +47,7 @@ static const char *errmsg[NLE_MAX+1] = {
 [NLE_NODEV]		= "No such device",
 [NLE_IMMUTABLE]		= "Immutable attribute",
 [NLE_DUMP_INTR]		= "Dump inconsistency detected, interrupted",
+[NLE_ATTRSIZE]		= "Attribute max length exceeded",
 };
 
 /**

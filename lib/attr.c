@@ -912,7 +912,7 @@ struct nlattr *nla_nest_start(struct nl_msg *msg, int attrtype)
  *
  * Corrects the container attribute header to include the appeneded attributes.
  *
- * @return 0
+ * @return 0 on success or a negative error code.
  */
 int nla_nest_end(struct nl_msg *msg, struct nlattr *start)
 {
@@ -920,14 +920,15 @@ int nla_nest_end(struct nl_msg *msg, struct nlattr *start)
 
 	len = (void *) nlmsg_tail(msg->nm_nlh) - (void *) start;
 
-	if (len == NLA_HDRLEN) {
+	if (len == NLA_HDRLEN || len > USHRT_MAX) {
 		/*
-		 * Kernel can't handle empty nested attributes, trim the
+		 * Max nlattr size exceeded or empty nested attribute, trim the
 		 * attribute header again
 		 */
 		nla_nest_cancel(msg, start);
 
-		return 0;
+		/* Return error only if nlattr size was exceeded */
+		return (len == NLA_HDRLEN) ? 0 : -NLE_ATTRSIZE;
 	}
 
 	start->nla_len = len;

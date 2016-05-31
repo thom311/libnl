@@ -1635,7 +1635,7 @@ int xfrmnl_sa_set_aead_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 	/* Free up the old key and allocate memory to hold new key */
 	if (sa->aead)
 		free (sa->aead);
-	if ((sa->aead = calloc (1, newlen)) == NULL)
+	if (strlen (alg_name) >= sizeof (sa->aead->alg_name) || (sa->aead = calloc (1, newlen)) == NULL)
 		return -1;
 
 	/* Save the new info */
@@ -1672,7 +1672,7 @@ int xfrmnl_sa_set_auth_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 	/* Free up the old auth data and allocate new one */
 	if (sa->auth)
 		free (sa->auth);
-	if ((sa->auth = calloc (1, newlen)) == NULL)
+	if (strlen (alg_name) >= sizeof (sa->auth->alg_name) || (sa->auth = calloc (1, newlen)) == NULL)
 		return -1;
 
 	/* Save the new info */
@@ -1708,7 +1708,7 @@ int xfrmnl_sa_set_crypto_params (struct xfrmnl_sa* sa, char* alg_name, unsigned 
 	/* Free up the old crypto and allocate new one */
 	if (sa->crypt)
 		free (sa->crypt);
-	if ((sa->crypt = calloc (1, newlen)) == NULL)
+	if (strlen (alg_name) >= sizeof (sa->crypt->alg_name) || (sa->crypt = calloc (1, newlen)) == NULL)
 		return -1;
 
 	/* Save the new info */
@@ -1743,7 +1743,7 @@ int xfrmnl_sa_set_comp_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 	/* Free up the old compression algo params and allocate new one */
 	if (sa->comp)
 		free (sa->comp);
-	if ((sa->comp = calloc (1, newlen)) == NULL)
+	if (strlen (alg_name) >= sizeof (sa->comp->alg_name) || (sa->comp = calloc (1, newlen)) == NULL)
 		return -1;
 
 	/* Save the new info */

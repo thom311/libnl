@@ -1629,7 +1629,8 @@ int xfrmnl_sa_get_aead_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 
 int xfrmnl_sa_set_aead_params (struct xfrmnl_sa* sa, char* alg_name, unsigned int key_len, unsigned int icv_len, char* key)
 {
-	uint32_t    newlen = sizeof (struct xfrmnl_algo_aead) + (sizeof (uint8_t) * ((key_len + 7)/8));
+	size_t      keysize = sizeof (uint8_t) * ((key_len + 7)/8);
+	uint32_t    newlen = sizeof (struct xfrmnl_algo_aead) + keysize;
 
 	/* Free up the old key and allocate memory to hold new key */
 	if (sa->aead)
@@ -1641,7 +1642,7 @@ int xfrmnl_sa_set_aead_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 	strcpy (sa->aead->alg_name, alg_name);
 	sa->aead->alg_key_len   = key_len;
 	sa->aead->alg_icv_len   = icv_len;
-	memcpy ((void *)sa->aead->alg_key, (void *)key, newlen);
+	memcpy ((void *)sa->aead->alg_key, (void *)key, keysize);
 
 	sa->ce_mask |= XFRM_SA_ATTR_ALG_AEAD;
 
@@ -1665,7 +1666,8 @@ int xfrmnl_sa_get_auth_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 
 int xfrmnl_sa_set_auth_params (struct xfrmnl_sa* sa, char* alg_name, unsigned int key_len, unsigned int trunc_len, char* key)
 {
-	uint32_t    newlen = sizeof (struct xfrmnl_algo_auth) + (sizeof (uint8_t) * ((key_len + 7)/8));
+	size_t      keysize = sizeof (uint8_t) * ((key_len + 7)/8);
+	uint32_t    newlen = sizeof (struct xfrmnl_algo_auth) + keysize;
 
 	/* Free up the old auth data and allocate new one */
 	if (sa->auth)
@@ -1677,7 +1679,7 @@ int xfrmnl_sa_set_auth_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 	strcpy (sa->auth->alg_name, alg_name);
 	sa->auth->alg_key_len   = key_len;
 	sa->auth->alg_trunc_len = trunc_len;
-	memcpy ((void *)sa->auth->alg_key, (void *)key, newlen);
+	memcpy ((void *)sa->auth->alg_key, (void *)key, keysize);
 
 	sa->ce_mask |= XFRM_SA_ATTR_ALG_AUTH;
 
@@ -1700,7 +1702,8 @@ int xfrmnl_sa_get_crypto_params (struct xfrmnl_sa* sa, char* alg_name, unsigned 
 
 int xfrmnl_sa_set_crypto_params (struct xfrmnl_sa* sa, char* alg_name, unsigned int key_len, char* key)
 {
-	uint32_t    newlen = sizeof (struct xfrmnl_algo) + (sizeof (uint8_t) * ((key_len + 7)/8));
+	size_t      keysize = sizeof (uint8_t) * ((key_len + 7)/8);
+	uint32_t    newlen = sizeof (struct xfrmnl_algo) + keysize;
 
 	/* Free up the old crypto and allocate new one */
 	if (sa->crypt)
@@ -1711,7 +1714,7 @@ int xfrmnl_sa_set_crypto_params (struct xfrmnl_sa* sa, char* alg_name, unsigned 
 	/* Save the new info */
 	strcpy (sa->crypt->alg_name, alg_name);
 	sa->crypt->alg_key_len  = key_len;
-	memcpy ((void *)sa->crypt->alg_key, (void *)key, newlen);
+	memcpy ((void *)sa->crypt->alg_key, (void *)key, keysize);
 
 	sa->ce_mask |= XFRM_SA_ATTR_ALG_CRYPT;
 
@@ -1734,7 +1737,8 @@ int xfrmnl_sa_get_comp_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 
 int xfrmnl_sa_set_comp_params (struct xfrmnl_sa* sa, char* alg_name, unsigned int key_len, char* key)
 {
-	uint32_t    newlen = sizeof (struct xfrmnl_algo) + (sizeof (uint8_t) * ((key_len + 7)/8));
+	size_t      keysize = sizeof (uint8_t) * ((key_len + 7)/8);
+	uint32_t    newlen = sizeof (struct xfrmnl_algo) + keysize;
 
 	/* Free up the old compression algo params and allocate new one */
 	if (sa->comp)
@@ -1745,7 +1749,7 @@ int xfrmnl_sa_set_comp_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 	/* Save the new info */
 	strcpy (sa->comp->alg_name, alg_name);
 	sa->comp->alg_key_len  = key_len;
-	memcpy ((void *)sa->comp->alg_key, (void *)key, newlen);
+	memcpy ((void *)sa->comp->alg_key, (void *)key, keysize);
 
 	sa->ce_mask |= XFRM_SA_ATTR_ALG_COMP;
 

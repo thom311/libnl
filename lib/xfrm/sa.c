@@ -1627,7 +1627,7 @@ int xfrmnl_sa_get_aead_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 	return 0;
 }
 
-int xfrmnl_sa_set_aead_params (struct xfrmnl_sa* sa, char* alg_name, unsigned int key_len, unsigned int icv_len, char* key)
+int xfrmnl_sa_set_aead_params (struct xfrmnl_sa* sa, const char* alg_name, unsigned int key_len, unsigned int icv_len, const char* key)
 {
 	size_t      keysize = sizeof (uint8_t) * ((key_len + 7)/8);
 	uint32_t    newlen = sizeof (struct xfrmnl_algo_aead) + keysize;
@@ -1642,7 +1642,7 @@ int xfrmnl_sa_set_aead_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 	strcpy (sa->aead->alg_name, alg_name);
 	sa->aead->alg_key_len   = key_len;
 	sa->aead->alg_icv_len   = icv_len;
-	memcpy ((void *)sa->aead->alg_key, (void *)key, keysize);
+	memcpy (sa->aead->alg_key, key, keysize);
 
 	sa->ce_mask |= XFRM_SA_ATTR_ALG_AEAD;
 
@@ -1664,7 +1664,7 @@ int xfrmnl_sa_get_auth_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 	return 0;
 }
 
-int xfrmnl_sa_set_auth_params (struct xfrmnl_sa* sa, char* alg_name, unsigned int key_len, unsigned int trunc_len, char* key)
+int xfrmnl_sa_set_auth_params (struct xfrmnl_sa* sa, const char* alg_name, unsigned int key_len, unsigned int trunc_len, const char* key)
 {
 	size_t      keysize = sizeof (uint8_t) * ((key_len + 7)/8);
 	uint32_t    newlen = sizeof (struct xfrmnl_algo_auth) + keysize;
@@ -1679,7 +1679,7 @@ int xfrmnl_sa_set_auth_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 	strcpy (sa->auth->alg_name, alg_name);
 	sa->auth->alg_key_len   = key_len;
 	sa->auth->alg_trunc_len = trunc_len;
-	memcpy ((void *)sa->auth->alg_key, (void *)key, keysize);
+	memcpy (sa->auth->alg_key, key, keysize);
 
 	sa->ce_mask |= XFRM_SA_ATTR_ALG_AUTH;
 
@@ -1700,7 +1700,7 @@ int xfrmnl_sa_get_crypto_params (struct xfrmnl_sa* sa, char* alg_name, unsigned 
 	return 0;
 }
 
-int xfrmnl_sa_set_crypto_params (struct xfrmnl_sa* sa, char* alg_name, unsigned int key_len, char* key)
+int xfrmnl_sa_set_crypto_params (struct xfrmnl_sa* sa, const char* alg_name, unsigned int key_len, const char* key)
 {
 	size_t      keysize = sizeof (uint8_t) * ((key_len + 7)/8);
 	uint32_t    newlen = sizeof (struct xfrmnl_algo) + keysize;
@@ -1714,7 +1714,7 @@ int xfrmnl_sa_set_crypto_params (struct xfrmnl_sa* sa, char* alg_name, unsigned 
 	/* Save the new info */
 	strcpy (sa->crypt->alg_name, alg_name);
 	sa->crypt->alg_key_len  = key_len;
-	memcpy ((void *)sa->crypt->alg_key, (void *)key, keysize);
+	memcpy (sa->crypt->alg_key, key, keysize);
 
 	sa->ce_mask |= XFRM_SA_ATTR_ALG_CRYPT;
 
@@ -1735,7 +1735,7 @@ int xfrmnl_sa_get_comp_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 	return 0;
 }
 
-int xfrmnl_sa_set_comp_params (struct xfrmnl_sa* sa, char* alg_name, unsigned int key_len, char* key)
+int xfrmnl_sa_set_comp_params (struct xfrmnl_sa* sa, const char* alg_name, unsigned int key_len, const char* key)
 {
 	size_t      keysize = sizeof (uint8_t) * ((key_len + 7)/8);
 	uint32_t    newlen = sizeof (struct xfrmnl_algo) + keysize;
@@ -1749,7 +1749,7 @@ int xfrmnl_sa_set_comp_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 	/* Save the new info */
 	strcpy (sa->comp->alg_name, alg_name);
 	sa->comp->alg_key_len  = key_len;
-	memcpy ((void *)sa->comp->alg_key, (void *)key, keysize);
+	memcpy (sa->comp->alg_key, key, keysize);
 
 	sa->ce_mask |= XFRM_SA_ATTR_ALG_COMP;
 
@@ -1869,7 +1869,7 @@ int xfrmnl_sa_get_sec_ctx (struct xfrmnl_sa* sa, unsigned int* doi, unsigned int
 	return 0;
 }
 
-int xfrmnl_sa_set_sec_ctx (struct xfrmnl_sa* sa, unsigned int doi, unsigned int alg, unsigned int len, unsigned int sid, char* ctx_str)
+int xfrmnl_sa_set_sec_ctx (struct xfrmnl_sa* sa, unsigned int doi, unsigned int alg, unsigned int len, unsigned int sid, const char* ctx_str)
 {
 	/* Free up the old context string and allocate new one */
 	if (sa->sec_ctx)
@@ -1882,7 +1882,7 @@ int xfrmnl_sa_set_sec_ctx (struct xfrmnl_sa* sa, unsigned int doi, unsigned int 
 	sa->sec_ctx->ctx_alg    =   alg;
 	sa->sec_ctx->ctx_len    =   len;
 	sa->sec_ctx->ctx_sid    =   sid;
-	memcpy ((void *)sa->sec_ctx->ctx_str, (void *)ctx_str, sizeof (uint8_t) * len);
+	memcpy (sa->sec_ctx->ctx_str, ctx_str, sizeof (uint8_t) * len);
 
 	sa->ce_mask |= XFRM_SA_ATTR_SECCTX;
 

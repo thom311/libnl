@@ -111,19 +111,21 @@ extern int                      xfrmnl_sa_set_flags (struct xfrmnl_sa*, unsigned
 
 extern int                      xfrmnl_sa_get_aead_params (struct xfrmnl_sa*, char*, unsigned int*,
                                                            unsigned int*, char*);
-extern int                      xfrmnl_sa_set_aead_params (struct xfrmnl_sa*, char*, unsigned int,
-                                                           unsigned int, char*);
+extern int                      xfrmnl_sa_set_aead_params (struct xfrmnl_sa*, const char*, unsigned int,
+                                                           unsigned int, const char*);
 
 extern int                      xfrmnl_sa_get_auth_params (struct xfrmnl_sa*, char*, unsigned int*,
                                                            unsigned int*, char*);
-extern int                      xfrmnl_sa_set_auth_params (struct xfrmnl_sa*, char*, unsigned int,
-                                                           unsigned int, char*);
+extern int                      xfrmnl_sa_set_auth_params (struct xfrmnl_sa*, const char*, unsigned int,
+                                                           unsigned int, const char*);
 
 extern int                      xfrmnl_sa_get_crypto_params (struct xfrmnl_sa*, char*, unsigned int*, char*);
-extern int                      xfrmnl_sa_set_crypto_params (struct xfrmnl_sa*, char*, unsigned int, char*);
+extern int                      xfrmnl_sa_set_crypto_params (struct xfrmnl_sa*, const char*, unsigned int,
+                                                             const char*);
 
 extern int                      xfrmnl_sa_get_comp_params (struct xfrmnl_sa*, char*, unsigned int*, char*);
-extern int                      xfrmnl_sa_set_comp_params (struct xfrmnl_sa*, char*, unsigned int, char*);
+extern int                      xfrmnl_sa_set_comp_params (struct xfrmnl_sa*, const char*, unsigned int,
+                                                           const char*);
 
 extern int                      xfrmnl_sa_get_encap_tmpl (struct xfrmnl_sa*, unsigned int*, unsigned int*,
                                                           unsigned int*, struct nl_addr**);
@@ -142,7 +144,7 @@ extern int                      xfrmnl_sa_set_mark (struct xfrmnl_sa*, unsigned 
 extern int                      xfrmnl_sa_get_sec_ctx (struct xfrmnl_sa*, unsigned int, unsigned int,
                                                        unsigned int, unsigned int, char*);
 extern int                      xfrmnl_sa_set_sec_ctx (struct xfrmnl_sa*, unsigned int, unsigned int,
-                                                       unsigned int, unsigned int, char*);
+                                                       unsigned int, unsigned int, const char*);
 
 extern int                      xfrmnl_sa_get_replay_maxage (struct xfrmnl_sa*);
 extern int                      xfrmnl_sa_set_replay_maxage (struct xfrmnl_sa*, unsigned int);

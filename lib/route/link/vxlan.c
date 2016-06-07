@@ -451,7 +451,7 @@ static int vxlan_compare(struct rtnl_link *link_a, struct rtnl_link *link_b,
 	struct vxlan_info *a = link_a->l_info;
 	struct vxlan_info *b = link_b->l_info;
 	int diff = 0;
-	uint32_t attrs = ~0;
+	uint32_t attrs = flags & LOOSE_COMPARISON ? b->ce_mask : ~0;
 
 #define VXLAN_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, VXLAN_ATTR_##ATTR, a, b, EXPR)
 

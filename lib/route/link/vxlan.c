@@ -446,11 +446,12 @@ nla_put_failure:
 }
 
 static int vxlan_compare(struct rtnl_link *link_a, struct rtnl_link *link_b,
-			uint32_t attrs, int flags)
+			 int flags)
 {
 	struct vxlan_info *a = link_a->l_info;
 	struct vxlan_info *b = link_b->l_info;
 	int diff = 0;
+	uint32_t attrs = ~0;
 
 #define VXLAN_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, VXLAN_ATTR_##ATTR, a, b, EXPR)
 

@@ -1008,7 +1008,7 @@ static uint64_t link_compare(struct nl_object *_a, struct nl_object *_b,
 			goto protinfo_mismatch;
 	}
 
-	diff |= LINK_DIFF(LINKINFO, rtnl_link_info_data_compare(a, b) != 0);
+	diff |= LINK_DIFF(LINKINFO, rtnl_link_info_data_compare(a, b, flags) != 0);
 out:
 	return diff;
 

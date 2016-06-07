@@ -402,7 +402,7 @@ out:
  * @return 0 if link_info data matches or is not present
  * or != 0 if it mismatches.
  */
-int rtnl_link_info_data_compare(struct rtnl_link *a, struct rtnl_link *b)
+int rtnl_link_info_data_compare(struct rtnl_link *a, struct rtnl_link *b, int flags)
 {
 	if (a->l_info_ops != b->l_info_ops)
 		return ~0;
@@ -410,7 +410,7 @@ int rtnl_link_info_data_compare(struct rtnl_link *a, struct rtnl_link *b)
 	if (!a->l_info_ops || !a->l_info_ops->io_compare)
 		return 0;
 
-	return a->l_info_ops->io_compare(a, b, ~0, 0);
+	return a->l_info_ops->io_compare(a, b, flags);
 }
 
 /** @} */

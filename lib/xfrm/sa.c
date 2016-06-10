@@ -1773,9 +1773,14 @@ int xfrmnl_sa_get_encap_tmpl (struct xfrmnl_sa* sa, unsigned int* encap_type, un
 
 int xfrmnl_sa_set_encap_tmpl (struct xfrmnl_sa* sa, unsigned int encap_type, unsigned int encap_sport, unsigned int encap_dport, struct nl_addr* encap_oa)
 {
-	/* Free up the old encap OA */
-	if (sa->encap->encap_oa)
-		nl_addr_put (sa->encap->encap_oa);
+	if (sa->encap) {
+		/* Free up the old encap OA */
+		if (sa->encap->encap_oa)
+			nl_addr_put(sa->encap->encap_oa);
+		free(sa->encap);
+	}
+	if ((sa->encap = calloc(1, sizeof(*sa->encap))) == NULL)
+		return -1;
 
 	/* Save the new info */
 	sa->encap->encap_type   =   encap_type;

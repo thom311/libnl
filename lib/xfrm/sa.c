@@ -1157,20 +1157,25 @@ static int build_xfrm_sa_message(struct xfrmnl_sa *tmpl, int cmd, int flags, str
 	}
 
 	if (tmpl->ce_mask & XFRM_SA_ATTR_ALG_AUTH) {
-		struct xfrm_algo*   auth;
-		struct nlattr *     auth_attr;
+		/* kernel prefers XFRMA_ALG_AUTH_TRUNC over XFRMA_ALG_AUTH, so only
+		 * one of the attributes needs to be present */
+		if (tmpl->auth->alg_trunc_len) {
+			len = sizeof (struct xfrm_algo_auth) + ((tmpl->auth->alg_key_len + 7) / 8);
+			NLA_PUT (msg, XFRMA_ALG_AUTH_TRUNC, len, tmpl->auth);
+		} else {
+			struct xfrm_algo *auth;
 
-		len = sizeof (struct xfrm_algo) + ((tmpl->auth->alg_key_len + 7) / 8);
-		auth_attr = nla_reserve(msg, XFRMA_ALG_AUTH, len);
-		if (!auth_attr)
-			goto nla_put_failure;
-		auth = nla_data (auth_attr);
-		strcpy(auth->alg_name, tmpl->auth->alg_name);
-		memcpy(auth->alg_key, tmpl->auth->alg_key, (tmpl->auth->alg_key_len + 7) / 8);
-		auth->alg_key_len = tmpl->auth->alg_key_len;
+			len = sizeof (struct xfrm_algo) + ((tmpl->auth->alg_key_len + 7) / 8);
+			auth = malloc(len);
+			if (!auth)
+				return -NLE_NOMEM;
 
-		len = sizeof (struct xfrm_algo_auth) + ((tmpl->auth->alg_key_len + 7) / 8);
-		NLA_PUT (msg, XFRMA_ALG_AUTH_TRUNC, len, tmpl->auth);
+			strncpy(auth->alg_name, tmpl->auth->alg_name, sizeof(auth->alg_name));
+			auth->alg_key_len = tmpl->auth->alg_key_len;
+			memcpy(auth->alg_key, tmpl->auth->alg_key, (tmpl->auth->alg_key_len + 7) / 8);
+			NLA_PUT(msg, XFRMA_ALG_AUTH, len, auth);
+			free(auth);
+		}
 	}
 
 	if (tmpl->ce_mask & XFRM_SA_ATTR_ALG_CRYPT) {

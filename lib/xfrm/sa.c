@@ -110,8 +110,11 @@ static void xfrm_sa_free_data(struct nl_object *c)
 		free (sa->crypt);
 	if (sa->comp)
 		free (sa->comp);
-	if (sa->encap)
-		free (sa->encap);
+	if (sa->encap) {
+		if (sa->encap->encap_oa)
+			nl_addr_put(sa->encap->encap_oa);
+		free(sa->encap);
+	}
 	if (sa->coaddr)
 		nl_addr_put (sa->coaddr);
 	if (sa->sec_ctx)

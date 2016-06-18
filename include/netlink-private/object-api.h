@@ -368,6 +368,11 @@ struct nl_object_ops
 	 * Get key attributes by family function
 	 */
 	uint32_t   (*oo_id_attrs_get)(struct nl_object *);
+
+	/**
+	 * Get attributes used in hash key
+	 */
+	uint32_t   (*oo_hash_attrs_get)(struct nl_object *);
 };
 
 /** @} */

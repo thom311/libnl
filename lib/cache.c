@@ -714,6 +714,7 @@ static int pickup_checkdup_cb(struct nl_object *c, struct nl_parser_param *p)
 {
 	struct nl_cache *cache = (struct nl_cache *)p->pp_arg;
 	struct nl_object *old;
+	int ret;
 
 	old = nl_cache_search(cache, c);
 	if (old) {
@@ -726,7 +727,11 @@ static int pickup_checkdup_cb(struct nl_object *c, struct nl_parser_param *p)
 		nl_object_put(old);
 	}
 
-	return nl_cache_add(cache, c);
+	c->ce_flags |= NL_OBJ_DUMP;
+	ret = nl_cache_add(cache, c);
+	c->ce_flags &= ~NL_OBJ_DUMP;
+
+	return ret;
 }
 
 static int pickup_cb(struct nl_object *c, struct nl_parser_param *p)
@@ -783,8 +788,10 @@ int nl_cache_pickup(struct nl_sock *sk, struct nl_cache *cache)
 	return __nl_cache_pickup(sk, cache, 0);
 }
 
+
 static int cache_include(struct nl_cache *cache, struct nl_object *obj,
-			 struct nl_msgtype *type, change_func_t cb, void *data)
+			 struct nl_msgtype *type, change_func_t cb,
+			 void *data)
 {
 	struct nl_object *old;
 
@@ -856,8 +863,13 @@ int nl_cache_include(struct nl_cache *cache, struct nl_object *obj,
 static int resync_cb(struct nl_object *c, struct nl_parser_param *p)
 {
 	struct nl_cache_assoc *ca = p->pp_arg;
+	int ret;
 
-	return nl_cache_include(ca->ca_cache, c, ca->ca_change, ca->ca_change_data);
+	c->ce_flags |= NL_OBJ_DUMP;
+	ret = nl_cache_include(ca->ca_cache, c, ca->ca_change, ca->ca_change_data);
+	c->ce_flags &= ~NL_OBJ_DUMP;
+
+    return ret;
 }
 
 int nl_cache_resync(struct nl_sock *sk, struct nl_cache *cache,

@@ -116,6 +116,40 @@ struct nl_object* nl_hash_table_lookup(nl_hash_table_t *ht,
 }
 
 /**
+ * Lookup identical object in hashtable
+ * @arg ht		Hashtable
+ * @arg obj		Object to lookup
+ * @arg mask		Attribute mask to use during lookup
+ *
+ * Generates hashkey for `obj` and traverses the corresponding chain calling
+ * `nl_object_diff_mask()` on each trying to find a match. similar to
+ * nl_hash_table_lookup but uses an user provided attribute mask.
+ *
+ * @return Pointer to object if match was found or NULL.
+ */
+
+struct nl_object* nl_hash_table_lookup_mask(nl_hash_table_t *ht,
+					    struct nl_object *obj,
+					    uint32_t mask)
+{
+	nl_hash_node_t *node, *head;
+	uint32_t key_hash;
+
+	nl_object_keygen(obj, &key_hash, ht->size);
+	head = ht->nodes[key_hash];
+
+	if (!head)
+		return NULL;
+
+	nl_list_for_each_entry(node, &head->list, list) {
+	       if (!nl_object_diff_mask(node->obj, obj, mask))
+		   return node->obj;
+	}
+
+	return NULL;
+}
+
+/**
  * Add object to hashtable
  * @arg ht		Hashtable
  * @arg obj		Object to add

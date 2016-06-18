@@ -96,6 +96,9 @@ extern void			nl_cache_set_flags(struct nl_cache *, unsigned int);
 extern int			nl_cache_is_empty(struct nl_cache *);
 extern struct nl_object *	nl_cache_search(struct nl_cache *,
 						struct nl_object *);
+extern struct nl_object *       nl_cache_search_mask(struct nl_cache *,
+						     struct nl_object *,
+						     uint32_t);
 extern struct nl_object *nl_cache_find(struct nl_cache *,
 				       struct nl_object *);
 extern void			nl_cache_mark_all(struct nl_cache *);

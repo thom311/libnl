@@ -239,6 +239,21 @@ struct nl_cache_ops
 	int   (*co_include_event)(struct nl_cache *cache, struct nl_object *obj,
 				  change_func_t change_cb, void *data);
 
+	/**
+	 * The function registered under this callback is called when an
+	 * a nl_cache_search is to performed on the cache.
+	 *
+	 * The callback if implemented by a cache must return an attribute
+	 * mask to be used for the cache search
+	 *
+	 * If no function is registered, nl_cache_search will internally use
+	 * oo_id_attrs_get to get its attributes for matching objects
+	 *
+	 * @see nl_cache_search()
+	 */
+	uint32_t (*co_cache_search_attrs_get)(struct nl_cache *cache,
+					      struct nl_object *needle);
+
 	void (*reserved_1)(void);
 	void (*reserved_2)(void);
 	void (*reserved_3)(void);

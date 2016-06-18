@@ -42,6 +42,8 @@ extern int			nl_hash_table_del(nl_hash_table_t *ht,
 
 extern struct nl_object *	nl_hash_table_lookup(nl_hash_table_t *ht,
 						     struct nl_object *obj);
+extern struct nl_object *	nl_hash_table_lookup_mask(nl_hash_table_t *ht,
+						     struct nl_object *obj, uint32_t);
 extern uint32_t 		nl_hash(void *k, size_t length,
 					uint32_t initval);
 

@@ -1043,6 +1043,21 @@ restart:
  * @name Utillities
  * @{
  */
+static struct nl_object *__cache_fast_lookup_mask(struct nl_cache *cache,
+						  struct nl_object *needle,
+						  uint32_t mask)
+{
+	struct nl_object *obj;
+
+	obj = nl_hash_table_lookup_mask(cache->hashtable, needle, mask);
+	if (obj) {
+	    nl_object_get(obj);
+	    return obj;
+	}
+
+	return NULL;
+}
+
 static struct nl_object *__cache_fast_lookup(struct nl_cache *cache,
 					     struct nl_object *needle)
 {
@@ -1052,6 +1067,40 @@ static struct nl_object *__cache_fast_lookup(struct nl_cache *cache,
 	if (obj) {
 	    nl_object_get(obj);
 	    return obj;
+	}
+
+	return NULL;
+}
+
+/**
+ * Search object in cache
+ * @arg cache		Cache
+ * @arg needle		Object to look for.
+ * @arg mask		Attribute mask to use during object comparision
+ *
+ * Searches the cache for an object which matches the object \p needle.
+ * The function nl_object_diff_mask() is used to determine if the
+ * objects match. If a matching object is found, the reference counter
+ * is incremented and the object is returned.
+ *
+ * Therefore, if an object is returned, the reference to the object
+ * must be returned by calling nl_object_put() after usage.
+ *
+ * @return Reference to object or NULL if not found.
+ */
+struct nl_object *nl_cache_search_mask(struct nl_cache *cache,
+				       struct nl_object *needle, uint32_t mask)
+{
+	struct nl_object *obj;
+
+	if (cache->hashtable)
+		return __cache_fast_lookup_mask(cache, needle, mask);
+
+	nl_list_for_each_entry(obj, &cache->c_items, ce_list) {
+		if (!nl_object_diff_mask(obj, needle, mask)) {
+			nl_object_get(obj);
+			return obj;
+		}
 	}
 
 	return NULL;
@@ -1076,6 +1125,13 @@ struct nl_object *nl_cache_search(struct nl_cache *cache,
 				  struct nl_object *needle)
 {
 	struct nl_object *obj;
+	uint32_t mask;
+
+	if (cache->c_ops->co_cache_search_attrs_get) {
+		mask = cache->c_ops->co_cache_search_attrs_get(cache, needle);
+		if (mask)
+			return nl_cache_search_mask(cache, needle, mask);
+	}
 
 	if (cache->hashtable)
 		return __cache_fast_lookup(cache, needle);

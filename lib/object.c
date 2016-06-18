@@ -393,6 +393,17 @@ uint32_t nl_object_diff(struct nl_object *a, struct nl_object *b)
 		: (uint32_t) diff;
 }
 
+uint32_t nl_object_diff_mask(struct nl_object *a, struct nl_object *b,
+		uint32_t mask)
+{
+	struct nl_object_ops *ops = obj_ops(a);
+
+	if (ops != obj_ops(b) || ops->oo_compare == NULL)
+		return UINT_MAX;
+
+	return ops->oo_compare(a, b, mask, 0);
+}
+
 /**
  * Match a filter against an object
  * @arg obj		object to check

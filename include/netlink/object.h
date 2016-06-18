@@ -45,6 +45,9 @@ extern uint32_t			nl_object_diff(struct nl_object *,
 					       struct nl_object *);
 extern uint64_t			nl_object_diff64(struct nl_object *,
 						 struct nl_object *);
+extern uint32_t			nl_object_diff_mask(struct nl_object *,
+						    struct nl_object *,
+						    uint32_t);
 extern int			nl_object_match_filter(struct nl_object *,
 						       struct nl_object *);
 extern char *			nl_object_attrs2str(struct nl_object *,

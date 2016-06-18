@@ -20,7 +20,7 @@ typedef struct nl_hash_node {
     uint32_t			key;
     uint32_t			key_size;
     struct nl_object *		obj;
-    struct nl_hash_node *	next;
+    struct nl_list_head		list;
 } nl_hash_node_t;
 
 typedef struct nl_hash_table {

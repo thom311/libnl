@@ -14,6 +14,19 @@
 #include <netlink/hash.h>
 #include <netlink/hashtable.h>
 
+static nl_hash_node_t *nl_hash_table_list_head_alloc()
+{
+	nl_hash_node_t *head;
+
+	head = calloc(1, sizeof(*head));
+	if (!head)
+		return NULL;
+
+	nl_init_list_head(&head->list);
+
+	return head;
+}
+
 /**
  * @ingroup core_types
  * @defgroup hashtable Hashtable
@@ -58,15 +71,15 @@ void nl_hash_table_free(nl_hash_table_t *ht)
 	int i;
 
 	for(i = 0; i < ht->size; i++) {
-	    nl_hash_node_t *node = ht->nodes[i];
-	    nl_hash_node_t *saved_node;
+		nl_hash_node_t *node, *head = ht->nodes[i], *tmp;
 
-	    while (node) {
-		   saved_node = node;
-		   node = node->next;
-		   nl_object_put(saved_node->obj);
-		   free(saved_node);
-	    }
+		if (!head)
+			continue;
+
+		nl_list_for_each_entry_safe(node, tmp, &head->list, list) {
+			nl_list_del(&node->list);
+			free(node);
+		}
 	}
 
 	free(ht->nodes);
@@ -86,16 +99,17 @@ void nl_hash_table_free(nl_hash_table_t *ht)
 struct nl_object* nl_hash_table_lookup(nl_hash_table_t *ht,
 				       struct nl_object *obj)
 {
-	nl_hash_node_t *node;
+	nl_hash_node_t *node, *head;
 	uint32_t key_hash;
 
 	nl_object_keygen(obj, &key_hash, ht->size);
-	node = ht->nodes[key_hash];
+	head = ht->nodes[key_hash];
+	if (!head)
+		return NULL;
 
-	while (node) {
-	       if (nl_object_identical(node->obj, obj))
+	nl_list_for_each_entry(node, &head->list, list) {
+		if (nl_object_identical(node->obj, obj))
 		   return node->obj;
-	       node = node->next;
 	}
 
 	return NULL;
@@ -116,18 +130,27 @@ struct nl_object* nl_hash_table_lookup(nl_hash_table_t *ht,
  */
 int nl_hash_table_add(nl_hash_table_t *ht, struct nl_object *obj)
 {
-	nl_hash_node_t *node;
+	nl_hash_node_t *node, *head;
 	uint32_t key_hash;
 
 	nl_object_keygen(obj, &key_hash, ht->size);
-	node = ht->nodes[key_hash];
-
-	while (node) {
-	       if (nl_object_identical(node->obj, obj)) {
-		   NL_DBG(2, "Warning: Add to hashtable found duplicate...\n");
-		   return -NLE_EXIST;
-	       }
-	       node = node->next;
+	head = ht->nodes[key_hash];
+	if (head != NULL) {
+		nl_list_for_each_entry(node, &head->list, list) {
+			if (nl_object_identical(node->obj, obj)) {
+				NL_DBG(2, "Warning: Add to hashtable found "
+					"duplicate...\n");
+				return -NLE_EXIST;
+			}
+		}
+	} else {
+		/* Initialize head (This can also be done in hash table alloc
+		 * function. Its done here so that we only allocate nodes
+		 * when needed)
+		 */
+		ht->nodes[key_hash] = nl_hash_table_list_head_alloc();
+		if (!ht->nodes[key_hash])
+			return -NLE_NOMEM;
 	}
 
 	NL_DBG (5, "adding cache entry of obj %p in table %p, with hash 0x%x\n",
@@ -140,8 +163,13 @@ int nl_hash_table_add(nl_hash_table_t *ht, struct nl_object *obj)
 	node->obj = obj;
 	node->key = key_hash;
 	node->key_size = sizeof(uint32_t);
-	node->next = ht->nodes[key_hash];
-	ht->nodes[key_hash] = node;
+	nl_init_list_head(&node->list);
+
+	if ((obj->ce_msgflags & NLM_F_APPEND) ||
+		(obj->ce_flags & NL_OBJ_DUMP))
+		nl_list_add_tail(&node->list, &ht->nodes[key_hash]->list);
+	else
+		nl_list_add_head(&node->list, &ht->nodes[key_hash]->list);
 
 	return 0;
 }
@@ -160,30 +188,25 @@ int nl_hash_table_add(nl_hash_table_t *ht, struct nl_object *obj)
  */
 int nl_hash_table_del(nl_hash_table_t *ht, struct nl_object *obj)
 {
-	nl_hash_node_t *node, *prev;
+	nl_hash_node_t *node, *head;
 	uint32_t key_hash;
 
 	nl_object_keygen(obj, &key_hash, ht->size);
-	prev = node = ht->nodes[key_hash];
+	head = ht->nodes[key_hash];
+	if (!head)
+		return -NLE_OBJ_NOTFOUND;
 
-	while (node) {
+	nl_list_for_each_entry(node, &head->list, list) {
 	       if (nl_object_identical(node->obj, obj)) {
-		   nl_object_put(obj);
-
-		   NL_DBG (5, "deleting cache entry of obj %p in table %p, with"
-			   " hash 0x%x\n", obj, ht, key_hash);
-
-	           if (node == ht->nodes[key_hash])
-		       ht->nodes[key_hash] = node->next;
-	           else
-		       prev->next = node->next;
-
-	           free(node);
-
-	           return 0;
-		}
-		prev = node;
-		node = node->next;
+			nl_object_put(obj);
+			nl_list_del(&node->list);
+			free(node);
+			if (nl_list_empty(&head->list)) {
+				free(ht->nodes[key_hash]);
+				ht->nodes[key_hash] = NULL;
+			}
+			return 0;
+	       }
 	}
 
 	return -NLE_OBJ_NOTFOUND;

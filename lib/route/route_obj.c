@@ -294,6 +294,29 @@ static void route_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	}
 }
 
+static uint32_t route_id_attrs_get(struct nl_object *obj)
+{
+	struct nl_object_ops *ops = obj->ce_ops;
+
+	if (!ops)
+		BUG();
+
+	if (obj->ce_mask & ROUTE_ATTR_MULTIPATH)
+		return ops->oo_id_attrs | ROUTE_ATTR_MULTIPATH;
+	else
+		return ops->oo_id_attrs;
+}
+
+static uint32_t route_hash_attrs_get(struct nl_object *obj)
+{
+	struct nl_object_ops *ops = obj->ce_ops;
+
+	if (!ops)
+		BUG();
+
+	return ops->oo_id_attrs;
+}
+
 static void route_keygen(struct nl_object *obj, uint32_t *hashkey,
 			  uint32_t table_sz)
 {
@@ -351,6 +374,7 @@ static uint64_t route_compare(struct nl_object *_a, struct nl_object *_b,
 	struct rtnl_nexthop *nh_a, *nh_b;
 	int i, found;
 	uint64_t diff = 0;
+	uint32_t nh_attrs;
 
 #define ROUTE_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ROUTE_ATTR_##ATTR, a, b, EXPR)
 
@@ -396,12 +420,18 @@ static uint64_t route_compare(struct nl_object *_a, struct nl_object *_b,
 		if (a->rt_nr_nh != b->rt_nr_nh)
 			goto nh_mismatch;
 
+		if (attrs == ~0)
+			nh_attrs = ~0;
+		else
+			nh_attrs = rtnl_route_nh_id_attrs();
+
 		/* search for a dup in each nh of a */
 		nl_list_for_each_entry(nh_a, &a->rt_nexthops, rtnh_list) {
 			found = 0;
 			nl_list_for_each_entry(nh_b, &b->rt_nexthops,
 					       rtnh_list) {
-				if (!rtnl_route_nh_compare(nh_a, nh_b, ~0, 0)) {
+				if (!rtnl_route_nh_compare(nh_a, nh_b, nh_attrs,
+							   0)) {
 					found = 1;
 					break;
 				}
@@ -416,7 +446,8 @@ static uint64_t route_compare(struct nl_object *_a, struct nl_object *_b,
 			found = 0;
 			nl_list_for_each_entry(nh_a, &a->rt_nexthops,
 					       rtnh_list) {
-				if (!rtnl_route_nh_compare(nh_a, nh_b, ~0, 0)) {
+				if (!rtnl_route_nh_compare(nh_a, nh_b,
+							   nh_attrs, 0)) {
 					found = 1;
 					break;
 				}
@@ -464,15 +495,9 @@ static int route_update(struct nl_object *old_obj, struct nl_object *new_obj)
 	 * route with multiple nexthops. The resulting object looks
 	 * similar to a ipv4 ECMP route
 	 */
-	if (new_route->rt_family != AF_INET6 ||
-	    new_route->rt_table == RT_TABLE_LOCAL)
-		return -NLE_OPNOTSUPP;
 
-	/*
-	 * For routes that are already multipath,
-	 * or dont have a nexthop dont do anything
-	 */
-	if (rtnl_route_get_nnexthops(new_route) != 1)
+
+	if (!rtnl_route_is_likely_ipv6_multipath(new_route))
 		return -NLE_OPNOTSUPP;
 
 	/*
@@ -481,19 +506,53 @@ static int route_update(struct nl_object *old_obj, struct nl_object *new_obj)
 	 * filled or nothing at all
 	 */
 	new_nh = rtnl_route_nexthop_n(new_route, 0);
-	if (!new_nh || !rtnl_route_nh_get_gateway(new_nh))
-		return -NLE_OPNOTSUPP;
 
 	switch(action) {
 	case RTM_NEWROUTE : {
 		struct rtnl_nexthop *cloned_nh;
 
 		/*
-		 * Add the nexthop to old route
+		 * If replace, we will let upper layers do
+		 * a replace of the route completely in
+		 * cache_include. This is because kernel deletes
+		 * the full ecmp route during first nexthop
+		 * replace. And the replace flag is only set
+		 * for the first nexthop
 		 */
+		if (new_obj->ce_msgflags & NLM_F_REPLACE)
+			return -NLE_OPNOTSUPP;
+
 		cloned_nh = rtnl_route_nh_clone(new_nh);
 		if (!cloned_nh)
 			return -NLE_NOMEM;
+
+		if (new_obj->ce_flags & NL_OBJ_DUMP) {
+			struct rtnl_nexthop *old_nh;
+			char nbuf[256];
+			char obuf[256];
+			/* Kernel can return duplicates during dumps
+			 * if the dump is interrupted and kernel routing
+			 * table is going through changes during dumps.
+			 * So, here we check for duplicates and return
+			 */
+			nl_list_for_each_entry(old_nh, &old_route->rt_nexthops,
+								   rtnh_list) {
+				if (!rtnl_route_nh_compare(old_nh, new_nh,
+							   rtnl_route_nh_id_attrs(), 0)) {
+					nl_object_dump_buf(new_obj, nbuf,
+							   sizeof(nbuf));
+					nl_object_dump_buf(old_obj, obuf,
+							   sizeof(obuf));
+					NL_DBG(0, "%s: ignoring duplicate nexthop: ce_msgflags = (%x, %x), rt_flags = (%x, %x), rtnh_flags = (%x, %x), objs = (%s, %s)\n", __FUNCTION__, old_obj->ce_msgflags, new_obj->ce_msgflags, old_route->rt_flags, new_route->rt_flags, old_nh->rtnh_flags, new_nh->rtnh_flags, obuf, nbuf);
+					rtnl_route_nh_free(cloned_nh);
+					return NLE_SUCCESS;
+				}
+			}
+		}
+
+		/*
+		 * Add the nexthop to old route
+		 */
 		rtnl_route_add_nexthop(old_route, cloned_nh);
 
 		NL_DBG(2, "Route obj %p updated. Added "
@@ -519,7 +578,9 @@ static int route_update(struct nl_object *old_obj, struct nl_object *new_obj)
 		 */
 		nl_list_for_each_entry(old_nh, &old_route->rt_nexthops,
 			rtnh_list) {
-			if (!rtnl_route_nh_compare(old_nh, new_nh, ~0, 0)) {
+			if (!rtnl_route_nh_compare(old_nh, new_nh,
+						   rtnl_route_nh_id_attrs(),
+						   0)) {
 
 				rtnl_route_remove_nexthop(old_route, old_nh);
 
@@ -835,6 +896,14 @@ int rtnl_route_get_iif(struct rtnl_route *route)
 void rtnl_route_add_nexthop(struct rtnl_route *route, struct rtnl_nexthop *nh)
 {
 	nl_list_add_tail(&nh->rtnh_list, &route->rt_nexthops);
+	route->rt_nr_nh++;
+	route->ce_mask |= ROUTE_ATTR_MULTIPATH;
+}
+
+void rtnl_route_add_nexthop_head(struct rtnl_route *route,
+		struct rtnl_nexthop *nh)
+{
+	nl_list_add_head(&nh->rtnh_list, &route->rt_nexthops);
 	route->rt_nr_nh++;
 	route->ce_mask |= ROUTE_ATTR_MULTIPATH;
 }
@@ -1311,6 +1380,8 @@ struct nl_object_ops route_obj_ops = {
 	.oo_id_attrs		= (ROUTE_ATTR_FAMILY | ROUTE_ATTR_TOS |
 				   ROUTE_ATTR_TABLE | ROUTE_ATTR_DST |
 				   ROUTE_ATTR_PRIO),
+	.oo_id_attrs_get        = route_id_attrs_get,
+	.oo_hash_attrs_get      = route_hash_attrs_get
 };
 /** @endcond */
 

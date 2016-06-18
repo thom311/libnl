@@ -46,6 +46,12 @@ struct rtnl_rtcacheinfo
 	uint32_t	rtci_tsage;
 };
 
+#define rtnl_route_is_likely_ipv6_multipath(route) \
+		(route->rt_family == AF_INET6 && \
+		route->rt_table != RT_TABLE_LOCAL && \
+		rtnl_route_get_nnexthops(route) == 1 && \
+		rtnl_route_nh_get_gateway(rtnl_route_nexthop_n(route, 0)))
+
 extern struct nl_object_ops route_obj_ops;
 
 extern struct rtnl_route *	rtnl_route_alloc(void);
@@ -97,6 +103,8 @@ extern int	rtnl_route_get_src_len(struct rtnl_route *);
 
 extern void	rtnl_route_add_nexthop(struct rtnl_route *,
 				       struct rtnl_nexthop *);
+extern void	rtnl_route_add_nexthop_head(struct rtnl_route *,
+					    struct rtnl_nexthop *);
 extern void	rtnl_route_remove_nexthop(struct rtnl_route *,
 					  struct rtnl_nexthop *);
 extern struct nl_list_head *rtnl_route_get_nexthops(struct rtnl_route *);

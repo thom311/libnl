@@ -80,6 +80,11 @@ void rtnl_route_nh_free(struct rtnl_nexthop *nh)
 
 /** @} */
 
+uint32_t rtnl_route_nh_id_attrs()
+{
+	return (NH_ATTR_IFINDEX | NH_ATTR_GATEWAY);
+}
+
 int rtnl_route_nh_compare(struct rtnl_nexthop *a, struct rtnl_nexthop *b,
 			  uint32_t attrs, int loose)
 {

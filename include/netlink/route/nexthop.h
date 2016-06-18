@@ -32,6 +32,7 @@ extern struct rtnl_nexthop * rtnl_route_nh_alloc(void);
 extern struct rtnl_nexthop * rtnl_route_nh_clone(struct rtnl_nexthop *);
 extern void		rtnl_route_nh_free(struct rtnl_nexthop *);
 
+extern uint32_t rtnl_route_nh_id_attrs(void);
 extern int		rtnl_route_nh_compare(struct rtnl_nexthop *,
 					      struct rtnl_nexthop *,
 					      uint32_t, int);

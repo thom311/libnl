@@ -27,6 +27,26 @@
 
 static struct nl_cache_ops rtnl_route_ops;
 
+uint32_t route_cache_search_attr_get(struct nl_cache *cache,
+				     struct nl_object *needle)
+{
+	struct nl_object_ops *ops = needle->ce_ops;
+	struct rtnl_route *new_route = (struct rtnl_route *)needle;
+
+	/*
+	 * If route add req is a replace
+	 * or it is a ipv6 multipath route
+	 * then, we replace the existing object
+	 * in the cache. So, look for the first object
+	 * that matches the hash key attributes
+	 */
+	if ((needle->ce_msgflags & NLM_F_REPLACE) ||
+		rtnl_route_is_likely_ipv6_multipath(new_route))
+		return ops->oo_hash_attrs_get(needle);
+	else
+		return ops->oo_id_attrs_get(needle);
+}
+
 static int route_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			    struct nlmsghdr *nlh, struct nl_parser_param *pp)
 {
@@ -191,6 +211,7 @@ static struct nl_cache_ops rtnl_route_ops = {
 	.co_request_update	= route_request_update,
 	.co_msg_parser		= route_msg_parser,
 	.co_obj_ops		= &route_obj_ops,
+	.co_cache_search_attrs_get = route_cache_search_attr_get,
 };
 
 static void __init route_init(void)

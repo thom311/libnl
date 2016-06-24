@@ -35,6 +35,7 @@ check_PROGRAMS = \
 	test-create-ipgretap \
 	test-create-ipip \
 	test-create-ipvti \
+	test-create-macsec \
 	test-create-macvlan \
 	test-create-macvtap \
 	test-create-ipvlan \

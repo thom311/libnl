@@ -677,6 +677,7 @@ static int link_request_update(struct nl_cache *cache, struct nl_sock *sk)
 	struct rtnl_link_af_ops *ops;
 	struct nl_msg *msg;
 	int err;
+	__u32 ext_filter_mask = RTEXT_FILTER_VF;
 
 	msg = nlmsg_alloc_simple(RTM_GETLINK, NLM_F_DUMP);
 	if (!msg)
@@ -688,10 +689,17 @@ static int link_request_update(struct nl_cache *cache, struct nl_sock *sk)
 
 	ops = rtnl_link_af_ops_lookup(family);
 	if (ops && ops->ao_get_af) {
-		err = ops->ao_get_af(msg);
+		err = ops->ao_get_af(msg, &ext_filter_mask);
 		if (err)
 			goto nla_put_failure;
 	}
+
+	if (ext_filter_mask) {
+		err = nla_put(msg, IFLA_EXT_MASK, sizeof(ext_filter_mask), &ext_filter_mask);
+		if (err)
+			goto nla_put_failure;
+	}
+
 	err = nl_send_auto(sk, msg);
 	if (err > 0)
 		err = 0;
@@ -1218,6 +1226,8 @@ int rtnl_link_build_get_request(int ifindex, const char *name,
 {
 	struct ifinfomsg ifi;
 	struct nl_msg *msg;
+	__u32 vf_mask = RTEXT_FILTER_VF;
+	int err = -NLE_MSGSIZE;
 
 	if (ifindex <= 0 && !name) {
 		APPBUG("ifindex or name must be specified");
@@ -1232,18 +1242,24 @@ int rtnl_link_build_get_request(int ifindex, const char *name,
 	if (ifindex > 0)
 		ifi.ifi_index = ifindex;
 
-	if (nlmsg_append(msg, &ifi, sizeof(ifi), NLMSG_ALIGNTO) < 0)
+	if (nlmsg_append(msg, &ifi, sizeof(ifi), NLMSG_ALIGNTO) < 0) {
+		err = -NLE_MSGSIZE;
 		goto nla_put_failure;
+	}
 
 	if (name)
 		NLA_PUT_STRING(msg, IFLA_IFNAME, name);
+
+	err = nla_put(msg, IFLA_EXT_MASK, sizeof(vf_mask), &vf_mask);
+	if (err)
+		goto nla_put_failure;
 
 	*result = msg;
 	return 0;
 
 nla_put_failure:
 	nlmsg_free(msg);
-	return -NLE_MSGSIZE;
+	return err;
 }
 
 /**

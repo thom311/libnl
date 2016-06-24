@@ -224,11 +224,10 @@ static int bridge_parse_af_full(struct rtnl_link *link, struct nlattr *attr_full
 	return 0;
 }
 
-static int bridge_get_af(struct nl_msg *msg)
+static int bridge_get_af(struct nl_msg *msg, uint32_t *ext_filter_mask)
 {
-	__u32 ext_filter_mask = RTEXT_FILTER_BRVLAN;
-
-	return nla_put(msg, IFLA_EXT_MASK, sizeof(ext_filter_mask), &ext_filter_mask);
+	*ext_filter_mask |= RTEXT_FILTER_BRVLAN;
+	return 0;
 }
 
 static void dump_bitmap(struct nl_dump_params *p, const uint32_t *b)

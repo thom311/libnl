@@ -62,7 +62,7 @@ struct rtnl_link_info_ops
 
 	/** Called to compare link info parameters between two links. */
 	int	      (*io_compare)(struct rtnl_link *, struct rtnl_link *,
-				    uint32_t attrs, int flags);
+				    int flags);
 
 	struct nl_list_head		io_list;
 };
@@ -160,7 +160,8 @@ extern int			rtnl_link_af_data_compare(struct rtnl_link *a,
 							  struct rtnl_link *b,
 							  int family);
 extern int			rtnl_link_info_data_compare(struct rtnl_link *a,
-							    struct rtnl_link *b);
+							    struct rtnl_link *b,
+							    int flags);
 
 #ifdef __cplusplus
 }

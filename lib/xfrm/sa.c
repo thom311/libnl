@@ -1167,8 +1167,10 @@ static int build_xfrm_sa_message(struct xfrmnl_sa *tmpl, int cmd, int flags, str
 
 			len = sizeof (struct xfrm_algo) + ((tmpl->auth->alg_key_len + 7) / 8);
 			auth = malloc(len);
-			if (!auth)
+			if (!auth) {
+				nlmsg_free(msg);
 				return -NLE_NOMEM;
+			}
 
 			strncpy(auth->alg_name, tmpl->auth->alg_name, sizeof(auth->alg_name));
 			auth->alg_key_len = tmpl->auth->alg_key_len;

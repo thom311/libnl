@@ -110,8 +110,11 @@ static void xfrm_sa_free_data(struct nl_object *c)
 		free (sa->crypt);
 	if (sa->comp)
 		free (sa->comp);
-	if (sa->encap)
-		free (sa->encap);
+	if (sa->encap) {
+		if (sa->encap->encap_oa)
+			nl_addr_put(sa->encap->encap_oa);
+		free(sa->encap);
+	}
 	if (sa->coaddr)
 		nl_addr_put (sa->coaddr);
 	if (sa->sec_ctx)
@@ -1154,20 +1157,27 @@ static int build_xfrm_sa_message(struct xfrmnl_sa *tmpl, int cmd, int flags, str
 	}
 
 	if (tmpl->ce_mask & XFRM_SA_ATTR_ALG_AUTH) {
-		struct xfrm_algo*   auth;
-		struct nlattr *     auth_attr;
+		/* kernel prefers XFRMA_ALG_AUTH_TRUNC over XFRMA_ALG_AUTH, so only
+		 * one of the attributes needs to be present */
+		if (tmpl->auth->alg_trunc_len) {
+			len = sizeof (struct xfrm_algo_auth) + ((tmpl->auth->alg_key_len + 7) / 8);
+			NLA_PUT (msg, XFRMA_ALG_AUTH_TRUNC, len, tmpl->auth);
+		} else {
+			struct xfrm_algo *auth;
 
-		len = sizeof (struct xfrm_algo) + ((tmpl->auth->alg_key_len + 7) / 8);
-		auth_attr = nla_reserve(msg, XFRMA_ALG_AUTH, len);
-		if (!auth_attr)
-			goto nla_put_failure;
-		auth = nla_data (auth_attr);
-		strcpy(auth->alg_name, tmpl->auth->alg_name);
-		memcpy(auth->alg_key, tmpl->auth->alg_key, (tmpl->auth->alg_key_len + 7) / 8);
-		auth->alg_key_len = tmpl->auth->alg_key_len;
+			len = sizeof (struct xfrm_algo) + ((tmpl->auth->alg_key_len + 7) / 8);
+			auth = malloc(len);
+			if (!auth) {
+				nlmsg_free(msg);
+				return -NLE_NOMEM;
+			}
 
-		len = sizeof (struct xfrm_algo_auth) + ((tmpl->auth->alg_key_len + 7) / 8);
-		NLA_PUT (msg, XFRMA_ALG_AUTH_TRUNC, len, tmpl->auth);
+			strncpy(auth->alg_name, tmpl->auth->alg_name, sizeof(auth->alg_name));
+			auth->alg_key_len = tmpl->auth->alg_key_len;
+			memcpy(auth->alg_key, tmpl->auth->alg_key, (tmpl->auth->alg_key_len + 7) / 8);
+			NLA_PUT(msg, XFRMA_ALG_AUTH, len, auth);
+			free(auth);
+		}
 	}
 
 	if (tmpl->ce_mask & XFRM_SA_ATTR_ALG_CRYPT) {
@@ -1773,9 +1783,13 @@ int xfrmnl_sa_get_encap_tmpl (struct xfrmnl_sa* sa, unsigned int* encap_type, un
 
 int xfrmnl_sa_set_encap_tmpl (struct xfrmnl_sa* sa, unsigned int encap_type, unsigned int encap_sport, unsigned int encap_dport, struct nl_addr* encap_oa)
 {
-	/* Free up the old encap OA */
-	if (sa->encap->encap_oa)
-		nl_addr_put (sa->encap->encap_oa);
+	if (sa->encap) {
+		/* Free up the old encap OA */
+		if (sa->encap->encap_oa)
+			nl_addr_put(sa->encap->encap_oa);
+		memset(sa->encap, 0, sizeof (*sa->encap));
+	} else if ((sa->encap = calloc(1, sizeof(*sa->encap))) == NULL)
+		return -1;
 
 	/* Save the new info */
 	sa->encap->encap_type   =   encap_type;

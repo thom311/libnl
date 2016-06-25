@@ -1777,9 +1777,8 @@ int xfrmnl_sa_set_encap_tmpl (struct xfrmnl_sa* sa, unsigned int encap_type, uns
 		/* Free up the old encap OA */
 		if (sa->encap->encap_oa)
 			nl_addr_put(sa->encap->encap_oa);
-		free(sa->encap);
-	}
-	if ((sa->encap = calloc(1, sizeof(*sa->encap))) == NULL)
+		memset(sa->encap, 0, sizeof (*sa->encap));
+	} else if ((sa->encap = calloc(1, sizeof(*sa->encap))) == NULL)
 		return -1;
 
 	/* Save the new info */

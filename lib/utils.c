@@ -1160,6 +1160,15 @@ int nl_has_capability (int capability)
 			NL_CAPABILITY_RTNL_LINK_VLAN_INGRESS_MAP_CLEAR,
 			NL_CAPABILITY_RTNL_LINK_VXLAN_IO_COMPARE,
 			NL_CAPABILITY_NL_OBJECT_DIFF64),
+		_NL_SET (2,
+			NL_CAPABILITY_XFRM_SA_KEY_SIZE,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0),
 		/* IMPORTANT: these capability numbers are intended to be universal and stable
 		 * for libnl3. Don't allocate new numbers on your own that differ from upstream
 		 * libnl3.

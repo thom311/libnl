@@ -197,6 +197,13 @@ enum {
 	NL_CAPABILITY_NL_OBJECT_DIFF64 = 16,
 #define NL_CAPABILITY_NL_OBJECT_DIFF64 NL_CAPABILITY_NL_OBJECT_DIFF64
 
+	/**
+	 * Support omitting @key argument to xfrmnl_sa_get_*_params() to check
+	 * for required buffer size for key.
+	 */
+	NL_CAPABILITY_XFRM_SA_KEY_SIZE = 17,
+#define NL_CAPABILITY_XFRM_SA_KEY_SIZE NL_CAPABILITY_XFRM_SA_KEY_SIZE
+
 	__NL_CAPABILITY_MAX,
 	NL_CAPABILITY_MAX = (__NL_CAPABILITY_MAX - 1),
 #define NL_CAPABILITY_MAX NL_CAPABILITY_MAX

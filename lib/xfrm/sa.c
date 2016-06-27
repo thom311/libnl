@@ -1622,14 +1622,32 @@ int xfrmnl_sa_set_flags (struct xfrmnl_sa* sa, unsigned int flags)
 	return 0;
 }
 
+/**
+ * Get the aead-params
+ * @arg sa              the xfrmnl_sa object
+ * @arg alg_name        an optional output buffer for the algorithm name. Must be at least 64 bytes.
+ * @arg key_len         an optional output value for the key length in bits.
+ * @arg icv_len         an optional output value for the alt-icv-len.
+ * @arg key             an optional buffer large enough for the key. It must contain at least
+ *                      ((@key_len + 7) / 8) bytes.
+ *
+ * Warning: you must ensure that @key is large enough. If you don't know the key_len before-hand,
+ * call xfrmnl_sa_get_aead_params() without @key argument to query only the required buffer size.
+ *
+ * @return 0 on success or a negative error code.
+ */
 int xfrmnl_sa_get_aead_params (struct xfrmnl_sa* sa, char* alg_name, unsigned int* key_len, unsigned int* icv_len, char* key)
 {
 	if (sa->ce_mask & XFRM_SA_ATTR_ALG_AEAD)
 	{
-		strcpy (alg_name, sa->aead->alg_name);
-		*key_len    =   sa->aead->alg_key_len;
-		*icv_len    =   sa->aead->alg_icv_len;
-		memcpy ((void *)key, (void *)sa->aead->alg_key, ((sa->aead->alg_key_len + 7)/8));
+		if (alg_name)
+			strcpy (alg_name, sa->aead->alg_name);
+		if (key_len)
+			*key_len = sa->aead->alg_key_len;
+		if (icv_len)
+			*icv_len = sa->aead->alg_icv_len;
+		if (key)
+			memcpy (key, sa->aead->alg_key, ((sa->aead->alg_key_len + 7)/8));
 	}
 	else
 		return -1;
@@ -1659,14 +1677,32 @@ int xfrmnl_sa_set_aead_params (struct xfrmnl_sa* sa, const char* alg_name, unsig
 	return 0;
 }
 
+/**
+ * Get the auth-params
+ * @arg sa              the xfrmnl_sa object
+ * @arg alg_name        an optional output buffer for the algorithm name. Must be at least 64 bytes.
+ * @arg key_len         an optional output value for the key length in bits.
+ * @arg trunc_len       an optional output value for the alg-trunc-len.
+ * @arg key             an optional buffer large enough for the key. It must contain at least
+ *                      ((@key_len + 7) / 8) bytes.
+ *
+ * Warning: you must ensure that @key is large enough. If you don't know the key_len before-hand,
+ * call xfrmnl_sa_get_auth_params() without @key argument to query only the required buffer size.
+ *
+ * @return 0 on success or a negative error code.
+ */
 int xfrmnl_sa_get_auth_params (struct xfrmnl_sa* sa, char* alg_name, unsigned int* key_len, unsigned int* trunc_len, char* key)
 {
 	if (sa->ce_mask & XFRM_SA_ATTR_ALG_AUTH)
 	{
-		strcpy (alg_name, sa->auth->alg_name);
-		*key_len    =   sa->auth->alg_key_len;
-		*trunc_len  =   sa->auth->alg_trunc_len;
-		memcpy ((void *)key, (void *)sa->auth->alg_key, ((sa->auth->alg_key_len + 7)/8));
+		if (alg_name)
+			strcpy (alg_name, sa->auth->alg_name);
+		if (key_len)
+			*key_len = sa->auth->alg_key_len;
+		if (trunc_len)
+			*trunc_len = sa->auth->alg_trunc_len;
+		if (key)
+			memcpy (key, sa->auth->alg_key, (sa->auth->alg_key_len + 7)/8);
 	}
 	else
 		return -1;
@@ -1696,13 +1732,29 @@ int xfrmnl_sa_set_auth_params (struct xfrmnl_sa* sa, const char* alg_name, unsig
 	return 0;
 }
 
+/**
+ * Get the crypto-params
+ * @arg sa              the xfrmnl_sa object
+ * @arg alg_name        an optional output buffer for the algorithm name. Must be at least 64 bytes.
+ * @arg key_len         an optional output value for the key length in bits.
+ * @arg key             an optional buffer large enough for the key. It must contain at least
+ *                      ((@key_len + 7) / 8) bytes.
+ *
+ * Warning: you must ensure that @key is large enough. If you don't know the key_len before-hand,
+ * call xfrmnl_sa_get_crypto_params() without @key argument to query only the required buffer size.
+ *
+ * @return 0 on success or a negative error code.
+ */
 int xfrmnl_sa_get_crypto_params (struct xfrmnl_sa* sa, char* alg_name, unsigned int* key_len, char* key)
 {
 	if (sa->ce_mask & XFRM_SA_ATTR_ALG_CRYPT)
 	{
-		strcpy (alg_name, sa->crypt->alg_name);
-		*key_len    =   sa->crypt->alg_key_len;
-		memcpy ((void *)key, (void *)sa->crypt->alg_key, ((sa->crypt->alg_key_len + 7)/8));
+		if (alg_name)
+			strcpy (alg_name, sa->crypt->alg_name);
+		if (key_len)
+			*key_len = sa->crypt->alg_key_len;
+		if (key)
+			memcpy (key, sa->crypt->alg_key, ((sa->crypt->alg_key_len + 7)/8));
 	}
 	else
 		return -1;
@@ -1731,13 +1783,29 @@ int xfrmnl_sa_set_crypto_params (struct xfrmnl_sa* sa, const char* alg_name, uns
 	return 0;
 }
 
+/**
+ * Get the comp-params
+ * @arg sa              the xfrmnl_sa object
+ * @arg alg_name        an optional output buffer for the algorithm name. Must be at least 64 bytes.
+ * @arg key_len         an optional output value for the key length in bits.
+ * @arg key             an optional buffer large enough for the key. It must contain at least
+ *                      ((@key_len + 7) / 8) bytes.
+ *
+ * Warning: you must ensure that @key is large enough. If you don't know the key_len before-hand,
+ * call xfrmnl_sa_get_comp_params() without @key argument to query only the required buffer size.
+ *
+ * @return 0 on success or a negative error code.
+ */
 int xfrmnl_sa_get_comp_params (struct xfrmnl_sa* sa, char* alg_name, unsigned int* key_len, char* key)
 {
 	if (sa->ce_mask & XFRM_SA_ATTR_ALG_COMP)
 	{
-		strcpy (alg_name, sa->comp->alg_name);
-		*key_len    =   sa->comp->alg_key_len;
-		memcpy ((void *)key, (void *)sa->comp->alg_key, ((sa->comp->alg_key_len + 7)/8));
+		if (alg_name)
+			strcpy (alg_name, sa->comp->alg_name);
+		if (key_len)
+			*key_len = sa->comp->alg_key_len;
+		if (key)
+			memcpy (key, sa->comp->alg_key, ((sa->comp->alg_key_len + 7)/8));
 	}
 	else
 		return -1;

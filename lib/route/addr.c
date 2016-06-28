@@ -429,6 +429,24 @@ static void addr_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	addr_dump_details(obj, p);
 }
 
+static uint32_t addr_id_attrs_get(struct nl_object *obj)
+{
+	struct rtnl_addr *addr = (struct rtnl_addr *)obj;
+
+	switch (addr->a_family) {
+	case AF_INET:
+		return (ADDR_ATTR_FAMILY | ADDR_ATTR_IFINDEX |
+		        ADDR_ATTR_LOCAL | ADDR_ATTR_PREFIXLEN |
+		        ADDR_ATTR_PEER);
+	case AF_INET6:
+		return (ADDR_ATTR_FAMILY | ADDR_ATTR_IFINDEX |
+		        ADDR_ATTR_LOCAL);
+	default:
+		return (ADDR_ATTR_FAMILY | ADDR_ATTR_IFINDEX |
+		        ADDR_ATTR_LOCAL | ADDR_ATTR_PREFIXLEN);
+	}
+}
+
 static uint64_t addr_compare(struct nl_object *_a, struct nl_object *_b,
 			     uint64_t attrs, int flags)
 {
@@ -442,7 +460,20 @@ static uint64_t addr_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= ADDR_DIFF(FAMILY,	a->a_family != b->a_family);
 	diff |= ADDR_DIFF(SCOPE,	a->a_scope != b->a_scope);
 	diff |= ADDR_DIFF(LABEL,	strcmp(a->a_label, b->a_label));
-	diff |= ADDR_DIFF(PEER,		nl_addr_cmp(a->a_peer, b->a_peer));
+	if (attrs & ADDR_ATTR_PEER) {
+		if (   (flags & ID_COMPARISON)
+		    && a->a_family == AF_INET
+		    && b->a_family == AF_INET
+		    && a->a_peer
+		    && b->a_peer
+		    && a->a_prefixlen == b->a_prefixlen) {
+			/* when comparing two IPv4 addresses for id-equality, the network part
+			 * of the PEER address shall be compared.
+			 */
+			diff |= ADDR_DIFF(PEER, nl_addr_cmp_prefix(a->a_peer, b->a_peer));
+		} else
+			diff |= ADDR_DIFF(PEER, nl_addr_cmp(a->a_peer, b->a_peer));
+	}
 	diff |= ADDR_DIFF(LOCAL,	nl_addr_cmp(a->a_local, b->a_local));
 	diff |= ADDR_DIFF(MULTICAST,	nl_addr_cmp(a->a_multicast,
 						    b->a_multicast));
@@ -1100,6 +1131,7 @@ static struct nl_object_ops addr_obj_ops = {
 	},
 	.oo_compare		= addr_compare,
 	.oo_attrs2str		= addr_attrs2str,
+	.oo_id_attrs_get	= addr_id_attrs_get,
 	.oo_id_attrs		= (ADDR_ATTR_FAMILY | ADDR_ATTR_IFINDEX |
 				   ADDR_ATTR_LOCAL | ADDR_ATTR_PREFIXLEN),
 };

@@ -111,6 +111,7 @@ struct nl_cache_mngr
 struct nl_parser_param;
 
 #define LOOSE_COMPARISON	1
+#define ID_COMPARISON           2
 
 #define NL_OBJ_MARK		1
 

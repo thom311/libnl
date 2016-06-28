@@ -241,34 +241,69 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		addr->ce_mask |= ADDR_ATTR_CACHEINFO;
 	}
 
-	if (tb[IFA_LOCAL]) {
-		addr->a_local = nl_addr_alloc_attr(tb[IFA_LOCAL], family);
+	if (family == AF_INET) {
+		uint32_t null = 0;
+
+		/* for IPv4/AF_INET, kernel always sets IFA_LOCAL and IFA_ADDRESS, unless it
+		 * is effectively 0.0.0.0. */
+		if (tb[IFA_LOCAL])
+			addr->a_local = nl_addr_alloc_attr(tb[IFA_LOCAL], family);
+		else
+			addr->a_local = nl_addr_build(family, &null, sizeof (null));
 		if (!addr->a_local)
 			goto errout_nomem;
 		addr->ce_mask |= ADDR_ATTR_LOCAL;
-		plen_addr = addr->a_local;
-	}
 
-	if (tb[IFA_ADDRESS]) {
-		struct nl_addr *a;
-
-		a = nl_addr_alloc_attr(tb[IFA_ADDRESS], family);
-		if (!a)
+		if (tb[IFA_ADDRESS])
+			addr->a_peer = nl_addr_alloc_attr(tb[IFA_ADDRESS], family);
+		else
+			addr->a_peer = nl_addr_build(family, &null, sizeof (null));
+		if (!addr->a_peer)
 			goto errout_nomem;
 
-		/* IPv6 sends the local address as IFA_ADDRESS with
-		 * no IFA_LOCAL, IPv4 sends both IFA_LOCAL and IFA_ADDRESS
-		 * with IFA_ADDRESS being the peer address if they differ */
-		if (!tb[IFA_LOCAL] || !nl_addr_cmp(a, addr->a_local)) {
-			nl_addr_put(addr->a_local);
-			addr->a_local = a;
-			addr->ce_mask |= ADDR_ATTR_LOCAL;
-		} else {
-			addr->a_peer = a;
+		if (!nl_addr_cmp (addr->a_local, addr->a_peer)) {
+			/* having IFA_ADDRESS equal to IFA_LOCAL does not really mean
+			 * there is no peer. It means the peer is equal to the local address,
+			 * which is the case for "normal" addresses.
+			 *
+			 * Still, clear the peer and pretend it is unset for backward
+			 * compatibility. */
+			nl_addr_put(addr->a_peer);
+			addr->a_peer = NULL;
+		} else
 			addr->ce_mask |= ADDR_ATTR_PEER;
+
+		plen_addr = addr->a_local;
+	} else {
+		if (tb[IFA_LOCAL]) {
+			addr->a_local = nl_addr_alloc_attr(tb[IFA_LOCAL], family);
+			if (!addr->a_local)
+				goto errout_nomem;
+			addr->ce_mask |= ADDR_ATTR_LOCAL;
+			plen_addr = addr->a_local;
 		}
 
-		plen_addr = a;
+		if (tb[IFA_ADDRESS]) {
+			struct nl_addr *a;
+
+			a = nl_addr_alloc_attr(tb[IFA_ADDRESS], family);
+			if (!a)
+				goto errout_nomem;
+
+			/* IPv6 sends the local address as IFA_ADDRESS with
+			 * no IFA_LOCAL, IPv4 sends both IFA_LOCAL and IFA_ADDRESS
+			 * with IFA_ADDRESS being the peer address if they differ */
+			if (!tb[IFA_LOCAL] || !nl_addr_cmp(a, addr->a_local)) {
+				nl_addr_put(addr->a_local);
+				addr->a_local = a;
+				addr->ce_mask |= ADDR_ATTR_LOCAL;
+			} else {
+				addr->a_peer = a;
+				addr->ce_mask |= ADDR_ATTR_PEER;
+			}
+
+			plen_addr = a;
+		}
 	}
 
 	if (plen_addr)

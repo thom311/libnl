@@ -27,6 +27,13 @@ enum oo_update_flags {
 	OO_UPDATE_FLAGS_IS_DUMP = 1,
 };
 
+enum oo_objflags {
+	OO_OBJFLAGS_NONE = 0,
+
+	/* whether to append or prepend the object in the hash bucket. */
+	OO_OBJFLAGS_CACHE_APPEND = 1,
+};
+
 /**
  * @ingroup object
  * @defgroup object_api Object API
@@ -197,7 +204,6 @@ enum oo_update_flags {
 	struct nl_cache *	ce_cache;	\
 	struct nl_list_head	ce_list;	\
 	int			ce_msgtype;	\
-	int			ce_msgflags;	\
 	int			ce_flags;	\
 	uint64_t		ce_mask;
 
@@ -381,11 +387,16 @@ struct nl_object_ops
 	 * Get attributes used in hash key
 	 */
 	uint32_t   (*oo_hash_attrs_get)(struct nl_object *);
+
+	int        (*oo_check_objflags)(struct nl_object *, enum oo_objflags flags);
 };
 
 int _nl_object_update(struct nl_object *dst,
                       struct nl_object *src,
                       enum oo_update_flags flags);
+
+int _nl_object_check_objflags (struct nl_object *obj,
+                               enum oo_objflags flags);
 
 /** @} */
 

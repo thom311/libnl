@@ -40,7 +40,7 @@ uint32_t route_cache_search_attr_get(struct nl_cache *cache,
 	 * in the cache. So, look for the first object
 	 * that matches the hash key attributes
 	 */
-	if ((needle->ce_msgflags & NLM_F_REPLACE) ||
+	if ((new_route->rt_msgflags & NLM_F_REPLACE) ||
 		rtnl_route_is_likely_ipv6_multipath(new_route))
 		return ops->oo_hash_attrs_get(needle);
 	else

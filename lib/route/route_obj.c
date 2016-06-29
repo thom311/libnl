@@ -520,7 +520,7 @@ static int route_update(struct nl_object *old_obj, struct nl_object *new_obj,
 		 * replace. And the replace flag is only set
 		 * for the first nexthop
 		 */
-		if (new_obj->ce_msgflags & NLM_F_REPLACE)
+		if (new_route->rt_msgflags & NLM_F_REPLACE)
 			return -NLE_OPNOTSUPP;
 
 		cloned_nh = rtnl_route_nh_clone(new_nh);
@@ -548,7 +548,7 @@ static int route_update(struct nl_object *old_obj, struct nl_object *new_obj,
 								   sizeof(nbuf));
 						nl_object_dump_buf(old_obj, obuf,
 								   sizeof(obuf));
-						NL_DBG(2, "%s: ignoring duplicate nexthop: ce_msgflags = (%x, %x), rt_flags = (%x, %x), rtnh_flags = (%x, %x), objs = (%s, %s)\n", __FUNCTION__, old_obj->ce_msgflags, new_obj->ce_msgflags, old_route->rt_flags, new_route->rt_flags, old_nh->rtnh_flags, new_nh->rtnh_flags, obuf, nbuf);
+						NL_DBG(2, "%s: ignoring duplicate nexthop: ce_msgflags = (%x, %x), rt_flags = (%x, %x), rtnh_flags = (%x, %x), objs = (%s, %s)\n", __FUNCTION__, old_route->rt_msgflags, new_route->rt_msgflags, old_route->rt_flags, new_route->rt_flags, old_nh->rtnh_flags, new_nh->rtnh_flags, obuf, nbuf);
 					}
 #endif
 					rtnl_route_nh_free(cloned_nh);
@@ -637,6 +637,15 @@ static char *route_attrs2str(int attrs, char *buf, size_t len)
 {
 	return __flags2str(attrs, buf, len, route_attrs,
 			   ARRAY_SIZE(route_attrs));
+}
+
+static int route_check_objflags(struct nl_object *obj, enum oo_objflags flags)
+{
+	if (flags & OO_OBJFLAGS_CACHE_APPEND) {
+		if (((struct rtnl_route *) obj)->rt_msgflags & NLM_F_APPEND)
+			return 1;
+	}
+	return 0;
 }
 
 /**
@@ -1097,7 +1106,8 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 	}
 
 	route->ce_msgtype = nlh->nlmsg_type;
-	route->ce_msgflags = nlh->nlmsg_flags;
+
+	route->rt_msgflags = nlh->nlmsg_flags;
 
 	err = nlmsg_parse(nlh, sizeof(struct rtmsg), tb, RTA_MAX, route_policy);
 	if (err < 0)
@@ -1384,6 +1394,7 @@ struct nl_object_ops route_obj_ops = {
 	.oo_keygen		= route_keygen,
 	.oo_update		= route_update,
 	.oo_attrs2str		= route_attrs2str,
+	.oo_check_objflags      = route_check_objflags,
 	.oo_id_attrs		= (ROUTE_ATTR_FAMILY | ROUTE_ATTR_TOS |
 				   ROUTE_ATTR_TABLE | ROUTE_ATTR_DST |
 				   ROUTE_ATTR_PRIO),

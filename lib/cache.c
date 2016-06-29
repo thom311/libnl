@@ -484,7 +484,7 @@ static int __cache_add(struct nl_cache *cache, struct nl_object *obj, int append
 int nl_cache_add(struct nl_cache *cache, struct nl_object *obj)
 {
 	return _nl_cache_add(cache, obj,
-	                     (obj->ce_msgflags & NLM_F_APPEND));
+	                     _nl_object_check_objflags (obj, OO_OBJFLAGS_CACHE_APPEND) > 0);
 }
 
 static int _nl_cache_add(struct nl_cache *cache, struct nl_object *obj, int append)
@@ -538,7 +538,7 @@ int nl_cache_move(struct nl_cache *cache, struct nl_object *obj)
 
 	NL_DBG(3, "Moving object %p from cache %p to cache %p\n",
 	       obj, obj->ce_cache, cache);
-	
+
 	/* Acquire reference, if already in a cache this will be
 	 * reverted during removal */
 	nl_object_get(obj);
@@ -547,7 +547,7 @@ int nl_cache_move(struct nl_cache *cache, struct nl_object *obj)
 		nl_cache_remove(obj);
 
 	return __cache_add(cache, obj,
-	                   (obj->ce_msgflags & NLM_F_APPEND));
+	                   _nl_object_check_objflags (obj, OO_OBJFLAGS_CACHE_APPEND) > 0);
 }
 
 /**

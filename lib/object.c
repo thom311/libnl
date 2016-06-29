@@ -144,6 +144,17 @@ struct nl_object *nl_object_clone(struct nl_object *obj)
 	return new;
 }
 
+int _nl_object_check_objflags (struct nl_object *obj,
+                               enum oo_objflags flags)
+{
+	struct nl_object_ops *ops = obj_ops(obj);
+
+	if (ops->oo_check_objflags)
+		return ops->oo_check_objflags(obj, flags);
+
+	return -NLE_OPNOTSUPP;
+}
+
 int _nl_object_update(struct nl_object *dst,
                       struct nl_object *src,
                       enum oo_update_flags flags)

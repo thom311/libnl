@@ -281,6 +281,7 @@ struct rtnl_route
 {
 	NLHDR_COMMON
 
+	int			rt_msgflags;
 	uint8_t			rt_family;
 	uint8_t			rt_dst_len;
 	uint8_t			rt_src_len;

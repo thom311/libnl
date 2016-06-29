@@ -529,8 +529,7 @@ static int route_update(struct nl_object *old_obj, struct nl_object *new_obj,
 
 		if (flags & OO_UPDATE_FLAGS_IS_DUMP) {
 			struct rtnl_nexthop *old_nh;
-			char nbuf[256];
-			char obuf[256];
+
 			/* Kernel can return duplicates during dumps
 			 * if the dump is interrupted and kernel routing
 			 * table is going through changes during dumps.
@@ -540,11 +539,18 @@ static int route_update(struct nl_object *old_obj, struct nl_object *new_obj,
 								   rtnh_list) {
 				if (!rtnl_route_nh_compare(old_nh, new_nh,
 							   rtnl_route_nh_id_attrs(), 0)) {
-					nl_object_dump_buf(new_obj, nbuf,
-							   sizeof(nbuf));
-					nl_object_dump_buf(old_obj, obuf,
-							   sizeof(obuf));
-					NL_DBG(0, "%s: ignoring duplicate nexthop: ce_msgflags = (%x, %x), rt_flags = (%x, %x), rtnh_flags = (%x, %x), objs = (%s, %s)\n", __FUNCTION__, old_obj->ce_msgflags, new_obj->ce_msgflags, old_route->rt_flags, new_route->rt_flags, old_nh->rtnh_flags, new_nh->rtnh_flags, obuf, nbuf);
+#ifdef NL_DEBUG
+					if (2 <= nl_debug) {
+						char nbuf[256];
+						char obuf[256];
+
+						nl_object_dump_buf(new_obj, nbuf,
+								   sizeof(nbuf));
+						nl_object_dump_buf(old_obj, obuf,
+								   sizeof(obuf));
+						NL_DBG(2, "%s: ignoring duplicate nexthop: ce_msgflags = (%x, %x), rt_flags = (%x, %x), rtnh_flags = (%x, %x), objs = (%s, %s)\n", __FUNCTION__, old_obj->ce_msgflags, new_obj->ce_msgflags, old_route->rt_flags, new_route->rt_flags, old_nh->rtnh_flags, new_nh->rtnh_flags, obuf, nbuf);
+					}
+#endif
 					rtnl_route_nh_free(cloned_nh);
 					return NLE_SUCCESS;
 				}

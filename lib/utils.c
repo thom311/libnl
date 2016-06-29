@@ -1162,7 +1162,7 @@ int nl_has_capability (int capability)
 			NL_CAPABILITY_NL_OBJECT_DIFF64),
 		_NL_SET (2,
 			NL_CAPABILITY_XFRM_SA_KEY_SIZE,
-			0,
+			NL_CAPABILITY_RTNL_ADDR_PEER_FIX,
 			0,
 			0,
 			0,

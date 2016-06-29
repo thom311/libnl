@@ -343,7 +343,7 @@ int nl_object_identical(struct nl_object *a, struct nl_object *b)
 	if (ops->oo_compare == NULL)
 		return 0;
 
-	return !(ops->oo_compare(a, b, req_attrs, 0));
+	return !(ops->oo_compare(a, b, req_attrs, ID_COMPARISON));
 }
 
 /**

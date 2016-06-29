@@ -241,34 +241,69 @@ static int addr_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		addr->ce_mask |= ADDR_ATTR_CACHEINFO;
 	}
 
-	if (tb[IFA_LOCAL]) {
-		addr->a_local = nl_addr_alloc_attr(tb[IFA_LOCAL], family);
+	if (family == AF_INET) {
+		uint32_t null = 0;
+
+		/* for IPv4/AF_INET, kernel always sets IFA_LOCAL and IFA_ADDRESS, unless it
+		 * is effectively 0.0.0.0. */
+		if (tb[IFA_LOCAL])
+			addr->a_local = nl_addr_alloc_attr(tb[IFA_LOCAL], family);
+		else
+			addr->a_local = nl_addr_build(family, &null, sizeof (null));
 		if (!addr->a_local)
 			goto errout_nomem;
 		addr->ce_mask |= ADDR_ATTR_LOCAL;
-		plen_addr = addr->a_local;
-	}
 
-	if (tb[IFA_ADDRESS]) {
-		struct nl_addr *a;
-
-		a = nl_addr_alloc_attr(tb[IFA_ADDRESS], family);
-		if (!a)
+		if (tb[IFA_ADDRESS])
+			addr->a_peer = nl_addr_alloc_attr(tb[IFA_ADDRESS], family);
+		else
+			addr->a_peer = nl_addr_build(family, &null, sizeof (null));
+		if (!addr->a_peer)
 			goto errout_nomem;
 
-		/* IPv6 sends the local address as IFA_ADDRESS with
-		 * no IFA_LOCAL, IPv4 sends both IFA_LOCAL and IFA_ADDRESS
-		 * with IFA_ADDRESS being the peer address if they differ */
-		if (!tb[IFA_LOCAL] || !nl_addr_cmp(a, addr->a_local)) {
-			nl_addr_put(addr->a_local);
-			addr->a_local = a;
-			addr->ce_mask |= ADDR_ATTR_LOCAL;
-		} else {
-			addr->a_peer = a;
+		if (!nl_addr_cmp (addr->a_local, addr->a_peer)) {
+			/* having IFA_ADDRESS equal to IFA_LOCAL does not really mean
+			 * there is no peer. It means the peer is equal to the local address,
+			 * which is the case for "normal" addresses.
+			 *
+			 * Still, clear the peer and pretend it is unset for backward
+			 * compatibility. */
+			nl_addr_put(addr->a_peer);
+			addr->a_peer = NULL;
+		} else
 			addr->ce_mask |= ADDR_ATTR_PEER;
+
+		plen_addr = addr->a_local;
+	} else {
+		if (tb[IFA_LOCAL]) {
+			addr->a_local = nl_addr_alloc_attr(tb[IFA_LOCAL], family);
+			if (!addr->a_local)
+				goto errout_nomem;
+			addr->ce_mask |= ADDR_ATTR_LOCAL;
+			plen_addr = addr->a_local;
 		}
 
-		plen_addr = a;
+		if (tb[IFA_ADDRESS]) {
+			struct nl_addr *a;
+
+			a = nl_addr_alloc_attr(tb[IFA_ADDRESS], family);
+			if (!a)
+				goto errout_nomem;
+
+			/* IPv6 sends the local address as IFA_ADDRESS with
+			 * no IFA_LOCAL, IPv4 sends both IFA_LOCAL and IFA_ADDRESS
+			 * with IFA_ADDRESS being the peer address if they differ */
+			if (!tb[IFA_LOCAL] || !nl_addr_cmp(a, addr->a_local)) {
+				nl_addr_put(addr->a_local);
+				addr->a_local = a;
+				addr->ce_mask |= ADDR_ATTR_LOCAL;
+			} else {
+				addr->a_peer = a;
+				addr->ce_mask |= ADDR_ATTR_PEER;
+			}
+
+			plen_addr = a;
+		}
 	}
 
 	if (plen_addr)
@@ -429,6 +464,24 @@ static void addr_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	addr_dump_details(obj, p);
 }
 
+static uint32_t addr_id_attrs_get(struct nl_object *obj)
+{
+	struct rtnl_addr *addr = (struct rtnl_addr *)obj;
+
+	switch (addr->a_family) {
+	case AF_INET:
+		return (ADDR_ATTR_FAMILY | ADDR_ATTR_IFINDEX |
+		        ADDR_ATTR_LOCAL | ADDR_ATTR_PREFIXLEN |
+		        ADDR_ATTR_PEER);
+	case AF_INET6:
+		return (ADDR_ATTR_FAMILY | ADDR_ATTR_IFINDEX |
+		        ADDR_ATTR_LOCAL);
+	default:
+		return (ADDR_ATTR_FAMILY | ADDR_ATTR_IFINDEX |
+		        ADDR_ATTR_LOCAL | ADDR_ATTR_PREFIXLEN);
+	}
+}
+
 static uint64_t addr_compare(struct nl_object *_a, struct nl_object *_b,
 			     uint64_t attrs, int flags)
 {
@@ -442,7 +495,20 @@ static uint64_t addr_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= ADDR_DIFF(FAMILY,	a->a_family != b->a_family);
 	diff |= ADDR_DIFF(SCOPE,	a->a_scope != b->a_scope);
 	diff |= ADDR_DIFF(LABEL,	strcmp(a->a_label, b->a_label));
-	diff |= ADDR_DIFF(PEER,		nl_addr_cmp(a->a_peer, b->a_peer));
+	if (attrs & ADDR_ATTR_PEER) {
+		if (   (flags & ID_COMPARISON)
+		    && a->a_family == AF_INET
+		    && b->a_family == AF_INET
+		    && a->a_peer
+		    && b->a_peer
+		    && a->a_prefixlen == b->a_prefixlen) {
+			/* when comparing two IPv4 addresses for id-equality, the network part
+			 * of the PEER address shall be compared.
+			 */
+			diff |= ADDR_DIFF(PEER, nl_addr_cmp_prefix(a->a_peer, b->a_peer));
+		} else
+			diff |= ADDR_DIFF(PEER, nl_addr_cmp(a->a_peer, b->a_peer));
+	}
 	diff |= ADDR_DIFF(LOCAL,	nl_addr_cmp(a->a_local, b->a_local));
 	diff |= ADDR_DIFF(MULTICAST,	nl_addr_cmp(a->a_multicast,
 						    b->a_multicast));
@@ -1100,6 +1166,7 @@ static struct nl_object_ops addr_obj_ops = {
 	},
 	.oo_compare		= addr_compare,
 	.oo_attrs2str		= addr_attrs2str,
+	.oo_id_attrs_get	= addr_id_attrs_get,
 	.oo_id_attrs		= (ADDR_ATTR_FAMILY | ADDR_ATTR_IFINDEX |
 				   ADDR_ATTR_LOCAL | ADDR_ATTR_PREFIXLEN),
 };

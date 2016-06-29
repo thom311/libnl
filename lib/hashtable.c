@@ -164,6 +164,11 @@ struct nl_object* nl_hash_table_lookup_mask(nl_hash_table_t *ht,
  */
 int nl_hash_table_add(nl_hash_table_t *ht, struct nl_object *obj)
 {
+	return _nl_hash_table_add(ht, obj, 0);
+}
+
+int _nl_hash_table_add(nl_hash_table_t *ht, struct nl_object *obj, int append)
+{
 	nl_hash_node_t *node, *head;
 	uint32_t key_hash;
 
@@ -199,8 +204,7 @@ int nl_hash_table_add(nl_hash_table_t *ht, struct nl_object *obj)
 	node->key_size = sizeof(uint32_t);
 	nl_init_list_head(&node->list);
 
-	if ((obj->ce_msgflags & NLM_F_APPEND) ||
-		(obj->ce_flags & NL_OBJ_DUMP))
+	if (append)
 		nl_list_add_tail(&node->list, &ht->nodes[key_hash]->list);
 	else
 		nl_list_add_head(&node->list, &ht->nodes[key_hash]->list);

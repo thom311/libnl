@@ -288,6 +288,8 @@ struct nl_hash_table {
 	struct nl_hash_node **nodes;
 };
 
+int _nl_hash_table_add(struct nl_hash_table *ht, struct nl_object *obj, int append);
+
 /** @} */
 
 #ifdef __cplusplus

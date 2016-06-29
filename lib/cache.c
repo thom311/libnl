@@ -438,7 +438,9 @@ static int __cache_add(struct nl_cache *cache, struct nl_object *obj)
 	obj->ce_cache = cache;
 
 	if (cache->hashtable) {
-		ret = nl_hash_table_add(cache->hashtable, obj);
+		ret = _nl_hash_table_add(cache->hashtable, obj,
+		                         (obj->ce_msgflags & NLM_F_APPEND) ||
+		                         (obj->ce_flags & NL_OBJ_DUMP));
 		if (ret < 0) {
 			obj->ce_cache = NULL;
 			return ret;

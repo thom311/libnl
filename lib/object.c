@@ -406,7 +406,7 @@ uint32_t nl_object_diff_mask(struct nl_object *a, struct nl_object *b,
 	struct nl_object_ops *ops = obj_ops(a);
 
 	if (ops != obj_ops(b) || ops->oo_compare == NULL)
-		return UINT_MAX;
+		return UINT32_MAX;
 
 	return ops->oo_compare(a, b, mask, 0);
 }

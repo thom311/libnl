@@ -276,6 +276,18 @@ struct nl_cache_ops
 	struct nl_msgtype	co_msgtypes[];
 };
 
+struct nl_hash_node {
+	uint32_t key;
+	uint32_t key_size;
+	struct nl_object *obj;
+	struct nl_list_head list;
+};
+
+struct nl_hash_table {
+	int size;
+	struct nl_hash_node **nodes;
+};
+
 /** @} */
 
 #ifdef __cplusplus

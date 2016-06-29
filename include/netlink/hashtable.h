@@ -16,17 +16,8 @@
 extern "C" {
 #endif
 
-typedef struct nl_hash_node {
-    uint32_t			key;
-    uint32_t			key_size;
-    struct nl_object *		obj;
-    struct nl_list_head		list;
-} nl_hash_node_t;
-
-typedef struct nl_hash_table {
-    int 			size;
-    nl_hash_node_t **		nodes;
-} nl_hash_table_t;
+typedef struct nl_hash_node nl_hash_node_t;
+typedef struct nl_hash_table nl_hash_table_t;
 
 /* Default hash table size */
 #define NL_MAX_HASH_ENTRIES 1024

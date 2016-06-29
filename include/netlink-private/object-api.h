@@ -20,6 +20,13 @@
 extern "C" {
 #endif
 
+enum oo_update_flags {
+	OO_UPDATE_FLAGS_NONE = 0,
+
+	/* object received due to a dump */
+	OO_UPDATE_FLAGS_IS_DUMP = 1,
+};
+
 /**
  * @ingroup object
  * @defgroup object_api Object API
@@ -350,7 +357,8 @@ struct nl_object_ops
 	 * to update. In case of failure its assumed that the original
 	 * object is not touched
 	 */
-	int   (*oo_update)(struct nl_object *, struct nl_object *);
+	int   (*oo_update)(struct nl_object *, struct nl_object *,
+	                   enum oo_update_flags flags);
 
 	/**
 	 * Hash Key generator function
@@ -374,6 +382,10 @@ struct nl_object_ops
 	 */
 	uint32_t   (*oo_hash_attrs_get)(struct nl_object *);
 };
+
+int _nl_object_update(struct nl_object *dst,
+                      struct nl_object *src,
+                      enum oo_update_flags flags);
 
 /** @} */
 

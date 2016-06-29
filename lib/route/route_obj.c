@@ -478,7 +478,8 @@ nh_mismatch:
 #undef ROUTE_DIFF
 }
 
-static int route_update(struct nl_object *old_obj, struct nl_object *new_obj)
+static int route_update(struct nl_object *old_obj, struct nl_object *new_obj,
+                        enum oo_update_flags flags)
 {
 	struct rtnl_route *new_route = (struct rtnl_route *) new_obj;
 	struct rtnl_route *old_route = (struct rtnl_route *) old_obj;
@@ -526,7 +527,7 @@ static int route_update(struct nl_object *old_obj, struct nl_object *new_obj)
 		if (!cloned_nh)
 			return -NLE_NOMEM;
 
-		if (new_obj->ce_flags & NL_OBJ_DUMP) {
+		if (flags & OO_UPDATE_FLAGS_IS_DUMP) {
 			struct rtnl_nexthop *old_nh;
 			char nbuf[256];
 			char obuf[256];

@@ -144,6 +144,18 @@ struct nl_object *nl_object_clone(struct nl_object *obj)
 	return new;
 }
 
+int _nl_object_update(struct nl_object *dst,
+                      struct nl_object *src,
+                      enum oo_update_flags flags)
+{
+	struct nl_object_ops *ops = obj_ops(dst);
+
+	if (ops->oo_update)
+		return ops->oo_update(dst, src, flags);
+
+	return -NLE_OPNOTSUPP;
+}
+
 /**
  * Merge a cacheable object
  * @arg dst		object to be merged into
@@ -153,12 +165,7 @@ struct nl_object *nl_object_clone(struct nl_object *obj)
  */
 int nl_object_update(struct nl_object *dst, struct nl_object *src)
 {
-	struct nl_object_ops *ops = obj_ops(dst);
-
-	if (ops->oo_update)
-		return ops->oo_update(dst, src);
-
-	return -NLE_OPNOTSUPP;
+	return _nl_object_update(dst, src, OO_UPDATE_FLAGS_NONE);
 }
 
 /**

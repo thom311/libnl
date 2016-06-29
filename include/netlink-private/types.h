@@ -114,7 +114,6 @@ struct nl_parser_param;
 #define ID_COMPARISON           2
 
 #define NL_OBJ_MARK		1
-#define NL_OBJ_DUMP		2	/* object received due to a dump */
 
 struct nl_data
 {

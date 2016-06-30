@@ -51,6 +51,7 @@ nobase_libnlinclude_HEADERS = \
 	netlink/route/link/inet.h \
 	netlink/route/link/inet6.h \
 	netlink/route/link/info-api.h \
+	netlink/route/link/macsec.h \
 	netlink/route/link/macvlan.h \
 	netlink/route/link/macvtap.h \
 	netlink/route/link/vlan.h \
@@ -133,6 +134,7 @@ noinst_HEADERS = \
 	linux-private/linux/if.h \
 	linux-private/linux/if_bridge.h \
 	linux-private/linux/if_link.h \
+	linux-private/linux/if_macsec.h \
 	linux-private/linux/if_tunnel.h \
 	linux-private/linux/if_vlan.h \
 	linux-private/linux/inet_diag.h \

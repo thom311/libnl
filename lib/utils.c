@@ -1163,7 +1163,7 @@ int nl_has_capability (int capability)
 		_NL_SET (2,
 			NL_CAPABILITY_XFRM_SA_KEY_SIZE,
 			NL_CAPABILITY_RTNL_ADDR_PEER_FIX,
-			0,
+			NL_CAPABILITY_VERSION_3_2_28,
 			0,
 			0,
 			0,

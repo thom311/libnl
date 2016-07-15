@@ -138,7 +138,7 @@ extern int __str2flags(const char *, const struct trans_tbl *, size_t);
 extern void dump_from_ops(struct nl_object *, struct nl_dump_params *);
 extern struct rtnl_link *link_lookup(struct nl_cache *cache, int ifindex);
 
-static inline int nl_cb_call(struct nl_cb *cb, int type, struct nl_msg *msg)
+static inline int nl_cb_call(struct nl_cb *cb, enum nl_cb_type type, struct nl_msg *msg)
 {
 	int ret;
 
@@ -201,7 +201,7 @@ static inline void rtnl_rcopy_ratespec(struct tc_ratespec *dst,
 	dst->rate = src->rs_rate;
 }
 
-static inline char *nl_cache_name(struct nl_cache *cache)
+static inline const char *nl_cache_name(struct nl_cache *cache)
 {
 	return cache->c_ops ? cache->c_ops->co_name : "unknown";
 }

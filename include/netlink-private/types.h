@@ -20,6 +20,7 @@
 #include <netlink/route/route.h>
 #include <netlink/idiag/idiagnl.h>
 #include <netlink/netfilter/ct.h>
+#include <netlink-private/object-api.h>
 #include <netlink-private/route/tc-api.h>
 #include <linux/tc_act/tc_mirred.h>
 #include <linux/tc_act/tc_skbedit.h>

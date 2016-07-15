@@ -2,6 +2,7 @@
 #define _IPV6_H
 
 #include <asm/byteorder.h>
+#include <linux/in6.h>
 
 /* The latest drafts declared increase in minimal mtu up to 1280. */
 

@@ -58,7 +58,7 @@ extern "C" {
 	int rtnl_link_sit_set_ip6rd_relay_prefixlen(struct rtnl_link *link, uint16_t prefix);
 	int rtnl_link_sit_get_ip6rd_relay_prefixlen(struct rtnl_link *link, uint16_t *prefix);
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

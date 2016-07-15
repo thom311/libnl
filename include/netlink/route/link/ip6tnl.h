@@ -51,7 +51,7 @@ extern "C" {
 	extern int rtnl_link_ip6_tnl_set_proto(struct rtnl_link *link, uint8_t proto);
 	extern uint8_t rtnl_link_ip6_tnl_get_proto(struct rtnl_link *link);
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

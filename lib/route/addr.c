@@ -467,12 +467,15 @@ static void addr_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 static uint32_t addr_id_attrs_get(struct nl_object *obj)
 {
 	struct rtnl_addr *addr = (struct rtnl_addr *)obj;
+	uint32_t rv;
 
 	switch (addr->a_family) {
 	case AF_INET:
-		return (ADDR_ATTR_FAMILY | ADDR_ATTR_IFINDEX |
-		        ADDR_ATTR_LOCAL | ADDR_ATTR_PREFIXLEN |
-		        ADDR_ATTR_PEER);
+		rv = (ADDR_ATTR_FAMILY | ADDR_ATTR_IFINDEX |
+		      ADDR_ATTR_LOCAL | ADDR_ATTR_PREFIXLEN);
+		if (addr->a_peer)
+			rv |= ADDR_ATTR_PEER;
+		return rv;
 	case AF_INET6:
 		return (ADDR_ATTR_FAMILY | ADDR_ATTR_IFINDEX |
 		        ADDR_ATTR_LOCAL);

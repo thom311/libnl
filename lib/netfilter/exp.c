@@ -357,10 +357,10 @@ static int nfnl_exp_build_tuple(struct nl_msg *msg, const struct nfnl_exp *exp,
 
 	int type = exp_get_tuple_attr(cta);
 
-    if (cta == CTA_EXPECT_NAT)
-        tuple = nla_nest_start(msg, CTA_EXPECT_NAT_TUPLE);
-    else
-        tuple = nla_nest_start(msg, cta);
+	if (cta == CTA_EXPECT_NAT)
+		tuple = nla_nest_start(msg, CTA_EXPECT_NAT_TUPLE);
+	else
+		tuple = nla_nest_start(msg, cta);
 
 	if (!tuple)
 		goto nla_put_failure;

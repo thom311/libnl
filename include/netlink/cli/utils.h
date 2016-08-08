@@ -61,8 +61,10 @@ extern "C" {
 #endif
 
 extern uint32_t		nl_cli_parse_u32(const char *);
-extern void		nl_cli_print_version(void);
-extern void		nl_cli_fatal(int, const char *, ...);
+extern void		nl_cli_print_version(void)
+			__attribute__((noreturn));
+extern void		nl_cli_fatal(int, const char *, ...)
+			__attribute__((noreturn));
 extern struct nl_addr *	nl_cli_addr_parse(const char *, int);
 extern int		nl_cli_connect(struct nl_sock *, int);
 extern struct nl_sock *	nl_cli_alloc_socket(void);

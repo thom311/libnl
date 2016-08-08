@@ -1067,8 +1067,8 @@ int xfrmnl_sa_get_kernel(struct nl_sock* sock, struct nl_addr* daddr, unsigned i
 	*result = (struct xfrmnl_sa *) obj;
 
 	/* If an object has been returned, we also need to wait for the ACK */
-	 if (err == 0 && obj)
-		 nl_wait_for_ack(sock);
+	if (err == 0 && obj)
+		nl_wait_for_ack(sock);
 
 	return 0;
 }

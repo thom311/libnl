@@ -132,7 +132,7 @@ static int exp_clone(struct nl_object *_dst, struct nl_object *_src)
 		dst->exp_mask.dst = addr;
 	}
 
-    // NAT
+	// NAT
 	if (src->exp_nat.src) {
 		addr = nl_addr_clone(src->exp_nat.src);
 		if (!addr)
@@ -200,7 +200,7 @@ static void exp_dump_tuples(struct nfnl_exp *exp, struct nl_dump_params *p)
 		if (nfnl_exp_test_dst(exp, i))
 			tuple_dst = nfnl_exp_get_dst(exp, i);
 
-        // Don't have tests for individual ports/types/codes/ids,
+		// Don't have tests for individual ports/types/codes/ids,
 		if (nfnl_exp_test_l4protonum(exp, i)) {
 			nl_dump(p, "%s ",
 				nl_ip_proto2str(nfnl_exp_get_l4protonum(exp, i), buf, sizeof(buf)));
@@ -286,17 +286,17 @@ static int exp_cmp_l4proto_ports (union nfnl_exp_protodata *a, union nfnl_exp_pr
 	// Must return 0 for match, 1 for mismatch
 	int d = 0;
 	d = ( (a->port.src != b->port.src) ||
-		  (a->port.dst != b->port.dst) );
+	      (a->port.dst != b->port.dst) );
 
 	return d;
 }
 
 static int exp_cmp_l4proto_icmp (union nfnl_exp_protodata *a, union nfnl_exp_protodata *b) {
-    // Must return 0 for match, 1 for mismatch
+	// Must return 0 for match, 1 for mismatch
 	int d = 0;
 	d = ( (a->icmp.code != b->icmp.code) ||
-		  (a->icmp.type != b->icmp.type) ||
-		  (a->icmp.id != b->icmp.id) );
+	      (a->icmp.type != b->icmp.type) ||
+	      (a->icmp.id != b->icmp.id) );
 
 	return d;
 }

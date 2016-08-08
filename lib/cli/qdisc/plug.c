@@ -66,7 +66,7 @@ static void plug_parse_argv(struct rtnl_tc *tc, int argc, char **argv)
 			{ "release-indefinite", 0, 0, ARG_RELEASE_INDEFINITE },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "h", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -85,14 +85,14 @@ static void plug_parse_argv(struct rtnl_tc *tc, int argc, char **argv)
 			break;
 
 		case ARG_RELEASE_ONE:
-		        rtnl_qdisc_plug_release_one(qdisc);
+			rtnl_qdisc_plug_release_one(qdisc);
 			break;
 
 		case ARG_RELEASE_INDEFINITE:
 			rtnl_qdisc_plug_release_indefinite(qdisc);
 			break;
 		}
- 	}
+	}
 }
 
 static struct nl_cli_tc_module plug_module =

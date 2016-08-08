@@ -204,18 +204,18 @@ static struct nl_sock *__alloc_socket(struct nl_cb *cb)
 struct nl_sock *nl_socket_alloc(void)
 {
 	struct nl_cb *cb;
-        struct nl_sock *sk;
+	struct nl_sock *sk;
 
 	cb = nl_cb_alloc(default_cb);
 	if (!cb)
 		return NULL;
 
-        /* will increment cb reference count on success */
+	/* will increment cb reference count on success */
 	sk = __alloc_socket(cb);
 
-        nl_cb_put(cb);
+	nl_cb_put(cb);
 
-        return sk;
+	return sk;
 }
 
 /**
@@ -751,8 +751,8 @@ struct nl_cb *nl_socket_get_cb(const struct nl_sock *sk)
 
 void nl_socket_set_cb(struct nl_sock *sk, struct nl_cb *cb)
 {
-        if (cb == NULL)
-                BUG();
+	if (cb == NULL)
+		BUG();
 
 	nl_cb_put(sk->s_cb);
 	sk->s_cb = nl_cb_get(cb);
@@ -823,7 +823,7 @@ int nl_socket_set_buffer_size(struct nl_sock *sk, int rxbuf, int txbuf)
 
 	if (sk->s_fd == -1)
 		return -NLE_BAD_SOCK;
-	
+
 	err = setsockopt(sk->s_fd, SOL_SOCKET, SO_SNDBUF,
 			 &txbuf, sizeof(txbuf));
 	if (err < 0) {

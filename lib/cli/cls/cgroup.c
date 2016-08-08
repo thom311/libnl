@@ -39,7 +39,7 @@ static void parse_argv(struct rtnl_tc *tc, int argc, char **argv)
 			{ "ematch", 1, 0, 'e' },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "he:", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -54,7 +54,7 @@ static void parse_argv(struct rtnl_tc *tc, int argc, char **argv)
 			rtnl_cgroup_set_ematch(cls, tree);
 			break;
 		}
- 	}
+	}
 }
 
 static struct nl_cli_tc_module cgroup_module =

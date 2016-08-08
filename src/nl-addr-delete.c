@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
 			{ "valid", 1, 0, ARG_VALID },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "iqhva:d:", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
 		case ARG_PREFERRED: nl_cli_addr_parse_preferred(addr, optarg); break;
 		case ARG_VALID: nl_cli_addr_parse_valid(addr, optarg); break;
 		}
- 	}
+	}
 
 	nl_cache_foreach_filter(addr_cache, OBJ_CAST(addr), delete_cb, NULL);
 

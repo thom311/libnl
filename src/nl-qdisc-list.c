@@ -129,15 +129,15 @@ int main(int argc, char *argv[])
 	struct rtnl_qdisc *qdisc;
 	struct rtnl_tc *tc;
 	struct nl_cache *link_cache, *qdisc_cache;
- 
+
 	params.dp_fd = stdout;
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
 	link_cache = nl_cli_link_alloc_cache(sock);
 	qdisc_cache = nl_cli_qdisc_alloc_cache(sock);
- 	qdisc = nl_cli_qdisc_alloc();
+	qdisc = nl_cli_qdisc_alloc();
 	tc = (struct rtnl_tc *) qdisc;
- 
+
 	for (;;) {
 		int c, optidx = 0;
 		enum {
@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
 			{ "kind", 1, 0, 'k' },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "rhvd:p:i:k:", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 		case 'i': nl_cli_tc_parse_handle(tc, optarg, 0); break;
 		case 'k': nl_cli_tc_parse_kind(tc, optarg); break;
 		}
- 	}
+	}
 
 	if (recursive)
 		nl_cache_foreach_filter(qdisc_cache, OBJ_CAST(qdisc), list_qdisc, NULL);

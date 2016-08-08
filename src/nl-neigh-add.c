@@ -51,12 +51,12 @@ int main(int argc, char *argv[])
 		.dp_fd = stdout,
 	};
 	int err, ok = 0, nlflags = NLM_F_REPLACE | NLM_F_CREATE;
- 
+
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
 	link_cache = nl_cli_link_alloc_cache(sock);
- 	neigh = nl_cli_neigh_alloc();
- 
+	neigh = nl_cli_neigh_alloc();
+
 	for (;;) {
 		int c, optidx = 0;
 		enum {
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 			{ "state", 1, 0, ARG_STATE },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "qhva:l:d:", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 		case 'd': nl_cli_neigh_parse_dev(neigh, link_cache, optarg); break;
 		case ARG_STATE: nl_cli_neigh_parse_state(neigh, optarg); break;
 		}
- 	}
+	}
 
 	if (!ok)
 		print_usage();
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 	if (!quiet) {
 		printf("Added ");
 		nl_object_dump(OBJ_CAST(neigh), &dp);
- 	}
+	}
 
 	return 0;
 }

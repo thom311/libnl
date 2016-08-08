@@ -33,13 +33,13 @@ int main(int argc, char *argv[])
 		.dp_type = NL_DUMP_LINE,
 		.dp_fd = stdout,
 	};
- 
+
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
 	nl_cli_link_alloc_cache(sock);
 	neightbl_cache = nl_cli_alloc_cache(sock, "neighbour table",
 					    rtnl_neightbl_alloc_cache);
- 
+
 	for (;;) {
 		int c, optidx = 0;
 		static struct option long_opts[] = {
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 			{ "version", 0, 0, 'v' },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "f:hv", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 		case 'h': print_usage(); break;
 		case 'v': nl_cli_print_version(); break;
 		}
- 	}
+	}
 
 	nl_cache_dump(neightbl_cache, &params);
 

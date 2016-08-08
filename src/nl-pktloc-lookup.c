@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 			{ "u32", 1, 0, ARG_U32 },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "hvl", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 			uvalue = nl_cli_parse_u32(optarg);
 			break;
 		}
- 	}
+	}
 
 	if (optind >= argc)
 		print_usage();

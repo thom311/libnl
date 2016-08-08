@@ -409,7 +409,7 @@ static void xfrm_sp_dump_line(struct nl_object *a, struct nl_dump_params *p)
 		nl_dump_line(p, "\tUser template: \n");
 
 		nl_list_for_each_entry(utmpl, &sp->usertmpl_list, utmpl_list)
-	        xfrmnl_user_tmpl_dump (utmpl, p);
+			xfrmnl_user_tmpl_dump (utmpl, p);
 	}
 
 	if (sp->ce_mask & XFRM_SP_ATTR_MARK)
@@ -750,8 +750,8 @@ int xfrmnl_sp_get_kernel(struct nl_sock* sock, unsigned int index, unsigned int 
 	*result = (struct xfrmnl_sp *) obj;
 
 	/* If an object has been returned, we also need to wait for the ACK */
-	 if (err == 0 && obj)
-		 nl_wait_for_ack(sock);
+	if (err == 0 && obj)
+		nl_wait_for_ack(sock);
 
 	return 0;
 }

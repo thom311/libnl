@@ -114,7 +114,7 @@ static int ct_parse_ip(struct nfnl_ct *ct, int repl, struct nlattr *attr)
 	struct nl_addr *addr;
 	int err;
 
-        err = nla_parse_nested(tb, CTA_IP_MAX, attr, ct_ip_policy);
+	err = nla_parse_nested(tb, CTA_IP_MAX, attr, ct_ip_policy);
 	if (err < 0)
 		goto errout;
 

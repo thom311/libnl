@@ -42,7 +42,7 @@ static void bfifo_parse_argv(struct rtnl_tc *tc, int argc, char **argv)
 			{ "limit", 1, 0, ARG_LIMIT },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "h", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -62,7 +62,7 @@ static void bfifo_parse_argv(struct rtnl_tc *tc, int argc, char **argv)
 			rtnl_qdisc_fifo_set_limit(qdisc, limit);
 			break;
 		}
- 	}
+	}
 }
 
 static struct nl_cli_tc_module bfifo_module =

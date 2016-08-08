@@ -259,18 +259,18 @@ char *idiagnl_tcpopts2str(uint8_t attrs, char *buf, size_t len)
  */
 char * idiagnl_shutdown2str(uint8_t shutdown, char *buf, size_t len)
 {
-  if (shutdown == 0) {
-	  snprintf(buf, len, " ");
-	  return buf;
-  } else if (shutdown == 1) {
-	  snprintf(buf, len, "receive shutdown");
-	  return buf;
-  } else if (shutdown == 2) {
-	  snprintf(buf, len, "send shutdown");
-	  return buf;
-  }
+	if (shutdown == 0) {
+		snprintf(buf, len, " ");
+		return buf;
+	} else if (shutdown == 1) {
+		snprintf(buf, len, "receive shutdown");
+		return buf;
+	} else if (shutdown == 2) {
+		snprintf(buf, len, "send shutdown");
+		return buf;
+	}
 
-  return NULL;
+	return NULL;
 }
 
 /** @} */

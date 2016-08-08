@@ -198,7 +198,7 @@ void xfrmnl_sel_dump(struct xfrmnl_sel* sel, struct nl_dump_params *p)
  */
 struct nl_addr* xfrmnl_sel_get_daddr (struct xfrmnl_sel* sel)
 {
-   return sel->daddr;
+	return sel->daddr;
 }
 
 int xfrmnl_sel_set_daddr (struct xfrmnl_sel* sel, struct nl_addr* addr)
@@ -214,7 +214,7 @@ int xfrmnl_sel_set_daddr (struct xfrmnl_sel* sel, struct nl_addr* addr)
 
 struct nl_addr* xfrmnl_sel_get_saddr (struct xfrmnl_sel* sel)
 {
-   return sel->saddr;
+	return sel->saddr;
 }
 
 int xfrmnl_sel_set_saddr (struct xfrmnl_sel* sel, struct nl_addr* addr)

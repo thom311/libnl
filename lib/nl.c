@@ -761,7 +761,7 @@ retry:
 		goto retry;
 	}
 
-        if (flags != 0) {
+	if (flags != 0) {
 		/* Buffer is big enough, do the actual reading */
 		flags = 0;
 		goto retry;
@@ -988,7 +988,7 @@ continue_reading:
 				/* Error message reported back from kernel. */
 				if (cb->cb_err) {
 					err = cb->cb_err(&nla, e,
-							   cb->cb_err_arg);
+							 cb->cb_err_arg);
 					if (err < 0)
 						goto out;
 					else if (err == NL_SKIP)
@@ -1206,7 +1206,7 @@ int nl_pickup_keep_syserr(struct nl_sock *sk,
 	struct nl_cb *cb;
 	int err;
 	struct pickup_param pp = {
-	        .parser = parser,
+		.parser = parser,
 	};
 
 	cb = nl_cb_clone(sk->s_cb);

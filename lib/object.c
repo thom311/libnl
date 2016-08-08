@@ -295,12 +295,12 @@ void nl_object_dump(struct nl_object *obj, struct nl_dump_params *params)
 
 void nl_object_dump_buf(struct nl_object *obj, char *buf, size_t len)
 {
-        struct nl_dump_params dp = {
-                .dp_buf = buf,
-                .dp_buflen = len,
-        };
+	struct nl_dump_params dp = {
+		.dp_buf = buf,
+		.dp_buflen = len,
+	};
 
-        return nl_object_dump(obj, &dp);
+	return nl_object_dump(obj, &dp);
 }
 
 /**

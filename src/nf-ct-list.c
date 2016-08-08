@@ -54,9 +54,9 @@ int main(int argc, char *argv[])
 		.dp_type = NL_DUMP_LINE,
 		.dp_fd = stdout,
 	};
- 
- 	ct = nl_cli_ct_alloc();
- 
+
+	ct = nl_cli_ct_alloc();
+
 	for (;;) {
 		int c, optidx = 0;
 		enum {
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 			{ "refcnt", 1, 0, ARG_REFCNT },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "46f:hvi:p:F:", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
 		case ARG_REFCNT: nl_cli_ct_parse_use(ct, optarg); break;
 		case ARG_FLAGS: nl_cli_ct_parse_status(ct, optarg); break;
 		}
- 	}
+	}
 
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_NETFILTER);

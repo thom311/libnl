@@ -59,15 +59,15 @@ int main(int argc, char *argv[])
 	struct rtnl_tc_ops *ops;
 	int err, flags = NLM_F_CREATE | NLM_F_EXCL;
 	char *kind, *id = NULL;
- 
+
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
 
 	link_cache = nl_cli_link_alloc_cache(sock);
 
- 	qdisc = nl_cli_qdisc_alloc();
+	qdisc = nl_cli_qdisc_alloc();
 	tc = (struct rtnl_tc *) qdisc;
- 
+
 	for (;;) {
 		int c, optidx = 0;
 		enum {
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
 			{ "update-only", 0, 0, ARG_UPDATE_ONLY },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "+qhvd:p:i:",
 				long_opts, &optidx);
 		if (c == -1)
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 		case ARG_UPDATE_ONLY: flags = 0; break;
 		case ARG_REPLACE_ONLY: flags = NLM_F_REPLACE; break;
 		}
- 	}
+	}
 
 	if (optind >= argc)
 		print_usage();
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 	if (!quiet) {
 		printf("Adding ");
 		nl_object_dump(OBJ_CAST(qdisc), &dp);
- 	}
+	}
 
 	if ((err = rtnl_qdisc_add(sock, qdisc, flags)) < 0)
 		nl_cli_fatal(EINVAL, "Unable to add qdisc: %s", nl_geterror(err));

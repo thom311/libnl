@@ -235,7 +235,7 @@ int nl_cache_alloc_and_fill(struct nl_cache_ops *ops, struct nl_sock *sock,
 {
 	struct nl_cache *cache;
 	int err;
-	
+
 	if (!(cache = nl_cache_alloc(ops)))
 		return -NLE_NOMEM;
 
@@ -527,7 +527,7 @@ int nl_cache_move(struct nl_cache *cache, struct nl_object *obj)
 
 	NL_DBG(3, "Moving object %p from cache %p to cache %p\n",
 	       obj, obj->ce_cache, cache);
-	
+
 	/* Acquire reference, if already in a cache this will be
 	 * reverted during removal */
 	nl_object_get(obj);
@@ -589,7 +589,7 @@ void nl_cache_remove(struct nl_object *obj)
  */
 void nl_cache_set_arg1(struct nl_cache *cache, int arg)
 {
-        cache->c_iarg1 = arg;
+	cache->c_iarg1 = arg;
 }
 
 /**
@@ -602,7 +602,7 @@ void nl_cache_set_arg1(struct nl_cache *cache, int arg)
  */
 void nl_cache_set_arg2(struct nl_cache *cache, int arg)
 {
-        cache->c_iarg2 = arg;
+	cache->c_iarg2 = arg;
 }
 
 /**
@@ -1038,8 +1038,8 @@ static struct nl_object *__cache_fast_lookup(struct nl_cache *cache,
 
 	obj = nl_hash_table_lookup(cache->hashtable, needle);
 	if (obj) {
-	    nl_object_get(obj);
-	    return obj;
+		nl_object_get(obj);
+		return obj;
 	}
 
 	return NULL;

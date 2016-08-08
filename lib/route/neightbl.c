@@ -135,7 +135,7 @@ static int neightbl_msg_parser(struct nl_cache_ops *ops,
 
 	ntbl->ce_msgtype = n->nlmsg_type;
 	rtmsg = nlmsg_data(n);
-	
+
 	err = nlmsg_parse(n, sizeof(*rtmsg), tb, NDTA_MAX, neightbl_policy);
 	if (err < 0)
 		goto errout;
@@ -236,7 +236,7 @@ static void neightbl_dump_line(struct nl_object *arg, struct nl_dump_params *p)
 
 	if (ntbl->nt_parms.ntp_mask & NEIGHTBLPARM_ATTR_IFINDEX) {
 		struct nl_cache *link_cache;
-		
+
 		link_cache = nl_cache_mngt_require_safe("route/link");
 
 		if (link_cache) {
@@ -278,10 +278,10 @@ static void neightbl_dump_details(struct nl_object *arg, struct nl_dump_params *
 			ntbl->nt_config.ndtc_key_len,
 			ntbl->nt_config.ndtc_entry_size,
 			nl_msec2str(ntbl->nt_config.ndtc_last_flush,
-				      x, sizeof(x)));
+				    x, sizeof(x)));
 
 		nl_dump_line(p, "    gc threshold %u/%u/%u interval %s " \
-			    "chain-position %u\n",
+				"chain-position %u\n",
 			ntbl->nt_gc_thresh1, ntbl->nt_gc_thresh2,
 			ntbl->nt_gc_thresh3,
 			nl_msec2str(ntbl->nt_gc_interval, x, sizeof(x)),
@@ -291,33 +291,33 @@ static void neightbl_dump_details(struct nl_object *arg, struct nl_dump_params *
 			ntbl->nt_config.ndtc_hash_rnd,
 			ntbl->nt_config.ndtc_hash_mask,
 			nl_msec2str(ntbl->nt_config.ndtc_last_rand,
-				      x, sizeof(x)));
+				    x, sizeof(x)));
 	}
 
 	if (ntbl->ce_mask & NEIGHTBL_ATTR_PARMS) {
 		struct rtnl_neightbl_parms *pa = &ntbl->nt_parms;
 
 		nl_dump_line(p, "    refcnt %u pending-queue-limit %u " \
-			    "proxy-delayed-queue-limit %u\n",
+				"proxy-delayed-queue-limit %u\n",
 			pa->ntp_refcnt,
 			pa->ntp_queue_len,
 			pa->ntp_proxy_qlen);
 
 		nl_dump_line(p, "    num-userspace-probes %u num-unicast-probes " \
-			    "%u num-multicast-probes %u\n",
+				"%u num-multicast-probes %u\n",
 			pa->ntp_app_probes,
 			pa->ntp_ucast_probes,
 			pa->ntp_mcast_probes);
 
 		nl_dump_line(p, "    min-age %s base-reachable-time %s " \
-			    "stale-check-interval %s\n",
+				"stale-check-interval %s\n",
 			nl_msec2str(pa->ntp_locktime, x, sizeof(x)),
 			nl_msec2str(pa->ntp_base_reachable_time,
-				      y, sizeof(y)),
+				    y, sizeof(y)),
 			nl_msec2str(pa->ntp_gc_stale_time, z, sizeof(z)));
 
 		nl_dump_line(p, "    initial-probe-delay %s answer-delay %s " \
-			    "proxy-answer-delay %s\n",
+				"proxy-answer-delay %s\n",
 			nl_msec2str(pa->ntp_probe_delay, x, sizeof(x)),
 			nl_msec2str(pa->ntp_anycast_delay, y, sizeof(y)),
 			nl_msec2str(pa->ntp_proxy_delay, z, sizeof(z)));
@@ -334,12 +334,12 @@ static void neightbl_dump_stats(struct nl_object *arg, struct nl_dump_params *p)
 		return;
 
 	nl_dump_line(p, "   " \
-                    " lookups %" PRIu64 \
-                    " hits %" PRIu64 \
-                    " failed %" PRIu64 \
-		    " allocations %" PRIu64 \
-                    " destroys %" PRIu64 \
-                    "\n",
+			" lookups %" PRIu64 \
+			" hits %" PRIu64 \
+			" failed %" PRIu64 \
+			" allocations %" PRIu64 \
+			" destroys %" PRIu64 \
+			"\n",
 		ntbl->nt_stats.ndts_lookups,
 		ntbl->nt_stats.ndts_hits,
 		ntbl->nt_stats.ndts_res_failed,
@@ -347,18 +347,18 @@ static void neightbl_dump_stats(struct nl_object *arg, struct nl_dump_params *p)
 		ntbl->nt_stats.ndts_destroys);
 
 	nl_dump_line(p, "   " \
-                        " hash-grows %" PRIu64 \
-                        " forced-gc-runs %" PRIu64 \
-                        " periodic-gc-runs %" PRIu64 \
-                        "\n",
+			" hash-grows %" PRIu64 \
+			" forced-gc-runs %" PRIu64 \
+			" periodic-gc-runs %" PRIu64 \
+			"\n",
 		ntbl->nt_stats.ndts_hash_grows,
 		ntbl->nt_stats.ndts_forced_gc_runs,
 		ntbl->nt_stats.ndts_periodic_gc_runs);
 
 	nl_dump_line(p, "   " \
-                        " rcv-unicast-probes %" PRIu64 \
-                        " rcv-multicast-probes %" PRIu64 \
-                        "\n",
+			" rcv-unicast-probes %" PRIu64 \
+			" rcv-multicast-probes %" PRIu64 \
+			"\n",
 		ntbl->nt_stats.ndts_rcv_probes_ucast,
 		ntbl->nt_stats.ndts_rcv_probes_mcast);
 }

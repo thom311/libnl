@@ -44,7 +44,7 @@ static void htb_parse_qdisc_argv(struct rtnl_tc *tc, int argc, char **argv)
 			{ "default", 1, 0, ARG_DEFAULT },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "hv", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -62,7 +62,7 @@ static void htb_parse_qdisc_argv(struct rtnl_tc *tc, int argc, char **argv)
 			rtnl_htb_set_defcls(qdisc, nl_cli_parse_u32(optarg));
 			break;
 		}
- 	}
+	}
 }
 
 static void print_class_usage(void)
@@ -109,7 +109,7 @@ static void htb_parse_class_argv(struct rtnl_tc *tc, int argc, char **argv)
 			{ "cburst", 1, 0, ARG_CBURST },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "h", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -173,7 +173,7 @@ static void htb_parse_class_argv(struct rtnl_tc *tc, int argc, char **argv)
 			rtnl_htb_set_cbuffer(class, rate);
 			break;
 		}
- 	}
+	}
 }
 
 static struct nl_cli_tc_module htb_qdisc_module =

@@ -1,4 +1,4 @@
- /*
+/*
  * lib/route/link/ipvti.c	 IPVTI Link Info
  *
  *	This library is free software; you can redistribute it and/or
@@ -118,7 +118,7 @@ static int ipvti_parse(struct rtnl_link *link, struct nlattr *data,
 
 	err = 0;
 
- errout:
+errout:
 	return err;
 }
 

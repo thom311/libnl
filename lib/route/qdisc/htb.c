@@ -55,7 +55,7 @@ static int htb_qdisc_msg_parser(struct rtnl_tc *tc, void *data)
 
 	if ((err = tca_parse(tb, TCA_HTB_MAX, tc, htb_policy)) < 0)
 		return err;
-	
+
 	if (tb[TCA_HTB_INIT]) {
 		struct tc_htb_glob opts;
 
@@ -78,7 +78,7 @@ static int htb_class_msg_parser(struct rtnl_tc *tc, void *data)
 
 	if ((err = tca_parse(tb, TCA_HTB_MAX, tc, htb_policy)) < 0)
 		return err;
-	
+
 	if (tb[TCA_HTB_PARMS]) {
 		struct tc_htb_opt opts;
 
@@ -191,9 +191,9 @@ static int htb_qdisc_msg_fill(struct rtnl_tc *tc, void *data,
 {
 	struct rtnl_htb_qdisc *htb = data;
 	struct tc_htb_glob opts = {
-        	.version = TC_HTB_PROTOVER,
-	        .rate2quantum = 10,
-        };
+		.version = TC_HTB_PROTOVER,
+		.rate2quantum = 10,
+	};
 
 	if (htb) {
 		if (htb->qh_mask & SCH_HTB_HAS_RATE2QUANTUM)

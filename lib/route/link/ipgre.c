@@ -159,7 +159,7 @@ static int ipgre_parse(struct rtnl_link *link, struct nlattr *data,
 
 	err = 0;
 
- errout:
+errout:
 	return err;
 }
 
@@ -204,7 +204,7 @@ static int ipgre_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 
 	nla_nest_end(msg, data);
 
- nla_put_failure:
+nla_put_failure:
 
 	return 0;
 }

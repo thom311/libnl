@@ -176,7 +176,7 @@ static int sit_parse(struct rtnl_link *link, struct nlattr *data,
 
 	err = 0;
 
- errout:
+errout:
 	return err;
 }
 

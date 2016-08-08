@@ -682,7 +682,7 @@ int rtnl_route_set_dst(struct rtnl_route *route, struct nl_addr *addr)
 
 	nl_addr_get(addr);
 	route->rt_dst = addr;
-	
+
 	route->ce_mask |= (ROUTE_ATTR_DST | ROUTE_ATTR_FAMILY);
 
 	return 0;
@@ -868,10 +868,10 @@ void rtnl_route_foreach_nexthop(struct rtnl_route *r,
                                 void *arg)
 {
 	struct rtnl_nexthop *nh;
-    
+
 	if (r->ce_mask & ROUTE_ATTR_MULTIPATH) {
 		nl_list_for_each_entry(nh, &r->rt_nexthops, rtnh_list) {
-                        cb(nh, arg);
+			cb(nh, arg);
 		}
 	}
 }
@@ -880,15 +880,15 @@ struct rtnl_nexthop *rtnl_route_nexthop_n(struct rtnl_route *r, int n)
 {
 	struct rtnl_nexthop *nh;
 	uint32_t i;
-    
+
 	if (r->ce_mask & ROUTE_ATTR_MULTIPATH && r->rt_nr_nh > n) {
 		i = 0;
 		nl_list_for_each_entry(nh, &r->rt_nexthops, rtnh_list) {
-                        if (i == n) return nh;
+			if (i == n) return nh;
 			i++;
 		}
 	}
-        return NULL;
+	return NULL;
 }
 
 /** @} */
@@ -986,7 +986,7 @@ static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 
 			if (ntb[RTA_FLOW]) {
 				uint32_t realms;
-				
+
 				realms = nla_get_u32(ntb[RTA_FLOW]);
 				rtnl_route_nh_set_realms(nh, realms);
 			}

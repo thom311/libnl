@@ -364,7 +364,7 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 
 		nla_memcpy(&st, tb[IFLA_STATS64], 
 			   sizeof(struct rtnl_link_stats64));
-		
+
 		link->l_stats[RTNL_LINK_RX_PACKETS]	= st.rx_packets;
 		link->l_stats[RTNL_LINK_TX_PACKETS]	= st.tx_packets;
 		link->l_stats[RTNL_LINK_RX_BYTES]	= st.rx_bytes;
@@ -523,8 +523,8 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	link->l_flags = ifi->ifi_flags;
 	link->l_change = ifi->ifi_change;
 	link->ce_mask = (LINK_ATTR_IFNAME | LINK_ATTR_FAMILY |
-			  LINK_ATTR_ARPTYPE| LINK_ATTR_IFINDEX |
-			  LINK_ATTR_FLAGS | LINK_ATTR_CHANGE);
+			 LINK_ATTR_ARPTYPE| LINK_ATTR_IFINDEX |
+			 LINK_ATTR_FLAGS | LINK_ATTR_CHANGE);
 
 	if ((af_ops_family = af_ops = af_lookup_and_alloc(link, family))) {
 		if (af_ops->ao_protinfo_policy) {
@@ -835,7 +835,7 @@ static void link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 	struct rtnl_link *link = (struct rtnl_link *) obj;
 	char *unit, fmt[64];
 	float res;
-	
+
 	link_dump_details(obj, p);
 
 	nl_dump_line(p, "    Stats:    bytes    packets     errors "
@@ -845,7 +845,7 @@ static void link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 
 	strcpy(fmt, "     RX %X.2f %s %10" PRIu64 " %10" PRIu64 " %10" PRIu64 " %10" PRIu64 " %10" PRIu64 "\n");
 	fmt[9] = *unit == 'B' ? '9' : '7';
-	
+
 	nl_dump_line(p, fmt, res, unit,
 		link->l_stats[RTNL_LINK_RX_PACKETS],
 		link->l_stats[RTNL_LINK_RX_ERRORS],
@@ -857,7 +857,7 @@ static void link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 
 	strcpy(fmt, "     TX %X.2f %s %10" PRIu64 " %10" PRIu64 " %10" PRIu64 " %10" PRIu64 " %10" PRIu64 "\n");
 	fmt[9] = *unit == 'B' ? '9' : '7';
-	
+
 	nl_dump_line(p, fmt, res, unit,
 		link->l_stats[RTNL_LINK_TX_PACKETS],
 		link->l_stats[RTNL_LINK_TX_ERRORS],
@@ -880,7 +880,7 @@ static void link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 
 	nl_dump_line(p, "            aborted    carrier  heartbeat "
 			"    window  collision\n");
-	
+
 	nl_dump_line(p, "     TX  %10" PRIu64 " %10" PRIu64 " %10"
 			PRIu64 " %10" PRIu64 " %10" PRIu64 "\n",
 		link->l_stats[RTNL_LINK_TX_ABORT_ERR],
@@ -1093,7 +1093,7 @@ int rtnl_link_alloc_cache_flags(struct nl_sock *sk, int family,
 {
 	struct nl_cache * cache;
 	int err;
-	
+
 	cache = nl_cache_alloc(&rtnl_link_ops);
 	if (!cache)
 		return -NLE_NOMEM;
@@ -1316,8 +1316,8 @@ int rtnl_link_get_kernel(struct nl_sock *sk, int ifindex, const char *name,
 	*result = (struct rtnl_link *) obj;
 
 	/* If an object has been returned, we also need to wait for the ACK */
-	 if (err == 0 && obj)
-		 wait_for_ack(sk);
+	if (err == 0 && obj)
+		wait_for_ack(sk);
 
 	return 0;
 }
@@ -1363,7 +1363,7 @@ int rtnl_link_name2i(struct nl_cache *cache, const char *name)
 {
 	int ifindex = 0;
 	struct rtnl_link *link;
-	
+
 	link = rtnl_link_get_by_name(cache, name);
 	if (link) {
 		ifindex = link->l_index;
@@ -1540,7 +1540,7 @@ int rtnl_link_add(struct nl_sock *sk, struct rtnl_link *link, int flags)
 {
 	struct nl_msg *msg;
 	int err;
-	
+
 	err = rtnl_link_build_add_request(link, flags, &msg);
 	if (err < 0)
 		return err;
@@ -1641,7 +1641,7 @@ int rtnl_link_change(struct nl_sock *sk, struct rtnl_link *orig,
 {
 	struct nl_msg *msg;
 	int err;
-	
+
 	err = rtnl_link_build_change_request(orig, changes, flags, &msg);
 	if (err < 0)
 		return err;
@@ -1740,7 +1740,7 @@ int rtnl_link_delete(struct nl_sock *sk, const struct rtnl_link *link)
 {
 	struct nl_msg *msg;
 	int err;
-	
+
 	if ((err = rtnl_link_build_delete_request(link, &msg)) < 0)
 		return err;
 
@@ -2578,7 +2578,7 @@ int rtnl_link_enslave_ifindex(struct nl_sock *sock, int master, int slave)
 
 	rtnl_link_set_ifindex(link, slave);
 	rtnl_link_set_master(link, master);
-	
+
 	if ((err = rtnl_link_change(sock, link, link, 0)) < 0)
 		goto errout;
 

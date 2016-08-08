@@ -57,7 +57,7 @@ struct nl_dump_params nl_debug_dp = {
 static void __init nl_debug_init(void)
 {
 	char *nldbg, *end;
-	
+
 	if ((nldbg = getenv("NLDBG"))) {
 		long level = strtol(nldbg, &end, 0);
 		if (nldbg != end)
@@ -202,11 +202,11 @@ int nl_rate2str(unsigned long long rate, int type, char *buf, size_t len)
 	case NL_BYTE_RATE:
 		frac = nl_cancel_down_bytes(rate, &unit);
 		break;
-	
+
 	case NL_BIT_RATE:
 		frac = nl_cancel_down_bits(rate, &unit);
 		break;
-	
+
 	default:
 		BUG();
 	}
@@ -435,19 +435,19 @@ static void __init get_psched_settings(void)
 				 getenv("PROC_ROOT"));
 		else
 			strncpy(name, "/proc/net/psched", sizeof(name) - 1);
-		
+
 		if ((fd = fopen(name, "r"))) {
 			unsigned int ns_per_usec, ns_per_tick, nom, denom;
 
 			if (fscanf(fd, "%08x %08x %08x %08x",
 			       &ns_per_usec, &ns_per_tick, &nom, &denom) != 4) {
-                            NL_DBG(1, "Fatal error: can not read psched settings from \"%s\". " \
-                                    "Try to set TICKS_PER_USEC, PROC_NET_PSCHED or PROC_ROOT " \
-                                    "environment variables\n", name);
-                            exit(1);
-                        }
+				NL_DBG(1, "Fatal error: can not read psched settings from \"%s\". " \
+				          "Try to set TICKS_PER_USEC, PROC_NET_PSCHED or PROC_ROOT " \
+				          "environment variables\n", name);
+				exit(1);
+			}
 
-			ticks_per_usec = (double) ns_per_usec / 
+			ticks_per_usec = (double) ns_per_usec /
 					 (double) ns_per_tick;
 
 			if (nom == 1000000)
@@ -1066,7 +1066,7 @@ int __str2flags(const char *buf, const struct trans_tbl *tbl, size_t tbl_len)
 	for (;;) {
 		if (*p == ' ')
 			p++;
-	
+
 		t = strchr(p, ',');
 		len = t ? t - p : strlen(p);
 		for (i = 0; i < tbl_len; i++)

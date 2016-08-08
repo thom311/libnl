@@ -50,12 +50,12 @@ int main(int argc, char *argv[])
 		.dp_fd = stdout,
 	};
 	int err, nlflags = NLM_F_CREATE;
- 
+
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
 	link_cache = nl_cli_link_alloc_cache(sock);
- 	addr = nl_cli_addr_alloc();
- 
+	addr = nl_cli_addr_alloc();
+
 	for (;;) {
 		int c, optidx = 0;
 		enum {
@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 			{ "valid", 1, 0, ARG_VALID },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "qhva:d:", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 		case ARG_PREFERRED: nl_cli_addr_parse_preferred(addr, optarg); break;
 		case ARG_VALID: nl_cli_addr_parse_valid(addr, optarg); break;
 		}
- 	}
+	}
 
 	if ((err = rtnl_addr_add(sock, addr, nlflags)) < 0)
 		nl_cli_fatal(err, "Unable to add address: %s",
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 	if (!quiet) {
 		printf("Added ");
 		nl_object_dump(OBJ_CAST(addr), &dp);
- 	}
+	}
 
 	return 0;
 }

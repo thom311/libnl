@@ -477,7 +477,7 @@ char *nfnl_ct_tcp_state2str(uint8_t state, char *buf, size_t len)
 
 int nfnl_ct_str2tcp_state(const char *name)
 {
-        return __str2type(name, tcp_states, ARRAY_SIZE(tcp_states));
+	return __str2type(name, tcp_states, ARRAY_SIZE(tcp_states));
 }
 
 void nfnl_ct_set_status(struct nfnl_ct *ct, uint32_t status)

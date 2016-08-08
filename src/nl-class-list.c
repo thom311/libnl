@@ -65,15 +65,15 @@ int main(int argc, char *argv[])
 	struct rtnl_tc *tc;
 	struct nl_cache *link_cache;
 	int ifindex;
- 
+
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
 	link_cache = nl_cli_link_alloc_cache(sock);
- 	class = nl_cli_class_alloc();
+	class = nl_cli_class_alloc();
 	tc = (struct rtnl_tc *) class;
 
 	params.dp_fd = stdout;
- 
+
 	for (;;) {
 		int c, optidx = 0;
 		enum {
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 			{ "kind", 1, 0, 'k' },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "hvd:p:i:k:", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -106,11 +106,11 @@ int main(int argc, char *argv[])
 		case 'i': nl_cli_tc_parse_handle(tc, optarg, 0); break;
 		case 'k': nl_cli_tc_parse_kind(tc, optarg); break;
 		}
- 	}
+	}
 
 	if ((ifindex = rtnl_tc_get_ifindex(tc)))
 		__dump_class(ifindex, class);
-	 else
+	else
 		nl_cache_foreach(link_cache, dump_class, class);
 
 	return 0;

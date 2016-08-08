@@ -53,9 +53,9 @@ extern int ematch_lex(YYSTYPE *, void *);
 static void yyerror(void *scanner, char **errp, struct nl_list_head *root, const char *msg)
 {
 	if (msg)
-            *errp = strdup(msg);
-        else
-	    *errp = NULL;
+		*errp = strdup(msg);
+	else
+		*errp = NULL;
 }
 %}
 

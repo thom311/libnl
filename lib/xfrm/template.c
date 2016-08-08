@@ -186,7 +186,7 @@ void xfrmnl_user_tmpl_dump(struct xfrmnl_user_tmpl* tmpl, struct nl_dump_params 
  */
 struct nl_addr* xfrmnl_user_tmpl_get_daddr (struct xfrmnl_user_tmpl* utmpl)
 {
-   return utmpl->id.daddr;
+	return utmpl->id.daddr;
 }
 
 int xfrmnl_user_tmpl_set_daddr (struct xfrmnl_user_tmpl* utmpl, struct nl_addr* addr)
@@ -238,7 +238,7 @@ int xfrmnl_user_tmpl_set_family(struct xfrmnl_user_tmpl *utmpl, int family)
 
 struct nl_addr* xfrmnl_user_tmpl_get_saddr (struct xfrmnl_user_tmpl* utmpl)
 {
-   return utmpl->saddr;
+	return utmpl->saddr;
 }
 
 int xfrmnl_user_tmpl_set_saddr (struct xfrmnl_user_tmpl* utmpl, struct nl_addr* addr)

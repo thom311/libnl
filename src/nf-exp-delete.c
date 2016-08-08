@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
 	};
 	int err, nlflags = 0;
 
- 	exp = nl_cli_exp_alloc();
- 
+	exp = nl_cli_exp_alloc();
+
 	for (;;) {
 		int c, optidx = 0;
 		enum {
@@ -80,17 +80,17 @@ int main(int argc, char *argv[])
 			ARG_MASTER_SPORT,
 			ARG_MASTER_DST,
 			ARG_MASTER_DPORT,
- 			ARG_MASK_PROTO,
- 			ARG_MASK_SRC,
+			ARG_MASK_PROTO,
+			ARG_MASK_SRC,
 			ARG_MASK_SPORT,
 			ARG_MASK_DST,
 			ARG_MASK_DPORT,
 			ARG_TIMEOUT,
- 			ARG_HELPER_NAME,
+			ARG_HELPER_NAME,
 			ARG_FLAGS,
 		};
 		static struct option long_opts[] = {
- 			{ "quiet", 0, 0, 'q' },
+			{ "quiet", 0, 0, 'q' },
 			{ "help", 0, 0, 'h' },
 			{ "version", 0, 0, 'v' },
 			{ "id", 1, 0, 'i' },
@@ -105,17 +105,17 @@ int main(int argc, char *argv[])
 			{ "master-dst", 1, 0, ARG_MASTER_DST },
 			{ "master-dport", 1, 0, ARG_MASTER_DPORT },
 			{ "mask-proto", 1, 0, ARG_MASK_PROTO },
- 			{ "mask-src", 1, 0, ARG_MASK_SRC },
- 			{ "mask-sport", 1, 0, ARG_MASK_SPORT },
- 			{ "mask-dst", 1, 0, ARG_MASK_DST },
- 			{ "mask-dport", 1, 0, ARG_MASK_DPORT },
+			{ "mask-src", 1, 0, ARG_MASK_SRC },
+			{ "mask-sport", 1, 0, ARG_MASK_SPORT },
+			{ "mask-dst", 1, 0, ARG_MASK_DST },
+			{ "mask-dport", 1, 0, ARG_MASK_DPORT },
 			{ "family", 1, 0, 'F' },
 			{ "timeout", 1, 0, ARG_TIMEOUT },
 			{ "helper", 1, 0, ARG_HELPER_NAME },
- 			{ "flags", 1, 0, ARG_FLAGS},
+			{ "flags", 1, 0, ARG_FLAGS},
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "46f:hvi:p:F:", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -142,13 +142,13 @@ int main(int argc, char *argv[])
 		case ARG_MASK_SRC: nl_cli_exp_parse_src(exp, NFNL_EXP_TUPLE_MASK, optarg); break;
 		case ARG_MASK_SPORT: nl_cli_exp_parse_src_port(exp, NFNL_EXP_TUPLE_MASK, optarg); break;
 		case ARG_MASK_DST: nl_cli_exp_parse_dst(exp, NFNL_EXP_TUPLE_MASK, optarg); break;
- 		case ARG_MASK_DPORT: nl_cli_exp_parse_dst_port(exp, NFNL_EXP_TUPLE_MASK, optarg); break;
+		case ARG_MASK_DPORT: nl_cli_exp_parse_dst_port(exp, NFNL_EXP_TUPLE_MASK, optarg); break;
 		case 'F': nl_cli_exp_parse_family(exp, optarg); break;
 		case ARG_TIMEOUT: nl_cli_exp_parse_timeout(exp, optarg); break;
 		case ARG_HELPER_NAME: nl_cli_exp_parse_helper_name(exp, optarg); break;
 		case ARG_FLAGS: nl_cli_exp_parse_flags(exp, optarg); break;
 		}
- 	}
+	}
 
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_NETFILTER);

@@ -69,15 +69,15 @@ int main(int argc, char *argv[])
 	struct rtnl_tc *tc;
 	struct nl_cache *link_cache;
 	int ifindex;
- 
+
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
 	link_cache = nl_cli_link_alloc_cache(sock);
- 	cls = nl_cli_cls_alloc();
+	cls = nl_cli_cls_alloc();
 	tc = (struct rtnl_tc *) cls;
 
 	params.dp_fd = stdout;
- 
+
 	for (;;) {
 		int c, optidx = 0;
 		enum {
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 			{ "prio", 1, 0, ARG_PRIO },
 			{ 0, 0, 0, 0 }
 		};
-	
+
 		c = getopt_long(argc, argv, "hvd:p:i:k:", long_opts, &optidx);
 		if (c == -1)
 			break;
@@ -118,11 +118,11 @@ int main(int argc, char *argv[])
 			rtnl_cls_set_prio(cls, nl_cli_parse_u32(optarg));
 			break;
 		}
- 	}
+	}
 
 	if ((ifindex = rtnl_tc_get_ifindex(tc)))
 		__dump_link(ifindex, cls);
-	 else
+	else
 		nl_cache_foreach(link_cache, dump_link, cls);
 
 	return 0;

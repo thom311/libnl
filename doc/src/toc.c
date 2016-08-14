@@ -17,7 +17,7 @@ libraries (e.g. "nl-route", "nl-genl", ...).
 
 The library is designed to ensure that all components are optional, i.e.
 even though the core library provides a caching system which allows to
-easly manage objects of any kind, no application is required to use this
+easily manage objects of any kind, no application is required to use this
 caching system if it has no need for it.
 
 The library was developed and tested on 2.6.x and 3.x kernel releases. It
@@ -39,7 +39,7 @@ git://git.infradead.org/users/tgr/libnl.git
 
 \section main_website Website
 
-- http://www.infradead.org/~tgr/libnl/
+- https://www.infradead.org/~tgr/libnl/
 
 \section main_mailinglist Mailinglist
 
@@ -49,6 +49,6 @@ Please post questions and patches to the libnl mailinglist:
 libnl@lists.infradead.org
 @endcode
 
-- Archives: http://canuck.infradead.org/pipermail/libnl/
+- Archives: https://lists.infradead.org/pipermail/libnl/
 
 */

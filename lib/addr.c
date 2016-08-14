@@ -707,8 +707,14 @@ int nl_addr_fill_sockaddr(const struct nl_addr *addr, struct sockaddr *sa,
 		if (*salen < sizeof(*sai))
 			return -NLE_INVAL;
 
+		if (addr->a_len == 4)
+			memcpy(&sai->sin_addr, addr->a_addr, 4);
+		else if (addr->a_len != 0)
+			return -NLE_INVAL;
+		else
+			memset(&sai->sin_addr, 0, 4);
+
 		sai->sin_family = addr->a_family;
-		memcpy(&sai->sin_addr, addr->a_addr, 4);
 		*salen = sizeof(*sai);
 	}
 		break;
@@ -719,8 +725,14 @@ int nl_addr_fill_sockaddr(const struct nl_addr *addr, struct sockaddr *sa,
 		if (*salen < sizeof(*sa6))
 			return -NLE_INVAL;
 
+		if (addr->a_len == 16)
+			memcpy(&sa6->sin6_addr, addr->a_addr, 16);
+		else if (addr->a_len != 0)
+			return -NLE_INVAL;
+		else
+			memset(&sa6->sin6_addr, 0, 16);
+
 		sa6->sin6_family = addr->a_family;
-		memcpy(&sa6->sin6_addr, addr->a_addr, 16);
 		*salen = sizeof(*sa6);
 	}
 		break;

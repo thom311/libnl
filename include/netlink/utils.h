@@ -224,6 +224,13 @@ enum {
 	NL_CAPABILITY_RTNL_ADDR_PEER_ID_FIX = 20,
 #define NL_CAPABILITY_RTNL_ADDR_PEER_ID_FIX NL_CAPABILITY_RTNL_ADDR_PEER_ID_FIX
 
+	/**
+	 * nl_addr_fill_sockaddr() properly checks that the provided address to
+	 * avoid read-out-of-bounds for invalid addresses.
+	 */
+	NL_CAPABILITY_NL_ADDR_FILL_SOCKADDR = 21,
+#define NL_CAPABILITY_NL_ADDR_FILL_SOCKADDR NL_CAPABILITY_NL_ADDR_FILL_SOCKADDR
+
 	__NL_CAPABILITY_MAX,
 	NL_CAPABILITY_MAX = (__NL_CAPABILITY_MAX - 1),
 #define NL_CAPABILITY_MAX NL_CAPABILITY_MAX

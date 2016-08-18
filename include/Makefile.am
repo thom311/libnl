@@ -153,6 +153,7 @@ noinst_HEADERS = \
 	linux-private/linux/netlink.h \
 	linux-private/linux/pkt_cls.h \
 	linux-private/linux/sock_diag.h \
+	linux-private/linux/socket.h \
 	linux-private/linux/tc_act/tc_mirred.h \
 	linux-private/linux/tc_act/tc_skbedit.h \
 	linux-private/linux/pkt_sched.h \

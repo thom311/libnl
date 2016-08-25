@@ -351,3 +351,8 @@ libnl_3_2_28 {
 global:
 	nl_object_diff64;
 } libnl_3_2_27;
+
+libnl_3_2_29 {
+global:
+	nl_strerror_l;
+} libnl_3_2_28;

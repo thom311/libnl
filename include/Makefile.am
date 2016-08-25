@@ -166,6 +166,7 @@ noinst_HEADERS = \
 	netlink-private/socket.h \
 	netlink-private/tc.h \
 	netlink-private/types.h \
+	netlink-private/utils.h \
 	netlink-private/cache-api.h \
 	netlink-private/object-api.h \
 	netlink-private/route/link/api.h \

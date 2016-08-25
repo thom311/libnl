@@ -27,6 +27,7 @@
  */
 
 #include <netlink-private/netlink.h>
+#include <netlink-private/utils.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/cache.h>
@@ -913,11 +914,10 @@ static void dump_error_msg(struct nl_msg *msg, FILE *ofd)
 	fprintf(ofd, "  [ERRORMSG] %zu octets\n", sizeof(*err));
 
 	if (nlmsg_len(hdr) >= sizeof(*err)) {
-		char buf[256];
 		struct nl_msg *errmsg;
 
 		fprintf(ofd, "    .error = %d \"%s\"\n", err->error,
-			strerror_r(-err->error, buf, sizeof(buf)));
+			nl_strerror_l(-err->error));
 		fprintf(ofd, "  [ORIGINAL MESSAGE] %zu octets\n", sizeof(*hdr));
 
 		errmsg = nlmsg_inherit(&err->msg);

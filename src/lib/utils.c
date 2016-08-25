@@ -22,6 +22,7 @@
  */
 
 #include <netlink/cli/utils.h>
+#include <locale.h>
 
 /**
  * Parse a text based 32 bit unsigned integer argument
@@ -70,7 +71,6 @@ void nl_cli_print_version(void)
 void nl_cli_fatal(int err, const char *fmt, ...)
 {
 	va_list ap;
-	char buf[256];
 
 	fprintf(stderr, "Error: ");
 
@@ -79,8 +79,22 @@ void nl_cli_fatal(int err, const char *fmt, ...)
 		vfprintf(stderr, fmt, ap);
 		va_end(ap);
 		fprintf(stderr, "\n");
-	} else
-		fprintf(stderr, "%s\n", strerror_r(err, buf, sizeof(buf)));
+	} else {
+		char *buf;
+		locale_t loc = newlocale(LC_MESSAGES_MASK, "", (locale_t)0);
+		if (loc == (locale_t)0) {
+			if (errno == ENOENT)
+				loc = newlocale(LC_MESSAGES_MASK,
+						"POSIX", (locale_t)0);
+			if (loc == (locale_t)0)
+				buf = "newlocale() failed";
+		}
+		if (loc != (locale_t)0)
+			buf = strerror_l(err, loc);
+		fprintf(stderr, "%s\n", buf);
+		if (loc != (locale_t)0)
+			freelocale(loc);
+	}
 
 	exit(abs(err));
 }

@@ -26,6 +26,7 @@
  */
 
 #include <netlink-private/netlink.h>
+#include <netlink-private/utils.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/msg.h>
@@ -79,10 +80,9 @@ static int nl_error_handler_verbose(struct sockaddr_nl *who,
 				    struct nlmsgerr *e, void *arg)
 {
 	FILE *ofd = arg ? arg : stderr;
-	char buf[256];
 
 	fprintf(ofd, "-- Error received: %s\n-- Original message: ",
-		strerror_r(-e->error, buf, sizeof(buf)));
+		nl_strerror_l(-e->error));
 	print_header_content(ofd, &e->msg);
 	fprintf(ofd, "\n");
 

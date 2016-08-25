@@ -33,6 +33,7 @@
  */
 
 #include <netlink-private/netlink.h>
+#include <netlink-private/utils.h>
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/utils.h>
@@ -392,10 +393,8 @@ int nl_cache_mngr_poll(struct nl_cache_mngr *mngr, int timeout)
 	ret = poll(&fds, 1, timeout);
 	NL_DBG(3, "Cache manager %p, poll() returned %d\n", mngr, ret);
 	if (ret < 0) {
-		char buf[64];
-
 		NL_DBG(4, "nl_cache_mngr_poll(%p): poll() failed with %d (%s)\n",
-			mngr, errno, strerror_r(errno, buf, sizeof(buf)));
+			mngr, errno, nl_strerror_l(errno));
 		return -nl_syserr2nlerr(errno);
 	}
 

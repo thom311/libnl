@@ -25,10 +25,12 @@
  */
 
 #include <netlink-private/netlink.h>
+#include <netlink-private/utils.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <linux/socket.h>
 #include <stdlib.h> /* exit() */
+#include <locale.h>
 
 /**
  * Global variable indicating the desired level of debugging output.
@@ -117,6 +119,28 @@ int __nl_read_num_str_file(const char *path, int (*cb)(long, const char *))
 	fclose(fd);
 
 	return 0;
+}
+
+const char *nl_strerror_l(int err)
+{
+	int errno_save = errno;
+	locale_t loc = newlocale(LC_MESSAGES_MASK, "", (locale_t)0);
+	const char *buf;
+
+	if (loc == (locale_t)0) {
+		if (errno == ENOENT)
+			loc = newlocale(LC_MESSAGES_MASK,
+					"POSIX", (locale_t)0);
+	}
+	if (loc != (locale_t)0) {
+		buf = strerror_l(err, loc);
+		freelocale(loc);
+	} else {
+		buf = "newlocale() failed";
+	}
+
+	errno = errno_save;
+	return buf;
 }
 /** @endcond */
 

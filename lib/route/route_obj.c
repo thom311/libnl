@@ -31,6 +31,7 @@
  */
 
 #include <netlink-private/netlink.h>
+#include <netlink-private/utils.h>
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/utils.h>
@@ -259,7 +260,7 @@ static void route_dump_details(struct nl_object *a, struct nl_dump_params *p)
 	if ((r->ce_mask & ROUTE_ATTR_CACHEINFO) && r->rt_cacheinfo.rtci_error) {
 		nl_dump_line(p, "    cacheinfo error %d (%s)\n",
 			r->rt_cacheinfo.rtci_error,
-			strerror_r(-r->rt_cacheinfo.rtci_error, buf, sizeof(buf)));
+			nl_strerror_l(-r->rt_cacheinfo.rtci_error));
 	}
 
 	if (r->ce_mask & ROUTE_ATTR_METRICS) {

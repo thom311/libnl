@@ -108,6 +108,17 @@ static int af_free(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
 	return 0;
 }
 
+static int af_request_type(int af_type)
+{
+	struct rtnl_link_af_ops *ops;
+
+	ops = rtnl_link_af_ops_lookup(af_type);
+	if (ops && ops->ao_override_rtm)
+		return RTM_SETLINK;
+
+	return RTM_NEWLINK;
+}
+
 static int af_clone(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
 		    void *data, void *arg)
 {
@@ -1576,7 +1587,7 @@ int rtnl_link_build_change_request(struct rtnl_link *orig,
 		.ifi_family = orig->l_family,
 		.ifi_index = orig->l_index,
 	};
-	int err;
+	int err, rt;
 
 	if (changes->ce_mask & LINK_ATTR_FLAGS) {
 		ifi.ifi_flags = orig->l_flags & ~changes->l_flag_mask;
@@ -1596,7 +1607,9 @@ int rtnl_link_build_change_request(struct rtnl_link *orig,
 	    !strcmp(orig->l_name, changes->l_name))
 		changes->ce_mask &= ~LINK_ATTR_IFNAME;
 
-	if ((err = build_link_msg(RTM_NEWLINK, &ifi, changes, flags, result)) < 0)
+	rt = af_request_type(orig->l_family);
+
+	if ((err = build_link_msg(rt, &ifi, changes, flags, result)) < 0)
 		goto errout;
 
 	return 0;

@@ -146,6 +146,14 @@ struct rtnl_link_af_ops
 	 */
 	int		      (*ao_compare)(struct rtnl_link *,
 					    struct rtnl_link *, int, uint32_t, int);
+
+	/* RTM_NEWLINK override
+	 *
+	 * Called if a change link request is set to the kernel. If this is set
+	 * to anything other than zero, RTM_NEWLINK will be overriden with
+	 * RTM_SETLINK when rtnl_link_build_change_request() is called.
+	 */
+	const int ao_override_rtm;
 };
 
 extern struct rtnl_link_af_ops *rtnl_link_af_ops_lookup(unsigned int);

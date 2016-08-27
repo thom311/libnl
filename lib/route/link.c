@@ -152,6 +152,30 @@ static int af_fill(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
 	return 0;
 }
 
+static int af_fill_pi(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
+		   void *data, void *arg)
+{
+	struct nl_msg *msg = arg;
+	struct nlattr *pi_attr;
+	int err, pi_type = IFLA_PROTINFO;
+
+	if (!ops->ao_fill_pi)
+		return 0;
+
+	if (ops->ao_fill_pi_flags > 0)
+		pi_type |= ops->ao_fill_pi_flags;
+
+	if (!(pi_attr = nla_nest_start(msg, pi_type)))
+		return -NLE_MSGSIZE;
+
+	if ((err = ops->ao_fill_pi(link, arg, data)) < 0)
+		return err;
+
+	nla_nest_end(msg, pi_attr);
+
+	return 0;
+}
+
 static int af_dump_line(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
 			 void *data, void *arg)
 {
@@ -1480,6 +1504,9 @@ static int build_link_msg(int cmd, struct ifinfomsg *hdr,
 
 		nla_nest_end(msg, info);
 	}
+
+	if (do_foreach_af(link, af_fill_pi, msg) < 0)
+		goto nla_put_failure;
 
 	if (!(af_spec = nla_nest_start(msg, IFLA_AF_SPEC)))
 		goto nla_put_failure;

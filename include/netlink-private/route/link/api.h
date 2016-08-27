@@ -154,6 +154,19 @@ struct rtnl_link_af_ops
 	 * RTM_SETLINK when rtnl_link_build_change_request() is called.
 	 */
 	const int ao_override_rtm;
+
+	/** Called if a link message is sent to the kernel. Must append the
+	 * link protocol specific attributes to the message. (IFLA_PROTINFO) */
+	int		      (*ao_fill_pi)(struct rtnl_link *,
+								struct nl_msg *msg, void *);
+
+	/** PROTINFO type
+	 *
+	 * Called if a link message is sent to the kernel. If this is set,
+	 * the default IFLA_PROTINFO is bitmasked with what is specified
+	 * here. (eg. NLA_F_NESTED)
+	 */
+	const int ao_fill_pi_flags;
 };
 
 extern struct rtnl_link_af_ops *rtnl_link_af_ops_lookup(unsigned int);

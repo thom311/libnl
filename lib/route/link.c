@@ -108,6 +108,17 @@ static int af_free(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
 	return 0;
 }
 
+static int af_request_type(int af_type)
+{
+	struct rtnl_link_af_ops *ops;
+
+	ops = rtnl_link_af_ops_lookup(af_type);
+	if (ops && ops->ao_override_rtm)
+		return RTM_SETLINK;
+
+	return RTM_NEWLINK;
+}
+
 static int af_clone(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
 		    void *data, void *arg)
 {
@@ -137,6 +148,30 @@ static int af_fill(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
 		return err;
 
 	nla_nest_end(msg, af_attr);
+
+	return 0;
+}
+
+static int af_fill_pi(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
+		   void *data, void *arg)
+{
+	struct nl_msg *msg = arg;
+	struct nlattr *pi_attr;
+	int err, pi_type = IFLA_PROTINFO;
+
+	if (!ops->ao_fill_pi)
+		return 0;
+
+	if (ops->ao_fill_pi_flags > 0)
+		pi_type |= ops->ao_fill_pi_flags;
+
+	if (!(pi_attr = nla_nest_start(msg, pi_type)))
+		return -NLE_MSGSIZE;
+
+	if ((err = ops->ao_fill_pi(link, arg, data)) < 0)
+		return err;
+
+	nla_nest_end(msg, pi_attr);
 
 	return 0;
 }
@@ -1470,6 +1505,9 @@ static int build_link_msg(int cmd, struct ifinfomsg *hdr,
 		nla_nest_end(msg, info);
 	}
 
+	if (do_foreach_af(link, af_fill_pi, msg) < 0)
+		goto nla_put_failure;
+
 	if (!(af_spec = nla_nest_start(msg, IFLA_AF_SPEC)))
 		goto nla_put_failure;
 
@@ -1576,7 +1614,7 @@ int rtnl_link_build_change_request(struct rtnl_link *orig,
 		.ifi_family = orig->l_family,
 		.ifi_index = orig->l_index,
 	};
-	int err;
+	int err, rt;
 
 	if (changes->ce_mask & LINK_ATTR_FLAGS) {
 		ifi.ifi_flags = orig->l_flags & ~changes->l_flag_mask;
@@ -1596,7 +1634,9 @@ int rtnl_link_build_change_request(struct rtnl_link *orig,
 	    !strcmp(orig->l_name, changes->l_name))
 		changes->ce_mask &= ~LINK_ATTR_IFNAME;
 
-	if ((err = build_link_msg(RTM_NEWLINK, &ifi, changes, flags, result)) < 0)
+	rt = af_request_type(orig->l_family);
+
+	if ((err = build_link_msg(rt, &ifi, changes, flags, result)) < 0)
 		goto errout;
 
 	return 0;

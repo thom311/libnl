@@ -224,6 +224,45 @@ static int bridge_parse_af_full(struct rtnl_link *link, struct nlattr *attr_full
 	return 0;
 }
 
+static int bridge_fill_pi(struct rtnl_link *link, struct nl_msg *msg,
+		   void *data)
+{
+	struct bridge_data *bd = data;
+
+	if (bd->ce_mask & BRIDGE_ATTR_FLAGS) {
+		if (bd->b_flags_mask & RTNL_BRIDGE_BPDU_GUARD) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_GUARD,
+						bd->b_flags & RTNL_BRIDGE_BPDU_GUARD);
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_HAIRPIN_MODE) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_MODE,
+						bd->b_flags & RTNL_BRIDGE_HAIRPIN_MODE);
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_FAST_LEAVE) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_MODE,
+						bd->b_flags & RTNL_BRIDGE_FAST_LEAVE);
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_ROOT_BLOCK) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_PROTECT,
+						bd->b_flags & RTNL_BRIDGE_ROOT_BLOCK);
+		}
+	}
+
+	if (bd->ce_mask & BRIDGE_ATTR_COST)
+		NLA_PUT_U32(msg, IFLA_BRPORT_COST, bd->b_cost);
+
+	if (bd->ce_mask & BRIDGE_ATTR_PRIORITY)
+		NLA_PUT_U16(msg, IFLA_BRPORT_PRIORITY, bd->b_priority);
+
+	if (bd->ce_mask & BRIDGE_ATTR_PORT_STATE)
+		NLA_PUT_U8(msg, IFLA_BRPORT_STATE, bd->b_port_state);
+
+	return 0;
+
+nla_put_failure:
+	return -NLE_MSGSIZE;
+}
+
 static int bridge_get_af(struct nl_msg *msg, uint32_t *ext_filter_mask)
 {
 	*ext_filter_mask |= RTEXT_FILTER_BRVLAN;
@@ -728,6 +767,9 @@ static struct rtnl_link_af_ops bridge_ops = {
 	.ao_compare			= &bridge_compare,
 	.ao_parse_af_full		= &bridge_parse_af_full,
 	.ao_get_af			= &bridge_get_af,
+	.ao_fill_pi			= &bridge_fill_pi,
+	.ao_fill_pi_flags	= NLA_F_NESTED,
+	.ao_override_rtm	= 1,
 };
 
 static void __init bridge_init(void)

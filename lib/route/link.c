@@ -135,19 +135,21 @@ static int af_fill(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
 		   void *data, void *arg)
 {
 	struct nl_msg *msg = arg;
-	struct nlattr *af_attr;
+	struct nlattr *af_attr = NULL;
 	int err;
 
 	if (!ops->ao_fill_af)
 		return 0;
 
-	if (!(af_attr = nla_nest_start(msg, ops->ao_family)))
-		return -NLE_MSGSIZE;
+	if (!ops->ao_fill_af_no_nest)
+		if (!(af_attr = nla_nest_start(msg, ops->ao_family)))
+			return -NLE_MSGSIZE;
 
 	if ((err = ops->ao_fill_af(link, arg, data)) < 0)
 		return err;
 
-	nla_nest_end(msg, af_attr);
+	if (!ops->ao_fill_af_no_nest)
+		nla_nest_end(msg, af_attr);
 
 	return 0;
 }

@@ -38,6 +38,9 @@ enum rtnl_link_bridge_flags {
 	RTNL_BRIDGE_BPDU_GUARD		= 0x0002,
 	RTNL_BRIDGE_ROOT_BLOCK		= 0x0004,
 	RTNL_BRIDGE_FAST_LEAVE		= 0x0008,
+	RTNL_BRIDGE_UNICAST_FLOOD	= 0x0010,
+	RTNL_BRIDGE_LEARNING		= 0x0020,
+	RTNL_BRIDGE_LEARNING_SYNC	= 0x0040,
 };
 
 extern struct rtnl_link *rtnl_link_bridge_alloc(void);

@@ -61,6 +61,9 @@ extern int	rtnl_link_bridge_get_flags(struct rtnl_link *);
 extern char * rtnl_link_bridge_flags2str(int, char *, size_t);
 extern int	rtnl_link_bridge_str2flags(const char *);
 
+extern char * rtnl_link_bridge_portstate2str(int, char *, size_t);
+extern int  rtnl_link_bridge_str2portstate(const char *);
+
 extern int	rtnl_link_bridge_add(struct nl_sock *sk, const char *name);
 
 extern int	rtnl_link_bridge_pvid(struct rtnl_link *link);

@@ -709,6 +709,31 @@ int rtnl_link_bridge_str2flags(const char *name)
 
 /** @} */
 
+static const struct trans_tbl port_states[] = {
+	__ADD(BR_STATE_DISABLED, disabled),
+	__ADD(BR_STATE_LISTENING, listening),
+	__ADD(BR_STATE_LEARNING, learning),
+	__ADD(BR_STATE_FORWARDING, forwarding),
+	__ADD(BR_STATE_BLOCKING, blocking),
+};
+
+/**
+ * @name Port State Translation
+ * @{
+ */
+
+char *rtnl_link_bridge_portstate2str(int st, char *buf, size_t len)
+{
+	return __type2str(st, buf, len, port_states, ARRAY_SIZE(port_states));
+}
+
+int rtnl_link_bridge_str2portstate(const char *name)
+{
+	return __str2type(name, port_states, ARRAY_SIZE(port_states));
+}
+
+/** @} */
+
 int rtnl_link_bridge_pvid(struct rtnl_link *link)
 {
 	struct bridge_data *bd;

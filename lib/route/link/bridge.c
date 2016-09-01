@@ -239,7 +239,7 @@ static int bridge_fill_pi(struct rtnl_link *link, struct nl_msg *msg,
 						bd->b_flags & RTNL_BRIDGE_HAIRPIN_MODE);
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_FAST_LEAVE) {
-			NLA_PUT_U8(msg, IFLA_BRPORT_MODE,
+			NLA_PUT_U8(msg, IFLA_BRPORT_FAST_LEAVE,
 						bd->b_flags & RTNL_BRIDGE_FAST_LEAVE);
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_ROOT_BLOCK) {

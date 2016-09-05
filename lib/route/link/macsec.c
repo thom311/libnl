@@ -509,7 +509,7 @@ int rtnl_link_macsec_set_icv_len(struct rtnl_link *link, uint16_t icv_len)
 
 	IS_MACSEC_LINK_ASSERT(link);
 
-	if (icv_len > MACSEC_MAX_ICV_LEN)
+	if (icv_len > MACSEC_STD_ICV_LEN)
 		return -NLE_INVAL;
 
 	info->icv_len = icv_len;

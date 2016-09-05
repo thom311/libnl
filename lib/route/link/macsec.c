@@ -19,6 +19,21 @@
 
 #include <linux/if_macsec.h>
 
+#include <byteswap.h>
+
+#if __BYTE_ORDER == __BIG_ENDIAN
+static uint64_t ntohll(uint64_t x)
+{
+	return x;
+}
+#elif __BYTE_ORDER == __LITTLE_ENDIAN
+static uint64_t ntohll(uint64_t x)
+{
+	return bswap_64(x);
+}
+#endif
+#define htonll(x) ntohll(x)
+
 #define MACSEC_ATTR_SCI			(1 << 0)
 #define MACSEC_ATTR_ICV_LEN		(1 << 1)
 #define MACSEC_ATTR_CIPHER_SUITE	(1 << 2)
@@ -103,7 +118,7 @@ static int macsec_parse(struct rtnl_link *link, struct nlattr *data,
 	info = link->l_info;
 
 	if (tb[IFLA_MACSEC_SCI]) {
-		info->sci = nla_get_u64(tb[IFLA_MACSEC_SCI]);
+		info->sci = ntohll(nla_get_u64(tb[IFLA_MACSEC_SCI]));
 		info->ce_mask |= MACSEC_ATTR_SCI;
 	}
 
@@ -276,7 +291,7 @@ static int macsec_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 		return -NLE_MSGSIZE;
 
 	if (info->ce_mask & MACSEC_ATTR_SCI)
-		NLA_PUT_U64(msg, IFLA_MACSEC_SCI, info->sci);
+		NLA_PUT_U64(msg, IFLA_MACSEC_SCI, htonll(info->sci));
 	else if (info->ce_mask & MACSEC_ATTR_PORT)
 		NLA_PUT_U16(msg, IFLA_MACSEC_PORT, htons(info->port));
 

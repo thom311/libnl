@@ -27,20 +27,10 @@
 #include <netlink/attr.h>
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/ct.h>
+#include <netlink-private/utils.h>
 
 static struct nl_cache_ops nfnl_ct_ops;
 
-#if __BYTE_ORDER == __BIG_ENDIAN
-static uint64_t ntohll(uint64_t x)
-{
-	return x;
-}
-#elif __BYTE_ORDER == __LITTLE_ENDIAN
-static uint64_t ntohll(uint64_t x)
-{
-	return bswap_64(x);
-}
-#endif
 
 static struct nla_policy ct_policy[CTA_MAX+1] = {
 	[CTA_TUPLE_ORIG]	= { .type = NLA_NESTED },

@@ -12,6 +12,14 @@
 #ifndef NETLINK_UTILS_PRIV_H_
 #define NETLINK_UTILS_PRIV_H_
 
+#include <byteswap.h>
+#if __BYTE_ORDER == __BIG_ENDIAN
+#define ntohll(x) (x)
+#elif __BYTE_ORDER == __LITTLE_ENDIAN
+#define ntohll(x) bswap_64((x))
+#endif
+#define htonll(x) ntohll(x)
+
 extern const char *	nl_strerror_l(int err);
 
 #endif

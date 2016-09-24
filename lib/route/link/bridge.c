@@ -766,12 +766,13 @@ int rtnl_link_bridge_set_self(struct rtnl_link *link)
 
 /**
  * Get hardware mode
- * @arg link		Link object of type bridge
+ * @arg link            Link object of type bridge
+ * @arg hwmode          Output argument.
  *
  * @see rtnl_link_bridge_set_hwmode()
  *
- * @return 1 and set hwmode if hardware mode is present
- * @return 0 if hardware mode is not present
+ * @return 0 if hardware mode is present and returned in hwmode
+ * @return -NLE_NOATTR if hardware mode is not present
  * @return -NLE_OPNOTSUP Link is not a bridge
  */
 int rtnl_link_bridge_get_hwmode(struct rtnl_link *link, uint16_t *hwmode)
@@ -780,11 +781,11 @@ int rtnl_link_bridge_get_hwmode(struct rtnl_link *link, uint16_t *hwmode)
 
 	IS_BRIDGE_LINK_ASSERT(link);
 
-	if (bd->ce_mask & BRIDGE_ATTR_HWMODE) {
-		*hwmode = bd->b_hwmode;
-		return 1;
-	} else
-		return 0;
+	if (!(bd->ce_mask & BRIDGE_ATTR_HWMODE))
+		return -NLE_NOATTR;
+
+	*hwmode = bd->b_hwmode;
+	return 0;
 }
 
 /**

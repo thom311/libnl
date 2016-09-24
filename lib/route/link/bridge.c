@@ -171,10 +171,10 @@ static int bridge_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 	check_flag(link, br_attrs, IFLA_BRPORT_PROTECT, RTNL_BRIDGE_ROOT_BLOCK);
 	check_flag(link, br_attrs, IFLA_BRPORT_FAST_LEAVE, RTNL_BRIDGE_FAST_LEAVE);
 	check_flag(link, br_attrs, IFLA_BRPORT_UNICAST_FLOOD,
-			   RTNL_BRIDGE_UNICAST_FLOOD);
+	           RTNL_BRIDGE_UNICAST_FLOOD);
 	check_flag(link, br_attrs, IFLA_BRPORT_LEARNING, RTNL_BRIDGE_LEARNING);
 	check_flag(link, br_attrs, IFLA_BRPORT_LEARNING_SYNC,
-			   RTNL_BRIDGE_LEARNING_SYNC);
+	           RTNL_BRIDGE_LEARNING_SYNC);
 
 	return 0;
 }
@@ -268,27 +268,27 @@ static int bridge_fill_pi(struct rtnl_link *link, struct nl_msg *msg,
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_HAIRPIN_MODE) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_MODE,
-						bd->b_flags & RTNL_BRIDGE_HAIRPIN_MODE);
+			           bd->b_flags & RTNL_BRIDGE_HAIRPIN_MODE);
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_FAST_LEAVE) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_FAST_LEAVE,
-						bd->b_flags & RTNL_BRIDGE_FAST_LEAVE);
+			           bd->b_flags & RTNL_BRIDGE_FAST_LEAVE);
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_ROOT_BLOCK) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_PROTECT,
-						bd->b_flags & RTNL_BRIDGE_ROOT_BLOCK);
+			           bd->b_flags & RTNL_BRIDGE_ROOT_BLOCK);
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_UNICAST_FLOOD) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_UNICAST_FLOOD,
-						bd->b_flags & RTNL_BRIDGE_UNICAST_FLOOD);
+			           bd->b_flags & RTNL_BRIDGE_UNICAST_FLOOD);
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_LEARNING) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_LEARNING,
-						bd->b_flags & RTNL_BRIDGE_LEARNING);
+			           bd->b_flags & RTNL_BRIDGE_LEARNING);
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_LEARNING_SYNC) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_LEARNING_SYNC,
-						bd->b_flags & RTNL_BRIDGE_LEARNING_SYNC);
+			           bd->b_flags & RTNL_BRIDGE_LEARNING_SYNC);
 		}
 	}
 
@@ -462,8 +462,8 @@ struct rtnl_link *rtnl_link_bridge_alloc(void)
 
 	return link;
 }
-		
-/** 
+
+/**
  * Create a new kernel bridge device
  * @arg sk              netlink socket
  * @arg name            name of the bridge device or NULL
@@ -752,7 +752,8 @@ int rtnl_link_bridge_get_flags(struct rtnl_link *link)
  * @return 0 on success or negative error code
  * @return -NLE_OPNOTSUP Link is not a bridge
  */
-int rtnl_link_bridge_set_self(struct rtnl_link *link) {
+int rtnl_link_bridge_set_self(struct rtnl_link *link)
+{
 	struct bridge_data *bd = bridge_data(link);
 
 	IS_BRIDGE_LINK_ASSERT(link);
@@ -782,8 +783,7 @@ int rtnl_link_bridge_get_hwmode(struct rtnl_link *link, uint16_t *hwmode)
 	if (bd->ce_mask & BRIDGE_ATTR_HWMODE) {
 		*hwmode = bd->b_hwmode;
 		return 1;
-	}
-	else
+	} else
 		return 0;
 }
 
@@ -815,7 +815,7 @@ int rtnl_link_bridge_set_hwmode(struct rtnl_link *link, uint16_t hwmode)
 	if (hwmode > RTNL_BRIDGE_HWMODE_MAX)
 		return -NLE_INVAL;
 
-    if ((err = rtnl_link_bridge_set_self(link)) < 0)
+	if ((err = rtnl_link_bridge_set_self(link)) < 0)
 		return err;
 
 	bd->b_hwmode = hwmode;

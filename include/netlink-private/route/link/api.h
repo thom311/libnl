@@ -172,7 +172,7 @@ struct rtnl_link_af_ops
 	 *
 	 * Called if a link message is sent to the kernel. If this is set,
 	 * the AF specific nest is not created. Instead, AF specific attributes
-     * are nested directly in the IFLA_AF_SPEC attribute.
+	 * are nested directly in the IFLA_AF_SPEC attribute.
 	 */
 	 const int ao_fill_af_no_nest;
 };

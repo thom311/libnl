@@ -24,21 +24,9 @@
 #include <netlink/attr.h>
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/queue_msg.h>
-#include <byteswap.h>
+#include <netlink-private/utils.h>
 
 static struct nl_cache_ops nfnl_queue_msg_ops;
-
-#if __BYTE_ORDER == __BIG_ENDIAN
-static uint64_t ntohll(uint64_t x)
-{
-	return x;
-}
-#elif __BYTE_ORDER == __LITTLE_ENDIAN
-static uint64_t ntohll(uint64_t x)
-{
-	return bswap_64(x);
-}
-#endif
 
 static struct nla_policy queue_policy[NFQA_MAX+1] = {
 	[NFQA_PACKET_HDR]		= {

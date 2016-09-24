@@ -16,6 +16,7 @@
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
 #include <netlink-private/route/link/api.h>
+#include <netlink-private/utils.h>
 
 #include <linux/if_macsec.h>
 
@@ -103,7 +104,7 @@ static int macsec_parse(struct rtnl_link *link, struct nlattr *data,
 	info = link->l_info;
 
 	if (tb[IFLA_MACSEC_SCI]) {
-		info->sci = nla_get_u64(tb[IFLA_MACSEC_SCI]);
+		info->sci = ntohll(nla_get_u64(tb[IFLA_MACSEC_SCI]));
 		info->ce_mask |= MACSEC_ATTR_SCI;
 	}
 
@@ -276,7 +277,7 @@ static int macsec_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 		return -NLE_MSGSIZE;
 
 	if (info->ce_mask & MACSEC_ATTR_SCI)
-		NLA_PUT_U64(msg, IFLA_MACSEC_SCI, info->sci);
+		NLA_PUT_U64(msg, IFLA_MACSEC_SCI, htonll(info->sci));
 	else if (info->ce_mask & MACSEC_ATTR_PORT)
 		NLA_PUT_U16(msg, IFLA_MACSEC_PORT, htons(info->port));
 
@@ -494,7 +495,7 @@ int rtnl_link_macsec_set_icv_len(struct rtnl_link *link, uint16_t icv_len)
 
 	IS_MACSEC_LINK_ASSERT(link);
 
-	if (icv_len > MACSEC_MAX_ICV_LEN)
+	if (icv_len > MACSEC_STD_ICV_LEN)
 		return -NLE_INVAL;
 
 	info->icv_len = icv_len;

@@ -33,6 +33,8 @@
 #define BRIDGE_ATTR_COST		(1 << 2)
 #define BRIDGE_ATTR_FLAGS		(1 << 3)
 #define BRIDGE_ATTR_PORT_VLAN           (1 << 4)
+#define BRIDGE_ATTR_HWMODE		(1 << 5)
+#define BRIDGE_ATTR_SELF		(1 << 6)
 
 #define PRIV_FLAG_NEW_ATTRS		(1 << 0)
 
@@ -40,7 +42,9 @@ struct bridge_data
 {
 	uint8_t			b_port_state;
 	uint8_t			b_priv_flags; /* internal flags */
+	uint16_t		b_hwmode;
 	uint16_t		b_priority;
+	uint16_t		b_self; /* here for comparison reasons */
 	uint32_t		b_cost;
 	uint32_t		b_flags;
 	uint32_t		b_flags_mask;
@@ -111,6 +115,9 @@ static struct nla_policy br_attrs_policy[IFLA_BRPORT_MAX+1] = {
 	[IFLA_BRPORT_GUARD]		= { .type = NLA_U8 },
 	[IFLA_BRPORT_PROTECT]		= { .type = NLA_U8 },
 	[IFLA_BRPORT_FAST_LEAVE]	= { .type = NLA_U8 },
+	[IFLA_BRPORT_LEARNING]		= { .type = NLA_U8 },
+	[IFLA_BRPORT_LEARNING_SYNC]	= { .type = NLA_U8 },
+	[IFLA_BRPORT_UNICAST_FLOOD]	= { .type = NLA_U8 },
 };
 
 static void check_flag(struct rtnl_link *link, struct nlattr *attrs[],
@@ -163,6 +170,11 @@ static int bridge_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 	check_flag(link, br_attrs, IFLA_BRPORT_GUARD, RTNL_BRIDGE_BPDU_GUARD);
 	check_flag(link, br_attrs, IFLA_BRPORT_PROTECT, RTNL_BRIDGE_ROOT_BLOCK);
 	check_flag(link, br_attrs, IFLA_BRPORT_FAST_LEAVE, RTNL_BRIDGE_FAST_LEAVE);
+	check_flag(link, br_attrs, IFLA_BRPORT_UNICAST_FLOOD,
+	           RTNL_BRIDGE_UNICAST_FLOOD);
+	check_flag(link, br_attrs, IFLA_BRPORT_LEARNING, RTNL_BRIDGE_LEARNING);
+	check_flag(link, br_attrs, IFLA_BRPORT_LEARNING_SYNC,
+	           RTNL_BRIDGE_LEARNING_SYNC);
 
 	return 0;
 }
@@ -180,7 +192,10 @@ static int bridge_parse_af_full(struct rtnl_link *link, struct nlattr *attr_full
 
 	nla_for_each_nested(attr, attr_full, remaining) {
 
-		if (nla_type(attr) != IFLA_BRIDGE_VLAN_INFO)
+		if (nla_type(attr) == IFLA_BRIDGE_MODE) {
+			bd->b_hwmode = nla_get_u16(attr);
+			bd->ce_mask |= BRIDGE_ATTR_HWMODE;
+		} else if (nla_type(attr) != IFLA_BRIDGE_VLAN_INFO)
 			continue;
 
 		if (nla_len(attr) != sizeof(struct bridge_vlan_info))
@@ -224,6 +239,23 @@ static int bridge_parse_af_full(struct rtnl_link *link, struct nlattr *attr_full
 	return 0;
 }
 
+static int bridge_fill_af(struct rtnl_link *link, struct nl_msg *msg,
+		   void *data)
+{
+	struct bridge_data *bd = data;
+
+	if ((bd->ce_mask & BRIDGE_ATTR_SELF)||(bd->ce_mask & BRIDGE_ATTR_HWMODE))
+		NLA_PUT_U16(msg, IFLA_BRIDGE_FLAGS, BRIDGE_FLAGS_SELF);
+
+	if (bd->ce_mask & BRIDGE_ATTR_HWMODE)
+		NLA_PUT_U16(msg, IFLA_BRIDGE_MODE, bd->b_hwmode);
+
+	return 0;
+
+nla_put_failure:
+	return -NLE_MSGSIZE;
+}
+
 static int bridge_fill_pi(struct rtnl_link *link, struct nl_msg *msg,
 		   void *data)
 {
@@ -236,15 +268,27 @@ static int bridge_fill_pi(struct rtnl_link *link, struct nl_msg *msg,
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_HAIRPIN_MODE) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_MODE,
-						bd->b_flags & RTNL_BRIDGE_HAIRPIN_MODE);
+			           bd->b_flags & RTNL_BRIDGE_HAIRPIN_MODE);
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_FAST_LEAVE) {
-			NLA_PUT_U8(msg, IFLA_BRPORT_MODE,
-						bd->b_flags & RTNL_BRIDGE_FAST_LEAVE);
+			NLA_PUT_U8(msg, IFLA_BRPORT_FAST_LEAVE,
+			           bd->b_flags & RTNL_BRIDGE_FAST_LEAVE);
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_ROOT_BLOCK) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_PROTECT,
-						bd->b_flags & RTNL_BRIDGE_ROOT_BLOCK);
+			           bd->b_flags & RTNL_BRIDGE_ROOT_BLOCK);
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_UNICAST_FLOOD) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_UNICAST_FLOOD,
+			           bd->b_flags & RTNL_BRIDGE_UNICAST_FLOOD);
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_LEARNING) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_LEARNING,
+			           bd->b_flags & RTNL_BRIDGE_LEARNING);
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_LEARNING_SYNC) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_LEARNING_SYNC,
+			           bd->b_flags & RTNL_BRIDGE_LEARNING_SYNC);
 		}
 	}
 
@@ -350,6 +394,13 @@ static void bridge_dump_details(struct rtnl_link *link,
 	if (bd->ce_mask & BRIDGE_ATTR_COST)
 		nl_dump(p, "cost %u ", bd->b_cost);
 
+	if (bd->ce_mask & BRIDGE_ATTR_HWMODE) {
+		char hbuf[32];
+
+		rtnl_link_bridge_hwmode2str(bd->b_hwmode, hbuf, sizeof(hbuf));
+		nl_dump(p, "hwmode %s", hbuf);
+	}
+
 	if (bd->ce_mask & BRIDGE_ATTR_PORT_VLAN)
 		rtnl_link_bridge_dump_vlans(p, bd);
 
@@ -377,6 +428,8 @@ static int bridge_compare(struct rtnl_link *_a, struct rtnl_link *_b,
 	diff |= BRIDGE_DIFF(COST, a->b_cost != b->b_cost);
 	diff |= BRIDGE_DIFF(PORT_VLAN, memcmp(&a->vlan_info, &b->vlan_info,
 					      sizeof(struct rtnl_link_bridge_vlan)));
+	diff |= BRIDGE_DIFF(HWMODE, a->b_hwmode != b->b_hwmode);
+	diff |= BRIDGE_DIFF(SELF, a->b_self != b->b_self);
 
 	if (flags & LOOSE_COMPARISON)
 		diff |= BRIDGE_DIFF(FLAGS,
@@ -409,8 +462,8 @@ struct rtnl_link *rtnl_link_bridge_alloc(void)
 
 	return link;
 }
-		
-/** 
+
+/**
  * Create a new kernel bridge device
  * @arg sk              netlink socket
  * @arg name            name of the bridge device or NULL
@@ -646,6 +699,9 @@ int rtnl_link_bridge_unset_flags(struct rtnl_link *link, unsigned int flags)
  *   - RTNL_BRIDGE_BPDU_GUARD
  *   - RTNL_BRIDGE_ROOT_BLOCK
  *   - RTNL_BRIDGE_FAST_LEAVE
+ *   - RTNL_BRIDGE_UNICAST_FLOOD
+ *   - RTNL_BRIDGE_LEARNING
+ *   - RTNL_BRIDGE_LEARNING_SYNC
  *
  * @see rtnl_link_bridge_unset_flags()
  * @see rtnl_link_bridge_get_flags()
@@ -685,11 +741,99 @@ int rtnl_link_bridge_get_flags(struct rtnl_link *link)
 	return bd->b_flags;
 }
 
+/**
+ * Set link change type to self
+ * @arg link		Link Object of type bridge
+ *
+ * This will set the bridge change flag to self, meaning that changes to
+ * be applied with this link object will be applied directly to the physical
+ * device in a bridge instead of the virtual device.
+ *
+ * @return 0 on success or negative error code
+ * @return -NLE_OPNOTSUP Link is not a bridge
+ */
+int rtnl_link_bridge_set_self(struct rtnl_link *link)
+{
+	struct bridge_data *bd = bridge_data(link);
+
+	IS_BRIDGE_LINK_ASSERT(link);
+
+	bd->b_self |= 1;
+	bd->ce_mask |= BRIDGE_ATTR_SELF;
+
+	return 0;
+}
+
+/**
+ * Get hardware mode
+ * @arg link            Link object of type bridge
+ * @arg hwmode          Output argument.
+ *
+ * @see rtnl_link_bridge_set_hwmode()
+ *
+ * @return 0 if hardware mode is present and returned in hwmode
+ * @return -NLE_NOATTR if hardware mode is not present
+ * @return -NLE_OPNOTSUP Link is not a bridge
+ */
+int rtnl_link_bridge_get_hwmode(struct rtnl_link *link, uint16_t *hwmode)
+{
+	struct bridge_data *bd = bridge_data(link);
+
+	IS_BRIDGE_LINK_ASSERT(link);
+
+	if (!(bd->ce_mask & BRIDGE_ATTR_HWMODE))
+		return -NLE_NOATTR;
+
+	*hwmode = bd->b_hwmode;
+	return 0;
+}
+
+/**
+ * Set hardware mode
+ * @arg link		Link object of type bridge
+ * @arg hwmode		Hardware mode to set on link
+ *
+ * This will set the hardware mode of a link when it supports hardware
+ * offloads for bridging.
+ * @see rtnl_link_bridge_get_hwmode()
+ *
+ * Valid modes are:
+ *   - RTNL_BRIDGE_HWMODE_VEB
+ *   - RTNL_BRIDGE_HWMODE_VEPA
+ *
+ * When setting hardware mode, the change type will be set to self.
+ * @see rtnl_link_bridge_set_self()
+ *
+ * @return 0 on success or negative error code
+ * @return -NLE_OPNOTSUP Link is not a bridge
+ * @return -NLE_INVAL when specified hwmode is unsupported.
+ */
+int rtnl_link_bridge_set_hwmode(struct rtnl_link *link, uint16_t hwmode)
+{
+	int err;
+	struct bridge_data *bd = bridge_data(link);
+
+	if (hwmode > RTNL_BRIDGE_HWMODE_MAX)
+		return -NLE_INVAL;
+
+	if ((err = rtnl_link_bridge_set_self(link)) < 0)
+		return err;
+
+	bd->b_hwmode = hwmode;
+	bd->ce_mask |= BRIDGE_ATTR_HWMODE;
+
+	return 0;
+}
+
+
 static const struct trans_tbl bridge_flags[] = {
 	__ADD(RTNL_BRIDGE_HAIRPIN_MODE, hairpin_mode),
 	__ADD(RTNL_BRIDGE_BPDU_GUARD, 	bpdu_guard),
 	__ADD(RTNL_BRIDGE_ROOT_BLOCK,	root_block),
 	__ADD(RTNL_BRIDGE_FAST_LEAVE,	fast_leave),
+	__ADD(RTNL_BRIDGE_UNICAST_FLOOD,	flood),
+	__ADD(RTNL_BRIDGE_LEARNING,			learning),
+	__ADD(RTNL_BRIDGE_LEARNING_SYNC,	learning_sync),
 };
 
 /**
@@ -705,6 +849,53 @@ char *rtnl_link_bridge_flags2str(int flags, char *buf, size_t len)
 int rtnl_link_bridge_str2flags(const char *name)
 {
 	return __str2flags(name, bridge_flags, ARRAY_SIZE(bridge_flags));
+}
+
+/** @} */
+
+static const struct trans_tbl port_states[] = {
+	__ADD(BR_STATE_DISABLED, disabled),
+	__ADD(BR_STATE_LISTENING, listening),
+	__ADD(BR_STATE_LEARNING, learning),
+	__ADD(BR_STATE_FORWARDING, forwarding),
+	__ADD(BR_STATE_BLOCKING, blocking),
+};
+
+/**
+ * @name Port State Translation
+ * @{
+ */
+
+char *rtnl_link_bridge_portstate2str(int st, char *buf, size_t len)
+{
+	return __type2str(st, buf, len, port_states, ARRAY_SIZE(port_states));
+}
+
+int rtnl_link_bridge_str2portstate(const char *name)
+{
+	return __str2type(name, port_states, ARRAY_SIZE(port_states));
+}
+
+/** @} */
+
+static const struct trans_tbl hw_modes[] = {
+	__ADD(RTNL_BRIDGE_HWMODE_VEB, veb),
+	__ADD(RTNL_BRIDGE_HWMODE_VEPA, vepa),
+	__ADD(RTNL_BRIDGE_HWMODE_UNDEF, undef),
+};
+
+/**
+ * @name Hardware Mode Translation
+ * @{
+ */
+
+char *rtnl_link_bridge_hwmode2str(uint16_t st, char *buf, size_t len) {
+	return __type2str(st, buf, len, hw_modes, ARRAY_SIZE(hw_modes));
+}
+
+uint16_t rtnl_link_bridge_str2hwmode(const char *name)
+{
+	return __str2type(name, hw_modes, ARRAY_SIZE(hw_modes));
 }
 
 /** @} */
@@ -767,9 +958,11 @@ static struct rtnl_link_af_ops bridge_ops = {
 	.ao_compare			= &bridge_compare,
 	.ao_parse_af_full		= &bridge_parse_af_full,
 	.ao_get_af			= &bridge_get_af,
+	.ao_fill_af			= &bridge_fill_af,
 	.ao_fill_pi			= &bridge_fill_pi,
 	.ao_fill_pi_flags	= NLA_F_NESTED,
 	.ao_override_rtm	= 1,
+	.ao_fill_af_no_nest	= 1,
 };
 
 static void __init bridge_init(void)

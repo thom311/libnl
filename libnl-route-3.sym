@@ -947,3 +947,14 @@ global:
 	rtnl_neigh_ll_get;
 } libnl_3_2_27;
 
+libnl_3_2_29 {
+global:
+	rtnl_link_bridge_portstate2str;
+	rtnl_link_bridge_str2portstate;
+	rtnl_link_bridge_set_self;
+	rtnl_link_bridge_get_hwmode;
+	rtnl_link_bridge_set_hwmode;
+	rtnl_link_bridge_hwmode2str;
+	rtnl_link_bridge_str2hwmode;
+} libnl_3_2_28;
+

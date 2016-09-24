@@ -167,6 +167,14 @@ struct rtnl_link_af_ops
 	 * here. (eg. NLA_F_NESTED)
 	 */
 	const int ao_fill_pi_flags;
+
+	/** IFLA_AF_SPEC nesting override
+	 *
+	 * Called if a link message is sent to the kernel. If this is set,
+	 * the AF specific nest is not created. Instead, AF specific attributes
+	 * are nested directly in the IFLA_AF_SPEC attribute.
+	 */
+	 const int ao_fill_af_no_nest;
 };
 
 extern struct rtnl_link_af_ops *rtnl_link_af_ops_lookup(unsigned int);

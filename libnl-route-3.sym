@@ -956,5 +956,13 @@ global:
 	rtnl_link_bridge_set_hwmode;
 	rtnl_link_bridge_hwmode2str;
 	rtnl_link_bridge_str2hwmode;
+	rtnl_link_macvlan_add_macaddr;
+	rtnl_link_macvlan_count_macaddr;
+	rtnl_link_macvlan_del_macaddr;
+	rtnl_link_macvlan_get_macaddr;
+	rtnl_link_macvlan_get_macmode;
+	rtnl_link_macvlan_macmode2str;
+	rtnl_link_macvlan_set_macmode;
+	rtnl_link_macvlan_str2macmode;
 } libnl_3_2_28;
 

@@ -38,8 +38,7 @@
 /** @cond SKIP */
 #define MACVLAN_HAS_MODE	(1<<0)
 #define MACVLAN_HAS_FLAGS	(1<<1)
-#define MACVLAN_HAS_MACCOUNT	(1<<2)
-#define MACVLAN_HAS_MACDATA	(1<<3)
+#define MACVLAN_HAS_MACADDR	(1<<2)
 
 struct macvlan_info
 {
@@ -65,9 +64,13 @@ static struct nla_policy macvlan_policy[IFLA_MACVLAN_MAX+1] = {
 static int macvlan_alloc(struct rtnl_link *link)
 {
 	struct macvlan_info *mvi;
+	uint32_t i;
 
 	if (link->l_info) {
 		mvi = link->l_info;
+		for (i = 0; i < mvi->mvi_maccount; i++)
+			nl_addr_put(mvi->mvi_macaddr[i]);
+		free(mvi->mvi_macaddr);
 		memset(mvi, 0, sizeof(*mvi));
 	} else {
 		if ((mvi = calloc(1, sizeof(*mvi))) == NULL)
@@ -86,7 +89,6 @@ static int macvlan_parse(struct rtnl_link *link, struct nlattr *data,
 	struct nlattr *tb[IFLA_MACVLAN_MAX+1];
 	struct macvlan_info *mvi;
 	struct nlattr *nla;
-	int i;
 	int len;
 	int err;
 
@@ -110,31 +112,30 @@ static int macvlan_parse(struct rtnl_link *link, struct nlattr *data,
 		mvi->mvi_mask |= MACVLAN_HAS_FLAGS;
 	}
 
-	if (tb[IFLA_MACVLAN_MACADDR_COUNT]) {
+	if (   tb[IFLA_MACVLAN_MACADDR_COUNT]
+	    && tb[IFLA_MACVLAN_MACADDR_DATA]) {
 		mvi->mvi_maccount = nla_get_u32(tb[IFLA_MACVLAN_MACADDR_COUNT]);
-		mvi->mvi_mask |= MACVLAN_HAS_MACCOUNT;
-	}
+		if (mvi->mvi_maccount > 0) {
+			uint32_t i;
 
-	if (tb[IFLA_MACVLAN_MACADDR_DATA] &&
-	    (mvi->mvi_mask & MACVLAN_HAS_MACCOUNT) &&
-	    mvi->mvi_maccount > 0) {
-		nla = nla_data(tb[IFLA_MACVLAN_MACADDR_DATA]);
-		len = nla_len(tb[IFLA_MACVLAN_MACADDR_DATA]);
+			nla = nla_data(tb[IFLA_MACVLAN_MACADDR_DATA]);
+			len = nla_len(tb[IFLA_MACVLAN_MACADDR_DATA]);
 
-		mvi->mvi_macaddr = calloc(mvi->mvi_maccount,
-					  sizeof(*(mvi->mvi_macaddr)));
-		mvi->mvi_mask |= MACVLAN_HAS_MACDATA;
-		i = 0;
+			mvi->mvi_macaddr = calloc(mvi->mvi_maccount,
+						  sizeof(*(mvi->mvi_macaddr)));
 
-		for (; nla_ok(nla, len); nla = nla_next(nla, &len)) {
-			if (i >= mvi->mvi_maccount)
-				break;
-			if (nla_type(nla) != IFLA_MACVLAN_MACADDR ||
-			    nla_len(nla) < ETH_ALEN)
-				continue;
-			mvi->mvi_macaddr[i] = nl_addr_alloc_attr(nla, AF_LLC);
-			i++;
+			i = 0;
+			for (; nla_ok(nla, len); nla = nla_next(nla, &len)) {
+				if (i >= mvi->mvi_maccount)
+					break;
+				if (nla_type(nla) != IFLA_MACVLAN_MACADDR ||
+				    nla_len(nla) < ETH_ALEN)
+					continue;
+				mvi->mvi_macaddr[i] = nl_addr_alloc_attr(nla, AF_LLC);
+				i++;
+			}
 		}
+		mvi->mvi_mask |= MACVLAN_HAS_MACADDR;
 	}
 
 	err = 0;
@@ -145,14 +146,12 @@ errout:
 static void macvlan_free(struct rtnl_link *link)
 {
 	struct macvlan_info *mvi;
-	int i;
+	uint32_t i;
 
 	mvi = link->l_info;
 
-	if (mvi->mvi_mask & MACVLAN_HAS_MACDATA) {
-		for (i = 0; i < mvi->mvi_maccount; i++)
-			nl_addr_put(mvi->mvi_macaddr[i]);
-	}
+	for (i = 0; i < mvi->mvi_maccount; i++)
+		nl_addr_put(mvi->mvi_macaddr[i]);
 	free(mvi->mvi_macaddr);
 	free(mvi);
 
@@ -162,7 +161,7 @@ static void macvlan_free(struct rtnl_link *link)
 static void macvlan_dump(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	char buf[64];
-	int i;
+	uint32_t i;
 	struct macvlan_info *mvi = link->l_info;
 
 	if (mvi->mvi_mask & MACVLAN_HAS_MODE) {
@@ -175,14 +174,14 @@ static void macvlan_dump(struct rtnl_link *link, struct nl_dump_params *p)
 		nl_dump(p, "%s-flags %s", link->l_info_ops->io_name, buf);
 	}
 
-	if (mvi->mvi_mask & MACVLAN_HAS_MACCOUNT)
-		nl_dump(p, "macvlan-count %d", mvi->mvi_maccount);
+	if (mvi->mvi_mask & MACVLAN_HAS_MACADDR) {
+		nl_dump(p, "macvlan-count %u", (unsigned) mvi->mvi_maccount);
 
-	if (mvi->mvi_mask & MACVLAN_HAS_MACDATA) {
-		for (i = 0; i < mvi->mvi_maccount; i++)
+		for (i = 0; i < mvi->mvi_maccount; i++) {
 			nl_dump(p, "macvlan-sourcemac %s",
 				nl_addr2str(mvi->mvi_macaddr[i], buf,
 					    sizeof(buf)));
+		}
 	}
 }
 
@@ -190,7 +189,7 @@ static int macvlan_clone(struct rtnl_link *dst, struct rtnl_link *src)
 {
 	struct macvlan_info *vdst, *vsrc = src->l_info;
 	int err;
-	int i;
+	uint32_t i;
 
 	dst->l_info = NULL;
 	if ((err = rtnl_link_set_type(dst, "macvlan")) < 0)
@@ -202,14 +201,14 @@ static int macvlan_clone(struct rtnl_link *dst, struct rtnl_link *src)
 
 	memcpy(vdst, vsrc, sizeof(struct macvlan_info));
 
-	if (vsrc->mvi_mask & MACVLAN_HAS_MACDATA) {
+	if (   vsrc->mvi_mask & MACVLAN_HAS_MACADDR
+	    && vsrc->mvi_maccount > 0) {
 		vdst->mvi_macaddr = calloc(vdst->mvi_maccount,
 					   sizeof(*(vdst->mvi_macaddr)));
 		for (i = 0; i < vdst->mvi_maccount; i++)
 			vdst->mvi_macaddr[i] = nl_addr_clone(vsrc->mvi_macaddr[i]);
-	}
-
-	vdst->mvi_macmode = vsrc->mvi_macmode;
+	} else
+		vdst->mvi_macaddr = NULL;
 
 	return 0;
 }
@@ -231,7 +230,7 @@ static int macvlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (mvi->mvi_mask & MACVLAN_HAS_FLAGS)
 		NLA_PUT_U16(msg, IFLA_MACVLAN_FLAGS, mvi->mvi_flags);
 
-	if (mvi->mvi_mask & MACVLAN_HAS_MACDATA) {
+	if (mvi->mvi_mask & MACVLAN_HAS_MACADDR) {
 		NLA_PUT_U32(msg, IFLA_MACVLAN_MACADDR_MODE, mvi->mvi_macmode);
 		datamac = nla_nest_start(msg, IFLA_MACVLAN_MACADDR_DATA);
 		if (!datamac)
@@ -349,14 +348,13 @@ int rtnl_link_macvlan_set_mode(struct rtnl_link *link, uint32_t mode)
 	mvi->mvi_mask |= MACVLAN_HAS_MODE;
 
 	if (mode != MACVLAN_MODE_SOURCE) {
-		if (mvi->mvi_mask & MACVLAN_HAS_MACDATA) {
-			for (i = 0; i < mvi->mvi_maccount; i++)
-				nl_addr_put(mvi->mvi_macaddr[i]);
-		}
+		for (i = 0; i < mvi->mvi_maccount; i++)
+			nl_addr_put(mvi->mvi_macaddr[i]);
 		free(mvi->mvi_macaddr);
+		mvi->mvi_maccount = 0;
 		mvi->mvi_macaddr = NULL;
-		mvi->mvi_mask &= ~MACVLAN_HAS_MACDATA;
-		mvi->mvi_mask &= ~MACVLAN_HAS_MACCOUNT;
+		mvi->mvi_macmode = MACVLAN_MACADDR_SET;
+		mvi->mvi_mask &= ~MACVLAN_HAS_MACADDR;
 	}
 
 	return 0;
@@ -400,6 +398,7 @@ int rtnl_link_macvlan_set_macmode(struct rtnl_link *link, uint32_t macmode)
 		return -NLE_INVAL;
 
 	mvi->mvi_macmode = macmode;
+	mvi->mvi_mask |= MACVLAN_HAS_MACADDR;
 
 	return 0;
 }
@@ -421,6 +420,9 @@ int rtnl_link_macvlan_get_macmode(struct rtnl_link *link, uint32_t *out_macmode)
 
 	if (!(mvi->mvi_mask & MACVLAN_HAS_MODE) ||
 	    (mvi->mvi_mode != MACVLAN_MODE_SOURCE))
+		return -NLE_INVAL;
+
+	if (!(mvi->mvi_mask & MACVLAN_HAS_MACADDR))
 		return -NLE_INVAL;
 
 	*out_macmode = mvi->mvi_macmode;
@@ -501,7 +503,7 @@ int rtnl_link_macvlan_count_macaddr(struct rtnl_link *link, uint32_t *out_count)
 	    (mvi->mvi_mode != MACVLAN_MODE_SOURCE))
 		return -NLE_INVAL;
 
-	if (!(mvi->mvi_mask & MACVLAN_HAS_MACCOUNT))
+	if (!(mvi->mvi_mask & MACVLAN_HAS_MACADDR))
 		return -NLE_INVAL;
 
 	*out_count = mvi->mvi_maccount;
@@ -520,7 +522,7 @@ int rtnl_link_macvlan_count_macaddr(struct rtnl_link *link, uint32_t *out_count)
  *
  * @return 0 on success or negative error code
  */
-int rtnl_link_macvlan_get_macaddr(struct rtnl_link *link, unsigned int idx,
+int rtnl_link_macvlan_get_macaddr(struct rtnl_link *link, uint32_t idx,
 				  const struct nl_addr **out_addr)
 {
 	struct macvlan_info *mvi = link->l_info;
@@ -531,15 +533,13 @@ int rtnl_link_macvlan_get_macaddr(struct rtnl_link *link, unsigned int idx,
 	    (mvi->mvi_mode != MACVLAN_MODE_SOURCE))
 		return -NLE_INVAL;
 
-	if (!(mvi->mvi_mask & MACVLAN_HAS_MACCOUNT) ||
-	    !(mvi->mvi_mask & MACVLAN_HAS_MACDATA))
+	if (!(mvi->mvi_mask & MACVLAN_HAS_MACADDR))
 		return -NLE_INVAL;
 
 	if (idx >= mvi->mvi_maccount)
-		*out_addr = NULL;
-	else
-		*out_addr = mvi->mvi_macaddr[idx];
+		return -NLE_INVAL;
 
+	*out_addr = mvi->mvi_macaddr[idx];
 	return 0;
 }
 
@@ -567,8 +567,10 @@ int rtnl_link_macvlan_add_macaddr(struct rtnl_link *link, struct nl_addr *addr)
 	    (mvi->mvi_mode != MACVLAN_MODE_SOURCE))
 		return -NLE_INVAL;
 
-	if (!(mvi->mvi_mask & MACVLAN_HAS_MACCOUNT) ||
-	    !(mvi->mvi_mask & MACVLAN_HAS_MACDATA))
+	if (!(mvi->mvi_mask & MACVLAN_HAS_MACADDR))
+		return -NLE_INVAL;
+
+	if (mvi->mvi_maccount >= UINT32_MAX)
 		return -NLE_INVAL;
 
 	newsize = (mvi->mvi_maccount + 1) * sizeof(*(mvi->mvi_macaddr));
@@ -580,8 +582,7 @@ int rtnl_link_macvlan_add_macaddr(struct rtnl_link *link, struct nl_addr *addr)
 	mvi->mvi_macaddr[mvi->mvi_maccount] = nl_addr_clone(addr);
 	mvi->mvi_maccount++;
 
-	mvi->mvi_mask |= MACVLAN_HAS_MACCOUNT;
-	mvi->mvi_mask |= MACVLAN_HAS_MACDATA;
+	mvi->mvi_mask |= MACVLAN_HAS_MACADDR;
 
 	return 0;
 }
@@ -593,12 +594,13 @@ int rtnl_link_macvlan_add_macaddr(struct rtnl_link *link, struct nl_addr *addr)
  *
  * addr is not release by this method.
  *
- * @return 0 on success or a negative error code.
+ * @return a negative error code on failure, or the number
+ *   of deleted addresses on success.
  */
 int rtnl_link_macvlan_del_macaddr(struct rtnl_link *link, struct nl_addr *addr)
 {
 	struct macvlan_info *mvi = link->l_info;
-	int found, i;
+	uint32_t found, i;
 
 	IS_MACVLAN_LINK_ASSERT(link);
 
@@ -609,9 +611,10 @@ int rtnl_link_macvlan_del_macaddr(struct rtnl_link *link, struct nl_addr *addr)
 	    (mvi->mvi_mode != MACVLAN_MODE_SOURCE))
 		return -NLE_INVAL;
 
-	if (!(mvi->mvi_mask & MACVLAN_HAS_MACCOUNT) ||
-	    !(mvi->mvi_mask & MACVLAN_HAS_MACDATA))
+	if (!(mvi->mvi_mask & MACVLAN_HAS_MACADDR))
 		return -NLE_INVAL;
+
+	nl_addr_get(addr);
 
 	found = 0; i = 0;
 	while (i + found < mvi->mvi_maccount) {
@@ -626,9 +629,11 @@ int rtnl_link_macvlan_del_macaddr(struct rtnl_link *link, struct nl_addr *addr)
 			i++;
 	}
 
+	nl_addr_put(addr);
+
 	mvi->mvi_maccount -= found;
 
-	return 0;
+	return found > INT_MAX ? INT_MAX : (int) found;
 }
 
 /** @} */
@@ -830,13 +835,13 @@ int rtnl_link_macvlan_str2mode(const char *name)
 
 char *rtnl_link_macvlan_macmode2str(int mode, char *buf, size_t len)
 {
-	return __type2str(mode, buf, len, macvlan_modes,
+	return __type2str(mode, buf, len, macvlan_macmodes,
 			  ARRAY_SIZE(macvlan_macmodes));
 }
 
 int rtnl_link_macvlan_str2macmode(const char *name)
 {
-	return __str2type(name, macvlan_modes, ARRAY_SIZE(macvlan_macmodes));
+	return __str2type(name, macvlan_macmodes, ARRAY_SIZE(macvlan_macmodes));
 }
 
 char *rtnl_link_macvtap_mode2str(int mode, char *buf, size_t len)

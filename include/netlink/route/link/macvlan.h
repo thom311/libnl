@@ -50,7 +50,7 @@ extern int		rtnl_link_macvlan_get_macmode(struct rtnl_link *link,
 extern int		rtnl_link_macvlan_count_macaddr(struct rtnl_link *link,
 							uint32_t *out_count);
 extern int		rtnl_link_macvlan_get_macaddr(struct rtnl_link *link,
-						      unsigned int idx,
+						      uint32_t idx,
 						      const struct nl_addr **addr);
 extern int		rtnl_link_macvlan_add_macaddr(struct rtnl_link *link,
 						      struct nl_addr *addr);

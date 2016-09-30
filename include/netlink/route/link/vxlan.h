@@ -23,16 +23,16 @@ extern "C" {
 
 extern struct rtnl_link *rtnl_link_vxlan_alloc(void);
 
-extern int		rtnl_link_is_vxlan(struct rtnl_link *);
+extern int	rtnl_link_is_vxlan(struct rtnl_link *);
 
-extern int		rtnl_link_vxlan_set_id(struct rtnl_link *, uint32_t);
-extern int		rtnl_link_vxlan_get_id(struct rtnl_link *, uint32_t *);
+extern int	rtnl_link_vxlan_set_id(struct rtnl_link *, uint32_t);
+extern int	rtnl_link_vxlan_get_id(struct rtnl_link *, uint32_t *);
 
 extern int	rtnl_link_vxlan_set_group(struct rtnl_link *, struct nl_addr *);
 extern int	rtnl_link_vxlan_get_group(struct rtnl_link *, struct nl_addr **);
 
-extern int		rtnl_link_vxlan_set_link(struct rtnl_link *, uint32_t);
-extern int		rtnl_link_vxlan_get_link(struct rtnl_link *, uint32_t *);
+extern int	rtnl_link_vxlan_set_link(struct rtnl_link *, uint32_t);
+extern int	rtnl_link_vxlan_get_link(struct rtnl_link *, uint32_t *);
 
 extern int	rtnl_link_vxlan_set_local(struct rtnl_link *, struct nl_addr *);
 extern int	rtnl_link_vxlan_get_local(struct rtnl_link *, struct nl_addr **);
@@ -78,6 +78,57 @@ extern int	rtnl_link_vxlan_set_l3miss(struct rtnl_link *, uint8_t);
 extern int	rtnl_link_vxlan_get_l3miss(struct rtnl_link *);
 extern int	rtnl_link_vxlan_enable_l3miss(struct rtnl_link *);
 extern int	rtnl_link_vxlan_disable_l3miss(struct rtnl_link *);
+
+extern int	rtnl_link_vxlan_set_port(struct rtnl_link *, uint32_t);
+extern int	rtnl_link_vxlan_get_port(struct rtnl_link *, uint32_t *);
+
+extern int	rtnl_link_vxlan_set_udp_csum(struct rtnl_link *, uint8_t);
+extern int	rtnl_link_vxlan_get_udp_csum(struct rtnl_link *);
+extern int	rtnl_link_vxlan_enable_udp_csum(struct rtnl_link *);
+extern int	rtnl_link_vxlan_disable_udp_csum(struct rtnl_link *);
+
+extern int	rtnl_link_vxlan_set_udp_zero_csum6_tx(struct rtnl_link *, uint8_t);
+extern int	rtnl_link_vxlan_get_udp_zero_csum6_tx(struct rtnl_link *);
+extern int	rtnl_link_vxlan_enable_udp_zero_csum6_tx(struct rtnl_link *);
+extern int	rtnl_link_vxlan_disable_udp_zero_csum6_tx(struct rtnl_link *);
+
+extern int	rtnl_link_vxlan_set_udp_zero_csum6_rx(struct rtnl_link *, uint8_t);
+extern int	rtnl_link_vxlan_get_udp_zero_csum6_rx(struct rtnl_link *);
+extern int	rtnl_link_vxlan_enable_udp_zero_csum6_rx(struct rtnl_link *);
+extern int	rtnl_link_vxlan_disable_udp_zero_csum6_rx(struct rtnl_link *);
+
+extern int	rtnl_link_vxlan_set_remcsum_tx(struct rtnl_link *, uint8_t);
+extern int	rtnl_link_vxlan_get_remcsum_tx(struct rtnl_link *);
+extern int	rtnl_link_vxlan_enable_remcsum_tx(struct rtnl_link *);
+extern int	rtnl_link_vxlan_disable_remcsum_tx(struct rtnl_link *);
+
+extern int	rtnl_link_vxlan_set_remcsum_rx(struct rtnl_link *, uint8_t);
+extern int	rtnl_link_vxlan_get_remcsum_rx(struct rtnl_link *);
+extern int	rtnl_link_vxlan_enable_remcsum_rx(struct rtnl_link *);
+extern int	rtnl_link_vxlan_disable_remcsum_rx(struct rtnl_link *);
+
+extern int	rtnl_link_vxlan_set_gbp(struct rtnl_link *, int);
+extern int	rtnl_link_vxlan_get_gbp(struct rtnl_link *);
+extern int	rtnl_link_vxlan_enable_gbp(struct rtnl_link *);
+extern int	rtnl_link_vxlan_disable_gbp(struct rtnl_link *);
+
+extern int	rtnl_link_vxlan_set_remcsum_nopartial(struct rtnl_link *, int);
+extern int	rtnl_link_vxlan_get_remcsum_nopartial(struct rtnl_link *);
+extern int	rtnl_link_vxlan_enable_remcsum_nopartial(struct rtnl_link *);
+extern int	rtnl_link_vxlan_disable_remcsum_nopartial(struct rtnl_link *);
+
+extern int	rtnl_link_vxlan_set_collect_metadata(struct rtnl_link *, uint8_t);
+extern int	rtnl_link_vxlan_get_collect_metadata(struct rtnl_link *);
+extern int	rtnl_link_vxlan_enable_collect_metadata(struct rtnl_link *);
+extern int	rtnl_link_vxlan_disable_collect_metadata(struct rtnl_link *);
+
+extern int	rtnl_link_vxlan_set_label(struct rtnl_link *, uint32_t);
+extern int	rtnl_link_vxlan_get_label(struct rtnl_link *, uint32_t *);
+
+extern int	rtnl_link_vxlan_set_gpe(struct rtnl_link *, int);
+extern int	rtnl_link_vxlan_get_gpe(struct rtnl_link *);
+extern int	rtnl_link_vxlan_enable_gpe(struct rtnl_link *);
+extern int	rtnl_link_vxlan_disable_gpe(struct rtnl_link *);
 
 #ifdef __cplusplus
 }

@@ -956,6 +956,8 @@ global:
 	rtnl_link_bridge_set_hwmode;
 	rtnl_link_bridge_hwmode2str;
 	rtnl_link_bridge_str2hwmode;
+	rtnl_link_ipgre_get_pmtudisc;
+	rtnl_link_is_ipgretap;
 	rtnl_link_macvlan_add_macaddr;
 	rtnl_link_macvlan_count_macaddr;
 	rtnl_link_macvlan_del_macaddr;

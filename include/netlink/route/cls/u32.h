@@ -28,6 +28,7 @@ extern int	rtnl_u32_set_divisor(struct rtnl_cls *, uint32_t);
 extern int	rtnl_u32_set_link(struct rtnl_cls *, uint32_t);
 extern int	rtnl_u32_set_hashtable(struct rtnl_cls *, uint32_t);
 extern int	rtnl_u32_set_hashmask(struct rtnl_cls *, uint32_t, uint32_t);
+extern int	rtnl_u32_set_selector(struct rtnl_cls *, int, uint32_t, char, uint16_t, char);
 extern int	rtnl_u32_set_cls_terminal(struct rtnl_cls *);
 
 extern int	rtnl_u32_set_flags(struct rtnl_cls *, int);

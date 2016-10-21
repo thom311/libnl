@@ -491,6 +491,36 @@ int rtnl_u32_set_hashmask(struct rtnl_cls *cls, uint32_t hashmask, uint32_t offs
 	return 0;
 }
 
+int rtnl_u32_set_selector(struct rtnl_cls *cls, int offoff, uint32_t offmask, char offshift, uint16_t off, char flags)
+{
+	struct rtnl_u32 *u;
+	struct tc_u32_sel *sel;
+	int err;
+
+	offmask = ntohs(offmask);
+
+	if (!(u = (struct rtnl_u32 *) rtnl_tc_data(TC_CAST(cls))))
+		return -NLE_NOMEM;
+
+	sel = u32_selector_alloc(u);
+	if (!sel)
+		return -NLE_NOMEM;
+
+	err = nl_data_append(u->cu_selector, NULL, sizeof(struct tc_u32_key));
+	if(err < 0)
+		return err;
+
+	sel = u32_selector(u);
+
+	sel->offoff = offoff;
+	sel->offmask = offmask;
+	sel->offshift = offshift;
+	sel->flags |= TC_U32_VAROFFSET;
+	sel->off = off;
+	sel->flags |= flags;
+	return 0;
+}
+
 int rtnl_u32_set_cls_terminal(struct rtnl_cls *cls)
 {
 	struct rtnl_u32 *u;

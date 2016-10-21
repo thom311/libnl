@@ -1022,5 +1022,6 @@ global:
 	rtnl_link_vf_vlanproto2str;
 	rtnl_link_vf_str2vlanproto;
 	rtnl_link_vf_str2guid;
+	rtnl_u32_set_selector;
 } libnl_3_2_28;
 

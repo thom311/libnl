@@ -191,7 +191,7 @@ static int xfrm_sa_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	if (src->sec_ctx)
 	{
-		len = sizeof (struct xfrmnl_sec_ctx) + src->sec_ctx->ctx_len;
+		len = sizeof (*src->sec_ctx) + src->sec_ctx->ctx_len;
 		if ((dst->sec_ctx = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
 		memcpy ((void *)dst->sec_ctx, (void *)src->sec_ctx, len);
@@ -257,8 +257,7 @@ static uint64_t xfrm_sa_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= XFRM_SA_DIFF(SECCTX,((a->sec_ctx->ctx_doi != b->sec_ctx->ctx_doi) ||
 	                            (a->sec_ctx->ctx_alg != b->sec_ctx->ctx_alg) ||
 	                            (a->sec_ctx->ctx_len != b->sec_ctx->ctx_len) ||
-	                            (a->sec_ctx->ctx_sid != b->sec_ctx->ctx_sid) ||
-	                            strcmp(a->sec_ctx->ctx_str, b->sec_ctx->ctx_str)));
+	                            strcmp(a->sec_ctx->ctx, b->sec_ctx->ctx)));
 	diff |= XFRM_SA_DIFF(REPLAY_MAXAGE,a->replay_maxage != b->replay_maxage);
 	diff |= XFRM_SA_DIFF(REPLAY_MAXDIFF,a->replay_maxdiff != b->replay_maxdiff);
 	diff |= XFRM_SA_DIFF(EXPIRE,a->hard != b->hard);
@@ -504,8 +503,8 @@ static void xfrm_sa_dump_line(struct nl_object *a, struct nl_dump_params *p)
 		nl_dump_line(p, "\tMark mask: 0x%x Mark value: 0x%x\n", sa->mark.m, sa->mark.v);
 
 	if (sa->ce_mask & XFRM_SA_ATTR_SECCTX)
-		nl_dump_line(p, "\tDOI: %d Algo: %d Len: %u SID: %u ctx: %s\n", sa->sec_ctx->ctx_doi,
-		             sa->sec_ctx->ctx_alg, sa->sec_ctx->ctx_len, sa->sec_ctx->ctx_sid, sa->sec_ctx->ctx_str);
+		nl_dump_line(p, "\tDOI: %d Algo: %d Len: %u ctx: %s\n", sa->sec_ctx->ctx_doi,
+		             sa->sec_ctx->ctx_alg, sa->sec_ctx->ctx_len, sa->sec_ctx->ctx);
 
 	nl_dump_line(p, "\treplay info: \n");
 	nl_dump_line(p, "\t\tmax age %u max diff %u \n", sa->replay_maxage, sa->replay_maxdiff);
@@ -868,14 +867,14 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 	}
 
 	if (tb[XFRMA_SEC_CTX]) {
-		struct xfrm_sec_ctx* sec_ctx = nla_data(tb[XFRMA_SEC_CTX]);
-		len = sizeof (struct xfrmnl_sec_ctx) + sec_ctx->ctx_len;
+		struct xfrm_user_sec_ctx* sec_ctx = nla_data(tb[XFRMA_SEC_CTX]);
+		len = sizeof (struct xfrmnl_user_sec_ctx) + sec_ctx->ctx_len;
 		if ((sa->sec_ctx = calloc (1, len)) == NULL)
 		{
 			err = -NLE_NOMEM;
 			goto errout;
 		}
-		memcpy ((void *)sa->sec_ctx, (void *)sec_ctx, len);
+		memcpy (sa->sec_ctx, sec_ctx, len);
 		sa->ce_mask     |= XFRM_SA_ATTR_SECCTX;
 	}
 
@@ -1938,15 +1937,38 @@ int xfrmnl_sa_set_mark (struct xfrmnl_sa* sa, unsigned int value, unsigned int m
 	return 0;
 }
 
-int xfrmnl_sa_get_sec_ctx (struct xfrmnl_sa* sa, unsigned int* doi, unsigned int* alg, unsigned int* len, unsigned int* sid, char* ctx_str)
+/**
+ * Get the security context.
+ *
+ * @arg sa              The xfrmnl_sa object.
+ * @arg doi             An optional output value for the security context domain of interpretation.
+ * @arg alg             An optional output value for the security context algorithm.
+ * @arg len             An optional output value for the security context length, including the
+ *                      terminating null byte ('\0').
+ * @arg sid             Unused parameter.
+ * @arg ctx_str         An optional buffer large enough for the security context string. It must
+ *                      contain at least @len bytes.
+ *
+ * Warning: you must ensure that @ctx_str is large enough. If you don't know the length before-hand,
+ * call xfrmnl_sa_get_sec_ctx() without @ctx_str argument to query only the required buffer size.
+ * This modified API is available in all versions of libnl3 that support the capability
+ * @def NL_CAPABILITY_XFRM_SEC_CTX_LEN (@see nl_has_capability for further information).
+ *
+ * @return 0 on success or a negative error code.
+ */
+int xfrmnl_sa_get_sec_ctx (struct xfrmnl_sa* sa, unsigned int* doi, unsigned int* alg,
+		unsigned int* len, unsigned int* sid, char* ctx_str)
 {
 	if (sa->ce_mask & XFRM_SA_ATTR_SECCTX)
 	{
-		*doi    =   sa->sec_ctx->ctx_doi;
-		*alg    =   sa->sec_ctx->ctx_alg;
-		*len    =   sa->sec_ctx->ctx_len;
-		*sid    =   sa->sec_ctx->ctx_sid;
-		memcpy ((void *)ctx_str, (void *)sa->sec_ctx->ctx_str, sizeof (uint8_t) * sa->sec_ctx->ctx_len);
+		if (doi)
+			*doi = sa->sec_ctx->ctx_doi;
+		if (alg)
+			*alg = sa->sec_ctx->ctx_alg;
+		if (len)
+			*len = sa->sec_ctx->ctx_len;
+		if (ctx_str)
+			memcpy (ctx_str, sa->sec_ctx->ctx, sa->sec_ctx->ctx_len);
 	}
 	else
 		return -1;
@@ -1954,20 +1976,35 @@ int xfrmnl_sa_get_sec_ctx (struct xfrmnl_sa* sa, unsigned int* doi, unsigned int
 	return 0;
 }
 
-int xfrmnl_sa_set_sec_ctx (struct xfrmnl_sa* sa, unsigned int doi, unsigned int alg, unsigned int len, unsigned int sid, const char* ctx_str)
+/**
+ * Set the security context.
+ *
+ * @arg sa              The xfrmnl_sa object.
+ * @arg doi             Parameter for the security context domain of interpretation.
+ * @arg alg             Parameter for the security context algorithm.
+ * @arg len             Parameter for the length of the security context string containing
+ *                      the terminating null byte ('\0').
+ * @arg sid             Unused parameter.
+ * @arg ctx_str         Buffer containing the security context string.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int xfrmnl_sa_set_sec_ctx (struct xfrmnl_sa* sa, unsigned int doi, unsigned int alg, unsigned int len,
+		unsigned int sid, const char* ctx_str)
 {
 	/* Free up the old context string and allocate new one */
 	if (sa->sec_ctx)
 		free (sa->sec_ctx);
-	if ((sa->sec_ctx = calloc (1, sizeof (struct xfrmnl_sec_ctx) + (sizeof (uint8_t) * len))) == NULL)
+	if ((sa->sec_ctx = calloc(1, sizeof (struct xfrmnl_user_sec_ctx) + len)) == NULL)
 		return -1;
 
 	/* Save the new info */
-	sa->sec_ctx->ctx_doi    =   doi;
+	sa->sec_ctx->len        =   sizeof(struct xfrmnl_user_sec_ctx) + len;
+	sa->sec_ctx->exttype    =   XFRMA_SEC_CTX;
 	sa->sec_ctx->ctx_alg    =   alg;
+	sa->sec_ctx->ctx_doi    =   doi;
 	sa->sec_ctx->ctx_len    =   len;
-	sa->sec_ctx->ctx_sid    =   sid;
-	memcpy (sa->sec_ctx->ctx_str, ctx_str, sizeof (uint8_t) * len);
+	memcpy (sa->sec_ctx->ctx, ctx_str, len);
 
 	sa->ce_mask |= XFRM_SA_ATTR_SECCTX;
 

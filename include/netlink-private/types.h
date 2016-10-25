@@ -1155,6 +1155,7 @@ struct xfrmnl_encap_tmpl {
 	struct nl_addr* encap_oa;
 };
 
+/* kernel space structure, don't use to retrieve/pass sec ctx attribute! */
 struct xfrmnl_sec_ctx {
 	uint8_t         ctx_doi;
 	uint8_t         ctx_alg;
@@ -1186,7 +1187,7 @@ struct xfrmnl_sa {
 	uint32_t                        tfcpad;
 	struct nl_addr*                 coaddr;
 	struct xfrmnl_mark              mark;
-	struct xfrmnl_sec_ctx*          sec_ctx;
+	struct xfrmnl_user_sec_ctx*     sec_ctx;
 	uint32_t                        replay_maxage;
 	uint32_t                        replay_maxdiff;
 	struct xfrmnl_replay_state      replay_state;

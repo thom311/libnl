@@ -966,6 +966,9 @@ global:
 	rtnl_link_macvlan_macmode2str;
 	rtnl_link_macvlan_set_macmode;
 	rtnl_link_macvlan_str2macmode;
+	rtnl_link_ppp_alloc;
+	rtnl_link_ppp_set_fd;
+	rtnl_link_ppp_get_fd;
 	rtnl_link_vxlan_get_collect_metadata;
 	rtnl_link_vxlan_get_flags;
 	rtnl_link_vxlan_get_label;

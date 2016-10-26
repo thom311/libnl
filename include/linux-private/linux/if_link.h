@@ -427,6 +427,14 @@ struct ifla_vxlan_port_range {
 	__be16	high;
 };
 
+/* PPP section */
+enum {
+	IFLA_PPP_UNSPEC,
+	IFLA_PPP_DEV_FD,
+	__IFLA_PPP_MAX
+};
+#define IFLA_PPP_MAX (__IFLA_PPP_MAX - 1)
+
 /* Bonding section */
 
 enum {

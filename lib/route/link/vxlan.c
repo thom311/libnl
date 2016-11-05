@@ -1155,7 +1155,7 @@ int rtnl_link_vxlan_get_limit(struct rtnl_link *link, uint32_t *limit)
  * @return 0 on success or a negative error code
  */
 int rtnl_link_vxlan_set_port_range(struct rtnl_link *link,
-								   struct ifla_vxlan_port_range *range)
+                                   struct ifla_vxlan_port_range *range)
 {
 	struct vxlan_info *vxi = link->l_info;
 
@@ -1178,7 +1178,7 @@ int rtnl_link_vxlan_set_port_range(struct rtnl_link *link,
  * @return 0 on success or a negative error code
  */
 int rtnl_link_vxlan_get_port_range(struct rtnl_link *link,
-								   struct ifla_vxlan_port_range *range)
+                                   struct ifla_vxlan_port_range *range)
 {
 	struct vxlan_info *vxi = link->l_info;
 
@@ -1660,78 +1660,6 @@ int rtnl_link_vxlan_get_remcsum_rx(struct rtnl_link *link)
 }
 
 /**
- * Set group-based policy extension flag to use for VXLAN
- * @arg link		Link object
- * @arg enable		Boolean enabling or disabling flag
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_set_gbp(struct rtnl_link *link, int enable)
-{
-	struct vxlan_info *vxi = link->l_info;
-
-	IS_VXLAN_LINK_ASSERT(link);
-
-	if (enable)
-		vxi->vxi_flags |= RTNL_LINK_VXLAN_F_GBP;
-	else
-		vxi->vxi_flags &= ~RTNL_LINK_VXLAN_F_GBP;
-
-	return 0;
-}
-
-/**
- * Get group-based policy extension flag to use for VXLAN
- * @arg link		Link object
- *
- * @return Status value on success or a negative error code
- */
-int rtnl_link_vxlan_get_gbp(struct rtnl_link *link)
-{
-	struct vxlan_info *vxi = link->l_info;
-
-	IS_VXLAN_LINK_ASSERT(link);
-
-	return !!(vxi->vxi_flags & RTNL_LINK_VXLAN_F_GBP);
-}
-
-/**
- * Set no-partial remote offload checksum flag to use for VXLAN
- * @arg link		Link object
- * @arg enable		Boolean enabling or disabling flag
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_set_remcsum_nopartial(struct rtnl_link *link, int enable)
-{
-	struct vxlan_info *vxi = link->l_info;
-
-	IS_VXLAN_LINK_ASSERT(link);
-
-	if (enable)
-		vxi->vxi_flags |= RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL;
-	else
-		vxi->vxi_flags &= ~RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL;
-
-	return 0;
-}
-
-/**
- * Get no-partial remote offload checksum flag to use for VXLAN
- * @arg link		Link object
- *
- * @return Status value on success or a negative error code
- */
-int rtnl_link_vxlan_get_remcsum_nopartial(struct rtnl_link *link)
-{
-	struct vxlan_info *vxi = link->l_info;
-
-	IS_VXLAN_LINK_ASSERT(link);
-
-	return !!(vxi->vxi_flags & RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL);
-}
-
-/**
  * Set collect metadata status to use for VXLAN
  * @arg link		Link object
  * @arg collect		Status value
@@ -1812,39 +1740,45 @@ int rtnl_link_vxlan_get_label(struct rtnl_link *link, uint32_t *label)
 }
 
 /**
- * Set generic protocol extension flag to use for VXLAN
+ * Set VXLAN flags RTNL_LINK_VXLAN_F_*
  * @arg link		Link object
+ * @flags               Which flags to set
  * @arg enable		Boolean enabling or disabling flag
  *
  * @return 0 on success or a negative error code
  */
-int rtnl_link_vxlan_set_gpe(struct rtnl_link *link, int enable)
+int rtnl_link_vxlan_set_flags(struct rtnl_link *link, uint32_t flags, int enable)
 {
 	struct vxlan_info *vxi = link->l_info;
 
 	IS_VXLAN_LINK_ASSERT(link);
 
+	if (flags & ~(RTNL_LINK_VXLAN_F_GBP | RTNL_LINK_VXLAN_F_GPE | RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL))
+		return -NLE_INVAL;
+
 	if (enable)
-		vxi->vxi_flags |= RTNL_LINK_VXLAN_F_GPE;
+		vxi->vxi_flags |= flags;
 	else
-		vxi->vxi_flags &= ~RTNL_LINK_VXLAN_F_GPE;
+		vxi->vxi_flags &= ~flags;
 
 	return 0;
 }
 
 /**
- * Get generic protocol extension flag to use for VXLAN
+ * Get VXLAN flags RTNL_LINK_VXLAN_F_*
  * @arg link		Link object
+ * @arg out_flags       Output value for flags. Must be present.
  *
- * @return Status value on success or a negative error code
+ * @return Zero on success or a negative error code
  */
-int rtnl_link_vxlan_get_gpe(struct rtnl_link *link)
+int rtnl_link_vxlan_get_flags(struct rtnl_link *link, uint32_t *out_flags)
 {
 	struct vxlan_info *vxi = link->l_info;
 
 	IS_VXLAN_LINK_ASSERT(link);
 
-	return !!(vxi->vxi_flags & RTNL_LINK_VXLAN_F_GPE);
+	*out_flags = vxi->vxi_flags;
+	return 0;
 }
 
 /** @} */

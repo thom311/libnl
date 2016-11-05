@@ -106,20 +106,14 @@ extern int	rtnl_link_vxlan_get_remcsum_tx(struct rtnl_link *);
 extern int	rtnl_link_vxlan_set_remcsum_rx(struct rtnl_link *, uint8_t);
 extern int	rtnl_link_vxlan_get_remcsum_rx(struct rtnl_link *);
 
-extern int	rtnl_link_vxlan_set_gbp(struct rtnl_link *, int);
-extern int	rtnl_link_vxlan_get_gbp(struct rtnl_link *);
-
-extern int	rtnl_link_vxlan_set_remcsum_nopartial(struct rtnl_link *, int);
-extern int	rtnl_link_vxlan_get_remcsum_nopartial(struct rtnl_link *);
+extern int	rtnl_link_vxlan_set_flags(struct rtnl_link *, uint32_t flags, int enable);
+extern int	rtnl_link_vxlan_get_flags(struct rtnl_link *, uint32_t *out_flags);
 
 extern int	rtnl_link_vxlan_set_collect_metadata(struct rtnl_link *, uint8_t);
 extern int	rtnl_link_vxlan_get_collect_metadata(struct rtnl_link *);
 
 extern int	rtnl_link_vxlan_set_label(struct rtnl_link *, uint32_t);
 extern int	rtnl_link_vxlan_get_label(struct rtnl_link *, uint32_t *);
-
-extern int	rtnl_link_vxlan_set_gpe(struct rtnl_link *, int);
-extern int	rtnl_link_vxlan_get_gpe(struct rtnl_link *);
 
 #ifdef __cplusplus
 }

@@ -21,6 +21,15 @@ extern "C" {
 
 #define VXLAN_ID_MAX 16777215
 
+enum {
+	RTNL_LINK_VXLAN_F_GBP                   = 1 << 0,
+#define RTNL_LINK_VXLAN_F_GBP RTNL_LINK_VXLAN_F_GBP
+	RTNL_LINK_VXLAN_F_GPE                   = 1 << 1,
+#define RTNL_LINK_VXLAN_F_GPE RTNL_LINK_VXLAN_F_GPE
+	RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL     = 1 << 2,
+#define RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL
+};
+
 extern struct rtnl_link *rtnl_link_vxlan_alloc(void);
 
 extern int	rtnl_link_is_vxlan(struct rtnl_link *);

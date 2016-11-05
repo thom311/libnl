@@ -56,12 +56,9 @@
 #define VXLAN_ATTR_UDP_ZERO_CSUM6_RX   (1<<19)
 #define VXLAN_ATTR_REMCSUM_TX          (1<<20)
 #define VXLAN_ATTR_REMCSUM_RX          (1<<21)
-#define VXLAN_ATTR_GBP                 (1<<22)
-#define VXLAN_ATTR_REMCSUM_NOPARTIAL   (1<<23)
-#define VXLAN_ATTR_COLLECT_METADATA    (1<<24)
-#define VXLAN_ATTR_LABEL               (1<<25)
-#define VXLAN_ATTR_GPE                 (1<<26)
-
+#define VXLAN_ATTR_COLLECT_METADATA    (1<<22)
+#define VXLAN_ATTR_LABEL               (1<<23)
+#define VXLAN_ATTR_FLAGS               (1<<24)
 
 struct vxlan_info
 {
@@ -74,6 +71,7 @@ struct vxlan_info
 	uint8_t			vxi_ttl;
 	uint8_t			vxi_tos;
 	uint8_t			vxi_learning;
+	uint8_t			vxi_flags;
 	uint32_t		vxi_ageing;
 	uint32_t		vxi_limit;
 	struct ifla_vxlan_port_range	vxi_port_range;
@@ -275,10 +273,10 @@ static int vxlan_parse(struct rtnl_link *link, struct nlattr *data,
 	}
 
 	if (tb[IFLA_VXLAN_GBP])
-		vxi->ce_mask |= VXLAN_ATTR_GBP;
+		vxi->vxi_flags |= RTNL_LINK_VXLAN_F_GBP;
 
 	if (tb[IFLA_VXLAN_REMCSUM_NOPARTIAL])
-		vxi->ce_mask |= VXLAN_ATTR_REMCSUM_NOPARTIAL;
+		vxi->vxi_flags |= RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL;
 
 	if (tb[IFLA_VXLAN_COLLECT_METADATA]) {
 		vxi->vxi_collect_metadata = nla_get_u8(tb[IFLA_VXLAN_COLLECT_METADATA]);
@@ -291,7 +289,7 @@ static int vxlan_parse(struct rtnl_link *link, struct nlattr *data,
 	}
 
 	if (tb[IFLA_VXLAN_GPE])
-		vxi->ce_mask |= VXLAN_ATTR_GPE;
+		vxi->vxi_flags |= RTNL_LINK_VXLAN_F_GPE;
 
 	err = 0;
 
@@ -487,10 +485,10 @@ static void vxlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 			nl_dump_line(p, "disabled\n");
 	}
 
-	if (vxi->ce_mask & VXLAN_ATTR_GBP)
+	if (vxi->vxi_flags & RTNL_LINK_VXLAN_F_GBP)
 		nl_dump(p, "      gbp\n");
 
-	if (vxi->ce_mask & VXLAN_ATTR_REMCSUM_NOPARTIAL)
+	if (vxi->vxi_flags & RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL)
 		nl_dump(p, "      rncsum-nopartial\n");
 
 	if (vxi->ce_mask & VXLAN_ATTR_COLLECT_METADATA) {
@@ -506,7 +504,7 @@ static void vxlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 		nl_dump_line(p, "%u\n", ntohl(vxi->vxi_label));
 	}
 
-	if (vxi->ce_mask & VXLAN_ATTR_GPE)
+	if (vxi->vxi_flags & RTNL_LINK_VXLAN_F_GPE)
 		nl_dump(p, "      gpe\n");
 }
 
@@ -603,10 +601,10 @@ static int vxlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (vxi->ce_mask & VXLAN_ATTR_REMCSUM_RX)
 		NLA_PUT_U8(msg, IFLA_VXLAN_REMCSUM_RX, vxi->vxi_remcsum_rx);
 
-	if (vxi->ce_mask & VXLAN_ATTR_GBP)
+	if (vxi->vxi_flags & RTNL_LINK_VXLAN_F_GBP)
 		NLA_PUT_FLAG(msg, IFLA_VXLAN_GBP);
 
-	if (vxi->ce_mask & VXLAN_ATTR_REMCSUM_NOPARTIAL)
+	if (vxi->vxi_flags & RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL)
 		NLA_PUT_FLAG(msg, IFLA_VXLAN_REMCSUM_NOPARTIAL);
 
 	if (vxi->ce_mask & VXLAN_ATTR_COLLECT_METADATA)
@@ -615,7 +613,7 @@ static int vxlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (vxi->ce_mask & VXLAN_ATTR_LABEL)
 		NLA_PUT_U32(msg, IFLA_VXLAN_LABEL, vxi->vxi_label);
 
-	if (vxi->ce_mask & VXLAN_ATTR_GPE)
+	if (vxi->vxi_flags & RTNL_LINK_VXLAN_F_GPE)
 		NLA_PUT_FLAG(msg, IFLA_VXLAN_GPE);
 
 	nla_nest_end(msg, data);
@@ -660,11 +658,9 @@ static int vxlan_compare(struct rtnl_link *link_a, struct rtnl_link *link_b,
 	diff |= VXLAN_DIFF(UDP_ZERO_CSUM6_RX, a->vxi_proxy != b->vxi_proxy);
 	diff |= VXLAN_DIFF(REMCSUM_TX, a->vxi_proxy != b->vxi_proxy);
 	diff |= VXLAN_DIFF(REMCSUM_RX, a->vxi_proxy != b->vxi_proxy);
-	diff |= VXLAN_DIFF(GBP, a->ce_mask & b->ce_mask & VXLAN_ATTR_GBP);
-	diff |= VXLAN_DIFF(REMCSUM_NOPARTIAL, a->ce_mask & b->ce_mask & VXLAN_ATTR_REMCSUM_NOPARTIAL);
 	diff |= VXLAN_DIFF(COLLECT_METADATA, a->vxi_collect_metadata != b->vxi_collect_metadata);
 	diff |= VXLAN_DIFF(LABEL, a->vxi_label != b->vxi_label);
-	diff |= VXLAN_DIFF(GPE, a->ce_mask & b->ce_mask & VXLAN_ATTR_GPE);
+	diff |= VXLAN_DIFF(FLAGS, a->vxi_flags != b->vxi_flags);
 #undef VXLAN_DIFF
 
 	return diff;
@@ -1677,9 +1673,9 @@ int rtnl_link_vxlan_set_gbp(struct rtnl_link *link, int enable)
 	IS_VXLAN_LINK_ASSERT(link);
 
 	if (enable)
-		vxi->ce_mask |= VXLAN_ATTR_GBP;
+		vxi->vxi_flags |= RTNL_LINK_VXLAN_F_GBP;
 	else
-		vxi->ce_mask &= ~VXLAN_ATTR_GBP;
+		vxi->vxi_flags &= ~RTNL_LINK_VXLAN_F_GBP;
 
 	return 0;
 }
@@ -1696,7 +1692,7 @@ int rtnl_link_vxlan_get_gbp(struct rtnl_link *link)
 
 	IS_VXLAN_LINK_ASSERT(link);
 
-	return !!(vxi->ce_mask & VXLAN_ATTR_GBP);
+	return !!(vxi->vxi_flags & RTNL_LINK_VXLAN_F_GBP);
 }
 
 /**
@@ -1713,9 +1709,9 @@ int rtnl_link_vxlan_set_remcsum_nopartial(struct rtnl_link *link, int enable)
 	IS_VXLAN_LINK_ASSERT(link);
 
 	if (enable)
-		vxi->ce_mask |= VXLAN_ATTR_REMCSUM_NOPARTIAL;
+		vxi->vxi_flags |= RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL;
 	else
-		vxi->ce_mask &= ~VXLAN_ATTR_REMCSUM_NOPARTIAL;
+		vxi->vxi_flags &= ~RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL;
 
 	return 0;
 }
@@ -1732,7 +1728,7 @@ int rtnl_link_vxlan_get_remcsum_nopartial(struct rtnl_link *link)
 
 	IS_VXLAN_LINK_ASSERT(link);
 
-	return !!(vxi->ce_mask & VXLAN_ATTR_REMCSUM_NOPARTIAL);
+	return !!(vxi->vxi_flags & RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL);
 }
 
 /**
@@ -1829,9 +1825,9 @@ int rtnl_link_vxlan_set_gpe(struct rtnl_link *link, int enable)
 	IS_VXLAN_LINK_ASSERT(link);
 
 	if (enable)
-		vxi->ce_mask |= VXLAN_ATTR_GPE;
+		vxi->vxi_flags |= RTNL_LINK_VXLAN_F_GPE;
 	else
-		vxi->ce_mask &= ~VXLAN_ATTR_GPE;
+		vxi->vxi_flags &= ~RTNL_LINK_VXLAN_F_GPE;
 
 	return 0;
 }
@@ -1848,7 +1844,7 @@ int rtnl_link_vxlan_get_gpe(struct rtnl_link *link)
 
 	IS_VXLAN_LINK_ASSERT(link);
 
-	return !!(vxi->ce_mask & VXLAN_ATTR_GPE);
+	return !!(vxi->vxi_flags & RTNL_LINK_VXLAN_F_GPE);
 }
 
 /** @} */

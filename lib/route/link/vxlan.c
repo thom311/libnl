@@ -1516,28 +1516,6 @@ int rtnl_link_vxlan_get_udp_csum(struct rtnl_link *link)
 }
 
 /**
- * Enable UDP checksums
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_enable_udp_csum(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_udp_csum(link, 1);
-}
-
-/**
- * Disable UDP checksums
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_disable_udp_csum(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_udp_csum(link, 0);
-}
-
-/**
  * Set skip UDP checksum transmitted over IPv6 status to use for VXLAN
  * @arg link		Link object
  * @arg csum		Status value
@@ -1572,28 +1550,6 @@ int rtnl_link_vxlan_get_udp_zero_csum6_tx(struct rtnl_link *link)
 		return -NLE_AGAIN;
 
 	return vxi->vxi_udp_zero_csum6_tx;
-}
-
-/**
- * Enable skip UDP checksum transmitted over IPv6
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_enable_udp_zero_csum6_tx(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_udp_zero_csum6_tx(link, 1);
-}
-
-/**
- * Disable skip UDP checksum transmitted over IPv6
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_disable_udp_zero_csum6_tx(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_udp_zero_csum6_tx(link, 0);
 }
 
 /**
@@ -1634,28 +1590,6 @@ int rtnl_link_vxlan_get_udp_zero_csum6_rx(struct rtnl_link *link)
 }
 
 /**
- * Enable skip UDP checksum received over IPv6
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_enable_udp_zero_csum6_rx(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_udp_zero_csum6_rx(link, 1);
-}
-
-/**
- * Disable skip UDP checksum received over IPv6
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_disable_udp_zero_csum6_rx(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_udp_zero_csum6_rx(link, 0);
-}
-
-/**
  * Set remote offload transmit checksum status to use for VXLAN
  * @arg link		Link object
  * @arg csum		Status value
@@ -1690,28 +1624,6 @@ int rtnl_link_vxlan_get_remcsum_tx(struct rtnl_link *link)
 		return -NLE_AGAIN;
 
 	return vxi->vxi_remcsum_tx;
-}
-
-/**
- * Enable remote offload transmit checksums
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_enable_remcsum_tx(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_remcsum_tx(link, 1);
-}
-
-/**
- * Disable remote offload transmit checksums
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_disable_remcsum_tx(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_remcsum_tx(link, 0);
 }
 
 /**
@@ -1752,28 +1664,6 @@ int rtnl_link_vxlan_get_remcsum_rx(struct rtnl_link *link)
 }
 
 /**
- * Enable remote offload receive checksums
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_enable_remcsum_rx(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_remcsum_rx(link, 1);
-}
-
-/**
- * Disable remote offload receive checksums
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_disable_remcsum_rx(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_remcsum_rx(link, 0);
-}
-
-/**
  * Set group-based policy extension flag to use for VXLAN
  * @arg link		Link object
  * @arg enable		Boolean enabling or disabling flag
@@ -1807,28 +1697,6 @@ int rtnl_link_vxlan_get_gbp(struct rtnl_link *link)
 	IS_VXLAN_LINK_ASSERT(link);
 
 	return !!(vxi->ce_mask & VXLAN_ATTR_GBP);
-}
-
-/**
- * Enable group-based policy extension
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_enable_gbp(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_gbp(link, 1);
-}
-
-/**
- * Disable group-based policy extension
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_disable_gbp(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_gbp(link, 0);
 }
 
 /**
@@ -1868,28 +1736,6 @@ int rtnl_link_vxlan_get_remcsum_nopartial(struct rtnl_link *link)
 }
 
 /**
- * Enable no-partial remote offload checksum
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_enable_remcsum_nopartial(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_remcsum_nopartial(link, 1);
-}
-
-/**
- * Disable no-partial remote offload checksum
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_disable_remcsum_nopartial(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_remcsum_nopartial(link, 0);
-}
-
-/**
  * Set collect metadata status to use for VXLAN
  * @arg link		Link object
  * @arg collect		Status value
@@ -1924,28 +1770,6 @@ int rtnl_link_vxlan_get_collect_metadata(struct rtnl_link *link)
 		return -NLE_AGAIN;
 
 	return vxi->vxi_collect_metadata;
-}
-
-/**
- * Enable collect metadata
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_enable_collect_metadata(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_collect_metadata(link, 1);
-}
-
-/**
- * Disable collect metadata
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_disable_collect_metadata(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_collect_metadata(link, 0);
 }
 
 /**
@@ -2025,28 +1849,6 @@ int rtnl_link_vxlan_get_gpe(struct rtnl_link *link)
 	IS_VXLAN_LINK_ASSERT(link);
 
 	return !!(vxi->ce_mask & VXLAN_ATTR_GPE);
-}
-
-/**
- * Enable generic protocol extension
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_enable_gpe(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_gpe(link, 1);
-}
-
-/**
- * Disable generic protocol extension
- * @arg link		Link object
- *
- * @return 0 on success or a negative error code
- */
-int rtnl_link_vxlan_disable_gpe(struct rtnl_link *link)
-{
-	return rtnl_link_vxlan_set_gpe(link, 0);
 }
 
 /** @} */

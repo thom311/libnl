@@ -1467,7 +1467,7 @@ int rtnl_link_vxlan_get_port(struct rtnl_link *link, uint32_t *port)
 		return -NLE_INVAL;
 
 	if (!(vxi->ce_mask & VXLAN_ATTR_PORT))
-		return -NLE_AGAIN;
+		return -NLE_NOATTR;
 
 	*port = ntohs(vxi->vxi_port);
 
@@ -1506,7 +1506,7 @@ int rtnl_link_vxlan_get_udp_csum(struct rtnl_link *link)
 	IS_VXLAN_LINK_ASSERT(link);
 
 	if (!(vxi->ce_mask & VXLAN_ATTR_UDP_CSUM))
-		return -NLE_AGAIN;
+		return -NLE_NOATTR;
 
 	return vxi->vxi_udp_csum;
 }
@@ -1543,7 +1543,7 @@ int rtnl_link_vxlan_get_udp_zero_csum6_tx(struct rtnl_link *link)
 	IS_VXLAN_LINK_ASSERT(link);
 
 	if (!(vxi->ce_mask & VXLAN_ATTR_UDP_ZERO_CSUM6_TX))
-		return -NLE_AGAIN;
+		return -NLE_NOATTR;
 
 	return vxi->vxi_udp_zero_csum6_tx;
 }
@@ -1580,7 +1580,7 @@ int rtnl_link_vxlan_get_udp_zero_csum6_rx(struct rtnl_link *link)
 	IS_VXLAN_LINK_ASSERT(link);
 
 	if (!(vxi->ce_mask & VXLAN_ATTR_UDP_ZERO_CSUM6_RX))
-		return -NLE_AGAIN;
+		return -NLE_NOATTR;
 
 	return vxi->vxi_udp_zero_csum6_rx;
 }
@@ -1617,7 +1617,7 @@ int rtnl_link_vxlan_get_remcsum_tx(struct rtnl_link *link)
 	IS_VXLAN_LINK_ASSERT(link);
 
 	if (!(vxi->ce_mask & VXLAN_ATTR_REMCSUM_TX))
-		return -NLE_AGAIN;
+		return -NLE_NOATTR;
 
 	return vxi->vxi_remcsum_tx;
 }
@@ -1654,7 +1654,7 @@ int rtnl_link_vxlan_get_remcsum_rx(struct rtnl_link *link)
 	IS_VXLAN_LINK_ASSERT(link);
 
 	if (!(vxi->ce_mask & VXLAN_ATTR_REMCSUM_RX))
-		return -NLE_AGAIN;
+		return -NLE_NOATTR;
 
 	return vxi->vxi_remcsum_rx;
 }
@@ -1691,7 +1691,7 @@ int rtnl_link_vxlan_get_collect_metadata(struct rtnl_link *link)
 	IS_VXLAN_LINK_ASSERT(link);
 
 	if (!(vxi->ce_mask & VXLAN_ATTR_COLLECT_METADATA))
-		return -NLE_AGAIN;
+		return -NLE_NOATTR;
 
 	return vxi->vxi_collect_metadata;
 }
@@ -1732,7 +1732,7 @@ int rtnl_link_vxlan_get_label(struct rtnl_link *link, uint32_t *label)
 		return -NLE_INVAL;
 
 	if (!(vxi->ce_mask & VXLAN_ATTR_LABEL))
-		return -NLE_AGAIN;
+		return -NLE_NOATTR;
 
 	*label = ntohl(vxi->vxi_label);
 

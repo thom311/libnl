@@ -818,6 +818,13 @@ uint8_t rtnl_link_ipgre_get_pmtudisc(struct rtnl_link *link)
 	return ipgre->pmtudisc;
 }
 
+uint8_t rtnl_link_get_pmtudisc(struct rtnl_link *link)
+{
+	/* rtnl_link_ipgre_get_pmtudisc() was wrongly named. Keep this
+	 * to preserve ABI. */
+	return rtnl_link_ipgre_get_pmtudisc (link);
+}
+
 static void __init ipgre_init(void)
 {
 	rtnl_link_register_info(&ipgre_info_ops);

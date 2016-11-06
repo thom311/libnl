@@ -1635,6 +1635,8 @@ int xfrmnl_sa_set_flags (struct xfrmnl_sa* sa, unsigned int flags)
  *
  * Warning: you must ensure that @key is large enough. If you don't know the key_len before-hand,
  * call xfrmnl_sa_get_aead_params() without @key argument to query only the required buffer size.
+ * This modified API is available in all versions of libnl3 that support the capability
+ * @def NL_CAPABILITY_XFRM_SA_KEY_SIZE (@see nl_has_capability for further information).
  *
  * @return 0 on success or a negative error code.
  */
@@ -1690,6 +1692,8 @@ int xfrmnl_sa_set_aead_params (struct xfrmnl_sa* sa, const char* alg_name, unsig
  *
  * Warning: you must ensure that @key is large enough. If you don't know the key_len before-hand,
  * call xfrmnl_sa_get_auth_params() without @key argument to query only the required buffer size.
+ * This modified API is available in all versions of libnl3 that support the capability
+ * @def NL_CAPABILITY_XFRM_SA_KEY_SIZE (@see nl_has_capability for further information).
  *
  * @return 0 on success or a negative error code.
  */
@@ -1744,6 +1748,8 @@ int xfrmnl_sa_set_auth_params (struct xfrmnl_sa* sa, const char* alg_name, unsig
  *
  * Warning: you must ensure that @key is large enough. If you don't know the key_len before-hand,
  * call xfrmnl_sa_get_crypto_params() without @key argument to query only the required buffer size.
+ * This modified API is available in all versions of libnl3 that support the capability
+ * @def NL_CAPABILITY_XFRM_SA_KEY_SIZE (@see nl_has_capability for further information).
  *
  * @return 0 on success or a negative error code.
  */
@@ -1795,6 +1801,8 @@ int xfrmnl_sa_set_crypto_params (struct xfrmnl_sa* sa, const char* alg_name, uns
  *
  * Warning: you must ensure that @key is large enough. If you don't know the key_len before-hand,
  * call xfrmnl_sa_get_comp_params() without @key argument to query only the required buffer size.
+ * This modified API is available in all versions of libnl3 that support the capability
+ * @def NL_CAPABILITY_XFRM_SA_KEY_SIZE (@see nl_has_capability for further information).
  *
  * @return 0 on success or a negative error code.
  */

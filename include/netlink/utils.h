@@ -231,6 +231,13 @@ enum {
 	NL_CAPABILITY_NL_ADDR_FILL_SOCKADDR = 21,
 #define NL_CAPABILITY_NL_ADDR_FILL_SOCKADDR NL_CAPABILITY_NL_ADDR_FILL_SOCKADDR
 
+	/**
+	 * Support omitting @ctx_str argument to xfrmnl_sa_get_sec_ctx() to check
+	 * for required buffer size for context string.
+	 */
+	NL_CAPABILITY_XFRM_SEC_CTX_LEN = 22,
+#define NL_CAPABILITY_XFRM_SEC_CTX_LEN NL_CAPABILITY_XFRM_SEC_CTX_LEN
+
 	__NL_CAPABILITY_MAX,
 	NL_CAPABILITY_MAX = (__NL_CAPABILITY_MAX - 1),
 #define NL_CAPABILITY_MAX NL_CAPABILITY_MAX

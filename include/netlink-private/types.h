@@ -1155,15 +1155,6 @@ struct xfrmnl_encap_tmpl {
 	struct nl_addr* encap_oa;
 };
 
-/* kernel space structure, don't use to retrieve/pass sec ctx attribute! */
-struct xfrmnl_sec_ctx {
-	uint8_t         ctx_doi;
-	uint8_t         ctx_alg;
-	uint16_t        ctx_len;
-	uint32_t        ctx_sid;
-	char            ctx_str[0];
-};
-
 struct xfrmnl_sa {
 	NLHDR_COMMON
 

@@ -41,15 +41,15 @@ static struct nla_policy ppp_nl_policy[IFLA_PPP_MAX+1] = {
 
 static int ppp_alloc(struct rtnl_link *link)
 {
-	struct ppp_info *pi;
+	struct ppp_info *info;
 
 	if (link->l_info)
-		memset(link->l_info, 0, sizeof(*pi));
+		memset(link->l_info, 0, sizeof(*info));
 	else {
-		if ((pi = calloc(1, sizeof(*pi))) == NULL)
+		if ((info = calloc(1, sizeof(*info))) == NULL)
 			return -NLE_NOMEM;
 
-		link->l_info = pi;
+		link->l_info = info;
 	}
 
 	return 0;
@@ -59,7 +59,7 @@ static int ppp_parse(struct rtnl_link *link, struct nlattr *data,
                          struct nlattr *xstats)
 {
 	struct nlattr *tb[IFLA_PPP_MAX+1];
-	struct ppp_info *pi;
+	struct ppp_info *info;
 	int err;
 
 	NL_DBG(3, "Parsing PPP link info\n");
@@ -70,11 +70,11 @@ static int ppp_parse(struct rtnl_link *link, struct nlattr *data,
 	if ((err = ppp_alloc(link)) < 0)
 		goto errout;
 
-	pi = link->l_info;
+	info = link->l_info;
 
 	if (tb[IFLA_PPP_DEV_FD]) {
-		pi->pi_fd = nla_get_s32(tb[IFLA_PPP_DEV_FD]);
-		pi->ce_mask |= PPP_ATTR_FD;
+		info->pi_fd = nla_get_s32(tb[IFLA_PPP_DEV_FD]);
+		info->ce_mask |= PPP_ATTR_FD;
 	}
 
 	err = 0;
@@ -108,14 +108,14 @@ static int ppp_clone(struct rtnl_link *dst, struct rtnl_link *src)
 
 static int ppp_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 {
-	struct ppp_info *pi = link->l_info;
+	struct ppp_info *info = link->l_info;
 	struct nlattr *data;
 
 	if (!(data = nla_nest_start(msg, IFLA_INFO_DATA)))
 		return -NLE_MSGSIZE;
 
-	if (pi->ce_mask & PPP_ATTR_FD)
-		NLA_PUT_S32(msg, IFLA_PPP_DEV_FD, pi->pi_fd);
+	if (info->ce_mask & PPP_ATTR_FD)
+		NLA_PUT_S32(msg, IFLA_PPP_DEV_FD, info->pi_fd);
 
 	nla_nest_end(msg, data);
 
@@ -176,12 +176,12 @@ struct rtnl_link *rtnl_link_ppp_alloc(void)
  */
 int rtnl_link_ppp_set_fd(struct rtnl_link *link, uint32_t fd)
 {
-	struct ppp_info *pi = link->l_info;
+	struct ppp_info *info = link->l_info;
 
 	IS_PPP_LINK_ASSERT(link);
 
-	pi->pi_fd |= fd;
-	pi->ce_mask |= PPP_ATTR_FD;
+	info->pi_fd |= fd;
+	info->ce_mask |= PPP_ATTR_FD;
 
 	return 0;
 }
@@ -194,15 +194,15 @@ int rtnl_link_ppp_set_fd(struct rtnl_link *link, uint32_t fd)
  */
 int rtnl_link_ppp_get_fd(struct rtnl_link *link, uint32_t *fd)
 {
-	struct ppp_info *pi = link->l_info;
+	struct ppp_info *info = link->l_info;
 
 	IS_PPP_LINK_ASSERT(link);
 
-	if (!(pi->ce_mask & PPP_ATTR_FD))
+	if (!(info->ce_mask & PPP_ATTR_FD))
 		return -NLE_NOATTR;
 
 	if (fd)
-		*fd = pi->pi_fd;
+		*fd = info->pi_fd;
 
 	return 0;
 }

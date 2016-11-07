@@ -1006,5 +1006,9 @@ global:
 	rtnl_link_vf_vlan_alloc;
 	rtnl_link_vf_vlan_free;
 	rtnl_link_vf_vlan_put;
+	rtnl_link_vf_linkstate2str;
+	rtnl_link_vf_str2linkstate;
+	rtnl_link_vf_vlanproto2str;
+	rtnl_link_vf_str2vlanproto;
 } libnl_3_2_28;
 

@@ -799,6 +799,45 @@ void rtnl_link_vf_vlan_put(nl_vf_vlans_t *vf_vlans) {
 	return;
 }
 
+/** @} */
+
+/**
+ * @name Utilities
+ * @{
+ */
+
+static const struct trans_tbl vf_link_states[] = {
+	__ADD(IFLA_VF_LINK_STATE_AUTO, autodetect),
+	__ADD(IFLA_VF_LINK_STATE_ENABLE, up),
+	__ADD(IFLA_VF_LINK_STATE_DISABLE, down),
+};
+
+char *rtnl_link_vf_linkstate2str(uint32_t ls, char *buf, size_t len)
+{
+	return __type2str(ls, buf, len, vf_link_states,
+			  ARRAY_SIZE(vf_link_states));
+}
+
+int rtnl_link_vf_str2linkstate(const char *name)
+{
+	return __str2type(name, vf_link_states, ARRAY_SIZE(vf_link_states));
+}
+
+static const struct trans_tbl vf_vlan_proto[] = {
+	__ADD(ETH_P_8021Q, 8021Q),
+	__ADD(ETH_P_8021AD, 8021AD),
+};
+
+char *rtnl_link_vf_vlanproto2str(uint16_t proto, char *buf, size_t len)
+{
+	return __type2str(proto, buf, len, vf_vlan_proto,
+			  ARRAY_SIZE(vf_vlan_proto));
+}
+
+int rtnl_link_vf_str2vlanproto(const char *name)
+{
+	return __str2type(name, vf_vlan_proto, ARRAY_SIZE(vf_vlan_proto));
+}
 
 /** @} */
 

@@ -105,6 +105,13 @@ extern int rtnl_link_vf_get_vlans(struct rtnl_link_vf *, nl_vf_vlans_t **);
 extern int rtnl_link_vf_vlan_alloc(nl_vf_vlans_t **, int);
 extern void rtnl_link_vf_vlan_put(nl_vf_vlans_t *);
 
+/* Utility functions */
+extern char *rtnl_link_vf_linkstate2str(uint32_t, char *, size_t);
+extern int rtnl_link_vf_str2linkstate(const char *);
+
+extern char *rtnl_link_vf_vlanproto2str(uint16_t, char *, size_t);
+extern int rtnl_link_vf_str2vlanproto(const char *);
+
 #ifdef __cplusplus
 }
 #endif

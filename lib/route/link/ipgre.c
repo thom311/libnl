@@ -809,13 +809,20 @@ int rtnl_link_ipgre_set_pmtudisc(struct rtnl_link *link, uint8_t pmtudisc)
  *
  * @return pmtudisc value
  */
-uint8_t rtnl_link_get_pmtudisc(struct rtnl_link *link)
+uint8_t rtnl_link_ipgre_get_pmtudisc(struct rtnl_link *link)
 {
 	struct ipgre_info *ipgre = link->l_info;
 
 	IS_IPGRE_LINK_ASSERT(link);
 
 	return ipgre->pmtudisc;
+}
+
+uint8_t rtnl_link_get_pmtudisc(struct rtnl_link *link)
+{
+	/* rtnl_link_ipgre_get_pmtudisc() was wrongly named. Keep this
+	 * to preserve ABI. */
+	return rtnl_link_ipgre_get_pmtudisc (link);
 }
 
 static void __init ipgre_init(void)

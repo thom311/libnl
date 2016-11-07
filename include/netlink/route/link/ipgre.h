@@ -19,6 +19,9 @@
 extern "C" {
 #endif
 
+	extern int rtnl_link_is_ipgre(struct rtnl_link *link);
+	extern int rtnl_link_is_ipgretap(struct rtnl_link *link);
+
 	extern struct rtnl_link *rtnl_link_ipgre_alloc(void);
 	extern struct rtnl_link *rtnl_link_ipgretap_alloc(void);
 	extern int rtnl_link_ipgre_add(struct nl_sock *sk, const char *name);

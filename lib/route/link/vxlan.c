@@ -34,22 +34,31 @@
 #include <linux/if_link.h>
 
 /** @cond SKIP */
-#define VXLAN_ATTR_ID           (1<<0)
-#define VXLAN_ATTR_GROUP        (1<<1)
-#define VXLAN_ATTR_LINK         (1<<2)
-#define VXLAN_ATTR_LOCAL        (1<<3)
-#define VXLAN_ATTR_TTL          (1<<4)
-#define VXLAN_ATTR_TOS          (1<<5)
-#define VXLAN_ATTR_LEARNING     (1<<6)
-#define VXLAN_ATTR_AGEING       (1<<7)
-#define VXLAN_ATTR_LIMIT        (1<<8)
-#define VXLAN_ATTR_PORT_RANGE   (1<<9)
-#define VXLAN_ATTR_PROXY        (1<<10)
-#define VXLAN_ATTR_RSC          (1<<11)
-#define VXLAN_ATTR_L2MISS       (1<<12)
-#define VXLAN_ATTR_L3MISS       (1<<13)
-#define VXLAN_ATTR_GROUP6       (1<<14)
-#define VXLAN_ATTR_LOCAL6       (1<<15)
+#define VXLAN_ATTR_ID                  (1<<0)
+#define VXLAN_ATTR_GROUP               (1<<1)
+#define VXLAN_ATTR_LINK                (1<<2)
+#define VXLAN_ATTR_LOCAL               (1<<3)
+#define VXLAN_ATTR_TTL                 (1<<4)
+#define VXLAN_ATTR_TOS                 (1<<5)
+#define VXLAN_ATTR_LEARNING            (1<<6)
+#define VXLAN_ATTR_AGEING              (1<<7)
+#define VXLAN_ATTR_LIMIT               (1<<8)
+#define VXLAN_ATTR_PORT_RANGE          (1<<9)
+#define VXLAN_ATTR_PROXY               (1<<10)
+#define VXLAN_ATTR_RSC                 (1<<11)
+#define VXLAN_ATTR_L2MISS              (1<<12)
+#define VXLAN_ATTR_L3MISS              (1<<13)
+#define VXLAN_ATTR_GROUP6              (1<<14)
+#define VXLAN_ATTR_LOCAL6              (1<<15)
+#define VXLAN_ATTR_PORT                (1<<16)
+#define VXLAN_ATTR_UDP_CSUM            (1<<17)
+#define VXLAN_ATTR_UDP_ZERO_CSUM6_TX   (1<<18)
+#define VXLAN_ATTR_UDP_ZERO_CSUM6_RX   (1<<19)
+#define VXLAN_ATTR_REMCSUM_TX          (1<<20)
+#define VXLAN_ATTR_REMCSUM_RX          (1<<21)
+#define VXLAN_ATTR_COLLECT_METADATA    (1<<22)
+#define VXLAN_ATTR_LABEL               (1<<23)
+#define VXLAN_ATTR_FLAGS               (1<<24)
 
 struct vxlan_info
 {
@@ -62,6 +71,7 @@ struct vxlan_info
 	uint8_t			vxi_ttl;
 	uint8_t			vxi_tos;
 	uint8_t			vxi_learning;
+	uint8_t			vxi_flags;
 	uint32_t		vxi_ageing;
 	uint32_t		vxi_limit;
 	struct ifla_vxlan_port_range	vxi_port_range;
@@ -69,13 +79,21 @@ struct vxlan_info
 	uint8_t			vxi_rsc;
 	uint8_t			vxi_l2miss;
 	uint8_t			vxi_l3miss;
+	uint16_t		vxi_port;
+	uint8_t			vxi_udp_csum;
+	uint8_t			vxi_udp_zero_csum6_tx;
+	uint8_t			vxi_udp_zero_csum6_rx;
+	uint8_t			vxi_remcsum_tx;
+	uint8_t			vxi_remcsum_rx;
+	uint8_t			vxi_collect_metadata;
+	uint32_t		vxi_label;
 	uint32_t		ce_mask;
 };
 
 /** @endcond */
 
 static struct nla_policy vxlan_policy[IFLA_VXLAN_MAX+1] = {
-	[IFLA_VXLAN_ID]	= { .type = NLA_U32 },
+	[IFLA_VXLAN_ID] = { .type = NLA_U32 },
 	[IFLA_VXLAN_GROUP] = { .minlen = sizeof(uint32_t) },
 	[IFLA_VXLAN_GROUP6] = { .minlen = sizeof(struct in6_addr) },
 	[IFLA_VXLAN_LINK] = { .type = NLA_U32 },
@@ -83,6 +101,7 @@ static struct nla_policy vxlan_policy[IFLA_VXLAN_MAX+1] = {
 	[IFLA_VXLAN_LOCAL6] = { .minlen = sizeof(struct in6_addr) },
 	[IFLA_VXLAN_TTL] = { .type = NLA_U8 },
 	[IFLA_VXLAN_TOS] = { .type = NLA_U8 },
+	[IFLA_VXLAN_LABEL] = { .type = NLA_U32 },
 	[IFLA_VXLAN_LEARNING] = { .type = NLA_U8 },
 	[IFLA_VXLAN_AGEING] = { .type = NLA_U32 },
 	[IFLA_VXLAN_LIMIT] = { .type = NLA_U32 },
@@ -91,6 +110,16 @@ static struct nla_policy vxlan_policy[IFLA_VXLAN_MAX+1] = {
 	[IFLA_VXLAN_RSC] = { .type = NLA_U8 },
 	[IFLA_VXLAN_L2MISS] = { .type = NLA_U8 },
 	[IFLA_VXLAN_L3MISS] = { .type = NLA_U8 },
+	[IFLA_VXLAN_COLLECT_METADATA] = { .type = NLA_U8 },
+	[IFLA_VXLAN_PORT] = { .type = NLA_U16 },
+	[IFLA_VXLAN_UDP_CSUM] = { .type = NLA_U8 },
+	[IFLA_VXLAN_UDP_ZERO_CSUM6_TX] = { .type = NLA_U8 },
+	[IFLA_VXLAN_UDP_ZERO_CSUM6_RX] = { .type = NLA_U8 },
+	[IFLA_VXLAN_REMCSUM_TX] = { .type = NLA_U8 },
+	[IFLA_VXLAN_REMCSUM_RX] = { .type = NLA_U8 },
+	[IFLA_VXLAN_GBP] = { .type = NLA_FLAG, },
+	[IFLA_VXLAN_GPE] = { .type = NLA_FLAG, },
+	[IFLA_VXLAN_REMCSUM_NOPARTIAL] = { .type = NLA_FLAG },
 };
 
 static int vxlan_alloc(struct rtnl_link *link)
@@ -212,6 +241,55 @@ static int vxlan_parse(struct rtnl_link *link, struct nlattr *data,
 		vxi->vxi_l3miss = nla_get_u8(tb[IFLA_VXLAN_L3MISS]);
 		vxi->ce_mask |= VXLAN_ATTR_L3MISS;
 	}
+
+	if (tb[IFLA_VXLAN_PORT]) {
+		vxi->vxi_port = nla_get_u16(tb[IFLA_VXLAN_PORT]);
+		vxi->ce_mask |= VXLAN_ATTR_PORT;
+	}
+
+	if (tb[IFLA_VXLAN_UDP_CSUM]) {
+		vxi->vxi_udp_csum = nla_get_u8(tb[IFLA_VXLAN_UDP_CSUM]);
+		vxi->ce_mask |= VXLAN_ATTR_UDP_CSUM;
+	}
+
+	if (tb[IFLA_VXLAN_UDP_ZERO_CSUM6_TX]) {
+		vxi->vxi_udp_zero_csum6_tx = nla_get_u8(tb[IFLA_VXLAN_UDP_ZERO_CSUM6_TX]);
+		vxi->ce_mask |= VXLAN_ATTR_UDP_ZERO_CSUM6_TX;
+	}
+
+	if (tb[IFLA_VXLAN_UDP_ZERO_CSUM6_RX]) {
+		vxi->vxi_udp_zero_csum6_rx = nla_get_u8(tb[IFLA_VXLAN_UDP_ZERO_CSUM6_RX]);
+		vxi->ce_mask |= VXLAN_ATTR_UDP_ZERO_CSUM6_RX;
+	}
+
+	if (tb[IFLA_VXLAN_REMCSUM_TX]) {
+		vxi->vxi_remcsum_tx = nla_get_u8(tb[IFLA_VXLAN_REMCSUM_TX]);
+		vxi->ce_mask |= VXLAN_ATTR_REMCSUM_TX;
+	}
+
+	if (tb[IFLA_VXLAN_REMCSUM_RX]) {
+		vxi->vxi_remcsum_rx = nla_get_u8(tb[IFLA_VXLAN_REMCSUM_RX]);
+		vxi->ce_mask |= VXLAN_ATTR_REMCSUM_RX;
+	}
+
+	if (tb[IFLA_VXLAN_GBP])
+		vxi->vxi_flags |= RTNL_LINK_VXLAN_F_GBP;
+
+	if (tb[IFLA_VXLAN_REMCSUM_NOPARTIAL])
+		vxi->vxi_flags |= RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL;
+
+	if (tb[IFLA_VXLAN_COLLECT_METADATA]) {
+		vxi->vxi_collect_metadata = nla_get_u8(tb[IFLA_VXLAN_COLLECT_METADATA]);
+		vxi->ce_mask |= VXLAN_ATTR_COLLECT_METADATA;
+	}
+
+	if (tb[IFLA_VXLAN_LABEL]) {
+		vxi->vxi_label = nla_get_u32(tb[IFLA_VXLAN_LABEL]);
+		vxi->ce_mask |= VXLAN_ATTR_LABEL;
+	}
+
+	if (tb[IFLA_VXLAN_GPE])
+		vxi->vxi_flags |= RTNL_LINK_VXLAN_F_GPE;
 
 	err = 0;
 
@@ -361,6 +439,73 @@ static void vxlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 		else
 			nl_dump_line(p, "disabled\n");
 	}
+
+	if (vxi->ce_mask & VXLAN_ATTR_PORT) {
+		nl_dump(p, "      port ");
+		nl_dump_line(p, "%u\n", ntohs(vxi->vxi_port));
+	}
+
+	if (vxi->ce_mask & VXLAN_ATTR_UDP_CSUM) {
+		nl_dump(p, "      UDP checksums ");
+		if (vxi->vxi_udp_csum)
+			nl_dump_line(p, "enabled (%#x)\n", vxi->vxi_udp_csum);
+		else
+			nl_dump_line(p, "disabled\n");
+	}
+
+	if (vxi->ce_mask & VXLAN_ATTR_UDP_ZERO_CSUM6_TX) {
+		nl_dump(p, "      udp-zero-csum6-tx ");
+		if (vxi->vxi_udp_zero_csum6_tx)
+			nl_dump_line(p, "enabled (%#x)\n", vxi->vxi_udp_zero_csum6_tx);
+		else
+			nl_dump_line(p, "disabled\n");
+	}
+
+	if (vxi->ce_mask & VXLAN_ATTR_UDP_ZERO_CSUM6_RX) {
+		nl_dump(p, "      udp-zero-csum6-rx ");
+		if (vxi->vxi_udp_zero_csum6_rx)
+			nl_dump_line(p, "enabled (%#x)\n", vxi->vxi_udp_zero_csum6_rx);
+		else
+			nl_dump_line(p, "disabled\n");
+	}
+
+	if (vxi->ce_mask & VXLAN_ATTR_REMCSUM_TX) {
+		nl_dump(p, "      remcsum-tx ");
+		if (vxi->vxi_remcsum_tx)
+			nl_dump_line(p, "enabled (%#x)\n", vxi->vxi_remcsum_tx);
+		else
+			nl_dump_line(p, "disabled\n");
+	}
+
+	if (vxi->ce_mask & VXLAN_ATTR_REMCSUM_RX) {
+		nl_dump(p, "      remcsum-rx ");
+		if (vxi->vxi_remcsum_rx)
+			nl_dump_line(p, "enabled (%#x)\n", vxi->vxi_remcsum_rx);
+		else
+			nl_dump_line(p, "disabled\n");
+	}
+
+	if (vxi->vxi_flags & RTNL_LINK_VXLAN_F_GBP)
+		nl_dump(p, "      gbp\n");
+
+	if (vxi->vxi_flags & RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL)
+		nl_dump(p, "      rncsum-nopartial\n");
+
+	if (vxi->ce_mask & VXLAN_ATTR_COLLECT_METADATA) {
+		nl_dump(p, "      remcsum-rx ");
+		if (vxi->vxi_collect_metadata)
+			nl_dump_line(p, "enabled (%#x)\n", vxi->vxi_collect_metadata);
+		else
+			nl_dump_line(p, "disabled\n");
+	}
+
+	if (vxi->ce_mask & VXLAN_ATTR_LABEL) {
+		nl_dump(p, "      label ");
+		nl_dump_line(p, "%u\n", ntohl(vxi->vxi_label));
+	}
+
+	if (vxi->vxi_flags & RTNL_LINK_VXLAN_F_GPE)
+		nl_dump(p, "      gpe\n");
 }
 
 static int vxlan_clone(struct rtnl_link *dst, struct rtnl_link *src)
@@ -438,6 +583,39 @@ static int vxlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (vxi->ce_mask & VXLAN_ATTR_L3MISS)
 		NLA_PUT_U8(msg, IFLA_VXLAN_L3MISS, vxi->vxi_l3miss);
 
+	if (vxi->ce_mask & VXLAN_ATTR_PORT)
+		NLA_PUT_U32(msg, IFLA_VXLAN_PORT, vxi->vxi_port);
+
+	if (vxi->ce_mask & VXLAN_ATTR_UDP_CSUM)
+		NLA_PUT_U8(msg, IFLA_VXLAN_UDP_CSUM, vxi->vxi_udp_csum);
+
+	if (vxi->ce_mask & VXLAN_ATTR_UDP_ZERO_CSUM6_TX)
+		NLA_PUT_U8(msg, IFLA_VXLAN_UDP_ZERO_CSUM6_TX, vxi->vxi_udp_zero_csum6_tx);
+
+	if (vxi->ce_mask & VXLAN_ATTR_UDP_ZERO_CSUM6_RX)
+		NLA_PUT_U8(msg, IFLA_VXLAN_UDP_ZERO_CSUM6_RX, vxi->vxi_udp_zero_csum6_rx);
+
+	if (vxi->ce_mask & VXLAN_ATTR_REMCSUM_TX)
+		NLA_PUT_U8(msg, IFLA_VXLAN_REMCSUM_TX, vxi->vxi_remcsum_tx);
+
+	if (vxi->ce_mask & VXLAN_ATTR_REMCSUM_RX)
+		NLA_PUT_U8(msg, IFLA_VXLAN_REMCSUM_RX, vxi->vxi_remcsum_rx);
+
+	if (vxi->vxi_flags & RTNL_LINK_VXLAN_F_GBP)
+		NLA_PUT_FLAG(msg, IFLA_VXLAN_GBP);
+
+	if (vxi->vxi_flags & RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL)
+		NLA_PUT_FLAG(msg, IFLA_VXLAN_REMCSUM_NOPARTIAL);
+
+	if (vxi->ce_mask & VXLAN_ATTR_COLLECT_METADATA)
+		NLA_PUT_U8(msg, IFLA_VXLAN_COLLECT_METADATA, vxi->vxi_collect_metadata);
+
+	if (vxi->ce_mask & VXLAN_ATTR_LABEL)
+		NLA_PUT_U32(msg, IFLA_VXLAN_LABEL, vxi->vxi_label);
+
+	if (vxi->vxi_flags & RTNL_LINK_VXLAN_F_GPE)
+		NLA_PUT_FLAG(msg, IFLA_VXLAN_GPE);
+
 	nla_nest_end(msg, data);
 
 nla_put_failure:
@@ -463,12 +641,26 @@ static int vxlan_compare(struct rtnl_link *link_a, struct rtnl_link *link_b,
 	diff |= VXLAN_DIFF(TTL,   a->vxi_ttl   != b->vxi_ttl);
 	diff |= VXLAN_DIFF(LEARNING, a->vxi_learning != b->vxi_learning);
 	diff |= VXLAN_DIFF(AGEING, a->vxi_ageing != b->vxi_ageing);
+	diff |= VXLAN_DIFF(LIMIT, a->vxi_limit != b->vxi_limit);
 	diff |= VXLAN_DIFF(PORT_RANGE,
 	                   a->vxi_port_range.low != b->vxi_port_range.low);
 	diff |= VXLAN_DIFF(PORT_RANGE,
 	                   a->vxi_port_range.high != b->vxi_port_range.high);
+	diff |= VXLAN_DIFF(PROXY, a->vxi_proxy != b->vxi_proxy);
+	diff |= VXLAN_DIFF(RSC, a->vxi_proxy != b->vxi_proxy);
+	diff |= VXLAN_DIFF(L2MISS, a->vxi_proxy != b->vxi_proxy);
+	diff |= VXLAN_DIFF(L3MISS, a->vxi_proxy != b->vxi_proxy);
+	diff |= VXLAN_DIFF(PORT, a->vxi_port != b->vxi_port);
 	diff |= VXLAN_DIFF(GROUP6, memcmp(&a->vxi_group6, &b->vxi_group6, sizeof(a->vxi_group6)) != 0);
 	diff |= VXLAN_DIFF(LOCAL6,  memcmp(&a->vxi_local6, &b->vxi_local6, sizeof(a->vxi_local6)) != 0);
+	diff |= VXLAN_DIFF(UDP_CSUM, a->vxi_proxy != b->vxi_proxy);
+	diff |= VXLAN_DIFF(UDP_ZERO_CSUM6_TX, a->vxi_proxy != b->vxi_proxy);
+	diff |= VXLAN_DIFF(UDP_ZERO_CSUM6_RX, a->vxi_proxy != b->vxi_proxy);
+	diff |= VXLAN_DIFF(REMCSUM_TX, a->vxi_proxy != b->vxi_proxy);
+	diff |= VXLAN_DIFF(REMCSUM_RX, a->vxi_proxy != b->vxi_proxy);
+	diff |= VXLAN_DIFF(COLLECT_METADATA, a->vxi_collect_metadata != b->vxi_collect_metadata);
+	diff |= VXLAN_DIFF(LABEL, a->vxi_label != b->vxi_label);
+	diff |= VXLAN_DIFF(FLAGS, a->vxi_flags != b->vxi_flags);
 #undef VXLAN_DIFF
 
 	return diff;
@@ -963,7 +1155,7 @@ int rtnl_link_vxlan_get_limit(struct rtnl_link *link, uint32_t *limit)
  * @return 0 on success or a negative error code
  */
 int rtnl_link_vxlan_set_port_range(struct rtnl_link *link,
-								   struct ifla_vxlan_port_range *range)
+                                   struct ifla_vxlan_port_range *range)
 {
 	struct vxlan_info *vxi = link->l_info;
 
@@ -986,7 +1178,7 @@ int rtnl_link_vxlan_set_port_range(struct rtnl_link *link,
  * @return 0 on success or a negative error code
  */
 int rtnl_link_vxlan_get_port_range(struct rtnl_link *link,
-								   struct ifla_vxlan_port_range *range)
+                                   struct ifla_vxlan_port_range *range)
 {
 	struct vxlan_info *vxi = link->l_info;
 
@@ -1218,7 +1410,7 @@ int rtnl_link_vxlan_get_l3miss(struct rtnl_link *link)
 }
 
 /**
- * Enable netlink IP DDR miss notifications
+ * Enable netlink IP ADDR miss notifications
  * @arg link		Link object
  *
  * @return 0 on success or a negative error code
@@ -1237,6 +1429,356 @@ int rtnl_link_vxlan_enable_l3miss(struct rtnl_link *link)
 int rtnl_link_vxlan_disable_l3miss(struct rtnl_link *link)
 {
 	return rtnl_link_vxlan_set_l3miss(link, 0);
+}
+
+/**
+ * Set UDP destination port to use for VXLAN
+ * @arg link		Link object
+ * @arg port		Destination port
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_vxlan_set_port(struct rtnl_link *link, uint32_t port)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	vxi->vxi_port = htons(port);
+	vxi->ce_mask |= VXLAN_ATTR_PORT;
+
+	return 0;
+}
+
+/**
+ * Get UDP destination port to use for VXLAN
+ * @arg link		Link object
+ * @arg port		Pointer to store destination port
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_vxlan_get_port(struct rtnl_link *link, uint32_t *port)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	if (!port)
+		return -NLE_INVAL;
+
+	if (!(vxi->ce_mask & VXLAN_ATTR_PORT))
+		return -NLE_NOATTR;
+
+	*port = ntohs(vxi->vxi_port);
+
+	return 0;
+}
+
+/**
+ * Set UDP checksum status to use for VXLAN
+ * @arg link		Link object
+ * @arg csum		Status value
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_vxlan_set_udp_csum(struct rtnl_link *link, uint8_t csum)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	vxi->vxi_udp_csum = csum;
+	vxi->ce_mask |= VXLAN_ATTR_UDP_CSUM;
+
+	return 0;
+}
+
+/**
+ * Get UDP checksum status to use for VXLAN
+ * @arg link		Link object
+ *
+ * @return Status value on success or a negative error code
+ */
+int rtnl_link_vxlan_get_udp_csum(struct rtnl_link *link)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	if (!(vxi->ce_mask & VXLAN_ATTR_UDP_CSUM))
+		return -NLE_NOATTR;
+
+	return vxi->vxi_udp_csum;
+}
+
+/**
+ * Set skip UDP checksum transmitted over IPv6 status to use for VXLAN
+ * @arg link		Link object
+ * @arg csum		Status value
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_vxlan_set_udp_zero_csum6_tx(struct rtnl_link *link, uint8_t csum)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	vxi->vxi_udp_zero_csum6_tx = csum;
+	vxi->ce_mask |= VXLAN_ATTR_UDP_ZERO_CSUM6_TX;
+
+	return 0;
+}
+
+/**
+ * Get skip UDP checksum transmitted over IPv6 status to use for VXLAN
+ * @arg link		Link object
+ *
+ * @return Status value on success or a negative error code
+ */
+int rtnl_link_vxlan_get_udp_zero_csum6_tx(struct rtnl_link *link)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	if (!(vxi->ce_mask & VXLAN_ATTR_UDP_ZERO_CSUM6_TX))
+		return -NLE_NOATTR;
+
+	return vxi->vxi_udp_zero_csum6_tx;
+}
+
+/**
+ * Set skip UDP checksum received over IPv6 status to use for VXLAN
+ * @arg link		Link object
+ * @arg csum		Status value
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_vxlan_set_udp_zero_csum6_rx(struct rtnl_link *link, uint8_t csum)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	vxi->vxi_udp_zero_csum6_rx = csum;
+	vxi->ce_mask |= VXLAN_ATTR_UDP_ZERO_CSUM6_RX;
+
+	return 0;
+}
+
+/**
+ * Get skip UDP checksum received over IPv6 status to use for VXLAN
+ * @arg link		Link object
+ *
+ * @return Status value on success or a negative error code
+ */
+int rtnl_link_vxlan_get_udp_zero_csum6_rx(struct rtnl_link *link)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	if (!(vxi->ce_mask & VXLAN_ATTR_UDP_ZERO_CSUM6_RX))
+		return -NLE_NOATTR;
+
+	return vxi->vxi_udp_zero_csum6_rx;
+}
+
+/**
+ * Set remote offload transmit checksum status to use for VXLAN
+ * @arg link		Link object
+ * @arg csum		Status value
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_vxlan_set_remcsum_tx(struct rtnl_link *link, uint8_t csum)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	vxi->vxi_remcsum_tx = csum;
+	vxi->ce_mask |= VXLAN_ATTR_REMCSUM_TX;
+
+	return 0;
+}
+
+/**
+ * Get remote offload transmit checksum status to use for VXLAN
+ * @arg link		Link object
+ *
+ * @return Status value on success or a negative error code
+ */
+int rtnl_link_vxlan_get_remcsum_tx(struct rtnl_link *link)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	if (!(vxi->ce_mask & VXLAN_ATTR_REMCSUM_TX))
+		return -NLE_NOATTR;
+
+	return vxi->vxi_remcsum_tx;
+}
+
+/**
+ * Set remote offload receive checksum status to use for VXLAN
+ * @arg link		Link object
+ * @arg csum		Status value
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_vxlan_set_remcsum_rx(struct rtnl_link *link, uint8_t csum)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	vxi->vxi_remcsum_rx = csum;
+	vxi->ce_mask |= VXLAN_ATTR_REMCSUM_RX;
+
+	return 0;
+}
+
+/**
+ * Get remote offload receive checksum status to use for VXLAN
+ * @arg link		Link object
+ *
+ * @return Status value on success or a negative error code
+ */
+int rtnl_link_vxlan_get_remcsum_rx(struct rtnl_link *link)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	if (!(vxi->ce_mask & VXLAN_ATTR_REMCSUM_RX))
+		return -NLE_NOATTR;
+
+	return vxi->vxi_remcsum_rx;
+}
+
+/**
+ * Set collect metadata status to use for VXLAN
+ * @arg link		Link object
+ * @arg collect		Status value
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_vxlan_set_collect_metadata(struct rtnl_link *link, uint8_t collect)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	vxi->vxi_collect_metadata = collect;
+	vxi->ce_mask |= VXLAN_ATTR_COLLECT_METADATA;
+
+	return 0;
+}
+
+/**
+ * Get collect metadata status to use for VXLAN
+ * @arg link		Link object
+ *
+ * @return Status value on success or a negative error code
+ */
+int rtnl_link_vxlan_get_collect_metadata(struct rtnl_link *link)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	if (!(vxi->ce_mask & VXLAN_ATTR_COLLECT_METADATA))
+		return -NLE_NOATTR;
+
+	return vxi->vxi_collect_metadata;
+}
+
+/**
+ * Set flow label to use for VXLAN
+ * @arg link		Link object
+ * @arg label		Destination label
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_vxlan_set_label(struct rtnl_link *link, uint32_t label)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	vxi->vxi_label = htonl(label);
+	vxi->ce_mask |= VXLAN_ATTR_LABEL;
+
+	return 0;
+}
+
+/**
+ * Get flow label to use for VXLAN
+ * @arg link		Link object
+ * @arg label		Pointer to store destination label
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_vxlan_get_label(struct rtnl_link *link, uint32_t *label)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	if (!label)
+		return -NLE_INVAL;
+
+	if (!(vxi->ce_mask & VXLAN_ATTR_LABEL))
+		return -NLE_NOATTR;
+
+	*label = ntohl(vxi->vxi_label);
+
+	return 0;
+}
+
+/**
+ * Set VXLAN flags RTNL_LINK_VXLAN_F_*
+ * @arg link		Link object
+ * @flags               Which flags to set
+ * @arg enable		Boolean enabling or disabling flag
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_vxlan_set_flags(struct rtnl_link *link, uint32_t flags, int enable)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	if (flags & ~(RTNL_LINK_VXLAN_F_GBP | RTNL_LINK_VXLAN_F_GPE | RTNL_LINK_VXLAN_F_REMCSUM_NOPARTIAL))
+		return -NLE_INVAL;
+
+	if (enable)
+		vxi->vxi_flags |= flags;
+	else
+		vxi->vxi_flags &= ~flags;
+
+	return 0;
+}
+
+/**
+ * Get VXLAN flags RTNL_LINK_VXLAN_F_*
+ * @arg link		Link object
+ * @arg out_flags       Output value for flags. Must be present.
+ *
+ * @return Zero on success or a negative error code
+ */
+int rtnl_link_vxlan_get_flags(struct rtnl_link *link, uint32_t *out_flags)
+{
+	struct vxlan_info *vxi = link->l_info;
+
+	IS_VXLAN_LINK_ASSERT(link);
+
+	*out_flags = vxi->vxi_flags;
+	return 0;
 }
 
 /** @} */

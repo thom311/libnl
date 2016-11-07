@@ -1190,7 +1190,7 @@ int nl_has_capability (int capability)
 			NL_CAPABILITY_VERSION_3_2_28,
 			NL_CAPABILITY_RTNL_ADDR_PEER_ID_FIX,
 			NL_CAPABILITY_NL_ADDR_FILL_SOCKADDR,
-			0,
+			NL_CAPABILITY_XFRM_SEC_CTX_LEN,
 			0,
 			0),
 		/* IMPORTANT: these capability numbers are intended to be universal and stable

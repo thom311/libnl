@@ -29,7 +29,7 @@
 
 struct ppp_info
 {
-	uint32_t		pi_fd;
+	int32_t			pi_fd;
 	uint32_t		ce_mask;
 };
 
@@ -174,7 +174,7 @@ struct rtnl_link *rtnl_link_ppp_alloc(void)
  *
  * @return 0 on success or a negative error code.
  */
-int rtnl_link_ppp_set_fd(struct rtnl_link *link, uint32_t fd)
+int rtnl_link_ppp_set_fd(struct rtnl_link *link, int32_t fd)
 {
 	struct ppp_info *info = link->l_info;
 
@@ -192,7 +192,7 @@ int rtnl_link_ppp_set_fd(struct rtnl_link *link, uint32_t fd)
  *
  * @return PPP file descriptor, 0 if not set or a negative error code.
  */
-int rtnl_link_ppp_get_fd(struct rtnl_link *link, uint32_t *fd)
+int rtnl_link_ppp_get_fd(struct rtnl_link *link, int32_t *fd)
 {
 	struct ppp_info *info = link->l_info;
 

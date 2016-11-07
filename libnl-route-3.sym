@@ -984,5 +984,8 @@ global:
 	rtnl_link_vxlan_set_udp_csum;
 	rtnl_link_vxlan_set_udp_zero_csum6_rx;
 	rtnl_link_vxlan_set_udp_zero_csum6_tx;
+	rtnl_link_ppp_alloc;
+	rtnl_link_ppp_set_fd;
+	rtnl_link_ppp_get_fd;
 } libnl_3_2_28;
 

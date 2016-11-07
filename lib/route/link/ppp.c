@@ -25,12 +25,12 @@
 #include <netlink-private/route/link/api.h>
 
 /** @cond SKIP */
-#define PPP_HAS_FD		(1<<0)
+#define PPP_ATTR_FD		(1<<0)
 
 struct ppp_info
 {
 	uint32_t		pi_fd;
-	uint32_t		pi_mask;
+	uint32_t		ce_mask;
 };
 
 /** @endcond */
@@ -74,7 +74,7 @@ static int ppp_parse(struct rtnl_link *link, struct nlattr *data,
 
 	if (tb[IFLA_PPP_DEV_FD]) {
 		pi->pi_fd = nla_get_s32(tb[IFLA_PPP_DEV_FD]);
-		pi->pi_mask |= PPP_HAS_FD;
+		pi->ce_mask |= PPP_ATTR_FD;
 	}
 
 	err = 0;
@@ -114,7 +114,7 @@ static int ppp_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (!(data = nla_nest_start(msg, IFLA_INFO_DATA)))
 		return -NLE_MSGSIZE;
 
-	if (pi->pi_mask & PPP_HAS_FD)
+	if (pi->ce_mask & PPP_ATTR_FD)
 		NLA_PUT_S32(msg, IFLA_PPP_DEV_FD, pi->pi_fd);
 
 	nla_nest_end(msg, data);
@@ -181,7 +181,7 @@ int rtnl_link_ppp_set_fd(struct rtnl_link *link, uint32_t fd)
 	IS_PPP_LINK_ASSERT(link);
 
 	pi->pi_fd |= fd;
-	pi->pi_mask |= PPP_HAS_FD;
+	pi->ce_mask |= PPP_ATTR_FD;
 
 	return 0;
 }
@@ -192,16 +192,19 @@ int rtnl_link_ppp_set_fd(struct rtnl_link *link, uint32_t fd)
  *
  * @return PPP file descriptor, 0 if not set or a negative error code.
  */
-uint32_t rtnl_link_ppp_get_mode(struct rtnl_link *link)
+int rtnl_link_ppp_get_fd(struct rtnl_link *link, uint32_t *fd)
 {
 	struct ppp_info *pi = link->l_info;
 
 	IS_PPP_LINK_ASSERT(link);
 
-	if (pi->pi_mask & PPP_HAS_FD)
-		return pi->pi_fd;
-	else
-		return 0;
+	if (!(pi->ce_mask & PPP_ATTR_FD))
+		return -NLE_NOATTR;
+
+	if (fd)
+		*fd = pi->pi_fd;
+
+	return 0;
 }
 
 /** @} */

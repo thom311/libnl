@@ -315,6 +315,10 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 		if (!(dst->l_phys_port_id = nl_data_clone(src->l_phys_port_id)))
 			return -NLE_NOMEM;
 
+	if (src->ce_mask & LINK_ATTR_VF_LIST)
+		if ((err = rtnl_link_sriov_clone(dst, src)) < 0)
+			return err;
+
 	return 0;
 }
 

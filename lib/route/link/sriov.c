@@ -79,6 +79,58 @@ static struct nla_policy sriov_stats_policy[IFLA_VF_STATS_MAX+1] = {
 
 /** @endcond */
 
+/* Clone SRIOV VF list in link object */
+int rtnl_link_sriov_clone(struct rtnl_link *dst, struct rtnl_link *src) {
+	int err = 0;
+	struct nl_addr *vf_addr;
+	struct rtnl_link_vf *s_list, *d_vf, *s_vf, *next, *dest_h = NULL;
+	nl_vf_vlans_t *src_vlans = NULL, *dst_vlans = NULL;
+	nl_vf_vlan_info_t *src_vlan_info = NULL, *dst_vlan_info = NULL;
+
+	if (!(err = rtnl_link_has_vf_list(src)))
+		return 0;
+
+	dst->l_vf_list = rtnl_link_vf_alloc();
+	if (!dst->l_vf_list)
+		return -NLE_NOMEM;
+	dest_h = dst->l_vf_list;
+	s_list = src->l_vf_list;
+
+	nl_list_for_each_entry_safe(s_vf, next, &s_list->vf_list, vf_list) {
+		if (!(d_vf = rtnl_link_vf_alloc()))
+			return -NLE_NOMEM;
+
+		memcpy(d_vf, s_vf, sizeof(*s_vf));
+
+		if (s_vf->ce_mask & SRIOV_ATTR_ADDR) {
+			vf_addr = nl_addr_clone(s_vf->vf_lladdr);
+			if (!vf_addr)
+				return -NLE_NOMEM;
+			d_vf->vf_lladdr = vf_addr;
+		}
+
+		if (s_vf->ce_mask & SRIOV_ATTR_VLAN) {
+			src_vlans = s_vf->vf_vlans;
+			src_vlan_info = src_vlans->vlans;
+
+			err = rtnl_link_vf_vlan_alloc(&dst_vlans,
+						      src_vlans->size);
+			if (err < 0)
+				return err;
+			dst_vlan_info = dst_vlans->vlans;
+			memcpy(dst_vlans, src_vlans, sizeof(nl_vf_vlans_t));
+			memcpy(dst_vlan_info, src_vlan_info,
+			       dst_vlans->size * sizeof(dst_vlan_info));
+			d_vf->vf_vlans = dst_vlans;
+		}
+
+		nl_list_add_head(&d_vf->vf_list, &dest_h->vf_list);
+		dest_h = d_vf;
+	}
+
+	return 0;
+}
+
 /* Free stored SRIOV VF data */
 void rtnl_link_sriov_free_data(struct rtnl_link *link) {
 	int err = 0;

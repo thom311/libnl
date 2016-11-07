@@ -1529,6 +1529,11 @@ static int build_link_msg(int cmd, struct ifinfomsg *hdr,
 		nla_nest_end(msg, info);
 	}
 
+	if (link->ce_mask & LINK_ATTR_VF_LIST) {
+		if (rtnl_link_sriov_fill_vflist(msg, link) < 0)
+			goto nla_put_failure;
+	}
+
 	if (do_foreach_af(link, af_fill_pi, msg) < 0)
 		goto nla_put_failure;
 

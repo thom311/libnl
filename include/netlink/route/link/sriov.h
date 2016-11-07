@@ -20,6 +20,8 @@
 extern "C" {
 #endif
 
+#define RTNL_VF_GUID_STR_LEN 23
+
 /**
  * @ingroup sriov
  */
@@ -87,20 +89,41 @@ struct nl_vf_rate {
 	uint32_t	min_tx_rate;	/*!< New API Mix Rate in Mbps */
 };
 
+extern int rtnl_link_vf_add(struct rtnl_link *, struct rtnl_link_vf *);
 extern struct rtnl_link_vf *rtnl_link_vf_alloc(void);
 extern void rtnl_link_vf_free(struct rtnl_link_vf *);
 extern struct rtnl_link_vf *rtnl_link_vf_get(struct rtnl_link *, uint32_t);
 extern void rtnl_link_vf_put(struct rtnl_link_vf *);
+
 extern int rtnl_link_vf_get_addr(struct rtnl_link_vf *, struct nl_addr **);
+extern void rtnl_link_vf_set_addr(struct rtnl_link_vf *, struct nl_addr *);
+
+extern void rtnl_link_vf_set_ib_node_guid(struct rtnl_link_vf *, uint64_t);
+extern void rtnl_link_vf_set_ib_port_guid(struct rtnl_link_vf *, uint64_t);
+
 extern int rtnl_link_vf_get_index(struct rtnl_link_vf *, uint32_t *);
+extern void rtnl_link_vf_set_index(struct rtnl_link_vf *, uint32_t);
+
 extern int rtnl_link_vf_get_linkstate(struct rtnl_link_vf *, uint32_t *);
+extern void rtnl_link_vf_set_linkstate(struct rtnl_link_vf *, uint32_t);
+
 extern int rtnl_link_vf_get_rate(struct rtnl_link_vf *, struct nl_vf_rate *);
+extern void rtnl_link_vf_set_rate(struct rtnl_link_vf *, struct nl_vf_rate *);
+
 extern int rtnl_link_vf_get_rss_query_en(struct rtnl_link_vf *, uint32_t *);
+extern void rtnl_link_vf_set_rss_query_en(struct rtnl_link_vf *, uint32_t);
+
 extern int rtnl_link_vf_get_spoofchk(struct rtnl_link_vf *, uint32_t *);
+extern void rtnl_link_vf_set_spoofchk(struct rtnl_link_vf *, uint32_t);
+
 extern int rtnl_link_vf_get_stat(struct rtnl_link_vf *, rtnl_link_vf_stats_t,
 				 uint64_t *);
+
 extern int rtnl_link_vf_get_trust(struct rtnl_link_vf *, uint32_t *);
+extern void rtnl_link_vf_set_trust(struct rtnl_link_vf *, uint32_t);
+
 extern int rtnl_link_vf_get_vlans(struct rtnl_link_vf *, nl_vf_vlans_t **);
+extern void rtnl_link_vf_set_vlans(struct rtnl_link_vf *, nl_vf_vlans_t *);
 
 extern int rtnl_link_vf_vlan_alloc(nl_vf_vlans_t **, int);
 extern void rtnl_link_vf_vlan_put(nl_vf_vlans_t *);
@@ -111,6 +134,8 @@ extern int rtnl_link_vf_str2linkstate(const char *);
 
 extern char *rtnl_link_vf_vlanproto2str(uint16_t, char *, size_t);
 extern int rtnl_link_vf_str2vlanproto(const char *);
+
+extern int rtnl_link_vf_str2guid(uint64_t *, const char *);
 
 #ifdef __cplusplus
 }

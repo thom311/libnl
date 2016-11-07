@@ -55,6 +55,8 @@
 #define SRIOV_ATTR_RSS_QUERY_EN 	(1 <<  8)
 #define SRIOV_ATTR_STATS 		(1 <<  9)
 #define SRIOV_ATTR_TRUST 		(1 << 10)
+#define SRIOV_ATTR_IB_NODE_GUID 	(1 << 11)
+#define SRIOV_ATTR_IB_PORT_GUID 	(1 << 12)
 
 static struct nla_policy sriov_info_policy[IFLA_VF_MAX+1] = {
 	[IFLA_VF_MAC]		= { .minlen = sizeof(struct ifla_vf_mac) },
@@ -316,6 +318,204 @@ static int rtnl_link_vf_vlan_info(int len, struct ifla_vf_vlan_info **vi,
 	return 0;
 }
 
+/* Fill the IFLA_VF_VLAN attribute */
+static void sriov_fill_vf_vlan(struct nl_msg *msg, nl_vf_vlan_info_t *vinfo,
+			       uint32_t index) {
+	struct ifla_vf_vlan vlan;
+
+	vlan.vf = index;
+	vlan.vlan = vinfo[0].vf_vlan;
+	vlan.qos = vinfo[0].vf_vlan_qos;
+	NLA_PUT(msg, IFLA_VF_VLAN, sizeof(vlan), &vlan);
+
+nla_put_failure:
+	return;
+}
+
+/* Fill the IFLA_VF_VLAN_LIST attribute */
+static int sriov_fill_vf_vlan_list(struct nl_msg *msg, nl_vf_vlans_t *vlans,
+				   uint32_t index) {
+	int cur = 0;
+	nl_vf_vlan_info_t *vlan_info = vlans->vlans;
+	struct ifla_vf_vlan_info vlan;
+	struct nlattr *list;
+
+	if (!(list = nla_nest_start(msg, IFLA_VF_VLAN_LIST)))
+		return -NLE_MSGSIZE;
+
+	vlan.vf = index;
+	while (cur < vlans->size) {
+		vlan.vlan = vlan_info[cur].vf_vlan;
+		vlan.qos = vlan_info[cur].vf_vlan_qos;
+		vlan.vlan_proto = vlan_info[cur].vf_vlan_proto;
+
+		NLA_PUT(msg, IFLA_VF_VLAN_INFO, sizeof(vlan), &vlan);
+
+		cur++;
+	}
+
+nla_put_failure:
+	nla_nest_end(msg, list);
+
+	return 0;
+}
+
+/* Fill individual IFLA_VF_INFO attributes */
+static int sriov_fill_vfinfo(struct nl_msg *msg,
+			     struct rtnl_link_vf *vf_data) {
+	int err = 0, new_rate = 0;
+	nl_vf_vlans_t *vlan_list;
+	nl_vf_vlan_info_t *vlan_info;
+	struct ifla_vf_guid vf_node_guid;
+	struct ifla_vf_guid vf_port_guid;
+	struct ifla_vf_link_state vf_link_state;
+	struct ifla_vf_mac vf_mac;
+	struct ifla_vf_rate new_vf_rate;
+	struct ifla_vf_rss_query_en vf_rss_query_en;
+	struct ifla_vf_spoofchk vf_spoofchk;
+	struct ifla_vf_trust vf_trust;
+	struct ifla_vf_tx_rate vf_rate;
+	struct nlattr *list;
+	uint16_t proto;
+
+	if (!(vf_data->ce_mask & SRIOV_ATTR_INDEX))
+		return -NLE_MISSING_ATTR;
+
+	if (!(list = nla_nest_start(msg, IFLA_VF_INFO)))
+		return -NLE_MSGSIZE;
+
+	/* IFLA_VF_MAC */
+	if (vf_data->ce_mask & SRIOV_ATTR_ADDR) {
+		vf_mac.vf = vf_data->vf_index;
+		memset(vf_mac.mac, 0, sizeof(vf_mac.mac));
+		memcpy(vf_mac.mac, nl_addr_get_binary_addr(vf_data->vf_lladdr),
+		       nl_addr_get_len(vf_data->vf_lladdr));
+		NLA_PUT(msg, IFLA_VF_MAC, sizeof(vf_mac), &vf_mac);
+	}
+
+	/* IFLA_VF_VLAN IFLA_VF_VLAN_LIST */
+	if (vf_data->ce_mask & SRIOV_ATTR_VLAN) {
+		vlan_list = vf_data->vf_vlans;
+		vlan_info = vlan_list->vlans;
+		proto = vlan_info[0].vf_vlan_proto;
+		if (!proto)
+			proto = ETH_P_8021Q;
+
+		if ((vlan_list->size == 1) && (proto == ETH_P_8021Q))
+			sriov_fill_vf_vlan(msg, vlan_info, vf_data->vf_index);
+		else
+			err = sriov_fill_vf_vlan_list(msg, vlan_list,
+						      vf_data->vf_index);
+	}
+
+	/* IFLA_VF_TX_RATE */
+	if (vf_data->ce_mask & SRIOV_ATTR_TX_RATE) {
+		vf_rate.vf = vf_data->vf_index;
+		vf_rate.rate = vf_data->vf_rate;
+
+		NLA_PUT(msg, IFLA_VF_TX_RATE, sizeof(vf_rate), &vf_rate);
+	}
+
+	/* IFLA_VF_RATE */
+	new_vf_rate.min_tx_rate = 0;
+	new_vf_rate.max_tx_rate = 0;
+	new_vf_rate.vf = vf_data->vf_index;
+	if (vf_data->ce_mask & SRIOV_ATTR_RATE_MIN) {
+		new_vf_rate.min_tx_rate = vf_data->vf_min_tx_rate;
+		new_rate = 1;
+	}
+	if (vf_data->ce_mask & SRIOV_ATTR_RATE_MAX) {
+		new_vf_rate.max_tx_rate = vf_data->vf_max_tx_rate;
+		new_rate = 1;
+	}
+	if (new_rate)
+		NLA_PUT(msg, IFLA_VF_RATE, sizeof(new_vf_rate), &new_vf_rate);
+
+	/* IFLA_VF_SPOOFCHK */
+	if (vf_data->ce_mask & SRIOV_ATTR_SPOOFCHK) {
+		vf_spoofchk.vf = vf_data->vf_index;
+		vf_spoofchk.setting = vf_data->vf_spoofchk;
+
+		NLA_PUT(msg, IFLA_VF_SPOOFCHK, sizeof(vf_spoofchk),
+			&vf_spoofchk);
+	}
+
+	/* IFLA_VF_LINK_STATE */
+	if (vf_data->ce_mask & SRIOV_ATTR_LINK_STATE) {
+		vf_link_state.vf = vf_data->vf_index;
+		vf_link_state.link_state = vf_data->vf_linkstate;
+
+		NLA_PUT(msg, IFLA_VF_LINK_STATE, sizeof(vf_link_state),
+			&vf_link_state);
+	}
+
+	/* IFLA_VF_RSS_QUERY_EN */
+	if (vf_data->ce_mask & SRIOV_ATTR_RSS_QUERY_EN) {
+		vf_rss_query_en.vf = vf_data->vf_index;
+		vf_rss_query_en.setting = vf_data->vf_rss_query_en;
+
+		NLA_PUT(msg, IFLA_VF_RSS_QUERY_EN, sizeof(vf_rss_query_en),
+			&vf_rss_query_en);
+	}
+
+	/* IFLA_VF_TRUST */
+	if (vf_data->ce_mask & SRIOV_ATTR_TRUST) {
+		vf_trust.vf = vf_data->vf_index;
+		vf_trust.setting = vf_data->vf_trust;
+
+		NLA_PUT(msg, IFLA_VF_TRUST, sizeof(vf_trust), &vf_trust);
+	}
+
+	/* IFLA_VF_IB_NODE_GUID */
+	if (vf_data->ce_mask & SRIOV_ATTR_IB_NODE_GUID) {
+		vf_node_guid.vf = vf_data->vf_index;
+		vf_node_guid.guid = vf_data->vf_guid_node;
+
+		NLA_PUT(msg, IFLA_VF_IB_NODE_GUID, sizeof(vf_node_guid),
+			&vf_node_guid);
+	}
+
+	/* IFLA_VF_IB_PORT_GUID */
+	if (vf_data->ce_mask & SRIOV_ATTR_IB_PORT_GUID) {
+		vf_port_guid.vf = vf_data->vf_index;
+		vf_port_guid.guid = vf_data->vf_guid_port;
+
+		NLA_PUT(msg, IFLA_VF_IB_PORT_GUID, sizeof(vf_port_guid),
+			&vf_port_guid);
+	}
+
+nla_put_failure:
+	nla_nest_end(msg, list);
+
+	return err;
+}
+
+/* Fill the IFLA_VFINFO_LIST attribute */
+int rtnl_link_sriov_fill_vflist(struct nl_msg *msg, struct rtnl_link *link) {
+	int err = 0;
+	struct nlattr *data;
+	struct rtnl_link_vf *list, *vf, *next;
+
+	if (!(err = rtnl_link_has_vf_list(link)))
+		return 0;
+
+	if (!(data = nla_nest_start(msg, IFLA_VFINFO_LIST)))
+		return -NLE_MSGSIZE;
+
+	list = link->l_vf_list;
+	nl_list_for_each_entry_safe(vf, next, &list->vf_list, vf_list) {
+		if (vf->ce_mask & SRIOV_ATTR_INDEX) {
+			if ((err = sriov_fill_vfinfo(msg, vf)) < 0)
+				goto nla_nest_list_failure;
+		}
+	}
+
+nla_nest_list_failure:
+	nla_nest_end(msg, data);
+
+	return err;
+}
+
 /* Parse IFLA_VFINFO_LIST and IFLA_VF_INFO attributes */
 int rtnl_link_sriov_parse_vflist(struct rtnl_link *link, struct nlattr **tb) {
 	int err, len, list_len, list_rem;
@@ -494,6 +694,39 @@ int rtnl_link_sriov_parse_vflist(struct rtnl_link *link, struct nlattr **tb) {
  */
 
 /**
+ * Add a SRIOV VF object to a link object
+ * @param link  	Link object to add to
+ * @param vf_data 	SRIOV VF object to add
+ *
+ * @return 0 if SRIOV VF object added successfully
+ * @return -NLE_OBJ_NOTFOUND if \p link or \p vf_data not provided
+ * @return -NLE_NOMEM if out of memory
+ */
+int rtnl_link_vf_add(struct rtnl_link *link, struct rtnl_link_vf *vf_data) {
+	struct rtnl_link_vf *vf_head = NULL;
+
+	if (!link||!vf_data)
+		return -NLE_OBJ_NOTFOUND;
+
+	if (!link->l_vf_list) {
+		link->l_vf_list = rtnl_link_vf_alloc();
+		if (!link->l_vf_list)
+			return -NLE_NOMEM;
+	}
+
+	vf_head = vf_data;
+	vf_head->ce_refcnt++;
+
+	vf_head = link->l_vf_list;
+	nl_list_add_head(&vf_data->vf_list, &vf_head->vf_list);
+	link->l_vf_list = vf_head;
+
+	rtnl_link_set_vf_list(link);
+
+	return 0;
+}
+
+/**
  * Allocate a new SRIOV VF object
  *
  * @return NULL if out of memory
@@ -601,6 +834,7 @@ void rtnl_link_vf_put(struct rtnl_link_vf *vf_data) {
  * @arg addr 		Pointer to store Link Layer address
  *
  * @see rtnl_link_get_num_vf()
+ * @see rtnl_link_vf_set_addr()
  *
  * @copydoc pointer_lifetime_warning
  * @return 0 if addr is present and addr is set to pointer containing address
@@ -618,6 +852,53 @@ int rtnl_link_vf_get_addr(struct rtnl_link_vf *vf_data, struct nl_addr **addr)
 		return -NLE_NOATTR;
 
 	return 0;
+}
+
+/**
+ * Set link layer address of SRIOV Virtual Function object
+ * @param vf_data 	SRIOV VF object
+ * @param addr 		New link layer address
+ *
+ * This function increments the reference counter of the address object
+ * and overwrites any existing link layer address previously assigned.
+ *
+ * @see rtnl_link_vf_get_addr()
+ */
+void rtnl_link_vf_set_addr(struct rtnl_link_vf *vf_data, struct nl_addr *addr) {
+	if (vf_data->vf_lladdr)
+		nl_addr_put(vf_data->vf_lladdr);
+
+	nl_addr_get(addr);
+	vf_data->vf_lladdr = addr;
+	vf_data->ce_mask |= SRIOV_ATTR_ADDR;
+
+	return;
+}
+
+/**
+ * Set the Infiniband node GUID for the SRIOV Virtual Function object
+ * @param vf_data 	SRIOV VF object
+ * @param guid  	node GUID
+ */
+void rtnl_link_vf_set_ib_node_guid(struct rtnl_link_vf *vf_data,
+				   uint64_t guid) {
+	vf_data->vf_guid_node = guid;
+	vf_data->ce_mask |= SRIOV_ATTR_IB_NODE_GUID;
+
+	return;
+}
+
+/**
+ * Set the Infiniband port GUID for the SRIOV Virtual Function object
+ * @param vf_data 	SRIOV VF object
+ * @param guid  	port GUID
+ */
+void rtnl_link_vf_set_ib_port_guid(struct rtnl_link_vf *vf_data,
+				   uint64_t guid) {
+	vf_data->vf_guid_port = guid;
+	vf_data->ce_mask |= SRIOV_ATTR_IB_PORT_GUID;
+
+	return;
 }
 
 /**
@@ -645,11 +926,27 @@ int rtnl_link_vf_get_index(struct rtnl_link_vf *vf_data, uint32_t *vf_index)
 }
 
 /**
+ * Set index of SRIOV Virtual Function object
+ * @param vf_data 	SRIOV VF object
+ * @param vf_index 	Index value
+ *
+ * @see rtnl_link_vf_get_index()
+ */
+void rtnl_link_vf_set_index(struct rtnl_link_vf *vf_data, uint32_t vf_index)
+{
+	vf_data->vf_index = vf_index;
+	vf_data->ce_mask |= SRIOV_ATTR_INDEX;
+
+	return;
+}
+
+/**
  * Get link state of SRIOV Virtual Function
- * @arg vf_data 	SRIOV VF object
+ * @arg vf_data  	SRIOV VF object
  * @arg vf_linkstate 	Pointer to store VF link state
  *
  * @see rtnl_link_get_num_vf()
+ * @see rtnl_link_set_linkstate()
  *
  * @return 0 if link state is present and vf_linkstate is set
  * @return -NLE_OBJ_NOTFOUND if information for VF info is not found
@@ -670,17 +967,42 @@ int rtnl_link_vf_get_linkstate(struct rtnl_link_vf *vf_data,
 }
 
 /**
+ * Set link state of SRIOV Virtual Function object
+ * @param vf_data 	SRIOV VF object
+ * @param vf_linkstate Link state value
+ *
+ * @see rtnl_link_get_linkstate()
+ *
+ * Not all hardware supports setting link state. If the feature is unsupported,
+ * the link change request will fail with -NLE_OPNOTSUPP
+ */
+void rtnl_link_vf_set_linkstate(struct rtnl_link_vf *vf_data,
+				uint32_t vf_linkstate) {
+	vf_data->vf_linkstate = vf_linkstate;
+	vf_data->ce_mask |= SRIOV_ATTR_LINK_STATE;
+
+	return;
+}
+
+/**
  * Get TX Rate Limit of SRIOV Virtual Function
  * @arg vf_data 	SRIOV VF object
  * @arg vf_rate 	Pointer to store VF rate limiting data
  *
  * @see rtnl_link_get_num_vf()
+ * @see rtnl_link_set_rate()
  *
  * When the older rate API has been implemented, the rate member of the struct
  * will be set, and the api member will be set to RTNL_LINK_VF_API_OLD.
  * When the newer rate API has been implemented, the max_tx_rate
  * and/or the minx_tx_rate will be set, and the api member will be set to
  * RTNL_LINK_VF_API_NEW.
+ *
+ * Old rate API supports only a maximum TX rate.
+ *   ip link set dev vf 0 rate
+ * New rate API supports minumum and maximum TX rates.
+ *   ip link set dev vf 0 min_tx_rate
+ *   ip link set dev vf 0 max_tx_rate
  *
  * @return 0 if rate is present and vf_rate is set
  * @return -NLE_OBJ_NOTFOUND if information for VF info is not found
@@ -728,11 +1050,53 @@ int rtnl_link_vf_get_rate(struct rtnl_link_vf *vf_data,
 }
 
 /**
+ * Set TX Rate Limit of SRIOV Virtual Function object
+ * @param vf_data 	SRIOV VF object
+ * @param vf_rate 	Rate limiting structure
+ *
+ * @see rtnl_link_vf_get_rate()
+ *
+ * When setting the rate, the API level must be specificed.
+ * Valid API levels:
+ *   RTNL_LINK_VF_RATE_API_NEW
+ *   RTNL_LINK_VF_RATE_API_OLD
+ *
+ * When using the new API, if either the min_tx_rate or
+ * max_tx_rate has been set, and the other is being changed,
+ * you must specify the currently set values to preserve
+ * them. If this is not done, that setting will be disabled.
+ *
+ * Old rate API supports only a maximum TX rate.
+ *   ip link set dev vf 0 rate
+ * New rate API supports minumum and maximum TX rates.
+ *   ip link set dev vf 0 min_tx_rate
+ *   ip link set dev vf 0 max_tx_rate
+ *
+ * Not all hardware supports min_tx_rate.
+ */
+void rtnl_link_vf_set_rate(struct rtnl_link_vf *vf_data,
+			   struct nl_vf_rate *vf_rate) {
+	if (vf_rate->api == RTNL_LINK_VF_RATE_API_OLD) {
+		vf_data->vf_rate = vf_rate->rate;
+		vf_data->ce_mask |= SRIOV_ATTR_TX_RATE;
+	} else if (vf_rate->api == RTNL_LINK_VF_RATE_API_NEW) {
+		vf_data->vf_max_tx_rate = vf_rate->max_tx_rate;
+		vf_data->ce_mask |= SRIOV_ATTR_RATE_MAX;
+
+		vf_data->vf_min_tx_rate = vf_rate->min_tx_rate;
+		vf_data->ce_mask |= SRIOV_ATTR_RATE_MIN;
+	}
+
+	return;
+}
+
+/**
  * Get RSS Query EN value of SRIOV Virtual Function
  * @arg vf_data 	SRIOV VF object
  * @arg vf_rss_query_en	Pointer to store VF RSS Query value
  *
  * @see rtnl_link_get_num_vf()
+ * @see rtnl_link_vf_set_rss_query_en()
  *
  * @return 0 if rss_query_en is present and vf_rss_query_en is set
  * @return -NLE_OBJ_NOTFOUND if information for VF info is not found
@@ -753,11 +1117,27 @@ int rtnl_link_vf_get_rss_query_en(struct rtnl_link_vf *vf_data,
 }
 
 /**
+ * Set RSS configuration querying of SRIOV Virtual Function Object
+ * @arg vf_data 	SRIOV VF object
+ * @arg vf_rss_query_en	RSS Query value
+ *
+ * @see rtnl_link_vf_get_rss_query_en()
+ */
+void rtnl_link_vf_set_rss_query_en(struct rtnl_link_vf *vf_data,
+				  uint32_t vf_rss_query_en) {
+	vf_data->vf_rss_query_en = vf_rss_query_en;
+	vf_data->ce_mask |= SRIOV_ATTR_RSS_QUERY_EN;
+
+	return;
+}
+
+/**
  * Get spoof checking value of SRIOV Virtual Function
  * @arg vf_data 	SRIOV VF object
  * @arg vf_spoofchk 	Pointer to store VF spoofchk value
  *
  * @see rtnl_link_get_num_vf()
+ * @see rtnl_link_set_spoofchk()
  *
  * @return 0 if spoofchk is present and vf_spoofchk is set
  * @return -NLE_OBJ_NOTFOUND if information for VF info is not found
@@ -775,6 +1155,21 @@ int rtnl_link_vf_get_spoofchk(struct rtnl_link_vf *vf_data,
 		return -NLE_NOATTR;
 
 	return 0;
+}
+
+/**
+ * Set spoof checking value of SRIOV Virtual Function Object
+ * @param vf_data
+ * @param vf_spoofchk
+ *
+ * @see rtnl_link_vf_get_spoofchk()
+ */
+void rtnl_link_vf_set_spoofchk(struct rtnl_link_vf *vf_data,
+			       uint32_t vf_spoofchk) {
+	vf_data->vf_spoofchk = vf_spoofchk;
+	vf_data->ce_mask |= SRIOV_ATTR_SPOOFCHK;
+
+	return;
 }
 
 /**
@@ -809,6 +1204,7 @@ int rtnl_link_vf_get_stat(struct rtnl_link_vf *vf_data,
  * @arg vf_trust 	Pointer to store VF trust value
  *
  * @see rtnl_link_get_num_vf()
+ * @see rtnl_link_set_trust()
  *
  * @return 0 if trust is present and vf_trust is set
  * @return -NLE_OBJ_NOTFOUND if information for VF info is not found
@@ -825,6 +1221,20 @@ int rtnl_link_vf_get_trust(struct rtnl_link_vf *vf_data, uint32_t *vf_trust)
 		return -NLE_NOATTR;
 
 	return 0;
+}
+
+/**
+ * Set user trust setting on SRIOV Virtual Function Object
+ * @param vf_data
+ * @param vf_trust
+ *
+ * @see rtnl_link_vf_get_trust()
+ */
+void rtnl_link_vf_set_trust(struct rtnl_link_vf *vf_data, uint32_t vf_trust) {
+	vf_data->vf_trust = vf_trust;
+	vf_data->ce_mask |= SRIOV_ATTR_TRUST;
+
+	return;
 }
 
 /**
@@ -857,6 +1267,30 @@ int rtnl_link_vf_get_vlans(struct rtnl_link_vf *vf_data,
 		return -NLE_NOATTR;
 
 	return 0;
+}
+
+/**
+ * Add a SRIOV VF VLANs object to the SRIOV Virtual Function Object
+ * @param vf_data 	SRIOV VF object
+ * @param vf_vlans 	SRIOV VF VLANs object
+ *
+ * @see rtnl_link_vf_get_vlans()
+ * @see rtnl_link_vf_vlan_alloc()
+ *
+ * This function assigns ownership of the SRIOV VF object \p vf_vlans
+ * to the SRIOV Virtual Function object \p vf_data. Do not use
+ * rtnl_link_vf_vlan_put() on \p vf_vlans after this.
+ */
+void rtnl_link_vf_set_vlans(struct rtnl_link_vf *vf_data,
+			    nl_vf_vlans_t *vf_vlans) {
+	if (!vf_data||!vf_vlans)
+		return;
+
+	vf_data->vf_vlans = vf_vlans;
+	vf_data->vf_vlans->ce_refcnt++;
+	vf_data->ce_mask |= SRIOV_ATTR_VLAN;
+
+	return;
 }
 
 /**
@@ -975,6 +1409,42 @@ char *rtnl_link_vf_vlanproto2str(uint16_t proto, char *buf, size_t len)
 int rtnl_link_vf_str2vlanproto(const char *name)
 {
 	return __str2type(name, vf_vlan_proto, ARRAY_SIZE(vf_vlan_proto));
+}
+
+/* Return a guid from a format checked string.
+ * Format string must be xx:xx:xx:xx:xx:xx:xx:xx where XX can be an
+ * arbitrary hex digit
+ *
+ * Function modified from original at iproute2/lib/utils.c:get_guid()
+ * Original by Eli Cohen <eli@mellanox.com>.
+ * iproute2 git commit d91fb3f4c7e4dba806541bdc90b1fb60a3581541
+ */
+int rtnl_link_vf_str2guid(uint64_t *guid, const char *guid_s) {
+	unsigned long int tmp;
+	char *endptr;
+	int i;
+
+	if (strlen(guid_s) != RTNL_VF_GUID_STR_LEN)
+		return -1;
+
+	for (i = 0; i < 7; i++) {
+		if (guid_s[2 + i * 3] != ':')
+			return -1;
+	}
+
+	*guid = 0;
+	for (i = 0; i < 8; i++) {
+		tmp = strtoul(guid_s + i * 3, &endptr, 16);
+		if (endptr != guid_s + i * 3 + 2)
+			return -1;
+
+		if (tmp > 255)
+			return -1;
+
+		*guid |= tmp << (56 - 8 * i);
+	}
+
+	return 0;
 }
 
 /** @} */

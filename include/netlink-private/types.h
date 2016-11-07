@@ -22,6 +22,7 @@
 #include <netlink/netfilter/ct.h>
 #include <netlink-private/object-api.h>
 #include <netlink-private/route/tc-api.h>
+#include <netlink-private/route/link/sriov.h>
 #include <linux/tc_act/tc_mirred.h>
 #include <linux/tc_act/tc_skbedit.h>
 
@@ -36,6 +37,7 @@ struct nl_cache_ops;
 struct nl_sock;
 struct nl_object;
 struct nl_hash_table;
+struct nl_vf_vlans;
 
 struct nl_cb
 {
@@ -154,6 +156,26 @@ struct rtnl_link_map
 	uint8_t  lm_port;
 };
 
+struct rtnl_link_vf
+{
+	struct nl_list_head	vf_list;
+	int			ce_refcnt;
+	uint32_t		ce_mask;
+	uint32_t		vf_index;
+	uint64_t		vf_guid_node;
+	uint64_t		vf_guid_port;
+	uint32_t		vf_linkstate;
+	struct nl_addr *	vf_lladdr;
+	uint32_t		vf_max_tx_rate;
+	uint32_t		vf_min_tx_rate;
+	uint32_t		vf_rate;
+	uint32_t		vf_rss_query_en;
+	uint32_t		vf_spoofchk;
+	uint64_t		vf_stats[RTNL_LINK_VF_STATS_MAX+1];
+	uint32_t		vf_trust;
+	struct nl_vf_vlans *	vf_vlans;
+};
+
 #define IFQDISCSIZ	32
 
 struct rtnl_link
@@ -197,6 +219,7 @@ struct rtnl_link
 	struct nl_data *		l_phys_port_id;
 	int				l_ns_fd;
 	pid_t				l_ns_pid;
+	struct rtnl_link_vf *		l_vf_list;
 };
 
 struct rtnl_ncacheinfo

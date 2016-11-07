@@ -244,6 +244,10 @@ extern int	rtnl_link_release(struct nl_sock *, struct rtnl_link *);
 extern int	rtnl_link_fill_info(struct nl_msg *, struct rtnl_link *);
 extern int	rtnl_link_info_parse(struct rtnl_link *, struct nlattr **);
 
+extern int rtnl_link_has_vf_list(struct rtnl_link *);
+extern void rtnl_link_set_vf_list(struct rtnl_link *);
+extern void rtnl_link_unset_vf_list(struct rtnl_link *);
+
 
 /* deprecated */
 extern int	rtnl_link_set_info_type(struct rtnl_link *, const char *) __attribute__((deprecated));

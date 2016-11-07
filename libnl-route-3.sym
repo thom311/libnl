@@ -984,5 +984,26 @@ global:
 	rtnl_link_vxlan_set_udp_csum;
 	rtnl_link_vxlan_set_udp_zero_csum6_rx;
 	rtnl_link_vxlan_set_udp_zero_csum6_tx;
+	rtnl_link_has_vf_list;
+	rtnl_link_set_vf_list;
+	rtnl_link_unset_vf_list;
+	rtnl_link_sriov_free_data;
+	rtnl_link_sriov_parse_vflist;
+	rtnl_link_vf_alloc;
+	rtnl_link_vf_free;
+	rtnl_link_vf_get;
+	rtnl_link_vf_put;
+	rtnl_link_vf_get_addr;
+	rtnl_link_vf_get_index;
+	rtnl_link_vf_get_linkstate;
+	rtnl_link_vf_get_rate;
+	rtnl_link_vf_get_rss_query_en;
+	rtnl_link_vf_get_spoofchk;
+	rtnl_link_vf_get_stat;
+	rtnl_link_vf_get_trust;
+	rtnl_link_vf_get_vlans;
+	rtnl_link_vf_vlan_alloc;
+	rtnl_link_vf_vlan_free;
+	rtnl_link_vf_vlan_put;
 } libnl_3_2_28;
 

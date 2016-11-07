@@ -28,6 +28,7 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link.h>
 #include <netlink-private/route/link/api.h>
+#include <netlink-private/route/link/sriov.h>
 
 /** @cond SKIP */
 #define LINK_ATTR_MTU		(1 <<  0)
@@ -63,6 +64,7 @@
 #define LINK_ATTR_NS_PID	(1 << 30)
 /* 31 used by 32-bit api */
 #define LINK_ATTR_LINK_NETNSID  ((uint64_t) 1 << 32)
+#define LINK_ATTR_VF_LIST	((uint64_t) 1 << 33)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -272,6 +274,9 @@ static void link_free_data(struct nl_object *c)
 		do_foreach_af(link, af_free, NULL);
 
 		nl_data_free(link->l_phys_port_id);
+
+		if (link->ce_mask & LINK_ATTR_VF_LIST)
+			rtnl_link_sriov_free_data(link);
 	}
 }
 
@@ -331,6 +336,7 @@ struct nla_policy rtln_link_policy[IFLA_MAX+1] = {
 	[IFLA_MAP]		= { .minlen = sizeof(struct rtnl_link_ifmap) },
 	[IFLA_IFALIAS]		= { .type = NLA_STRING, .maxlen = IFALIASZ },
 	[IFLA_NUM_VF]		= { .type = NLA_U32 },
+	[IFLA_VFINFO_LIST]	= { .type = NLA_NESTED },
 	[IFLA_AF_SPEC]		= { .type = NLA_NESTED },
 	[IFLA_PROMISCUITY]	= { .type = NLA_U32 },
 	[IFLA_NUM_TX_QUEUES]	= { .type = NLA_U32 },
@@ -584,6 +590,12 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (tb[IFLA_NUM_VF]) {
 		link->l_num_vf = nla_get_u32(tb[IFLA_NUM_VF]);
 		link->ce_mask |= LINK_ATTR_NUM_VF;
+		if (link->l_num_vf && tb[IFLA_VFINFO_LIST]) {
+			if ((err = rtnl_link_sriov_parse_vflist(link, tb)) < 0) {
+				goto errout;
+			}
+			link->ce_mask |= LINK_ATTR_VF_LIST;
+		}
 	}
 
 	if (tb[IFLA_LINKINFO]) {
@@ -2880,6 +2892,31 @@ char *rtnl_link_carrier2str(uint8_t st, char *buf, size_t len)
 int rtnl_link_str2carrier(const char *name)
 {
 	return __str2type(name, carrier_states, ARRAY_SIZE(carrier_states));
+}
+
+int rtnl_link_has_vf_list(struct rtnl_link *link) {
+	if (link->ce_mask & LINK_ATTR_VF_LIST)
+		return 1;
+	else
+		return 0;
+}
+
+void rtnl_link_set_vf_list(struct rtnl_link *link) {
+	int err;
+
+	if (!(err = rtnl_link_has_vf_list(link)))
+		link->ce_mask |= LINK_ATTR_VF_LIST;
+
+	return;
+}
+
+void rtnl_link_unset_vf_list(struct rtnl_link *link) {
+	int err;
+
+	if ((err = rtnl_link_has_vf_list(link)))
+		link->ce_mask &= ~LINK_ATTR_VF_LIST;
+
+	return;
 }
 
 /** @} */

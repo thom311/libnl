@@ -21,6 +21,8 @@ extern "C" {
 #endif
 
 extern int rtnl_link_sriov_clone(struct rtnl_link *, struct rtnl_link *);
+extern void rtnl_link_sriov_dump_details(struct rtnl_link *, struct nl_dump_params *);
+extern void rtnl_link_sriov_dump_stats(struct rtnl_link *, struct nl_dump_params *);
 extern void rtnl_link_sriov_free_data(struct rtnl_link *);
 extern int rtnl_link_sriov_parse_vflist(struct rtnl_link *, struct nlattr **);
 

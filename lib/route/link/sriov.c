@@ -37,6 +37,9 @@
 
 /** @cond SKIP */
 
+#define SRIOVON "on"
+#define SRIOVOFF "off"
+
 #define SET_VF_STAT(link, vf_num, stb, stat, attr) \
 	vf_data->vf_stats[stat] = nla_get_u64(stb[attr])
 
@@ -129,6 +132,141 @@ int rtnl_link_sriov_clone(struct rtnl_link *dst, struct rtnl_link *src) {
 	}
 
 	return 0;
+}
+
+/* Dump VLAN details for each SRIOV VF */
+static void dump_sriov_vlans(nl_vf_vlans_t *vlans,
+			     struct nl_dump_params *p) {
+	char buf[64];
+	int cur = 0;
+	nl_vf_vlan_info_t *vlan_data;
+	uint16_t prot;
+
+	vlan_data = vlans->vlans;
+	nl_dump(p, "\t      VLANS:\n");
+	while (cur < vlans->size) {
+		nl_dump(p, "\t      vlan %u", vlan_data[cur].vf_vlan);
+		if (vlan_data[cur].vf_vlan_qos)
+			nl_dump(p, " qos %u", vlan_data[cur].vf_vlan_qos);
+		if (vlan_data[cur].vf_vlan_proto) {
+			prot = vlan_data[cur].vf_vlan_proto;
+			nl_dump(p, " proto %s",
+				rtnl_link_vf_vlanproto2str(prot, buf,
+							   sizeof(buf)));
+		}
+		nl_dump(p, "\n");
+		cur++;
+	}
+
+	return;
+}
+
+/* Dump details for each SRIOV VF */
+static void dump_vf_details(struct rtnl_link_vf *vf_data,
+			    struct nl_dump_params *p) {
+	char buf[64];
+	int err = 0;
+	struct nl_vf_rate vf_rate;
+	uint32_t v = 0;
+
+	nl_dump(p, "\tvf %u: ", vf_data->vf_index);
+	if (vf_data->ce_mask & SRIOV_ATTR_LINK_STATE) {
+		v = vf_data->vf_linkstate;
+		nl_dump(p, "state %s ",
+			rtnl_link_vf_linkstate2str(v, buf, sizeof(buf)));
+	}
+	if (vf_data->ce_mask & SRIOV_ATTR_ADDR) {
+		nl_dump(p, "addr %s ",
+			nl_addr2str(vf_data->vf_lladdr, buf, sizeof(buf)));
+	}
+	nl_dump(p, "\n");
+
+	v = vf_data->vf_spoofchk;
+	nl_dump(p, "\t      spoofchk %s ", v ? SRIOVON : SRIOVOFF);
+	v = vf_data->vf_trust;
+	nl_dump(p, "trust %s ", v ? SRIOVON : SRIOVOFF);
+	v = vf_data->vf_rss_query_en;
+	nl_dump(p, "rss_query %s\n", v ? SRIOVON : SRIOVOFF);
+
+	err = rtnl_link_vf_get_rate(vf_data, &vf_rate);
+	if (!err) {
+		if (vf_rate.api == RTNL_LINK_VF_RATE_API_OLD)
+			nl_dump(p, "\t      rate_api old rate %u\n",
+				vf_rate.rate);
+		else if (vf_rate.api == RTNL_LINK_VF_RATE_API_NEW)
+			nl_dump(p, "\t      rate_api new min_rate %u "
+					"max_rate %u\n", vf_rate.min_tx_rate,
+				vf_rate.max_tx_rate);
+	}
+	if (vf_data->ce_mask & SRIOV_ATTR_VLAN)
+		dump_sriov_vlans(vf_data->vf_vlans, p);
+
+	return;
+}
+
+/* Loop through SRIOV VF list dump details */
+void rtnl_link_sriov_dump_details(struct rtnl_link *link,
+				  struct nl_dump_params *p) {
+	int err;
+	struct rtnl_link_vf *vf_data, *list, *next;
+
+	if (!(err = rtnl_link_has_vf_list(link)))
+		BUG();
+
+	nl_dump(p, "    SRIOV VF List\n");
+	list = link->l_vf_list;
+	nl_list_for_each_entry_safe(vf_data, next, &list->vf_list, vf_list) {
+		if (vf_data->ce_mask & SRIOV_ATTR_INDEX)
+			dump_vf_details(vf_data, p);
+	}
+
+	return;
+}
+
+/* Dump stats for each SRIOV VF */
+static void dump_vf_stats(struct rtnl_link_vf *vf_data,
+			  struct nl_dump_params *p) {
+	char *unit;
+	float res;
+
+	nl_dump(p, "    VF %" PRIu64 " Stats:\n", vf_data->vf_index);
+	nl_dump_line(p, "\tRX:    %-14s %-10s   %-10s %-10s\n",
+		     "bytes", "packets", "multicast", "broadcast");
+
+	res = nl_cancel_down_bytes(vf_data->vf_stats[RTNL_LINK_VF_STATS_RX_BYTES],
+				   &unit);
+
+	nl_dump_line(p,
+		"\t%10.2f %3s   %10" PRIu64 "   %10" PRIu64 " %10" PRIu64 "\n",
+		res, unit,
+		vf_data->vf_stats[RTNL_LINK_VF_STATS_RX_PACKETS],
+		vf_data->vf_stats[RTNL_LINK_VF_STATS_MULTICAST],
+		vf_data->vf_stats[RTNL_LINK_VF_STATS_BROADCAST]);
+
+	nl_dump_line(p, "\tTX:    %-14s %-10s\n", "bytes", "packets");
+
+	res = nl_cancel_down_bytes(vf_data->vf_stats[RTNL_LINK_VF_STATS_TX_BYTES],
+				   &unit);
+
+	nl_dump_line(p, "\t%10.2f %3s   %10" PRIu64 "\n", res, unit,
+		vf_data->vf_stats[RTNL_LINK_VF_STATS_TX_PACKETS]);
+
+	return;
+}
+
+/* Loop through SRIOV VF list dump stats */
+void rtnl_link_sriov_dump_stats(struct rtnl_link *link,
+				struct nl_dump_params *p) {
+	struct rtnl_link_vf *vf_data, *list, *next;
+
+	list = link->l_vf_list;
+	nl_list_for_each_entry_safe(vf_data, next, &list->vf_list, vf_list) {
+		if (vf_data->ce_mask & SRIOV_ATTR_INDEX)
+			dump_vf_stats(vf_data, p);
+	}
+	nl_dump(p, "\n");
+
+	return;
 }
 
 /* Free stored SRIOV VF data */

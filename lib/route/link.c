@@ -881,6 +881,9 @@ static void link_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 		link->l_info_ops->io_dump[NL_DUMP_DETAILS](link, p);
 
 	do_foreach_af(link, af_dump_details, p);
+
+	if (link->ce_mask & LINK_ATTR_VF_LIST)
+		rtnl_link_sriov_dump_details(link, p);
 }
 
 static void link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
@@ -946,6 +949,9 @@ static void link_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
 		link->l_info_ops->io_dump[NL_DUMP_STATS](link, p);
 
 	do_foreach_af(link, af_dump_stats, p);
+
+	if (link->ce_mask & LINK_ATTR_VF_LIST)
+		rtnl_link_sriov_dump_stats(link, p);
 }
 
 #if 0

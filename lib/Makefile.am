@@ -99,6 +99,7 @@ libnl_route_3_la_SOURCES = \
 	\
 	route/act/mirred.c \
 	route/act/skbedit.c \
+	route/act/gact.c \
 	\
 	route/cls/ematch.c \
 	route/cls/ematch/container.c route/cls/ematch/cmp.c \

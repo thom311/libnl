@@ -25,6 +25,7 @@
 #include <netlink-private/route/link/sriov.h>
 #include <linux/tc_act/tc_mirred.h>
 #include <linux/tc_act/tc_skbedit.h>
+#include <linux/tc_act/tc_gact.h>
 
 #define NL_SOCK_PASSCRED	(1<<1)
 #define NL_OWN_PORT		(1<<2)
@@ -556,6 +557,11 @@ struct rtnl_skbedit
 	uint32_t	  s_mark;
 	uint32_t	  s_prio;
 	uint16_t	  s_queue_mapping;
+};
+
+struct rtnl_gact
+{
+	struct tc_gact g_parm;
 };
 
 struct rtnl_u32

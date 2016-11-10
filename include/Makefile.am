@@ -34,6 +34,7 @@ nobase_libnlinclude_HEADERS = \
 	netlink/route/action.h \
 	netlink/route/act/mirred.h \
 	netlink/route/act/skbedit.h \
+	netlink/route/act/gact.h \
 	netlink/route/cls/ematch/cmp.h \
 	netlink/route/cls/ematch/meta.h \
 	netlink/route/cls/ematch/nbyte.h \
@@ -158,6 +159,7 @@ noinst_HEADERS = \
 	linux-private/linux/socket.h \
 	linux-private/linux/tc_act/tc_mirred.h \
 	linux-private/linux/tc_act/tc_skbedit.h \
+	linux-private/linux/tc_act/tc_gact.h \
 	linux-private/linux/pkt_sched.h \
 	linux-private/linux/rtnetlink.h \
 	linux-private/linux/snmp.h \

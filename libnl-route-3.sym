@@ -949,6 +949,8 @@ global:
 
 libnl_3_2_29 {
 global:
+	rtnl_gact_set_action;
+	rtnl_gact_get_action;
 	rtnl_link_bridge_portstate2str;
 	rtnl_link_bridge_str2portstate;
 	rtnl_link_bridge_set_self;

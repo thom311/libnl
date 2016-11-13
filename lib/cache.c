@@ -784,30 +784,45 @@ int nl_cache_pickup(struct nl_sock *sk, struct nl_cache *cache)
 }
 
 static int cache_include(struct nl_cache *cache, struct nl_object *obj,
-			 struct nl_msgtype *type, change_func_t cb, void *data)
+			 struct nl_msgtype *type, change_func_t cb,
+			 change_func_v2_t cb_v2, void *data)
 {
 	struct nl_object *old;
+	struct nl_object *clone = NULL;
+	uint64_t diff;
 
 	switch (type->mt_act) {
 	case NL_ACT_NEW:
 	case NL_ACT_DEL:
 		old = nl_cache_search(cache, obj);
 		if (old) {
+			if (cb_v2 && old->ce_ops->oo_update) {
+				clone = nl_object_clone(old);
+				diff = nl_object_diff64(old, obj);
+			}
 			/*
 			 * Some objects types might support merging the new
 			 * object with the old existing cache object.
 			 * Handle them first.
 			 */
 			if (nl_object_update(old, obj) == 0) {
-				if (cb)
+				if (cb_v2) {
+					cb_v2(cache, clone, obj, diff,
+					      NL_ACT_CHANGE, data);
+					nl_object_put(clone);
+				} else if (cb)
 					cb(cache, old, NL_ACT_CHANGE, data);
 				nl_object_put(old);
 				return 0;
 			}
+			nl_object_put(clone);
 
 			nl_cache_remove(old);
 			if (type->mt_act == NL_ACT_DEL) {
-				if (cb)
+				if (cb_v2)
+					cb_v2(cache, old, NULL, 0, NL_ACT_DEL,
+					      data);
+				else if (cb)
 					cb(cache, old, NL_ACT_DEL, data);
 				nl_object_put(old);
 			}
@@ -815,10 +830,20 @@ static int cache_include(struct nl_cache *cache, struct nl_object *obj,
 
 		if (type->mt_act == NL_ACT_NEW) {
 			nl_cache_move(cache, obj);
-			if (old == NULL && cb)
-				cb(cache, obj, NL_ACT_NEW, data);
-			else if (old) {
-				if (nl_object_diff(old, obj) && cb)
+			if (old == NULL) {
+				if (cb_v2) {
+					cb_v2(cache, NULL, obj, 0, NL_ACT_NEW,
+					      data);
+				} else if (cb)
+					cb(cache, obj, NL_ACT_NEW, data);
+			} else if (old) {
+				uint64_t diff = 0;
+				if (cb || cb_v2)
+					diff = nl_object_diff64(old, obj);
+				if (diff && cb_v2) {
+					cb_v2(cache, old, obj, diff, NL_ACT_CHANGE,
+					      data);
+				} else if (diff && cb)
 					cb(cache, obj, NL_ACT_CHANGE, data);
 
 				nl_object_put(old);
@@ -845,7 +870,27 @@ int nl_cache_include(struct nl_cache *cache, struct nl_object *obj,
 	for (i = 0; ops->co_msgtypes[i].mt_id >= 0; i++)
 		if (ops->co_msgtypes[i].mt_id == obj->ce_msgtype)
 			return cache_include(cache, obj, &ops->co_msgtypes[i],
-					     change_cb, data);
+					     change_cb, NULL, data);
+
+	NL_DBG(3, "Object %p does not seem to belong to cache %p <%s>\n",
+	       obj, cache, nl_cache_name(cache));
+
+	return -NLE_MSGTYPE_NOSUPPORT;
+}
+
+int nl_cache_include_v2(struct nl_cache *cache, struct nl_object *obj,
+			change_func_v2_t change_cb, void *data)
+{
+	struct nl_cache_ops *ops = cache->c_ops;
+	int i;
+
+	if (ops->co_obj_ops != obj->ce_ops)
+		return -NLE_OBJ_MISMATCH;
+
+	for (i = 0; ops->co_msgtypes[i].mt_id >= 0; i++)
+		if (ops->co_msgtypes[i].mt_id == obj->ce_msgtype)
+			return cache_include(cache, obj, &ops->co_msgtypes[i],
+						NULL, change_cb, data);
 
 	NL_DBG(3, "Object %p does not seem to belong to cache %p <%s>\n",
 	       obj, cache, nl_cache_name(cache));
@@ -857,7 +902,12 @@ static int resync_cb(struct nl_object *c, struct nl_parser_param *p)
 {
 	struct nl_cache_assoc *ca = p->pp_arg;
 
-	return nl_cache_include(ca->ca_cache, c, ca->ca_change, ca->ca_change_data);
+	if (ca->ca_change_v2)
+		return nl_cache_include_v2(ca->ca_cache, c, ca->ca_change_v2,
+					   ca->ca_change_data);
+	else
+		return nl_cache_include(ca->ca_cache, c, ca->ca_change,
+					ca->ca_change_data);
 }
 
 int nl_cache_resync(struct nl_sock *sk, struct nl_cache *cache,

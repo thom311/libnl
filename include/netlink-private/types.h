@@ -99,6 +99,7 @@ struct nl_cache_assoc
 {
 	struct nl_cache *	ca_cache;
 	change_func_t		ca_change;
+	change_func_v2_t	ca_change_v2;
 	void *			ca_change_data;
 };
 

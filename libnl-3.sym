@@ -354,5 +354,7 @@ global:
 
 libnl_3_2_29 {
 global:
+	nl_cache_include_v2;
+	nl_cache_mngr_add_cache_v2;
 	nl_strerror_l;
 } libnl_3_2_28;

@@ -918,7 +918,8 @@ errout:
 }
 
 static int xfrm_sa_update_cache (struct nl_cache *cache, struct nl_object *obj,
-                                 change_func_t change_cb, void *data)
+                                 change_func_t change_cb, change_func_v2_t change_cb_v2,
+				 void *data)
 {
 	struct nl_object*       old_sa;
 	struct xfrmnl_sa*       sa = (struct xfrmnl_sa*)obj;
@@ -947,18 +948,29 @@ static int xfrm_sa_update_cache (struct nl_cache *cache, struct nl_object *obj,
 			 * cache and notify application of the expiry event. */
 			nl_cache_move (cache, obj);
 
-			if (old_sa == NULL && change_cb)
+			if (old_sa == NULL)
 			{
 				/* Application CB present, no previous instance of SA object present.
 				 * Notify application CB as a NEW event */
-				change_cb (cache, obj, NL_ACT_NEW, data);
+				if (change_cb_v2)
+					change_cb_v2(cache, NULL, obj, 0, NL_ACT_NEW, data);
+				else if (change_cb)
+					change_cb(cache, obj, NL_ACT_NEW, data);
 			}
 			else if (old_sa)
 			{
+				uint64_t diff = 0;
+				if (change_cb || change_cb_v2)
+					diff = nl_object_diff64(old_sa, obj);
+
 				/* Application CB present, a previous instance of SA object present.
 				 * Notify application CB as a CHANGE1 event */
-				if (nl_object_diff (old_sa, obj) && change_cb)
-					change_cb (cache, obj, NL_ACT_CHANGE, data);
+				if (diff) {
+					if (change_cb_v2) {
+						change_cb_v2(cache, old_sa, obj, diff, NL_ACT_CHANGE, data);
+					} else if (change_cb)
+						change_cb(cache, obj, NL_ACT_CHANGE, data);
+				}
 				nl_object_put (old_sa);
 			}
 		}
@@ -966,7 +978,9 @@ static int xfrm_sa_update_cache (struct nl_cache *cache, struct nl_object *obj,
 		{
 			/* Hard expiry event: Delete the object from the
 			 * cache and notify application of the expiry event. */
-			if (change_cb)
+			if (change_cb_v2)
+				change_cb_v2(cache, obj, NULL, 0, NL_ACT_DEL, data);
+			else if (change_cb)
 				change_cb (cache, obj, NL_ACT_DEL, data);
 			nl_object_put (old_sa);
 		}
@@ -978,7 +992,10 @@ static int xfrm_sa_update_cache (struct nl_cache *cache, struct nl_object *obj,
 	{
 		/* All other messages other than Expire, let the standard Libnl cache
 		 * module handle it. */
-		return nl_cache_include (cache, obj, change_cb, data);
+		if (change_cb_v2)
+			return nl_cache_include_v2(cache, obj, change_cb_v2, data);
+		else
+			return nl_cache_include (cache, obj, change_cb, data);
 	}
 }
 

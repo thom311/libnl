@@ -237,7 +237,8 @@ struct nl_cache_ops
 	 * @see nl_cache_include()
 	 */
 	int   (*co_include_event)(struct nl_cache *cache, struct nl_object *obj,
-				  change_func_t change_cb, void *data);
+				  change_func_t change_cb, change_func_v2_t change_cb_v2,
+				  void *data);
 
 	void (*reserved_1)(void);
 	void (*reserved_2)(void);

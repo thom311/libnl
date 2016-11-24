@@ -987,12 +987,6 @@ global:
 	rtnl_link_has_vf_list;
 	rtnl_link_set_vf_list;
 	rtnl_link_unset_vf_list;
-	rtnl_link_sriov_clone;
-	rtnl_link_sriov_dump_details;
-	rtnl_link_sriov_dump_stats;
-	rtnl_link_sriov_fill_vflist;
-	rtnl_link_sriov_free_data;
-	rtnl_link_sriov_parse_vflist;
 	rtnl_link_vf_add;
 	rtnl_link_vf_alloc;
 	rtnl_link_vf_free;

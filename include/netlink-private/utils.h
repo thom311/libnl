@@ -22,4 +22,9 @@
 
 extern const char *	nl_strerror_l(int err);
 
+/* internal macro to calculate the size of a struct @type up to (and including) @field.
+ * this will be used for .minlen policy fields, so that we require only a field of up
+ * to the given size. */
+#define _nl_offset_plus_sizeof(type, field) (offsetof (type, field) + sizeof (((type *) NULL)->field))
+
 #endif

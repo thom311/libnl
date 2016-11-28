@@ -322,6 +322,11 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 	return 0;
 }
 
+/* struct rtnl_link_stats doesn't have rx_nohandler in kernel versions < 4.6 */
+#define IFLA_STATS_MINLEN (sizeof(struct rtnl_link_stats) - sizeof(__u32))
+/* struct rtnl_link_stats64 doesn't have rx_nohandler in kernel versions < 4.6 */
+#define IFLA_STATS64_MINLEN (sizeof(struct rtnl_link_stats64) - sizeof(__u64))
+
 struct nla_policy rtln_link_policy[IFLA_MAX+1] = {
 	[IFLA_IFNAME]		= { .type = NLA_STRING,
 				    .maxlen = IFNAMSIZ },
@@ -335,8 +340,8 @@ struct nla_policy rtln_link_policy[IFLA_MAX+1] = {
 	[IFLA_LINKINFO]		= { .type = NLA_NESTED },
 	[IFLA_QDISC]		= { .type = NLA_STRING,
 				    .maxlen = IFQDISCSIZ },
-	[IFLA_STATS]		= { .minlen = sizeof(struct rtnl_link_stats) },
-	[IFLA_STATS64]		= { .minlen = sizeof(struct rtnl_link_stats64)},
+	[IFLA_STATS]		= { .minlen = IFLA_STATS_MINLEN },
+	[IFLA_STATS64]		= { .minlen = IFLA_STATS64_MINLEN },
 	[IFLA_MAP]		= { .minlen = sizeof(struct rtnl_link_ifmap) },
 	[IFLA_IFALIAS]		= { .type = NLA_STRING, .maxlen = IFALIASZ },
 	[IFLA_NUM_VF]		= { .type = NLA_U32 },

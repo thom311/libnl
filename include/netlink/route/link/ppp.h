@@ -20,8 +20,8 @@ extern "C" {
 #endif
 
 extern struct rtnl_link	*rtnl_link_ppp_alloc(void);
-extern int		rtnl_link_ppp_set_fd(struct rtnl_link *, uint32_t);
-extern uint32_t		rtnl_link_ppp_get_mode(struct rtnl_link *);
+extern int		rtnl_link_ppp_set_fd(struct rtnl_link *, int32_t);
+extern int		rtnl_link_ppp_get_fd(struct rtnl_link *, int32_t *);
 
 #ifdef __cplusplus
 }

@@ -20,6 +20,8 @@
  * @{
  */
 
+#include <netlink/route/link/ppp.h>
+
 #include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
 #include <netlink-private/route/link/api.h>

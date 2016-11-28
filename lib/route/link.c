@@ -29,6 +29,7 @@
 #include <netlink/route/link.h>
 #include <netlink-private/route/link/api.h>
 #include <netlink-private/route/link/sriov.h>
+#include <netlink-private/utils.h>
 
 /** @cond SKIP */
 #define LINK_ATTR_MTU		(1 <<  0)
@@ -322,11 +323,6 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 	return 0;
 }
 
-/* struct rtnl_link_stats doesn't have rx_nohandler in kernel versions < 4.6 */
-#define IFLA_STATS_MINLEN (sizeof(struct rtnl_link_stats) - sizeof(__u32))
-/* struct rtnl_link_stats64 doesn't have rx_nohandler in kernel versions < 4.6 */
-#define IFLA_STATS64_MINLEN (sizeof(struct rtnl_link_stats64) - sizeof(__u64))
-
 struct nla_policy rtln_link_policy[IFLA_MAX+1] = {
 	[IFLA_IFNAME]		= { .type = NLA_STRING,
 				    .maxlen = IFNAMSIZ },
@@ -340,8 +336,8 @@ struct nla_policy rtln_link_policy[IFLA_MAX+1] = {
 	[IFLA_LINKINFO]		= { .type = NLA_NESTED },
 	[IFLA_QDISC]		= { .type = NLA_STRING,
 				    .maxlen = IFQDISCSIZ },
-	[IFLA_STATS]		= { .minlen = IFLA_STATS_MINLEN },
-	[IFLA_STATS64]		= { .minlen = IFLA_STATS64_MINLEN },
+	[IFLA_STATS]		= { .minlen = _nl_offset_plus_sizeof (struct rtnl_link_stats, tx_compressed) },
+	[IFLA_STATS64]		= { .minlen = _nl_offset_plus_sizeof (struct rtnl_link_stats64, tx_compressed) },
 	[IFLA_MAP]		= { .minlen = sizeof(struct rtnl_link_ifmap) },
 	[IFLA_IFALIAS]		= { .type = NLA_STRING, .maxlen = IFALIASZ },
 	[IFLA_NUM_VF]		= { .type = NLA_U32 },
@@ -401,6 +397,9 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 		link->l_stats[RTNL_LINK_RX_COMPRESSED]	= st->rx_compressed;
 		link->l_stats[RTNL_LINK_TX_COMPRESSED]	= st->tx_compressed;
 
+		/* beware: @st might not be the full struct, only fields up to
+		 * tx_compressed are present. See _nl_offset_plus_sizeof() above. */
+
 		link->ce_mask |= LINK_ATTR_STATS;
 	}
 
@@ -443,6 +442,9 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 
 		link->l_stats[RTNL_LINK_RX_COMPRESSED]	= st.rx_compressed;
 		link->l_stats[RTNL_LINK_TX_COMPRESSED]	= st.tx_compressed;
+
+		/* beware: @st might not be the full struct, only fields up to
+		 * tx_compressed are present. See _nl_offset_plus_sizeof() above. */
 
 		link->ce_mask |= LINK_ATTR_STATS;
 	}

@@ -156,6 +156,7 @@ enum {
 	IFLA_GSO_MAX_SEGS,
 	IFLA_GSO_MAX_SIZE,
 	IFLA_PAD,
+	IFLA_XDP,
 	__IFLA_MAX
 };
 
@@ -271,6 +272,7 @@ enum {
 	IFLA_BR_VLAN_DEFAULT_PVID,
 	IFLA_BR_PAD,
 	IFLA_BR_VLAN_STATS_ENABLED,
+	IFLA_BR_MCAST_STATS_ENABLED,
 	__IFLA_BR_MAX,
 };
 
@@ -314,6 +316,7 @@ enum {
 	IFLA_BRPORT_FLUSH,
 	IFLA_BRPORT_MULTICAST_ROUTER,
 	IFLA_BRPORT_PAD,
+	IFLA_BRPORT_MCAST_FLOOD,
 	__IFLA_BRPORT_MAX
 };
 #define IFLA_BRPORT_MAX (__IFLA_BRPORT_MAX - 1)
@@ -459,6 +462,7 @@ enum {
 enum ipvlan_mode {
 	IPVLAN_MODE_L2 = 0,
 	IPVLAN_MODE_L3,
+	IPVLAN_MODE_L3S,
 	IPVLAN_MODE_MAX
 };
 
@@ -613,7 +617,7 @@ enum {
 enum {
 	IFLA_VF_UNSPEC,
 	IFLA_VF_MAC,		/* Hardware queue specific attributes */
-	IFLA_VF_VLAN,
+	IFLA_VF_VLAN,		/* VLAN ID and QoS */
 	IFLA_VF_TX_RATE,	/* Max TX Bandwidth Allocation */
 	IFLA_VF_SPOOFCHK,	/* Spoof Checking on/off switch */
 	IFLA_VF_LINK_STATE,	/* link state enable/disable/auto switch */
@@ -837,6 +841,8 @@ enum {
 	IFLA_STATS_UNSPEC, /* also used as 64bit pad attribute */
 	IFLA_STATS_LINK_64,
 	IFLA_STATS_LINK_XSTATS,
+	IFLA_STATS_LINK_XSTATS_SLAVE,
+	IFLA_STATS_LINK_OFFLOAD_XSTATS,
 	__IFLA_STATS_MAX,
 };
 
@@ -855,5 +861,24 @@ enum {
 	__LINK_XSTATS_TYPE_MAX
 };
 #define LINK_XSTATS_TYPE_MAX (__LINK_XSTATS_TYPE_MAX - 1)
+
+/* These are stats embedded into IFLA_STATS_LINK_OFFLOAD_XSTATS */
+enum {
+	IFLA_OFFLOAD_XSTATS_UNSPEC,
+	IFLA_OFFLOAD_XSTATS_CPU_HIT, /* struct rtnl_link_stats64 */
+	__IFLA_OFFLOAD_XSTATS_MAX
+};
+#define IFLA_OFFLOAD_XSTATS_MAX (__IFLA_OFFLOAD_XSTATS_MAX - 1)
+
+/* XDP section */
+
+enum {
+	IFLA_XDP_UNSPEC,
+	IFLA_XDP_FD,
+	IFLA_XDP_ATTACHED,
+	__IFLA_XDP_MAX,
+};
+
+#define IFLA_XDP_MAX (__IFLA_XDP_MAX - 1)
 
 #endif /* _LINUX_IF_LINK_H */

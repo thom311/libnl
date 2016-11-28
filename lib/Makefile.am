@@ -92,7 +92,7 @@ libnl_route_3_la_SOURCES = \
 	route/addr.c route/class.c route/cls.c route/act.c route/link.c \
 	route/neigh.c route/neightbl.c route/nexthop.c route/qdisc.c \
 	route/route.c route/route_obj.c route/route_utils.c route/rtnl.c \
-	route/rule.c route/tc.c route/classid.c \
+	route/rule.c route/tc.c route/classid.c route/link/sriov.c \
 	\
 	route/cls/fw.c route/cls/police.c route/cls/u32.c route/cls/basic.c \
 	route/cls/cgroup.c \

@@ -78,6 +78,7 @@
 					 */
 #define ETH_P_PAE	0x888E		/* Port Access Entity (IEEE 802.1X) */
 #define ETH_P_AOE	0x88A2		/* ATA over Ethernet		*/
+#define ETH_P_8021AD	0x88A8		/* 802.1ad Service VLAN		*/
 #define ETH_P_TIPC	0x88CA		/* TIPC 			*/
 #define ETH_P_1588	0x88F7		/* IEEE 1588 Timesync */
 #define ETH_P_FCOE	0x8906		/* Fibre Channel over Ethernet  */

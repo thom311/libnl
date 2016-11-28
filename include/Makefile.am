@@ -64,6 +64,7 @@ nobase_libnlinclude_HEADERS = \
 	netlink/route/link/sit.h \
 	netlink/route/link/ipvlan.h \
 	netlink/route/link/vrf.h \
+	netlink/route/link/sriov.h \
 	netlink/route/qdisc/cbq.h \
 	netlink/route/qdisc/dsmark.h \
 	netlink/route/qdisc/fifo.h \
@@ -171,4 +172,5 @@ noinst_HEADERS = \
 	netlink-private/cache-api.h \
 	netlink-private/object-api.h \
 	netlink-private/route/link/api.h \
+	netlink-private/route/link/sriov.h \
 	netlink-private/route/tc-api.h

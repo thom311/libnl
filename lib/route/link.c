@@ -400,7 +400,7 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 		/* beware: @st might not be the full struct, only fields up to
 		 * tx_compressed are present. See _nl_offset_plus_sizeof() above. */
 
-		if (nla_len(tb[IFLA_STATS]) > _nl_offset_plus_sizeof (struct rtnl_link_stats, tx_compressed))
+		if (nla_len(tb[IFLA_STATS]) >= _nl_offset_plus_sizeof (struct rtnl_link_stats, rx_nohandler))
 			link->l_stats[RTNL_LINK_RX_NOHANDLER] = st->rx_nohandler;
 		else
 			link->l_stats[RTNL_LINK_RX_NOHANDLER] = 0;
@@ -418,7 +418,7 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 		 */
 		struct rtnl_link_stats64 st = { 0 };
 
-		nla_memcpy(&st, tb[IFLA_STATS64], nla_len(tb[IFLA_STATS64]));
+		nla_memcpy(&st, tb[IFLA_STATS64], sizeof (st));
 
 		link->l_stats[RTNL_LINK_RX_PACKETS]	= st.rx_packets;
 		link->l_stats[RTNL_LINK_TX_PACKETS]	= st.tx_packets;

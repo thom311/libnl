@@ -238,6 +238,14 @@ enum {
 	NL_CAPABILITY_XFRM_SEC_CTX_LEN = 22,
 #define NL_CAPABILITY_XFRM_SEC_CTX_LEN NL_CAPABILITY_XFRM_SEC_CTX_LEN
 
+	/**
+	 * rtnl_link_build_add_request() would set ifi.ifi_flags but leave ifi.ifi_change at zero.
+	 * This was later fixed to set ifi.ifi_change to the flags that are actually
+	 * set
+	 */
+	NL_CAPABILITY_LINK_BUILD_ADD_REQUEST_SET_CHANGE = 23,
+#define NL_CAPABILITY_LINK_BUILD_ADD_REQUEST_SET_CHANGE NL_CAPABILITY_LINK_BUILD_ADD_REQUEST_SET_CHANGE
+
 	__NL_CAPABILITY_MAX,
 	NL_CAPABILITY_MAX = (__NL_CAPABILITY_MAX - 1),
 #define NL_CAPABILITY_MAX NL_CAPABILITY_MAX

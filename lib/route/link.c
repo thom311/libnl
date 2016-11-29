@@ -1594,6 +1594,7 @@ int rtnl_link_build_add_request(struct rtnl_link *link, int flags,
 		.ifi_family = link->l_family,
 		.ifi_index = link->l_index,
 		.ifi_flags = link->l_flags,
+		.ifi_change = link->l_flag_mask,
 	};
 
 	return build_link_msg(RTM_NEWLINK, &ifi, link, flags, result);

@@ -34,7 +34,7 @@ static void list_stat_names(void)
 	char buf[64];
 	int i;
 
-	for (i = 0; i < RTNL_LINK_STATS_MAX; i++)
+	for (i = 0; i < __RTNL_LINK_STATS_MAX; i++)
 		printf("%s\n", rtnl_link_stat2str(i, buf, sizeof(buf)));
 
 	exit(0);
@@ -59,7 +59,7 @@ static void dump_stats(struct nl_object *obj, void *arg)
 	if (optind >= gargc) {
 		int i;
 
-		for (i = 0; i < RTNL_LINK_STATS_MAX; i++)
+		for (i = 0; i < __RTNL_LINK_STATS_MAX; i++)
 			dump_stat(link, i);
 	} else {
 		while (optind < gargc) {

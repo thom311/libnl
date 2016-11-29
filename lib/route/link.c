@@ -400,6 +400,11 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 		/* beware: @st might not be the full struct, only fields up to
 		 * tx_compressed are present. See _nl_offset_plus_sizeof() above. */
 
+		if (nla_len(tb[IFLA_STATS]) >= _nl_offset_plus_sizeof (struct rtnl_link_stats, rx_nohandler))
+			link->l_stats[RTNL_LINK_RX_NOHANDLER] = st->rx_nohandler;
+		else
+			link->l_stats[RTNL_LINK_RX_NOHANDLER] = 0;
+
 		link->ce_mask |= LINK_ATTR_STATS;
 	}
 
@@ -411,10 +416,9 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 		 * Therefore, copy the data to the stack and access it from
 		 * there, where it will be aligned to 8.
 		 */
-		struct rtnl_link_stats64 st;
+		struct rtnl_link_stats64 st = { 0 };
 
-		nla_memcpy(&st, tb[IFLA_STATS64], 
-			   sizeof(struct rtnl_link_stats64));
+		nla_memcpy(&st, tb[IFLA_STATS64], sizeof (st));
 
 		link->l_stats[RTNL_LINK_RX_PACKETS]	= st.rx_packets;
 		link->l_stats[RTNL_LINK_TX_PACKETS]	= st.tx_packets;
@@ -445,6 +449,8 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 
 		/* beware: @st might not be the full struct, only fields up to
 		 * tx_compressed are present. See _nl_offset_plus_sizeof() above. */
+
+		link->l_stats[RTNL_LINK_RX_NOHANDLER]	= st.rx_nohandler;
 
 		link->ce_mask |= LINK_ATTR_STATS;
 	}
@@ -2851,6 +2857,7 @@ static const struct trans_tbl link_stats[] = {
 	__ADD(RTNL_LINK_IP6_ECT1PKTS, Ip6_InECT1Pkts),
 	__ADD(RTNL_LINK_IP6_ECT0PKTS, Ip6_InECT0Pkts),
 	__ADD(RTNL_LINK_IP6_CEPKTS, Ip6_InCEPkts),
+	__ADD(RTNL_LINK_RX_NOHANDLER, rx_nohandler),
 };
 
 char *rtnl_link_stat2str(int st, char *buf, size_t len)

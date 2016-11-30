@@ -672,7 +672,8 @@ int nl_recv(struct nl_sock *sk, struct sockaddr_nl *nla,
 	if (!buf || !nla)
 		return -NLE_INVAL;
 
-	if (sk->s_flags & NL_MSG_PEEK)
+	if (   (sk->s_flags & NL_MSG_PEEK)
+	    || (!(sk->s_flags & NL_MSG_PEEK_EXPLICIT) && sk->s_bufsize == 0))
 		flags |= MSG_PEEK | MSG_TRUNC;
 
 	if (page_size == 0)
@@ -736,7 +737,7 @@ retry:
 		void *tmp;
 
 		/* respond with error to an incomplete message */
-		if (!(sk->s_flags & NL_MSG_PEEK)) {
+		if (flags == 0) {
 			retval = -NLE_MSG_TRUNC;
 			goto abort;
 		}

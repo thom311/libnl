@@ -716,18 +716,23 @@ int nl_socket_set_nonblocking(const struct nl_sock *sk)
 /**
  * Enable use of MSG_PEEK when reading from socket
  * @arg sk		Netlink socket.
+ *
+ * See also NL_CAPABILITY_NL_RECVMSGS_PEEK_BY_DEFAULT capability
  */
 void nl_socket_enable_msg_peek(struct nl_sock *sk)
 {
-	sk->s_flags |= NL_MSG_PEEK;
+	sk->s_flags |= (NL_MSG_PEEK | NL_MSG_PEEK_EXPLICIT);
 }
 
 /**
  * Disable use of MSG_PEEK when reading from socket
  * @arg sk		Netlink socket.
+ *
+ * See also NL_CAPABILITY_NL_RECVMSGS_PEEK_BY_DEFAULT capability
  */
 void nl_socket_disable_msg_peek(struct nl_sock *sk)
 {
+	sk->s_flags |= NL_MSG_PEEK_EXPLICIT;
 	sk->s_flags &= ~NL_MSG_PEEK;
 }
 
@@ -845,6 +850,19 @@ int nl_socket_set_buffer_size(struct nl_sock *sk, int rxbuf, int txbuf)
  * The default message buffer size limits the maximum message size the
  * socket will be able to receive. It is generally recommneded to specify
  * a buffer size no less than the size of a memory page.
+ *
+ * Setting the @bufsize to zero means to use a default of 4 times getpagesize().
+ *
+ * When MSG_PEEK is enabled, the buffer size is used for the initial choice
+ * of the buffer while peeking. It still makes sense to choose an optimal value
+ * to avoid realloc().
+ *
+ * When MSG_PEEK is disabled, the buffer size is important because a too small
+ * size will lead to failure of receiving the message via nl_recvmsgs().
+ *
+ * By default, MSG_PEEK is enabled unless the user calls either nl_socket_disable_msg_peek()/
+ * nl_socket_enable_msg_peek() or sets the message buffer size to a positive value.
+ * See capability NL_CAPABILITY_NL_RECVMSGS_PEEK_BY_DEFAULT for that.
  *
  * @return 0 on success or a negative error code.
  */

@@ -246,6 +246,21 @@ enum {
 	NL_CAPABILITY_LINK_BUILD_ADD_REQUEST_SET_CHANGE = 23,
 #define NL_CAPABILITY_LINK_BUILD_ADD_REQUEST_SET_CHANGE NL_CAPABILITY_LINK_BUILD_ADD_REQUEST_SET_CHANGE
 
+	/* Older versions of libnl3 would not use MSG_PEEK for nl_recvmsgs() unless calling
+	 * nl_socket_enable_msg_peek(). Instead, the user had to specify the buffer size via
+	 * nl_socket_set_msg_buf_size(), which in turn would default to 4*getpagesize().
+	 *
+	 * The default value might not be large enough, so users who were not aware of the
+	 * problem easily ended up using a too small receive buffer. Usually, one wants to
+	 * avoid MSG_PEEK for recvmsg() because it requires an additional syscall.
+	 *
+	 * Now, as indicated by this capability, nl_recvmsgs() would use MSG_PEEK by default. The
+	 * user still can explicitly disable MSG_PEEK by calling nl_socket_disable_msg_peek() or
+	 * by setting the nl_socket_set_msg_buf_size() to a non-zero value.
+	 */
+	NL_CAPABILITY_NL_RECVMSGS_PEEK_BY_DEFAULT = 24,
+#define NL_CAPABILITY_NL_RECVMSGS_PEEK_BY_DEFAULT NL_CAPABILITY_NL_RECVMSGS_PEEK_BY_DEFAULT
+
 	__NL_CAPABILITY_MAX,
 	NL_CAPABILITY_MAX = (__NL_CAPABILITY_MAX - 1),
 #define NL_CAPABILITY_MAX NL_CAPABILITY_MAX

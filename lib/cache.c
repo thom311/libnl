@@ -789,7 +789,7 @@ static int cache_include(struct nl_cache *cache, struct nl_object *obj,
 {
 	struct nl_object *old;
 	struct nl_object *clone = NULL;
-	uint64_t diff;
+	uint64_t diff = 0;
 
 	switch (type->mt_act) {
 	case NL_ACT_NEW:
@@ -837,7 +837,7 @@ static int cache_include(struct nl_cache *cache, struct nl_object *obj,
 				} else if (cb)
 					cb(cache, obj, NL_ACT_NEW, data);
 			} else if (old) {
-				uint64_t diff = 0;
+				diff = 0;
 				if (cb || cb_v2)
 					diff = nl_object_diff64(old, obj);
 				if (diff && cb_v2) {

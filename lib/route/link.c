@@ -67,6 +67,7 @@
 #define LINK_ATTR_LINK_NETNSID  	((uint64_t) 1 << 32)
 #define LINK_ATTR_VF_LIST		((uint64_t) 1 << 33)
 #define LINK_ATTR_CARRIER_CHANGES	((uint64_t) 1 << 34)
+#define LINK_ATTR_PHYS_PORT_NAME	((uint64_t) 1 << 35)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -351,6 +352,7 @@ struct nla_policy rtln_link_policy[IFLA_MAX+1] = {
 	[IFLA_CARRIER]		= { .type = NLA_U8 },
 	[IFLA_CARRIER_CHANGES]	= { .type = NLA_U32 },
 	[IFLA_PHYS_PORT_ID]	= { .type = NLA_UNSPEC },
+	[IFLA_PHYS_PORT_NAME]	= { .type = NLA_STRING, .maxlen = IFNAMSIZ },
 	[IFLA_NET_NS_PID]	= { .type = NLA_U32 },
 	[IFLA_NET_NS_FD]	= { .type = NLA_U32 },
 };
@@ -734,6 +736,11 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			goto errout;
 		}
 		link->ce_mask |= LINK_ATTR_PHYS_PORT_ID;
+	}
+
+	if (tb[IFLA_PHYS_PORT_NAME]) {
+		nla_strlcpy(link->l_phys_port_name, tb[IFLA_PHYS_PORT_NAME], IFNAMSIZ);
+		link->ce_mask |= LINK_ATTR_PHYS_PORT_NAME;
 	}
 
 	err = pp->pp_cb((struct nl_object *) link, pp);
@@ -1129,6 +1136,7 @@ static const struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_CARRIER, carrier),
 	__ADD(LINK_ATTR_CARRIER_CHANGES, carrier_changes),
 	__ADD(LINK_ATTR_PHYS_PORT_ID, phys_port_id),
+	__ADD(LINK_ATTR_PHYS_PORT_NAME, phys_port_name),
 	__ADD(LINK_ATTR_NS_FD, ns_fd),
 	__ADD(LINK_ATTR_NS_PID, ns_pid),
 	__ADD(LINK_ATTR_LINK_NETNSID, link_netnsid),
@@ -2635,6 +2643,17 @@ uint32_t rtnl_link_get_num_rx_queues(struct rtnl_link *link)
 struct nl_data *rtnl_link_get_phys_port_id(struct rtnl_link *link)
 {
 	return link->l_phys_port_id;
+}
+
+/**
+ * Return physical port name of link object
+ * @arg link		Link object
+ *
+ * @return Physical port name or NULL if not set.
+ */
+char *rtnl_link_get_phys_port_name(struct rtnl_link *link)
+{
+	return link->l_phys_port_name;
 }
 
 void rtnl_link_set_ns_fd(struct rtnl_link *link, int fd)

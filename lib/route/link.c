@@ -2327,8 +2327,9 @@ uint8_t rtnl_link_get_carrier(struct rtnl_link *link)
 /**
  * Return carrier on/off changes of link object
  * @arg link		Link object
+ * @arg carrier_changes	Pointer to store number of carrier changes
  *
- * @return Carrier changes.
+ * @return 0 on success, negative error number otherwise
  */
 int rtnl_link_get_carrier_changes(struct rtnl_link *link, uint32_t *carrier_changes)
 {

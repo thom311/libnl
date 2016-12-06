@@ -218,6 +218,7 @@ struct rtnl_link
 	uint32_t			l_group;
 	uint8_t				l_carrier;
 	/* 3 byte hole */
+	uint32_t			l_carrier_changes;
 	struct rtnl_link_af_ops *	l_af_ops;
 	struct nl_data *		l_phys_port_id;
 	int				l_ns_fd;

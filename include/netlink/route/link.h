@@ -200,6 +200,8 @@ extern int	rtnl_link_get_master(struct rtnl_link *);
 extern void	rtnl_link_set_carrier(struct rtnl_link *, uint8_t);
 extern uint8_t	rtnl_link_get_carrier(struct rtnl_link *);
 
+extern int	rtnl_link_get_carrier_changes(struct rtnl_link *, uint32_t *);
+
 extern void	rtnl_link_set_operstate(struct rtnl_link *, uint8_t);
 extern uint8_t	rtnl_link_get_operstate(struct rtnl_link *);
 

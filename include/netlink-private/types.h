@@ -215,11 +215,16 @@ struct rtnl_link
 	uint32_t			l_promiscuity;
 	uint32_t			l_num_tx_queues;
 	uint32_t			l_num_rx_queues;
+	uint32_t			l_gso_max_segs;
+	uint32_t			l_gso_max_size;
 	uint32_t			l_group;
 	uint8_t				l_carrier;
 	/* 3 byte hole */
+	uint32_t			l_carrier_changes;
 	struct rtnl_link_af_ops *	l_af_ops;
 	struct nl_data *		l_phys_port_id;
+	char				l_phys_port_name[IFNAMSIZ];
+	struct nl_data *		l_phys_switch_id;
 	int				l_ns_fd;
 	pid_t				l_ns_pid;
 	struct rtnl_link_vf *		l_vf_list;

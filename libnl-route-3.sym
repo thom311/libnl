@@ -958,6 +958,11 @@ global:
 	rtnl_link_bridge_set_hwmode;
 	rtnl_link_bridge_hwmode2str;
 	rtnl_link_bridge_str2hwmode;
+	rtnl_link_get_carrier_changes;
+	rtnl_link_get_gso_max_segs;
+	rtnl_link_get_gso_max_size;
+	rtnl_link_get_phys_port_name;
+	rtnl_link_get_phys_switch_id;
 	rtnl_link_ipgre_get_pmtudisc;
 	rtnl_link_is_ipgretap;
 	rtnl_link_macvlan_add_macaddr;

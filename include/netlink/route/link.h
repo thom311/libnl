@@ -200,6 +200,8 @@ extern int	rtnl_link_get_master(struct rtnl_link *);
 extern void	rtnl_link_set_carrier(struct rtnl_link *, uint8_t);
 extern uint8_t	rtnl_link_get_carrier(struct rtnl_link *);
 
+extern int	rtnl_link_get_carrier_changes(struct rtnl_link *, uint32_t *);
+
 extern void	rtnl_link_set_operstate(struct rtnl_link *, uint8_t);
 extern uint8_t	rtnl_link_get_operstate(struct rtnl_link *);
 
@@ -230,7 +232,15 @@ extern uint32_t	rtnl_link_get_num_tx_queues(struct rtnl_link *);
 extern void	rtnl_link_set_num_rx_queues(struct rtnl_link *, uint32_t);
 extern uint32_t	rtnl_link_get_num_rx_queues(struct rtnl_link *);
 
+extern int	rtnl_link_get_gso_max_segs(struct rtnl_link *, uint32_t *);
+
+extern int	rtnl_link_get_gso_max_size(struct rtnl_link *, uint32_t *);
+
 extern struct nl_data *	rtnl_link_get_phys_port_id(struct rtnl_link *);
+
+extern char*	rtnl_link_get_phys_port_name(struct rtnl_link *);
+
+extern struct nl_data *	rtnl_link_get_phys_switch_id(struct rtnl_link *);
 
 extern void	rtnl_link_set_ns_fd(struct rtnl_link *, int);
 extern int	rtnl_link_get_ns_fd(struct rtnl_link *);

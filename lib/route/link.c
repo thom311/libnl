@@ -64,8 +64,13 @@
 #define LINK_ATTR_NS_FD		(1 << 29)
 #define LINK_ATTR_NS_PID	(1 << 30)
 /* 31 used by 32-bit api */
-#define LINK_ATTR_LINK_NETNSID  ((uint64_t) 1 << 32)
-#define LINK_ATTR_VF_LIST	((uint64_t) 1 << 33)
+#define LINK_ATTR_LINK_NETNSID  	((uint64_t) 1 << 32)
+#define LINK_ATTR_VF_LIST		((uint64_t) 1 << 33)
+#define LINK_ATTR_CARRIER_CHANGES	((uint64_t) 1 << 34)
+#define LINK_ATTR_PHYS_PORT_NAME	((uint64_t) 1 << 35)
+#define LINK_ATTR_PHYS_SWITCH_ID	((uint64_t) 1 << 36)
+#define LINK_ATTR_GSO_MAX_SEGS		((uint64_t) 1 << 37)
+#define LINK_ATTR_GSO_MAX_SIZE		((uint64_t) 1 << 38)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -275,6 +280,7 @@ static void link_free_data(struct nl_object *c)
 		do_foreach_af(link, af_free, NULL);
 
 		nl_data_free(link->l_phys_port_id);
+		nl_data_free(link->l_phys_switch_id);
 
 		if (link->ce_mask & LINK_ATTR_VF_LIST)
 			rtnl_link_sriov_free_data(link);
@@ -316,6 +322,10 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 		if (!(dst->l_phys_port_id = nl_data_clone(src->l_phys_port_id)))
 			return -NLE_NOMEM;
 
+	if (src->l_phys_switch_id)
+		if (!(dst->l_phys_switch_id = nl_data_clone(src->l_phys_switch_id)))
+			return -NLE_NOMEM;
+
 	if (src->ce_mask & LINK_ATTR_VF_LIST)
 		if ((err = rtnl_link_sriov_clone(dst, src)) < 0)
 			return err;
@@ -346,9 +356,14 @@ struct nla_policy rtln_link_policy[IFLA_MAX+1] = {
 	[IFLA_PROMISCUITY]	= { .type = NLA_U32 },
 	[IFLA_NUM_TX_QUEUES]	= { .type = NLA_U32 },
 	[IFLA_NUM_RX_QUEUES]	= { .type = NLA_U32 },
+	[IFLA_GSO_MAX_SEGS]	= { .type = NLA_U32 },
+	[IFLA_GSO_MAX_SIZE]	= { .type = NLA_U32 },
 	[IFLA_GROUP]		= { .type = NLA_U32 },
 	[IFLA_CARRIER]		= { .type = NLA_U8 },
+	[IFLA_CARRIER_CHANGES]	= { .type = NLA_U32 },
 	[IFLA_PHYS_PORT_ID]	= { .type = NLA_UNSPEC },
+	[IFLA_PHYS_PORT_NAME]	= { .type = NLA_STRING, .maxlen = IFNAMSIZ },
+	[IFLA_PHYS_SWITCH_ID]	= { .type = NLA_UNSPEC },
 	[IFLA_NET_NS_PID]	= { .type = NLA_U32 },
 	[IFLA_NET_NS_FD]	= { .type = NLA_U32 },
 };
@@ -518,6 +533,11 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 	if (tb[IFLA_CARRIER]) {
 		link->l_carrier = nla_get_u8(tb[IFLA_CARRIER]);
 		link->ce_mask |= LINK_ATTR_CARRIER;
+	}
+
+	if (tb[IFLA_CARRIER_CHANGES]) {
+		link->l_carrier_changes = nla_get_u32(tb[IFLA_CARRIER_CHANGES]);
+		link->ce_mask |= LINK_ATTR_CARRIER_CHANGES;
 	}
 
 	if (tb[IFLA_OPERSTATE]) {
@@ -715,6 +735,16 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		link->ce_mask |= LINK_ATTR_NUM_RX_QUEUES;
 	}
 
+	if (tb[IFLA_GSO_MAX_SEGS]) {
+		link->l_gso_max_segs = nla_get_u32(tb[IFLA_GSO_MAX_SEGS]);
+		link->ce_mask |= LINK_ATTR_GSO_MAX_SEGS;
+	}
+
+	if (tb[IFLA_GSO_MAX_SIZE]) {
+		link->l_gso_max_size = nla_get_u32(tb[IFLA_GSO_MAX_SIZE]);
+		link->ce_mask |= LINK_ATTR_GSO_MAX_SIZE;
+	}
+
 	if (tb[IFLA_GROUP]) {
 		link->l_group = nla_get_u32(tb[IFLA_GROUP]);
 		link->ce_mask |= LINK_ATTR_GROUP;
@@ -727,6 +757,20 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			goto errout;
 		}
 		link->ce_mask |= LINK_ATTR_PHYS_PORT_ID;
+	}
+
+	if (tb[IFLA_PHYS_PORT_NAME]) {
+		nla_strlcpy(link->l_phys_port_name, tb[IFLA_PHYS_PORT_NAME], IFNAMSIZ);
+		link->ce_mask |= LINK_ATTR_PHYS_PORT_NAME;
+	}
+
+	if (tb[IFLA_PHYS_SWITCH_ID]) {
+		link->l_phys_switch_id = nl_data_alloc_attr(tb[IFLA_PHYS_SWITCH_ID]);
+		if (link->l_phys_switch_id == NULL) {
+			err = -NLE_NOMEM;
+			goto errout;
+		}
+		link->ce_mask |= LINK_ATTR_PHYS_SWITCH_ID;
 	}
 
 	err = pp->pp_cb((struct nl_object *) link, pp);
@@ -887,6 +931,9 @@ static void link_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 
 	nl_dump(p, "carrier %s",
 		rtnl_link_carrier2str(link->l_carrier, buf, sizeof(buf)));
+
+	if (link->ce_mask & LINK_ATTR_CARRIER_CHANGES)
+		nl_dump(p, " carrier-changes %u", link->l_carrier_changes);
 
 	nl_dump(p, "\n");
 
@@ -1115,9 +1162,14 @@ static const struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_PROMISCUITY, promiscuity),
 	__ADD(LINK_ATTR_NUM_TX_QUEUES, num_tx_queues),
 	__ADD(LINK_ATTR_NUM_RX_QUEUES, num_rx_queues),
+	__ADD(LINK_ATTR_GSO_MAX_SEGS, gso_max_segs),
+	__ADD(LINK_ATTR_GSO_MAX_SIZE, gso_max_size),
 	__ADD(LINK_ATTR_GROUP, group),
 	__ADD(LINK_ATTR_CARRIER, carrier),
+	__ADD(LINK_ATTR_CARRIER_CHANGES, carrier_changes),
 	__ADD(LINK_ATTR_PHYS_PORT_ID, phys_port_id),
+	__ADD(LINK_ATTR_PHYS_PORT_NAME, phys_port_name),
+	__ADD(LINK_ATTR_PHYS_SWITCH_ID, phys_switch_id),
 	__ADD(LINK_ATTR_NS_FD, ns_fd),
 	__ADD(LINK_ATTR_NS_PID, ns_pid),
 	__ADD(LINK_ATTR_LINK_NETNSID, link_netnsid),
@@ -2273,6 +2325,23 @@ uint8_t rtnl_link_get_carrier(struct rtnl_link *link)
 }
 
 /**
+ * Return carrier on/off changes of link object
+ * @arg link		Link object
+ *
+ * @return Carrier changes.
+ */
+int rtnl_link_get_carrier_changes(struct rtnl_link *link, uint32_t *carrier_changes)
+{
+	if (!(link->ce_mask & LINK_ATTR_CARRIER_CHANGES))
+		return -NLE_NOATTR;
+
+	if (carrier_changes)
+		*carrier_changes = link->l_carrier_changes;
+
+	return 0;
+}
+
+/**
  * Set operational status of link object
  * @arg link		Link object
  * @arg status		New opertional status
@@ -2599,6 +2668,42 @@ uint32_t rtnl_link_get_num_rx_queues(struct rtnl_link *link)
 }
 
 /**
+ * Return maximum number of segments for generic segmentation offload
+ * @arg link		Link object
+ * @arg gso_max_segs	Pointer to store maximum number GSO segments
+ *
+ * @return 0 on success, negative error number otherwise
+ */
+int rtnl_link_get_gso_max_segs(struct rtnl_link *link, uint32_t *gso_max_segs)
+{
+	if (!(link->ce_mask & LINK_ATTR_GSO_MAX_SEGS))
+		return -NLE_NOATTR;
+
+	if (gso_max_segs)
+		*gso_max_segs = link->l_gso_max_segs;
+
+	return 0;
+}
+
+/**
+ * Return maximum size for generic segmentation offload
+ * @arg link		Link object
+ * @arg gso_max_segs	Pointer to store maximum GSO size
+ *
+ * @return 0 on success, negative error number otherwise
+ */
+int rtnl_link_get_gso_max_size(struct rtnl_link *link, uint32_t *gso_max_size)
+{
+	if (!(link->ce_mask & LINK_ATTR_GSO_MAX_SIZE))
+		return -NLE_NOATTR;
+
+	if (gso_max_size)
+		*gso_max_size = link->l_gso_max_size;
+
+	return 0;
+}
+
+/**
  * Return physical port id of link object
  * @arg link		Link object
  *
@@ -2607,6 +2712,28 @@ uint32_t rtnl_link_get_num_rx_queues(struct rtnl_link *link)
 struct nl_data *rtnl_link_get_phys_port_id(struct rtnl_link *link)
 {
 	return link->l_phys_port_id;
+}
+
+/**
+ * Return physical port name of link object
+ * @arg link		Link object
+ *
+ * @return Physical port name or NULL if not set.
+ */
+char *rtnl_link_get_phys_port_name(struct rtnl_link *link)
+{
+	return link->l_phys_port_name;
+}
+
+/*
+ * Return physical switch id of link object
+ * @arg link		Link object
+ *
+ * @return Physical switch id or NULL if not set.
+ */
+struct nl_data *rtnl_link_get_phys_switch_id(struct rtnl_link *link)
+{
+	return link->l_phys_switch_id;
 }
 
 void rtnl_link_set_ns_fd(struct rtnl_link *link, int fd)

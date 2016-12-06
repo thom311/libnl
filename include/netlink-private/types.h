@@ -222,6 +222,7 @@ struct rtnl_link
 	struct rtnl_link_af_ops *	l_af_ops;
 	struct nl_data *		l_phys_port_id;
 	char				l_phys_port_name[IFNAMSIZ];
+	struct nl_data *		l_phys_switch_id;
 	int				l_ns_fd;
 	pid_t				l_ns_pid;
 	struct rtnl_link_vf *		l_vf_list;

@@ -232,6 +232,10 @@ extern uint32_t	rtnl_link_get_num_tx_queues(struct rtnl_link *);
 extern void	rtnl_link_set_num_rx_queues(struct rtnl_link *, uint32_t);
 extern uint32_t	rtnl_link_get_num_rx_queues(struct rtnl_link *);
 
+extern int	rtnl_link_get_gso_max_segs(struct rtnl_link *, uint32_t *);
+
+extern int	rtnl_link_get_gso_max_size(struct rtnl_link *, uint32_t *);
+
 extern struct nl_data *	rtnl_link_get_phys_port_id(struct rtnl_link *);
 
 extern char*	rtnl_link_get_phys_port_name(struct rtnl_link *);

@@ -64,8 +64,9 @@
 #define LINK_ATTR_NS_FD		(1 << 29)
 #define LINK_ATTR_NS_PID	(1 << 30)
 /* 31 used by 32-bit api */
-#define LINK_ATTR_LINK_NETNSID  ((uint64_t) 1 << 32)
-#define LINK_ATTR_VF_LIST	((uint64_t) 1 << 33)
+#define LINK_ATTR_LINK_NETNSID  	((uint64_t) 1 << 32)
+#define LINK_ATTR_VF_LIST		((uint64_t) 1 << 33)
+#define LINK_ATTR_CARRIER_CHANGES	((uint64_t) 1 << 34)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -348,6 +349,7 @@ struct nla_policy rtln_link_policy[IFLA_MAX+1] = {
 	[IFLA_NUM_RX_QUEUES]	= { .type = NLA_U32 },
 	[IFLA_GROUP]		= { .type = NLA_U32 },
 	[IFLA_CARRIER]		= { .type = NLA_U8 },
+	[IFLA_CARRIER_CHANGES]	= { .type = NLA_U32 },
 	[IFLA_PHYS_PORT_ID]	= { .type = NLA_UNSPEC },
 	[IFLA_NET_NS_PID]	= { .type = NLA_U32 },
 	[IFLA_NET_NS_FD]	= { .type = NLA_U32 },
@@ -518,6 +520,11 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 	if (tb[IFLA_CARRIER]) {
 		link->l_carrier = nla_get_u8(tb[IFLA_CARRIER]);
 		link->ce_mask |= LINK_ATTR_CARRIER;
+	}
+
+	if (tb[IFLA_CARRIER_CHANGES]) {
+		link->l_carrier_changes = nla_get_u32(tb[IFLA_CARRIER_CHANGES]);
+		link->ce_mask |= LINK_ATTR_CARRIER_CHANGES;
 	}
 
 	if (tb[IFLA_OPERSTATE]) {
@@ -888,6 +895,9 @@ static void link_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 	nl_dump(p, "carrier %s",
 		rtnl_link_carrier2str(link->l_carrier, buf, sizeof(buf)));
 
+	if (link->ce_mask & LINK_ATTR_CARRIER_CHANGES)
+		nl_dump(p, " carrier-changes %u", link->l_carrier_changes);
+
 	nl_dump(p, "\n");
 
 	if (link->l_info_ops && link->l_info_ops->io_dump[NL_DUMP_DETAILS])
@@ -1117,6 +1127,7 @@ static const struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_NUM_RX_QUEUES, num_rx_queues),
 	__ADD(LINK_ATTR_GROUP, group),
 	__ADD(LINK_ATTR_CARRIER, carrier),
+	__ADD(LINK_ATTR_CARRIER_CHANGES, carrier_changes),
 	__ADD(LINK_ATTR_PHYS_PORT_ID, phys_port_id),
 	__ADD(LINK_ATTR_NS_FD, ns_fd),
 	__ADD(LINK_ATTR_NS_PID, ns_pid),
@@ -2270,6 +2281,23 @@ void rtnl_link_set_carrier(struct rtnl_link *link, uint8_t status)
 uint8_t rtnl_link_get_carrier(struct rtnl_link *link)
 {
 	return link->l_carrier;
+}
+
+/**
+ * Return carrier on/off changes of link object
+ * @arg link		Link object
+ *
+ * @return Carrier changes.
+ */
+int rtnl_link_get_carrier_changes(struct rtnl_link *link, uint32_t *carrier_changes)
+{
+	if (!(link->ce_mask & LINK_ATTR_CARRIER_CHANGES))
+		return -NLE_NOATTR;
+
+	if (carrier_changes)
+		*carrier_changes = link->l_carrier_changes;
+
+	return 0;
 }
 
 /**

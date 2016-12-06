@@ -69,6 +69,8 @@
 #define LINK_ATTR_CARRIER_CHANGES	((uint64_t) 1 << 34)
 #define LINK_ATTR_PHYS_PORT_NAME	((uint64_t) 1 << 35)
 #define LINK_ATTR_PHYS_SWITCH_ID	((uint64_t) 1 << 36)
+#define LINK_ATTR_GSO_MAX_SEGS		((uint64_t) 1 << 37)
+#define LINK_ATTR_GSO_MAX_SIZE		((uint64_t) 1 << 38)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -354,6 +356,8 @@ struct nla_policy rtln_link_policy[IFLA_MAX+1] = {
 	[IFLA_PROMISCUITY]	= { .type = NLA_U32 },
 	[IFLA_NUM_TX_QUEUES]	= { .type = NLA_U32 },
 	[IFLA_NUM_RX_QUEUES]	= { .type = NLA_U32 },
+	[IFLA_GSO_MAX_SEGS]	= { .type = NLA_U32 },
+	[IFLA_GSO_MAX_SIZE]	= { .type = NLA_U32 },
 	[IFLA_GROUP]		= { .type = NLA_U32 },
 	[IFLA_CARRIER]		= { .type = NLA_U8 },
 	[IFLA_CARRIER_CHANGES]	= { .type = NLA_U32 },
@@ -729,6 +733,16 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (tb[IFLA_NUM_RX_QUEUES]) {
 		link->l_num_rx_queues = nla_get_u32(tb[IFLA_NUM_RX_QUEUES]);
 		link->ce_mask |= LINK_ATTR_NUM_RX_QUEUES;
+	}
+
+	if (tb[IFLA_GSO_MAX_SEGS]) {
+		link->l_gso_max_segs = nla_get_u32(tb[IFLA_GSO_MAX_SEGS]);
+		link->ce_mask |= LINK_ATTR_GSO_MAX_SEGS;
+	}
+
+	if (tb[IFLA_GSO_MAX_SIZE]) {
+		link->l_gso_max_size = nla_get_u32(tb[IFLA_GSO_MAX_SIZE]);
+		link->ce_mask |= LINK_ATTR_GSO_MAX_SIZE;
 	}
 
 	if (tb[IFLA_GROUP]) {
@@ -1148,6 +1162,8 @@ static const struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_PROMISCUITY, promiscuity),
 	__ADD(LINK_ATTR_NUM_TX_QUEUES, num_tx_queues),
 	__ADD(LINK_ATTR_NUM_RX_QUEUES, num_rx_queues),
+	__ADD(LINK_ATTR_GSO_MAX_SEGS, gso_max_segs),
+	__ADD(LINK_ATTR_GSO_MAX_SIZE, gso_max_size),
 	__ADD(LINK_ATTR_GROUP, group),
 	__ADD(LINK_ATTR_CARRIER, carrier),
 	__ADD(LINK_ATTR_CARRIER_CHANGES, carrier_changes),
@@ -2649,6 +2665,42 @@ void rtnl_link_set_num_rx_queues(struct rtnl_link *link, uint32_t nqueues)
 uint32_t rtnl_link_get_num_rx_queues(struct rtnl_link *link)
 {
 	return link->l_num_rx_queues;
+}
+
+/**
+ * Return maximum number of segments for generic segmentation offload
+ * @arg link		Link object
+ * @arg gso_max_segs	Pointer to store maximum number GSO segments
+ *
+ * @return 0 on success, negative error number otherwise
+ */
+int rtnl_link_get_gso_max_segs(struct rtnl_link *link, uint32_t *gso_max_segs)
+{
+	if (!(link->ce_mask & LINK_ATTR_GSO_MAX_SEGS))
+		return -NLE_NOATTR;
+
+	if (gso_max_segs)
+		*gso_max_segs = link->l_gso_max_segs;
+
+	return 0;
+}
+
+/**
+ * Return maximum size for generic segmentation offload
+ * @arg link		Link object
+ * @arg gso_max_segs	Pointer to store maximum GSO size
+ *
+ * @return 0 on success, negative error number otherwise
+ */
+int rtnl_link_get_gso_max_size(struct rtnl_link *link, uint32_t *gso_max_size)
+{
+	if (!(link->ce_mask & LINK_ATTR_GSO_MAX_SIZE))
+		return -NLE_NOATTR;
+
+	if (gso_max_size)
+		*gso_max_size = link->l_gso_max_size;
+
+	return 0;
 }
 
 /**

@@ -215,6 +215,8 @@ struct rtnl_link
 	uint32_t			l_promiscuity;
 	uint32_t			l_num_tx_queues;
 	uint32_t			l_num_rx_queues;
+	uint32_t			l_gso_max_segs;
+	uint32_t			l_gso_max_size;
 	uint32_t			l_group;
 	uint8_t				l_carrier;
 	/* 3 byte hole */

@@ -68,6 +68,7 @@
 #define LINK_ATTR_VF_LIST		((uint64_t) 1 << 33)
 #define LINK_ATTR_CARRIER_CHANGES	((uint64_t) 1 << 34)
 #define LINK_ATTR_PHYS_PORT_NAME	((uint64_t) 1 << 35)
+#define LINK_ATTR_PHYS_SWITCH_ID	((uint64_t) 1 << 36)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -277,6 +278,7 @@ static void link_free_data(struct nl_object *c)
 		do_foreach_af(link, af_free, NULL);
 
 		nl_data_free(link->l_phys_port_id);
+		nl_data_free(link->l_phys_switch_id);
 
 		if (link->ce_mask & LINK_ATTR_VF_LIST)
 			rtnl_link_sriov_free_data(link);
@@ -318,6 +320,10 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 		if (!(dst->l_phys_port_id = nl_data_clone(src->l_phys_port_id)))
 			return -NLE_NOMEM;
 
+	if (src->l_phys_switch_id)
+		if (!(dst->l_phys_switch_id = nl_data_clone(src->l_phys_switch_id)))
+			return -NLE_NOMEM;
+
 	if (src->ce_mask & LINK_ATTR_VF_LIST)
 		if ((err = rtnl_link_sriov_clone(dst, src)) < 0)
 			return err;
@@ -353,6 +359,7 @@ struct nla_policy rtln_link_policy[IFLA_MAX+1] = {
 	[IFLA_CARRIER_CHANGES]	= { .type = NLA_U32 },
 	[IFLA_PHYS_PORT_ID]	= { .type = NLA_UNSPEC },
 	[IFLA_PHYS_PORT_NAME]	= { .type = NLA_STRING, .maxlen = IFNAMSIZ },
+	[IFLA_PHYS_SWITCH_ID]	= { .type = NLA_UNSPEC },
 	[IFLA_NET_NS_PID]	= { .type = NLA_U32 },
 	[IFLA_NET_NS_FD]	= { .type = NLA_U32 },
 };
@@ -741,6 +748,15 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (tb[IFLA_PHYS_PORT_NAME]) {
 		nla_strlcpy(link->l_phys_port_name, tb[IFLA_PHYS_PORT_NAME], IFNAMSIZ);
 		link->ce_mask |= LINK_ATTR_PHYS_PORT_NAME;
+	}
+
+	if (tb[IFLA_PHYS_SWITCH_ID]) {
+		link->l_phys_switch_id = nl_data_alloc_attr(tb[IFLA_PHYS_SWITCH_ID]);
+		if (link->l_phys_switch_id == NULL) {
+			err = -NLE_NOMEM;
+			goto errout;
+		}
+		link->ce_mask |= LINK_ATTR_PHYS_SWITCH_ID;
 	}
 
 	err = pp->pp_cb((struct nl_object *) link, pp);
@@ -1137,6 +1153,7 @@ static const struct trans_tbl link_attrs[] = {
 	__ADD(LINK_ATTR_CARRIER_CHANGES, carrier_changes),
 	__ADD(LINK_ATTR_PHYS_PORT_ID, phys_port_id),
 	__ADD(LINK_ATTR_PHYS_PORT_NAME, phys_port_name),
+	__ADD(LINK_ATTR_PHYS_SWITCH_ID, phys_switch_id),
 	__ADD(LINK_ATTR_NS_FD, ns_fd),
 	__ADD(LINK_ATTR_NS_PID, ns_pid),
 	__ADD(LINK_ATTR_LINK_NETNSID, link_netnsid),
@@ -2654,6 +2671,17 @@ struct nl_data *rtnl_link_get_phys_port_id(struct rtnl_link *link)
 char *rtnl_link_get_phys_port_name(struct rtnl_link *link)
 {
 	return link->l_phys_port_name;
+}
+
+/*
+ * Return physical switch id of link object
+ * @arg link		Link object
+ *
+ * @return Physical switch id or NULL if not set.
+ */
+struct nl_data *rtnl_link_get_phys_switch_id(struct rtnl_link *link)
+{
+	return link->l_phys_switch_id;
 }
 
 void rtnl_link_set_ns_fd(struct rtnl_link *link, int fd)

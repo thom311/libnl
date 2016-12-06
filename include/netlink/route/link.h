@@ -236,6 +236,8 @@ extern struct nl_data *	rtnl_link_get_phys_port_id(struct rtnl_link *);
 
 extern char*	rtnl_link_get_phys_port_name(struct rtnl_link *);
 
+extern struct nl_data *	rtnl_link_get_phys_switch_id(struct rtnl_link *);
+
 extern void	rtnl_link_set_ns_fd(struct rtnl_link *, int);
 extern int	rtnl_link_get_ns_fd(struct rtnl_link *);
 extern void	rtnl_link_set_ns_pid(struct rtnl_link *, pid_t);

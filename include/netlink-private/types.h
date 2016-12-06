@@ -221,6 +221,7 @@ struct rtnl_link
 	uint32_t			l_carrier_changes;
 	struct rtnl_link_af_ops *	l_af_ops;
 	struct nl_data *		l_phys_port_id;
+	char				l_phys_port_name[IFNAMSIZ];
 	int				l_ns_fd;
 	pid_t				l_ns_pid;
 	struct rtnl_link_vf *		l_vf_list;

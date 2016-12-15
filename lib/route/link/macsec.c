@@ -104,7 +104,7 @@ static int macsec_parse(struct rtnl_link *link, struct nlattr *data,
 	info = link->l_info;
 
 	if (tb[IFLA_MACSEC_SCI]) {
-		info->sci = ntohll(nla_get_u64(tb[IFLA_MACSEC_SCI]));
+		info->sci = nla_get_u64(tb[IFLA_MACSEC_SCI]);
 		info->ce_mask |= MACSEC_ATTR_SCI;
 	}
 
@@ -277,7 +277,7 @@ static int macsec_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 		return -NLE_MSGSIZE;
 
 	if (info->ce_mask & MACSEC_ATTR_SCI)
-		NLA_PUT_U64(msg, IFLA_MACSEC_SCI, htonll(info->sci));
+		NLA_PUT_U64(msg, IFLA_MACSEC_SCI, info->sci);
 	else if (info->ce_mask & MACSEC_ATTR_PORT)
 		NLA_PUT_U16(msg, IFLA_MACSEC_PORT, htons(info->port));
 

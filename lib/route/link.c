@@ -346,8 +346,8 @@ struct nla_policy rtln_link_policy[IFLA_MAX+1] = {
 	[IFLA_LINKINFO]		= { .type = NLA_NESTED },
 	[IFLA_QDISC]		= { .type = NLA_STRING,
 				    .maxlen = IFQDISCSIZ },
-	[IFLA_STATS]		= { .minlen = _nl_offset_plus_sizeof (struct rtnl_link_stats, tx_compressed) },
-	[IFLA_STATS64]		= { .minlen = _nl_offset_plus_sizeof (struct rtnl_link_stats64, tx_compressed) },
+	[IFLA_STATS]		= { .minlen = _nl_offsetofend (struct rtnl_link_stats, tx_compressed) },
+	[IFLA_STATS64]		= { .minlen = _nl_offsetofend (struct rtnl_link_stats64, tx_compressed) },
 	[IFLA_MAP]		= { .minlen = sizeof(struct rtnl_link_ifmap) },
 	[IFLA_IFALIAS]		= { .type = NLA_STRING, .maxlen = IFALIASZ },
 	[IFLA_NUM_VF]		= { .type = NLA_U32 },
@@ -413,9 +413,9 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 		link->l_stats[RTNL_LINK_TX_COMPRESSED]	= st->tx_compressed;
 
 		/* beware: @st might not be the full struct, only fields up to
-		 * tx_compressed are present. See _nl_offset_plus_sizeof() above. */
+		 * tx_compressed are present. See _nl_offsetofend() above. */
 
-		if (nla_len(tb[IFLA_STATS]) >= _nl_offset_plus_sizeof (struct rtnl_link_stats, rx_nohandler))
+		if (nla_len(tb[IFLA_STATS]) >= _nl_offsetofend (struct rtnl_link_stats, rx_nohandler))
 			link->l_stats[RTNL_LINK_RX_NOHANDLER] = st->rx_nohandler;
 		else
 			link->l_stats[RTNL_LINK_RX_NOHANDLER] = 0;
@@ -463,7 +463,7 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 		link->l_stats[RTNL_LINK_TX_COMPRESSED]	= st.tx_compressed;
 
 		/* beware: @st might not be the full struct, only fields up to
-		 * tx_compressed are present. See _nl_offset_plus_sizeof() above. */
+		 * tx_compressed are present. See _nl_offsetofend() above. */
 
 		link->l_stats[RTNL_LINK_RX_NOHANDLER]	= st.rx_nohandler;
 

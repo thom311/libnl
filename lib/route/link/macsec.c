@@ -9,6 +9,18 @@
  * Copyright (c) 2016 Sabrina Dubroca <sd@queasysnail.net>
  */
 
+/**
+ * @ingroup link
+ * @defgroup macsec MACsec
+ * MACsec link module
+ *
+ * @details
+ * \b Link Type Name: "macsec"
+ *
+ * @route_doc{link_macsec, MACsec Documentation}
+ *
+ * @{
+ */
 #include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
@@ -20,6 +32,7 @@
 
 #include <linux/if_macsec.h>
 
+/** @cond SKIP */
 #define MACSEC_ATTR_SCI			(1 << 0)
 #define MACSEC_ATTR_ICV_LEN		(1 << 1)
 #define MACSEC_ATTR_CIPHER_SUITE	(1 << 2)
@@ -49,6 +62,10 @@ struct macsec_info {
 	uint32_t ce_mask;
 };
 
+#define DEFAULT_ICV_LEN 16
+
+/** @endcond */
+
 static struct nla_policy macsec_policy[IFLA_MACSEC_MAX+1] = {
 	[IFLA_MACSEC_SCI] = { .type = NLA_U64 },
 	[IFLA_MACSEC_ICV_LEN] = { .type = NLA_U8 },
@@ -64,8 +81,16 @@ static struct nla_policy macsec_policy[IFLA_MACSEC_MAX+1] = {
 	[IFLA_MACSEC_VALIDATION] = { .type = NLA_U8 },
 };
 
-#define DEFAULT_ICV_LEN 16
+/**
+ * @name MACsec Object
+ * @{
+ */
 
+/**
+ * Allocate link object of type MACsec
+ *
+ * @return Allocated link object or NULL.
+ */
 static int macsec_alloc(struct rtnl_link *link)
 {
 	struct macsec_info *info;
@@ -104,7 +129,7 @@ static int macsec_parse(struct rtnl_link *link, struct nlattr *data,
 	info = link->l_info;
 
 	if (tb[IFLA_MACSEC_SCI]) {
-		info->sci = ntohll(nla_get_u64(tb[IFLA_MACSEC_SCI]));
+		info->sci = nla_get_u64(tb[IFLA_MACSEC_SCI]);
 		info->ce_mask |= MACSEC_ATTR_SCI;
 	}
 
@@ -195,7 +220,9 @@ static char *replay_protect_str(char *buf, uint8_t replay_protect, uint8_t windo
 	return buf;
 }
 
+/** @cond SKIP */
 #define PRINT_FLAG(buf, i, field, c) ({ if (i->field == 1) *buf++ = c; })
+/** @endcond */
 static char *flags_str(char *buf, unsigned char len, struct macsec_info *info)
 {
 	char *tmp = buf;
@@ -234,7 +261,7 @@ static void macsec_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 	struct macsec_info *info = link->l_info;
 	char tmp[128];
 
-	nl_dump(p, "sci %016llx <%s>", info->sci, flags_str(tmp, sizeof(tmp), info));
+	nl_dump(p, "sci %016llx <%s>", ntohll(info->sci), flags_str(tmp, sizeof(tmp), info));
 }
 
 static void macsec_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
@@ -243,7 +270,7 @@ static void macsec_dump_details(struct rtnl_link *link, struct nl_dump_params *p
 	char tmp[128];
 
 	nl_dump(p, "    sci %016llx protect %s encoding_sa %d encrypt %s send_sci %s validate %s %s\n",
-		info->sci, values_on_off[info->protect], info->encoding_sa, values_on_off[info->encrypt], values_on_off[info->send_sci],
+		ntohll(info->sci), values_on_off[info->protect], info->encoding_sa, values_on_off[info->encrypt], values_on_off[info->send_sci],
 		VALIDATE_STR[info->validate],
 		replay_protect_str(tmp, info->replay_protect, info->window));
 	nl_dump(p, "    cipher suite: %016llx, icv_len %d\n",
@@ -277,7 +304,7 @@ static int macsec_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 		return -NLE_MSGSIZE;
 
 	if (info->ce_mask & MACSEC_ATTR_SCI)
-		NLA_PUT_U64(msg, IFLA_MACSEC_SCI, htonll(info->sci));
+		NLA_PUT_U64(msg, IFLA_MACSEC_SCI, info->sci);
 	else if (info->ce_mask & MACSEC_ATTR_PORT)
 		NLA_PUT_U16(msg, IFLA_MACSEC_PORT, htons(info->port));
 
@@ -387,11 +414,13 @@ static void __exit macsec_exit(void)
 	rtnl_link_unregister_info(&macsec_info_ops);
 }
 
+/** @cond SKIP */
 #define IS_MACSEC_LINK_ASSERT(link) \
 	if ((link)->l_info_ops != &macsec_info_ops) { \
 		APPBUG("Link is not a MACsec link. set type \"macsec\" first."); \
 		return -NLE_OPNOTSUPP; \
 	}
+/** @endcond */
 
 struct rtnl_link *rtnl_link_macsec_alloc(void)
 {
@@ -408,6 +437,13 @@ struct rtnl_link *rtnl_link_macsec_alloc(void)
 	return link;
 }
 
+/**
+ * Set SCI
+ * @arg link		Link object
+ * @arg sci		Secure Channel Identifier in network byte order
+ *
+ * @return 0 on success or a negative error code.
+ */
 int rtnl_link_macsec_set_sci(struct rtnl_link *link, uint64_t sci)
 {
 	struct macsec_info *info = link->l_info;
@@ -420,6 +456,14 @@ int rtnl_link_macsec_set_sci(struct rtnl_link *link, uint64_t sci)
 	return 0;
 }
 
+/**
+ * Get SCI
+ * @arg link		Link object
+ * @arg sci		On return points to the Secure Channel Identifier
+ *			in network byte order
+ *
+ * @return 0 on success or a negative error code.
+ */
 int rtnl_link_macsec_get_sci(struct rtnl_link *link, uint64_t *sci)
 {
 	struct macsec_info *info = link->l_info;
@@ -435,6 +479,13 @@ int rtnl_link_macsec_get_sci(struct rtnl_link *link, uint64_t *sci)
 	return 0;
 }
 
+/**
+ * Set port identifier
+ * @arg link		Link object
+ * @arg port		Port identifier in host byte order
+ *
+ * @return 0 on success or a negative error code.
+ */
 int rtnl_link_macsec_set_port(struct rtnl_link *link, uint16_t port)
 {
 	struct macsec_info *info = link->l_info;
@@ -447,6 +498,13 @@ int rtnl_link_macsec_set_port(struct rtnl_link *link, uint16_t port)
 	return 0;
 }
 
+/**
+ * Get port identifier
+ * @arg link		Link object
+ * @arg port		On return points to the port identifier in host byte order
+ *
+ * @return 0 on success or a negative error code.
+ */
 int rtnl_link_macsec_get_port(struct rtnl_link *link, uint16_t *port)
 {
 	struct macsec_info *info = link->l_info;
@@ -785,3 +843,7 @@ int rtnl_link_macsec_get_scb(struct rtnl_link *link, uint8_t *scb)
 
 	return 0;
 }
+
+/** @} */
+
+/** @} */

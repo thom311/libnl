@@ -1193,6 +1193,15 @@ int nl_has_capability (int capability)
 			NL_CAPABILITY_XFRM_SEC_CTX_LEN,
 			NL_CAPABILITY_LINK_BUILD_ADD_REQUEST_SET_CHANGE,
 			NL_CAPABILITY_NL_RECVMSGS_PEEK_BY_DEFAULT),
+		_NL_SET (3,
+			NL_CAPABILITY_VERSION_3_2_29,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0),
 		/* IMPORTANT: these capability numbers are intended to be universal and stable
 		 * for libnl3. Don't allocate new numbers on your own that differ from upstream
 		 * libnl3.

@@ -239,12 +239,6 @@ nla_put_failure:
 	return err;
 }
 
-void tca_set_kind(struct rtnl_tc *t, const char *kind)
-{
-	strncpy(t->tc_kind, kind, sizeof(t->tc_kind) - 1);
-	t->ce_mask |= TCA_ATTR_KIND;
-}
-
 
 /** @endcond */
 

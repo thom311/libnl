@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 
 AM_CPPFLAGS  =			 	\
-	-Wall \
+	-Wall -Wmissing-prototypes \
 	-I${top_srcdir}/include/linux-private \
 	-I${top_srcdir}/include \
 	-I${top_builddir}/include \

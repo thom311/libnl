@@ -46,6 +46,7 @@
  * ~~~~
  */
 
+#include <netlink/xfrm/template.h>
 #include <netlink-private/netlink.h>
 
 void xfrmnl_user_tmpl_free(struct xfrmnl_user_tmpl* utmpl)
@@ -229,7 +230,7 @@ int xfrmnl_user_tmpl_get_family(struct xfrmnl_user_tmpl *utmpl)
 	return utmpl->family;
 }
 
-int xfrmnl_user_tmpl_set_family(struct xfrmnl_user_tmpl *utmpl, int family)
+int xfrmnl_user_tmpl_set_family(struct xfrmnl_user_tmpl *utmpl, unsigned int family)
 {
 	utmpl->family = family;
 

@@ -26,7 +26,7 @@ extern "C" {
 	extern uint32_t rtnl_link_sit_get_link(struct rtnl_link *link);
 
 	extern int rtnl_link_sit_set_local(struct rtnl_link *link, uint32_t addr);
-	extern uint32_t rtnl_link_get_sit_local(struct rtnl_link *link);
+	extern uint32_t rtnl_link_sit_get_local(struct rtnl_link *link);
 
 	extern int rtnl_link_sit_set_remote(struct rtnl_link *link, uint32_t addr);
 	extern uint32_t rtnl_link_sit_get_remote(struct rtnl_link *link);

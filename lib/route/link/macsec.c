@@ -27,6 +27,7 @@
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
+#include <netlink/route/link/macsec.h>
 #include <netlink-private/route/link/api.h>
 #include <netlink-private/utils.h>
 

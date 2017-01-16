@@ -126,6 +126,7 @@ extern int rtnl_link_vf_get_vlans(struct rtnl_link_vf *, nl_vf_vlans_t **);
 extern void rtnl_link_vf_set_vlans(struct rtnl_link_vf *, nl_vf_vlans_t *);
 
 extern int rtnl_link_vf_vlan_alloc(nl_vf_vlans_t **, int);
+extern void rtnl_link_vf_vlan_free(nl_vf_vlans_t *vf_vlans);
 extern void rtnl_link_vf_vlan_put(nl_vf_vlans_t *);
 
 /* Utility functions */

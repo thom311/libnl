@@ -35,6 +35,13 @@ extern int			flnl_lookup(struct nl_sock *,
 					    struct flnl_request *,
 					    struct nl_cache *);
 
+extern int flnl_result_get_table_id(struct flnl_result *res);
+extern int flnl_result_get_prefixlen(struct flnl_result *res);
+extern int flnl_result_get_nexthop_sel(struct flnl_result *res);
+extern int flnl_result_get_type(struct flnl_result *res);
+extern int flnl_result_get_scope(struct flnl_result *res);
+extern int flnl_result_get_error(struct flnl_result *res);
+
 #ifdef __cplusplus
 }
 #endif

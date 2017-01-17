@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 	FILE *fd;
 	char buf[2048], p[64];
 
-	fd = fopen(PROC_NETLINK, "r");
+	fd = fopen(PROC_NETLINK, "re");
 	if (fd == NULL) {
 		perror("fopen");
 		return -1;

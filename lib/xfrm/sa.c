@@ -42,6 +42,7 @@
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/object.h>
+#include <netlink/xfrm/sa.h>
 #include <netlink/xfrm/selector.h>
 #include <netlink/xfrm/lifetime.h>
 #include <time.h>

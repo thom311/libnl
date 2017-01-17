@@ -432,13 +432,20 @@ static void get_psched_settings(void)
 	char name[FILENAME_MAX];
 	FILE *fd;
 	int got_hz = 0;
-	static int initialized = 0;
-	if (initialized == 1) {
-		return;
-	}
+	static volatile int initialized = 0;
+	const char *ev;
+	NL_LOCK(mutex);
 
-	if (getenv("HZ")) {
-		long hz = strtol(getenv("HZ"), NULL, 0);
+	if (initialized == 1)
+		return;
+
+	nl_lock(&mutex);
+
+	if (initialized == 1)
+		return;
+
+	if ((ev = getenv("HZ"))) {
+		long hz = strtol(ev, NULL, 0);
 
 		if (LONG_MIN != hz && LONG_MAX != hz) {
 			user_hz = hz;
@@ -451,16 +458,15 @@ static void get_psched_settings(void)
 
 	psched_hz = user_hz;
 
-	if (getenv("TICKS_PER_USEC")) {
-		double t = strtod(getenv("TICKS_PER_USEC"), NULL);
+	if ((ev = getenv("TICKS_PER_USEC"))) {
+		double t = strtod(ev, NULL);
 		ticks_per_usec = t;
 	}
 	else {
-		if (getenv("PROC_NET_PSCHED"))
-			snprintf(name, sizeof(name), "%s", getenv("PROC_NET_PSCHED"));
-		else if (getenv("PROC_ROOT"))
-			snprintf(name, sizeof(name), "%s/net/psched",
-				 getenv("PROC_ROOT"));
+		if ((ev = getenv("PROC_NET_PSCHED")))
+			snprintf(name, sizeof(name), "%s", ev);
+		else if ((ev = getenv("PROC_ROOT")))
+			snprintf(name, sizeof(name), "%s/net/psched", ev);
 		else
 			strncpy(name, "/proc/net/psched", sizeof(name) - 1);
 
@@ -485,6 +491,8 @@ static void get_psched_settings(void)
 		}
 	}
 	initialized = 1;
+
+	nl_unlock(&mutex);
 }
 
 

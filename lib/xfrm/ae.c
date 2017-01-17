@@ -123,6 +123,7 @@
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/object.h>
+#include <netlink/xfrm/ae.h>
 #include <linux/xfrm.h>
 
 /** @cond SKIP */

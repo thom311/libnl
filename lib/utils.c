@@ -427,14 +427,25 @@ static double ticks_per_usec = 1.0f;
  * Supports the environment variables:
  *   PROC_NET_PSCHED  - may point to psched file in /proc
  *   PROC_ROOT        - may point to /proc fs */ 
-static void __init get_psched_settings(void)
+static void get_psched_settings(void)
 {
 	char name[FILENAME_MAX];
 	FILE *fd;
 	int got_hz = 0;
+	static volatile int initialized = 0;
+	const char *ev;
+	NL_LOCK(mutex);
 
-	if (getenv("HZ")) {
-		long hz = strtol(getenv("HZ"), NULL, 0);
+	if (initialized == 1)
+		return;
+
+	nl_lock(&mutex);
+
+	if (initialized == 1)
+		return;
+
+	if ((ev = getenv("HZ"))) {
+		long hz = strtol(ev, NULL, 0);
 
 		if (LONG_MIN != hz && LONG_MAX != hz) {
 			user_hz = hz;
@@ -447,16 +458,15 @@ static void __init get_psched_settings(void)
 
 	psched_hz = user_hz;
 
-	if (getenv("TICKS_PER_USEC")) {
-		double t = strtod(getenv("TICKS_PER_USEC"), NULL);
+	if ((ev = getenv("TICKS_PER_USEC"))) {
+		double t = strtod(ev, NULL);
 		ticks_per_usec = t;
 	}
 	else {
-		if (getenv("PROC_NET_PSCHED"))
-			snprintf(name, sizeof(name), "%s", getenv("PROC_NET_PSCHED"));
-		else if (getenv("PROC_ROOT"))
-			snprintf(name, sizeof(name), "%s/net/psched",
-				 getenv("PROC_ROOT"));
+		if ((ev = getenv("PROC_NET_PSCHED")))
+			snprintf(name, sizeof(name), "%s", ev);
+		else if ((ev = getenv("PROC_ROOT")))
+			snprintf(name, sizeof(name), "%s/net/psched", ev);
 		else
 			strncpy(name, "/proc/net/psched", sizeof(name) - 1);
 
@@ -480,6 +490,9 @@ static void __init get_psched_settings(void)
 			fclose(fd);
 		}
 	}
+	initialized = 1;
+
+	nl_unlock(&mutex);
 }
 
 
@@ -488,6 +501,7 @@ static void __init get_psched_settings(void)
  */
 int nl_get_user_hz(void)
 {
+	get_psched_settings();
 	return user_hz;
 }
 
@@ -496,6 +510,7 @@ int nl_get_user_hz(void)
  */
 int nl_get_psched_hz(void)
 {
+	get_psched_settings();
 	return psched_hz;
 }
 
@@ -506,6 +521,7 @@ int nl_get_psched_hz(void)
  */
 uint32_t nl_us2ticks(uint32_t us)
 {
+	get_psched_settings();
 	return us * ticks_per_usec;
 }
 
@@ -517,6 +533,7 @@ uint32_t nl_us2ticks(uint32_t us)
  */
 uint32_t nl_ticks2us(uint32_t ticks)
 {
+	get_psched_settings();
 	return ticks / ticks_per_usec;
 }
 

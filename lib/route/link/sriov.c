@@ -568,7 +568,9 @@ int rtnl_link_sriov_parse_vflist(struct rtnl_link *link, struct nlattr **tb) {
 			list_len = 0;
 			nla_for_each_nested(nla_list, t[IFLA_VF_VLAN_LIST],
 					    list_rem) {
-				vf_vlan_info[len] = nla_data(nla_list);
+				if (list_len >= MAX_VLAN_LIST_LEN)
+					break;
+				vf_vlan_info[list_len] = nla_data(nla_list);
 				list_len++;
 			}
 

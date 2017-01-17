@@ -22,7 +22,6 @@
 #define _LINUX_IN6_H
 
 #include <linux/types.h>
-#include <linux/libc-compat.h>
 
 /*
  *	IPv6 address structure

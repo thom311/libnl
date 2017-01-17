@@ -75,7 +75,7 @@ int __nl_read_num_str_file(const char *path, int (*cb)(long, const char *))
 	FILE *fd;
 	char buf[128];
 
-	fd = fopen(path, "r");
+	fd = fopen(path, "re");
 	if (fd == NULL)
 		return -nl_syserr2nlerr(errno);
 
@@ -470,7 +470,7 @@ static void get_psched_settings(void)
 		else
 			strncpy(name, "/proc/net/psched", sizeof(name) - 1);
 
-		if ((fd = fopen(name, "r"))) {
+		if ((fd = fopen(name, "re"))) {
 			unsigned int ns_per_usec, ns_per_tick, nom, denom;
 
 			if (fscanf(fd, "%08x %08x %08x %08x",

@@ -109,7 +109,7 @@ static int read_pktlocs(void)
 
 	NL_DBG(2, "Reading packet location file \"%s\"\n", path);
 
-	if (!(fd = fopen(path, "r"))) {
+	if (!(fd = fopen(path, "re"))) {
 		err = -NLE_PKTLOC_FILE;
 		goto errout;
 	}

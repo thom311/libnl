@@ -901,7 +901,7 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 
 	for (i = 0; i < ARRAY_SIZE(test_path); i++) {
 		snprintf(name, NAME_MAX, "%s%s%s", test_path[i], dist_type, dist_suffix);
-		if ((f = fopen(name, "r")))
+		if ((f = fopen(name, "re")))
 			break;
 	}
 

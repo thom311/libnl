@@ -328,7 +328,7 @@ int rtnl_tc_read_classid_file(void)
 		}
 	}
 
-	if (!(fd = fopen(path, "r"))) {
+	if (!(fd = fopen(path, "re"))) {
 		err = -nl_syserr2nlerr(errno);
 		goto errout;
 	}
@@ -402,7 +402,7 @@ int rtnl_classid_generate(const char *name, uint32_t *result, uint32_t parent)
 	if (build_sysconf_path(&path, "classid") < 0)
 		return -NLE_NOMEM;
 
-	if (!(fd = fopen(path, "a"))) {
+	if (!(fd = fopen(path, "ae"))) {
 		err = -nl_syserr2nlerr(errno);
 		goto errout;
 	}

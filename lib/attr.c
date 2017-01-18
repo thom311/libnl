@@ -457,7 +457,10 @@ struct nlattr *nla_reserve(struct nl_msg *msg, int attrtype, int attrlen)
 {
 	struct nlattr *nla;
 	int tlen;
-	
+
+	if (attrlen < 0)
+		return NULL;
+
 	tlen = NLMSG_ALIGN(msg->nm_nlh->nlmsg_len) + nla_total_size(attrlen);
 
 	if (tlen > msg->nm_size)
@@ -499,8 +502,12 @@ int nla_put(struct nl_msg *msg, int attrtype, int datalen, const void *data)
 	struct nlattr *nla;
 
 	nla = nla_reserve(msg, attrtype, datalen);
-	if (!nla)
+	if (!nla) {
+		if (datalen < 0)
+			return -NLE_INVAL;
+
 		return -NLE_NOMEM;
+	}
 
 	if (datalen > 0) {
 		memcpy(nla_data(nla), data, datalen);

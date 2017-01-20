@@ -43,6 +43,10 @@ extern int		    idiagnl_req_set_src(struct idiagnl_req *,
 extern struct nl_addr *	    idiagnl_req_get_dst(const struct idiagnl_req *);
 extern int		    idiagnl_req_set_dst(struct idiagnl_req *,
                                                 struct nl_addr *);
+
+extern int		    idiagnl_req_parse(struct nlmsghdr *nlh,
+					      struct idiagnl_req **result);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

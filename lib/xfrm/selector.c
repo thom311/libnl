@@ -46,6 +46,7 @@
  * ~~~~
  */
 
+#include <netlink/xfrm/selector.h>
 #include <netlink-private/netlink.h>
 
 static void sel_destroy(struct xfrmnl_sel* sel)
@@ -281,7 +282,7 @@ int xfrmnl_sel_get_family(struct xfrmnl_sel *sel)
 	return sel->family;
 }
 
-int xfrmnl_sel_set_family(struct xfrmnl_sel *sel, int family)
+int xfrmnl_sel_set_family(struct xfrmnl_sel *sel, unsigned int family)
 {
 	sel->family = family;
 

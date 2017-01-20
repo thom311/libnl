@@ -818,6 +818,10 @@ uint8_t rtnl_link_ipgre_get_pmtudisc(struct rtnl_link *link)
 	return ipgre->pmtudisc;
 }
 
+/* Function prototype for ABI-preserving wrapper (not in public header) to avoid
+ * GCC warning about missing prototype. */
+uint8_t rtnl_link_get_pmtudisc(struct rtnl_link *link);
+
 uint8_t rtnl_link_get_pmtudisc(struct rtnl_link *link)
 {
 	/* rtnl_link_ipgre_get_pmtudisc() was wrongly named. Keep this

@@ -82,7 +82,10 @@ extern uint16_t nfnl_exp_get_zone(const struct nfnl_exp *);
 
 extern void nfnl_exp_set_flags(struct nfnl_exp *, uint32_t);
 extern int  nfnl_exp_test_flags(const struct nfnl_exp *);
+extern void nfnl_exp_unset_flags(struct nfnl_exp *exp, uint32_t flags);
 extern uint32_t nfnl_exp_get_flags(const struct nfnl_exp *);
+extern char * nfnl_exp_flags2str(int flags, char *buf, size_t len);
+int nfnl_exp_str2flags(const char *name);
 
 extern void nfnl_exp_set_class(struct nfnl_exp *, uint32_t);
 extern int  nfnl_exp_test_class(const struct nfnl_exp *);

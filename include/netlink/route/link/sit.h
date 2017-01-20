@@ -22,11 +22,13 @@ extern "C" {
 	extern struct rtnl_link *rtnl_link_sit_alloc(void);
 	extern int rtnl_link_sit_add(struct nl_sock *sk, const char *name);
 
+	extern int rtnl_link_is_sit(struct rtnl_link *link);
+
 	extern int rtnl_link_sit_set_link(struct rtnl_link *link,  uint32_t index);
 	extern uint32_t rtnl_link_sit_get_link(struct rtnl_link *link);
 
 	extern int rtnl_link_sit_set_local(struct rtnl_link *link, uint32_t addr);
-	extern uint32_t rtnl_link_get_sit_local(struct rtnl_link *link);
+	extern uint32_t rtnl_link_sit_get_local(struct rtnl_link *link);
 
 	extern int rtnl_link_sit_set_remote(struct rtnl_link *link, uint32_t addr);
 	extern uint32_t rtnl_link_sit_get_remote(struct rtnl_link *link);

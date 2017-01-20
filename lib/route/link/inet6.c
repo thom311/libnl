@@ -13,6 +13,7 @@
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/route/rtnl.h>
+#include <netlink/route/link/inet6.h>
 #include <netlink-private/route/link/api.h>
 
 #define I6_ADDR_GEN_MODE_UNKNOWN	UINT8_MAX

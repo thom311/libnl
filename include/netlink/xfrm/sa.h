@@ -141,8 +141,8 @@ extern int                      xfrmnl_sa_set_coaddr (struct xfrmnl_sa*, struct 
 extern int                      xfrmnl_sa_get_mark (struct xfrmnl_sa*, unsigned int*, unsigned int*);
 extern int                      xfrmnl_sa_set_mark (struct xfrmnl_sa*, unsigned int, unsigned int);
 
-extern int                      xfrmnl_sa_get_sec_ctx (struct xfrmnl_sa*, unsigned int, unsigned int,
-                                                       unsigned int, unsigned int, char*);
+extern int                      xfrmnl_sa_get_sec_ctx (struct xfrmnl_sa*, unsigned int*, unsigned int*,
+                                                       unsigned int*, unsigned int*, char*);
 extern int                      xfrmnl_sa_set_sec_ctx (struct xfrmnl_sa*, unsigned int, unsigned int,
                                                        unsigned int, unsigned int, const char*);
 

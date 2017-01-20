@@ -128,52 +128,55 @@ nobase_libnlinclude_HEADERS += \
 endif
 
 noinst_HEADERS = \
+	linux-private/linux/can/netlink.h \
 	linux-private/linux/fib_rules.h \
-	linux-private/linux/genetlink.h \
 	linux-private/linux/gen_stats.h \
+	linux-private/linux/genetlink.h \
+	linux-private/linux/if.h \
 	linux-private/linux/if_addr.h \
 	linux-private/linux/if_arp.h \
-	linux-private/linux/if_ether.h \
-	linux-private/linux/if.h \
 	linux-private/linux/if_bridge.h \
+	linux-private/linux/if_ether.h \
 	linux-private/linux/if_link.h \
 	linux-private/linux/if_macsec.h \
 	linux-private/linux/if_tunnel.h \
 	linux-private/linux/if_vlan.h \
+	linux-private/linux/in.h \
+	linux-private/linux/in6.h \
 	linux-private/linux/inet_diag.h \
 	linux-private/linux/ip.h \
 	linux-private/linux/ip_mp_alg.h \
 	linux-private/linux/ipv6.h \
-	linux-private/linux/can/netlink.h \
+	linux-private/linux/libc-compat.h \
 	linux-private/linux/neighbour.h \
 	linux-private/linux/netfilter.h \
 	linux-private/linux/netfilter/nf_conntrack_common.h \
+	linux-private/linux/netfilter/nfnetlink.h \
 	linux-private/linux/netfilter/nfnetlink_compat.h \
 	linux-private/linux/netfilter/nfnetlink_conntrack.h \
-	linux-private/linux/netfilter/nfnetlink.h \
 	linux-private/linux/netfilter/nfnetlink_log.h \
 	linux-private/linux/netfilter/nfnetlink_queue.h \
 	linux-private/linux/netlink.h \
 	linux-private/linux/pkt_cls.h \
-	linux-private/linux/sock_diag.h \
-	linux-private/linux/socket.h \
-	linux-private/linux/tc_act/tc_mirred.h \
-	linux-private/linux/tc_act/tc_skbedit.h \
-	linux-private/linux/tc_act/tc_gact.h \
 	linux-private/linux/pkt_sched.h \
 	linux-private/linux/rtnetlink.h \
 	linux-private/linux/snmp.h \
+	linux-private/linux/sock_diag.h \
+	linux-private/linux/socket.h \
+	linux-private/linux/tc_act/tc_gact.h \
+	linux-private/linux/tc_act/tc_mirred.h \
+	linux-private/linux/tc_act/tc_skbedit.h \
+	linux-private/linux/tc_ematch/tc_em_meta.h \
 	linux-private/linux/veth.h \
 	linux-private/linux/xfrm.h \
-	linux-private/linux/tc_ematch/tc_em_meta.h \
+	netlink-private/cache-api.h \
 	netlink-private/genl.h \
 	netlink-private/netlink.h \
-	netlink-private/socket.h \
-	netlink-private/tc.h \
-	netlink-private/types.h \
-	netlink-private/utils.h \
-	netlink-private/cache-api.h \
 	netlink-private/object-api.h \
 	netlink-private/route/link/api.h \
 	netlink-private/route/link/sriov.h \
-	netlink-private/route/tc-api.h
+	netlink-private/route/tc-api.h \
+	netlink-private/socket.h \
+	netlink-private/tc.h \
+	netlink-private/types.h \
+	netlink-private/utils.h

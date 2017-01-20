@@ -621,7 +621,9 @@ errout:
  *
  * This function blocks until data is available to be read unless the socket
  * has been put into non-blocking mode using nl_socket_set_nonblocking() in
- * which case this function will return immediately with a return value of 0.
+ * which case this function will return immediately with a return value of
+ * -NLA_AGAIN (versions before 3.2.22 returned instead 0, in which case you
+ * should check first clear errno and then check for errno EAGAIN).
  *
  * The buffer size used when reading from the netlink socket and thus limiting
  * the maximum size of a netlink message that can be read defaults to the size

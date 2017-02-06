@@ -411,6 +411,9 @@ void *nlmsg_reserve(struct nl_msg *n, size_t len, int pad)
 	size_t nlmsg_len = n->nm_nlh->nlmsg_len;
 	size_t tlen;
 
+	if (len > n->nm_size)
+		return NULL;
+
 	tlen = pad ? ((len + (pad - 1)) & ~(pad - 1)) : len;
 
 	if ((tlen + nlmsg_len) > n->nm_size)

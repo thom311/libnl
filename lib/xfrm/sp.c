@@ -765,8 +765,7 @@ static int build_xfrm_sp_message(struct xfrmnl_sp *tmpl, int cmd, int flags, str
 	uint32_t                    len;
 	struct nl_addr*             addr;
 
-	if (!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) ||
-	    !(tmpl->ce_mask & XFRM_SP_ATTR_DIR))
+	if (!(tmpl->ce_mask & XFRM_SP_ATTR_DIR))
 		return -NLE_MISSING_ATTR;
 
 	memset ((void*)&sp_info, 0, sizeof (sp_info));

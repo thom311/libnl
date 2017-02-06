@@ -1172,21 +1172,33 @@ int xfrmnl_sp_get_sec_ctx (struct xfrmnl_sp* sp, unsigned int* len, unsigned int
 
 	return 0;
 }
-
-int xfrmnl_sp_set_sec_ctx (struct xfrmnl_sp* sp, unsigned int len, unsigned int exttype, unsigned int alg, unsigned int doi, unsigned int ctx_len, char* ctx_str)
+/**
+ * @brief      Set security context (ctx_str) for XFRM Polixy.
+ *
+ * @param      sp       XFRM Policy
+ * @param[in]  len      !!! depricated unused parameter !!!
+ * @param[in]  exttype  netlink message attribute - probably XFRMA_SEC_CTX
+ * @param[in]  alg      security context algorithm
+ * @param[in]  doi      security context domain interpretation
+ * @param[in]  ctx_len  Length of the context string.
+ * @param      ctx_str  The context string.
+ *
+ * @return     0 if sucessfull, else -1
+ */
+int xfrmnl_sp_set_sec_ctx (struct xfrmnl_sp* sp, unsigned int len __attribute__((unused)), unsigned int exttype, unsigned int alg, unsigned int doi, unsigned int ctx_len, char* ctx_str)
 {
 	/* Free up the old context string and allocate new one */
 	if (sp->sec_ctx)
 		free (sp->sec_ctx);
-	if ((sp->sec_ctx = calloc (1, sizeof (struct xfrmnl_user_sec_ctx) + (sizeof (uint8_t) * ctx_len))) == NULL)
+	if ((sp->sec_ctx = calloc (1, sizeof(struct xfrmnl_user_sec_ctx) + ctx_len)) == NULL)
 		return -1;
 
 	/* Save the new info */
-	sp->sec_ctx->len        =   len;
+	sp->sec_ctx->len        =   sizeof (struct xfrmnl_user_sec_ctx) + ctx_len;
 	sp->sec_ctx->exttype    =   exttype;
 	sp->sec_ctx->ctx_alg    =   alg;
 	sp->sec_ctx->ctx_doi    =   doi;
-	sp->sec_ctx->ctx_len    =   len;
+	sp->sec_ctx->ctx_len    =   ctx_len;
 	memcpy ((void *)sp->sec_ctx->ctx, (void *)ctx_str, sizeof (uint8_t) * ctx_len);
 
 	sp->ce_mask |= XFRM_SP_ATTR_SECCTX;

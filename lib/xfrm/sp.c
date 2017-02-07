@@ -938,18 +938,53 @@ int xfrmnl_sp_update(struct nl_sock* sk, struct xfrmnl_sp* tmpl, int flags)
 
 /** @} */
 
+/**
+ * \brief      Builds a xfrm_sp_delete_message. Uses either index and direction
+ *             or security-context (not set is a valid value), selector and
+ *             direction for identification.
+ *             Returns error if necessary values aren't set.
+ *
+ * \param      tmpl    The policy template.
+ * \param      cmd     The command. Should be XFRM_MSG_DELPOLICY.
+ * \param      flags   Additional flags
+ * \param      result  Resulting message.
+ *
+ * \return     0 if successful, else error value < 0
+ */
 static int build_xfrm_sp_delete_message(struct xfrmnl_sp *tmpl, int cmd, int flags, struct nl_msg **result)
 {
 	struct nl_msg*              msg;
 	struct xfrm_userpolicy_id   spid;
+	struct nl_addr*             addr;
+	uint32_t 					len;
 
-	if (!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) ||
-	    !(tmpl->ce_mask & XFRM_SP_ATTR_DIR))
+	if (!(tmpl->ce_mask & XFRM_SP_ATTR_DIR) &&
+			(!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) ||
+			 !(tmpl->ce_mask & XFRM_SP_ATTR_SEL)))
 		return -NLE_MISSING_ATTR;
 
 	memset(&spid, 0, sizeof(spid));
-	spid.index          = tmpl->index;
 	spid.dir            = tmpl->dir;
+	if(tmpl->ce_mask & XFRM_SP_ATTR_INDEX)
+		spid.index          = tmpl->index;
+
+	if (tmpl->ce_mask & XFRM_SP_ATTR_SEL)
+	{
+		addr = xfrmnl_sel_get_daddr (tmpl->sel);
+		memcpy ((void*)&spid.sel.daddr, (void*)nl_addr_get_binary_addr (addr), sizeof (uint8_t) * nl_addr_get_len (addr));
+		addr = xfrmnl_sel_get_saddr (tmpl->sel);
+		memcpy ((void*)&spid.sel.saddr, (void*)nl_addr_get_binary_addr (addr), sizeof (uint8_t) * nl_addr_get_len (addr));
+		spid.sel.dport       =   htons (xfrmnl_sel_get_dport (tmpl->sel));
+		spid.sel.dport_mask  =   htons (xfrmnl_sel_get_dportmask (tmpl->sel));
+		spid.sel.sport       =   htons (xfrmnl_sel_get_sport (tmpl->sel));
+		spid.sel.sport_mask  =   htons (xfrmnl_sel_get_sportmask (tmpl->sel));
+		spid.sel.family      =   xfrmnl_sel_get_family (tmpl->sel);
+		spid.sel.prefixlen_d =   xfrmnl_sel_get_prefixlen_d (tmpl->sel);
+		spid.sel.prefixlen_s =   xfrmnl_sel_get_prefixlen_s (tmpl->sel);
+		spid.sel.proto       =   xfrmnl_sel_get_proto (tmpl->sel);
+		spid.sel.ifindex     =   xfrmnl_sel_get_ifindex (tmpl->sel);
+		spid.sel.user        =   xfrmnl_sel_get_userid (tmpl->sel);
+	}
 
 	msg = nlmsg_alloc_simple(cmd, flags);
 	if (!msg)
@@ -958,8 +993,14 @@ static int build_xfrm_sp_delete_message(struct xfrmnl_sp *tmpl, int cmd, int fla
 	if (nlmsg_append(msg, &spid, sizeof(spid), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
 
+	if (tmpl->ce_mask & XFRM_SP_ATTR_SECCTX) {
+		len = (sizeof (struct xfrm_user_sec_ctx)) + tmpl->sec_ctx->ctx_len;
+		NLA_PUT (msg, XFRMA_SEC_CTX, len, tmpl->sec_ctx);
+	}
+
 	if (tmpl->ce_mask & XFRM_SP_ATTR_MARK) {
-		NLA_PUT (msg, XFRMA_MARK, sizeof (struct xfrm_mark), &tmpl->mark);
+		len = sizeof (struct xfrm_mark);
+		NLA_PUT (msg, XFRMA_MARK, len, &tmpl->mark);
 	}
 
 	*result = msg;

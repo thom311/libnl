@@ -1219,11 +1219,11 @@ int xfrmnl_sp_get_sec_ctx (struct xfrmnl_sp* sp, unsigned int* len, unsigned int
  * @brief      Set security context (ctx_str) for XFRM Polixy.
  *
  * @param      sp       XFRM Policy
- * @param[in]  len      !!! depricated unused parameter !!!
- * @param[in]  exttype  netlink message attribute - probably XFRMA_SEC_CTX
- * @param[in]  alg      security context algorithm
- * @param[in]  doi      security context domain interpretation
- * @param[in]  ctx_len  Length of the context string.
+ * @param      len      !!! depricated unused parameter !!!
+ * @param      exttype  netlink message attribute - probably XFRMA_SEC_CTX
+ * @param      alg      security context algorithm
+ * @param      doi      security context domain interpretation
+ * @param      ctx_len  Length of the context string.
  * @param      ctx_str  The context string.
  *
  * @return     0 if sucessfull, else -1

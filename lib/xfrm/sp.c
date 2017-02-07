@@ -1190,7 +1190,7 @@ int xfrmnl_sp_set_sec_ctx (struct xfrmnl_sp* sp, unsigned int len __attribute__(
 	/* Free up the old context string and allocate new one */
 	if (sp->sec_ctx)
 		free (sp->sec_ctx);
-	if ((sp->sec_ctx = calloc (1, sizeof(struct xfrmnl_user_sec_ctx) + ctx_len)) == NULL)
+	if ((sp->sec_ctx = calloc (1, sizeof (struct xfrmnl_user_sec_ctx) + ctx_len)) == NULL)
 		return -1;
 
 	/* Save the new info */
@@ -1199,7 +1199,7 @@ int xfrmnl_sp_set_sec_ctx (struct xfrmnl_sp* sp, unsigned int len __attribute__(
 	sp->sec_ctx->ctx_alg    =   alg;
 	sp->sec_ctx->ctx_doi    =   doi;
 	sp->sec_ctx->ctx_len    =   ctx_len;
-	memcpy ((void *)sp->sec_ctx->ctx, (void *)ctx_str, sizeof (uint8_t) * ctx_len);
+	memcpy ((void *)sp->sec_ctx->ctx, (void *)ctx_str, ctx_len);
 
 	sp->ce_mask |= XFRM_SP_ATTR_SECCTX;
 

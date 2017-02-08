@@ -765,8 +765,8 @@ static int build_xfrm_sp_message(struct xfrmnl_sp *tmpl, int cmd, int flags, str
 	uint32_t                    len;
 	struct nl_addr*             addr;
 
-	if (!(tmpl->ce_mask & XFRM_SP_ATTR_DIR) &&
-			(!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) ||
+	if (!(tmpl->ce_mask & XFRM_SP_ATTR_DIR) ||
+			(!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) &&
 			 !(tmpl->ce_mask & XFRM_SP_ATTR_SEL)))
 		return -NLE_MISSING_ATTR;
 
@@ -958,8 +958,8 @@ static int build_xfrm_sp_delete_message(struct xfrmnl_sp *tmpl, int cmd, int fla
 	struct nl_addr*             addr;
 	uint32_t 					len;
 
-	if (!(tmpl->ce_mask & XFRM_SP_ATTR_DIR) &&
-			(!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) ||
+	if (!(tmpl->ce_mask & XFRM_SP_ATTR_DIR) ||
+			(!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) &&
 			 !(tmpl->ce_mask & XFRM_SP_ATTR_SEL)))
 		return -NLE_MISSING_ATTR;
 

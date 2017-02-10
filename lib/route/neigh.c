@@ -422,17 +422,21 @@ int rtnl_neigh_parse(struct nlmsghdr *n, struct rtnl_neigh **result)
 	 * Get the bridge index for AF_BRIDGE family entries
 	 */
 	if (neigh->n_family == AF_BRIDGE) {
-		struct nl_cache *lcache = nl_cache_mngt_require_safe("route/link");
-		if (lcache ) {
-			struct rtnl_link *link = rtnl_link_get(lcache,
-							neigh->n_ifindex);
-			if (link) {
-				neigh->n_master = link->l_master;
-				rtnl_link_put(link);
-				neigh->ce_mask |= NEIGH_ATTR_MASTER;
+		if (tb[NDA_MASTER]) {
+			neigh->n_master = nla_get_u32(tb[NDA_MASTER]);
+			neigh->ce_mask |= NEIGH_ATTR_MASTER;
+		} else {
+			struct nl_cache *lcache = nl_cache_mngt_require_safe("route/link");
+			if (lcache ) {
+				struct rtnl_link *link = rtnl_link_get(lcache,
+								       neigh->n_ifindex);
+				if (link) {
+					neigh->n_master = link->l_master;
+					rtnl_link_put(link);
+					neigh->ce_mask |= NEIGH_ATTR_MASTER;
+				}
+				nl_cache_put(lcache);
 			}
-
-			nl_cache_put(lcache);
 		}
 	}
 

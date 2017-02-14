@@ -248,10 +248,15 @@ static const struct trans_tbl inet6_flags[] = {
 	__ADD(IF_READY, ready),
 };
 
-static char *inet6_flags2str(int flags, char *buf, size_t len)
+char *rtnl_link_inet6_flags2str(int flags, char *buf, size_t len)
 {
 	return __flags2str(flags, buf, len, inet6_flags,
 			   ARRAY_SIZE(inet6_flags));
+}
+
+int rtnl_link_inet6_str2flags(const char *name)
+{
+	return __str2flags(name, inet6_flags, ARRAY_SIZE(inet6_flags));
 }
 
 static const struct trans_tbl inet6_devconf[] = {
@@ -322,7 +327,7 @@ static void inet6_dump_details(struct rtnl_link *link,
 		nl_size2str(i6->i6_cacheinfo.max_reasm_len, buf, sizeof(buf)));
 
 	nl_dump(p, " <%s>\n",
-		inet6_flags2str(i6->i6_flags, buf, sizeof(buf)));
+		rtnl_link_inet6_flags2str(i6->i6_flags, buf, sizeof(buf)));
 
 
 	nl_dump_line(p, "      create-stamp %.2fs reachable-time %s",
@@ -533,6 +538,48 @@ static struct rtnl_link_af_ops inet6_ops = {
 	.ao_dump[NL_DUMP_STATS]		= &inet6_dump_stats,
 	.ao_protinfo_policy		= &protinfo_policy,
 };
+
+/**
+ * Return IPv6 specific flags
+ * @arg link		Link object
+ * @arg out_flags	Flags on success
+ *
+ * Returns the link's IPv6 flags.
+ *
+ * @return 0 on success
+ * @return -NLE_NOATTR configuration setting not available
+ */
+int rtnl_link_inet6_get_flags(struct rtnl_link *link, uint32_t* out_flags)
+{
+	struct inet6_data *id = NULL;
+
+	if (!(id = rtnl_link_af_data(link, &inet6_ops)))
+		return -NLE_NOATTR;
+
+	*out_flags = id->i6_flags;
+	return 0;
+}
+
+/**
+ * Set IPv6 specific flags
+ * @arg link		Link object
+ * @arg flags		Flags to set
+ *
+ * Sets the link's IPv6 specific flags. Overwrites currently set flags.
+ *
+ * @return 0 on success
+ * @return -NLE_NOMEM could not allocate inet6 data
+ */
+int rtnl_link_inet6_set_flags(struct rtnl_link *link, uint32_t flags)
+{
+	struct inet6_data *id;
+
+	if (!(id = rtnl_link_af_alloc(link, &inet6_ops)))
+		return -NLE_NOMEM;
+
+	id->i6_flags = flags;
+	return 0;
+}
 
 /**
  * Get IPv6 tokenized interface identifier

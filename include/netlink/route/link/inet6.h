@@ -36,6 +36,16 @@ extern int		rtnl_link_inet6_get_addr_gen_mode(struct rtnl_link *,
 extern int		rtnl_link_inet6_set_addr_gen_mode(struct rtnl_link *,
 							  uint8_t);
 
+extern int		rtnl_link_inet6_get_flags(struct rtnl_link *,
+							  uint32_t *);
+
+extern int		rtnl_link_inet6_set_flags(struct rtnl_link *,
+							  uint32_t);
+
+/* Link Flags Translations */
+extern char *	rtnl_link_inet6_flags2str(int, char *, size_t);
+extern int		rtnl_link_inet6_str2flags(const char *);
+
 #ifdef __cplusplus
 }
 #endif

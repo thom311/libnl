@@ -1032,3 +1032,10 @@ global:
 	rtnl_u32_set_selector;
 } libnl_3_2_28;
 
+libnl_3_4 {
+global:
+	rtnl_link_inet6_flags2str;
+	rtnl_link_inet6_str2flags;
+	rtnl_link_inet6_get_flags;
+	rtnl_link_inet6_set_flags;
+} libnl_3_2_29;

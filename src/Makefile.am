@@ -1,7 +1,5 @@
 # -*- Makefile -*-
 
-SUBDIRS = lib
-
 AM_CPPFLAGS  = \
 	-I${top_srcdir}/include/linux-private \
 	-I${top_srcdir}/include \

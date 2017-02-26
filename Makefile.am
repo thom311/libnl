@@ -492,12 +492,10 @@ lib_libnl_xfrm_3_la_LIBADD = \
 
 if ENABLE_CLI
 
-lib_cli_ldflags = \
-	-module -avoid-version
-
-nobase_pkglib_LTLIBRARIES = \
+lib_cli_ltlibraries_cls = \
 	lib/cli/cls/basic.la \
-	lib/cli/cls/cgroup.la \
+	lib/cli/cls/cgroup.la
+lib_cli_ltlibraries_qdisc = \
 	lib/cli/qdisc/bfifo.la \
 	lib/cli/qdisc/blackhole.la \
 	lib/cli/qdisc/fq_codel.la \
@@ -506,6 +504,16 @@ nobase_pkglib_LTLIBRARIES = \
 	lib/cli/qdisc/ingress.la \
 	lib/cli/qdisc/pfifo.la \
 	lib/cli/qdisc/plug.la
+
+pkglib_clsdir = $(pkglibdir)/cli/cls
+pkglib_qdiscdir = $(pkglibdir)/cli/qdisc
+pkglib_cls_LTLIBRARIES = $(lib_cli_ltlibraries_cls)
+pkglib_qdisc_LTLIBRARIES = $(lib_cli_ltlibraries_qdisc)
+
+endif
+
+lib_cli_ldflags = \
+	-module -avoid-version
 
 lib_cli_cls_basic_la_CPPFLAGS       = $(lib_cppflags)
 lib_cli_cls_basic_la_LDFLAGS        = $(lib_cli_ldflags)
@@ -527,7 +535,45 @@ lib_cli_qdisc_pfifo_la_CPPFLAGS     = $(lib_cppflags)
 lib_cli_qdisc_pfifo_la_LDFLAGS      = $(lib_cli_ldflags)
 lib_cli_qdisc_plug_la_CPPFLAGS      = $(lib_cppflags)
 lib_cli_qdisc_plug_la_LDFLAGS       = $(lib_cli_ldflags)
+
+###############################################################################
+
+if ENABLE_CLI
+lib_LTLIBRARIES += src/lib/libnl-cli-3.la
 endif
+
+src_lib_libnl_cli_3_la_SOURCES = \
+	src/lib/utils.c \
+	src/lib/addr.c \
+	src/lib/ct.c \
+	src/lib/link.c \
+	src/lib/neigh.c \
+	src/lib/rule.c \
+	src/lib/route.c \
+	src/lib/tc.c \
+	src/lib/qdisc.c \
+	src/lib/class.c \
+	src/lib/cls.c \
+	src/lib/exp.c
+EXTRA_src_lib_libnl_cli_3_la_DEPENDENCIES = \
+	libnl-cli-3.sym
+src_lib_libnl_cli_3_la_CPPFLAGS = \
+	-Wall \
+	-D_GNU_SOURCE \
+	-DPKGLIBDIR=\"$(pkglibdir)\" \
+	-DSYSCONFDIR=\"$(sysconfdir)\" \
+	-I$(srcdir)/include/linux-private \
+	-I$(srcdir)/include \
+	-I$(builddir)/include
+src_lib_libnl_cli_3_la_LDFLAGS = \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-Wl,--version-script=$(srcdir)/libnl-cli-3.sym
+src_lib_libnl_cli_3_la_LIBADD = \
+	lib/libnl-3.la \
+	lib/libnl-route-3.la \
+	lib/libnl-nf-3.la \
+	lib/libnl-genl-3.la \
+	-ldl
 
 ###############################################################################
 

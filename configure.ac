@@ -135,7 +135,6 @@ libnl-cli-3.0.pc
 libnl-xfrm-3.0.pc
 libnl-idiag-3.0.pc
 src/Makefile
-src/lib/Makefile
 python/setup.py
 include/netlink/version.h
 ])

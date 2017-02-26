@@ -2,17 +2,14 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = \
-	.
-
-if ENABLE_CLI
-SUBDIRS += src
-endif
-
 lib_LTLIBRARIES =
 
 check_PROGRAMS =
 check_programs =
+
+bin_PROGRAMS =
+sbin_PROGRAMS =
+noinst_PROGRAMS =
 
 TESTS =
 
@@ -574,6 +571,177 @@ src_lib_libnl_cli_3_la_LIBADD = \
 	lib/libnl-nf-3.la \
 	lib/libnl-genl-3.la \
 	-ldl
+
+###############################################################################
+
+src_cppflags = \
+	-Wall \
+	-D_GNU_SOURCE \
+	-DSYSCONFDIR=\"$(sysconfdir)/libnl\" \
+	-I$(srcdir)/include/linux-private \
+	-I$(srcdir)/include \
+	-I$(builddir)/include
+
+src_ldadd = \
+	src/lib/libnl-cli-3.la \
+	lib/libnl-3.la \
+	lib/libnl-nf-3.la \
+	lib/libnl-genl-3.la \
+	lib/libnl-route-3.la \
+	lib/libnl-idiag-3.la
+
+cli_programs = \
+	src/genl-ctrl-list \
+	src/idiag-socket-details \
+	src/nf-ct-add \
+	src/nf-ct-list \
+	src/nf-exp-add \
+	src/nf-exp-delete \
+	src/nf-exp-list \
+	src/nf-log \
+	src/nf-monitor \
+	src/nf-queue \
+	src/nl-addr-add \
+	src/nl-addr-delete \
+	src/nl-addr-list \
+	src/nl-class-add \
+	src/nl-class-delete \
+	src/nl-class-list \
+	src/nl-classid-lookup \
+	src/nl-cls-add \
+	src/nl-cls-delete \
+	src/nl-cls-list \
+	src/nl-fib-lookup \
+	src/nl-link-enslave \
+	src/nl-link-ifindex2name \
+	src/nl-link-list \
+	src/nl-link-name2ifindex \
+	src/nl-link-release \
+	src/nl-link-set \
+	src/nl-link-stats \
+	src/nl-list-caches \
+	src/nl-list-sockets \
+	src/nl-monitor \
+	src/nl-neigh-add \
+	src/nl-neigh-delete \
+	src/nl-neigh-list \
+	src/nl-neightbl-list \
+	src/nl-pktloc-lookup \
+	src/nl-qdisc-add \
+	src/nl-qdisc-delete \
+	src/nl-qdisc-list \
+	src/nl-route-add \
+	src/nl-route-delete \
+	src/nl-route-get \
+	src/nl-route-list \
+	src/nl-rule-list \
+	src/nl-tctree-list \
+	src/nl-util-addr
+
+if ENABLE_CLI
+if ENABLE_CLI_INSTALL_BIN
+bin_PROGRAMS += $(cli_programs)
+else
+if ENABLE_CLI_INSTALL_SBIN
+sbin_PROGRAMS += $(cli_programs)
+else
+noinst_PROGRAMS += $(cli_programs)
+endif
+endif
+endif
+
+src_genl_ctrl_list_CPPFLAGS =       $(src_cppflags)
+src_genl_ctrl_list_LDADD =          $(src_ldadd)
+src_idiag_socket_details_CPPFLAGS = $(src_cppflags)
+src_idiag_socket_details_LDADD =    $(src_ldadd)
+src_nf_ct_add_CPPFLAGS =            $(src_cppflags)
+src_nf_ct_add_LDADD =               $(src_ldadd)
+src_nf_ct_list_CPPFLAGS =           $(src_cppflags)
+src_nf_ct_list_LDADD =              $(src_ldadd)
+src_nf_exp_add_CPPFLAGS =           $(src_cppflags)
+src_nf_exp_add_LDADD =              $(src_ldadd)
+src_nf_exp_delete_CPPFLAGS =        $(src_cppflags)
+src_nf_exp_delete_LDADD =           $(src_ldadd)
+src_nf_exp_list_CPPFLAGS =          $(src_cppflags)
+src_nf_exp_list_LDADD =             $(src_ldadd)
+src_nf_log_CPPFLAGS =               $(src_cppflags)
+src_nf_log_LDADD =                  $(src_ldadd)
+src_nf_monitor_CPPFLAGS =           $(src_cppflags)
+src_nf_monitor_LDADD =              $(src_ldadd)
+src_nf_queue_CPPFLAGS =             $(src_cppflags)
+src_nf_queue_LDADD =                $(src_ldadd)
+src_nl_addr_add_CPPFLAGS =          $(src_cppflags)
+src_nl_addr_add_LDADD =             $(src_ldadd)
+src_nl_addr_delete_CPPFLAGS =       $(src_cppflags)
+src_nl_addr_delete_LDADD =          $(src_ldadd)
+src_nl_addr_list_CPPFLAGS =         $(src_cppflags)
+src_nl_addr_list_LDADD =            $(src_ldadd)
+src_nl_class_add_CPPFLAGS =         $(src_cppflags)
+src_nl_class_add_LDADD =            $(src_ldadd)
+src_nl_class_delete_CPPFLAGS =      $(src_cppflags)
+src_nl_class_delete_LDADD =         $(src_ldadd)
+src_nl_class_list_CPPFLAGS =        $(src_cppflags)
+src_nl_class_list_LDADD =           $(src_ldadd)
+src_nl_classid_lookup_CPPFLAGS =    $(src_cppflags)
+src_nl_classid_lookup_LDADD =       $(src_ldadd)
+src_nl_cls_add_CPPFLAGS =           $(src_cppflags)
+src_nl_cls_add_LDADD =              $(src_ldadd)
+src_nl_cls_delete_CPPFLAGS =        $(src_cppflags)
+src_nl_cls_delete_LDADD =           $(src_ldadd)
+src_nl_cls_list_CPPFLAGS =          $(src_cppflags)
+src_nl_cls_list_LDADD =             $(src_ldadd)
+src_nl_fib_lookup_CPPFLAGS =        $(src_cppflags)
+src_nl_fib_lookup_LDADD =           $(src_ldadd)
+src_nl_link_enslave_CPPFLAGS =      $(src_cppflags)
+src_nl_link_enslave_LDADD =         $(src_ldadd)
+src_nl_link_ifindex2name_CPPFLAGS = $(src_cppflags)
+src_nl_link_ifindex2name_LDADD =    $(src_ldadd)
+src_nl_link_list_CPPFLAGS =         $(src_cppflags)
+src_nl_link_list_LDADD =            $(src_ldadd)
+src_nl_link_name2ifindex_CPPFLAGS = $(src_cppflags)
+src_nl_link_name2ifindex_LDADD =    $(src_ldadd)
+src_nl_link_release_CPPFLAGS =      $(src_cppflags)
+src_nl_link_release_LDADD =         $(src_ldadd)
+src_nl_link_set_CPPFLAGS =          $(src_cppflags)
+src_nl_link_set_LDADD =             $(src_ldadd)
+src_nl_link_stats_CPPFLAGS =        $(src_cppflags)
+src_nl_link_stats_LDADD =           $(src_ldadd)
+src_nl_list_caches_CPPFLAGS =       $(src_cppflags)
+src_nl_list_caches_LDADD =          $(src_ldadd)
+src_nl_list_sockets_CPPFLAGS =      $(src_cppflags)
+src_nl_list_sockets_LDADD =         $(src_ldadd)
+src_nl_monitor_CPPFLAGS =           $(src_cppflags)
+src_nl_monitor_LDADD =              $(src_ldadd)
+src_nl_neigh_add_CPPFLAGS =         $(src_cppflags)
+src_nl_neigh_add_LDADD =            $(src_ldadd)
+src_nl_neigh_delete_CPPFLAGS =      $(src_cppflags)
+src_nl_neigh_delete_LDADD =         $(src_ldadd)
+src_nl_neigh_list_CPPFLAGS =        $(src_cppflags)
+src_nl_neigh_list_LDADD =           $(src_ldadd)
+src_nl_neightbl_list_CPPFLAGS =     $(src_cppflags)
+src_nl_neightbl_list_LDADD =        $(src_ldadd)
+src_nl_pktloc_lookup_CPPFLAGS =     $(src_cppflags)
+src_nl_pktloc_lookup_LDADD =        $(src_ldadd)
+src_nl_qdisc_add_CPPFLAGS =         $(src_cppflags)
+src_nl_qdisc_add_LDADD =            $(src_ldadd)
+src_nl_qdisc_delete_CPPFLAGS =      $(src_cppflags)
+src_nl_qdisc_delete_LDADD =         $(src_ldadd)
+src_nl_qdisc_list_CPPFLAGS =        $(src_cppflags)
+src_nl_qdisc_list_LDADD =           $(src_ldadd)
+src_nl_route_add_CPPFLAGS =         $(src_cppflags)
+src_nl_route_add_LDADD =            $(src_ldadd)
+src_nl_route_delete_CPPFLAGS =      $(src_cppflags)
+src_nl_route_delete_LDADD =         $(src_ldadd)
+src_nl_route_get_CPPFLAGS =         $(src_cppflags)
+src_nl_route_get_LDADD =            $(src_ldadd)
+src_nl_route_list_CPPFLAGS =        $(src_cppflags)
+src_nl_route_list_LDADD =           $(src_ldadd)
+src_nl_rule_list_CPPFLAGS =         $(src_cppflags)
+src_nl_rule_list_LDADD =            $(src_ldadd)
+src_nl_tctree_list_CPPFLAGS =       $(src_cppflags)
+src_nl_tctree_list_LDADD =          $(src_ldadd)
+src_nl_util_addr_CPPFLAGS =         $(src_cppflags)
+src_nl_util_addr_LDADD =            $(src_ldadd)
 
 ###############################################################################
 

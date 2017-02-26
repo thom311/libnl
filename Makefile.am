@@ -4,7 +4,6 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = \
 	. \
-	python \
 	tests
 
 if ENABLE_CLI
@@ -535,6 +534,45 @@ dist_man8_MANS = \
 	man/nl-qdisc-delete.8 \
 	man/nl-qdisc-list.8 \
 	man/genl-ctrl-list.8
+
+###############################################################################
+
+EXTRA_DIST += \
+	python/README \
+	\
+	python/doc/conf.py \
+	python/doc/core.rst \
+	python/doc/index.rst \
+	python/doc/route_addr.rst \
+	python/doc/route.rst \
+	\
+	python/examples/iface.py \
+	python/examples/nl80211.py \
+	python/examples/wiphy.py \
+	\
+	python/netlink/capi.i \
+	python/netlink/fixes.h \
+	python/netlink/__init__.py \
+	python/netlink/core.py \
+	python/netlink/util.py \
+	python/netlink/utils.h \
+	\
+	python/netlink/genl/capi.i \
+	python/netlink/genl/__init__.py \
+	\
+	python/netlink/route/capi.i \
+	python/netlink/route/__init__.py \
+	python/netlink/route/address.py \
+	python/netlink/route/link.py \
+	python/netlink/route/tc.py \
+	python/netlink/route/links/__init__.py \
+	python/netlink/route/links/dummy.py \
+	python/netlink/route/links/inet.py \
+	python/netlink/route/links/vlan.py \
+	python/netlink/route/qdisc/__init__.py \
+	python/netlink/route/qdisc/htb.py \
+	\
+	python/tests/test-create-bridge.py
 
 ###############################################################################
 

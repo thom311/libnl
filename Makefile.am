@@ -3,14 +3,18 @@
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = \
-	. \
-	tests
+	.
 
 if ENABLE_CLI
 SUBDIRS += src
 endif
 
 lib_LTLIBRARIES =
+
+check_PROGRAMS =
+check_programs =
+
+TESTS =
 
 CLEANFILES =
 EXTRA_DIST =
@@ -527,6 +531,125 @@ endif
 
 ###############################################################################
 
+tests_cppflags = \
+	-Wall \
+	-D_GNU_SOURCE \
+	-DSYSCONFDIR=\"$(sysconfdir)/libnl\" \
+	-I$(srcdir)/include/linux-private \
+	-I$(srcdir)/include \
+	-I$(builddir)/include
+
+tests_ldadd = \
+	lib/libnl-3.la \
+	lib/libnl-nf-3.la \
+	lib/libnl-genl-3.la \
+	lib/libnl-route-3.la
+
+check_PROGRAMS += \
+	tests/test-complex-HTB-with-hash-filters \
+	tests/test-create-bond \
+	tests/test-create-bridge \
+	tests/test-create-ifb \
+	tests/test-create-ip6tnl \
+	tests/test-create-ipgre \
+	tests/test-create-ipgretap \
+	tests/test-create-ipip \
+	tests/test-create-ipvlan \
+	tests/test-create-ipvti \
+	tests/test-create-macsec \
+	tests/test-create-macvlan \
+	tests/test-create-macvtap \
+	tests/test-create-sit \
+	tests/test-create-veth \
+	tests/test-create-vlan \
+	tests/test-create-vrf \
+	tests/test-create-vxlan \
+	tests/test-delete-link \
+	tests/test-socket-creation \
+	tests/test-u32-filter-with-actions
+
+tests_test_create_bond_CPPFLAGS                   = $(tests_cppflags)
+tests_test_create_bond_LDADD                      = $(tests_ldadd)
+tests_test_create_vlan_CPPFLAGS                   = $(tests_cppflags)
+tests_test_create_vlan_LDADD                      = $(tests_ldadd)
+tests_test_create_vxlan_CPPFLAGS                  = $(tests_cppflags)
+tests_test_create_vxlan_LDADD                     = $(tests_ldadd)
+tests_test_create_veth_CPPFLAGS                   = $(tests_cppflags)
+tests_test_create_veth_LDADD                      = $(tests_ldadd)
+tests_test_create_bridge_CPPFLAGS                 = $(tests_cppflags)
+tests_test_create_bridge_LDADD                    = $(tests_ldadd)
+tests_test_create_ip6tnl_CPPFLAGS                 = $(tests_cppflags)
+tests_test_create_ip6tnl_LDADD                    = $(tests_ldadd)
+tests_test_create_ipgre_CPPFLAGS                  = $(tests_cppflags)
+tests_test_create_ipgre_LDADD                     = $(tests_ldadd)
+tests_test_create_ipgretap_CPPFLAGS               = $(tests_cppflags)
+tests_test_create_ipgretap_LDADD                  = $(tests_ldadd)
+tests_test_create_ipip_CPPFLAGS                   = $(tests_cppflags)
+tests_test_create_ipip_LDADD                      = $(tests_ldadd)
+tests_test_create_ipvti_CPPFLAGS                  = $(tests_cppflags)
+tests_test_create_ipvti_LDADD                     = $(tests_ldadd)
+tests_test_create_macsec_CPPFLAGS                 = $(tests_cppflags)
+tests_test_create_macsec_LDADD                    = $(tests_ldadd)
+tests_test_create_macvlan_CPPFLAGS                = $(tests_cppflags)
+tests_test_create_macvlan_LDADD                   = $(tests_ldadd)
+tests_test_create_macvtap_CPPFLAGS                = $(tests_cppflags)
+tests_test_create_macvtap_LDADD                   = $(tests_ldadd)
+tests_test_create_ipvlan_CPPFLAGS                 = $(tests_cppflags)
+tests_test_create_ipvlan_LDADD                    = $(tests_ldadd)
+tests_test_create_vrf_CPPFLAGS                    = $(tests_cppflags)
+tests_test_create_vrf_LDADD                       = $(tests_ldadd)
+tests_test_create_sit_CPPFLAGS                    = $(tests_cppflags)
+tests_test_create_sit_LDADD                       = $(tests_ldadd)
+tests_test_create_ifb_CPPFLAGS                    = $(tests_cppflags)
+tests_test_create_ifb_LDADD                       = $(tests_ldadd)
+tests_test_delete_link_CPPFLAGS                   = $(tests_cppflags)
+tests_test_delete_link_LDADD                      = $(tests_ldadd)
+tests_test_socket_creation_CPPFLAGS               = $(tests_cppflags)
+tests_test_socket_creation_LDADD                  = $(tests_ldadd)
+tests_test_complex_HTB_with_hash_filters_CPPFLAGS = $(tests_cppflags)
+tests_test_complex_HTB_with_hash_filters_LDADD    = $(tests_ldadd)
+tests_test_u32_filter_with_actions_CPPFLAGS       = $(tests_cppflags)
+tests_test_u32_filter_with_actions_LDADD          = $(tests_ldadd)
+
+if ENABLE_CLI
+check_PROGRAMS += \
+	tests/test-cache-mngr \
+	tests/test-genl \
+	tests/test-nf-cache-mngr
+endif
+
+tests_cli_ldadd = \
+	$(tests_ldadd) \
+	src/lib/libnl-cli-3.la
+
+tests_test_cache_mngr_CPPFLAGS                    = $(tests_cppflags)
+tests_test_cache_mngr_LDADD                       = $(tests_cli_ldadd)
+tests_test_genl_CPPFLAGS                          = $(tests_cppflags)
+tests_test_genl_LDADD                             = $(tests_cli_ldadd)
+tests_test_nf_cache_mngr_CPPFLAGS                 = $(tests_cppflags)
+tests_test_nf_cache_mngr_LDADD                    = $(tests_cli_ldadd)
+
+
+if WITH_CHECK
+check_programs += tests/check-all
+endif
+
+tests_check_all_SOURCES = \
+	tests/util.h \
+	tests/check-all.c \
+	tests/check-addr.c \
+	tests/check-attr.c
+
+tests_check_all_CPPFLAGS = \
+	$(tests_cppflags) \
+	$(CHECK_CFLAGS)
+
+tests_check_all_LDADD = \
+	$(tests_ldadd) \
+	$(CHECK_LIBS)
+
+###############################################################################
+
 dist_man8_MANS = \
 	man/nl-classid-lookup.8 \
 	man/nl-pktloc-lookup.8 \
@@ -575,6 +698,9 @@ EXTRA_DIST += \
 	python/tests/test-create-bridge.py
 
 ###############################################################################
+
+check_PROGRAMS += $(check_programs)
+TESTS += $(check_programs)
 
 if ENABLE_CLI
 pkgconfig_DATA += libnl-cli-3.0.pc

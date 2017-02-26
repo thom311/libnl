@@ -138,7 +138,6 @@ libnl-idiag-3.0.pc
 src/Makefile
 src/lib/Makefile
 tests/Makefile
-man/Makefile
 python/Makefile
 python/setup.py
 python/doc/Makefile

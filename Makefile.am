@@ -4,7 +4,6 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = \
 	. \
-	man \
 	python \
 	tests
 
@@ -526,6 +525,16 @@ lib_cli_qdisc_pfifo_la_LDFLAGS      = $(lib_cli_ldflags)
 lib_cli_qdisc_plug_la_CPPFLAGS      = $(lib_cppflags)
 lib_cli_qdisc_plug_la_LDFLAGS       = $(lib_cli_ldflags)
 endif
+
+###############################################################################
+
+dist_man8_MANS = \
+	man/nl-classid-lookup.8 \
+	man/nl-pktloc-lookup.8 \
+	man/nl-qdisc-add.8 \
+	man/nl-qdisc-delete.8 \
+	man/nl-qdisc-list.8 \
+	man/genl-ctrl-list.8
 
 ###############################################################################
 

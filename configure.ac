@@ -135,7 +135,6 @@ libnl-nf-3.0.pc
 libnl-cli-3.0.pc
 libnl-xfrm-3.0.pc
 libnl-idiag-3.0.pc
-lib/Makefile
 src/Makefile
 src/lib/Makefile
 tests/Makefile

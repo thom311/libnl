@@ -3,7 +3,7 @@
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = \
-	lib \
+	. \
 	man \
 	python \
 	tests
@@ -11,6 +11,11 @@ SUBDIRS = \
 if ENABLE_CLI
 SUBDIRS += src
 endif
+
+lib_LTLIBRARIES =
+
+CLEANFILES =
+EXTRA_DIST =
 
 pkgconfig_DATA = \
 	libnl-3.0.pc \
@@ -229,6 +234,301 @@ noinst_HEADERS = \
 
 ###############################################################################
 
+# Hack to avoid using ylwrap. It does not function correctly in combination
+# with --header-file=
+
+lib/route/pktloc_grammar.h: lib/route/pktloc_grammar.c
+	@true
+
+lib/route/pktloc_grammar.c: lib/route/pktloc_grammar.l
+	$(AM_V_GEN) $(MKDIR_P) route; $(FLEX) --header-file=lib/route/pktloc_grammar.h $(LFLAGS) -o $@ $^
+
+lib/route/pktloc_syntax.h: lib/route/pktloc_syntax.c
+	@true
+
+lib/route/pktloc_syntax.c: lib/route/pktloc_syntax.y
+	$(AM_V_GEN) $(MKDIR_P) route; $(YACC) -d $(YFLAGS) -o $@ $^
+
+lib/route/cls/ematch_grammar.h: lib/route/cls/ematch_grammar.c
+	@true
+
+lib/route/cls/ematch_grammar.c: lib/route/cls/ematch_grammar.l
+	$(AM_V_GEN) $(MKDIR_P) route/cls; $(FLEX) --header-file=lib/route/cls/ematch_grammar.h $(LFLAGS) -o $@ $^
+
+lib/route/cls/ematch_syntax.h: lib/route/cls/ematch_syntax.c
+	@true
+
+lib/route/cls/ematch_syntax.c: lib/route/cls/ematch_syntax.y
+	$(AM_V_GEN) $(MKDIR_P) route/cls; $(YACC) -d $(YFLAGS) -o $@ $^
+
+grammar_files_sources = \
+	lib/route/pktloc_grammar.c \
+	lib/route/pktloc_syntax.c \
+	lib/route/cls/ematch_grammar.c \
+	lib/route/cls/ematch_syntax.c
+
+grammar_files_headers = $(grammar_files_sources:%.c=%.h)
+
+CLEANFILES += \
+	$(grammar_files_sources) \
+	$(grammar_files_headers)
+
+EXTRA_DIST += \
+	lib/route/pktloc_grammar.l \
+	lib/route/pktloc_syntax.y \
+	lib/route/cls/ematch_grammar.l \
+	lib/route/cls/ematch_syntax.y
+
+###############################################################################
+
+lib_cppflags = \
+	-Wall \
+	-Wmissing-prototypes \
+	-D_GNU_SOURCE \
+	-DSYSCONFDIR=\"$(sysconfdir)/libnl\" \
+	-I$(srcdir)/include/linux-private \
+	-I$(srcdir)/include \
+	-I$(builddir)/include \
+	-I$(builddir)/lib/route \
+	-I$(builddir)/lib/route/cls
+
+lib_LTLIBRARIES += lib/libnl-3.la
+
+lib_libnl_3_la_SOURCES = \
+	lib/addr.c \
+	lib/attr.c \
+	lib/cache.c \
+	lib/cache_mngr.c \
+	lib/cache_mngt.c \
+	lib/data.c \
+	lib/error.c \
+	lib/handlers.c \
+	lib/msg.c \
+	lib/nl.c \
+	lib/object.c \
+	lib/socket.c \
+	lib/utils.c \
+	lib/version.c \
+	lib/hash.c \
+	lib/hashtable.c
+EXTRA_lib_libnl_3_la_DEPENDENCIES = \
+	libnl-3.sym
+lib_libnl_3_la_CPPFLAGS = \
+	$(lib_cppflags)
+lib_libnl_3_la_LDFLAGS = \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-Wl,--version-script=$(srcdir)/libnl-3.sym
+
+lib_LTLIBRARIES += lib/libnl-route-3.la
+
+lib_libnl_route_3_la_SOURCES = \
+	lib/fib_lookup/lookup.c \
+	lib/fib_lookup/request.c \
+	lib/route/act.c \
+	lib/route/act/gact.c \
+	lib/route/act/mirred.c \
+	lib/route/act/skbedit.c \
+	lib/route/addr.c \
+	lib/route/class.c \
+	lib/route/classid.c \
+	lib/route/cls/basic.c \
+	lib/route/cls.c \
+	lib/route/cls/cgroup.c \
+	lib/route/cls/ematch.c \
+	lib/route/cls/ematch/cmp.c \
+	lib/route/cls/ematch/container.c \
+	lib/route/cls/ematch/meta.c \
+	lib/route/cls/ematch/nbyte.c \
+	lib/route/cls/ematch/text.c \
+	lib/route/cls/fw.c \
+	lib/route/cls/police.c \
+	lib/route/cls/u32.c \
+	lib/route/link/api.c \
+	lib/route/link/bonding.c \
+	lib/route/link/bridge.c \
+	lib/route/link.c \
+	lib/route/link/can.c \
+	lib/route/link/dummy.c \
+	lib/route/link/ifb.c \
+	lib/route/link/inet6.c \
+	lib/route/link/inet.c \
+	lib/route/link/ip6tnl.c \
+	lib/route/link/ipgre.c \
+	lib/route/link/ipip.c \
+	lib/route/link/ipvlan.c \
+	lib/route/link/ipvti.c \
+	lib/route/link/macsec.c \
+	lib/route/link/macvlan.c \
+	lib/route/link/ppp.c \
+	lib/route/link/sit.c \
+	lib/route/link/sriov.c \
+	lib/route/link/veth.c \
+	lib/route/link/vlan.c \
+	lib/route/link/vrf.c \
+	lib/route/link/vxlan.c \
+	lib/route/neigh.c \
+	lib/route/neightbl.c \
+	lib/route/nexthop.c \
+	lib/route/pktloc.c \
+	lib/route/qdisc/blackhole.c \
+	lib/route/qdisc.c \
+	lib/route/qdisc/cbq.c \
+	lib/route/qdisc/dsmark.c \
+	lib/route/qdisc/fifo.c \
+	lib/route/qdisc/fq_codel.c \
+	lib/route/qdisc/hfsc.c \
+	lib/route/qdisc/htb.c \
+	lib/route/qdisc/ingress.c \
+	lib/route/qdisc/netem.c \
+	lib/route/qdisc/plug.c \
+	lib/route/qdisc/prio.c \
+	lib/route/qdisc/red.c \
+	lib/route/qdisc/sfq.c \
+	lib/route/qdisc/tbf.c \
+	lib/route/route.c \
+	lib/route/route_obj.c \
+	lib/route/route_utils.c \
+	lib/route/rtnl.c \
+	lib/route/rule.c \
+	lib/route/tc.c \
+	$(NULL)
+nodist_lib_libnl_route_3_la_SOURCES = \
+	$(grammar_files_sources)
+EXTRA_lib_libnl_route_3_la_DEPENDENCIES = \
+	libnl-route-3.sym
+lib_libnl_route_3_la_CPPFLAGS = \
+	$(lib_cppflags)
+lib_libnl_route_3_la_LDFLAGS = \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-Wl,--version-script=$(srcdir)/libnl-route-3.sym
+lib_libnl_route_3_la_LIBADD = \
+	lib/libnl-3.la
+
+$(lib_libnl_route_3_la_OBJECTS): $(grammar_files_headers)
+
+lib_LTLIBRARIES += lib/libnl-idiag-3.la
+
+lib_libnl_idiag_3_la_SOURCES = \
+	lib/idiag/idiag_meminfo_obj.c \
+	lib/idiag/idiag_vegasinfo_obj.c \
+	lib/idiag/idiag_msg_obj.c \
+	lib/idiag/idiag_req_obj.c \
+	lib/idiag/idiag.c
+EXTRA_lib_libnl_idiag_3_la_DEPENDENCIES = \
+	libnl-idiag-3.sym
+lib_libnl_idiag_3_la_CPPFLAGS = \
+	$(lib_cppflags)
+lib_libnl_idiag_3_la_LDFLAGS = \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-Wl,--version-script=$(srcdir)/libnl-idiag-3.sym
+lib_libnl_idiag_3_la_LIBADD = \
+	lib/libnl-3.la
+
+lib_LTLIBRARIES += lib/libnl-genl-3.la
+
+lib_libnl_genl_3_la_SOURCES = \
+	lib/genl/ctrl.c \
+	lib/genl/family.c \
+	lib/genl/genl.c \
+	lib/genl/mngt.c
+EXTRA_lib_libnl_genl_3_la_DEPENDENCIES = \
+	libnl-genl-3.sym
+lib_libnl_genl_3_la_CPPFLAGS = \
+	$(lib_cppflags)
+lib_libnl_genl_3_la_LDFLAGS = \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-Wl,--version-script=$(srcdir)/libnl-genl-3.sym
+lib_libnl_genl_3_la_LIBADD = \
+	lib/libnl-3.la
+
+lib_LTLIBRARIES += lib/libnl-nf-3.la
+
+lib_libnl_nf_3_la_SOURCES = \
+	lib/netfilter/ct.c \
+	lib/netfilter/ct_obj.c \
+	lib/netfilter/log.c \
+	lib/netfilter/log_msg.c \
+	lib/netfilter/log_msg_obj.c \
+	lib/netfilter/log_obj.c \
+	lib/netfilter/netfilter.c \
+	lib/netfilter/nfnl.c \
+	lib/netfilter/queue.c \
+	lib/netfilter/queue_msg.c \
+	lib/netfilter/queue_msg_obj.c \
+	lib/netfilter/queue_obj.c \
+	lib/netfilter/exp.c \
+	lib/netfilter/exp_obj.c
+lib_libnl_nf_3_la_CPPFLAGS = \
+	$(lib_cppflags)
+EXTRA_lib_libnl_nf_3_la_DEPENDENCIES = \
+	libnl-nf-3.sym
+lib_libnl_nf_3_la_LDFLAGS = \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-Wl,--version-script=$(srcdir)/libnl-nf-3.sym
+lib_libnl_nf_3_la_LIBADD  = \
+	lib/libnl-3.la \
+	lib/libnl-route-3.la
+
+lib_LTLIBRARIES += lib/libnl-xfrm-3.la
+
+lib_libnl_xfrm_3_la_SOURCES = \
+	lib/xfrm/ae.c \
+	lib/xfrm/lifetime.c \
+	lib/xfrm/sa.c \
+	lib/xfrm/selector.c \
+	lib/xfrm/sp.c \
+	lib/xfrm/template.c
+lib_libnl_xfrm_3_la_CPPFLAGS = \
+	$(lib_cppflags)
+lib_libnl_xfrm_3_la_LDFLAGS = \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
+	-Wl,--version-script=$(srcdir)/libnl-xfrm-3.sym
+EXTRA_lib_libnl_xfrm_3_la_DEPENDENCIES = \
+	libnl-xfrm-3.sym
+lib_libnl_xfrm_3_la_LIBADD = \
+	lib/libnl-3.la
+
+if ENABLE_CLI
+
+lib_cli_ldflags = \
+	-module -avoid-version
+
+nobase_pkglib_LTLIBRARIES = \
+	lib/cli/cls/basic.la \
+	lib/cli/cls/cgroup.la \
+	lib/cli/qdisc/bfifo.la \
+	lib/cli/qdisc/blackhole.la \
+	lib/cli/qdisc/fq_codel.la \
+	lib/cli/qdisc/hfsc.la \
+	lib/cli/qdisc/htb.la \
+	lib/cli/qdisc/ingress.la \
+	lib/cli/qdisc/pfifo.la \
+	lib/cli/qdisc/plug.la
+
+lib_cli_cls_basic_la_CPPFLAGS       = $(lib_cppflags)
+lib_cli_cls_basic_la_LDFLAGS        = $(lib_cli_ldflags)
+lib_cli_cls_cgroup_la_CPPFLAGS      = $(lib_cppflags)
+lib_cli_cls_cgroup_la_LDFLAGS       = $(lib_cli_ldflags)
+lib_cli_qdisc_bfifo_la_CPPFLAGS     = $(lib_cppflags)
+lib_cli_qdisc_bfifo_la_LDFLAGS      = $(lib_cli_ldflags)
+lib_cli_qdisc_blackhole_la_CPPFLAGS = $(lib_cppflags)
+lib_cli_qdisc_blackhole_la_LDFLAGS  = $(lib_cli_ldflags)
+lib_cli_qdisc_fq_codel_la_CPPFLAGS  = $(lib_cppflags)
+lib_cli_qdisc_fq_codel_la_LDFLAGS   = $(lib_cli_ldflags)
+lib_cli_qdisc_hfsc_la_CPPFLAGS      = $(lib_cppflags)
+lib_cli_qdisc_hfsc_la_LDFLAGS       = $(lib_cli_ldflags)
+lib_cli_qdisc_htb_la_CPPFLAGS       = $(lib_cppflags)
+lib_cli_qdisc_htb_la_LDFLAGS        = $(lib_cli_ldflags)
+lib_cli_qdisc_ingress_la_CPPFLAGS   = $(lib_cppflags)
+lib_cli_qdisc_ingress_la_LDFLAGS    = $(lib_cli_ldflags)
+lib_cli_qdisc_pfifo_la_CPPFLAGS     = $(lib_cppflags)
+lib_cli_qdisc_pfifo_la_LDFLAGS      = $(lib_cli_ldflags)
+lib_cli_qdisc_plug_la_CPPFLAGS      = $(lib_cppflags)
+lib_cli_qdisc_plug_la_LDFLAGS       = $(lib_cli_ldflags)
+endif
+
+###############################################################################
+
 if ENABLE_CLI
 pkgconfig_DATA += libnl-cli-3.0.pc
 endif
@@ -238,7 +538,7 @@ pkgsysconf_DATA = \
 	etc/pktloc \
 	etc/classid
 
-EXTRA_DIST = \
+EXTRA_DIST += \
 	$(pkgsysconf_DATA) \
 	libnl-3.sym \
 	libnl-cli-3.sym \

@@ -254,25 +254,25 @@ lib/route/pktloc_grammar.h: lib/route/pktloc_grammar.c
 	@true
 
 lib/route/pktloc_grammar.c: lib/route/pktloc_grammar.l lib/route/.dirstamp
-	$(AM_V_GEN) $(MKDIR_P) route; $(FLEX) --header-file=lib/route/pktloc_grammar.h $(LFLAGS) -o $@ $<
+	$(AM_V_GEN) $(FLEX) --header-file=lib/route/pktloc_grammar.h $(LFLAGS) -o $@ $<
 
 lib/route/pktloc_syntax.h: lib/route/pktloc_syntax.c
 	@true
 
 lib/route/pktloc_syntax.c: lib/route/pktloc_syntax.y lib/route/.dirstamp
-	$(AM_V_GEN) $(MKDIR_P) route; $(YACC) -d $(YFLAGS) -o $@ $<
+	$(AM_V_GEN) $(YACC) -d $(YFLAGS) -o $@ $<
 
 lib/route/cls/ematch_grammar.h: lib/route/cls/ematch_grammar.c
 	@true
 
 lib/route/cls/ematch_grammar.c: lib/route/cls/ematch_grammar.l lib/route/cls/.dirstamp
-	$(AM_V_GEN) $(MKDIR_P) route/cls; $(FLEX) --header-file=lib/route/cls/ematch_grammar.h $(LFLAGS) -o $@ $<
+	$(AM_V_GEN) $(FLEX) --header-file=lib/route/cls/ematch_grammar.h $(LFLAGS) -o $@ $<
 
 lib/route/cls/ematch_syntax.h: lib/route/cls/ematch_syntax.c
 	@true
 
 lib/route/cls/ematch_syntax.c: lib/route/cls/ematch_syntax.y lib/route/cls/.dirstamp
-	$(AM_V_GEN) $(MKDIR_P) route/cls; $(YACC) -d $(YFLAGS) -o $@ $<
+	$(AM_V_GEN) $(YACC) -d $(YFLAGS) -o $@ $<
 
 grammar_files_sources = \
 	lib/route/pktloc_grammar.c \

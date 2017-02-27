@@ -1199,16 +1199,43 @@ int xfrmnl_sp_set_share (struct xfrmnl_sp* sp, unsigned int share)
 	return 0;
 }
 
+/**
+ * Get the security context.
+ *
+ * @arg sp              The xfrmnl_sp object.
+ * @arg len             An optional output value for the ctx_str length including the xfrmnl_sp header.
+ * @arg exttype         An optional output value.
+ * @arg alg             An optional output value for the security context algorithm.
+ * @arg doi             An optional output value for the security context domain of interpretation.
+ * @arg ctx_len         An optional output value for the security context length, including the
+ *                      terminating null byte ('\0').
+ * @arg ctx_str         An optional buffer large enough for the security context string. It must
+ *                      contain at least @ctx_len bytes. You are advised to create the ctx_str
+ *                      buffer one element larger and ensure NUL termination yourself.
+ *
+ * Warning: you must ensure that @ctx_str is large enough. If you don't know the length before-hand,
+ * call xfrmnl_sp_get_sec_ctx() without @ctx_str argument to query only the required buffer size.
+ * This modified API is available in all versions of libnl3 that support the capability
+ * @def NL_CAPABILITY_XFRM_SP_SEC_CTX_LEN (@see nl_has_capability for further information).
+ *
+ * @return 0 on success or a negative error code.
+ */
 int xfrmnl_sp_get_sec_ctx (struct xfrmnl_sp* sp, unsigned int* len, unsigned int* exttype, unsigned int* alg, unsigned int* doi, unsigned int* ctx_len, char* ctx_str)
 {
 	if (sp->ce_mask & XFRM_SP_ATTR_SECCTX)
 	{
-		*len    =   sp->sec_ctx->len;
-		*exttype=   sp->sec_ctx->exttype;
-		*alg    =   sp->sec_ctx->ctx_alg;
-		*doi    =   sp->sec_ctx->ctx_doi;
-		*ctx_len=   sp->sec_ctx->ctx_len;
-		memcpy ((void *)ctx_str, (void *)sp->sec_ctx->ctx, sizeof (uint8_t) * sp->sec_ctx->ctx_len);
+		if (len)
+			*len = sizeof (struct xfrmnl_user_sec_ctx) + sp->sec_ctx->ctx_len;
+		if (exttype)
+			*exttype = sp->sec_ctx->exttype;
+		if (alg)
+			*alg = sp->sec_ctx->ctx_alg;
+		if (doi)
+			*doi = sp->sec_ctx->ctx_doi;
+		if (ctx_len)
+			*ctx_len = sp->sec_ctx->ctx_len;
+		if (ctx_str)
+			memcpy ((void *)ctx_str, (void *)sp->sec_ctx->ctx, sp->sec_ctx->ctx_len);
 	}
 	else
 		return -1;

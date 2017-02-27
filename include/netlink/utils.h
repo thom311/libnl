@@ -267,6 +267,13 @@ enum {
 	NL_CAPABILITY_VERSION_3_2_29 = 25,
 #define NL_CAPABILITY_VERSION_3_2_29 NL_CAPABILITY_VERSION_3_2_29
 
+	/**
+	 * Support omitting @ctx_str argument to xfrmnl_sp_get_sec_ctx() to check
+	 * for required buffer size for context string.
+	 */
+	NL_CAPABILITY_XFRM_SP_SEC_CTX_LEN = 26,
+#define NL_CAPABILITY_XFRM_SP_SEC_CTX_LEN NL_CAPABILITY_XFRM_SP_SEC_CTX_LEN
+
 	__NL_CAPABILITY_MAX,
 	NL_CAPABILITY_MAX = (__NL_CAPABILITY_MAX - 1),
 #define NL_CAPABILITY_MAX NL_CAPABILITY_MAX

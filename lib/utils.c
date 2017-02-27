@@ -1212,7 +1212,7 @@ int nl_has_capability (int capability)
 			NL_CAPABILITY_NL_RECVMSGS_PEEK_BY_DEFAULT),
 		_NL_SET (3,
 			NL_CAPABILITY_VERSION_3_2_29,
-			0,
+			NL_CAPABILITY_XFRM_SP_SEC_CTX_LEN,
 			0,
 			0,
 			0,

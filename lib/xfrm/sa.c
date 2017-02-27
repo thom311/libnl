@@ -2021,7 +2021,7 @@ int xfrmnl_sa_set_sec_ctx (struct xfrmnl_sa* sa, unsigned int doi, unsigned int 
 	/* Free up the old context string and allocate new one */
 	if (sa->sec_ctx)
 		free (sa->sec_ctx);
-	if ((sa->sec_ctx = calloc(1, sizeof (struct xfrmnl_user_sec_ctx) + len)) == NULL)
+	if ((sa->sec_ctx = calloc(1, sizeof (struct xfrmnl_user_sec_ctx) + 1 + len)) == NULL)
 		return -1;
 
 	/* Save the new info */
@@ -2031,6 +2031,7 @@ int xfrmnl_sa_set_sec_ctx (struct xfrmnl_sa* sa, unsigned int doi, unsigned int 
 	sa->sec_ctx->ctx_doi    =   doi;
 	sa->sec_ctx->ctx_len    =   len;
 	memcpy (sa->sec_ctx->ctx, ctx_str, len);
+	sa->sec_ctx->ctx[len] = '\0';
 
 	sa->ce_mask |= XFRM_SA_ATTR_SECCTX;
 

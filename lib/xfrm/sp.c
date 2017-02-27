@@ -765,8 +765,9 @@ static int build_xfrm_sp_message(struct xfrmnl_sp *tmpl, int cmd, int flags, str
 	uint32_t                    len;
 	struct nl_addr*             addr;
 
-	if (!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) ||
-	    !(tmpl->ce_mask & XFRM_SP_ATTR_DIR))
+	if (!(tmpl->ce_mask & XFRM_SP_ATTR_DIR) ||
+			(!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) &&
+			 !(tmpl->ce_mask & XFRM_SP_ATTR_SEL)))
 		return -NLE_MISSING_ATTR;
 
 	memset ((void*)&sp_info, 0, sizeof (sp_info));
@@ -937,18 +938,53 @@ int xfrmnl_sp_update(struct nl_sock* sk, struct xfrmnl_sp* tmpl, int flags)
 
 /** @} */
 
+/**
+ * \brief      Builds a xfrm_sp_delete_message. Uses either index and direction
+ *             or security-context (not set is a valid value), selector and
+ *             direction for identification.
+ *             Returns error if necessary values aren't set.
+ *
+ * \param      tmpl    The policy template.
+ * \param      cmd     The command. Should be XFRM_MSG_DELPOLICY.
+ * \param      flags   Additional flags
+ * \param      result  Resulting message.
+ *
+ * \return     0 if successful, else error value < 0
+ */
 static int build_xfrm_sp_delete_message(struct xfrmnl_sp *tmpl, int cmd, int flags, struct nl_msg **result)
 {
 	struct nl_msg*              msg;
 	struct xfrm_userpolicy_id   spid;
+	struct nl_addr*             addr;
+	uint32_t 					len;
 
-	if (!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) ||
-	    !(tmpl->ce_mask & XFRM_SP_ATTR_DIR))
+	if (!(tmpl->ce_mask & XFRM_SP_ATTR_DIR) ||
+			(!(tmpl->ce_mask & XFRM_SP_ATTR_INDEX) &&
+			 !(tmpl->ce_mask & XFRM_SP_ATTR_SEL)))
 		return -NLE_MISSING_ATTR;
 
 	memset(&spid, 0, sizeof(spid));
-	spid.index          = tmpl->index;
 	spid.dir            = tmpl->dir;
+	if(tmpl->ce_mask & XFRM_SP_ATTR_INDEX)
+		spid.index          = tmpl->index;
+
+	if (tmpl->ce_mask & XFRM_SP_ATTR_SEL)
+	{
+		addr = xfrmnl_sel_get_daddr (tmpl->sel);
+		memcpy ((void*)&spid.sel.daddr, (void*)nl_addr_get_binary_addr (addr), sizeof (uint8_t) * nl_addr_get_len (addr));
+		addr = xfrmnl_sel_get_saddr (tmpl->sel);
+		memcpy ((void*)&spid.sel.saddr, (void*)nl_addr_get_binary_addr (addr), sizeof (uint8_t) * nl_addr_get_len (addr));
+		spid.sel.dport       =   htons (xfrmnl_sel_get_dport (tmpl->sel));
+		spid.sel.dport_mask  =   htons (xfrmnl_sel_get_dportmask (tmpl->sel));
+		spid.sel.sport       =   htons (xfrmnl_sel_get_sport (tmpl->sel));
+		spid.sel.sport_mask  =   htons (xfrmnl_sel_get_sportmask (tmpl->sel));
+		spid.sel.family      =   xfrmnl_sel_get_family (tmpl->sel);
+		spid.sel.prefixlen_d =   xfrmnl_sel_get_prefixlen_d (tmpl->sel);
+		spid.sel.prefixlen_s =   xfrmnl_sel_get_prefixlen_s (tmpl->sel);
+		spid.sel.proto       =   xfrmnl_sel_get_proto (tmpl->sel);
+		spid.sel.ifindex     =   xfrmnl_sel_get_ifindex (tmpl->sel);
+		spid.sel.user        =   xfrmnl_sel_get_userid (tmpl->sel);
+	}
 
 	msg = nlmsg_alloc_simple(cmd, flags);
 	if (!msg)
@@ -957,8 +993,14 @@ static int build_xfrm_sp_delete_message(struct xfrmnl_sp *tmpl, int cmd, int fla
 	if (nlmsg_append(msg, &spid, sizeof(spid), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
 
+	if (tmpl->ce_mask & XFRM_SP_ATTR_SECCTX) {
+		len = (sizeof (struct xfrm_user_sec_ctx)) + tmpl->sec_ctx->ctx_len;
+		NLA_PUT (msg, XFRMA_SEC_CTX, len, tmpl->sec_ctx);
+	}
+
 	if (tmpl->ce_mask & XFRM_SP_ATTR_MARK) {
-		NLA_PUT (msg, XFRMA_MARK, sizeof (struct xfrm_mark), &tmpl->mark);
+		len = sizeof (struct xfrm_mark);
+		NLA_PUT (msg, XFRMA_MARK, len, &tmpl->mark);
 	}
 
 	*result = msg;
@@ -1157,38 +1199,78 @@ int xfrmnl_sp_set_share (struct xfrmnl_sp* sp, unsigned int share)
 	return 0;
 }
 
+/**
+ * Get the security context.
+ *
+ * @arg sp              The xfrmnl_sp object.
+ * @arg len             An optional output value for the ctx_str length including the xfrmnl_sp header.
+ * @arg exttype         An optional output value.
+ * @arg alg             An optional output value for the security context algorithm.
+ * @arg doi             An optional output value for the security context domain of interpretation.
+ * @arg ctx_len         An optional output value for the security context length, including the
+ *                      terminating null byte ('\0').
+ * @arg ctx_str         An optional buffer large enough for the security context string. It must
+ *                      contain at least @ctx_len bytes. You are advised to create the ctx_str
+ *                      buffer one element larger and ensure NUL termination yourself.
+ *
+ * Warning: you must ensure that @ctx_str is large enough. If you don't know the length before-hand,
+ * call xfrmnl_sp_get_sec_ctx() without @ctx_str argument to query only the required buffer size.
+ * This modified API is available in all versions of libnl3 that support the capability
+ * @def NL_CAPABILITY_XFRM_SP_SEC_CTX_LEN (@see nl_has_capability for further information).
+ *
+ * @return 0 on success or a negative error code.
+ */
 int xfrmnl_sp_get_sec_ctx (struct xfrmnl_sp* sp, unsigned int* len, unsigned int* exttype, unsigned int* alg, unsigned int* doi, unsigned int* ctx_len, char* ctx_str)
 {
 	if (sp->ce_mask & XFRM_SP_ATTR_SECCTX)
 	{
-		*len    =   sp->sec_ctx->len;
-		*exttype=   sp->sec_ctx->exttype;
-		*alg    =   sp->sec_ctx->ctx_alg;
-		*doi    =   sp->sec_ctx->ctx_doi;
-		*ctx_len=   sp->sec_ctx->ctx_len;
-		memcpy ((void *)ctx_str, (void *)sp->sec_ctx->ctx, sizeof (uint8_t) * sp->sec_ctx->ctx_len);
+		if (len)
+			*len = sizeof (struct xfrmnl_user_sec_ctx) + sp->sec_ctx->ctx_len;
+		if (exttype)
+			*exttype = sp->sec_ctx->exttype;
+		if (alg)
+			*alg = sp->sec_ctx->ctx_alg;
+		if (doi)
+			*doi = sp->sec_ctx->ctx_doi;
+		if (ctx_len)
+			*ctx_len = sp->sec_ctx->ctx_len;
+		if (ctx_str)
+			memcpy ((void *)ctx_str, (void *)sp->sec_ctx->ctx, sp->sec_ctx->ctx_len);
 	}
 	else
 		return -1;
 
 	return 0;
 }
-
-int xfrmnl_sp_set_sec_ctx (struct xfrmnl_sp* sp, unsigned int len, unsigned int exttype, unsigned int alg, unsigned int doi, unsigned int ctx_len, char* ctx_str)
+/**
+ * @brief      Set security context (ctx_str) for XFRM Polixy.
+ *
+ * @param      sp       XFRM Policy
+ * @param      len      !!! depricated unused parameter !!!
+ * @param      exttype  netlink message attribute - probably XFRMA_SEC_CTX
+ * @param      alg      security context algorithm
+ * @param      doi      security context domain interpretation
+ * @param      ctx_len  Length of the context string.
+ * @param      ctx_str  The context string.
+ *
+ * @return     0 if sucessfull, else -1
+ */
+int xfrmnl_sp_set_sec_ctx (struct xfrmnl_sp* sp, unsigned int len __attribute__((unused)), unsigned int exttype, unsigned int alg, unsigned int doi, unsigned int ctx_len, char* ctx_str)
 {
 	/* Free up the old context string and allocate new one */
 	if (sp->sec_ctx)
 		free (sp->sec_ctx);
-	if ((sp->sec_ctx = calloc (1, sizeof (struct xfrmnl_user_sec_ctx) + (sizeof (uint8_t) * ctx_len))) == NULL)
+	if ((sp->sec_ctx = calloc (1, sizeof (struct xfrmnl_user_sec_ctx) + 1 + ctx_len)) == NULL)
 		return -1;
 
 	/* Save the new info */
-	sp->sec_ctx->len        =   len;
+	sp->sec_ctx->len        =   sizeof (struct xfrmnl_user_sec_ctx) + ctx_len;
 	sp->sec_ctx->exttype    =   exttype;
 	sp->sec_ctx->ctx_alg    =   alg;
 	sp->sec_ctx->ctx_doi    =   doi;
-	sp->sec_ctx->ctx_len    =   len;
-	memcpy ((void *)sp->sec_ctx->ctx, (void *)ctx_str, sizeof (uint8_t) * ctx_len);
+	sp->sec_ctx->ctx_len    =   ctx_len;
+	memcpy ((void *)sp->sec_ctx->ctx, (void *)ctx_str, ctx_len);
+	sp->sec_ctx->ctx[ctx_len] = '\0';
 
 	sp->ce_mask |= XFRM_SP_ATTR_SECCTX;
 

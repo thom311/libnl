@@ -26,6 +26,9 @@ pkgconfig_DATA = \
 	libnl-xfrm-3.0.pc \
 	libnl-idiag-3.0.pc
 
+warn_cppflags = \
+	-Wall
+
 ###############################################################################
 
 libnlincludedir = $(includedir)/libnl@MAJ_VERSION@
@@ -283,7 +286,7 @@ EXTRA_DIST += \
 ###############################################################################
 
 lib_cppflags = \
-	-Wall \
+	$(warn_cppflags) \
 	-Wmissing-prototypes \
 	-D_GNU_SOURCE \
 	-DSYSCONFDIR=\"$(sysconfdir)/libnl\" \
@@ -564,7 +567,7 @@ src_lib_libnl_cli_3_la_SOURCES = \
 EXTRA_src_lib_libnl_cli_3_la_DEPENDENCIES = \
 	libnl-cli-3.sym
 src_lib_libnl_cli_3_la_CPPFLAGS = \
-	-Wall \
+	$(warn_cppflags) \
 	-D_GNU_SOURCE \
 	-DPKGLIBDIR=\"$(pkglibdir)\" \
 	-DSYSCONFDIR=\"$(sysconfdir)\" \
@@ -584,7 +587,7 @@ src_lib_libnl_cli_3_la_LIBADD = \
 ###############################################################################
 
 src_cppflags = \
-	-Wall \
+	$(warn_cppflags) \
 	-D_GNU_SOURCE \
 	-DSYSCONFDIR=\"$(sysconfdir)/libnl\" \
 	-I$(srcdir)/include/linux-private \
@@ -757,7 +760,7 @@ src_nl_util_addr_LDADD =            $(src_ldadd)
 ###############################################################################
 
 tests_cppflags = \
-	-Wall \
+	$(warn_cppflags) \
 	-D_GNU_SOURCE \
 	-DSYSCONFDIR=\"$(sysconfdir)/libnl\" \
 	-I$(srcdir)/include/linux-private \

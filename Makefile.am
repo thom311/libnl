@@ -18,6 +18,9 @@ TESTS =
 CLEANFILES =
 EXTRA_DIST =
 
+DISTCHECK_CONFIGURE_FLAGS = \
+	--disable-dependency-tracking
+
 pkgconfig_DATA = \
 	libnl-3.0.pc \
 	libnl-route-3.0.pc \

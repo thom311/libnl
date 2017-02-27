@@ -74,6 +74,7 @@ AM_PROG_LIBTOOL
 AC_PROG_MKDIR_P
 AC_CHECK_PROGS(FLEX, 'flex')
 AC_CHECK_PROGS(YACC, 'bison -y')
+AC_CHECK_LIB([m], [pow], [], AC_MSG_ERROR([libm is required]))
 
 AC_C_CONST
 AC_C_INLINE
@@ -105,20 +106,15 @@ AC_ARG_ENABLE([pthreads],
 	AS_HELP_STRING([--disable-pthreads], [Disable pthreads support]),
 	[enable_pthreads="$enableval"], [enable_pthreads="yes"])
 AM_CONDITIONAL([DISABLE_PTHREADS], [test "$enable_pthreads" = "no"])
-
-AC_ARG_ENABLE([debug],
-	AS_HELP_STRING([--disable-debug], [Do not include debugging statements]),
-	[enable_debug="$enableval"], [enable_debug="yes"])
-AM_CONDITIONAL([ENABLE_DEBUG], [test "$enable_debug" = "no" ])
-
-AC_CHECK_LIB([m], [pow], [], AC_MSG_ERROR([libm is required]))
-
 if test "x$enable_pthreads" = "xno"; then
     AC_DEFINE([DISABLE_PTHREADS], [1], [Define to 1 to disable pthreads])
 else
     AC_CHECK_LIB([pthread], [pthread_mutex_lock], [], AC_MSG_ERROR([libpthread is required]))
 fi
 
+AC_ARG_ENABLE([debug],
+	AS_HELP_STRING([--disable-debug], [Do not include debugging statements]),
+	[enable_debug="$enableval"], [enable_debug="yes"])
 if test "x$enable_debug" = "xyes"; then
     AC_DEFINE([NL_DEBUG], [1], [Define to 1 to enable debugging])
 fi

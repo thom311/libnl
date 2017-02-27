@@ -79,11 +79,10 @@ AC_C_CONST
 AC_C_INLINE
 
 PKG_CHECK_MODULES([CHECK], [check >= 0.9.0],
-	[enable_unit_tests="yes"],
+	[has_check="yes"],
 	[AC_MSG_WARN([*** Disabling building of unit tests])
-	 enable_unit_tests="no"])
-
-AM_CONDITIONAL([ENABLE_UNIT_TESTS], [test "$enable_unit_tests" = "yes"])
+	 has_check="no"])
+AM_CONDITIONAL(WITH_CHECK, [test "$has_check" = 'yes'])
 
 AC_ARG_WITH([pkgconfigdir], AS_HELP_STRING([--with-pkgconfigdir=PATH],
 	[Path to the pkgconfig directory [[LIBDIR/pkgconfig]]]),
@@ -135,20 +134,7 @@ libnl-nf-3.0.pc
 libnl-cli-3.0.pc
 libnl-xfrm-3.0.pc
 libnl-idiag-3.0.pc
-lib/Makefile
-include/Makefile
-src/Makefile
-src/lib/Makefile
-tests/Makefile
-man/Makefile
-python/Makefile
 python/setup.py
-python/doc/Makefile
-python/examples/Makefile
-python/netlink/Makefile
-python/netlink/genl/Makefile
-python/netlink/route/Makefile
-python/tests/Makefile
 include/netlink/version.h
 ])
 

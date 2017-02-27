@@ -5,7 +5,7 @@
 #define TEST_BRIDGE_NAME "testbridge"
 #define TEST_INTERFACE_NAME "testtap1"
 
-int create_bridge(struct nl_sock *sk, struct nl_cache *link_cache, const char *name) {
+static int create_bridge(struct nl_sock *sk, struct nl_cache *link_cache, const char *name) {
 	struct rtnl_link *link;
 	int err;
 

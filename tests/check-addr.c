@@ -12,6 +12,8 @@
 #include <check.h>
 #include <netlink/addr.h>
 
+#include "util.h"
+
 START_TEST(addr_alloc)
 {
 	struct nl_addr *addr;

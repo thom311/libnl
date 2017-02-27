@@ -27,7 +27,8 @@ pkgconfig_DATA = \
 	libnl-idiag-3.0.pc
 
 warn_cppflags = \
-	-Wall
+	-Wall \
+	-Wmissing-prototypes
 
 ###############################################################################
 
@@ -287,7 +288,6 @@ EXTRA_DIST += \
 
 lib_cppflags = \
 	$(warn_cppflags) \
-	-Wmissing-prototypes \
 	-D_GNU_SOURCE \
 	-DSYSCONFDIR=\"$(sysconfdir)/libnl\" \
 	-I$(srcdir)/include/linux-private \

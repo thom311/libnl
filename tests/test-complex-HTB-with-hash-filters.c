@@ -29,7 +29,7 @@
 #define 	TC_HANDLE(maj, min)   (TC_H_MAJ((maj) << 16) | TC_H_MIN(min))
 
 /* some functions are copied from iproute-tc tool */
-int get_u32(__u32 *val, const char *arg, int base)
+static int get_u32(__u32 *val, const char *arg, int base)
 {
 	unsigned long res;
 	char *ptr;
@@ -43,7 +43,7 @@ int get_u32(__u32 *val, const char *arg, int base)
 	return 0;
 }
 
-int get_u32_handle(__u32 *handle, const char *str)
+static int get_u32_handle(__u32 *handle, const char *str)
 {
 	__u32 htid=0, hash=0, nodeid=0;
 	char *tmp = strchr(str, ':');
@@ -78,7 +78,7 @@ int get_u32_handle(__u32 *handle, const char *str)
 	return 0;
 }
 
-uint32_t get_u32_parse_handle(const char *cHandle)
+static uint32_t get_u32_parse_handle(const char *cHandle)
 {
 	uint32_t handle=0;
 
@@ -94,7 +94,7 @@ uint32_t get_u32_parse_handle(const char *cHandle)
 	return handle;
 }
 
-int get_tc_classid(__u32 *h, const char *str)
+static int get_tc_classid(__u32 *h, const char *str)
 {
 	__u32 maj, min;
 	char *p;
@@ -134,7 +134,7 @@ ok:
  * Function that adds a new filter and attach it to a hash table
  *
  */
-int u32_add_filter_on_ht(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t prio, 
+static int u32_add_filter_on_ht(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t prio, 
 		uint32_t keyval, uint32_t keymask, int keyoff, int keyoffmask,
 		uint32_t htid, uint32_t classid
 )
@@ -186,7 +186,7 @@ int u32_add_filter_on_ht(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint3
  * and set next hash table link with hash mask
  *
  */
-int u32_add_filter_on_ht_with_hashmask(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t prio, 
+static int u32_add_filter_on_ht_with_hashmask(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t prio, 
 	    uint32_t keyval, uint32_t keymask, int keyoff, int keyoffmask,
 	    uint32_t htid, uint32_t htlink, uint32_t hmask, uint32_t hoffset
 )
@@ -237,7 +237,7 @@ int u32_add_filter_on_ht_with_hashmask(struct nl_sock *sock, struct rtnl_link *r
 /* 
  * function that creates a new hash table 
  */
-int u32_add_ht(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t prio, uint32_t htid, uint32_t divisor)
+static int u32_add_ht(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t prio, uint32_t htid, uint32_t divisor)
 {
 
     int err;
@@ -276,7 +276,7 @@ int u32_add_ht(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t prio, 
 /*
  * function that adds a new HTB qdisc and set the default class for unclassified traffic
  */
-int qdisc_add_HTB(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t defaultClass)
+static int qdisc_add_HTB(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t defaultClass)
 {
     
     struct rtnl_qdisc *qdisc;
@@ -326,7 +326,7 @@ int qdisc_add_HTB(struct nl_sock *sock, struct rtnl_link *rtnlLink, uint32_t def
 /*
  * function that adds a new HTB class and set its parameters
  */
-int class_add_HTB(struct nl_sock *sock, struct rtnl_link *rtnlLink, 
+static int class_add_HTB(struct nl_sock *sock, struct rtnl_link *rtnlLink, 
 		    uint32_t parentMaj, uint32_t parentMin,
 		    uint32_t childMaj,  uint32_t childMin, 
 		    uint64_t rate, uint64_t ceil,
@@ -388,7 +388,7 @@ int class_add_HTB(struct nl_sock *sock, struct rtnl_link *rtnlLink,
 /*
  * function that adds a HTB root class and set its parameters
  */
-int class_add_HTB_root(struct nl_sock *sock, struct rtnl_link *rtnlLink, 
+static int class_add_HTB_root(struct nl_sock *sock, struct rtnl_link *rtnlLink, 
 			uint64_t rate, uint64_t ceil,
 			uint32_t burst, uint32_t cburst
 )
@@ -443,7 +443,7 @@ int class_add_HTB_root(struct nl_sock *sock, struct rtnl_link *rtnlLink,
 /*
  * function that adds a new SFQ qdisc as a leaf for a HTB class
  */
-int qdisc_add_SFQ_leaf(struct nl_sock *sock, struct rtnl_link *rtnlLink,
+static int qdisc_add_SFQ_leaf(struct nl_sock *sock, struct rtnl_link *rtnlLink,
 			uint32_t parentMaj, uint32_t parentMin, 
 			int quantum, int limit, int perturb
 )

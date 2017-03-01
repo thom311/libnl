@@ -16,6 +16,7 @@
 #include <netlink/cache.h>
 #include <netlink/addr.h>
 #include <netlink/route/route.h>
+#include <linux/fib_rules.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -14,6 +14,8 @@
 
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>
+#include <linux/if_link.h>
+#include <linux/if_macsec.h>
 
 #ifdef __cplusplus
 extern "C" {

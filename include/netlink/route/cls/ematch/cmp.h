@@ -14,6 +14,7 @@
 
 #include <netlink/netlink.h>
 #include <netlink/route/cls/ematch.h>
+#include <linux/tc_ematch/tc_em_cmp.h>
 
 #ifdef __cplusplus
 extern "C" {

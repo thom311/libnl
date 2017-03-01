@@ -20,6 +20,8 @@
 #include <netlink/cache.h>
 #include <netlink/msg.h>
 
+#include <linux/version.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

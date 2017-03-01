@@ -16,6 +16,8 @@
 #include <netlink/cache.h>
 #include <netlink/data.h>
 #include <netlink/route/link.h>
+#include <linux/pkt_sched.h>
+#include <linux/pkt_cls.h>
 
 #ifdef __cplusplus
 extern "C" {

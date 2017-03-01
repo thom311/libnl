@@ -13,6 +13,7 @@
 #define __NETLINK_CLI_CT_H_
 
 #include <netlink/netfilter/ct.h>
+#include <linux/netfilter/nf_conntrack_common.h>
 
 extern struct nfnl_ct *nl_cli_ct_alloc(void);
 extern struct nl_cache *nl_cli_ct_alloc_cache(struct nl_sock *);

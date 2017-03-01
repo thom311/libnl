@@ -13,6 +13,7 @@
 #define NETLINK_IDIAGNL_H_
 
 #include <netlink/netlink.h>
+#include <linux/sock_diag.h>
 
 #ifdef __cplusplus
 extern "C" {

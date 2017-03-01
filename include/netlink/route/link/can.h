@@ -14,6 +14,7 @@
 
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>
+#include <linux/can/netlink.h>
 
 #ifdef __cplusplus
 extern "C" {

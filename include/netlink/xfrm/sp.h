@@ -39,6 +39,7 @@
 #include <netlink/addr.h>
 #include <netlink/xfrm/template.h>
 #include <netlink/xfrm/lifetime.h>
+#include <linux/xfrm.h>
 
 #ifdef __cplusplus
 extern "C" {

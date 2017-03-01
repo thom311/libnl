@@ -22,10 +22,6 @@
 #include <sys/time.h>
 #include <netdb.h>
 #include <netlink/netlink-compat.h>
-#include <linux/netlink.h>
-#include <linux/rtnetlink.h>
-#include <linux/genetlink.h>
-#include <linux/netfilter/nfnetlink.h>
 #include <netinet/tcp.h>
 #include <netlink/version.h>
 #include <netlink/errno.h>
@@ -38,6 +34,7 @@
 extern "C" {
 #endif
 
+struct nlmsghdr;
 struct ucred;
 struct nl_cache_ops;
 struct nl_parser_param;

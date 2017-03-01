@@ -13,6 +13,8 @@
 #include <netlink/cli/route.h>
 #include <netlink/cli/link.h>
 
+#include <linux/netlink.h>
+
 static int interactive = 0, default_yes = 0, quiet = 0;
 static int deleted = 0;
 static struct nl_sock *sock;

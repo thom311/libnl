@@ -14,6 +14,8 @@
 #include <netlink/cli/utils.h>
 #include <netlink/cli/ct.h>
 
+#include <linux/netlink.h>
+
 static void print_usage(void)
 {
 	printf(

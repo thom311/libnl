@@ -11,6 +11,7 @@
 
 #include <netlink/cli/utils.h>
 #include <netlink/route/pktloc.h>
+#include <linux/tc_ematch/tc_em_cmp.h>
 
 static void print_usage(void)
 {

@@ -12,6 +12,7 @@
 #include <netlink/cli/utils.h>
 #include <netlink/cli/tc.h>
 #include <netlink/route/qdisc/hfsc.h>
+#include <linux/pkt_sched.h>
 
 static void print_qdisc_usage(void)
 {

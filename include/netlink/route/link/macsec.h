@@ -14,12 +14,12 @@
 
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>
-#include <linux/if_link.h>
-#include <linux/if_macsec.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+enum macsec_validation_type;
 
 struct rtnl_link *rtnl_link_macsec_alloc(void);
 

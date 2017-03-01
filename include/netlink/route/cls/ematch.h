@@ -15,7 +15,6 @@
 #include <netlink/netlink.h>
 #include <netlink/msg.h>
 #include <netlink/route/classifier.h>
-#include <linux/pkt_cls.h>
 
 #ifdef __cplusplus
 extern "C" {

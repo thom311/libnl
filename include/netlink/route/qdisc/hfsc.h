@@ -21,6 +21,8 @@
 extern "C" {
 #endif
 
+struct tc_service_curve;
+
 extern uint32_t	rtnl_qdisc_hfsc_get_defcls(const struct rtnl_qdisc *);
 extern int	rtnl_qdisc_hfsc_set_defcls(struct rtnl_qdisc *, uint32_t);
 

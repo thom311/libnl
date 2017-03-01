@@ -13,6 +13,8 @@
 #include <netlink/cli/link.h>
 #include <netlink/route/link/bonding.h>
 
+#include <linux/netlink.h>
+
 int main(int argc, char *argv[])
 {
 	struct nl_sock *sock;

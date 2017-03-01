@@ -20,6 +20,8 @@
 #include <netlink/route/cls/ematch/nbyte.h>
 #include <netlink/route/cls/ematch/text.h>
 #include <netlink/route/cls/ematch/meta.h>
+#include <linux/tc_ematch/tc_em_meta.h>
+#include <linux/tc_ematch/tc_em_cmp.h>
 
 #define META_ALLOC rtnl_meta_value_alloc_id
 #define META_ID(name) TCF_META_ID_##name

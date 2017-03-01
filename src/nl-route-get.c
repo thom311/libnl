@@ -13,6 +13,8 @@
 #include <netlink/cli/route.h>
 #include <netlink/cli/link.h>
 
+#include <linux/rtnetlink.h>
+
 static void print_usage(void)
 {
 	printf("Usage: nl-route-get <addr>\n");

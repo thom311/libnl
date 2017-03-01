@@ -11,6 +11,8 @@
 
 #include <netlink/cli/utils.h>
 
+#include <linux/genetlink.h>
+
 static struct nl_cache *alloc_genl_family_cache(struct nl_sock *sk)
 {
 	return nl_cli_alloc_cache(sk, "generic netlink family",

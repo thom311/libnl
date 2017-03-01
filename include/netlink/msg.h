@@ -20,6 +20,8 @@
 extern "C" {
 #endif
 
+struct nlmsghdr;
+
 #define NL_DONTPAD	0
 
 /**

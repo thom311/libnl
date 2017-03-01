@@ -20,11 +20,14 @@
 #include <netlink/route/act/mirred.h>
 #include <netlink/route/act/skbedit.h>
 #include <netlink/route/class.h>
-#include <linux/if_ether.h>
-
 #include <netlink/attr.h>
+
 #include <stdio.h>
 #include <string.h>
+
+#include <linux/if_ether.h>
+#include <linux/tc_act/tc_mirred.h>
+#include <linux/netlink.h>
 
 #define 	TC_HANDLE(maj, min)   (TC_H_MAJ((maj) << 16) | TC_H_MIN(min))
 

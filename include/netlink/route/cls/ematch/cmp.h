@@ -14,11 +14,12 @@
 
 #include <netlink/netlink.h>
 #include <netlink/route/cls/ematch.h>
-#include <linux/tc_ematch/tc_em_cmp.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+struct tcf_em_cmp;
 
 extern void	rtnl_ematch_cmp_set(struct rtnl_ematch *,
 				    struct tcf_em_cmp *);

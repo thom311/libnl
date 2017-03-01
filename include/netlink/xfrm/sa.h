@@ -37,7 +37,6 @@
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/addr.h>
-#include <linux/xfrm.h>
 
 #ifdef __cplusplus
 extern "C" {

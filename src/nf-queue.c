@@ -20,6 +20,8 @@
 #include <netlink/netfilter/queue.h>
 #include <netlink/netfilter/queue_msg.h>
 
+#include <linux/netlink.h>
+
 static struct nl_sock *nf_sock;
 
 static struct nfnl_queue *alloc_queue(void)

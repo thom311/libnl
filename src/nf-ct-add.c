@@ -14,6 +14,8 @@
 #include <netlink/cli/utils.h>
 #include <netlink/cli/ct.h>
 
+#include <linux/rtnetlink.h>
+
 static int quiet = 0;
 
 static void print_usage(void)

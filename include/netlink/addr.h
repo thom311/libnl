@@ -18,6 +18,8 @@
 extern "C" {
 #endif
 
+struct nlattr;
+
 struct nl_addr;
 
 /* Creation */

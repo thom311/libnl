@@ -12,6 +12,8 @@
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>
 
+#include <linux/netlink.h>
+
 static void print_usage(void)
 {
 	printf("Usage: nl-link-ifindex2name <ifindex>\n");

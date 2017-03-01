@@ -13,6 +13,8 @@
 #include <netlink/attr.h>
 #include <netlink/msg.h>
 
+#include <linux/netlink.h>
+
 START_TEST(attr_size)
 {
 	fail_if(nla_attr_size(0) != NLA_HDRLEN,

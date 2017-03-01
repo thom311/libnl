@@ -14,11 +14,14 @@
 
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>
-#include <linux/can/netlink.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+struct can_bittiming_const;
+struct can_bittiming;
+struct can_berr_counter;
 
 extern int rtnl_link_is_can(struct rtnl_link *link);
 

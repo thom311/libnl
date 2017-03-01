@@ -14,7 +14,6 @@
 #define __NETLINK_CLI_EXP_H_
 
 #include <netlink/netfilter/exp.h>
-#include <linux/netfilter/nf_conntrack_common.h>
 
 extern struct nfnl_exp *nl_cli_exp_alloc(void);
 extern struct nl_cache *nl_cli_exp_alloc_cache(struct nl_sock *);

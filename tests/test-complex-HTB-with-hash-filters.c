@@ -18,6 +18,7 @@
 #include <netlink/route/classifier.h>
 #include <netlink/route/class.h>
 #include <linux/if_ether.h>
+#include <linux/pkt_cls.h>
 
 #include <netlink/attr.h>
 //#include "include/rtnl_u32.h"
@@ -25,6 +26,8 @@
 #include <stdio.h>
 #include <string.h>
 //#include "include/rtnl_u32_addon.h"
+
+#include <linux/netlink.h>
 
 #define 	TC_HANDLE(maj, min)   (TC_H_MAJ((maj) << 16) | TC_H_MIN(min))
 

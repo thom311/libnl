@@ -21,6 +21,7 @@
 #include <netlink/netlink.h>
 #include <netlink/route/cls/ematch.h>
 #include <netlink/route/cls/ematch/meta.h>
+#include <linux/tc_ematch/tc_em_meta.h>
 
 struct rtnl_meta_value
 {

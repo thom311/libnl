@@ -21,6 +21,7 @@
 #include <netlink/netlink.h>
 #include <netlink/route/cls/ematch.h>
 #include <netlink/route/cls/ematch/nbyte.h>
+#include <linux/tc_ematch/tc_em_nbyte.h>
 
 struct nbyte_data
 {

@@ -41,6 +41,7 @@
 #include <netlink/route/route.h>
 #include <netlink/route/link.h>
 #include <netlink/route/nexthop.h>
+#include <linux/in_route.h>
 
 /** @cond SKIP */
 #define ROUTE_ATTR_FAMILY    0x000001

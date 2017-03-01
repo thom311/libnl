@@ -13,6 +13,8 @@
 #include <netlink/cli/link.h>
 #include <netlink/cli/qdisc.h>
 #include <netlink/cli/class.h>
+
+#include <linux/netlink.h>
 #include <linux/pkt_sched.h>
 
 static struct nl_sock *sock;

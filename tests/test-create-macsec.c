@@ -1,5 +1,9 @@
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>
+
+#include <linux/netlink.h>
+#include <linux/if_link.h>
+
 #include <netlink/route/link/macsec.h>
 
 int main(int argc, char *argv[])

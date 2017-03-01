@@ -2,6 +2,8 @@
 #include <netlink/route/link.h>
 #include <netlink/route/link/vrf.h>
 
+#include <linux/netlink.h>
+
 int main(int argc, char *argv[])
 {
 	struct nl_cache *link_cache;

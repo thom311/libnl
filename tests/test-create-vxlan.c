@@ -2,6 +2,8 @@
 #include <netlink/route/link.h>
 #include <netlink/route/link/vxlan.h>
 
+#include <linux/netlink.h>
+
 int main(int argc, char *argv[])
 {
 	struct rtnl_link *link;

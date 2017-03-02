@@ -20,6 +20,8 @@
 extern "C" {
 #endif
 
+struct tcf_em_cmp;
+
 extern void	rtnl_ematch_cmp_set(struct rtnl_ematch *,
 				    struct tcf_em_cmp *);
 extern struct tcf_em_cmp *

@@ -10,6 +10,7 @@
  */
 
 #include <netlink/cli/utils.h>
+#include <linux/pkt_sched.h>
 
 static void print_usage(void)
 {

@@ -21,6 +21,8 @@
 extern "C" {
 #endif
 
+enum macsec_validation_type;
+
 struct rtnl_link *rtnl_link_macsec_alloc(void);
 
 int rtnl_link_macsec_set_sci(struct rtnl_link *, uint64_t);

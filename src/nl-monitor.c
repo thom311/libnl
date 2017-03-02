@@ -12,6 +12,8 @@
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>
 
+#include <linux/rtnetlink.h>
+
 static void obj_input(struct nl_object *obj, void *arg)
 {
 	struct nl_dump_params dp = {

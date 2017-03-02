@@ -13,6 +13,8 @@
 #include <netlink/cli/route.h>
 #include <netlink/cli/link.h>
 
+#include <linux/netlink.h>
+
 static int quiet = 0;
 static struct nl_cache *link_cache, *route_cache;
 

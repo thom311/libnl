@@ -1,5 +1,7 @@
 #include <netlink/cli/utils.h>
 
+#include <linux/netlink.h>
+
 static void change_cb(struct nl_cache *cache, struct nl_object *obj,
 		      int action, void *data)
 {

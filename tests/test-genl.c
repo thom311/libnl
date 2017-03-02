@@ -1,5 +1,7 @@
 #include <netlink/cli/utils.h>
+
 #include <linux/taskstats.h>
+#include <linux/genetlink.h>
 
 static struct nla_policy attr_policy[TASKSTATS_TYPE_MAX+1] = {
 	[TASKSTATS_TYPE_PID]	= { .type = NLA_U32 },

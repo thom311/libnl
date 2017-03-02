@@ -13,6 +13,8 @@
 #include <netlink/cli/rule.h>
 #include <netlink/cli/link.h>
 
+#include <linux/netlink.h>
+
 static void print_usage(void)
 {
 	printf(

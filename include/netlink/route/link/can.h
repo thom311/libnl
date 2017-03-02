@@ -20,6 +20,10 @@
 extern "C" {
 #endif
 
+struct can_bittiming_const;
+struct can_bittiming;
+struct can_berr_counter;
+
 extern int rtnl_link_is_can(struct rtnl_link *link);
 
 extern char *rtnl_link_can_ctrlmode2str(int, char *, size_t);

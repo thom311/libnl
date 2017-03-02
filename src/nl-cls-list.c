@@ -14,6 +14,8 @@
 #include <netlink/cli/cls.h>
 #include <netlink/cli/link.h>
 
+#include <linux/netlink.h>
+
 static struct nl_sock *sock;
 
 static struct nl_dump_params params = {

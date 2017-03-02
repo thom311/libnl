@@ -22,6 +22,7 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/rule.h>
 #include <inttypes.h>
+#include <linux/fib_rules.h>
 
 /** @cond SKIP */
 #define RULE_ATTR_FAMILY	0x0001

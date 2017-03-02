@@ -21,6 +21,8 @@
 extern "C" {
 #endif
 
+struct nlattr;
+
 struct nl_msg;
 
 /**

@@ -9,9 +9,11 @@
  * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
-#include <linux/if.h>
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>
+
+#include <linux/if.h>
+#include <linux/netlink.h>
 
 static struct nl_sock *sock;
 static int quiet = 0;

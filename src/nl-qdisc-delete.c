@@ -14,6 +14,8 @@
 #include <netlink/cli/qdisc.h>
 #include <netlink/cli/link.h>
 
+#include <linux/netlink.h>
+
 static int quiet = 0, default_yes = 0, deleted = 0, interactive = 0;
 static struct nl_sock *sock;
 

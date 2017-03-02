@@ -13,9 +13,11 @@
 
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>
-#include <linux/netfilter/nfnetlink_log.h>
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/log.h>
+
+#include <linux/netfilter/nfnetlink_log.h>
+#include <linux/netlink.h>
 
 static struct nfnl_log *alloc_log(void)
 {

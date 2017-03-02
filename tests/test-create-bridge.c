@@ -2,6 +2,8 @@
 #include <netlink/route/link.h>
 #include <netlink/route/link/bridge.h>
 
+#include <linux/netlink.h>
+
 #define TEST_BRIDGE_NAME "testbridge"
 #define TEST_INTERFACE_NAME "testtap1"
 

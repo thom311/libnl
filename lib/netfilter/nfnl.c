@@ -65,6 +65,8 @@
 #include <netlink/netlink.h>
 #include <netlink/netfilter/nfnl.h>
 
+#include <linux/netfilter/nfnetlink.h>
+
 /**
  * @name Socket Creating
  * @{

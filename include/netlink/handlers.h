@@ -22,10 +22,13 @@
 extern "C" {
 #endif
 
+struct nlmsgerr;
+struct sockaddr_nl;
+struct ucred;
+
 struct nl_cb;
 struct nl_sock;
 struct nl_msg;
-struct ucred;
 
 /**
  * @name Callback Typedefs

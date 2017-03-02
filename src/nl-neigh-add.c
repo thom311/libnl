@@ -13,6 +13,8 @@
 #include <netlink/cli/neigh.h>
 #include <netlink/cli/link.h>
 
+#include <linux/netlink.h>
+
 static int quiet = 0;
 
 static void print_usage(void)

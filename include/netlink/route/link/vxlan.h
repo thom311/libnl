@@ -19,6 +19,8 @@
 extern "C" {
 #endif
 
+struct ifla_vxlan_port_range;
+
 #define VXLAN_ID_MAX 16777215
 
 enum {

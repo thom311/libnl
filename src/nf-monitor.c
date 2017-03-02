@@ -14,6 +14,9 @@
 #include <netlink/cli/utils.h>
 #include <netlink/netfilter/nfnl.h>
 
+#include <linux/netlink.h>
+#include <linux/netfilter/nfnetlink.h>
+
 static void obj_input(struct nl_object *obj, void *arg)
 {
 	struct nl_dump_params dp = {

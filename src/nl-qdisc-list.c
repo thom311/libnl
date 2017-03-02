@@ -16,6 +16,9 @@
 #include <netlink/cli/cls.h>
 #include <netlink/cli/link.h>
 
+#include <linux/pkt_sched.h>
+#include <linux/netlink.h>
+
 #define NUM_INDENT 4
 
 static struct nl_sock *sock;

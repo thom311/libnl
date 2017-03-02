@@ -4,6 +4,8 @@
 #include <netlink/route/link.h>
 #include <netlink/route/link/macvlan.h>
 
+#include <linux/netlink.h>
+
 int main(int argc, char *argv[])
 {
 	struct rtnl_link *link;

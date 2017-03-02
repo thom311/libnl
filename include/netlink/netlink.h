@@ -38,6 +38,7 @@
 extern "C" {
 #endif
 
+struct nlmsghdr;
 struct ucred;
 struct nl_cache_ops;
 struct nl_parser_param;

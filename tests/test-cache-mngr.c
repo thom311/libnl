@@ -5,6 +5,8 @@
 
 #include <netlink-private/cache-api.h>
 
+#include <linux/netlink.h>
+
 static int quit = 0;
 
 static struct nl_dump_params dp = {

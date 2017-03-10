@@ -121,6 +121,8 @@ fi
 
 AC_CONFIG_SUBDIRS([doc])
 
+AC_CHECK_FUNCS([strerror_l])
+
 AC_CONFIG_FILES([
 Makefile
 libnl-3.0.pc

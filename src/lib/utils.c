@@ -81,6 +81,7 @@ void nl_cli_fatal(int err, const char *fmt, ...)
 		fprintf(stderr, "\n");
 	} else {
 		char *buf;
+#ifdef HAVE_STRERROR_L
 		locale_t loc = newlocale(LC_MESSAGES_MASK, "", (locale_t)0);
 		if (loc == (locale_t)0) {
 			if (errno == ENOENT)
@@ -91,9 +92,14 @@ void nl_cli_fatal(int err, const char *fmt, ...)
 		}
 		if (loc != (locale_t)0)
 			buf = strerror_l(err, loc);
+#else
+		buf = strerror(err);
+#endif
 		fprintf(stderr, "%s\n", buf);
+#ifdef HAVE_STRERROR_L
 		if (loc != (locale_t)0)
 			freelocale(loc);
+#endif
 	}
 
 	exit(abs(err));

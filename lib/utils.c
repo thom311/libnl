@@ -30,7 +30,9 @@
 #include <netlink/utils.h>
 #include <linux/socket.h>
 #include <stdlib.h> /* exit() */
+#ifdef HAVE_STRERROR_L
 #include <locale.h>
+#endif
 
 /**
  * Global variable indicating the desired level of debugging output.
@@ -123,9 +125,10 @@ int __nl_read_num_str_file(const char *path, int (*cb)(long, const char *))
 
 const char *nl_strerror_l(int err)
 {
+	const char *buf;
+#ifdef HAVE_STRERROR_L
 	int errno_save = errno;
 	locale_t loc = newlocale(LC_MESSAGES_MASK, "", (locale_t)0);
-	const char *buf;
 
 	if (loc == (locale_t)0) {
 		if (errno == ENOENT)
@@ -140,6 +143,9 @@ const char *nl_strerror_l(int err)
 	}
 
 	errno = errno_save;
+#else
+	buf = strerror(err);
+#endif
 	return buf;
 }
 /** @endcond */

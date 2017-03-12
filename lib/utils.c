@@ -121,6 +121,10 @@ int __nl_read_num_str_file(const char *path, int (*cb)(long, const char *))
 	return 0;
 }
 
+#ifdef __UCLIBC__
+#define strerror_l(e, l) strerror(e)
+#endif
+
 const char *nl_strerror_l(int err)
 {
 	int errno_save = errno;

@@ -28,6 +28,7 @@ extern void			rtnl_basic_set_ematch(struct rtnl_cls *,
 extern struct rtnl_ematch_tree *rtnl_basic_get_ematch(struct rtnl_cls *);
 extern int rtnl_basic_add_action(struct rtnl_cls *, struct rtnl_act *);
 extern int rtnl_basic_del_action(struct rtnl_cls *, struct rtnl_act *);
+extern struct rtnl_act* rtnl_basic_get_action(struct rtnl_cls *);
 
 #ifdef __cplusplus
 }

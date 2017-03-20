@@ -233,6 +233,21 @@ int rtnl_basic_add_action(struct rtnl_cls *cls, struct rtnl_act *act)
 	return rtnl_act_append(&b->b_act, act);
 }
 
+struct rtnl_act* rtnl_basic_get_action(struct rtnl_cls *cls)
+{
+	struct rtnl_basic *b;
+
+	if (!(b = rtnl_tc_data_peek(TC_CAST(cls))))
+		return NULL;
+
+	if (!(b->b_mask & BASIC_ATTR_ACTION))
+		return NULL;
+
+	struct rtnl_act* act = b->b_act;
+    rtnl_act_get(act);
+    return act;
+}
+
 int rtnl_basic_del_action(struct rtnl_cls *cls, struct rtnl_act *act)
 {
 	struct rtnl_basic *b;

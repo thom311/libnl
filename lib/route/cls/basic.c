@@ -243,9 +243,7 @@ struct rtnl_act* rtnl_basic_get_action(struct rtnl_cls *cls)
 	if (!(b->b_mask & BASIC_ATTR_ACTION))
 		return NULL;
 
-	struct rtnl_act* act = b->b_act;
-    rtnl_act_get(act);
-    return act;
+	return b->b_act;
 }
 
 int rtnl_basic_del_action(struct rtnl_cls *cls, struct rtnl_act *act)

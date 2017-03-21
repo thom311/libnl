@@ -824,8 +824,8 @@ global:
 	rtnl_u32_add_key_uint16;
 	rtnl_u32_add_key_uint32;
 	rtnl_u32_add_key_uint8;
-	rtnl_u32_get_action;
 	rtnl_u32_del_action;
+	rtnl_u32_get_action;
 	rtnl_u32_get_key;
 	rtnl_u32_set_classid;
 	rtnl_u32_set_cls_terminal;

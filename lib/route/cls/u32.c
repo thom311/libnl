@@ -570,9 +570,7 @@ struct rtnl_act* rtnl_u32_get_action(struct rtnl_cls *cls)
     if (!(u->cu_mask & U32_ATTR_ACTION))
         return NULL;
 
-    struct rtnl_act* act = u->cu_act;
-    rtnl_act_get(act);
-    return act;
+    return u->cu_act;
 }
 
 int rtnl_u32_del_action(struct rtnl_cls *cls, struct rtnl_act *act)

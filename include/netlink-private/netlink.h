@@ -18,7 +18,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <math.h>
 #include <time.h>
 #include <stdarg.h>
 #include <ctype.h>

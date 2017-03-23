@@ -74,7 +74,6 @@ AM_PROG_LIBTOOL
 AC_PROG_MKDIR_P
 AC_CHECK_PROGS(FLEX, 'flex')
 AC_CHECK_PROGS(YACC, 'bison -y')
-AC_CHECK_LIB([m], [pow], [], AC_MSG_ERROR([libm is required]))
 
 AC_C_CONST
 AC_C_INLINE

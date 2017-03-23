@@ -405,7 +405,7 @@ long nl_prob2int(const char *str)
 	if (*p && strcmp(p, "%") != 0)
 		return -NLE_INVAL;
 
-	return rint(d * NL_PROB_MAX);
+	return (long) (((d * NL_PROB_MAX) + 0.5));
 }
 
 /** @} */

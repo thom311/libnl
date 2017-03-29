@@ -771,7 +771,7 @@ int rtnl_neigh_build_add_request(struct rtnl_neigh *tmpl, int flags,
  *  - Destination address (rtnl_neigh_set_dst())
  *  - Link layer address (rtnl_neigh_set_lladdr())
  *
- * @return 0 on sucess or a negative error if an error occured.
+ * @return 0 on success or a negative error if an error occured.
  */
 int rtnl_neigh_add(struct nl_sock *sk, struct rtnl_neigh *tmpl, int flags)
 {
@@ -826,7 +826,7 @@ int rtnl_neigh_build_delete_request(struct rtnl_neigh *neigh, int flags,
  * sends the request to the kernel and waits for the next ACK to be
  * received and thus blocks until the request has been fullfilled.
  *
- * @return 0 on sucess or a negative error if an error occured.
+ * @return 0 on success or a negative error if an error occured.
  */
 int rtnl_neigh_delete(struct nl_sock *sk, struct rtnl_neigh *neigh,
 		      int flags)

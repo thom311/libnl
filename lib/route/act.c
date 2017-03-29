@@ -293,7 +293,7 @@ int rtnl_act_build_change_request(struct rtnl_act *act, int flags,
  * sends the request to the kernel and waits for the next ACK to be
  * received and thus blocks until the request has been processed.
  *
- * @return 0 on sucess or a negative error if an error occured.
+ * @return 0 on success or a negative error if an error occured.
  */
 int rtnl_act_change(struct nl_sock *sk, struct rtnl_act *act, int flags)
 {

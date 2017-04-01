@@ -98,9 +98,6 @@ static int can_parse(struct rtnl_link *link, struct nlattr *data,
 	if ((err = nla_parse_nested(tb, IFLA_CAN_MAX, data, can_policy)) < 0)
 		goto errout;
 
-	if ((err = can_alloc(link)) < 0)
-		goto errout;
-
 	ci = link->l_info;
 
 	if (tb[IFLA_CAN_STATE]) {

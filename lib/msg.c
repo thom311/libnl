@@ -865,9 +865,39 @@ static void *print_genl_msg(struct nl_msg *msg, FILE *ofd, struct nlmsghdr *hdr,
 
 static void dump_attr(FILE *ofd, struct nlattr *attr, int prefix)
 {
-	int len = nla_len(attr);
-
-	dump_hex(ofd, nla_data(attr), len, prefix);
+        switch(nla_type(attr)) {
+            case NLA_U8:
+                prefix_line(ofd, prefix);
+                fprintf(ofd, "U8=%" PRIu8 "\n", nla_get_u8(attr));
+                break;
+            case NLA_U16:
+                prefix_line(ofd, prefix);
+                fprintf(ofd, "U16=%" PRIu16 "\n", nla_get_u16(attr));
+                break;
+            case NLA_U32:
+                prefix_line(ofd, prefix);
+                fprintf(ofd, "U32=%" PRIu32 "\n", nla_get_u32(attr));
+                break;
+            case NLA_U64:
+                prefix_line(ofd, prefix);
+                fprintf(ofd, "U64=%" PRIu64 "\n", nla_get_u64(attr));
+                break;
+            case NLA_STRING:
+                prefix_line(ofd, prefix);
+                /* TODO: escape string/replace non-printable */
+                fprintf(ofd, "STR=%s\n", nla_get_string(attr));
+                break;
+            case NLA_FLAG:
+                prefix_line(ofd, prefix);
+                fprintf(ofd, "FLAG=%d\n", nla_get_flag(attr));
+                break;
+            case NLA_MSECS:
+                prefix_line(ofd, prefix);
+                fprintf(ofd, "MSECS=%lu\n", nla_get_msecs(attr));
+                break;
+            default:
+                dump_hex(ofd, nla_data(attr), nla_len(attr), prefix);
+        }
 }
 
 static void dump_attrs(FILE *ofd, struct nlattr *attrs, int attrlen,

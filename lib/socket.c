@@ -939,6 +939,33 @@ int nl_socket_recv_pktinfo(struct nl_sock *sk, int state)
 	return 0;
 }
 
+/**
+ * Set the network namespace for the netlink socket to listen on.
+ * @arg sk	Netlink socket.
+ * @arg ns	Network namespace number.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int nl_socket_set_ns(struct nl_sock *sk, int ns)
+{
+	int err;
+
+	if (sk->s_fd == -1)
+		return -NLE_BAD_SOCK;
+
+	err = setsockopt(sk->s_fd, SOL_SOCKET, SO_NSID,
+			 &ns, sizeof(ns));
+	if (err < 0) {
+		char buf[64];
+
+		NL_DBG(4, "nl_socket_switch_ns(%p): setsockopt() failed with %d (%s)\n",
+			sk, errno, strerror_r(errno, buf, sizeof(buf)));
+		return -nl_syserr2nlerr(errno);
+	}
+
+	return 0;
+}
+
 /** @} */
 
 /** @} */

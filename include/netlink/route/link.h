@@ -15,6 +15,9 @@
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/addr.h>
+#ifndef _LINUX_IF_H
+#include <linux/if.h>
+#endif
 #include <sys/types.h>
 
 #ifdef __cplusplus

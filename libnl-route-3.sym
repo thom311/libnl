@@ -82,7 +82,6 @@ global:
 	rtnl_act_parse;
 	rtnl_act_put;
 	rtnl_act_put_all;
-	rtnl_act_next;
 	rtnl_act_remove;
 	rtnl_addr_add;
 	rtnl_addr_alloc;
@@ -127,7 +126,6 @@ global:
 	rtnl_addr_unset_flags;
 	rtnl_basic_add_action;
 	rtnl_basic_del_action;
-	rtnl_basic_get_action;
 	rtnl_basic_get_ematch;
 	rtnl_basic_get_target;
 	rtnl_basic_set_ematch;
@@ -825,7 +823,6 @@ global:
 	rtnl_u32_add_key_uint32;
 	rtnl_u32_add_key_uint8;
 	rtnl_u32_del_action;
-	rtnl_u32_get_action;
 	rtnl_u32_get_key;
 	rtnl_u32_set_classid;
 	rtnl_u32_set_cls_terminal;
@@ -1037,8 +1034,11 @@ global:
 
 libnl_3_4 {
 global:
+	rtnl_act_next;
+	rtnl_basic_get_action;
 	rtnl_link_inet6_flags2str;
 	rtnl_link_inet6_str2flags;
 	rtnl_link_inet6_get_flags;
 	rtnl_link_inet6_set_flags;
+	rtnl_u32_get_action;
 } libnl_3_2_29;

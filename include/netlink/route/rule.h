@@ -67,6 +67,8 @@ extern void		rtnl_rule_set_realms(struct rtnl_rule *, uint32_t);
 extern uint32_t		rtnl_rule_get_realms(struct rtnl_rule *);
 extern void		rtnl_rule_set_goto(struct rtnl_rule *, uint32_t);
 extern uint32_t		rtnl_rule_get_goto(struct rtnl_rule *);
+extern void		rtnl_rule_set_l3mdev(struct rtnl_rule *);
+extern uint8_t		rtnl_rule_get_l3mdev(struct rtnl_rule *);
 
 #ifdef __cplusplus
 }

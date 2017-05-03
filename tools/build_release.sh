@@ -31,6 +31,10 @@ Build() {
     git clean -fdx
     ./autogen.sh
     ./configure
+    pushd ./doc/
+        ./autogen.sh
+        ./configure --enable-doc
+    popd
     make -j 5
     make -C doc
     make -C doc gendoc

@@ -1050,4 +1050,5 @@ global:
 	rtnl_netconf_get_forwarding;
 	rtnl_netconf_get_mc_forwarding;
 	rtnl_netconf_get_rp_filter;
+	rtnl_netconf_get_input;
 } libnl_3_2_29;

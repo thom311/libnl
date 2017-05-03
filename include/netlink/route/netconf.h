@@ -35,6 +35,7 @@ int rtnl_netconf_get_mc_forwarding(struct rtnl_netconf *nc, int *val);
 int rtnl_netconf_get_rp_filter(struct rtnl_netconf *nc, int *val);
 int rtnl_netconf_get_proxy_neigh(struct rtnl_netconf *nc, int *val);
 int rtnl_netconf_get_ignore_routes_linkdown(struct rtnl_netconf *nc, int *val);
+int rtnl_netconf_get_input(struct rtnl_netconf *nc, int *val);
 
 #ifdef __cplusplus
 }

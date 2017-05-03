@@ -34,6 +34,7 @@ static const struct {
 	{ RTNLGRP_IPV6_PREFIX, "ipv6-prefix" },
 	{ RTNLGRP_IPV4_NETCONF, "ipv4-netconf" },
 	{ RTNLGRP_IPV6_NETCONF, "ipv6-netconf" },
+	{ RTNLGRP_MPLS_NETCONF, "mpls-netconf" },
 	{ RTNLGRP_NONE, NULL }
 };
 

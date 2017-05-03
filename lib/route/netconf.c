@@ -22,6 +22,7 @@
 #include <netlink/utils.h>
 #include <netlink/route/netconf.h>
 #include <linux/netconf.h>
+#include <linux/socket.h>
 #include <netlink/hashtable.h>
 
 /** @cond SKIP */
@@ -32,6 +33,7 @@
 #define NETCONF_ATTR_MC_FWDING		0x0010
 #define NETCONF_ATTR_PROXY_NEIGH	0x0020
 #define NETCONF_ATTR_IGNORE_RT_LINKDWN	0x0040
+#define NETCONF_ATTR_INPUT		0x0080
 
 struct rtnl_netconf
 {
@@ -44,6 +46,7 @@ struct rtnl_netconf
 	int	mc_forwarding;
 	int	proxy_neigh;
 	int	ignore_routes_linkdown;
+	int	input;
 };
 
 static struct nl_cache_ops rtnl_netconf_ops;
@@ -65,6 +68,11 @@ static struct nla_policy devconf_ipv6_policy[NETCONFA_MAX+1] = {
 	[NETCONFA_MC_FORWARDING] = { .type = NLA_S32 },
 	[NETCONFA_PROXY_NEIGH]	 = { .type = NLA_S32 },
 	[NETCONFA_IGNORE_ROUTES_WITH_LINKDOWN]  = { .type = NLA_S32 },
+};
+
+static struct nla_policy devconf_mpls_policy[NETCONFA_MAX+1] = {
+	[NETCONFA_IFINDEX]	 = { .type = NLA_S32 },
+	[NETCONFA_INPUT]	 = { .type = NLA_S32 },
 };
 
 static struct rtnl_netconf *rtnl_netconf_alloc(void)
@@ -101,6 +109,12 @@ static int netconf_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	case AF_INET6:
 		err = nlmsg_parse(nlh, sizeof(*ncm), tb, NETCONFA_MAX,
 				  devconf_ipv6_policy);
+		if (err < 0)
+			return err;
+		break;
+	case AF_MPLS:
+		err = nlmsg_parse(nlh, sizeof(*ncm), tb, NETCONFA_MAX,
+				  devconf_mpls_policy);
 		if (err < 0)
 			return err;
 		break;
@@ -153,6 +167,12 @@ static int netconf_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		nc->ce_mask |= NETCONF_ATTR_IGNORE_RT_LINKDWN;
 	}
 
+	if (tb[NETCONFA_INPUT]) {
+		attr = tb[NETCONFA_INPUT];
+		nc->input = nla_get_s32(attr);
+		nc->ce_mask |= NETCONF_ATTR_INPUT;
+	}
+
 	return pp->pp_cb((struct nl_object *) nc, pp);
 }
 
@@ -177,6 +197,9 @@ static void netconf_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 		break;
 	case AF_INET6:
 		nl_dump(p, "ipv6 ");
+		break;
+	case AF_MPLS:
+		nl_dump(p, "mpls ");
 		break;
 	default:
 		return;
@@ -229,6 +252,9 @@ static void netconf_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 			nc->ignore_routes_linkdown ? "on" : "off");
 	}
 
+	if (nc->ce_mask & NETCONF_ATTR_INPUT)
+		nl_dump(p, "input %s ", nc->input ? "on" : "off");
+
 	nl_dump(p, "\n");
 }
 
@@ -240,6 +266,7 @@ static const struct trans_tbl netconf_attrs[] = {
 	__ADD(NETCONF_ATTR_MC_FWDING, mc_forwarding),
 	__ADD(NETCONF_ATTR_PROXY_NEIGH, proxy_neigh),
 	__ADD(NETCONF_ATTR_IGNORE_RT_LINKDWN, ignore_routes_with_linkdown),
+	__ADD(NETCONF_ATTR_INPUT, input),
 };
 
 static char *netconf_attrs2str(int attrs, char *buf, size_t len)
@@ -285,6 +312,7 @@ static uint64_t netconf_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= NETCONF_DIFF(PROXY_NEIGH, a->proxy_neigh != b->proxy_neigh);
 	diff |= NETCONF_DIFF(IGNORE_RT_LINKDWN,
 			a->ignore_routes_linkdown != b->ignore_routes_linkdown);
+	diff |= NETCONF_DIFF(INPUT,	a->input != b->input);
 
 #undef NETCONF_DIFF
 
@@ -486,6 +514,17 @@ int rtnl_netconf_get_ignore_routes_linkdown(struct rtnl_netconf *nc, int *val)
 		*val = nc->ignore_routes_linkdown;
 	return 0;
 }
+int rtnl_netconf_get_input(struct rtnl_netconf *nc, int *val)
+{
+	if (!nc)
+		return -NLE_INVAL;
+	if (!(nc->ce_mask & NETCONF_ATTR_INPUT))
+		return -NLE_MISSING_ATTR;
+	if (val)
+		*val = nc->input;
+	return 0;
+}
+
 
 /** @} */
 
@@ -508,6 +547,7 @@ static struct nl_object_ops netconf_obj_ops = {
 static struct nl_af_group netconf_groups[] = {
 	{ AF_INET,	RTNLGRP_IPV4_NETCONF },
 	{ AF_INET6,	RTNLGRP_IPV6_NETCONF },
+	{ AF_MPLS,	RTNLGRP_MPLS_NETCONF },
 	{ END_OF_GROUP_LIST },
 };
 

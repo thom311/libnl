@@ -47,4 +47,8 @@ typedef unsigned short  sa_family_t;
 #define AF_LLC		26
 #endif
 
+#ifndef AF_MPLS
+#define AF_MPLS		28
+#endif
+
 #endif

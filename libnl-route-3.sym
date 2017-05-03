@@ -1034,8 +1034,11 @@ global:
 
 libnl_3_4 {
 global:
+	rtnl_act_next;
+	rtnl_basic_get_action;
 	rtnl_link_inet6_flags2str;
 	rtnl_link_inet6_str2flags;
 	rtnl_link_inet6_get_flags;
 	rtnl_link_inet6_set_flags;
+	rtnl_u32_get_action;
 } libnl_3_2_29;

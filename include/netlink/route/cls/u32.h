@@ -50,6 +50,7 @@ extern int	rtnl_u32_add_key_in6_addr(struct rtnl_cls *, const struct in6_addr *,
 					  uint8_t, int, int);
 extern int	rtnl_u32_add_action(struct rtnl_cls *, struct rtnl_act *);
 extern int	rtnl_u32_del_action(struct rtnl_cls *, struct rtnl_act *);
+extern struct rtnl_act* rtnl_u32_get_action(struct rtnl_cls *);
 
 #ifdef __cplusplus
 }

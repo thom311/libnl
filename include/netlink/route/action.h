@@ -22,6 +22,7 @@ extern "C" {
 #endif
 
 extern struct rtnl_act *rtnl_act_alloc(void);
+extern struct rtnl_act *rtnl_act_next(struct rtnl_act *);
 extern void		rtnl_act_get(struct rtnl_act *);
 extern void		rtnl_act_put(struct rtnl_act *);
 extern int		rtnl_act_build_add_request(struct rtnl_act *, int,

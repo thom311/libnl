@@ -1075,6 +1075,9 @@ static const struct trans_tbl afs[] = {
 #ifdef AF_NFC
 	__ADD(AF_NFC,nfc),
 #endif
+#ifdef AF_VSOCK
+	__ADD(AF_VSOCK,vsock),
+#endif
 };
 
 char *nl_af2str(int family, char *buf, size_t size)

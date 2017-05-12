@@ -706,14 +706,41 @@ uint8_t rtnl_rule_get_action(struct rtnl_rule *rule)
 	return rule->r_action;
 }
 
-void rtnl_rule_set_l3mdev(struct rtnl_rule *rule)
+/**
+ * Set l3mdev value of the rule (FRA_L3MDEV)
+ * @arg rule		rule
+ * @arg value		value to set
+ *
+ * Set the l3mdev value to value. Currently supported values
+ * are only 1 (set it) and -1 (unset it). All other values
+ * are reserved.
+ */
+void rtnl_rule_set_l3mdev(struct rtnl_rule *rule, int value)
 {
-	rule->r_l3mdev = 1;
-	rule->ce_mask |= RULE_ATTR_L3MDEV;
+	if (value >= 0) {
+		rule->r_l3mdev = (uint8_t) value;
+		rule->ce_mask |= RULE_ATTR_L3MDEV;
+	} else {
+		rule->r_l3mdev = 0;
+		rule->ce_mask &= ~((uint32_t) RULE_ATTR_L3MDEV);
+	}
 }
 
-uint8_t rtnl_rule_get_l3mdev(struct rtnl_rule *rule)
+/**
+ * Get l3mdev value of the rule (FRA_L3MDEV)
+ * @arg rule		rule
+ *
+ * @return a negative error code, including -NLE_MISSING_ATTR
+ *   if the property is unset. Otherwise returns a non-negative
+ *   value. As FRA_L3MDEV is a boolean, the only expected
+ *   value at the moment is 1.
+ */
+int rtnl_rule_get_l3mdev(struct rtnl_rule *rule)
 {
+	if (!rule)
+		return -NLE_INVAL;
+	if (!(rule->ce_mask & RULE_ATTR_L3MDEV))
+		return -NLE_MISSING_ATTR;
 	return rule->r_l3mdev;
 }
 

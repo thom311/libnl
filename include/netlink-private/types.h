@@ -346,7 +346,7 @@ struct rtnl_rule
 	uint8_t		r_family;
 	uint8_t		r_action;
 	uint8_t		r_dsfield; /* ipv4 only */
-	uint8_t		r_unused;
+	uint8_t		r_l3mdev;
 	uint32_t	r_table;
 	uint32_t	r_flags;
 	uint32_t	r_prio;

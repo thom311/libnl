@@ -39,6 +39,7 @@
 #define RULE_ATTR_DST		0x0800
 #define RULE_ATTR_DSFIELD	0x1000
 #define RULE_ATTR_FLOW		0x2000
+#define RULE_ATTR_L3MDEV	0x4000
 
 static struct nl_cache_ops rtnl_rule_ops;
 static struct nl_object_ops rule_obj_ops;
@@ -80,6 +81,7 @@ static struct nla_policy rule_policy[FRA_MAX+1] = {
 	[FRA_FWMASK]	= { .type = NLA_U32 },
 	[FRA_GOTO]	= { .type = NLA_U32 },
 	[FRA_FLOW]	= { .type = NLA_U32 },
+	[FRA_L3MDEV]	= { .type = NLA_U8 },
 };
 
 static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
@@ -108,8 +110,9 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	rule->r_action = frh->action;
 	rule->r_flags = frh->flags;
 
-	rule->ce_mask = (RULE_ATTR_FAMILY | RULE_ATTR_TABLE | RULE_ATTR_ACTION |
-			 RULE_ATTR_FLAGS);
+	rule->ce_mask = (RULE_ATTR_FAMILY | RULE_ATTR_ACTION | RULE_ATTR_FLAGS);
+	if (rule->r_table)
+		rule->ce_mask |= RULE_ATTR_TABLE;
 
 	/* ipv4 only */
 	if (frh->tos) {
@@ -119,7 +122,8 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 	if (tb[FRA_TABLE]) {
 		rule->r_table = nla_get_u32(tb[FRA_TABLE]);
-		rule->ce_mask |= RULE_ATTR_TABLE;
+		if (rule->r_table)
+			rule->ce_mask |= RULE_ATTR_TABLE;
 	}
 
 	if (tb[FRA_IIFNAME]) {
@@ -173,6 +177,11 @@ static int rule_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		rule->ce_mask |= RULE_ATTR_FLOW;
 	}
 
+	if (tb[FRA_L3MDEV]) {
+		rule->r_l3mdev = nla_get_u8(tb[FRA_L3MDEV]);
+		rule->ce_mask |= RULE_ATTR_L3MDEV;
+	}
+
 	err = pp->pp_cb((struct nl_object *) rule, pp);
 errout:
 	rtnl_rule_put(rule);
@@ -219,6 +228,9 @@ static void rule_dump_line(struct nl_object *o, struct nl_dump_params *p)
 	if (r->ce_mask & RULE_ATTR_TABLE)
 		nl_dump(p, "lookup %s ",
 			rtnl_route_table2str(r->r_table, buf, sizeof(buf)));
+
+	if (r->ce_mask & RULE_ATTR_L3MDEV)
+		nl_dump(p, "lookup [l3mdev-table] ");
 
 	if (r->ce_mask & RULE_ATTR_FLOW)
 		nl_dump(p, "flow %s ",
@@ -414,6 +426,9 @@ static int build_rule_msg(struct rtnl_rule *tmpl, int cmd, int flags,
 
 	if (tmpl->ce_mask & RULE_ATTR_FLOW)
 		NLA_PUT_U32(msg, FRA_FLOW, tmpl->r_flow);
+
+	if (tmpl->ce_mask & RULE_ATTR_L3MDEV)
+		NLA_PUT_U8(msg, FRA_L3MDEV, tmpl->r_l3mdev);
 
 
 	*result = msg;
@@ -689,6 +704,44 @@ void rtnl_rule_set_action(struct rtnl_rule *rule, uint8_t action)
 uint8_t rtnl_rule_get_action(struct rtnl_rule *rule)
 {
 	return rule->r_action;
+}
+
+/**
+ * Set l3mdev value of the rule (FRA_L3MDEV)
+ * @arg rule		rule
+ * @arg value		value to set
+ *
+ * Set the l3mdev value to value. Currently supported values
+ * are only 1 (set it) and -1 (unset it). All other values
+ * are reserved.
+ */
+void rtnl_rule_set_l3mdev(struct rtnl_rule *rule, int value)
+{
+	if (value >= 0) {
+		rule->r_l3mdev = (uint8_t) value;
+		rule->ce_mask |= RULE_ATTR_L3MDEV;
+	} else {
+		rule->r_l3mdev = 0;
+		rule->ce_mask &= ~((uint32_t) RULE_ATTR_L3MDEV);
+	}
+}
+
+/**
+ * Get l3mdev value of the rule (FRA_L3MDEV)
+ * @arg rule		rule
+ *
+ * @return a negative error code, including -NLE_MISSING_ATTR
+ *   if the property is unset. Otherwise returns a non-negative
+ *   value. As FRA_L3MDEV is a boolean, the only expected
+ *   value at the moment is 1.
+ */
+int rtnl_rule_get_l3mdev(struct rtnl_rule *rule)
+{
+	if (!rule)
+		return -NLE_INVAL;
+	if (!(rule->ce_mask & RULE_ATTR_L3MDEV))
+		return -NLE_MISSING_ATTR;
+	return rule->r_l3mdev;
 }
 
 void rtnl_rule_set_realms(struct rtnl_rule *rule, uint32_t realms)

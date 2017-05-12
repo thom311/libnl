@@ -100,6 +100,7 @@ libnlinclude_netlink_route_HEADERS = \
 	include/netlink/route/link.h \
 	include/netlink/route/neighbour.h \
 	include/netlink/route/neightbl.h \
+	include/netlink/route/netconf.h \
 	include/netlink/route/nexthop.h \
 	include/netlink/route/pktloc.h \
 	include/netlink/route/qdisc.h \
@@ -380,6 +381,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/link/vxlan.c \
 	lib/route/neigh.c \
 	lib/route/neightbl.c \
+	lib/route/netconf.c \
 	lib/route/nexthop.c \
 	lib/route/pktloc.c \
 	lib/route/qdisc/blackhole.c \

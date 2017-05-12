@@ -1041,4 +1041,14 @@ global:
 	rtnl_link_inet6_get_flags;
 	rtnl_link_inet6_set_flags;
 	rtnl_u32_get_action;
+	rtnl_netconf_get_by_idx;
+	rtnl_netconf_get_all;
+	rtnl_netconf_get_default;
+	rtnl_netconf_put;
+	rtnl_netconf_get_family;
+	rtnl_netconf_get_ifindex;
+	rtnl_netconf_get_forwarding;
+	rtnl_netconf_get_mc_forwarding;
+	rtnl_netconf_get_rp_filter;
+	rtnl_netconf_get_input;
 } libnl_3_2_29;

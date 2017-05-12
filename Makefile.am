@@ -3,8 +3,6 @@
 ACLOCAL_AMFLAGS = -I m4
 
 lib_LTLIBRARIES =
-noinst_LTLIBRARIES =
-check_LTLIBRARIES =
 
 check_PROGRAMS =
 check_programs =
@@ -502,6 +500,8 @@ EXTRA_lib_libnl_xfrm_3_la_DEPENDENCIES = \
 lib_libnl_xfrm_3_la_LIBADD = \
 	lib/libnl-3.la
 
+if ENABLE_CLI
+
 lib_cli_ltlibraries_cls = \
 	lib/cli/cls/basic.la \
 	lib/cli/cls/cgroup.la
@@ -515,15 +515,11 @@ lib_cli_ltlibraries_qdisc = \
 	lib/cli/qdisc/pfifo.la \
 	lib/cli/qdisc/plug.la
 
-if ENABLE_CLI
 pkglib_clsdir = $(pkglibdir)/cli/cls
 pkglib_qdiscdir = $(pkglibdir)/cli/qdisc
 pkglib_cls_LTLIBRARIES = $(lib_cli_ltlibraries_cls)
 pkglib_qdisc_LTLIBRARIES = $(lib_cli_ltlibraries_qdisc)
-else
-noinst_LTLIBRARIES += \
-	$(lib_cli_ltlibraries_cls) \
-	$(lib_cli_ltlibraries_qdisc)
+
 endif
 
 lib_cli_ldflags = \
@@ -552,13 +548,8 @@ lib_cli_qdisc_plug_la_LDFLAGS       = $(lib_cli_ldflags)
 
 ###############################################################################
 
-src_lib_ldflags =
-
 if ENABLE_CLI
 lib_LTLIBRARIES += src/lib/libnl-cli-3.la
-src_lib_ldflags += -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
-else
-check_LTLIBRARIES += src/lib/libnl-cli-3.la
 endif
 
 src_lib_libnl_cli_3_la_SOURCES = \
@@ -585,7 +576,7 @@ src_lib_libnl_cli_3_la_CPPFLAGS = \
 	-I$(srcdir)/include \
 	-I$(builddir)/include
 src_lib_libnl_cli_3_la_LDFLAGS = \
-	$(src_lib_ldflags) \
+	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
 	-Wl,--version-script=$(srcdir)/libnl-cli-3.sym
 src_lib_libnl_cli_3_la_LIBADD = \
 	lib/libnl-3.la \
@@ -670,8 +661,6 @@ else
 noinst_PROGRAMS += $(cli_programs)
 endif
 endif
-else
-check_PROGRAMS += $(cli_programs)
 endif
 
 src_genl_ctrl_list_CPPFLAGS =       $(src_cppflags)
@@ -849,10 +838,12 @@ tests_test_complex_HTB_with_hash_filters_LDADD    = $(tests_ldadd)
 tests_test_u32_filter_with_actions_CPPFLAGS       = $(tests_cppflags)
 tests_test_u32_filter_with_actions_LDADD          = $(tests_ldadd)
 
+if ENABLE_CLI
 check_PROGRAMS += \
 	tests/test-cache-mngr \
 	tests/test-genl \
 	tests/test-nf-cache-mngr
+endif
 
 tests_cli_ldadd = \
 	$(tests_ldadd) \

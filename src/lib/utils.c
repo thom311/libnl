@@ -24,6 +24,12 @@
 #include <netlink/cli/utils.h>
 #include <locale.h>
 
+#include "lib/defs.h"
+
+#ifdef HAVE_DLFCN_H
+#include <dlfcn.h>
+#endif
+
 /**
  * Parse a text based 32 bit unsigned integer argument
  * @arg arg		Integer in text form.
@@ -220,14 +226,23 @@ struct nl_cache *nl_cli_alloc_cache_flags(struct nl_sock *sock,
 void nl_cli_load_module(const char *prefix, const char *name)
 {
 	char path[FILENAME_MAX+1];
-	void *handle;
 
 	snprintf(path, sizeof(path), "%s/%s/%s.so",
 		 PKGLIBDIR, prefix, name);
 
-	if (!(handle = dlopen(path, RTLD_NOW)))
-		nl_cli_fatal(ENOENT, "Unable to load module \"%s\": %s\n",
-			path, dlerror());
+#ifdef HAVE_DLFCN_H
+	{
+		void *handle;
+
+		if (!(handle = dlopen(path, RTLD_NOW))) {
+			nl_cli_fatal(ENOENT, "Unable to load module \"%s\": %s\n",
+			             path, dlerror());
+		}
+	}
+#else
+	nl_cli_fatal(ENOTSUP, "Unable to load module \"%s\": built without dynamic libraries support\n",
+	             path);
+#endif
 }
 
 /** @} */

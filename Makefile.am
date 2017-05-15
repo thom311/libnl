@@ -521,7 +521,7 @@ pkglib_qdiscdir = $(pkglibdir)/cli/qdisc
 pkglib_cls_LTLIBRARIES = $(lib_cli_ltlibraries_cls)
 pkglib_qdisc_LTLIBRARIES = $(lib_cli_ltlibraries_qdisc)
 else
-noinst_LTLIBRARIES += \
+check_LTLIBRARIES += \
 	$(lib_cli_ltlibraries_cls) \
 	$(lib_cli_ltlibraries_qdisc)
 endif

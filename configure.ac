@@ -101,6 +101,8 @@ AM_CONDITIONAL([ENABLE_CLI], [test "$enable_cli" != "no"])
 AM_CONDITIONAL([ENABLE_CLI_INSTALL_BIN], [test "$enable_cli" = "bin"])
 AM_CONDITIONAL([ENABLE_CLI_INSTALL_SBIN], [test "$enable_cli" = "sbin"])
 
+AC_CHECK_HEADERS(dlfcn.h, [], [])
+
 AC_ARG_ENABLE([pthreads],
 	AS_HELP_STRING([--disable-pthreads], [Disable pthreads support]),
 	[enable_pthreads="$enableval"], [enable_pthreads="yes"])

@@ -313,7 +313,7 @@ int genl_resolve_id(struct genl_ops *ops)
 	int err = 0;
 
 	/* Check if resolved already */
-	if (ops->o_id != GENL_ID_GENERATE)
+	if (ops->o_id != 0)
 		return 0;
 
 	if (!ops->o_name)

@@ -66,6 +66,10 @@ void nl_cli_print_version(void)
 	exit(0);
 }
 
+#ifdef __UCLIBC__
+#define strerror_l(e, l) strerror(e)
+#endif
+
 /**
  * Print error message and quit application
  * @arg err		Error code.

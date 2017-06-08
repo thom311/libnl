@@ -317,15 +317,18 @@ retry:
 			break;
 
 	if (i >= mngr->cm_nassocs) {
-		mngr->cm_nassocs += NASSOC_EXPAND;
-		mngr->cm_assocs = realloc(mngr->cm_assocs,
-					  mngr->cm_nassocs *
-					  sizeof(struct nl_cache_assoc));
-		if (mngr->cm_assocs == NULL)
+		struct nl_cache_assoc *cm_assocs;
+		int cm_nassocs = mngr->cm_nassocs + NASSOC_EXPAND;
+
+		cm_assocs = realloc(mngr->cm_assocs,
+				    cm_nassocs * sizeof(struct nl_cache_assoc));
+		if (cm_assocs == NULL)
 			return -NLE_NOMEM;
 
-		memset(mngr->cm_assocs + (mngr->cm_nassocs - NASSOC_EXPAND), 0,
+		memset(cm_assocs + mngr->cm_nassocs, 0,
 		       NASSOC_EXPAND * sizeof(struct nl_cache_assoc));
+		mngr->cm_assocs = cm_assocs;
+		mngr->cm_nassocs = cm_nassocs;
 
 		NL_DBG(1, "Increased capacity of cache manager %p " \
 			  "to %d\n", mngr, mngr->cm_nassocs);

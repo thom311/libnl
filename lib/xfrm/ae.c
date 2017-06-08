@@ -174,9 +174,9 @@ static int xfrm_ae_clone(struct nl_object *_dst, struct nl_object *_src)
 	if (src->replay_state_esn)
 	{
 		uint32_t len = sizeof (struct xfrmnl_replay_state_esn) + (sizeof (uint32_t) * src->replay_state_esn->bmp_len);
-		if ((dst->replay_state_esn = (struct xfrmnl_replay_state_esn*)calloc (1, len)) == NULL)
+		if ((dst->replay_state_esn = malloc (len)) == NULL)
 			return -NLE_NOMEM;
-		memcpy (dst->replay_state_esn, dst->replay_state_esn, len);
+		memcpy (dst->replay_state_esn, src->replay_state_esn, len);
 	}
 
 	return 0;

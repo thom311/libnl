@@ -274,10 +274,11 @@ static int netem_msg_fill_raw(struct rtnl_tc *tc, void *data,
 		/* Resize to accomodate the large distribution table */
 		int new_msg_len = msg->nm_size + netem->qnm_dist.dist_size *
 			sizeof(netem->qnm_dist.dist_data[0]);
+		struct nlmsghdr *new_nlh = realloc(msg->nm_nlh, new_msg_len);
 
-		msg->nm_nlh = (struct nlmsghdr *) realloc(msg->nm_nlh, new_msg_len);
-		if ( msg->nm_nlh == NULL )
+		if ( new_nlh == NULL )
 			return -NLE_NOMEM;
+		msg->nm_nlh = new_nlh;
 		msg->nm_size = new_msg_len;
 			set_dist = 1;
 		}

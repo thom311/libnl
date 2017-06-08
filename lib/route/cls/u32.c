@@ -711,7 +711,6 @@ int rtnl_u32_get_key(struct rtnl_cls *cls, uint8_t index,
 	if (!(u->cu_mask & U32_ATTR_SELECTOR))
 		return -NLE_INVAL;
 
-	/* the selector might have been moved by realloc */
 	sel = u32_selector(u);
 	if (index >= sel->nkeys)
 		return -NLE_RANGE;

@@ -264,7 +264,7 @@ static void print_selector(struct nl_dump_params *p, struct tc_u32_sel *sel,
 
 
 	for (i = 0; i < sel->nkeys; i++) {
-		key = (struct tc_u32_key *) ((char *) sel + sizeof(*sel)) + i;
+		key = &sel->keys[i];
 
 		nl_dump(p, "\n");
 		nl_dump_line(p, "      match key at %s%u ",

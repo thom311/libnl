@@ -311,7 +311,6 @@ int nl_cache_mngr_add_cache(struct nl_cache_mngr *mngr, struct nl_cache *cache,
 		    mngr->cm_assocs[i].ca_cache->c_ops == ops)
 			return -NLE_EXIST;
 
-retry:
 	for (i = 0; i < mngr->cm_nassocs; i++)
 		if (!mngr->cm_assocs[i].ca_cache)
 			break;
@@ -332,7 +331,6 @@ retry:
 
 		NL_DBG(1, "Increased capacity of cache manager %p " \
 			  "to %d\n", mngr, mngr->cm_nassocs);
-		goto retry;
 	}
 
 	for (grp = ops->co_groups; grp->ag_group; grp++) {

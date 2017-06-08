@@ -1311,7 +1311,7 @@ struct nl_object_ops route_obj_ops = {
 	.oo_attrs2str		= route_attrs2str,
 	.oo_id_attrs		= (ROUTE_ATTR_FAMILY | ROUTE_ATTR_TOS |
 				   ROUTE_ATTR_TABLE | ROUTE_ATTR_DST |
-				   ROUTE_ATTR_PRIO),
+				   ROUTE_ATTR_PRIO | ROUTE_ATTR_MULTIPATH),
 };
 /** @endcond */
 

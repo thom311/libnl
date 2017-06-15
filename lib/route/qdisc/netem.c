@@ -212,8 +212,8 @@ static int netem_msg_fill_raw(struct rtnl_tc *tc, void *data,
 	struct tc_netem_corrupt corrupt;
 	struct rtnl_netem *netem = data;
 
-	unsigned char set_correlation = 0, set_reorder = 0,
-	              set_corrupt = 0, set_dist = 0;
+	unsigned char set_correlation = 0, set_reorder = 0;
+	unsigned char set_corrupt = 0, set_dist = 0;
 
 	if (!netem)
 		BUG();
@@ -226,52 +226,45 @@ static int netem_msg_fill_raw(struct rtnl_tc *tc, void *data,
 	msg->nm_nlh->nlmsg_flags |= NLM_F_REQUEST;
 
 	if (netem->qnm_ro.nmro_probability != 0) {
-		if (netem->qnm_latency == 0) {
+		if (netem->qnm_latency == 0)
 			return -NLE_MISSING_ATTR;
-		}
 		if (netem->qnm_gap == 0)
 			netem->qnm_gap = 1;
-	} else if (netem->qnm_gap) {
+	} else if (netem->qnm_gap)
 		return -NLE_MISSING_ATTR;
-	}
 
 	if (netem->qnm_corr.nmc_delay != 0) {
-		if (netem->qnm_latency == 0 || netem->qnm_jitter == 0) {
+		if (netem->qnm_latency == 0 || netem->qnm_jitter == 0)
 			return -NLE_MISSING_ATTR;
-		}
 		set_correlation = 1;
 	}
 
 	if (netem->qnm_corr.nmc_loss != 0) {
-		if (netem->qnm_loss == 0) {
+		if (netem->qnm_loss == 0)
 			return -NLE_MISSING_ATTR;
-		}
 		set_correlation = 1;
 	}
 
 	if (netem->qnm_corr.nmc_duplicate != 0) {
-		if (netem->qnm_duplicate == 0) {
+		if (netem->qnm_duplicate == 0)
 			return -NLE_MISSING_ATTR;
-		}
 		set_correlation = 1;
 	}
 
 	if (netem->qnm_ro.nmro_probability != 0)
 		set_reorder = 1;
-	else if (netem->qnm_ro.nmro_correlation != 0) {
+	else if (netem->qnm_ro.nmro_correlation != 0)
 		return -NLE_MISSING_ATTR;
-	}
 
 	if (netem->qnm_crpt.nmcr_probability != 0)
 		set_corrupt = 1;
-	else if (netem->qnm_crpt.nmcr_correlation != 0) {
+	else if (netem->qnm_crpt.nmcr_correlation != 0)
 		return -NLE_MISSING_ATTR;
-	}
 
 	if (netem->qnm_dist.dist_data && netem->qnm_dist.dist_size) {
-		if (netem->qnm_latency == 0 || netem->qnm_jitter == 0) {
+		if (netem->qnm_latency == 0 || netem->qnm_jitter == 0)
 			return -NLE_MISSING_ATTR;
-		} else {
+		else {
 			/* Resize to accomodate the large distribution table */
 			int new_msg_len = msg->nm_size + netem->qnm_dist.dist_size *
 			                  sizeof(netem->qnm_dist.dist_data[0]);

@@ -321,17 +321,17 @@ static uint32_t hashlittle( const void *key, size_t length, uint32_t *val2 )
     /*-------------------------------- last block: affect all 32 bits of (c) */
     switch(length)                   /* all the case statements fall through */
     {
-    case 12: c+=((uint32_t)k[11])<<24;
-    case 11: c+=((uint32_t)k[10])<<16;
-    case 10: c+=((uint32_t)k[9])<<8;
-    case 9 : c+=k[8];
-    case 8 : b+=((uint32_t)k[7])<<24;
-    case 7 : b+=((uint32_t)k[6])<<16;
-    case 6 : b+=((uint32_t)k[5])<<8;
-    case 5 : b+=k[4];
-    case 4 : a+=((uint32_t)k[3])<<24;
-    case 3 : a+=((uint32_t)k[2])<<16;
-    case 2 : a+=((uint32_t)k[1])<<8;
+    case 12: c+=((uint32_t)k[11])<<24;  /* fall through */
+    case 11: c+=((uint32_t)k[10])<<16;  /* fall through */
+    case 10: c+=((uint32_t)k[9])<<8;    /* fall through */
+    case 9 : c+=k[8];                   /* fall through */
+    case 8 : b+=((uint32_t)k[7])<<24;   /* fall through */
+    case 7 : b+=((uint32_t)k[6])<<16;   /* fall through */
+    case 6 : b+=((uint32_t)k[5])<<8;    /* fall through */
+    case 5 : b+=k[4];                   /* fall through */
+    case 4 : a+=((uint32_t)k[3])<<24;   /* fall through */
+    case 3 : a+=((uint32_t)k[2])<<16;   /* fall through */
+    case 2 : a+=((uint32_t)k[1])<<8;    /* fall through */
     case 1 : a+=k[0];
              break;
     case 0 : return c;
@@ -451,18 +451,18 @@ static uint32_t hashbig( const void *key, size_t length, uint32_t *val2)
     /*-------------------------------- last block: affect all 32 bits of (c) */
     switch(length)                   /* all the case statements fall through */
     {
-    case 12: c+=k[11];
-    case 11: c+=((uint32_t)k[10])<<8;
-    case 10: c+=((uint32_t)k[9])<<16;
-    case 9 : c+=((uint32_t)k[8])<<24;
-    case 8 : b+=k[7];
-    case 7 : b+=((uint32_t)k[6])<<8;
-    case 6 : b+=((uint32_t)k[5])<<16;
-    case 5 : b+=((uint32_t)k[4])<<24;
-    case 4 : a+=k[3];
-    case 3 : a+=((uint32_t)k[2])<<8;
-    case 2 : a+=((uint32_t)k[1])<<16;
-    case 1 : a+=((uint32_t)k[0])<<24;
+    case 12: c+=k[11];                  /* fall through */
+    case 11: c+=((uint32_t)k[10])<<8;   /* fall through */
+    case 10: c+=((uint32_t)k[9])<<16;   /* fall through */
+    case 9 : c+=((uint32_t)k[8])<<24;   /* fall through */
+    case 8 : b+=k[7];                   /* fall through */
+    case 7 : b+=((uint32_t)k[6])<<8;    /* fall through */
+    case 6 : b+=((uint32_t)k[5])<<16;   /* fall through */
+    case 5 : b+=((uint32_t)k[4])<<24;   /* fall through */
+    case 4 : a+=k[3];                   /* fall through */
+    case 3 : a+=((uint32_t)k[2])<<8;    /* fall through */
+    case 2 : a+=((uint32_t)k[1])<<16;   /* fall through */
+    case 1 : a+=((uint32_t)k[0])<<24;   /* fall through */
              break;
     case 0 : return c;
     }

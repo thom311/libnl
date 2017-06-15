@@ -179,6 +179,7 @@ int nl_cli_confirm(struct nl_object *obj, struct nl_dump_params *params,
 		switch ((answer = tolower(buf[0]))) {
 		case '\n':
 			answer = default_yes ? 'y' : 'n';
+			/* fall through */
 		case 'y':
 		case 'n':
 			return answer == 'y';

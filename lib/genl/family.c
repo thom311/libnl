@@ -330,7 +330,7 @@ uint32_t genl_family_get_maxattr(struct genl_family *family)
 	if (family->ce_mask & FAMILY_ATTR_MAXATTR)
 		return family->gf_maxattr;
 	else
-		return family->gf_maxattr;
+		return 0;
 }
 
 void genl_family_set_maxattr(struct genl_family *family, uint32_t maxattr)

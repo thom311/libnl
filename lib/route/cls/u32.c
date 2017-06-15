@@ -628,7 +628,7 @@ int rtnl_u32_add_key(struct rtnl_cls *cls, uint32_t val, uint32_t mask,
 	if (!sel)
 		return -NLE_NOMEM;
 
-	if (sel->nkeys == 255)
+	if (sel->nkeys == UCHAR_MAX)
 		return -NLE_NOMEM;
 
 	err = nl_data_append(u->cu_selector, NULL, sizeof(struct tc_u32_key));

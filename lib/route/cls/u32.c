@@ -264,7 +264,7 @@ static void print_selector(struct nl_dump_params *p, struct tc_u32_sel *sel,
 
 
 	for (i = 0; i < sel->nkeys; i++) {
-		key = (struct tc_u32_key *) ((char *) sel + sizeof(*sel)) + i;
+		key = &sel->keys[i];
 
 		nl_dump(p, "\n");
 		nl_dump_line(p, "      match key at %s%u ",
@@ -469,7 +469,6 @@ int rtnl_u32_set_hashmask(struct rtnl_cls *cls, uint32_t hashmask, uint32_t offs
 {
 	struct rtnl_u32 *u;
 	struct tc_u32_sel *sel;
-	int err;
 
 	hashmask = htonl(hashmask);
 
@@ -480,12 +479,6 @@ int rtnl_u32_set_hashmask(struct rtnl_cls *cls, uint32_t hashmask, uint32_t offs
 	if (!sel)
 		return -NLE_NOMEM;
 
-	err = nl_data_append(u->cu_selector, NULL, sizeof(struct tc_u32_key));
-	if(err < 0)
-		return err;
-
-	sel = u32_selector(u);
-
 	sel->hmask = hashmask;
 	sel->hoff = offset;
 	return 0;
@@ -495,7 +488,6 @@ int rtnl_u32_set_selector(struct rtnl_cls *cls, int offoff, uint32_t offmask, ch
 {
 	struct rtnl_u32 *u;
 	struct tc_u32_sel *sel;
-	int err;
 
 	offmask = ntohs(offmask);
 
@@ -505,12 +497,6 @@ int rtnl_u32_set_selector(struct rtnl_cls *cls, int offoff, uint32_t offmask, ch
 	sel = u32_selector_alloc(u);
 	if (!sel)
 		return -NLE_NOMEM;
-
-	err = nl_data_append(u->cu_selector, NULL, sizeof(struct tc_u32_key));
-	if(err < 0)
-		return err;
-
-	sel = u32_selector(u);
 
 	sel->offoff = offoff;
 	sel->offmask = offmask;
@@ -525,7 +511,6 @@ int rtnl_u32_set_cls_terminal(struct rtnl_cls *cls)
 {
 	struct rtnl_u32 *u;
 	struct tc_u32_sel *sel;
-	int err;
 
 	if (!(u = (struct rtnl_u32 *) rtnl_tc_data(TC_CAST(cls))))
 		return -NLE_NOMEM;
@@ -533,12 +518,6 @@ int rtnl_u32_set_cls_terminal(struct rtnl_cls *cls)
 	sel = u32_selector_alloc(u);
 	if (!sel)
 		return -NLE_NOMEM;
-
-	err = nl_data_append(u->cu_selector, NULL, sizeof(struct tc_u32_key));
-	if(err < 0)
-		return err;
-
-	sel = u32_selector(u);
 
 	sel->flags |= TC_U32_TERMINAL;
 	return 0;
@@ -649,6 +628,9 @@ int rtnl_u32_add_key(struct rtnl_cls *cls, uint32_t val, uint32_t mask,
 	if (!sel)
 		return -NLE_NOMEM;
 
+	if (sel->nkeys == UCHAR_MAX)
+		return -NLE_NOMEM;
+
 	err = nl_data_append(u->cu_selector, NULL, sizeof(struct tc_u32_key));
 	if (err < 0)
 		return err;
@@ -729,7 +711,6 @@ int rtnl_u32_get_key(struct rtnl_cls *cls, uint8_t index,
 	if (!(u->cu_mask & U32_ATTR_SELECTOR))
 		return -NLE_INVAL;
 
-	/* the selector might have been moved by realloc */
 	sel = u32_selector(u);
 	if (index >= sel->nkeys)
 		return -NLE_RANGE;

@@ -193,6 +193,9 @@ int genl_register_family(struct genl_ops *ops)
  */
 int genl_unregister_family(struct genl_ops *ops)
 {
+    if (!ops->o_list)
+        return -NLE_FAILURE;
+
 	nl_list_del(&ops->o_list);
 
 	return 0;

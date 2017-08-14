@@ -886,13 +886,19 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 	char name[NAME_MAX];
 	char dist_suffix[] = ".dist";
 
+	/* Check several locations for the dist file */
+	char *test_path[] = {
+		"",
+		"./",
+		"/usr/lib/tc/",
+		"/usr/lib64/tc/",
+		"/usr/local/lib/tc/",
+	};
+
 	/* If the given filename already ends in .dist, don't append it later */
 	char *test_suffix = strstr(dist_type, dist_suffix);
 	if (test_suffix != NULL && strlen(test_suffix) == 5)
 		strcpy(dist_suffix, "");
-
-	/* Check several locations for the dist file */
-	char *test_path[] = { "", "./", "/usr/lib/tc/", "/usr/local/lib/tc/" };
 
 	for (i = 0; i < ARRAY_SIZE(test_path); i++) {
 		snprintf(name, NAME_MAX, "%s%s%s", test_path[i], dist_type, dist_suffix);

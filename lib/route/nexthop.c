@@ -16,6 +16,7 @@
  */
 
 #include <netlink-private/netlink.h>
+#include <netlink-private/route/nexthop-encap.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
@@ -29,6 +30,7 @@
 #define NH_ATTR_REALMS  0x000010
 #define NH_ATTR_NEWDST  0x000020
 #define NH_ATTR_VIA     0x000040
+#define NH_ATTR_ENCAP   0x000080
 /** @endcond */
 
 /**
@@ -98,6 +100,12 @@ void rtnl_route_nh_free(struct rtnl_nexthop *nh)
 	nl_addr_put(nh->rtnh_gateway);
 	nl_addr_put(nh->rtnh_newdst);
 	nl_addr_put(nh->rtnh_via);
+	if (nh->rtnh_encap) {
+		if (nh->rtnh_encap->ops && nh->rtnh_encap->ops->destructor)
+			nh->rtnh_encap->ops->destructor(nh->rtnh_encap->priv);
+		free(nh->rtnh_encap->priv);
+		free(nh->rtnh_encap);
+	}
 	free(nh);
 }
 
@@ -119,6 +127,8 @@ int rtnl_route_nh_compare(struct rtnl_nexthop *a, struct rtnl_nexthop *b,
 						    b->rtnh_newdst));
 	diff |= NH_DIFF(VIA,		nl_addr_cmp(a->rtnh_via,
 						    b->rtnh_via));
+	diff |= NH_DIFF(ENCAP,		nh_encap_compare(a->rtnh_encap,
+							 b->rtnh_encap));
 
 	if (loose)
 		diff |= NH_DIFF(FLAGS,
@@ -137,6 +147,9 @@ static void nh_dump_line(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 	char buf[128];
 
 	link_cache = nl_cache_mngt_require_safe("route/link");
+
+	if (nh->ce_mask & NH_ATTR_ENCAP)
+		nh_encap_dump(nh->rtnh_encap, dp);
 
 	if (nh->ce_mask & NH_ATTR_NEWDST)
 		nl_dump(dp, "as to %s ",
@@ -176,6 +189,9 @@ static void nh_dump_details(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 	link_cache = nl_cache_mngt_require_safe("route/link");
 
 	nl_dump(dp, "nexthop");
+
+	if (nh->ce_mask & NH_ATTR_ENCAP)
+		nh_encap_dump(nh->rtnh_encap, dp);
 
 	if (nh->ce_mask & NH_ATTR_NEWDST)
 		nl_dump(dp, " as to %s",
@@ -230,6 +246,24 @@ void rtnl_route_nh_dump(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 
 	default:
 		break;
+	}
+}
+
+void nh_set_encap(struct rtnl_nexthop *nh, struct rtnl_nh_encap *rtnh_encap)
+{
+	if (nh->rtnh_encap) {
+		if (nh->rtnh_encap->ops && nh->rtnh_encap->ops->destructor)
+			nh->rtnh_encap->ops->destructor(nh->rtnh_encap->priv);
+		free(nh->rtnh_encap->priv);
+		free(nh->rtnh_encap);
+	}
+
+	if (rtnh_encap) {
+		nh->rtnh_encap = rtnh_encap;
+		nh->ce_mask |= NH_ATTR_ENCAP;
+	} else {
+		nh->rtnh_encap = NULL;
+		nh->ce_mask &= ~NH_ATTR_ENCAP;
 	}
 }
 

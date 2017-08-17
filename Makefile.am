@@ -385,6 +385,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/neightbl.c \
 	lib/route/netconf.c \
 	lib/route/nexthop.c \
+	lib/route/nexthop_encap.c \
 	lib/route/pktloc.c \
 	lib/route/qdisc/blackhole.c \
 	lib/route/qdisc.c \

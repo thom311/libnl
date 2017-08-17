@@ -32,6 +32,7 @@
 
 #include <netlink-private/netlink.h>
 #include <netlink-private/utils.h>
+#include <netlink-private/route/nexthop-encap.h>
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/utils.h>
@@ -1014,6 +1015,8 @@ static struct nla_policy route_policy[RTA_MAX+1] = {
 	[RTA_METRICS]	= { .type = NLA_NESTED },
 	[RTA_MULTIPATH]	= { .type = NLA_NESTED },
 	[RTA_TTL_PROPAGATE] = { .type = NLA_U8 },
+	[RTA_ENCAP]	= { .type = NLA_NESTED },
+	[RTA_ENCAP_TYPE] = { .type = NLA_U16 },
 };
 
 static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
@@ -1086,6 +1089,14 @@ static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 
 				err = rtnl_route_nh_set_via(nh, addr);
 				nl_addr_put(addr);
+				if (err)
+					goto errout;
+			}
+
+			if (ntb[RTA_ENCAP] && ntb[RTA_ENCAP_TYPE]) {
+				err = nh_encap_parse_msg(ntb[RTA_ENCAP],
+							 ntb[RTA_ENCAP_TYPE],
+							 nh);
 				if (err)
 					goto errout;
 			}
@@ -1275,6 +1286,13 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 					     nla_get_u8(tb[RTA_TTL_PROPAGATE]));
 	}
 
+	if (tb[RTA_ENCAP] && tb[RTA_ENCAP_TYPE]) {
+		err = nh_encap_parse_msg(tb[RTA_ENCAP],
+					 tb[RTA_ENCAP_TYPE], old_nh);
+		if (err)
+			goto errout;
+	}
+
 	if (old_nh) {
 		rtnl_route_nh_set_flags(old_nh, rtm->rtm_flags & 0xff);
 		if (route->rt_nr_nh == 0) {
@@ -1402,6 +1420,9 @@ int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)
 			NLA_PUT_ADDR(msg, RTA_NEWDST, nh->rtnh_newdst);
 		if (nh->rtnh_via && rtnl_route_put_via(msg, nh->rtnh_via) < 0)
 			goto nla_put_failure;
+		if (nh->rtnh_encap &&
+		    nh_encap_build_msg(msg, nh->rtnh_encap) < 0)
+			goto nla_put_failure;
 	} else if (rtnl_route_get_nnexthops(route) > 1) {
 		struct nlattr *multipath;
 		struct rtnl_nexthop *nh;
@@ -1433,6 +1454,10 @@ int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)
 
 			if (nh->rtnh_realms)
 				NLA_PUT_U32(msg, RTA_FLOW, nh->rtnh_realms);
+
+			if (nh->rtnh_encap &&
+			    nh_encap_build_msg(msg, nh->rtnh_encap) < 0)
+				goto nla_put_failure;
 
 			rtnh->rtnh_len = nlmsg_tail(msg->nm_nlh) -
 						(void *) rtnh;

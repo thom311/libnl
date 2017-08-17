@@ -311,6 +311,8 @@ struct rtnl_nexthop
 	uint32_t		ce_mask; /* HACK to support attr macros */
 	struct nl_list_head	rtnh_list;
 	uint32_t		rtnh_realms;
+	struct nl_addr *	rtnh_newdst;
+	struct nl_addr *	rtnh_via;
 };
 
 struct rtnl_route

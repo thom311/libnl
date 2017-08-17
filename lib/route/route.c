@@ -173,6 +173,7 @@ int rtnl_route_delete(struct nl_sock *sk, struct rtnl_route *route, int flags)
 static struct nl_af_group route_groups[] = {
 	{ AF_INET,	RTNLGRP_IPV4_ROUTE },
 	{ AF_INET6,	RTNLGRP_IPV6_ROUTE },
+	{ AF_MPLS,	RTNLGRP_MPLS_ROUTE },
 	{ AF_DECnet,	RTNLGRP_DECnet_ROUTE },
 	{ END_OF_GROUP_LIST },
 };

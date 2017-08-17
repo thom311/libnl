@@ -31,6 +31,7 @@
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/addr.h>
+#include <netlink-private/route/mpls.h>
 #include <linux/socket.h>
 
 /* All this DECnet stuff is stolen from iproute2, thanks to whoever wrote
@@ -223,7 +224,13 @@ struct nl_addr *nl_addr_build(int family, const void *buf, size_t size)
 
 	addr->a_family = family;
 	addr->a_len = size;
-	addr->a_prefixlen = size*8;
+	switch(family) {
+	case AF_MPLS:
+		addr->a_prefixlen = 20;  /* MPLS address is a 20-bit label */
+		break;
+	default:
+		addr->a_prefixlen = size*8;
+	}
 
 	if (size)
 		memcpy(addr->a_addr, buf, size);
@@ -290,8 +297,8 @@ struct nl_addr *nl_addr_alloc_attr(const struct nlattr *nla, int family)
  */
 int nl_addr_parse(const char *addrstr, int hint, struct nl_addr **result)
 {
-	int err, copy = 0, len = 0, family = AF_UNSPEC;
-	char *str, *prefix, buf[32];
+	int err, copy = 0, len = 0, family = AF_UNSPEC, plen = 0;
+	char *str, *prefix = NULL, buf[256];
 	struct nl_addr *addr = NULL; /* gcc ain't that smart */
 
 	str = strdup(addrstr);
@@ -300,9 +307,11 @@ int nl_addr_parse(const char *addrstr, int hint, struct nl_addr **result)
 		goto errout;
 	}
 
-	prefix = strchr(str, '/');
-	if (prefix)
-		*prefix = '\0';
+	if (hint != AF_MPLS) {
+		prefix = strchr(str, '/');
+		if (prefix)
+			*prefix = '\0';
+	}
 
 	if (!strcasecmp(str, "none")) {
 		family = hint;
@@ -399,6 +408,17 @@ int nl_addr_parse(const char *addrstr, int hint, struct nl_addr **result)
 		}
 	}
 
+	if (hint == AF_MPLS) {
+		len = mpls_pton(AF_MPLS, str, buf, sizeof(buf));
+		if (len <= 0) {
+			err = -NLE_INVAL;
+			goto errout;
+		}
+		family = AF_MPLS;
+		plen = 20;
+		goto prefix;
+	}
+
 	if (hint == AF_UNSPEC && strchr(str, ':')) {
 		size_t i = 0;
 		char *s = str, *p;
@@ -445,9 +465,11 @@ prefix:
 			goto errout;
 		}
 		nl_addr_set_prefixlen(addr, pl);
-	} else
-		nl_addr_set_prefixlen(addr, len * 8);
-
+	} else {
+		if (!plen)
+			plen = len * 8;
+		nl_addr_set_prefixlen(addr, plen);
+	}
 	*result = addr;
 	err = 0;
 errout:
@@ -639,12 +661,18 @@ int nl_addr_iszero(const struct nl_addr *addr)
 int nl_addr_valid(const char *addr, int family)
 {
 	int ret;
-	char buf[32];
+	char buf[256]; /* MPLS has N-labels at 4-bytes / label */
 
 	switch (family) {
 	case AF_INET:
 	case AF_INET6:
 		ret = inet_pton(family, addr, buf);
+		if (ret <= 0)
+			return 0;
+		break;
+
+	case AF_MPLS:
+		ret = mpls_pton(family, addr, buf, sizeof(buf));
 		if (ret <= 0)
 			return 0;
 		break;
@@ -982,6 +1010,10 @@ char *nl_addr2str(const struct nl_addr *addr, char *buf, size_t size)
 			inet_ntop(AF_INET6, addr->a_addr, buf, size);
 			break;
 
+		case AF_MPLS:
+			mpls_ntop(AF_MPLS, addr->a_addr, buf, size);
+			break;
+
 		case AF_DECnet:
 			dnet_ntop(addr->a_addr, addr->a_len, buf, size);
 			break;
@@ -999,7 +1031,8 @@ char *nl_addr2str(const struct nl_addr *addr, char *buf, size_t size)
 	}
 
 prefix:
-	if (addr->a_prefixlen != (8 * addr->a_len)) {
+	if (addr->a_family != AF_MPLS &&
+	    addr->a_prefixlen != (8 * addr->a_len)) {
 		snprintf(tmp, sizeof(tmp), "/%u", addr->a_prefixlen);
 		strncat(buf, tmp, size - strlen(buf) - 1);
 	}
@@ -1078,6 +1111,7 @@ static const struct trans_tbl afs[] = {
 #ifdef AF_VSOCK
 	__ADD(AF_VSOCK,vsock),
 #endif
+	__ADD(AF_MPLS,mpls),
 };
 
 char *nl_af2str(int family, char *buf, size_t size)

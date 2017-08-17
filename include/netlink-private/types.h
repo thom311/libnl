@@ -327,6 +327,7 @@ struct rtnl_route
 	uint8_t			rt_scope;
 	uint8_t			rt_type;
 	uint8_t			rt_nmetrics;
+	uint8_t			rt_ttl_propagate;
 	uint32_t		rt_flags;
 	struct nl_addr *	rt_dst;
 	struct nl_addr *	rt_src;

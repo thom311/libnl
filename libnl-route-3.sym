@@ -1057,4 +1057,6 @@ global:
 	rtnl_route_nh_get_newdst;
 	rtnl_route_nh_set_via;
 	rtnl_route_nh_get_via;
+	rtnl_route_set_ttl_propagate;
+	rtnl_route_get_ttl_propagate;
 } libnl_3_2_29;

@@ -62,6 +62,7 @@
 #define ROUTE_ATTR_MULTIPATH 0x008000
 #define ROUTE_ATTR_REALMS    0x010000
 #define ROUTE_ATTR_CACHEINFO 0x020000
+#define ROUTE_ATTR_TTL_PROPAGATE 0x040000
 /** @endcond */
 
 static void route_constructor(struct nl_object *c)
@@ -245,6 +246,11 @@ static void route_dump_details(struct nl_object *a, struct nl_dump_params *p)
 	if (r->ce_mask & ROUTE_ATTR_SRC)
 		nl_dump(p, "src %s ", nl_addr2str(r->rt_src, buf, sizeof(buf)));
 
+	if (r->ce_mask & ROUTE_ATTR_TTL_PROPAGATE) {
+		nl_dump(p, " ttl-propagate %s",
+			r->rt_ttl_propagate ? "enabled" : "disabled");
+	}
+
 	nl_dump(p, "\n");
 
 	if (r->ce_mask & ROUTE_ATTR_MULTIPATH) {
@@ -381,6 +387,8 @@ static uint64_t route_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= ROUTE_DIFF(IIF,		a->rt_iif != b->rt_iif);
 	diff |= ROUTE_DIFF(PREF_SRC,	nl_addr_cmp(a->rt_pref_src,
 						    b->rt_pref_src));
+	diff |= ROUTE_DIFF(TTL_PROPAGATE,
+			   a->rt_ttl_propagate != b->rt_ttl_propagate);
 
 	if (flags & LOOSE_COMPARISON) {
 		nl_list_for_each_entry(nh_b, &b->rt_nexthops, rtnh_list) {
@@ -578,6 +586,7 @@ static const struct trans_tbl route_attrs[] = {
 	__ADD(ROUTE_ATTR_MULTIPATH, multipath),
 	__ADD(ROUTE_ATTR_REALMS, realms),
 	__ADD(ROUTE_ATTR_CACHEINFO, cacheinfo),
+	__ADD(ROUTE_ATTR_TTL_PROPAGATE, ttl_propagate),
 };
 
 static char *route_attrs2str(int attrs, char *buf, size_t len)
@@ -910,6 +919,21 @@ struct rtnl_nexthop *rtnl_route_nexthop_n(struct rtnl_route *r, int n)
 	return NULL;
 }
 
+void rtnl_route_set_ttl_propagate(struct rtnl_route *route, uint8_t ttl_prop)
+{
+	route->rt_ttl_propagate = ttl_prop;
+	route->ce_mask |= ROUTE_ATTR_TTL_PROPAGATE;
+}
+
+int rtnl_route_get_ttl_propagate(struct rtnl_route *route)
+{
+	if (!route)
+		return -NLE_INVAL;
+	if (!(route->ce_mask & ROUTE_ATTR_TTL_PROPAGATE))
+		return -NLE_MISSING_ATTR;
+	return route->rt_ttl_propagate;
+}
+
 /** @} */
 
 /**
@@ -989,6 +1013,7 @@ static struct nla_policy route_policy[RTA_MAX+1] = {
 	[RTA_CACHEINFO]	= { .minlen = sizeof(struct rta_cacheinfo) },
 	[RTA_METRICS]	= { .type = NLA_NESTED },
 	[RTA_MULTIPATH]	= { .type = NLA_NESTED },
+	[RTA_TTL_PROPAGATE] = { .type = NLA_U8 },
 };
 
 static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
@@ -1245,6 +1270,11 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 			goto errout;
 	}
 
+	if (tb[RTA_TTL_PROPAGATE]) {
+		rtnl_route_set_ttl_propagate(route,
+					     nla_get_u8(tb[RTA_TTL_PROPAGATE]));
+	}
+
 	if (old_nh) {
 		rtnl_route_nh_set_flags(old_nh, rtm->rtm_flags & 0xff);
 		if (route->rt_nr_nh == 0) {
@@ -1339,6 +1369,9 @@ int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)
 
 	if (route->ce_mask & ROUTE_ATTR_IIF)
 		NLA_PUT_U32(msg, RTA_IIF, route->rt_iif);
+
+	if (route->ce_mask & ROUTE_ATTR_TTL_PROPAGATE)
+		NLA_PUT_U8(msg, RTA_TTL_PROPAGATE, route->rt_ttl_propagate);
 
 	if (route->rt_nmetrics > 0) {
 		uint32_t val;

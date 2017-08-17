@@ -324,7 +324,8 @@ lib_libnl_3_la_SOURCES = \
 	lib/utils.c \
 	lib/version.c \
 	lib/hash.c \
-	lib/hashtable.c
+	lib/hashtable.c \
+	lib/mpls.c
 EXTRA_lib_libnl_3_la_DEPENDENCIES = \
 	libnl-3.sym
 lib_libnl_3_la_CPPFLAGS = \

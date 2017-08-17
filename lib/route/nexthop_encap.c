@@ -9,7 +9,7 @@ static struct lwtunnel_encap_type {
 	struct nh_encap_ops *ops;
 } lwtunnel_encap_types[__LWTUNNEL_ENCAP_MAX] = {
 	[LWTUNNEL_ENCAP_NONE] = { .name = "none" },
-	[LWTUNNEL_ENCAP_MPLS] = { .name = "mpls" },
+	[LWTUNNEL_ENCAP_MPLS] = { .name = "mpls", .ops = &mpls_encap_ops },
 	[LWTUNNEL_ENCAP_IP]   = { .name = "ip" },
 	[LWTUNNEL_ENCAP_IP6]  = { .name = "ip6" },
 	[LWTUNNEL_ENCAP_ILA]  = { .name = "ila" },

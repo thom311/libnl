@@ -27,4 +27,9 @@ int nh_encap_build_msg(struct nl_msg *msg, struct rtnl_nh_encap *rtnh_encap);
 void nh_encap_dump(struct rtnl_nh_encap *rtnh_encap, struct nl_dump_params *dp);
 
 int nh_encap_compare(struct rtnl_nh_encap *a, struct rtnl_nh_encap *b);
+
+/*
+ * MPLS encap
+ */
+extern struct nh_encap_ops mpls_encap_ops;
 #endif

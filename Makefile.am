@@ -241,6 +241,8 @@ noinst_HEADERS = \
 	include/netlink-private/object-api.h \
 	include/netlink-private/route/link/api.h \
 	include/netlink-private/route/link/sriov.h \
+	include/netlink-private/route/nexthop-encap.h \
+	include/netlink-private/route/mpls.h \
 	include/netlink-private/route/tc-api.h \
 	include/netlink-private/socket.h \
 	include/netlink-private/tc.h \

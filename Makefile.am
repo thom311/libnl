@@ -213,6 +213,7 @@ noinst_HEADERS = \
 	include/linux-private/linux/ip_mp_alg.h \
 	include/linux-private/linux/ipv6.h \
 	include/linux-private/linux/libc-compat.h \
+	include/linux-private/linux/mpls.h \
 	include/linux-private/linux/neighbour.h \
 	include/linux-private/linux/netfilter.h \
 	include/linux-private/linux/netfilter/nf_conntrack_common.h \

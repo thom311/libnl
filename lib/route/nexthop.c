@@ -16,6 +16,7 @@
  */
 
 #include <netlink-private/netlink.h>
+#include <netlink-private/route/nexthop-encap.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
@@ -27,6 +28,9 @@
 #define NH_ATTR_IFINDEX 0x000004
 #define NH_ATTR_GATEWAY 0x000008
 #define NH_ATTR_REALMS  0x000010
+#define NH_ATTR_NEWDST  0x000020
+#define NH_ATTR_VIA     0x000040
+#define NH_ATTR_ENCAP   0x000080
 /** @endcond */
 
 /**
@@ -69,12 +73,39 @@ struct rtnl_nexthop *rtnl_route_nh_clone(struct rtnl_nexthop *src)
 		}
 	}
 
+	if (src->rtnh_newdst) {
+		nh->rtnh_newdst = nl_addr_clone(src->rtnh_newdst);
+		if (!nh->rtnh_newdst) {
+			nl_addr_put(nh->rtnh_gateway);
+			free(nh);
+			return NULL;
+		}
+	}
+
+	if (src->rtnh_via) {
+		nh->rtnh_via = nl_addr_clone(src->rtnh_via);
+		if (!nh->rtnh_via) {
+			nl_addr_put(nh->rtnh_gateway);
+			nl_addr_put(nh->rtnh_newdst);
+			free(nh);
+			return NULL;
+		}
+	}
+
 	return nh;
 }
 
 void rtnl_route_nh_free(struct rtnl_nexthop *nh)
 {
 	nl_addr_put(nh->rtnh_gateway);
+	nl_addr_put(nh->rtnh_newdst);
+	nl_addr_put(nh->rtnh_via);
+	if (nh->rtnh_encap) {
+		if (nh->rtnh_encap->ops && nh->rtnh_encap->ops->destructor)
+			nh->rtnh_encap->ops->destructor(nh->rtnh_encap->priv);
+		free(nh->rtnh_encap->priv);
+		free(nh->rtnh_encap);
+	}
 	free(nh);
 }
 
@@ -92,6 +123,12 @@ int rtnl_route_nh_compare(struct rtnl_nexthop *a, struct rtnl_nexthop *b,
 	diff |= NH_DIFF(REALMS,		a->rtnh_realms != b->rtnh_realms);
 	diff |= NH_DIFF(GATEWAY,	nl_addr_cmp(a->rtnh_gateway,
 						    b->rtnh_gateway));
+	diff |= NH_DIFF(NEWDST,		nl_addr_cmp(a->rtnh_newdst,
+						    b->rtnh_newdst));
+	diff |= NH_DIFF(VIA,		nl_addr_cmp(a->rtnh_via,
+						    b->rtnh_via));
+	diff |= NH_DIFF(ENCAP,		nh_encap_compare(a->rtnh_encap,
+							 b->rtnh_encap));
 
 	if (loose)
 		diff |= NH_DIFF(FLAGS,
@@ -111,7 +148,18 @@ static void nh_dump_line(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 
 	link_cache = nl_cache_mngt_require_safe("route/link");
 
+	if (nh->ce_mask & NH_ATTR_ENCAP)
+		nh_encap_dump(nh->rtnh_encap, dp);
+
+	if (nh->ce_mask & NH_ATTR_NEWDST)
+		nl_dump(dp, "as to %s ",
+			nl_addr2str(nh->rtnh_newdst, buf, sizeof(buf)));
+
 	nl_dump(dp, "via");
+
+	if (nh->ce_mask & NH_ATTR_VIA)
+		nl_dump(dp, " %s",
+			nl_addr2str(nh->rtnh_via, buf, sizeof(buf)));
 
 	if (nh->ce_mask & NH_ATTR_GATEWAY)
 		nl_dump(dp, " %s", nl_addr2str(nh->rtnh_gateway,
@@ -141,6 +189,17 @@ static void nh_dump_details(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 	link_cache = nl_cache_mngt_require_safe("route/link");
 
 	nl_dump(dp, "nexthop");
+
+	if (nh->ce_mask & NH_ATTR_ENCAP)
+		nh_encap_dump(nh->rtnh_encap, dp);
+
+	if (nh->ce_mask & NH_ATTR_NEWDST)
+		nl_dump(dp, " as to %s",
+			nl_addr2str(nh->rtnh_newdst, buf, sizeof(buf)));
+
+	if (nh->ce_mask & NH_ATTR_VIA)
+		nl_dump(dp, " via %s",
+			nl_addr2str(nh->rtnh_via, buf, sizeof(buf)));
 
 	if (nh->ce_mask & NH_ATTR_GATEWAY)
 		nl_dump(dp, " via %s", nl_addr2str(nh->rtnh_gateway,
@@ -187,6 +246,24 @@ void rtnl_route_nh_dump(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 
 	default:
 		break;
+	}
+}
+
+void nh_set_encap(struct rtnl_nexthop *nh, struct rtnl_nh_encap *rtnh_encap)
+{
+	if (nh->rtnh_encap) {
+		if (nh->rtnh_encap->ops && nh->rtnh_encap->ops->destructor)
+			nh->rtnh_encap->ops->destructor(nh->rtnh_encap->priv);
+		free(nh->rtnh_encap->priv);
+		free(nh->rtnh_encap);
+	}
+
+	if (rtnh_encap) {
+		nh->rtnh_encap = rtnh_encap;
+		nh->ce_mask |= NH_ATTR_ENCAP;
+	} else {
+		nh->rtnh_encap = NULL;
+		nh->ce_mask &= ~NH_ATTR_ENCAP;
 	}
 }
 
@@ -267,6 +344,60 @@ void rtnl_route_nh_set_realms(struct rtnl_nexthop *nh, uint32_t realms)
 uint32_t rtnl_route_nh_get_realms(struct rtnl_nexthop *nh)
 {
 	return nh->rtnh_realms;
+}
+
+int rtnl_route_nh_set_newdst(struct rtnl_nexthop *nh, struct nl_addr *addr)
+{
+	struct nl_addr *old = nh->rtnh_newdst;
+
+	if (!nl_addr_valid(nl_addr_get_binary_addr(addr),
+			   nl_addr_get_len(addr)))
+		return -NLE_INVAL;
+
+	if (addr) {
+		nh->rtnh_newdst = nl_addr_get(addr);
+		nh->ce_mask |= NH_ATTR_NEWDST;
+	} else {
+		nh->ce_mask &= ~NH_ATTR_NEWDST;
+		nh->rtnh_newdst = NULL;
+	}
+
+	if (old)
+		nl_addr_put(old);
+
+	return 0;
+}
+
+struct nl_addr *rtnl_route_nh_get_newdst(struct rtnl_nexthop *nh)
+{
+	return nh->rtnh_newdst;
+}
+
+int rtnl_route_nh_set_via(struct rtnl_nexthop *nh, struct nl_addr *addr)
+{
+	struct nl_addr *old = nh->rtnh_via;
+
+	if (!nl_addr_valid(nl_addr_get_binary_addr(addr),
+			   nl_addr_get_len(addr)))
+		return -NLE_INVAL;
+
+	if (addr) {
+		nh->rtnh_via = nl_addr_get(addr);
+		nh->ce_mask |= NH_ATTR_VIA;
+	} else {
+		nh->ce_mask &= ~NH_ATTR_VIA;
+		nh->rtnh_via= NULL;
+	}
+
+	if (old)
+		nl_addr_put(old);
+
+	return 0;
+}
+
+struct nl_addr *rtnl_route_nh_get_via(struct rtnl_nexthop *nh)
+{
+	return nh->rtnh_via;
 }
 
 /** @} */

@@ -23,6 +23,7 @@
 #include <netlink-private/object-api.h>
 #include <netlink-private/route/tc-api.h>
 #include <netlink-private/route/link/sriov.h>
+#include <netlink-private/route/nexthop-encap.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 #include <linux/genetlink.h>
@@ -300,6 +301,12 @@ struct rtnl_addr
 	struct rtnl_link *a_link;
 };
 
+struct rtnl_nh_encap
+{
+	struct nh_encap_ops *ops;
+	void *priv;    /* private data for encap type */
+};
+
 struct rtnl_nexthop
 {
 	uint8_t			rtnh_flags;
@@ -311,6 +318,9 @@ struct rtnl_nexthop
 	uint32_t		ce_mask; /* HACK to support attr macros */
 	struct nl_list_head	rtnh_list;
 	uint32_t		rtnh_realms;
+	struct nl_addr *	rtnh_newdst;
+	struct nl_addr *	rtnh_via;
+	struct rtnl_nh_encap *	rtnh_encap;
 };
 
 struct rtnl_route
@@ -325,6 +335,7 @@ struct rtnl_route
 	uint8_t			rt_scope;
 	uint8_t			rt_type;
 	uint8_t			rt_nmetrics;
+	uint8_t			rt_ttl_propagate;
 	uint32_t		rt_flags;
 	struct nl_addr *	rt_dst;
 	struct nl_addr *	rt_src;

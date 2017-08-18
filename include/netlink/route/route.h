@@ -94,6 +94,9 @@ extern struct nl_addr *rtnl_route_get_pref_src(struct rtnl_route *);
 extern void	rtnl_route_set_iif(struct rtnl_route *, int);
 extern int	rtnl_route_get_iif(struct rtnl_route *);
 extern int	rtnl_route_get_src_len(struct rtnl_route *);
+extern void	rtnl_route_set_ttl_propagate(struct rtnl_route *route,
+					     uint8_t ttl_prop);
+extern int	rtnl_route_get_ttl_propagate(struct rtnl_route *route);
 
 extern void	rtnl_route_add_nexthop(struct rtnl_route *,
 				       struct rtnl_nexthop *);

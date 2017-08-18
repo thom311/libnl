@@ -213,6 +213,7 @@ noinst_HEADERS = \
 	include/linux-private/linux/ip_mp_alg.h \
 	include/linux-private/linux/ipv6.h \
 	include/linux-private/linux/libc-compat.h \
+	include/linux-private/linux/mpls.h \
 	include/linux-private/linux/neighbour.h \
 	include/linux-private/linux/netfilter.h \
 	include/linux-private/linux/netfilter/nf_conntrack_common.h \
@@ -240,6 +241,8 @@ noinst_HEADERS = \
 	include/netlink-private/object-api.h \
 	include/netlink-private/route/link/api.h \
 	include/netlink-private/route/link/sriov.h \
+	include/netlink-private/route/nexthop-encap.h \
+	include/netlink-private/route/mpls.h \
 	include/netlink-private/route/tc-api.h \
 	include/netlink-private/socket.h \
 	include/netlink-private/tc.h \
@@ -323,7 +326,8 @@ lib_libnl_3_la_SOURCES = \
 	lib/utils.c \
 	lib/version.c \
 	lib/hash.c \
-	lib/hashtable.c
+	lib/hashtable.c \
+	lib/mpls.c
 EXTRA_lib_libnl_3_la_DEPENDENCIES = \
 	libnl-3.sym
 lib_libnl_3_la_CPPFLAGS = \
@@ -383,6 +387,8 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/neightbl.c \
 	lib/route/netconf.c \
 	lib/route/nexthop.c \
+	lib/route/nexthop_encap.c \
+	lib/route/nh_encap_mpls.c \
 	lib/route/pktloc.c \
 	lib/route/qdisc/blackhole.c \
 	lib/route/qdisc.c \

@@ -55,9 +55,21 @@ extern void		rtnl_route_nh_set_realms(struct rtnl_nexthop *,
 						 uint32_t);
 extern uint32_t		rtnl_route_nh_get_realms(struct rtnl_nexthop *);
 
+extern int		rtnl_route_nh_set_newdst(struct rtnl_nexthop *,
+						 struct nl_addr *);
+extern struct nl_addr *	rtnl_route_nh_get_newdst(struct rtnl_nexthop *);
+extern int		rtnl_route_nh_set_via(struct rtnl_nexthop *,
+						 struct nl_addr *);
+extern struct nl_addr *	rtnl_route_nh_get_via(struct rtnl_nexthop *);
 extern char *		rtnl_route_nh_flags2str(int, char *, size_t);
 extern int		rtnl_route_nh_str2flags(const char *);
 
+/*
+ * nexthop encapsulations
+ */
+extern int		rtnl_route_nh_encap_mpls(struct rtnl_nexthop *nh,
+						 struct nl_addr *addr,
+						 uint8_t ttl);
 #ifdef __cplusplus
 }
 #endif

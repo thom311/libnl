@@ -1315,7 +1315,7 @@ int rtnl_link_vf_vlan_alloc(nl_vf_vlans_t **vf_vlans, int vlan_count) {
 		return -NLE_INVAL;
 
 	vlans = calloc(1, sizeof(*vlans));
-	if (!vf_vlans)
+	if (!vlans)
 		return -NLE_NOMEM;
 
 	vlan_info = calloc(vlan_count+1, sizeof(*vlan_info));

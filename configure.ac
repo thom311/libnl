@@ -12,7 +12,7 @@
 
 # copied from glib
 m4_define([libnl_major_version], [3])
-m4_define([libnl_minor_version], [3])
+m4_define([libnl_minor_version], [4])
 m4_define([libnl_micro_version], [0])
 m4_define([libnl_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./.git/)" = "$(readlink -f "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
 
@@ -35,12 +35,12 @@ m4_define([libnl_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./
 # 3. Programs may need to be changed, recompiled, relinked in order to use
 #    the new version. Bump current, set revision and age to 0.
 
-m4_define([libnl_lt_current],    [225])
+m4_define([libnl_lt_current],    [226])
 m4_define([libnl_lt_revision],   [0])
-m4_define([libnl_lt_age],        [25])
+m4_define([libnl_lt_age],        [26])
 
 m4_define([libnl_version],
-	  [libnl_major_version.libnl_minor_version.libnl_micro_version])
+	  [libnl_major_version.libnl_minor_version.libnl_micro_version-rc1])
 
 AC_INIT(libnl, [libnl_version], [], [], [http://www.infradead.org/~tgr/libnl/])
 AC_CONFIG_HEADERS([lib/defs.h])

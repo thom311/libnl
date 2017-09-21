@@ -213,8 +213,11 @@ noinst_HEADERS = \
 	include/linux-private/linux/ip_mp_alg.h \
 	include/linux-private/linux/ipv6.h \
 	include/linux-private/linux/libc-compat.h \
+	include/linux-private/linux/lwtunnel.h \
 	include/linux-private/linux/mpls.h \
+	include/linux-private/linux/mpls_iptunnel.h \
 	include/linux-private/linux/neighbour.h \
+	include/linux-private/linux/netconf.h \
 	include/linux-private/linux/netfilter.h \
 	include/linux-private/linux/netfilter/nf_conntrack_common.h \
 	include/linux-private/linux/netfilter/nfnetlink.h \
@@ -241,8 +244,8 @@ noinst_HEADERS = \
 	include/netlink-private/object-api.h \
 	include/netlink-private/route/link/api.h \
 	include/netlink-private/route/link/sriov.h \
-	include/netlink-private/route/nexthop-encap.h \
 	include/netlink-private/route/mpls.h \
+	include/netlink-private/route/nexthop-encap.h \
 	include/netlink-private/route/tc-api.h \
 	include/netlink-private/socket.h \
 	include/netlink-private/tc.h \

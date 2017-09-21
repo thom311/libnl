@@ -173,7 +173,10 @@ static int netconf_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		nc->ce_mask |= NETCONF_ATTR_INPUT;
 	}
 
-	return pp->pp_cb((struct nl_object *) nc, pp);
+	err = pp->pp_cb((struct nl_object *) nc, pp);
+
+	rtnl_netconf_put(nc);
+	return err;
 }
 
 static int netconf_request_update(struct nl_cache *cache, struct nl_sock *sk)

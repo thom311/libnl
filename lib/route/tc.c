@@ -37,7 +37,7 @@ static struct nla_policy tc_policy[TCA_MAX+1] = {
 };
 
 int tca_parse(struct nlattr **tb, int maxattr, struct rtnl_tc *g,
-	      struct nla_policy *policy)
+	      const struct nla_policy *policy)
 {
 	
 	if (g->ce_mask & TCA_ATTR_OPTS)

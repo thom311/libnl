@@ -35,7 +35,7 @@ extern "C" {
 #define TCA_ATTR_MAX		TCA_ATTR_LINKTYPE
 
 extern int tca_parse(struct nlattr **, int, struct rtnl_tc *,
-		     struct nla_policy *);
+                     const struct nla_policy *);
 
 #define RTNL_TC_RTABLE_SIZE	256
 

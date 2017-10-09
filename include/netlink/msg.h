@@ -66,10 +66,10 @@ extern int		  nlmsg_valid_hdr(const struct nlmsghdr *, int);
 extern int		  nlmsg_ok(const struct nlmsghdr *, int);
 extern struct nlmsghdr *  nlmsg_next(struct nlmsghdr *, int *);
 extern int		  nlmsg_parse(struct nlmsghdr *, int, struct nlattr **,
-				      int, struct nla_policy *);
+				      int, const struct nla_policy *);
 extern struct nlattr *	  nlmsg_find_attr(struct nlmsghdr *, int, int);
 extern int		  nlmsg_validate(struct nlmsghdr *, int, int,
-					 struct nla_policy *);
+					 const struct nla_policy *);
 
 extern struct nl_msg *	  nlmsg_alloc(void);
 extern struct nl_msg *	  nlmsg_alloc_size(size_t);

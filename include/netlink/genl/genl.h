@@ -29,9 +29,9 @@ extern void *		genlmsg_put(struct nl_msg *, uint32_t, uint32_t,
 
 extern int		genlmsg_valid_hdr(struct nlmsghdr *, int);
 extern int		genlmsg_validate(struct nlmsghdr *, int, int,
-					 struct nla_policy *);
+					 const struct nla_policy *);
 extern int		genlmsg_parse(struct nlmsghdr *, int, struct nlattr **,
-				      int, struct nla_policy *);
+				      int, const struct nla_policy *);
 extern struct genlmsghdr *
 			genlmsg_hdr(struct nlmsghdr *);
 extern void *		genlmsg_data(const struct genlmsghdr *);

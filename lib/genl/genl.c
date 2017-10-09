@@ -150,7 +150,7 @@ int genlmsg_valid_hdr(struct nlmsghdr *nlh, int hdrlen)
  * @return 0 on success or a negative error code.
  */
 int genlmsg_validate(struct nlmsghdr *nlh, int hdrlen, int maxtype,
-		     struct nla_policy *policy)
+		     const struct nla_policy *policy)
 {
 	struct genlmsghdr *ghdr;
 
@@ -190,7 +190,7 @@ int genlmsg_validate(struct nlmsghdr *nlh, int hdrlen, int maxtype,
  * @return 0 on success or a negative error code.
  */
 int genlmsg_parse(struct nlmsghdr *nlh, int hdrlen, struct nlattr *tb[],
-		  int maxtype, struct nla_policy *policy)
+		  int maxtype, const struct nla_policy *policy)
 {
 	struct genlmsghdr *ghdr;
 

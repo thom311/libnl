@@ -89,7 +89,7 @@ extern int		nla_len(const struct nlattr *);
 extern int		nla_ok(const struct nlattr *, int);
 extern struct nlattr *	nla_next(const struct nlattr *, int *);
 extern int		nla_parse(struct nlattr **, int, struct nlattr *,
-				  int, struct nla_policy *);
+				  int, const struct nla_policy *);
 extern int		nla_validate(const struct nlattr *, int, int,
 				     const struct nla_policy *);
 extern struct nlattr *	nla_find(const struct nlattr *, int, int);
@@ -145,7 +145,7 @@ extern struct nlattr *	nla_nest_start(struct nl_msg *, int);
 extern int		nla_nest_end(struct nl_msg *, struct nlattr *);
 extern void		nla_nest_cancel(struct nl_msg *, const struct nlattr *);
 extern int		nla_parse_nested(struct nlattr **, int, struct nlattr *,
-					 struct nla_policy *);
+					 const struct nla_policy *);
 extern int		nla_is_nested(const struct nlattr *);
 
 /**

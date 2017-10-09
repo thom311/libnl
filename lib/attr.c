@@ -240,7 +240,7 @@ static int validate_nla(const struct nlattr *nla, int maxtype,
  * @return 0 on success or a negative error code.
  */
 int nla_parse(struct nlattr *tb[], int maxtype, struct nlattr *head, int len,
-	      struct nla_policy *policy)
+	      const struct nla_policy *policy)
 {
 	struct nlattr *nla;
 	int rem, err;
@@ -997,7 +997,7 @@ void nla_nest_cancel(struct nl_msg *msg, const struct nlattr *attr)
  * @return 0 on success or a negative error code.
  */
 int nla_parse_nested(struct nlattr *tb[], int maxtype, struct nlattr *nla,
-		     struct nla_policy *policy)
+		     const struct nla_policy *policy)
 {
 	return nla_parse(tb, maxtype, nla_data(nla), nla_len(nla), policy);
 }

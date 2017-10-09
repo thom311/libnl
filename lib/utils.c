@@ -1220,7 +1220,7 @@ int nl_has_capability (int capability)
 			NL_CAPABILITY_VERSION_3_2_29,
 			NL_CAPABILITY_XFRM_SP_SEC_CTX_LEN,
 			NL_CAPABILITY_VERSION_3_3_0,
-			0,
+			NL_CAPABILITY_VERSION_3_4_0,
 			0,
 			0,
 			0,

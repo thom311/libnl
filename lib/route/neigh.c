@@ -462,10 +462,14 @@ static void neigh_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	struct rtnl_neigh *n = (struct rtnl_neigh *) a;
 	struct nl_cache *link_cache;
 	char state[128], flags[64];
+	char buf[128];
 
 	link_cache = nl_cache_mngt_require_safe("route/link");
 
-	if (n->n_family != AF_BRIDGE)
+	if (n->n_family != AF_UNSPEC)
+		nl_dump_line(p, "%s ", nl_af2str(n->n_family, buf, sizeof(buf)));
+
+	if (n->ce_mask & NEIGH_ATTR_DST)
 		nl_dump_line(p, "%s ", nl_addr2str(n->n_dst, dst, sizeof(dst)));
 
 	if (link_cache)

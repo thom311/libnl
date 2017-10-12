@@ -831,6 +831,9 @@ static void link_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 		fetched_cache = 1;
 	}
 
+	if (link->l_family != AF_UNSPEC)
+		nl_dump_line(p, "%s ", nl_af2str(link->l_family, buf, sizeof(buf)));
+
 	nl_dump_line(p, "%s %s ", link->l_name,
 		     nl_llproto2str(link->l_arptype, buf, sizeof(buf)));
 

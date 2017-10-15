@@ -589,7 +589,7 @@ int rtnl_link_vlan_set_egress_map(struct rtnl_link *link, uint32_t from, int to)
 		int new_size = vi->vi_egress_size + 32;
 		void *ptr;
 
-		ptr = realloc(vi->vi_egress_qos, new_size);
+		ptr = realloc(vi->vi_egress_qos, new_size * sizeof(struct vlan_map));
 		if (!ptr)
 			return -NLE_NOMEM;
 

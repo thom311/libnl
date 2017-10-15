@@ -162,11 +162,11 @@ static int vlan_parse(struct rtnl_link *link, struct nlattr *data,
 			i++;
 		}
 
-		/* align to have a little reserve */
-		vi->vi_egress_size = (i + 32) & ~31;
-		vi->vi_egress_qos = calloc(vi->vi_egress_size, sizeof(*vi->vi_egress_qos));
+		vi->vi_egress_qos = calloc(i, sizeof(struct vlan_map));
 		if (vi->vi_egress_qos == NULL)
 			return -NLE_NOMEM;
+
+		vi->vi_egress_size = i * sizeof(struct vlan_map);
 
 		i = 0;
 		nla_for_each_nested(nla, tb[IFLA_VLAN_EGRESS_QOS], remaining) {
@@ -270,13 +270,13 @@ static int vlan_clone(struct rtnl_link *dst, struct rtnl_link *src)
 		return err;
 	vdst = dst->l_info;
 
-	vdst->vi_egress_qos = calloc(vsrc->vi_egress_size,
+	vdst->vi_egress_qos = calloc(vsrc->vi_negress,
 				     sizeof(struct vlan_map));
 	if (!vdst->vi_egress_qos)
 		return -NLE_NOMEM;
 
 	memcpy(vdst->vi_egress_qos, vsrc->vi_egress_qos,
-	       vsrc->vi_egress_size * sizeof(struct vlan_map));
+	       vsrc->vi_negress * sizeof(struct vlan_map));
 
 	return 0;
 }
@@ -585,8 +585,8 @@ int rtnl_link_vlan_set_egress_map(struct rtnl_link *link, uint32_t from, int to)
 	if (to < 0 || to > VLAN_PRIO_MAX)
 		return -NLE_INVAL;
 
-	if (vi->vi_negress >= vi->vi_egress_size) {
-		int new_size = vi->vi_egress_size + 32;
+	if ((vi->vi_negress * sizeof (struct vlan_map)) >= vi->vi_egress_size) {
+		int new_size = vi->vi_egress_size + sizeof (struct vlan_map);
 		void *ptr;
 
 		ptr = realloc(vi->vi_egress_qos, new_size);

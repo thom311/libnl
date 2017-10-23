@@ -595,10 +595,16 @@ int rtnl_link_vlan_set_egress_map(struct rtnl_link *link, uint32_t from, int to)
 		return -NLE_INVAL;
 
 	if (vi->vi_negress >= vi->vi_egress_size) {
-		int new_size = vi->vi_egress_size + 32;
+		uint32_t new_size = vi->vi_egress_size + 1 + vi->vi_egress_size / 2;
+		size_t bytes;
 		void *ptr;
 
-		ptr = realloc(vi->vi_egress_qos, new_size * sizeof(struct vlan_map));
+		if (new_size < vi->vi_egress_size)
+			return -NLE_NOMEM;
+		bytes = (size_t) new_size * sizeof(struct vlan_map);
+		if (bytes / sizeof (struct vlan_map) != new_size)
+			return -NLE_NOMEM;
+		ptr = realloc(vi->vi_egress_qos, bytes);
 		if (!ptr)
 			return -NLE_NOMEM;
 

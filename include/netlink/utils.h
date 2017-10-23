@@ -286,6 +286,14 @@ enum {
 	NL_CAPABILITY_VERSION_3_4_0 = 28,
 #define NL_CAPABILITY_VERSION_3_4_0 NL_CAPABILITY_VERSION_3_4_0
 
+	/**
+	 * Fixed memory corruption in rtnl_link_vlan_set_egress_map(). Previously, if you tried
+	 * to add more then 4 mappings, a buffer overflow occured. Also fixed nl_object_clone()
+	 * for VLAN links.
+	 */
+	NL_CAPABILITY_ROUTE_FIX_VLAN_SET_EGRESS_MAP = 29,
+#define NL_CAPABILITY_ROUTE_FIX_VLAN_SET_EGRESS_MAP NL_CAPABILITY_ROUTE_FIX_VLAN_SET_EGRESS_MAP
+
 	__NL_CAPABILITY_MAX,
 	NL_CAPABILITY_MAX = (__NL_CAPABILITY_MAX - 1),
 #define NL_CAPABILITY_MAX NL_CAPABILITY_MAX

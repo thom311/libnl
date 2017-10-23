@@ -264,19 +264,28 @@ static int vlan_clone(struct rtnl_link *dst, struct rtnl_link *src)
 {
 	struct vlan_info *vdst, *vsrc = src->l_info;
 	int err;
+	struct vlan_map *p = NULL;
 
 	dst->l_info = NULL;
 	if ((err = rtnl_link_set_type(dst, "vlan")) < 0)
 		return err;
 	vdst = dst->l_info;
 
-	vdst->vi_egress_qos = calloc(vsrc->vi_egress_size,
-				     sizeof(struct vlan_map));
-	if (!vdst->vi_egress_qos)
-		return -NLE_NOMEM;
+	if (vsrc->vi_negress) {
+		p = calloc(vsrc->vi_negress,
+		           sizeof(struct vlan_map));
+		if (!p)
+			return -NLE_NOMEM;
+	}
 
-	memcpy(vdst->vi_egress_qos, vsrc->vi_egress_qos,
-	       vsrc->vi_egress_size * sizeof(struct vlan_map));
+	*vdst = *vsrc;
+
+	if (vsrc->vi_negress) {
+		vdst->vi_egress_size = vsrc->vi_negress;
+		vdst->vi_egress_qos = p;
+		memcpy(vdst->vi_egress_qos, vsrc->vi_egress_qos,
+		       vsrc->vi_negress * sizeof(struct vlan_map));
+	}
 
 	return 0;
 }

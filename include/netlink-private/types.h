@@ -605,6 +605,14 @@ struct rtnl_u32
 	int			cu_mask;
 };
 
+struct rtnl_mall
+{
+	uint32_t         m_classid;
+	uint32_t         m_flags;
+	struct rtnl_act *m_act;
+	int              m_mask;
+};
+
 struct rtnl_cgroup
 {
 	struct rtnl_ematch_tree *cg_ematch;

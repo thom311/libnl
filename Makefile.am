@@ -121,7 +121,8 @@ libnlinclude_netlink_route_cls_HEADERS = \
 	include/netlink/route/cls/ematch.h \
 	include/netlink/route/cls/fw.h \
 	include/netlink/route/cls/police.h \
-	include/netlink/route/cls/u32.h
+	include/netlink/route/cls/u32.h \
+	include/netlink/route/cls/matchall.h
 libnlinclude_netlink_route_cls_ematchdir = $(libnlincludedir)/netlink/route/cls/ematch
 libnlinclude_netlink_route_cls_ematch_HEADERS = \
 	include/netlink/route/cls/ematch/cmp.h \
@@ -364,6 +365,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/cls/fw.c \
 	lib/route/cls/police.c \
 	lib/route/cls/u32.c \
+	lib/route/cls/mall.c \
 	lib/route/link/api.c \
 	lib/route/link/bonding.c \
 	lib/route/link/bridge.c \

@@ -341,6 +341,7 @@ struct rtnl_route
 	struct nl_addr *	rt_src;
 	uint32_t		rt_table;
 	uint32_t		rt_iif;
+	uint32_t		rt_oif;
 	uint32_t		rt_prio;
 	uint32_t		rt_metrics[RTAX_MAX];
 	uint32_t		rt_metrics_mask;

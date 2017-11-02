@@ -93,6 +93,8 @@ extern int	rtnl_route_set_pref_src(struct rtnl_route *, struct nl_addr *);
 extern struct nl_addr *rtnl_route_get_pref_src(struct rtnl_route *);
 extern void	rtnl_route_set_iif(struct rtnl_route *, int);
 extern int	rtnl_route_get_iif(struct rtnl_route *);
+extern void	rtnl_route_set_oif(struct rtnl_route *, int);
+extern int	rtnl_route_get_oif(struct rtnl_route *);
 extern int	rtnl_route_get_src_len(struct rtnl_route *);
 extern void	rtnl_route_set_ttl_propagate(struct rtnl_route *route,
 					     uint8_t ttl_prop);

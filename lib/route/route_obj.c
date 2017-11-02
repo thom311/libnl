@@ -861,6 +861,17 @@ int rtnl_route_get_iif(struct rtnl_route *route)
 	return route->rt_iif;
 }
 
+void rtnl_route_set_oif(struct rtnl_route *route, int ifindex)
+{
+	route->rt_oif = ifindex;
+	route->ce_mask |= ROUTE_ATTR_OIF;
+}
+
+int rtnl_route_get_oif(struct rtnl_route *route)
+{
+	return route->rt_oif;
+}
+
 void rtnl_route_add_nexthop(struct rtnl_route *route, struct rtnl_nexthop *nh)
 {
 	nl_list_add_tail(&nh->rtnh_list, &route->rt_nexthops);
@@ -1387,6 +1398,9 @@ int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)
 
 	if (route->ce_mask & ROUTE_ATTR_IIF)
 		NLA_PUT_U32(msg, RTA_IIF, route->rt_iif);
+
+	if (route->ce_mask & ROUTE_ATTR_OIF)
+		NLA_PUT_U32(msg, RTA_OIF, route->rt_oif);
 
 	if (route->ce_mask & ROUTE_ATTR_TTL_PROPAGATE)
 		NLA_PUT_U8(msg, RTA_TTL_PROPAGATE, route->rt_ttl_propagate);

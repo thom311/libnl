@@ -149,11 +149,11 @@ struct rtnl_link_af_ops
 
 	/* RTM_NEWLINK override
 	 *
-	 * Called if a change link request is set to the kernel. If this is set
-	 * to anything other than zero, RTM_NEWLINK will be overriden with
+	 * Called if a change link request is set to the kernel. If this returns
+	 * anything other than zero, RTM_NEWLINK will be overriden with
 	 * RTM_SETLINK when rtnl_link_build_change_request() is called.
 	 */
-	const int ao_override_rtm;
+	int		      (*ao_override_rtm)(struct rtnl_link *);
 
 	/** Called if a link message is sent to the kernel. Must append the
 	 * link protocol specific attributes to the message. (IFLA_PROTINFO) */

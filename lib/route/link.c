@@ -116,12 +116,12 @@ static int af_free(struct rtnl_link *link, struct rtnl_link_af_ops *ops,
 	return 0;
 }
 
-static int af_request_type(int af_type)
+static int af_request_type(int af_type, struct rtnl_link *changes)
 {
 	struct rtnl_link_af_ops *ops;
 
 	ops = rtnl_link_af_ops_lookup(af_type);
-	if (ops && ops->ao_override_rtm)
+	if (ops && ops->ao_override_rtm(changes))
 		return RTM_SETLINK;
 
 	return RTM_NEWLINK;
@@ -1732,7 +1732,7 @@ int rtnl_link_build_change_request(struct rtnl_link *orig,
 	    !strcmp(orig->l_name, changes->l_name))
 		changes->ce_mask &= ~LINK_ATTR_IFNAME;
 
-	rt = af_request_type(orig->l_family);
+	rt = af_request_type(orig->l_family, changes);
 
 	if ((err = build_link_msg(rt, &ifi, changes, flags, result)) < 0)
 		goto errout;

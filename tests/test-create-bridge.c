@@ -67,6 +67,11 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Link is not a bridge\n");
 		return -2;
 	}
+
+	rtnl_link_put(ltap);
+	nl_cache_refill(sk, link_cache);
+	ltap = rtnl_link_get_by_name(link_cache, TEST_INTERFACE_NAME);
+
 	if(rtnl_link_get_master(ltap) <= 0) {
 		fprintf(stderr, "Interface is not attached to a bridge\n");
 		return -3;

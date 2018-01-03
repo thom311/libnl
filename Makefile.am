@@ -813,7 +813,8 @@ check_PROGRAMS += \
 	tests/test-create-vxlan \
 	tests/test-delete-link \
 	tests/test-socket-creation \
-	tests/test-u32-filter-with-actions
+	tests/test-u32-filter-with-actions \
+	tests/test-loopback-up-down
 
 tests_test_create_bond_CPPFLAGS                   = $(tests_cppflags)
 tests_test_create_bond_LDADD                      = $(tests_ldadd)
@@ -857,6 +858,8 @@ tests_test_complex_HTB_with_hash_filters_CPPFLAGS = $(tests_cppflags)
 tests_test_complex_HTB_with_hash_filters_LDADD    = $(tests_ldadd)
 tests_test_u32_filter_with_actions_CPPFLAGS       = $(tests_cppflags)
 tests_test_u32_filter_with_actions_LDADD          = $(tests_ldadd)
+tests_test_loopback_up_down_CPPFLAGS              = $(tests_cppflags)
+tests_test_loopback_up_down_LDADD                 = $(tests_ldadd)
 
 check_PROGRAMS += \
 	tests/test-cache-mngr \

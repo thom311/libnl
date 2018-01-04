@@ -282,10 +282,10 @@ int rtnl_link_veth_add(struct nl_sock *sock, const char *name,
 		return -NLE_NOMEM;
 	peer = link->l_info;
 
-	if (name && peer_name) {
+	if (name)
 		rtnl_link_set_name(link, name);
+	if (peer_name)
 		rtnl_link_set_name(peer, peer_name);
-	}
 
 	rtnl_link_set_ns_pid(peer, pid);
 	err = rtnl_link_add(sock, link, NLM_F_CREATE | NLM_F_EXCL);

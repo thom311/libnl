@@ -345,6 +345,35 @@ int rtnl_cls_alloc_cache(struct nl_sock *sk, int ifindex, uint32_t parent,
 	return 0;
 }
 
+/**
+ * Allocate a cache and fill it with all configured classifiers
+ * @arg sk		Netlink socket
+ * @arg ifindex		Interface index of the network device
+ * @arg parent		Parent qdisc/traffic class class
+ * @arg result		Pointer to store the created cache
+ *
+ * Allocates a new classifier cache and fills it with a list of all
+ * configured classifier attached to the specified parent qdisc/traffic
+ * class on the specified network device. Release the cache with
+ * nl_cache_free().
+ *
+ * @return 0 on success or a negative error code.
+ */
+
+/**
+ * Set parent handle for classifier cache.
+ * @arg cache 		Pointer to cache
+ * @arg parent 		Parent qdisc/traffic class class
+ *
+ * Re-set the parent handle of a classifier cache.
+ *
+ * @return void.
+ */
+void rtnl_cls_cache_set_parent(struct nl_cache *cache, uint32_t parent)
+{
+	cache->c_iarg2 = parent;
+}
+
 /** @} */
 
 static void cls_dump_line(struct rtnl_tc *tc, struct nl_dump_params *p)

@@ -324,7 +324,8 @@ int rtnl_cls_delete(struct nl_sock *sk, struct rtnl_cls *cls, int flags)
  *
  * @return 0 on success or a negative error code.
  */
-int rtnl_cls_alloc_cache(struct nl_sock *sk, int ifindex, uint32_t parent,			 struct nl_cache **result)
+int rtnl_cls_alloc_cache(struct nl_sock *sk, int ifindex, uint32_t parent,
+			 struct nl_cache **result)
 {
 	struct nl_cache * cache;
 	int err;

@@ -66,7 +66,7 @@ extern int rtnl_netem_get_delay_correlation(struct rtnl_qdisc *);
 /* Delay Distribution */
 #define MAXDIST 65536
 extern int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *, const char *);
-extern int rtnl_netem_set_delay_distribution_data(struct rtnl_qdisc *, int16_t *, size_t len);
+extern int rtnl_netem_set_delay_distribution_data(struct rtnl_qdisc *, const int16_t *, size_t len);
 extern int rtnl_netem_get_delay_distribution_size(struct rtnl_qdisc *);
 extern int rtnl_netem_get_delay_distribution(struct rtnl_qdisc *, int16_t **);
 

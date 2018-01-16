@@ -871,7 +871,7 @@ int rtnl_netem_get_delay_distribution(struct rtnl_qdisc *qdisc, int16_t **dist_p
  * @arg qdisc Netem qdisc.
  * @return 0 on success, error code on failure.
  */
-int rtnl_netem_set_delay_distribution_data(struct rtnl_qdisc *qdisc, int16_t *data, size_t len) {
+int rtnl_netem_set_delay_distribution_data(struct rtnl_qdisc *qdisc, const int16_t *data, size_t len) {
 	struct rtnl_netem *netem;
 
 	if (!(netem = rtnl_tc_data(TC_CAST(qdisc))))

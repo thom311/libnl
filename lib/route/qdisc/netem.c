@@ -873,6 +873,7 @@ int rtnl_netem_get_delay_distribution(struct rtnl_qdisc *qdisc, int16_t **dist_p
  */
 int rtnl_netem_set_delay_distribution_data(struct rtnl_qdisc *qdisc, const int16_t *data, size_t len) {
 	struct rtnl_netem *netem;
+	int16_t *new_data;
 
 	if (!(netem = rtnl_tc_data(TC_CAST(qdisc))))
 		BUG();
@@ -880,7 +881,12 @@ int rtnl_netem_set_delay_distribution_data(struct rtnl_qdisc *qdisc, const int16
 	if (len > MAXDIST)
 		return -NLE_INVAL;
 
-	netem->qnm_dist.dist_data = (int16_t *) calloc(len, sizeof(int16_t));
+	new_data = (int16_t *) calloc(len, sizeof(int16_t));
+	if (!new_data)
+		return -NLE_NOMEM;
+
+	free (netem->qnm_dist.dist_data);
+	netem->qnm_dist.dist_data = new_data;
 
 	memcpy(netem->qnm_dist.dist_data, data, len * sizeof(int16_t));
 

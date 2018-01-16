@@ -904,6 +904,8 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 	char *line;
 	char name[NAME_MAX];
 	char dist_suffix[] = ".dist";
+	int16_t *data;
+	char *test_suffix;
 
 	/* Check several locations for the dist file */
 	char *test_path[] = {
@@ -915,7 +917,7 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 	};
 
 	/* If the given filename already ends in .dist, don't append it later */
-	char *test_suffix = strstr(dist_type, dist_suffix);
+	test_suffix = strstr(dist_type, dist_suffix);
 	if (test_suffix != NULL && strlen(test_suffix) == 5)
 		strcpy(dist_suffix, "");
 
@@ -928,7 +930,7 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 	if (f == NULL)
 		return -nl_syserr2nlerr(errno);
 
-	int16_t * data = (int16_t *) calloc (MAXDIST, sizeof(int16_t));
+	data = (int16_t *) calloc (MAXDIST, sizeof(int16_t));
 
 	line = (char *) calloc (sizeof(char), len + 1);
 
@@ -953,7 +955,7 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 
 	free(line);
 	fclose(f);
-	
+
 	return rtnl_netem_set_delay_distribution_data(qdisc, data, n);
 }
 

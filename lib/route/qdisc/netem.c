@@ -871,14 +871,42 @@ int rtnl_netem_get_delay_distribution(struct rtnl_qdisc *qdisc, int16_t **dist_p
 }
 
 /**
- * Set the delay distribution. Latency/jitter must be set before applying.
+ * Set the delay distribution data. Latency/jitter must be set before applying.
+ * @arg qdisc Netem qdisc.
+ * @return 0 on success, error code on failure.
+ */
+int rtnl_netem_set_delay_distribution_data(struct rtnl_qdisc *qdisc, const int16_t *data, size_t len) {
+	struct rtnl_netem *netem;
+	int16_t *new_data;
+
+	if (!(netem = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
+
+	if (len > MAXDIST)
+		return -NLE_INVAL;
+
+	new_data = (int16_t *) calloc(len, sizeof(int16_t));
+	if (!new_data)
+		return -NLE_NOMEM;
+
+	free (netem->qnm_dist.dist_data);
+	netem->qnm_dist.dist_data = new_data;
+
+	memcpy(netem->qnm_dist.dist_data, data, len * sizeof(int16_t));
+
+	netem->qnm_dist.dist_size = len;
+	netem->qnm_mask |= SCH_NETEM_ATTR_DIST;
+
+	return 0;
+}
+
+/**
+ * Load the delay distribution from a file. Latency/jitter must be set before applying.
  * @arg qdisc Netem qdisc.
  * @arg dist_type The name of the distribution (type, file, path/file).
  * @return 0 on success, error code on failure.
  */
 int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist_type) {
-	struct rtnl_netem *netem;
-
 	FILE *f;
 	int n = 0;
 	size_t i;
@@ -886,6 +914,7 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 	char *line;
 	char name[NAME_MAX];
 	char dist_suffix[] = ".dist";
+	int16_t *data;
 	char *test_suffix;
 
 	/* Check several locations for the dist file */
@@ -897,12 +926,8 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 		"/usr/local/lib/tc/",
 	};
 
-	if (!(netem = rtnl_tc_data(TC_CAST(qdisc))))
-		BUG();
-
 	/* If the given filename already ends in .dist, don't append it later */
 	test_suffix = strstr(dist_type, dist_suffix);
-
 	if (test_suffix != NULL && strlen(test_suffix) == 5)
 		strcpy(dist_suffix, "");
 
@@ -915,7 +940,7 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 	if (f == NULL)
 		return -nl_syserr2nlerr(errno);
 
-	netem->qnm_dist.dist_data = (int16_t *) calloc (MAXDIST, sizeof(int16_t));
+	data = (int16_t *) calloc (MAXDIST, sizeof(int16_t));
 
 	line = (char *) calloc (sizeof(char), len + 1);
 
@@ -934,17 +959,16 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 				fclose(f);
 				return -NLE_INVAL;
 			}
-			netem->qnm_dist.dist_data[n++] = x;
+			data[n++] = x;
 		}
 	}
 
 	free(line);
-
-	netem->qnm_dist.dist_size = n;
-	netem->qnm_mask |= SCH_NETEM_ATTR_DIST;
-
 	fclose(f);
-	return 0;
+
+	i = rtnl_netem_set_delay_distribution_data(qdisc, data, n);
+	free(data);
+	return i;
 }
 
 /** @} */

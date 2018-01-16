@@ -1061,3 +1061,8 @@ global:
 	rtnl_route_get_ttl_propagate;
 	rtnl_route_nh_encap_mpls;
 } libnl_3_2_29;
+
+libnl_3_5 {
+global:
+	rtnl_netem_set_delay_distribution_data;
+} libnl_3_4;

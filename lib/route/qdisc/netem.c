@@ -215,6 +215,10 @@ static int netem_msg_fill_raw(struct rtnl_tc *tc, void *data,
 	unsigned char set_correlation = 0, set_reorder = 0;
 	unsigned char set_corrupt = 0, set_dist = 0;
 
+	struct nlattr* head;
+	struct nlattr* tail;
+	int old_len;
+
 	if (!netem)
 		BUG();
 
@@ -319,13 +323,13 @@ static int netem_msg_fill_raw(struct rtnl_tc *tc, void *data,
 	 * remainder of the message. That's just the way that sch_netem expects it.
 	 * Maybe there's a more succinct way to do this at a higher level.
 	 */
-	struct nlattr* head = (struct nlattr *)(NLMSG_DATA(msg->nm_nlh) +
-	                      NLMSG_LENGTH(sizeof(struct tcmsg)) - NLMSG_ALIGNTO);
+	head = (struct nlattr *)(NLMSG_DATA(msg->nm_nlh) +
+	                         NLMSG_LENGTH(sizeof(struct tcmsg)) - NLMSG_ALIGNTO);
 
-	struct nlattr* tail = (struct nlattr *)(((void *) (msg->nm_nlh)) +
-	                      NLMSG_ALIGN(msg->nm_nlh->nlmsg_len));
+	tail = (struct nlattr *)(((void *) (msg->nm_nlh)) +
+	                         NLMSG_ALIGN(msg->nm_nlh->nlmsg_len));
 
-	int old_len = head->nla_len;
+	old_len = head->nla_len;
 	head->nla_len = (void *)tail - (void *)head;
 	msg->nm_nlh->nlmsg_len += (head->nla_len - old_len);
 
@@ -875,9 +879,6 @@ int rtnl_netem_get_delay_distribution(struct rtnl_qdisc *qdisc, int16_t **dist_p
 int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist_type) {
 	struct rtnl_netem *netem;
 
-	if (!(netem = rtnl_tc_data(TC_CAST(qdisc))))
-		BUG();
-
 	FILE *f;
 	int n = 0;
 	size_t i;
@@ -885,6 +886,7 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 	char *line;
 	char name[NAME_MAX];
 	char dist_suffix[] = ".dist";
+	char *test_suffix;
 
 	/* Check several locations for the dist file */
 	char *test_path[] = {
@@ -895,8 +897,12 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 		"/usr/local/lib/tc/",
 	};
 
+	if (!(netem = rtnl_tc_data(TC_CAST(qdisc))))
+		BUG();
+
 	/* If the given filename already ends in .dist, don't append it later */
-	char *test_suffix = strstr(dist_type, dist_suffix);
+	test_suffix = strstr(dist_type, dist_suffix);
+
 	if (test_suffix != NULL && strlen(test_suffix) == 5)
 		strcpy(dist_suffix, "");
 

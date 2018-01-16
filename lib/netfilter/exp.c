@@ -352,10 +352,11 @@ static int nfnl_exp_build_tuple(struct nl_msg *msg, const struct nfnl_exp *exp,
 	struct nlattr *tuple, *ip, *proto;
 	struct nl_addr *addr;
 	int family;
+	int type;
 
 	family = nfnl_exp_get_family(exp);
 
-	int type = exp_get_tuple_attr(cta);
+	type = exp_get_tuple_attr(cta);
 
 	if (cta == CTA_EXPECT_NAT)
 		tuple = nla_nest_start(msg, CTA_EXPECT_NAT_TUPLE);

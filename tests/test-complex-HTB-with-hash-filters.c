@@ -517,6 +517,8 @@ int main() {
 
     struct nl_cache *link_cache;
     
+    uint32_t i;
+
     if (!(sock = nl_socket_alloc())) {
         printf("Unable to allocate netlink socket\n");
         exit(1);
@@ -579,7 +581,6 @@ int main() {
      * each entry in hash table match a byte from IP address specified later by a hash key
      */
 
-    uint32_t i;
     for (i = 1; i <= 0xf; i++) 
 	u32_add_ht(sock, link, 1, i, 256);
 

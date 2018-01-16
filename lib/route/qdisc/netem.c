@@ -956,7 +956,9 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 	free(line);
 	fclose(f);
 
-	return rtnl_netem_set_delay_distribution_data(qdisc, data, n);
+	i = rtnl_netem_set_delay_distribution_data(qdisc, data, n);
+	free(data);
+	return i;
 }
 
 /** @} */

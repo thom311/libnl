@@ -27,7 +27,7 @@ extern void		rtnl_cls_put(struct rtnl_cls *);
 extern int		rtnl_cls_alloc_cache(struct nl_sock *, int, uint32_t,
 					     struct nl_cache **);
 
-extern void 		rtnl_cls_cache_set_tcm_params(struct nl_cache *, int, uint32_t);
+extern void 		rtnl_cls_cache_set_tc_params(struct nl_cache *, int, uint32_t);
 
 extern int		rtnl_cls_build_add_request(struct rtnl_cls *, int,
 						   struct nl_msg **);

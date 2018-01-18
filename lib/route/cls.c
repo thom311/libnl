@@ -356,8 +356,8 @@ int rtnl_cls_alloc_cache(struct nl_sock *sk, int ifindex, uint32_t parent,
  *
  * @return void.
  */
-void rtnl_cls_cache_set_tcm_params(struct nl_cache *cache,
-				   int ifindex, uint32_t parent)
+void rtnl_cls_cache_set_tc_params(struct nl_cache *cache,
+				  int ifindex, uint32_t parent)
 {
 	cache->c_iarg1 = ifindex;
 	cache->c_iarg2 = parent;

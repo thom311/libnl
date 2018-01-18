@@ -151,7 +151,6 @@ global:
 	rtnl_cls_add;
 	rtnl_cls_alloc;
 	rtnl_cls_alloc_cache;
-	rtnl_cls_cache_set_tcm_params;
 	rtnl_cls_build_add_request;
 	rtnl_cls_build_change_request;
 	rtnl_cls_build_delete_request;
@@ -1065,5 +1064,6 @@ global:
 
 libnl_3_5 {
 global:
+	rtnl_cls_cache_set_tc_params;
 	rtnl_netem_set_delay_distribution_data;
 } libnl_3_4;

@@ -1064,5 +1064,6 @@ global:
 
 libnl_3_5 {
 global:
+	rtnl_cls_cache_set_tc_params;
 	rtnl_netem_set_delay_distribution_data;
 } libnl_3_4;

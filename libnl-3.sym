@@ -260,6 +260,7 @@ global:
 	nla_memcpy;
 	nla_nest_cancel;
 	nla_nest_end;
+	nla_nest_end_keep_empty;
 	nla_nest_start;
 	nla_next;
 	nla_ok;

@@ -962,6 +962,55 @@ int nla_nest_end(struct nl_msg *msg, struct nlattr *start)
 }
 
 /**
+ * Finalize nesting of attributes without stripping off empty attributes.
+ * @arg msg		Netlink message.
+ * @arg start		Container attribute as returned from nla_nest_start().
+ *
+ * Corrects the container attribute header to include the appeneded attributes.
+ * Keep empty attribute if NO actual attribute payload exists.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int nla_nest_end_keep_empty(struct nl_msg *msg, struct nlattr *start)
+{
+	size_t pad, len;
+
+	len = (void *) nlmsg_tail(msg->nm_nlh) - (void *) start;
+
+	if (len > USHRT_MAX) {
+		/*
+		 * Max nlattr size is exceeded, trim the attribute header again
+		 */
+		nla_nest_cancel(msg, start);
+
+		/* Return error only if nlattr size was exceeded */
+		return -NLE_ATTRSIZE;
+	}
+
+	start->nla_len = len;
+
+	pad = NLMSG_ALIGN(msg->nm_nlh->nlmsg_len) - msg->nm_nlh->nlmsg_len;
+	if (pad > 0) {
+		/*
+		 * Data inside attribute does not end at a alignment boundry.
+		 * Pad accordingly and accoun for the additional space in
+		 * the message. nlmsg_reserve() may never fail in this situation,
+		 * the allocate message buffer must be a multiple of NLMSG_ALIGNTO.
+		 */
+		if (!nlmsg_reserve(msg, pad, 0))
+			BUG();
+
+		NL_DBG(2, "msg %p: attr <%p> %d: added %zu bytes of padding\n",
+			msg, start, start->nla_type, pad);
+	}
+
+	NL_DBG(2, "msg %p: attr <%p> %d: closing nesting, len=%u\n",
+		msg, start, start->nla_type, start->nla_len);
+
+	return 0;
+}
+
+/**
  * Cancel the addition of a nested attribute
  * @arg msg		Netlink message
  * @arg attr		Nested netlink attribute

@@ -151,7 +151,8 @@ libnlinclude_netlink_route_link_HEADERS = \
 	include/netlink/route/link/veth.h \
 	include/netlink/route/link/vlan.h \
 	include/netlink/route/link/vrf.h \
-	include/netlink/route/link/vxlan.h
+	include/netlink/route/link/vxlan.h \
+	include/netlink/route/link/geneve.h
 libnlinclude_netlink_route_qdiscdir = $(libnlincludedir)/netlink/route/qdisc
 libnlinclude_netlink_route_qdisc_HEADERS = \
 	include/netlink/route/qdisc/cbq.h \
@@ -386,6 +387,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/link/vlan.c \
 	lib/route/link/vrf.c \
 	lib/route/link/vxlan.c \
+	lib/route/link/geneve.c \
 	lib/route/neigh.c \
 	lib/route/neightbl.c \
 	lib/route/netconf.c \
@@ -811,6 +813,7 @@ check_PROGRAMS += \
 	tests/test-create-vlan \
 	tests/test-create-vrf \
 	tests/test-create-vxlan \
+	tests/test-create-geneve \
 	tests/test-delete-link \
 	tests/test-socket-creation \
 	tests/test-u32-filter-with-actions \
@@ -822,6 +825,8 @@ tests_test_create_vlan_CPPFLAGS                   = $(tests_cppflags)
 tests_test_create_vlan_LDADD                      = $(tests_ldadd)
 tests_test_create_vxlan_CPPFLAGS                  = $(tests_cppflags)
 tests_test_create_vxlan_LDADD                     = $(tests_ldadd)
+tests_test_create_geneve_CPPFLAGS                  = $(tests_cppflags)
+tests_test_create_geneve_LDADD                     = $(tests_ldadd)
 tests_test_create_veth_CPPFLAGS                   = $(tests_cppflags)
 tests_test_create_veth_LDADD                      = $(tests_ldadd)
 tests_test_create_bridge_CPPFLAGS                 = $(tests_cppflags)

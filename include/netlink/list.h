@@ -59,9 +59,8 @@ static inline int nl_list_empty(struct nl_list_head *head)
 	return head->next == head;
 }
 
-#define nl_container_of(ptr, type, member) ({			\
-        const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
-        (type *)( (char *)__mptr - (offsetof(type, member)));})
+#define nl_container_of(ptr, type, member) \
+	(type *)((char *)(ptr) - offsetof(type, member))
 
 #define nl_list_entry(ptr, type, member) \
 	nl_container_of(ptr, type, member)

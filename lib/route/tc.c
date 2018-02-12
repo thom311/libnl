@@ -226,7 +226,10 @@ int rtnl_tc_msg_build(struct rtnl_tc *tc, int type, int flags,
 			if ((err = ops->to_msg_fill(tc, data, msg)) < 0)
 				goto nla_put_failure;
 
-			nla_nest_end(msg, opts);
+			if (strcmp("cgroup", tc->tc_kind))
+				nla_nest_end(msg, opts);
+			else
+				nla_nest_end_keep_empty(msg, opts);
 		} else if ((err = ops->to_msg_fill_raw(tc, data, msg)) < 0)
 			goto nla_put_failure;
 	}

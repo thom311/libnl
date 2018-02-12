@@ -358,3 +358,8 @@ global:
 	nl_cache_mngr_add_cache_v2;
 	nl_strerror_l;
 } libnl_3_2_28;
+
+libnl_3_5 {
+global:
+	nla_nest_end_keep_empty;
+} libnl_3_2_29;

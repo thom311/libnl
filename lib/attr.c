@@ -912,22 +912,14 @@ struct nlattr *nla_nest_start(struct nl_msg *msg, int attrtype)
 	return start;
 }
 
-/**
- * Finalize nesting of attributes.
- * @arg msg		Netlink message.
- * @arg start		Container attribute as returned from nla_nest_start().
- *
- * Corrects the container attribute header to include the appeneded attributes.
- *
- * @return 0 on success or a negative error code.
- */
-int nla_nest_end(struct nl_msg *msg, struct nlattr *start)
+static int _nest_end(struct nl_msg *msg, struct nlattr *start, int keep_empty)
 {
 	size_t pad, len;
 
 	len = (void *) nlmsg_tail(msg->nm_nlh) - (void *) start;
 
-	if (len == NLA_HDRLEN || len > USHRT_MAX) {
+	if (   len > USHRT_MAX
+	    || (!keep_empty && len == NLA_HDRLEN)) {
 		/*
 		 * Max nlattr size exceeded or empty nested attribute, trim the
 		 * attribute header again
@@ -959,6 +951,35 @@ int nla_nest_end(struct nl_msg *msg, struct nlattr *start)
 		msg, start, start->nla_type, start->nla_len);
 
 	return 0;
+}
+
+/**
+ * Finalize nesting of attributes.
+ * @arg msg		Netlink message.
+ * @arg start		Container attribute as returned from nla_nest_start().
+ *
+ * Corrects the container attribute header to include the appeneded attributes.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int nla_nest_end(struct nl_msg *msg, struct nlattr *start)
+{
+	return _nest_end (msg, start, 0);
+}
+
+/**
+ * Finalize nesting of attributes without stripping off empty attributes.
+ * @arg msg		Netlink message.
+ * @arg start		Container attribute as returned from nla_nest_start().
+ *
+ * Corrects the container attribute header to include the appeneded attributes.
+ * Keep empty attribute if NO actual attribute payload exists.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int nla_nest_end_keep_empty(struct nl_msg *msg, struct nlattr *start)
+{
+	return _nest_end (msg, start, 1);
 }
 
 /**

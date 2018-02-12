@@ -1066,4 +1066,26 @@ libnl_3_5 {
 global:
 	rtnl_cls_cache_set_tc_params;
 	rtnl_netem_set_delay_distribution_data;
+        rtnl_link_is_geneve;
+        rtnl_link_geneve_alloc;
+        rtnl_link_geneve_set_id;
+        rtnl_link_geneve_get_id;
+        rtnl_link_geneve_set_remote;
+        rtnl_link_geneve_get_remote;
+        rtnl_link_geneve_set_ttl;
+        rtnl_link_geneve_get_ttl;
+        rtnl_link_geneve_set_tos;
+        rtnl_link_geneve_get_tos;
+        rtnl_link_geneve_set_port;
+        rtnl_link_geneve_get_port;
+        rtnl_link_geneve_set_label;
+        rtnl_link_geneve_get_label;
+        rtnl_link_geneve_set_udp_csum;
+        rtnl_link_geneve_get_udp_csum;
+        rtnl_link_geneve_set_udp_zero_csum6_tx;
+        rtnl_link_geneve_get_udp_zero_csum6_tx;
+        rtnl_link_geneve_set_udp_zero_csum6_rx;
+        rtnl_link_geneve_get_udp_zero_csum6_rx;
+        rtnl_link_geneve_set_flags;
+        rtnl_link_geneve_get_flags;
 } libnl_3_4;

@@ -393,7 +393,7 @@ int rtnl_link_geneve_set_id(struct rtnl_link *link, uint32_t id)
 
         IS_GENEVE_LINK_ASSERT(link);
 
-        if (id > GENEVE_ID_MAX)
+        if (id > RTNL_GENEVE_ID_MAX)
                 return -NLE_INVAL;
 
         geneve->id = id;

@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-#define GENEVE_ID_MAX 16777215
+#define RTNL_GENEVE_ID_MAX 16777215
 
 #define RTNL_LINK_GENEVE_F_COLLECT_METADATA     (1<<0)
 

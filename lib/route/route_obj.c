@@ -43,6 +43,7 @@
 #include <netlink/route/link.h>
 #include <netlink/route/nexthop.h>
 #include <linux/in_route.h>
+#include <linux/ipv6_route.h>
 
 /** @cond SKIP */
 #define ROUTE_ATTR_FAMILY    0x000001
@@ -1142,7 +1143,11 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 	route->rt_scope = rtm->rtm_scope;
 	route->rt_protocol = rtm->rtm_protocol;
 	route->rt_flags = rtm->rtm_flags;
-	route->rt_prio = 0;
+
+	if (family == AF_INET6)
+		route->rt_prio = IP6_RT_PRIO_USER;
+	else
+		route->rt_prio = 0;
 
 	route->ce_mask |= ROUTE_ATTR_FAMILY | ROUTE_ATTR_TOS |
 			  ROUTE_ATTR_TABLE | ROUTE_ATTR_TYPE |

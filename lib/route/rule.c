@@ -783,6 +783,12 @@ static struct nl_object_ops rule_obj_ops = {
 	.oo_id_attrs		= ~0,
 };
 
+static struct nl_af_group rule_groups[] = {
+	{ AF_INET,	RTNLGRP_IPV4_RULE },
+	{ AF_INET6,	RTNLGRP_IPV6_RULE },
+	{ END_OF_GROUP_LIST },
+};
+
 static struct nl_cache_ops rtnl_rule_ops = {
 	.co_name		= "route/rule",
 	.co_hdrsize		= sizeof(struct fib_rule_hdr),
@@ -796,6 +802,7 @@ static struct nl_cache_ops rtnl_rule_ops = {
 	.co_request_update	= rule_request_update,
 	.co_msg_parser		= rule_msg_parser,
 	.co_obj_ops		= &rule_obj_ops,
+	.co_groups		= rule_groups,
 };
 
 static void __init rule_init(void)

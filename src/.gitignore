@@ -1,5 +1,5 @@
 genl-ctrl-list
-/nf-ct-add
+nf-ct-add
 nf-ct-list
 nf-ct-events
 nf-exp-list

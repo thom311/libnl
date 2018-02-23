@@ -628,6 +628,7 @@ cli_programs = \
 	src/idiag-socket-details \
 	src/nf-ct-add \
 	src/nf-ct-list \
+	src/nf-ct-events \
 	src/nf-exp-add \
 	src/nf-exp-delete \
 	src/nf-exp-list \
@@ -691,6 +692,8 @@ src_idiag_socket_details_CPPFLAGS = $(src_cppflags)
 src_idiag_socket_details_LDADD =    $(src_ldadd)
 src_nf_ct_add_CPPFLAGS =            $(src_cppflags)
 src_nf_ct_add_LDADD =               $(src_ldadd)
+src_nf_ct_events_CPPFLAGS =         $(src_cppflags)
+src_nf_ct_events_LDADD =            $(src_ldadd)
 src_nf_ct_list_CPPFLAGS =           $(src_cppflags)
 src_nf_ct_list_LDADD =              $(src_ldadd)
 src_nf_exp_add_CPPFLAGS =           $(src_cppflags)

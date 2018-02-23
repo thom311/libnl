@@ -165,6 +165,7 @@ libnlinclude_netlink_route_qdisc_HEADERS = \
 	include/netlink/route/qdisc/netem.h \
 	include/netlink/route/qdisc/plug.h \
 	include/netlink/route/qdisc/prio.h \
+	include/netlink/route/qdisc/mqprio.h \
 	include/netlink/route/qdisc/red.h \
 	include/netlink/route/qdisc/sfq.h \
 	include/netlink/route/qdisc/tbf.h
@@ -409,6 +410,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/qdisc/netem.c \
 	lib/route/qdisc/plug.c \
 	lib/route/qdisc/prio.c \
+	lib/route/qdisc/mqprio.c \
 	lib/route/qdisc/red.c \
 	lib/route/qdisc/sfq.c \
 	lib/route/qdisc/tbf.c \

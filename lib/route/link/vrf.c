@@ -107,6 +107,7 @@ static int vrf_clone(struct rtnl_link *dst, struct rtnl_link *src)
 	struct vrf_info *vdst, *vsrc = src->l_info;
 	int err;
 
+	dst->l_info = NULL;
 	if ((err = rtnl_link_set_type(dst, "vrf")) < 0)
 		return err;
 	vdst = dst->l_info;

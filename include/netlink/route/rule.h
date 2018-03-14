@@ -69,6 +69,22 @@ extern void		rtnl_rule_set_goto(struct rtnl_rule *, uint32_t);
 extern uint32_t		rtnl_rule_get_goto(struct rtnl_rule *);
 extern void		rtnl_rule_set_l3mdev(struct rtnl_rule *, int);
 extern int		rtnl_rule_get_l3mdev(struct rtnl_rule *);
+extern int		rtnl_rule_set_protocol(struct rtnl_rule *, uint8_t);
+extern int		rtnl_rule_get_protocol(struct rtnl_rule *, uint8_t *);
+extern int		rtnl_rule_set_ipproto(struct rtnl_rule *, uint8_t);
+extern int		rtnl_rule_get_ipproto(struct rtnl_rule *, uint8_t *);
+extern int		rtnl_rule_set_sport(struct rtnl_rule *, uint16_t start);
+extern int		rtnl_rule_set_sport_range(struct rtnl_rule *,
+						  uint16_t start,
+						  uint16_t end);
+extern int		rtnl_rule_get_sport(struct rtnl_rule *, uint16_t *start,
+					    uint16_t *end);
+extern int		rtnl_rule_set_dport(struct rtnl_rule *, uint16_t start);
+extern int		rtnl_rule_set_dport_range(struct rtnl_rule *,
+						  uint16_t start,
+						  uint16_t end);
+extern int		rtnl_rule_get_dport(struct rtnl_rule *, uint16_t *start,
+					    uint16_t *end);
 
 #ifdef __cplusplus
 }

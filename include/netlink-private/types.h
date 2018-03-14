@@ -31,6 +31,7 @@
 #include <linux/tc_act/tc_skbedit.h>
 #include <linux/tc_act/tc_gact.h>
 #include <linux/sock_diag.h>
+#include <linux/fib_rules.h>
 
 #define NL_SOCK_PASSCRED	(1<<1)
 #define NL_OWN_PORT		(1<<2)
@@ -358,6 +359,8 @@ struct rtnl_rule
 	uint8_t		r_action;
 	uint8_t		r_dsfield; /* ipv4 only */
 	uint8_t		r_l3mdev;
+	uint8_t		r_protocol; /* protocol that installed rule */
+	uint8_t		r_ip_proto; /* IP/IPv6 protocol */
 	uint32_t	r_table;
 	uint32_t	r_flags;
 	uint32_t	r_prio;
@@ -369,6 +372,9 @@ struct rtnl_rule
 	struct nl_addr *r_dst;
 	char		r_iifname[IFNAMSIZ];
 	char		r_oifname[IFNAMSIZ];
+
+	struct fib_rule_port_range	r_sport;
+	struct fib_rule_port_range	r_dport;
 };
 
 struct rtnl_neightbl_parms

@@ -149,6 +149,8 @@ static void macvlan_free(struct rtnl_link *link)
 	uint32_t i;
 
 	mvi = link->l_info;
+	if (NULL == mvi)
+		return;
 
 	for (i = 0; i < mvi->mvi_maccount; i++)
 		nl_addr_put(mvi->mvi_macaddr[i]);

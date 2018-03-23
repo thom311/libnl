@@ -34,9 +34,22 @@ static struct nla_policy cgroup_policy[TCA_CGROUP_MAX+1] = {
 	[TCA_CGROUP_EMATCHES]	= { .type = NLA_NESTED },
 };
 
-static int cgroup_clone(void *dst, void *src)
+static int cgroup_clone(void *_dst, void *_src)
 {
-	return -NLE_OPNOTSUPP;
+	struct rtnl_cgroup *dst = NULL, *src = _src;
+
+	dst = calloc(1, sizeof(*dst));
+	if (!dst)
+		return -NLE_NOMEM;
+
+	dst->cg_mask = src->cg_mask;
+	dst->cg_ematch = rtnl_ematch_tree_clone(src->cg_ematch);
+	if (!dst) {
+		free(dst);
+		return -NLE_NOMEM;
+	}
+
+	return 0;
 }
 
 static void cgroup_free_data(struct rtnl_tc *tc, void *data)

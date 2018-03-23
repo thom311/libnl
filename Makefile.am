@@ -898,7 +898,8 @@ tests_check_all_SOURCES = \
 	tests/util.h \
 	tests/check-all.c \
 	tests/check-addr.c \
-	tests/check-attr.c
+	tests/check-attr.c \
+	tests/check-ematch-tree-clone.c
 
 tests_check_all_CPPFLAGS = \
 	$(tests_cppflags) \

@@ -289,6 +289,63 @@ void rtnl_ematch_tree_free(struct rtnl_ematch_tree *tree)
 	free(tree);
 }
 
+static int clone_ematch_list(struct nl_list_head *dst, struct nl_list_head *src)
+{
+	struct rtnl_ematch *new = NULL, *pos = NULL;
+
+	nl_list_for_each_entry(pos, src, e_list) {
+		new = rtnl_ematch_alloc();
+		if (!new)
+			goto nomem;
+
+		new->e_id      = pos->e_id;
+		new->e_kind    = pos->e_kind;
+		new->e_flags   = pos->e_flags;
+		new->e_index   = pos->e_index;
+		new->e_datalen = pos->e_datalen;
+
+		if (pos->e_ops) {
+			if (rtnl_ematch_set_ops(new, pos->e_ops))
+				goto nomem;
+		}
+
+		if (!nl_list_empty(&pos->e_childs)) {
+			if (clone_ematch_list(&new->e_childs, &pos->e_childs) < 0)
+				goto nomem;
+		}
+		nl_list_add_tail(&new->e_list, dst);
+	}
+
+	return 0;
+
+nomem:
+	if (new)
+		free(new);
+	free_ematch_list(dst);
+	return -NLE_NOMEM;
+}
+
+/**
+ * Clone ematch tree object
+ * @arg src		ematch tree object
+ *
+ * This function clones the ematch tree and all ematches attached to it.
+ */
+struct rtnl_ematch_tree *rtnl_ematch_tree_clone(struct rtnl_ematch_tree *src)
+{
+	struct rtnl_ematch_tree *dst = NULL;
+
+	if (!src)
+		return NULL;
+
+	if (!(dst = rtnl_ematch_tree_alloc(src->et_progid)))
+		return NULL;
+
+	clone_ematch_list(&dst->et_list, &src->et_list);
+
+	return dst;
+}
+
 /**
  * Add ematch object to the end of the ematch tree
  * @arg tree		ematch tree object

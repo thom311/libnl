@@ -73,6 +73,8 @@ extern void			rtnl_ematch_tree_free(struct rtnl_ematch_tree *);
 extern void			rtnl_ematch_tree_add(struct rtnl_ematch_tree *,
 						     struct rtnl_ematch *);
 
+extern struct rtnl_ematch_tree *rtnl_ematch_tree_clone(struct rtnl_ematch_tree *);
+
 extern int			rtnl_ematch_parse_attr(struct nlattr *,
 						       struct rtnl_ematch_tree **);
 extern int			rtnl_ematch_fill_attr(struct nl_msg *, int,

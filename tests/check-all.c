@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
 
 	srunner_add_suite(runner, make_nl_addr_suite());
 	srunner_add_suite(runner, make_nl_attr_suite());
+	srunner_add_suite(runner, make_nl_ematch_tree_clone_suite());
 
 	/* Do not add testsuites below this line */
 

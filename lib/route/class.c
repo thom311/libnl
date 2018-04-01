@@ -367,6 +367,38 @@ struct rtnl_class *rtnl_class_get(struct nl_cache *cache, int ifindex,
 	return NULL;
 }
 
+/**
+ * Search class by interface index and parent
+ * @arg cache		Traffic class cache
+ * @arg ifindex		Interface index
+ * @arg parent		Handle of parent qdisc
+ *
+ * Searches a class cache previously allocated with rtnl_class_alloc_cache()
+ * and searches for a class matching the interface index and parent qdisc.
+ *
+ * The reference counter is incremented before returning the class, therefore
+ * the reference must be given back with rtnl_class_put() after usage.
+ *
+ * @return pointer to class inside the cache or NULL if no match was found.
+ */
+struct rtnl_class *rtnl_class_get_by_parent(struct nl_cache *cache, int ifindex,
+					    uint32_t parent)
+{
+	struct rtnl_class *class;
+
+	if (cache->c_ops != &rtnl_class_ops)
+		return NULL;
+
+	nl_list_for_each_entry(class, &cache->c_items, ce_list) {
+		if (class->c_parent == parent && class->c_ifindex == ifindex) {
+			nl_object_get((struct nl_object *) class);
+			return class;
+		}
+	}
+
+	return NULL;
+}
+
 /** @} */
 
 /**

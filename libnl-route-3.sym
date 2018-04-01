@@ -1064,6 +1064,7 @@ global:
 
 libnl_3_5 {
 global:
+	rtnl_class_get_by_parent;
 	rtnl_cls_cache_set_tc_params;
 	rtnl_netem_set_delay_distribution_data;
 	rtnl_link_is_geneve;

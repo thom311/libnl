@@ -31,6 +31,9 @@ extern int		rtnl_class_alloc_cache(struct nl_sock *, int,
 extern struct rtnl_class *
 			rtnl_class_get(struct nl_cache *, int, uint32_t);
 
+extern struct rtnl_class *
+			rtnl_class_get_by_parent(struct nl_cache *, int, uint32_t);
+
 extern struct rtnl_qdisc *
 			rtnl_class_leaf_qdisc(struct rtnl_class *,
 						      struct nl_cache *);

@@ -225,25 +225,29 @@ static int mall_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 static int mall_clone(void *_dst, void *_src)
 {
 	struct rtnl_mall *dst = _dst, *src = _src;
-	struct rtnl_act *next;
+	struct rtnl_act *next, *new;
 	int err;
 
 	if (src->m_act) {
 		if (!(dst->m_act = rtnl_act_alloc()))
 			return -NLE_NOMEM;
 
+		/* action nl list next and prev pointers must be updated */
+		nl_init_list_head(&dst->m_act->ce_list);
+
 		memcpy(dst->m_act, src->m_act, sizeof(struct rtnl_act));
 		next = rtnl_act_next(src->m_act);
 		while (next) {
-		        err = rtnl_act_append(&dst->m_act, next);
+			new = (struct rtnl_act *) nl_object_clone((struct nl_object *) next);
+			if (!new)
+				return -NLE_NOMEM;
+
+			err = rtnl_act_append(&dst->m_act, new);
 			if (err < 0)
-		                return err;
+				return err;
 
 			next = rtnl_act_next(next);
 		}
-
-		/* action nl list next and prev pointers must be updated */
-		nl_init_list_head(&dst->m_act->ce_list);
 	}
 
 	return 0;

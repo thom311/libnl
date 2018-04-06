@@ -627,8 +627,8 @@ cli_programs = \
 	src/genl-ctrl-list \
 	src/idiag-socket-details \
 	src/nf-ct-add \
-	src/nf-ct-list \
 	src/nf-ct-events \
+	src/nf-ct-list \
 	src/nf-exp-add \
 	src/nf-exp-delete \
 	src/nf-exp-list \
@@ -670,7 +670,8 @@ cli_programs = \
 	src/nl-route-list \
 	src/nl-rule-list \
 	src/nl-tctree-list \
-	src/nl-util-addr
+	src/nl-util-addr \
+	$(NULL)
 
 if ENABLE_CLI
 if ENABLE_CLI_INSTALL_BIN
@@ -801,6 +802,7 @@ check_PROGRAMS += \
 	tests/test-complex-HTB-with-hash-filters \
 	tests/test-create-bond \
 	tests/test-create-bridge \
+	tests/test-create-geneve \
 	tests/test-create-ifb \
 	tests/test-create-ip6tnl \
 	tests/test-create-ipgre \
@@ -816,24 +818,22 @@ check_PROGRAMS += \
 	tests/test-create-vlan \
 	tests/test-create-vrf \
 	tests/test-create-vxlan \
-	tests/test-create-geneve \
 	tests/test-delete-link \
+	tests/test-loopback-up-down \
 	tests/test-socket-creation \
 	tests/test-u32-filter-with-actions \
-	tests/test-loopback-up-down
+	$(NULL)
 
+tests_test_complex_HTB_with_hash_filters_CPPFLAGS = $(tests_cppflags)
+tests_test_complex_HTB_with_hash_filters_LDADD    = $(tests_ldadd)
 tests_test_create_bond_CPPFLAGS                   = $(tests_cppflags)
 tests_test_create_bond_LDADD                      = $(tests_ldadd)
-tests_test_create_vlan_CPPFLAGS                   = $(tests_cppflags)
-tests_test_create_vlan_LDADD                      = $(tests_ldadd)
-tests_test_create_vxlan_CPPFLAGS                  = $(tests_cppflags)
-tests_test_create_vxlan_LDADD                     = $(tests_ldadd)
-tests_test_create_geneve_CPPFLAGS                 = $(tests_cppflags)
-tests_test_create_geneve_LDADD                    = $(tests_ldadd)
-tests_test_create_veth_CPPFLAGS                   = $(tests_cppflags)
-tests_test_create_veth_LDADD                      = $(tests_ldadd)
 tests_test_create_bridge_CPPFLAGS                 = $(tests_cppflags)
 tests_test_create_bridge_LDADD                    = $(tests_ldadd)
+tests_test_create_geneve_CPPFLAGS                 = $(tests_cppflags)
+tests_test_create_geneve_LDADD                    = $(tests_ldadd)
+tests_test_create_ifb_CPPFLAGS                    = $(tests_cppflags)
+tests_test_create_ifb_LDADD                       = $(tests_ldadd)
 tests_test_create_ip6tnl_CPPFLAGS                 = $(tests_cppflags)
 tests_test_create_ip6tnl_LDADD                    = $(tests_ldadd)
 tests_test_create_ipgre_CPPFLAGS                  = $(tests_cppflags)
@@ -842,6 +842,8 @@ tests_test_create_ipgretap_CPPFLAGS               = $(tests_cppflags)
 tests_test_create_ipgretap_LDADD                  = $(tests_ldadd)
 tests_test_create_ipip_CPPFLAGS                   = $(tests_cppflags)
 tests_test_create_ipip_LDADD                      = $(tests_ldadd)
+tests_test_create_ipvlan_CPPFLAGS                 = $(tests_cppflags)
+tests_test_create_ipvlan_LDADD                    = $(tests_ldadd)
 tests_test_create_ipvti_CPPFLAGS                  = $(tests_cppflags)
 tests_test_create_ipvti_LDADD                     = $(tests_ldadd)
 tests_test_create_macsec_CPPFLAGS                 = $(tests_cppflags)
@@ -850,24 +852,24 @@ tests_test_create_macvlan_CPPFLAGS                = $(tests_cppflags)
 tests_test_create_macvlan_LDADD                   = $(tests_ldadd)
 tests_test_create_macvtap_CPPFLAGS                = $(tests_cppflags)
 tests_test_create_macvtap_LDADD                   = $(tests_ldadd)
-tests_test_create_ipvlan_CPPFLAGS                 = $(tests_cppflags)
-tests_test_create_ipvlan_LDADD                    = $(tests_ldadd)
-tests_test_create_vrf_CPPFLAGS                    = $(tests_cppflags)
-tests_test_create_vrf_LDADD                       = $(tests_ldadd)
 tests_test_create_sit_CPPFLAGS                    = $(tests_cppflags)
 tests_test_create_sit_LDADD                       = $(tests_ldadd)
-tests_test_create_ifb_CPPFLAGS                    = $(tests_cppflags)
-tests_test_create_ifb_LDADD                       = $(tests_ldadd)
+tests_test_create_veth_CPPFLAGS                   = $(tests_cppflags)
+tests_test_create_veth_LDADD                      = $(tests_ldadd)
+tests_test_create_vlan_CPPFLAGS                   = $(tests_cppflags)
+tests_test_create_vlan_LDADD                      = $(tests_ldadd)
+tests_test_create_vrf_CPPFLAGS                    = $(tests_cppflags)
+tests_test_create_vrf_LDADD                       = $(tests_ldadd)
+tests_test_create_vxlan_CPPFLAGS                  = $(tests_cppflags)
+tests_test_create_vxlan_LDADD                     = $(tests_ldadd)
 tests_test_delete_link_CPPFLAGS                   = $(tests_cppflags)
 tests_test_delete_link_LDADD                      = $(tests_ldadd)
-tests_test_socket_creation_CPPFLAGS               = $(tests_cppflags)
-tests_test_socket_creation_LDADD                  = $(tests_ldadd)
-tests_test_complex_HTB_with_hash_filters_CPPFLAGS = $(tests_cppflags)
-tests_test_complex_HTB_with_hash_filters_LDADD    = $(tests_ldadd)
-tests_test_u32_filter_with_actions_CPPFLAGS       = $(tests_cppflags)
-tests_test_u32_filter_with_actions_LDADD          = $(tests_ldadd)
 tests_test_loopback_up_down_CPPFLAGS              = $(tests_cppflags)
 tests_test_loopback_up_down_LDADD                 = $(tests_ldadd)
+tests_test_socket_creation_CPPFLAGS               = $(tests_cppflags)
+tests_test_socket_creation_LDADD                  = $(tests_ldadd)
+tests_test_u32_filter_with_actions_CPPFLAGS       = $(tests_cppflags)
+tests_test_u32_filter_with_actions_LDADD          = $(tests_ldadd)
 
 check_PROGRAMS += \
 	tests/test-cache-mngr \

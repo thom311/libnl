@@ -389,11 +389,13 @@ int rtnl_neigh_parse(struct nlmsghdr *n, struct rtnl_neigh **result)
 	}
 
 	if (tb[NDA_DST]) {
-		neigh->n_dst = nl_addr_alloc_attr(tb[NDA_DST], neigh->n_family);
+		neigh->n_dst = nl_addr_alloc_attr(tb[NDA_DST], AF_UNSPEC);
 		if (!neigh->n_dst) {
 			err = -NLE_NOMEM;
 			goto errout;
 		}
+		nl_addr_set_family(neigh->n_dst,
+				   nl_addr_guess_family(neigh->n_dst));
 		neigh->ce_mask |= NEIGH_ATTR_DST;
 	}
 

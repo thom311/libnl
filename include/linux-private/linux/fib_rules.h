@@ -1,5 +1,9 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 #ifndef __LINUX_FIB_RULES_H
 #define __LINUX_FIB_RULES_H
+
+#include <linux/types.h>
+#include <linux/rtnetlink.h>
 
 /* rule is permanent, and cannot be deleted */
 #define FIB_RULE_PERMANENT	0x00000001
@@ -19,11 +23,21 @@ struct fib_rule_hdr {
 	__u8		tos;
 
 	__u8		table;
-	__u8		res1;	/* reserved */
+	__u8		res1;   /* reserved */
 	__u8		res2;	/* reserved */
 	__u8		action;
 
 	__u32		flags;
+};
+
+struct fib_rule_uid_range {
+	__u32		start;
+	__u32		end;
+};
+
+struct fib_rule_port_range {
+	__u16		start;
+	__u16		end;
 };
 
 enum {
@@ -40,15 +54,19 @@ enum {
 	FRA_UNUSED5,
 	FRA_FWMARK,	/* mark */
 	FRA_FLOW,	/* flow/class id */
-	FRA_UNUSED6,
-	FRA_UNUSED7,
-	FRA_UNUSED8,
+	FRA_TUN_ID,
+	FRA_SUPPRESS_IFGROUP,
+	FRA_SUPPRESS_PREFIXLEN,
 	FRA_TABLE,	/* Extended table id */
 	FRA_FWMASK,	/* mask for netfilter mark */
 	FRA_OIFNAME,
 	FRA_PAD,
 	FRA_L3MDEV,	/* iif or oif is l3mdev goto its table */
 	FRA_UID_RANGE,	/* UID range */
+	FRA_PROTOCOL,   /* Originator of the rule */
+	FRA_IP_PROTO,	/* ip proto */
+	FRA_SPORT_RANGE, /* sport */
+	FRA_DPORT_RANGE, /* dport */
 	__FRA_MAX
 };
 

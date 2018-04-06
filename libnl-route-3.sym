@@ -1088,4 +1088,14 @@ global:
         rtnl_link_geneve_get_udp_zero_csum6_rx;
         rtnl_link_geneve_set_flags;
         rtnl_link_geneve_get_flags;
+	rtnl_rule_set_protocol;
+	rtnl_rule_get_protocol;
+	rtnl_rule_set_ipproto;
+	rtnl_rule_get_ipproto;
+	rtnl_rule_set_sport;
+	rtnl_rule_set_sport_range;
+	rtnl_rule_get_sport;
+	rtnl_rule_set_dport;
+	rtnl_rule_set_dport_range;
+	rtnl_rule_get_dport;
 } libnl_3_4;

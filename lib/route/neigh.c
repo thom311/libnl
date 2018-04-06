@@ -319,11 +319,13 @@ static uint32_t neigh_id_attrs_get(struct nl_object *obj)
 
 	if (neigh->n_family == AF_BRIDGE) {
 		if (neigh->n_flags & NTF_SELF)
-			return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY | NEIGH_ATTR_IFINDEX | NEIGH_ATTR_VLAN);
+			return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY | NEIGH_ATTR_IFINDEX |
+				       ((neigh->ce_mask & NEIGH_ATTR_DST) ? NEIGH_ATTR_DST: 0) |
+				       ((neigh->ce_mask & NEIGH_ATTR_VLAN) ? NEIGH_ATTR_VLAN : 0));
 		else
 			return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY | NEIGH_ATTR_MASTER | NEIGH_ATTR_VLAN);
 	} else
-		return (NEIGH_ATTR_IFINDEX | NEIGH_ATTR_DST | NEIGH_ATTR_FAMILY);
+		return neigh_obj_ops.oo_id_attrs;
 }
 
 static struct nla_policy neigh_policy[NDA_MAX+1] = {

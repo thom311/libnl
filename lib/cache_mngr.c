@@ -415,6 +415,9 @@ int nl_cache_mngr_add_cache_v2(struct nl_cache_mngr *mngr, struct nl_cache *cach
  * the socket and call nl_cache_mngr_data_ready() to allow the library
  * to process netlink notification events.
  *
+ * @note Versions up to 3.4.0 actually required the result argument, preventing
+ * 	 NULL to be passed.
+ *
  * @see nl_cache_mngr_poll()
  * @see nl_cache_mngr_data_ready()
  *
@@ -445,7 +448,8 @@ int nl_cache_mngr_add(struct nl_cache_mngr *mngr, const char *name,
 	if (err < 0)
 		goto errout_free_cache;
 
-	*result = cache;
+	if (result)
+		*result = cache;
 	return 0;
 
 errout_free_cache:

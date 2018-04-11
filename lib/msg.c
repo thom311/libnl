@@ -350,6 +350,8 @@ struct nl_msg *nlmsg_alloc_simple(int nlmsgtype, int flags)
 	struct nlmsghdr nlh = {
 		.nlmsg_type = nlmsgtype,
 		.nlmsg_flags = flags,
+		.nlmsg_seq = NL_AUTO_SEQ,
+		.nlmsg_pid = NL_AUTO_PID,
 	};
 
 	msg = nlmsg_inherit(&nlh);

@@ -1098,4 +1098,11 @@ global:
 	rtnl_rule_set_dport;
 	rtnl_rule_set_dport_range;
 	rtnl_rule_get_dport;
+	rtnl_mall_set_classid;
+	rtnl_mall_get_classid;
+	rtnl_mall_set_flags;
+	rtnl_mall_get_flags;
+	rtnl_mall_append_action;
+	rtnl_mall_get_first_action;
+	rtnl_mall_del_action;
 } libnl_3_4;

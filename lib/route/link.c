@@ -1772,6 +1772,10 @@ errout:
  * @note The link name can only be changed if the link has been put
  *       in opertional down state. (~IF_UP)
  *
+ * @note On versions up to 3.4.0, \c NLE_SEQ_MISMATCH would be returned if the
+ *       kernel does not supports \c RTM_NEWLINK. It is advised to ignore the
+ *       error code if you cannot upgrade the library.
+ *
  * @return 0 on success or a negative error code.
  */
 int rtnl_link_change(struct nl_sock *sk, struct rtnl_link *orig,
@@ -1784,6 +1788,7 @@ int rtnl_link_change(struct nl_sock *sk, struct rtnl_link *orig,
 	if (err < 0)
 		return err;
 
+	BUG_ON(msg->nm_nlh->nlmsg_seq != NL_AUTO_SEQ);
 retry:
 	err = nl_send_auto_complete(sk, msg);
 	if (err < 0)
@@ -1792,6 +1797,7 @@ retry:
 	err = wait_for_ack(sk);
 	if (err == -NLE_OPNOTSUPP && msg->nm_nlh->nlmsg_type == RTM_NEWLINK) {
 		msg->nm_nlh->nlmsg_type = RTM_SETLINK;
+		msg->nm_nlh->nlmsg_seq = NL_AUTO_SEQ;
 		goto retry;
 	}
 

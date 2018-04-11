@@ -1788,6 +1788,7 @@ int rtnl_link_change(struct nl_sock *sk, struct rtnl_link *orig,
 	if (err < 0)
 		return err;
 
+	BUG_ON(msg->nm_nlh->nlmsg_seq != NL_AUTO_SEQ);
 retry:
 	err = nl_send_auto_complete(sk, msg);
 	if (err < 0)

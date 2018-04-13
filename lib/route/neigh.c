@@ -894,6 +894,9 @@ static const struct trans_tbl neigh_flags[] = {
 	__ADD(NTF_PROXY, proxy),
 	__ADD(NTF_ROUTER, router),
 	__ADD(NTF_SELF, self),
+	__ADD(NTF_MASTER, master),
+	__ADD(NTF_EXT_LEARNED, ext_learned),
+	__ADD(NTF_OFFLOADED, offloaded),
 };
 
 char * rtnl_neigh_flags2str(int flags, char *buf, size_t len)

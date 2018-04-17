@@ -456,7 +456,31 @@ static int neigh_request_update(struct nl_cache *c, struct nl_sock *h)
 {
 	int family = c->c_iarg1;
 
-	return nl_rtgen_request(h, RTM_GETNEIGH, family, NLM_F_DUMP);
+	if (family == AF_UNSPEC) {
+		return nl_rtgen_request(h, RTM_GETNEIGH, family, NLM_F_DUMP);
+	} else if (family == AF_BRIDGE) {
+		struct ifinfomsg hdr = {.ifi_family = family};
+		struct nl_msg *msg;
+		int err;
+
+		msg = nlmsg_alloc_simple(RTM_GETNEIGH, NLM_F_REQUEST | NLM_F_DUMP);
+		if (!msg)
+			return -NLE_NOMEM;
+
+		err = -NLE_MSGSIZE;
+		if (nlmsg_append(msg, &hdr, sizeof(hdr), NLMSG_ALIGNTO) < 0)
+			goto nla_put_failure;
+
+		err = nl_send_auto(h, msg);
+		if (err > 0)
+			err = 0;
+
+	nla_put_failure:
+		nlmsg_free(msg);
+		return err;
+	}
+
+	return -NLE_INVAL;
 }
 
 
@@ -610,6 +634,7 @@ struct rtnl_neigh * rtnl_neigh_get(struct nl_cache *cache, int ifindex,
 
 	nl_list_for_each_entry(neigh, &cache->c_items, ce_list) {
 		if (neigh->n_ifindex == ifindex &&
+		    neigh->n_family == dst->a_family &&
 		    !nl_addr_cmp(neigh->n_dst, dst)) {
 			nl_object_get((struct nl_object *) neigh);
 			return neigh;

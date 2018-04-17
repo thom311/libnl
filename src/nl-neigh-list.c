@@ -87,5 +87,10 @@ int main(int argc, char *argv[])
 
 	nl_cache_dump_filter(neigh_cache, &params, OBJ_CAST(neigh));
 
+	rtnl_neigh_put(neigh);
+	nl_cache_put(neigh_cache);
+	nl_cache_put(link_cache);
+	nl_socket_free(sock);
+
 	return 0;
 }

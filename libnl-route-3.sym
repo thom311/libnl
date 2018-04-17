@@ -944,7 +944,6 @@ global:
 	rtnl_link_vrf_get_tableid;
 	rtnl_link_vrf_set_tableid;
 	rtnl_neigh_alloc_cache_flags;
-	rtnl_neigh_ll_get;
 } libnl_3_2_27;
 
 libnl_3_2_29 {
@@ -1106,4 +1105,5 @@ global:
 	rtnl_mall_append_action;
 	rtnl_mall_get_first_action;
 	rtnl_mall_del_action;
+	rtnl_neigh_get_by_vlan;
 } libnl_3_4;

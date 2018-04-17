@@ -1106,4 +1106,6 @@ global:
 	rtnl_mall_get_first_action;
 	rtnl_mall_del_action;
 	rtnl_neigh_get_by_vlan;
+	rtnl_neigh_get_master;
+	rtnl_neigh_set_master;
 } libnl_3_4;

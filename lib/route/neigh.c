@@ -1048,6 +1048,16 @@ int rtnl_neigh_get_vlan(struct rtnl_neigh *neigh)
 		return -1;
 }
 
+void rtnl_neigh_set_master(struct rtnl_neigh *neigh, int ifindex)
+{
+	neigh->n_master = ifindex;
+	neigh->ce_mask |= NEIGH_ATTR_MASTER;
+}
+
+int rtnl_neigh_get_master(struct rtnl_neigh *neigh) {
+	return neigh->n_master;
+}
+
 /** @} */
 
 static struct nl_object_ops neigh_obj_ops = {

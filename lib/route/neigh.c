@@ -68,7 +68,7 @@
  * // Neighbours can then be looked up by the interface and destination
  * // address:
  * struct rtnl_neigh *neigh = rtnl_neigh_get(cache, ifindex, dst_addr);
- * 
+ *
  * // After successful usage, the object must be given back to the cache
  * rtnl_neigh_put(neigh);
  * @endcode
@@ -408,7 +408,7 @@ int rtnl_neigh_parse(struct nlmsghdr *n, struct rtnl_neigh **result)
 		neigh->n_cacheinfo.nci_used = ci->ndm_used;
 		neigh->n_cacheinfo.nci_updated = ci->ndm_updated;
 		neigh->n_cacheinfo.nci_refcnt = ci->ndm_refcnt;
-		
+
 		neigh->ce_mask |= NEIGH_ATTR_CACHEINFO;
 	}
 
@@ -735,7 +735,7 @@ nla_put_failure:
  * all relevant fields and must thus be sent out via nl_send_auto_complete()
  * or supplemented as needed. \a tmpl must contain the attributes of the new
  * neighbour set via \c rtnl_neigh_set_* functions.
- * 
+ *
  * The following attributes must be set in the template:
  *  - Interface index (rtnl_neigh_set_ifindex())
  *  - State (rtnl_neigh_set_state())
@@ -772,7 +772,7 @@ int rtnl_neigh_add(struct nl_sock *sk, struct rtnl_neigh *tmpl, int flags)
 {
 	int err;
 	struct nl_msg *msg;
-	
+
 	if ((err = rtnl_neigh_build_add_request(tmpl, flags, &msg)) < 0)
 		return err;
 
@@ -828,7 +828,7 @@ int rtnl_neigh_delete(struct nl_sock *sk, struct rtnl_neigh *neigh,
 {
 	struct nl_msg *msg;
 	int err;
-	
+
 	if ((err = rtnl_neigh_build_delete_request(neigh, flags, &msg)) < 0)
 		return err;
 

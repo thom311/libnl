@@ -514,6 +514,14 @@ static void neigh_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	if (n->ce_mask & NEIGH_ATTR_VLAN)
 		nl_dump(p, "vlan %d ", n->n_vlan);
 
+	if (n->ce_mask & NEIGH_ATTR_MASTER) {
+		if (link_cache)
+			nl_dump(p, "%s ", rtnl_link_i2name(link_cache, n->n_master,
+							   state, sizeof(state)));
+		else
+			nl_dump(p, "%d ", n->n_master);
+	}
+
 	rtnl_neigh_state2str(n->n_state, state, sizeof(state));
 	rtnl_neigh_flags2str(n->n_flags, flags, sizeof(flags));
 

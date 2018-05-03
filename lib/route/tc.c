@@ -32,6 +32,7 @@ static struct rtnl_tc_type_ops *tc_type_ops[__RTNL_TC_TYPE_MAX];
 static struct nla_policy tc_policy[TCA_MAX+1] = {
 	[TCA_KIND]	= { .type = NLA_STRING,
 			    .maxlen = TCKINDSIZ },
+	[TCA_CHAIN]	= { .type = NLA_U32 },
 	[TCA_STATS]	= { .minlen = sizeof(struct tc_stats) },
 	[TCA_STATS2]	= { .type = NLA_NESTED },
 };
@@ -78,6 +79,9 @@ int rtnl_tc_msg_parse(struct nlmsghdr *n, struct rtnl_tc *tc)
 
 	nla_strlcpy(kind, tb[TCA_KIND], sizeof(kind));
 	rtnl_tc_set_kind(tc, kind);
+
+	if (tb[TCA_CHAIN])
+	        rtnl_tc_set_chain(tc, nla_get_u32(tb[TCA_CHAIN]));
 
 	tm = nlmsg_data(n);
 	tc->tc_family  = tm->tcm_family;
@@ -215,6 +219,9 @@ int rtnl_tc_msg_build(struct rtnl_tc *tc, int type, int flags,
 
 	if (tc->ce_mask & TCA_ATTR_KIND)
 		NLA_PUT_STRING(msg, TCA_KIND, tc->tc_kind);
+
+	if (tc->ce_mask & TCA_ATTR_CHAIN)
+	        NLA_PUT_U32(msg, TCA_CHAIN, tc->tc_chain);
 
 	ops = rtnl_tc_get_ops(tc);
 	if (ops && (ops->to_msg_fill || ops->to_msg_fill_raw)) {
@@ -558,6 +565,32 @@ uint64_t rtnl_tc_get_stat(struct rtnl_tc *tc, enum rtnl_tc_stat id)
 		return 0;
 
 	return tc->tc_stats[id];
+}
+
+/**
+ * Set the chain index of a traffic control object
+ * @arg tc		traffic control object
+ * @arg chain		chain index of traffic control object
+ *
+ */
+void rtnl_tc_set_chain(struct rtnl_tc *tc, uint32_t chain)
+{
+	tc->tc_chain = chain;
+	tc->ce_mask |= TCA_ATTR_CHAIN;
+}
+
+/**
+ * Return chain index of traffic control object
+ * @arg tc		traffic control object
+ *
+ * @return chain index of traffic control object or 0 if not set.
+ */
+uint32_t rtnl_tc_get_chain(struct rtnl_tc *tc)
+{
+	if (tc->ce_mask & TCA_ATTR_CHAIN)
+		return tc->tc_chain;
+	else
+		return 0;
 }
 
 /** @} */

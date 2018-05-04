@@ -1127,4 +1127,14 @@ global:
 	rtnl_rule_set_sport_range;
 	rtnl_tc_get_chain;
 	rtnl_tc_set_chain;
+	rtnl_vlan_get_action;
+	rtnl_vlan_get_mode;
+	rtnl_vlan_get_protocol;
+	rtnl_vlan_get_vlan_id;
+	rtnl_vlan_get_vlan_prio;
+	rtnl_vlan_set_action;
+	rtnl_vlan_set_mode;
+	rtnl_vlan_set_protocol;
+	rtnl_vlan_set_vlan_id;
+	rtnl_vlan_set_vlan_prio;
 } libnl_3_4;

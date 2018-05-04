@@ -252,6 +252,7 @@ noinst_HEADERS = \
 	include/linux-private/linux/tc_act/tc_gact.h \
 	include/linux-private/linux/tc_act/tc_mirred.h \
 	include/linux-private/linux/tc_act/tc_skbedit.h \
+	include/linux-private/linux/tc_act/tc_vlan.h \
 	include/linux-private/linux/tc_ematch/tc_em_meta.h \
 	include/linux-private/linux/veth.h \
 	include/linux-private/linux/xfrm.h \

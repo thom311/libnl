@@ -710,7 +710,7 @@ retry:
 			goto retry;
 		}
 
-		NL_DBG(4, "nl_sendmsg(%p): nl_recv() failed with %d (%s)\n",
+		NL_DBG(4, "recvmsg(%p): nl_recv() failed with %d (%s)\n",
 			sk, errno, nl_strerror_l(errno));
 		retval = -nl_syserr2nlerr(errno);
 		goto abort;

@@ -889,7 +889,7 @@ int rtnl_link_vxlan_set_local(struct rtnl_link *link, struct nl_addr *addr)
 		memcpy(&vxi->vxi_local, nl_addr_get_binary_addr(addr),
 		       sizeof(vxi->vxi_local));
 		vxi->ce_mask |= VXLAN_ATTR_LOCAL;
-		vxi->ce_mask &= VXLAN_ATTR_LOCAL6;
+		vxi->ce_mask &= ~VXLAN_ATTR_LOCAL6;
 	} else if ((nl_addr_get_family(addr) == AF_INET6) &&
 		   (nl_addr_get_len(addr) == sizeof(vxi->vxi_local6))) {
 		memcpy(&vxi->vxi_local6, nl_addr_get_binary_addr(addr),

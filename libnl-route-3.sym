@@ -1147,4 +1147,6 @@ global:
 	rtnl_link_ip6vti_set_local;
 	rtnl_link_ip6vti_set_okey;
 	rtnl_link_ip6vti_set_remote;
+	rtnl_link_ipgre_get_fwmark;
+	rtnl_link_ipgre_set_fwmark;
 } libnl_3_4;

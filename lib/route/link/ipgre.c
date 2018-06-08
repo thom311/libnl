@@ -42,6 +42,7 @@
 #define IPGRE_ATTR_TTL           (1 << 7)
 #define IPGRE_ATTR_TOS           (1 << 8)
 #define IPGRE_ATTR_PMTUDISC      (1 << 9)
+#define IPGRE_ATTR_FWMARK        (1 << 10)
 
 struct ipgre_info
 {
@@ -55,6 +56,7 @@ struct ipgre_info
 	uint32_t   link;
 	uint32_t   local;
 	uint32_t   remote;
+	uint32_t   fwmark;
 	uint32_t   ipgre_mask;
 };
 
@@ -69,6 +71,7 @@ static  struct nla_policy ipgre_policy[IFLA_GRE_MAX + 1] = {
 	[IFLA_GRE_TTL]      = { .type = NLA_U8 },
 	[IFLA_GRE_TOS]      = { .type = NLA_U8 },
 	[IFLA_GRE_PMTUDISC] = { .type = NLA_U8 },
+	[IFLA_GRE_FWMARK]   = { .type = NLA_U32 },
 };
 
 static int ipgre_alloc(struct rtnl_link *link)
@@ -157,6 +160,11 @@ static int ipgre_parse(struct rtnl_link *link, struct nlattr *data,
 		ipgre->ipgre_mask |= IPGRE_ATTR_PMTUDISC;
 	}
 
+	if (tb[IFLA_GRE_FWMARK]) {
+		ipgre->fwmark = nla_get_u32(tb[IFLA_GRE_FWMARK]);
+		ipgre->ipgre_mask |= IPGRE_ATTR_FWMARK;
+	}
+
 	err = 0;
 
 errout:
@@ -201,6 +209,9 @@ static int ipgre_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 
 	if (ipgre->ipgre_mask & IPGRE_ATTR_PMTUDISC)
 		NLA_PUT_U8(msg, IFLA_GRE_PMTUDISC, ipgre->pmtudisc);
+
+	if (ipgre->ipgre_mask & IPGRE_ATTR_FWMARK)
+		NLA_PUT_U32(msg, IFLA_GRE_FWMARK, ipgre->fwmark);
 
 	nla_nest_end(msg, data);
 
@@ -291,6 +302,11 @@ static void ipgre_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 	if (ipgre->ipgre_mask & IPGRE_ATTR_PMTUDISC) {
 		nl_dump(p, "      pmtudisc ");
 		nl_dump_line(p, "enabled (%#x)\n", ipgre->pmtudisc);
+	}
+
+	if (ipgre->ipgre_mask & IPGRE_ATTR_FWMARK) {
+		nl_dump(p, "      fwmark ");
+		nl_dump_line(p, "%x\n", ipgre->fwmark);
 	}
 }
 
@@ -827,6 +843,46 @@ uint8_t rtnl_link_get_pmtudisc(struct rtnl_link *link)
 	/* rtnl_link_ipgre_get_pmtudisc() was wrongly named. Keep this
 	 * to preserve ABI. */
 	return rtnl_link_ipgre_get_pmtudisc (link);
+}
+
+/**
+ * Set IPGRE tunnel fwmark
+ * @arg link            Link object
+ * @arg fwmark          fwmark
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_ipgre_set_fwmark(struct rtnl_link *link, uint32_t fwmark)
+{
+	struct ipgre_info *ipgre = link->l_info;
+
+	IS_IPGRE_LINK_ASSERT(link);
+
+	ipgre->fwmark = fwmark;
+	ipgre->ipgre_mask |= IPGRE_ATTR_FWMARK;
+
+	return 0;
+}
+
+/**
+ * Get IPGRE tunnel fwmark
+ * @arg link            Link object
+ * @arg fwmark          addr to fill in with the fwmark
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_ipgre_get_fwmark(struct rtnl_link *link, uint32_t *fwmark)
+{
+	struct ipgre_info *ipgre = link->l_info;
+
+	IS_IPGRE_LINK_ASSERT(link);
+
+	if (!(ipgre->ipgre_mask & IPGRE_ATTR_FWMARK))
+		return -NLE_NOATTR;
+
+	*fwmark = ipgre->fwmark;
+
+	return 0;
 }
 
 static void __init ipgre_init(void)

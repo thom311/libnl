@@ -1191,6 +1191,8 @@ global:
 	rtnl_link_ip6vti_set_remote;
 	rtnl_link_ipgre_get_fwmark;
 	rtnl_link_ipgre_set_fwmark;
+	rtnl_link_ipvti_get_fwmark;
+	rtnl_link_ipvti_set_fwmark;
 	rtnl_link_is_ip6gre;
 	rtnl_link_is_ip6vti;
 	rtnl_link_macsec_get_offload;

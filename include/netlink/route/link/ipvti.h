@@ -38,6 +38,9 @@ extern "C" {
 	extern int rtnl_link_ipvti_set_remote(struct rtnl_link *link, uint32_t addr);
 	extern uint32_t rtnl_link_ipvti_get_remote(struct rtnl_link *link);
 
+	extern int rtnl_link_ipvti_set_fwmark(struct rtnl_link *link, uint32_t fwmark);
+	extern int rtnl_link_ipvti_get_fwmark(struct rtnl_link *link, uint32_t *fwmark);
+
 #ifdef __cplusplus
 }
 #endif

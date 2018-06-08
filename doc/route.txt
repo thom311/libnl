@@ -1202,35 +1202,43 @@ rtnl_link_put(link);
 
 [source,c]
 -----
-extern struct rtnl_link *rtnl_link_ip6_tnl_alloc(void);
-extern int rtnl_link_ip6_tnl_add(struct nl_sock *sk, const char *name);
+extern int rtnl_link_is_ip6gre(struct rtnl_link *link);
 
-extern int rtnl_link_ip6_tnl_set_link(struct rtnl_link *link,  uint32_t index);
-extern uint32_t rtnl_link_ip6_tnl_get_link(struct rtnl_link *link);
+extern struct rtnl_link *rtnl_link_ip6gre_alloc(void);
+extern int rtnl_link_ip6gre_add(struct nl_sock *sk, const char *name);
 
-extern int rtnl_link_ip6_tnl_set_local(struct rtnl_link *link, struct in6_addr *);
-extern int rtnl_link_ip6_tnl_get_local(struct rtnl_link *link, struct in6_addr *);
+extern int rtnl_link_ip6gre_set_link(struct rtnl_link *link, uint32_t index);
+extern int rtnl_link_ip6gre_get_link(struct rtnl_link *link, uint32_t *index);
 
-extern int rtnl_link_ip6_tnl_set_remote(struct rtnl_link *link, struct in6_addr *);
-extern int rtnl_link_ip6_tnl_get_remote(struct rtnl_link *link, struct in6_addr *);
+extern int rtnl_link_ip6gre_set_iflags(struct rtnl_link *link, uint16_t iflags);
+extern int rtnl_link_ip6gre_get_iflags(struct rtnl_link *link, uint16_t *iflags);
 
-extern int rtnl_link_ip6_tnl_set_ttl(struct rtnl_link *link, uint8_t ttl);
-extern uint8_t rtnl_link_ip6_tnl_get_ttl(struct rtnl_link *link);
+extern int rtnl_link_ip6gre_set_oflags(struct rtnl_link *link, uint16_t oflags);
+extern int rtnl_link_ip6gre_get_oflags(struct rtnl_link *link, uint16_t *oflags);
 
-extern int rtnl_link_ip6_tnl_set_tos(struct rtnl_link *link, uint8_t tos);
-extern uint8_t rtnl_link_ip6_tnl_get_tos(struct rtnl_link *link);
+extern int rtnl_link_ip6gre_set_ikey(struct rtnl_link *link, uint32_t ikey);
+extern int rtnl_link_ip6gre_get_ikey(struct rtnl_link *link, uint32_t *ikey);
 
-extern int rtnl_link_ip6_tnl_set_encaplimit(struct rtnl_link *link, uint8_t encap_limit);
-extern uint8_t rtnl_link_ip6_tnl_get_encaplimit(struct rtnl_link *link);
+extern int rtnl_link_ip6gre_set_okey(struct rtnl_link *link, uint32_t okey);
+extern int rtnl_link_ip6gre_get_okey(struct rtnl_link *link, uint32_t *okey);
 
-extern int rtnl_link_ip6_tnl_set_flags(struct rtnl_link *link, uint32_t flags);
-extern uint32_t rtnl_link_ip6_tnl_get_flags(struct rtnl_link *link);
+extern int rtnl_link_ip6gre_set_local(struct rtnl_link *link, struct in6_addr *local);
+extern int rtnl_link_ip6gre_get_local(struct rtnl_link *link, struct in6_addr *local);
 
-extern uint32_t rtnl_link_ip6_tnl_get_flowinfo(struct rtnl_link *link);
-extern int rtnl_link_ip6_tnl_set_flowinfo(struct rtnl_link *link, uint32_t flowinfo);
+extern int rtnl_link_ip6gre_set_remote(struct rtnl_link *link, struct in6_addr *remote);
+extern int rtnl_link_ip6gre_get_remote(struct rtnl_link *link, struct in6_addr *remote);
 
-extern int rtnl_link_ip6_tnl_set_proto(struct rtnl_link *link, uint8_t proto);
-extern uint8_t rtnl_link_ip6_tnl_get_proto(struct rtnl_link *link);
+extern int rtnl_link_ip6gre_set_ttl(struct rtnl_link *link, uint8_t ttl);
+extern int rtnl_link_ip6gre_get_ttl(struct rtnl_link *link, uint8_t *ttl);
+
+extern int rtnl_link_ip6gre_set_encaplimit(struct rtnl_link *link, uint8_t encaplimit);
+extern int rtnl_link_ip6gre_get_encaplimit(struct rtnl_link *link, uint8_t *encaplimit);
+
+extern int rtnl_link_ip6gre_set_flowinfo(struct rtnl_link *link, uint32_t flowinfo);
+extern int rtnl_link_ip6gre_get_flowinfo(struct rtnl_link *link, uint32_t *flowinfo);
+
+extern int rtnl_link_ip6gre_set_flags(struct rtnl_link *link, uint32_t flags);
+extern int rtnl_link_ip6gre_get_flags(struct rtnl_link *link, uint32_t *flags);
 
 -----
 
@@ -1250,6 +1258,71 @@ rtnl_link_ip6_tnl_set_local(link, &addr);
 
 inet_pton(AF_INET6, "2607:f0d0:1002:52::5", &addr);
 rtnl_link_ip6_tnl_set_remote(link, &addr);
+
+rtnl_link_add(sk, link, NLM_F_CREATE);
+rtnl_link_put(link);
+
+-----
+
+[[link_ip6gre]]
+==== IP6GRE
+
+[source,c]
+----
+extern struct rtnl_link *rtnl_link_ip6gre_alloc(void);
+extern int rtnl_link_ip6gre_add(struct nl_sock *sk, const char *name);
+
+extern int rtnl_link_ip6gre_set_link(struct rtnl_link *link,  uint32_t index);
+extern int rtnl_link_ip6gre_get_link(struct rtnl_link *link, uint32_t *index);
+
+extern int rtnl_link_ip6gre_set_iflags(struct rtnl_link *link, uint16_t iflags);
+extern int rtnl_link_ip6gre_get_iflags(struct rtnl_link *link, uint16_t *iflags);
+
+extern int rtnl_link_ip6gre_set_oflags(struct rtnl_link *link, uint16_t oflags);
+extern int rtnl_link_ip6gre_get_oflags(struct rtnl_link *link, uint16_t *oflags);
+
+extern int rtnl_link_ip6gre_set_ikey(struct rtnl_link *link, uint32_t ikey);
+extern int rtnl_link_ip6gre_get_ikey(struct rtnl_link *link, uint32_t *ikey);
+
+extern int rtnl_link_ip6gre_set_okey(struct rtnl_link *link, uint32_t okey);
+extern int rtnl_link_ip6gre_get_okey(struct rtnl_link *link, uint32_t *okey);
+
+extern int rtnl_link_ip6gre_set_local(struct rtnl_link *link, struct in6_addr *local);
+extern int rtnl_link_ip6gre_get_local(struct rtnl_link *link, struct in6_addr *local);
+
+extern int rtnl_link_ip6gre_set_remote(struct rtnl_link *link, struct in6_addr *remote);
+extern int rtnl_link_ip6gre_get_remote(struct rtnl_link *link, struct in6_addr *remote);
+
+extern int rtnl_link_ip6gre_set_ttl(struct rtnl_link *link, uint8_t ttl);
+extern int rtnl_link_ip6gre_get_ttl(struct rtnl_link *link, uint8_t *ttl);
+
+extern int rtnl_link_ip6gre_set_encaplimit(struct rtnl_link *link, uint8_t encaplimit);
+extern int rtnl_link_ip6gre_get_encaplimit(struct rtnl_link *link, uint8_t *encaplimit);
+
+extern int rtnl_link_ip6gre_set_flowinfo(struct rtnl_link *link, uint32_t flowinfo);
+extern int rtnl_link_ip6gre_get_flowinfo(struct rtnl_link *link, uint32_t *flowinfo);
+
+extern int rtnl_link_ip6gre_set_flags(struct rtnl_link *link, uint32_t flags);
+extern int rtnl_link_ip6gre_get_flags(struct rtnl_link *link, uint32_t *flags);
+
+----
+
+.Example: Add a ip6gre tunnel device
+[source,c]
+----
+struct rtnl_link *link
+struct in6_addr addr
+
+link = rtnl_link_ip6gre_alloc();
+
+rtnl_link_set_name(link, "ip6gre-tun");
+rtnl_link_ip6gre_set_link(link, if_index);
+
+inet_pton(AF_INET6, "2607:f0d0:1002:51::4", &addr);
+rtnl_link_ip6gre_set_local(link, &addr);
+
+inet_pton(AF_INET6, "2607:f0d0:1002:52::5", &addr);
+rtnl_link_ip6gre_set_remote(link, &addr);
 
 rtnl_link_add(sk, link, NLM_F_CREATE);
 rtnl_link_put(link);

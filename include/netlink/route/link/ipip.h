@@ -41,6 +41,9 @@ extern "C" {
 	extern int rtnl_link_ipip_set_pmtudisc(struct rtnl_link *link, uint8_t pmtudisc);
 	extern uint8_t rtnl_link_ipip_get_pmtudisc(struct rtnl_link *link);
 
+	extern int rtnl_link_ipip_set_fwmark(struct rtnl_link *link, uint32_t fwmark);
+	extern int rtnl_link_ipip_get_fwmark(struct rtnl_link *link, uint32_t *fwmark);
+
 #ifdef __cplusplus
 }
 #endif

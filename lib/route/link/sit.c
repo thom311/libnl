@@ -38,6 +38,7 @@
 #define SIT_ATTR_6RD_RELAY_PREFIX    (1 << 9)
 #define SIT_ATTR_6RD_PREFIXLEN       (1 << 10)
 #define SIT_ATTR_6RD_RELAY_PREFIXLEN (1 << 11)
+#define SIT_ATTR_FWMARK        (1 << 12)
 
 struct sit_info
 {
@@ -53,6 +54,7 @@ struct sit_info
 	uint32_t   ip6rd_relay_prefix;
 	uint16_t   ip6rd_prefixlen;
 	uint16_t   ip6rd_relay_prefixlen;
+	uint32_t   fwmark;
 	uint32_t   sit_mask;
 };
 
@@ -69,6 +71,7 @@ static struct nla_policy sit_policy[IFLA_IPTUN_MAX + 1] = {
 	[IFLA_IPTUN_6RD_RELAY_PREFIX]    = { .type = NLA_U32 },
 	[IFLA_IPTUN_6RD_PREFIXLEN]       = { .type = NLA_U16 },
 	[IFLA_IPTUN_6RD_RELAY_PREFIXLEN] = { .type = NLA_U16 },
+	[IFLA_IPTUN_FWMARK]     = { .type = NLA_U32 },
 };
 
 static int sit_alloc(struct rtnl_link *link)
@@ -168,6 +171,11 @@ static int sit_parse(struct rtnl_link *link, struct nlattr *data,
 		sit->sit_mask |= SIT_ATTR_6RD_RELAY_PREFIXLEN;
 	}
 
+	if (tb[IFLA_IPTUN_FWMARK]) {
+		sit->fwmark = nla_get_u32(tb[IFLA_IPTUN_FWMARK]);
+		sit->sit_mask |= SIT_ATTR_FWMARK;
+	}
+
 	err = 0;
 
 errout:
@@ -218,6 +226,9 @@ static int sit_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 
 	if (sit->sit_mask & SIT_ATTR_6RD_RELAY_PREFIXLEN)
 		NLA_PUT_U16(msg, IFLA_IPTUN_6RD_RELAY_PREFIXLEN, sit->ip6rd_relay_prefixlen);
+
+	if (sit->sit_mask & SIT_ATTR_FWMARK)
+		NLA_PUT_U32(msg, IFLA_IPTUN_FWMARK, sit->fwmark);
 
 	nla_nest_end(msg, data);
 
@@ -319,6 +330,11 @@ static void sit_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 	if (sit->sit_mask & SIT_ATTR_6RD_RELAY_PREFIXLEN) {
 		nl_dump(p, "      6rd_relay_prefixlen   ");
 		nl_dump_line(p, "%d\n", sit->ip6rd_relay_prefixlen);
+	}
+
+	if (sit->sit_mask & SIT_ATTR_FWMARK) {
+		nl_dump(p, "      fwmark ");
+		nl_dump_line(p, "%x\n", sit->fwmark);
 	}
 }
 
@@ -803,6 +819,42 @@ int rtnl_link_sit_get_ip6rd_relay_prefixlen(struct rtnl_link *link, uint16_t *pr
 
 	if (prefixlen)
 		*prefixlen = sit->ip6rd_relay_prefixlen;
+	return 0;
+}
+
+/**
+ * Set SIT tunnel fwmark
+ * @arg link            Link object
+ * @arg fwmark          fwmark
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_sit_set_fwmark(struct rtnl_link *link, uint32_t fwmark)
+{
+	IS_SIT_LINK_ASSERT(link, sit);
+
+	sit->fwmark = fwmark;
+	sit->sit_mask |= SIT_ATTR_FWMARK;
+
+	return 0;
+}
+
+/**
+ * Get SIT tunnel fwmark
+ * @arg link            Link object
+ * @arg fwmark          addr to fill in with the fwmark
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_sit_get_fwmark(struct rtnl_link *link, uint32_t *fwmark)
+{
+	IS_SIT_LINK_ASSERT(link, sit);
+
+	if (!(sit->sit_mask & SIT_ATTR_FWMARK))
+		return -NLE_NOATTR;
+
+	*fwmark = sit->fwmark;
+
 	return 0;
 }
 

@@ -1246,6 +1246,9 @@ extern int rtnl_link_ip6gre_get_flowinfo(struct rtnl_link *link, uint32_t *flowi
 extern int rtnl_link_ip6gre_set_flags(struct rtnl_link *link, uint32_t flags);
 extern int rtnl_link_ip6gre_get_flags(struct rtnl_link *link, uint32_t *flags);
 
+extern int rtnl_link_ip6_tnl_set_fwmark(struct rtnl_link *link, uint32_t fwmark);
+extern int rtnl_link_ip6_tnl_get_fwmark(struct rtnl_link *link, uint32_t *fwmark);
+
 -----
 
 .Example: Add a ip6tnl tunnel device

@@ -1151,4 +1151,6 @@ global:
 	rtnl_link_ipgre_set_fwmark;
 	rtnl_link_ipvti_get_fwmark;
 	rtnl_link_ipvti_set_fwmark;
+	rtnl_link_ip6_tnl_get_fwmark;
+	rtnl_link_ip6_tnl_set_fwmark;
 } libnl_3_4;

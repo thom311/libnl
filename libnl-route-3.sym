@@ -1153,6 +1153,8 @@ global:
 
 libnl_3_6 {
 global:
+	rtnl_link_ip6_tnl_get_fwmark;
+	rtnl_link_ip6_tnl_set_fwmark;
 	rtnl_link_ip6gre_add;
 	rtnl_link_ip6gre_alloc;
 	rtnl_link_ip6gre_get_encaplimit;

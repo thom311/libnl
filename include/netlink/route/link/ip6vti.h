@@ -37,6 +37,9 @@ extern "C" {
 	extern int rtnl_link_ip6vti_set_remote(struct rtnl_link *link, struct in6_addr *remote);
 	extern int rtnl_link_ip6vti_get_remote(struct rtnl_link *link, struct in6_addr *remote);
 
+	extern int rtnl_link_ip6vti_set_fwmark(struct rtnl_link *link, uint32_t fwmark);
+	extern int rtnl_link_ip6vti_get_fwmark(struct rtnl_link *link, uint32_t *fwmark);
+
 #ifdef __cplusplus
 }
 #endif

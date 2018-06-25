@@ -35,6 +35,7 @@
 #define IP6VTI_ATTR_OKEY      (1 << 2)
 #define IP6VTI_ATTR_LOCAL     (1 << 3)
 #define IP6VTI_ATTR_REMOTE    (1 << 4)
+#define IP6VTI_ATTR_FWMARK    (1 << 5)
 
 struct ip6vti_info
 {
@@ -43,6 +44,7 @@ struct ip6vti_info
 	uint32_t            okey;
 	struct in6_addr     local;
 	struct in6_addr     remote;
+	uint32_t            fwmark;
 	uint32_t            ip6vti_mask;
 };
 
@@ -52,6 +54,7 @@ static  struct nla_policy ip6vti_policy[IFLA_VTI_MAX + 1] = {
 	[IFLA_VTI_OKEY]     = { .type = NLA_U32 },
 	[IFLA_VTI_LOCAL]    = { .minlen = sizeof(struct in6_addr) },
 	[IFLA_VTI_REMOTE]   = { .minlen = sizeof(struct in6_addr) },
+	[IFLA_VTI_FWMARK]   = { .type = NLA_U32 },
 };
 
 static int ip6vti_alloc(struct rtnl_link *link)
@@ -115,6 +118,11 @@ static int ip6vti_parse(struct rtnl_link *link, struct nlattr *data,
 		ip6vti->ip6vti_mask |= IP6VTI_ATTR_REMOTE;
 	}
 
+	if (tb[IFLA_VTI_FWMARK]) {
+		ip6vti->fwmark = nla_get_u32(tb[IFLA_VTI_FWMARK]);
+		ip6vti->ip6vti_mask |= IP6VTI_ATTR_FWMARK;
+	}
+
 	err = 0;
 
  errout:
@@ -144,6 +152,9 @@ static int ip6vti_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 
 	if (ip6vti->ip6vti_mask & IP6VTI_ATTR_REMOTE)
 		NLA_PUT(msg, IFLA_VTI_REMOTE, sizeof(struct in6_addr), &ip6vti->remote);
+
+	if (ip6vti->ip6vti_mask & IP6VTI_ATTR_FWMARK)
+		NLA_PUT_U32(msg, IFLA_VTI_FWMARK, ip6vti->fwmark);
 
 	nla_nest_end(msg, data);
 
@@ -203,6 +214,11 @@ static void ip6vti_dump_details(struct rtnl_link *link, struct nl_dump_params *p
 			nl_dump_line(p, "%s\n", addr);
 		else
 			nl_dump_line(p, "%#x\n", ip6vti->remote);
+	}
+
+	if (ip6vti->ip6vti_mask & IP6VTI_ATTR_FWMARK) {
+		nl_dump(p, "      fwmark ");
+		nl_dump_line(p, "%x\n", ip6vti->fwmark);
 	}
 }
 
@@ -494,6 +510,45 @@ int rtnl_link_ip6vti_get_remote(struct rtnl_link *link, struct in6_addr *remote)
 	HAS_IP6VTI_ATTR_ASSERT(ip6vti, IP6VTI_ATTR_REMOTE);
 
 	memcpy(remote, &ip6vti->remote, sizeof(struct in6_addr));
+
+	return 0;
+}
+
+/**
+ * Set IP6VTI tunnel fwmark
+ * @arg link            Link object
+ * @arg fwmark          fwmark
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_ip6vti_set_fwmark(struct rtnl_link *link, uint32_t fwmark)
+{
+	struct ip6vti_info *ip6vti = link->l_info;
+
+	IS_IP6VTI_LINK_ASSERT(link);
+
+	ip6vti->fwmark = fwmark;
+	ip6vti->ip6vti_mask |= IP6VTI_ATTR_FWMARK;
+
+	return 0;
+}
+
+/**
+ * Get IP6VTI tunnel fwmark
+ * @arg link            Link object
+ * @arg fwmark          addr to fill in with the fwmark
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_ip6vti_get_fwmark(struct rtnl_link *link, uint32_t *fwmark)
+{
+	struct ip6vti_info *ip6vti = link->l_info;
+
+	IS_IP6VTI_LINK_ASSERT(link);
+
+	HAS_IP6VTI_ATTR_ASSERT(ip6vti, IP6VTI_ATTR_FWMARK);
+
+	*fwmark = ip6vti->fwmark;
 
 	return 0;
 }

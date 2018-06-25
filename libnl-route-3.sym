@@ -1134,4 +1134,17 @@ global:
 	rtnl_link_ip6gre_set_okey;
 	rtnl_link_ip6gre_set_remote;
 	rtnl_link_ip6gre_set_ttl;
+	rtnl_link_is_ip6vti;
+	rtnl_link_ip6vti_add;
+	rtnl_link_ip6vti_alloc;
+	rtnl_link_ip6vti_get_ikey;
+	rtnl_link_ip6vti_get_link;
+	rtnl_link_ip6vti_get_local;
+	rtnl_link_ip6vti_get_okey;
+	rtnl_link_ip6vti_get_remote;
+	rtnl_link_ip6vti_set_ikey;
+	rtnl_link_ip6vti_set_link;
+	rtnl_link_ip6vti_set_local;
+	rtnl_link_ip6vti_set_okey;
+	rtnl_link_ip6vti_set_remote;
 } libnl_3_4;

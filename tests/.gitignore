@@ -30,3 +30,4 @@
 /test-socket-creation
 /test-suite.log
 /test-u32-filter-with-actions
+/test-ematch-tree-clone

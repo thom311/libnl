@@ -1115,6 +1115,7 @@ global:
 	rtnl_link_ip6gre_get_encaplimit;
 	rtnl_link_ip6gre_get_flags;
 	rtnl_link_ip6gre_get_flowinfo;
+	rtnl_link_ip6gre_get_fwmark;
 	rtnl_link_ip6gre_get_iflags;
 	rtnl_link_ip6gre_get_ikey;
 	rtnl_link_ip6gre_get_link;
@@ -1126,6 +1127,7 @@ global:
 	rtnl_link_ip6gre_set_encaplimit;
 	rtnl_link_ip6gre_set_flags;
 	rtnl_link_ip6gre_set_flowinfo;
+	rtnl_link_ip6gre_set_fwmark;
 	rtnl_link_ip6gre_set_iflags;
 	rtnl_link_ip6gre_set_ikey;
 	rtnl_link_ip6gre_set_link;

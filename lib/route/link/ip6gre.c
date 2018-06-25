@@ -41,6 +41,7 @@
 #define IP6GRE_ATTR_ENCAPLIMIT    (1 << 8)
 #define IP6GRE_ATTR_FLOWINFO      (1 << 9)
 #define IP6GRE_ATTR_FLAGS         (1 << 10)
+#define IP6GRE_ATTR_FWMARK        (1 << 11)
 
 struct ip6gre_info
 {
@@ -55,6 +56,7 @@ struct ip6gre_info
 	uint32_t            flags;
 	struct in6_addr     local;
 	struct in6_addr     remote;
+	uint32_t            fwmark;
 	uint32_t            ip6gre_mask;
 };
 
@@ -70,6 +72,7 @@ static  struct nla_policy ip6gre_policy[IFLA_GRE_MAX + 1] = {
 	[IFLA_GRE_ENCAP_LIMIT]  = { .type = NLA_U8 },
 	[IFLA_GRE_FLOWINFO]     = { .type = NLA_U32 },
 	[IFLA_GRE_FLAGS]        = { .type = NLA_U32 },
+	[IFLA_GRE_FWMARK]       = { .type = NLA_U32 },
 };
 
 static int ip6gre_alloc(struct rtnl_link *link)
@@ -163,6 +166,11 @@ static int ip6gre_parse(struct rtnl_link *link, struct nlattr *data,
 		ip6gre->ip6gre_mask |= IP6GRE_ATTR_FLAGS;
 	}
 
+	if (tb[IFLA_GRE_FWMARK]) {
+		ip6gre->fwmark = nla_get_u32(tb[IFLA_GRE_FWMARK]);
+		ip6gre->ip6gre_mask |= IP6GRE_ATTR_FWMARK;
+	}
+
 	err = 0;
 
  errout:
@@ -210,6 +218,9 @@ static int ip6gre_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 
 	if (ip6gre->ip6gre_mask & IP6GRE_ATTR_FLAGS)
 		NLA_PUT_U32(msg, IFLA_GRE_FLAGS, ip6gre->flags);
+
+	if (ip6gre->ip6gre_mask & IP6GRE_ATTR_FWMARK)
+		NLA_PUT_U32(msg, IFLA_GRE_FWMARK, ip6gre->fwmark);
 
 	nla_nest_end(msg, data);
 
@@ -299,6 +310,11 @@ static void ip6gre_dump_details(struct rtnl_link *link, struct nl_dump_params *p
 	if (ip6gre->ip6gre_mask & IP6GRE_ATTR_FLAGS) {
 		nl_dump(p, "      flags ");
 		nl_dump_line(p, "%x\n", ip6gre->flags);
+	}
+
+	if (ip6gre->ip6gre_mask & IP6GRE_ATTR_FWMARK) {
+		nl_dump(p, "    fwmark   ");
+		nl_dump_line(p, "%x\n", ip6gre->fwmark);
 	}
 }
 
@@ -826,6 +842,45 @@ int rtnl_link_ip6gre_get_flags(struct rtnl_link *link, uint32_t *flags)
 	HAS_IP6GRE_ATTR_ASSERT(ip6gre, IP6GRE_ATTR_FLAGS);
 
 	*flags = ip6gre->flags;
+
+	return 0;
+}
+
+/**
+ * Set IP6GRE tunnel fwmark
+ * @arg link            Link object
+ * @arg fwmark          fwmark
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_ip6gre_set_fwmark(struct rtnl_link *link, uint32_t fwmark)
+{
+	struct ip6gre_info *ip6gre = link->l_info;
+
+	IS_IP6GRE_LINK_ASSERT(link);
+
+	ip6gre->fwmark = fwmark;
+	ip6gre->ip6gre_mask |= IP6GRE_ATTR_FWMARK;
+
+	return 0;
+}
+
+/**
+ * Get IP6GRE tunnel fwmark
+ * @arg link            Link object
+ * @arg fwmark          addr to fill in with the fwmark
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_ip6gre_get_fwmark(struct rtnl_link *link, uint32_t *fwmark)
+{
+	struct ip6gre_info *ip6gre = link->l_info;
+
+	IS_IP6GRE_LINK_ASSERT(link);
+
+	HAS_IP6GRE_ATTR_ASSERT(ip6gre, IP6GRE_ATTR_FWMARK);
+
+	*fwmark = ip6gre->fwmark;
 
 	return 0;
 }

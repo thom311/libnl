@@ -55,6 +55,9 @@ extern "C" {
 	extern int rtnl_link_ip6gre_set_flags(struct rtnl_link *link, uint32_t flags);
 	extern int rtnl_link_ip6gre_get_flags(struct rtnl_link *link, uint32_t *flags);
 
+	extern int rtnl_link_ip6gre_set_fwmark(struct rtnl_link *link, uint32_t fwmark);
+	extern int rtnl_link_ip6gre_get_fwmark(struct rtnl_link *link, uint32_t *fwmark);
+
 #ifdef __cplusplus
 }
 #endif

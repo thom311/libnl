@@ -68,7 +68,7 @@
  * // Neighbours can then be looked up by the interface and destination
  * // address:
  * struct rtnl_neigh *neigh = rtnl_neigh_get(cache, ifindex, dst_addr);
- * 
+ *
  * // After successful usage, the object must be given back to the cache
  * rtnl_neigh_put(neigh);
  * @endcode
@@ -408,7 +408,7 @@ int rtnl_neigh_parse(struct nlmsghdr *n, struct rtnl_neigh **result)
 		neigh->n_cacheinfo.nci_used = ci->ndm_used;
 		neigh->n_cacheinfo.nci_updated = ci->ndm_updated;
 		neigh->n_cacheinfo.nci_refcnt = ci->ndm_refcnt;
-		
+
 		neigh->ce_mask |= NEIGH_ATTR_CACHEINFO;
 	}
 
@@ -456,7 +456,31 @@ static int neigh_request_update(struct nl_cache *c, struct nl_sock *h)
 {
 	int family = c->c_iarg1;
 
-	return nl_rtgen_request(h, RTM_GETNEIGH, family, NLM_F_DUMP);
+	if (family == AF_UNSPEC) {
+		return nl_rtgen_request(h, RTM_GETNEIGH, family, NLM_F_DUMP);
+	} else if (family == AF_BRIDGE) {
+		struct ifinfomsg hdr = {.ifi_family = family};
+		struct nl_msg *msg;
+		int err;
+
+		msg = nlmsg_alloc_simple(RTM_GETNEIGH, NLM_F_REQUEST | NLM_F_DUMP);
+		if (!msg)
+			return -NLE_NOMEM;
+
+		err = -NLE_MSGSIZE;
+		if (nlmsg_append(msg, &hdr, sizeof(hdr), NLMSG_ALIGNTO) < 0)
+			goto nla_put_failure;
+
+		err = nl_send_auto(h, msg);
+		if (err > 0)
+			err = 0;
+
+	nla_put_failure:
+		nlmsg_free(msg);
+		return err;
+	}
+
+	return -NLE_INVAL;
 }
 
 
@@ -610,6 +634,7 @@ struct rtnl_neigh * rtnl_neigh_get(struct nl_cache *cache, int ifindex,
 
 	nl_list_for_each_entry(neigh, &cache->c_items, ce_list) {
 		if (neigh->n_ifindex == ifindex &&
+		    neigh->n_family == dst->a_family &&
 		    !nl_addr_cmp(neigh->n_dst, dst)) {
 			nl_object_get((struct nl_object *) neigh);
 			return neigh;
@@ -710,7 +735,7 @@ nla_put_failure:
  * all relevant fields and must thus be sent out via nl_send_auto_complete()
  * or supplemented as needed. \a tmpl must contain the attributes of the new
  * neighbour set via \c rtnl_neigh_set_* functions.
- * 
+ *
  * The following attributes must be set in the template:
  *  - Interface index (rtnl_neigh_set_ifindex())
  *  - State (rtnl_neigh_set_state())
@@ -747,7 +772,7 @@ int rtnl_neigh_add(struct nl_sock *sk, struct rtnl_neigh *tmpl, int flags)
 {
 	int err;
 	struct nl_msg *msg;
-	
+
 	if ((err = rtnl_neigh_build_add_request(tmpl, flags, &msg)) < 0)
 		return err;
 
@@ -803,7 +828,7 @@ int rtnl_neigh_delete(struct nl_sock *sk, struct rtnl_neigh *neigh,
 {
 	struct nl_msg *msg;
 	int err;
-	
+
 	if ((err = rtnl_neigh_build_delete_request(neigh, flags, &msg)) < 0)
 		return err;
 

@@ -91,7 +91,7 @@ static int ipgre_alloc(struct rtnl_link *link)
 static int ipgre_parse(struct rtnl_link *link, struct nlattr *data,
 		       struct nlattr *xstats)
 {
-	struct nlattr *tb[IFLA_IPTUN_MAX + 1];
+	struct nlattr *tb[IFLA_GRE_MAX + 1];
 	struct ipgre_info *ipgre;
 	int err;
 

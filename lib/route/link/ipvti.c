@@ -48,7 +48,7 @@ struct ipvti_info
 	uint32_t   ipvti_mask;
 };
 
-static	struct nla_policy ipvti_policy[IFLA_GRE_MAX + 1] = {
+static	struct nla_policy ipvti_policy[IFLA_VTI_MAX + 1] = {
 	[IFLA_VTI_LINK]     = { .type = NLA_U32 },
 	[IFLA_VTI_IKEY]     = { .type = NLA_U32 },
 	[IFLA_VTI_OKEY]     = { .type = NLA_U32 },
@@ -76,13 +76,13 @@ static int ipvti_alloc(struct rtnl_link *link)
 static int ipvti_parse(struct rtnl_link *link, struct nlattr *data,
 		       struct nlattr *xstats)
 {
-	struct nlattr *tb[IFLA_IPTUN_MAX + 1];
+	struct nlattr *tb[IFLA_VTI_MAX + 1];
 	struct ipvti_info *ipvti;
 	int err;
 
 	NL_DBG(3, "Parsing IPVTI link info\n");
 
-	err = nla_parse_nested(tb, IFLA_GRE_MAX, data, ipvti_policy);
+	err = nla_parse_nested(tb, IFLA_VTI_MAX, data, ipvti_policy);
 	if (err < 0)
 		goto errout;
 

@@ -109,6 +109,8 @@ extern char *		rtnl_tc_handle2str(uint32_t, char *, size_t);
 extern int		rtnl_tc_str2handle(const char *, uint32_t *);
 extern int		rtnl_classid_generate(const char *, uint32_t *,
 					      uint32_t);
+extern void		rtnl_tc_set_chain(struct rtnl_tc *, uint32_t);
+extern uint32_t         rtnl_tc_get_chain(struct rtnl_tc *);
 
 #ifdef __cplusplus
 }

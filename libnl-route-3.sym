@@ -1109,4 +1109,6 @@ global:
 	rtnl_neigh_get_by_vlan;
 	rtnl_neigh_get_master;
 	rtnl_neigh_set_master;
+	rtnl_tc_set_chain;
+	rtnl_tc_get_chain;
 } libnl_3_4;

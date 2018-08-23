@@ -526,6 +526,7 @@ int rtnl_u32_set_cls_terminal(struct rtnl_cls *cls)
 int rtnl_u32_add_action(struct rtnl_cls *cls, struct rtnl_act *act)
 {
 	struct rtnl_u32 *u;
+	int err;
 
 	if (!act)
 		return 0;
@@ -534,9 +535,12 @@ int rtnl_u32_add_action(struct rtnl_cls *cls, struct rtnl_act *act)
 		return -NLE_NOMEM;
 
 	u->cu_mask |= U32_ATTR_ACTION;
+	if ((err = rtnl_act_append(&u->cu_act, act)))
+		return err;
+
 	/* In case user frees it */
 	rtnl_act_get(act);
-	return rtnl_act_append(&u->cu_act, act);
+	return 0;
 }
 
 struct rtnl_act* rtnl_u32_get_action(struct rtnl_cls *cls)

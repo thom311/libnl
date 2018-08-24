@@ -21,19 +21,19 @@
 
 
 /** @cond SKIP */
-#define FLOWER_ATTR_FLAGS           1 << 0x0
-#define FLOWER_ATTR_ACTION          1 << 0x1
-#define FLOWER_ATTR_POLICE          1 << 0x2
-#define FLOWER_ATTR_VLAN_ID         1 << 0x3
-#define FLOWER_ATTR_VLAN_PRIO       1 << 0x4
-#define FLOWER_ATTR_VLAN_ETH_TYPE   1 << 0x5
-#define FLOWER_ATTR_DST_MAC         1 << 0x6
-#define FLOWER_ATTR_DST_MAC_MASK    1 << 0x7
-#define FLOWER_ATTR_SRC_MAC         1 << 0x8
-#define FLOWER_ATTR_SRC_MAC_MASK    1 << 0x9
-#define FLOWER_ATTR_IP_DSCP         1 << 0xa
-#define FLOWER_ATTR_IP_DSCP_MASK    1 << 0xb
-#define FLOWER_ATTR_PROTO           1 << 0xc
+#define FLOWER_ATTR_FLAGS           (1 << 0x0)
+#define FLOWER_ATTR_ACTION          (1 << 0x1)
+#define FLOWER_ATTR_POLICE          (1 << 0x2)
+#define FLOWER_ATTR_VLAN_ID         (1 << 0x3)
+#define FLOWER_ATTR_VLAN_PRIO       (1 << 0x4)
+#define FLOWER_ATTR_VLAN_ETH_TYPE   (1 << 0x5)
+#define FLOWER_ATTR_DST_MAC         (1 << 0x6)
+#define FLOWER_ATTR_DST_MAC_MASK    (1 << 0x7)
+#define FLOWER_ATTR_SRC_MAC         (1 << 0x8)
+#define FLOWER_ATTR_SRC_MAC_MASK    (1 << 0x9)
+#define FLOWER_ATTR_IP_DSCP         (1 << 0xa)
+#define FLOWER_ATTR_IP_DSCP_MASK    (1 << 0xb)
+#define FLOWER_ATTR_PROTO           (1 << 0xc)
 /** @endcond */
 
 #define FLOWER_DSCP_MAX             0xe0

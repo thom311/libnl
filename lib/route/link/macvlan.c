@@ -108,7 +108,7 @@ static int macvlan_parse(struct rtnl_link *link, struct nlattr *data,
 	}
 
 	if (tb[IFLA_MACVLAN_FLAGS]) {
-		mvi->mvi_mode = nla_get_u16(tb[IFLA_MACVLAN_FLAGS]);
+		mvi->mvi_flags = nla_get_u16(tb[IFLA_MACVLAN_FLAGS]);
 		mvi->mvi_mask |= MACVLAN_HAS_FLAGS;
 	}
 
@@ -158,7 +158,7 @@ static void macvlan_free(struct rtnl_link *link)
 	link->l_info = NULL;
 }
 
-static void macvlan_dump(struct rtnl_link *link, struct nl_dump_params *p)
+static void macvlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	char buf[64];
 	uint32_t i;
@@ -166,23 +166,26 @@ static void macvlan_dump(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (mvi->mvi_mask & MACVLAN_HAS_MODE) {
 		rtnl_link_macvlan_mode2str(mvi->mvi_mode, buf, sizeof(buf));
-		nl_dump(p, "%s-mode %s", link->l_info_ops->io_name, buf);
+		nl_dump(p, "    %s-mode %s", link->l_info_ops->io_name, buf);
 	}
 
 	if (mvi->mvi_mask & MACVLAN_HAS_FLAGS) {
 		rtnl_link_macvlan_flags2str(mvi->mvi_flags, buf, sizeof(buf));
-		nl_dump(p, "%s-flags %s", link->l_info_ops->io_name, buf);
+		nl_dump(p, " %s-flags %s", link->l_info_ops->io_name, buf);
 	}
 
 	if (mvi->mvi_mask & MACVLAN_HAS_MACADDR) {
-		nl_dump(p, "macvlan-count %u", (unsigned) mvi->mvi_maccount);
+		nl_dump(p, " macvlan-count %u", (unsigned) mvi->mvi_maccount);
+		
+		if (mvi->mvi_maccount)
+			nl_dump(p, " macvlan-sourcemac");
 
 		for (i = 0; i < mvi->mvi_maccount; i++) {
-			nl_dump(p, "macvlan-sourcemac %s",
-				nl_addr2str(mvi->mvi_macaddr[i], buf,
+			nl_dump(p, " %s", nl_addr2str(mvi->mvi_macaddr[i], buf,
 					    sizeof(buf)));
 		}
 	}
+	nl_dump(p, "\n");
 }
 
 static int macvlan_clone(struct rtnl_link *dst, struct rtnl_link *src)
@@ -258,8 +261,7 @@ static struct rtnl_link_info_ops macvlan_info_ops = {
 	.io_alloc               = macvlan_alloc,
 	.io_parse               = macvlan_parse,
 	.io_dump = {
-		[NL_DUMP_LINE]    = macvlan_dump,
-		[NL_DUMP_DETAILS] = macvlan_dump,
+		[NL_DUMP_DETAILS] = macvlan_dump_details,
 	},
 	.io_clone               = macvlan_clone,
 	.io_put_attrs           = macvlan_put_attrs,
@@ -271,8 +273,7 @@ static struct rtnl_link_info_ops macvtap_info_ops = {
 	.io_alloc               = macvlan_alloc,
 	.io_parse               = macvlan_parse,
 	.io_dump = {
-		[NL_DUMP_LINE]    = macvlan_dump,
-		[NL_DUMP_DETAILS] = macvlan_dump,
+		[NL_DUMP_DETAILS] = macvlan_dump_details,
 	},
 	.io_clone               = macvlan_clone,
 	.io_put_attrs           = macvlan_put_attrs,

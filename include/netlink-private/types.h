@@ -1330,11 +1330,11 @@ struct xfrmnl_sp {
 
 struct rtnl_vlan
 {
-        struct tc_vlan v_parm;
-        uint16_t       v_vid;
-        uint16_t       v_proto;
-        uint8_t        v_prio;
-        uint32_t       v_flags;
+	struct tc_vlan v_parm;
+	uint16_t       v_vid;
+	uint16_t       v_proto;
+	uint8_t        v_prio;
+	uint32_t       v_flags;
 };
 
 #endif

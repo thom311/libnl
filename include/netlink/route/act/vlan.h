@@ -1,10 +1,10 @@
 /*
- * netlink/route/act/vlan.h	vlan action
+ * netlink/route/act/vlan.h     vlan action
  *
- *	This library is free software; you can redistribute it and/or
- *	modify it under the terms of the GNU Lesser General Public
- *	License as published by the Free Software Foundation version 2.1
- *	of the License.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation version 2.1
+ * of the License.
  *
  * Copyright (c) 2018 Volodymyr Bendiuga <volodymyr.bendiuga@gmail.com>
  */
@@ -31,9 +31,8 @@ extern uint16_t rtnl_vlan_get_vlan_id(struct rtnl_act *act);
 extern int rtnl_vlan_set_vlan_prio(struct rtnl_act *act, uint8_t prio);
 extern uint8_t rtnl_vlan_get_vlan_prio(struct rtnl_act *act);
 
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* NETLINK_VLAN_H */
+#endif /* NETLINK_VLAN_H_ */

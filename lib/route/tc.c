@@ -202,14 +202,16 @@ int rtnl_tc_msg_build(struct rtnl_tc *tc, int type, int flags,
 		.tcm_handle = tc->tc_handle,
 		.tcm_parent = tc->tc_parent,
 	};
-	int err = -NLE_MSGSIZE;
+	int err;
 
 	msg = nlmsg_alloc_simple(type, flags);
 	if (!msg)
 		return -NLE_NOMEM;
 
-	if (nlmsg_append(msg, &tchdr, sizeof(tchdr), NLMSG_ALIGNTO) < 0)
+	if (nlmsg_append(msg, &tchdr, sizeof(tchdr), NLMSG_ALIGNTO) < 0) {
+		err = -NLE_MSGSIZE;
 		goto nla_put_failure;
+	}
 
 	if (tc->ce_mask & TCA_ATTR_KIND)
 	    NLA_PUT_STRING(msg, TCA_KIND, tc->tc_kind);
@@ -220,8 +222,10 @@ int rtnl_tc_msg_build(struct rtnl_tc *tc, int type, int flags,
 		void *data = rtnl_tc_data(tc);
 
 		if (ops->to_msg_fill) {
-			if (!(opts = nla_nest_start(msg, TCA_OPTIONS)))
+			if (!(opts = nla_nest_start(msg, TCA_OPTIONS))) {
+				err = -NLE_NOMEM;
 				goto nla_put_failure;
+			}
 
 			if ((err = ops->to_msg_fill(tc, data, msg)) < 0)
 				goto nla_put_failure;

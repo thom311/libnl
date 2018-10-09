@@ -19,7 +19,7 @@
 extern "C" {
 #endif
 
-extern void rtnl_qdisc_mqprio_set_num_tc(struct rtnl_qdisc *qdisc, int num_tc);
+extern int rtnl_qdisc_mqprio_set_num_tc(struct rtnl_qdisc *qdisc, int num_tc);
 extern int rtnl_qdisc_mqprio_get_num_tc(struct rtnl_qdisc *qdisc);
 extern int rtnl_qdisc_mqprio_set_priomap(struct rtnl_qdisc *qdisc, uint8_t priomap[],
                                          int len);

@@ -123,7 +123,7 @@ static int mqprio_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 	    !(mqprio->qm_mask & SCH_MQPRIO_ATTR_NUMTC) ||
 	    !(mqprio->qm_mask & SCH_MQPRIO_ATTR_PRIOMAP) ||
 	    !(mqprio->qm_mask & SCH_MQPRIO_ATTR_QUEUE))
-		BUG();
+		return -NLE_INVAL;
 
 	if (!(mqprio->qm_mask & SCH_MQPRIO_ATTR_HW))
 		qopt.hw = 0;
@@ -222,15 +222,16 @@ static void mqprio_dump_details(struct rtnl_tc *tc, void *data,
  * @arg num_tc          Number of traffic classes to create.
  * @return 0 on success or a negative error code.
  */
-void rtnl_qdisc_mqprio_set_num_tc(struct rtnl_qdisc *qdisc, int num_tc)
+int rtnl_qdisc_mqprio_set_num_tc(struct rtnl_qdisc *qdisc, int num_tc)
 {
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_NOMEM;
 
 	mqprio->qm_num_tc = num_tc;
 	mqprio->qm_mask |= SCH_MQPRIO_ATTR_NUMTC;
+	return 0;
 }
 
 /**
@@ -243,7 +244,7 @@ int rtnl_qdisc_mqprio_get_num_tc(struct rtnl_qdisc *qdisc)
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data_peek(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_INVAL;
 
 	if (mqprio->qm_mask & SCH_MQPRIO_ATTR_NUMTC)
 		return mqprio->qm_num_tc;
@@ -265,7 +266,7 @@ int rtnl_qdisc_mqprio_set_priomap(struct rtnl_qdisc *qdisc, uint8_t priomap[],
 	int i;
 
 	if (!(mqprio = rtnl_tc_data(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_NOMEM;
 
 	if (!(mqprio->qm_mask & SCH_MQPRIO_ATTR_NUMTC))
 		return -NLE_MISSING_ATTR;
@@ -295,7 +296,7 @@ uint8_t *rtnl_qdisc_mqprio_get_priomap(struct rtnl_qdisc *qdisc)
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data_peek(TC_CAST(qdisc))))
-		BUG();
+		return NULL;
 
 	if (mqprio->qm_mask & SCH_MQPRIO_ATTR_PRIOMAP)
 		return mqprio->qm_prio_map;
@@ -314,7 +315,7 @@ int rtnl_qdisc_mqprio_hw_offload(struct rtnl_qdisc *qdisc, int offload)
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_NOMEM;
 
 	switch (offload) {
 	case 0:
@@ -339,7 +340,7 @@ int rtnl_qdisc_mqprio_get_hw_offload(struct rtnl_qdisc *qdisc)
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data_peek(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_INVAL;
 
 	if (mqprio->qm_mask & SCH_MQPRIO_ATTR_HW)
 		return mqprio->qm_hw;
@@ -360,7 +361,7 @@ int rtnl_qdisc_mqprio_set_queue(struct rtnl_qdisc *qdisc, uint16_t count[],
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_NOMEM;
 
 	if (!(mqprio->qm_mask & SCH_MQPRIO_ATTR_NUMTC))
 		return -NLE_MISSING_ATTR;
@@ -388,7 +389,7 @@ int rtnl_qdisc_mqprio_get_queue(struct rtnl_qdisc *qdisc, uint16_t *count,
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data_peek(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_INVAL;
 
 	if (!(mqprio->qm_mask & SCH_MQPRIO_ATTR_QUEUE))
 		return -NLE_MISSING_ATTR;
@@ -410,7 +411,7 @@ int rtnl_qdisc_mqprio_set_mode(struct rtnl_qdisc *qdisc, uint16_t mode)
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_NOMEM;
 
 	if (!(mqprio->qm_mask & SCH_MQPRIO_ATTR_HW))
 		return -NLE_MISSING_ATTR;
@@ -431,7 +432,7 @@ int rtnl_qdisc_mqprio_get_mode(struct rtnl_qdisc *qdisc)
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data_peek(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_INVAL;
 
 	if (mqprio->qm_mask & SCH_MQPRIO_ATTR_MODE)
 		return mqprio->qm_mode;
@@ -450,7 +451,7 @@ int rtnl_qdisc_mqprio_set_shaper(struct rtnl_qdisc *qdisc, uint16_t shaper)
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_NOMEM;
 
 	if (!(mqprio->qm_mask & SCH_MQPRIO_ATTR_HW))
 		return -NLE_MISSING_ATTR;
@@ -471,7 +472,7 @@ int rtnl_qdisc_mqprio_get_shaper(struct rtnl_qdisc *qdisc)
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data_peek(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_INVAL;
 
 	if (mqprio->qm_mask & SCH_MQPRIO_ATTR_SHAPER)
 		return mqprio->qm_shaper;
@@ -490,7 +491,7 @@ int rtnl_qdisc_mqprio_set_min_rate(struct rtnl_qdisc *qdisc, uint64_t min[], int
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_NOMEM;
 
 	if (!(mqprio->qm_mask & SCH_MQPRIO_ATTR_SHAPER))
 		return -NLE_MISSING_ATTR;
@@ -518,7 +519,7 @@ int rtnl_qdisc_mqprio_get_min_rate(struct rtnl_qdisc *qdisc, uint64_t *min)
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data_peek(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_INVAL;
 
 	if (mqprio->qm_mask & SCH_MQPRIO_ATTR_MIN_RATE) {
 		memcpy(min, mqprio->qm_min_rate, TC_QOPT_MAX_QUEUE * sizeof(uint64_t));
@@ -539,7 +540,7 @@ int rtnl_qdisc_mqprio_set_max_rate(struct rtnl_qdisc *qdisc, uint64_t max[], int
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_NOMEM;
 
 	if (!(mqprio->qm_mask & SCH_MQPRIO_ATTR_SHAPER))
 		return -NLE_MISSING_ATTR;
@@ -567,7 +568,7 @@ int rtnl_qdisc_mqprio_get_max_rate(struct rtnl_qdisc *qdisc, uint64_t *max)
 	struct rtnl_mqprio *mqprio;
 
 	if (!(mqprio = rtnl_tc_data_peek(TC_CAST(qdisc))))
-		BUG();
+		return -NLE_INVAL;
 
 	if (mqprio->qm_mask & SCH_MQPRIO_ATTR_MAX_RATE) {
 		memcpy(max, mqprio->qm_max_rate, TC_QOPT_MAX_QUEUE * sizeof(uint64_t));

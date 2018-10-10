@@ -1125,4 +1125,6 @@ global:
 	rtnl_rule_set_protocol;
 	rtnl_rule_set_sport;
 	rtnl_rule_set_sport_range;
+	rtnl_tc_get_chain;
+	rtnl_tc_set_chain;
 } libnl_3_4;

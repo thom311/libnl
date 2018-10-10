@@ -110,7 +110,7 @@ extern int		rtnl_tc_str2handle(const char *, uint32_t *);
 extern int		rtnl_classid_generate(const char *, uint32_t *,
 					      uint32_t);
 extern void		rtnl_tc_set_chain(struct rtnl_tc *, uint32_t);
-extern uint32_t         rtnl_tc_get_chain(struct rtnl_tc *);
+extern int              rtnl_tc_get_chain(struct rtnl_tc *, uint32_t *);
 
 #ifdef __cplusplus
 }

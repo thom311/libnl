@@ -582,15 +582,17 @@ void rtnl_tc_set_chain(struct rtnl_tc *tc, uint32_t chain)
 /**
  * Return chain index of traffic control object
  * @arg tc		traffic control object
+ * @arg out_value       output argument.
  *
- * @return chain index of traffic control object or 0 if not set.
+ * @return 0 of the output value was successfully returned, or a negative
+ *   error code on failure.
  */
-uint32_t rtnl_tc_get_chain(struct rtnl_tc *tc)
+int rtnl_tc_get_chain(struct rtnl_tc *tc, uint32_t *out_value)
 {
-	if (tc->ce_mask & TCA_ATTR_CHAIN)
-		return tc->tc_chain;
-	else
-		return 0;
+	if (!(tc->ce_mask & TCA_ATTR_CHAIN))
+		return -NLE_MISSING_ATTR;
+	*out_value = tc->tc_chain;
+	return 0;
 }
 
 /** @} */

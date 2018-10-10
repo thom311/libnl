@@ -218,19 +218,21 @@ int rtnl_vlan_set_mode(struct rtnl_act *act, int mode)
 /**
  * Get vlan mode
  * @arg act             vlan action
- * @return vlan mode on success or a negative error code.
+ * @arg out_mode        vlan mode output paramter
+ * @return 0 on success if the vlan mode was returned or a negative error code.
 */
-int rtnl_vlan_get_mode(struct rtnl_act *act)
+int rtnl_vlan_get_mode(struct rtnl_act *act, int *out_mode)
 {
 	struct rtnl_vlan *v;
 
 	if (!(v = (struct rtnl_vlan *) rtnl_tc_data_peek(TC_CAST(act))))
-		return -NLE_NOMEM;
+		return -NLE_INVAL;
 
 	if (!(v->v_flags & VLAN_F_MODE))
 		return -NLE_MISSING_ATTR;
 
-	return v->v_parm.v_action;
+	*out_mode = v->v_parm.v_action;
+	return 0;
 }
 
 /**
@@ -255,19 +257,21 @@ int rtnl_vlan_set_action(struct rtnl_act *act, int action)
 /**
  * Get general action
  * @arg act             vlan action
- * @return general action on success or a negative error code.
+ * @arg out_action      output parameter
+ * @return general 0 if out_action was set or a negative error code.
 */
-int rtnl_vlan_get_action(struct rtnl_act *act)
+int rtnl_vlan_get_action(struct rtnl_act *act, int *out_action)
 {
 	struct rtnl_vlan *v;
 
 	if (!(v = (struct rtnl_vlan *) rtnl_tc_data_peek(TC_CAST(act))))
-		return -NLE_NOMEM;
+		return -NLE_INVAL;
 
 	if (!(v->v_flags & VLAN_F_ACT))
 		return -NLE_MISSING_ATTR;
 
-	return v->v_parm.action;
+	*out_action = v->v_parm.action;
+	return 0;
 }
 
 /**
@@ -292,19 +296,21 @@ int rtnl_vlan_set_protocol(struct rtnl_act *act, uint16_t protocol)
 /**
  * Get protocol
  * @arg act             vlan action
- * @return protocol on success or a negative error code.
+ * @arg out_protocol    protocol output argument
+ * @return 0 if the protocol was returned or a negative error code.
 */
-uint16_t rtnl_vlan_get_protocol(struct rtnl_act *act)
+int rtnl_vlan_get_protocol(struct rtnl_act *act, uint16_t *out_protocol)
 {
 	struct rtnl_vlan *v;
 
 	if (!(v = (struct rtnl_vlan *) rtnl_tc_data_peek(TC_CAST(act))))
-		return -NLE_NOMEM;
+		return -NLE_INVAL;
 
 	if (!(v->v_flags & VLAN_F_PROTO))
 		return -NLE_MISSING_ATTR;
 
-	return v->v_proto;
+	*out_protocol = v->v_proto;
+	return 0;
 }
 
 /**
@@ -332,19 +338,21 @@ int rtnl_vlan_set_vlan_id(struct rtnl_act *act, uint16_t vid)
 /**
  * Get vlan id
  * @arg act             vlan action
- * @return vlan id on success or a negative error code.
+ * @arg out_vid         output vlan id
+ * @return 0 if the vlan id was returned or a negative error code.
 */
-uint16_t rtnl_vlan_get_vlan_id(struct rtnl_act *act)
+int rtnl_vlan_get_vlan_id(struct rtnl_act *act, uint16_t *out_vid)
 {
 	struct rtnl_vlan *v;
 
 	if (!(v = (struct rtnl_vlan *) rtnl_tc_data_peek(TC_CAST(act))))
-		return -NLE_NOMEM;
+		return -NLE_INVAL;
 
 	if (!(v->v_flags & VLAN_F_VID))
 		return -NLE_MISSING_ATTR;
 
-	return v->v_vid;
+	*out_vid = v->v_vid;
+	return 0;
 }
 
 /**
@@ -372,19 +380,21 @@ int rtnl_vlan_set_vlan_prio(struct rtnl_act *act, uint8_t prio)
 /**
  * Get vlan prio
  * @arg act             vlan action
- * @return vlan prio on success or a negative error code.
+ * @arg out_prio        the output vlan prio
+ * @return 0 if the vlan prio was returned or a negative error code.
 */
-uint8_t rtnl_vlan_get_vlan_prio(struct rtnl_act *act)
+int rtnl_vlan_get_vlan_prio(struct rtnl_act *act, uint8_t *out_prio)
 {
 	struct rtnl_vlan *v;
 
 	if (!(v = (struct rtnl_vlan *) rtnl_tc_data_peek(TC_CAST(act))))
-		return -NLE_NOMEM;
+		return -NLE_INVAL;
 
 	if (!(v->v_flags & VLAN_F_PRIO))
 		return -NLE_MISSING_ATTR;
 
-	return v->v_prio;
+	*out_prio = v->v_prio;
+	return 0;
 }
 
 /** @} */

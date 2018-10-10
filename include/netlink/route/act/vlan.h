@@ -21,15 +21,15 @@ extern "C" {
 #endif
 
 extern int rtnl_vlan_set_mode(struct rtnl_act *act, int mode);
-extern int rtnl_vlan_get_mode(struct rtnl_act *act);
+extern int rtnl_vlan_get_mode(struct rtnl_act *act, int *out_mode);
 extern int rtnl_vlan_set_action(struct rtnl_act *act, int action);
-extern int rtnl_vlan_get_action(struct rtnl_act *act);
+extern int rtnl_vlan_get_action(struct rtnl_act *act, int *out_action);
 extern int rtnl_vlan_set_protocol(struct rtnl_act *act, uint16_t protocol);
-extern uint16_t rtnl_vlan_get_protocol(struct rtnl_act *act);
+extern int rtnl_vlan_get_protocol(struct rtnl_act *act, uint16_t *out_protocol);
 extern int rtnl_vlan_set_vlan_id(struct rtnl_act *act, uint16_t vid);
-extern uint16_t rtnl_vlan_get_vlan_id(struct rtnl_act *act);
+extern int rtnl_vlan_get_vlan_id(struct rtnl_act *act, uint16_t *out_vid);
 extern int rtnl_vlan_set_vlan_prio(struct rtnl_act *act, uint8_t prio);
-extern uint8_t rtnl_vlan_get_vlan_prio(struct rtnl_act *act);
+extern int rtnl_vlan_get_vlan_prio(struct rtnl_act *act, uint8_t *out_prio);
 
 #ifdef __cplusplus
 }

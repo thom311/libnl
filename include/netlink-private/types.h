@@ -30,6 +30,7 @@
 #include <linux/tc_act/tc_mirred.h>
 #include <linux/tc_act/tc_skbedit.h>
 #include <linux/tc_act/tc_gact.h>
+#include <linux/tc_act/tc_vlan.h>
 #include <linux/sock_diag.h>
 #include <linux/fib_rules.h>
 
@@ -1325,6 +1326,15 @@ struct xfrmnl_sp {
 	uint32_t                        nr_user_tmpl;
 	struct nl_list_head             usertmpl_list;
 	struct xfrmnl_mark              mark;
+};
+
+struct rtnl_vlan
+{
+	struct tc_vlan v_parm;
+	uint16_t       v_vid;
+	uint16_t       v_proto;
+	uint8_t        v_prio;
+	uint32_t       v_flags;
 };
 
 #endif

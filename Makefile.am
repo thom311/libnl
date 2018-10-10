@@ -23,11 +23,12 @@ DISTCHECK_CONFIGURE_FLAGS = \
 
 pkgconfig_DATA = \
 	libnl-3.0.pc \
-	libnl-route-3.0.pc \
 	libnl-genl-3.0.pc \
+	libnl-idiag-3.0.pc \
 	libnl-nf-3.0.pc \
+	libnl-route-3.0.pc \
 	libnl-xfrm-3.0.pc \
-	libnl-idiag-3.0.pc
+	$(NULL)
 
 warn_cppflags = \
 	-Wall \
@@ -63,24 +64,28 @@ libnlinclude_netlink_HEADERS = \
 	include/netlink/socket.h \
 	include/netlink/types.h \
 	include/netlink/utils.h \
-	include/netlink/version.h
+	include/netlink/version.h \
+	$(NULL)
 libnlinclude_netlink_fib_lookupdir = $(libnlincludedir)/netlink/fib_lookup
 libnlinclude_netlink_fib_lookup_HEADERS = \
 	include/netlink/fib_lookup/lookup.h \
-	include/netlink/fib_lookup/request.h
+	include/netlink/fib_lookup/request.h \
+	$(NULL)
 libnlinclude_netlink_genldir = $(libnlincludedir)/netlink/genl
 libnlinclude_netlink_genl_HEADERS = \
 	include/netlink/genl/ctrl.h \
 	include/netlink/genl/family.h \
 	include/netlink/genl/genl.h \
-	include/netlink/genl/mngt.h
+	include/netlink/genl/mngt.h \
+	$(NULL)
 libnlinclude_netlink_idiagdir = $(libnlincludedir)/netlink/idiag
 libnlinclude_netlink_idiag_HEADERS = \
 	include/netlink/idiag/idiagnl.h \
 	include/netlink/idiag/meminfo.h \
 	include/netlink/idiag/msg.h \
 	include/netlink/idiag/req.h \
-	include/netlink/idiag/vegasinfo.h
+	include/netlink/idiag/vegasinfo.h \
+	$(NULL)
 libnlinclude_netlink_netfilterdir = $(libnlincludedir)/netlink/netfilter
 libnlinclude_netlink_netfilter_HEADERS = \
 	include/netlink/netfilter/ct.h \
@@ -90,7 +95,8 @@ libnlinclude_netlink_netfilter_HEADERS = \
 	include/netlink/netfilter/netfilter.h \
 	include/netlink/netfilter/nfnl.h \
 	include/netlink/netfilter/queue.h \
-	include/netlink/netfilter/queue_msg.h
+	include/netlink/netfilter/queue_msg.h \
+	$(NULL)
 libnlinclude_netlink_routedir = $(libnlincludedir)/netlink/route
 libnlinclude_netlink_route_HEADERS = \
 	include/netlink/route/action.h \
@@ -108,33 +114,38 @@ libnlinclude_netlink_route_HEADERS = \
 	include/netlink/route/rtnl.h \
 	include/netlink/route/rule.h \
 	include/netlink/route/tc-api.h \
-	include/netlink/route/tc.h
+	include/netlink/route/tc.h \
+	$(NULL)
 libnlinclude_netlink_route_actdir = $(libnlincludedir)/netlink/route/act
 libnlinclude_netlink_route_act_HEADERS = \
 	include/netlink/route/act/gact.h \
 	include/netlink/route/act/mirred.h \
-	include/netlink/route/act/skbedit.h
+	include/netlink/route/act/skbedit.h \
+	$(NULL)
 libnlinclude_netlink_route_clsdir = $(libnlincludedir)/netlink/route/cls
 libnlinclude_netlink_route_cls_HEADERS = \
 	include/netlink/route/cls/basic.h \
 	include/netlink/route/cls/cgroup.h \
 	include/netlink/route/cls/ematch.h \
 	include/netlink/route/cls/fw.h \
+	include/netlink/route/cls/matchall.h \
 	include/netlink/route/cls/police.h \
 	include/netlink/route/cls/u32.h \
-	include/netlink/route/cls/matchall.h
+	$(NULL)
 libnlinclude_netlink_route_cls_ematchdir = $(libnlincludedir)/netlink/route/cls/ematch
 libnlinclude_netlink_route_cls_ematch_HEADERS = \
 	include/netlink/route/cls/ematch/cmp.h \
 	include/netlink/route/cls/ematch/meta.h \
 	include/netlink/route/cls/ematch/nbyte.h \
-	include/netlink/route/cls/ematch/text.h
+	include/netlink/route/cls/ematch/text.h \
+	$(NULL)
 libnlinclude_netlink_route_linkdir = $(libnlincludedir)/netlink/route/link
 libnlinclude_netlink_route_link_HEADERS = \
 	include/netlink/route/link/api.h \
 	include/netlink/route/link/bonding.h \
 	include/netlink/route/link/bridge.h \
 	include/netlink/route/link/can.h \
+	include/netlink/route/link/geneve.h \
 	include/netlink/route/link/inet.h \
 	include/netlink/route/link/inet6.h \
 	include/netlink/route/link/info-api.h \
@@ -153,7 +164,7 @@ libnlinclude_netlink_route_link_HEADERS = \
 	include/netlink/route/link/vlan.h \
 	include/netlink/route/link/vrf.h \
 	include/netlink/route/link/vxlan.h \
-	include/netlink/route/link/geneve.h
+	$(NULL)
 libnlinclude_netlink_route_qdiscdir = $(libnlincludedir)/netlink/route/qdisc
 libnlinclude_netlink_route_qdisc_HEADERS = \
 	include/netlink/route/qdisc/cbq.h \
@@ -162,12 +173,14 @@ libnlinclude_netlink_route_qdisc_HEADERS = \
 	include/netlink/route/qdisc/fq_codel.h \
 	include/netlink/route/qdisc/hfsc.h \
 	include/netlink/route/qdisc/htb.h \
+	include/netlink/route/qdisc/mqprio.h \
 	include/netlink/route/qdisc/netem.h \
 	include/netlink/route/qdisc/plug.h \
 	include/netlink/route/qdisc/prio.h \
 	include/netlink/route/qdisc/red.h \
 	include/netlink/route/qdisc/sfq.h \
-	include/netlink/route/qdisc/tbf.h
+	include/netlink/route/qdisc/tbf.h \
+	$(NULL)
 libnlinclude_netlink_xfrmdir = $(libnlincludedir)/netlink/xfrm
 libnlinclude_netlink_xfrm_HEADERS = \
 	include/netlink/xfrm/ae.h \
@@ -175,7 +188,8 @@ libnlinclude_netlink_xfrm_HEADERS = \
 	include/netlink/xfrm/sa.h \
 	include/netlink/xfrm/selector.h \
 	include/netlink/xfrm/sp.h \
-	include/netlink/xfrm/template.h
+	include/netlink/xfrm/template.h \
+	$(NULL)
 
 if ENABLE_CLI
 libnlinclude_netlink_clidir = $(libnlincludedir)/netlink/cli
@@ -191,7 +205,8 @@ libnlinclude_netlink_cli_HEADERS = \
 	include/netlink/cli/route.h \
 	include/netlink/cli/rule.h \
 	include/netlink/cli/tc.h \
-	include/netlink/cli/utils.h
+	include/netlink/cli/utils.h \
+	$(NULL)
 endif
 
 noinst_HEADERS = \
@@ -252,7 +267,8 @@ noinst_HEADERS = \
 	include/netlink-private/socket.h \
 	include/netlink-private/tc.h \
 	include/netlink-private/types.h \
-	include/netlink-private/utils.h
+	include/netlink-private/utils.h \
+	$(NULL)
 
 ###############################################################################
 
@@ -284,10 +300,11 @@ lib/route/cls/ematch_syntax.c: lib/route/cls/ematch_syntax.y lib/route/cls/.dirs
 	$(AM_V_GEN) $(YACC) -d $(YFLAGS) -o $@ $<
 
 grammar_files_sources = \
+	lib/route/cls/ematch_grammar.c \
+	lib/route/cls/ematch_syntax.c \
 	lib/route/pktloc_grammar.c \
 	lib/route/pktloc_syntax.c \
-	lib/route/cls/ematch_grammar.c \
-	lib/route/cls/ematch_syntax.c
+	$(NULL)
 
 grammar_files_headers = $(grammar_files_sources:%.c=%.h)
 
@@ -296,10 +313,11 @@ CLEANFILES += \
 	$(grammar_files_headers)
 
 EXTRA_DIST += \
+	lib/route/cls/ematch_grammar.l \
+	lib/route/cls/ematch_syntax.y \
 	lib/route/pktloc_grammar.l \
 	lib/route/pktloc_syntax.y \
-	lib/route/cls/ematch_grammar.l \
-	lib/route/cls/ematch_syntax.y
+	$(NULL)
 
 ###############################################################################
 
@@ -324,15 +342,16 @@ lib_libnl_3_la_SOURCES = \
 	lib/data.c \
 	lib/error.c \
 	lib/handlers.c \
+	lib/hash.c \
+	lib/hashtable.c \
+	lib/mpls.c \
 	lib/msg.c \
 	lib/nl.c \
 	lib/object.c \
 	lib/socket.c \
 	lib/utils.c \
 	lib/version.c \
-	lib/hash.c \
-	lib/hashtable.c \
-	lib/mpls.c
+	$(NULL)
 EXTRA_lib_libnl_3_la_DEPENDENCIES = \
 	libnl-3.sym
 lib_libnl_3_la_CPPFLAGS = \
@@ -353,8 +372,8 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/addr.c \
 	lib/route/class.c \
 	lib/route/classid.c \
-	lib/route/cls/basic.c \
 	lib/route/cls.c \
+	lib/route/cls/basic.c \
 	lib/route/cls/cgroup.c \
 	lib/route/cls/ematch.c \
 	lib/route/cls/ematch/cmp.c \
@@ -363,18 +382,19 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/cls/ematch/nbyte.c \
 	lib/route/cls/ematch/text.c \
 	lib/route/cls/fw.c \
+	lib/route/cls/mall.c \
 	lib/route/cls/police.c \
 	lib/route/cls/u32.c \
-	lib/route/cls/mall.c \
+	lib/route/link.c \
 	lib/route/link/api.c \
 	lib/route/link/bonding.c \
 	lib/route/link/bridge.c \
-	lib/route/link.c \
 	lib/route/link/can.c \
 	lib/route/link/dummy.c \
+	lib/route/link/geneve.c \
 	lib/route/link/ifb.c \
-	lib/route/link/inet6.c \
 	lib/route/link/inet.c \
+	lib/route/link/inet6.c \
 	lib/route/link/ip6tnl.c \
 	lib/route/link/ipgre.c \
 	lib/route/link/ipip.c \
@@ -389,7 +409,6 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/link/vlan.c \
 	lib/route/link/vrf.c \
 	lib/route/link/vxlan.c \
-	lib/route/link/geneve.c \
 	lib/route/neigh.c \
 	lib/route/neightbl.c \
 	lib/route/netconf.c \
@@ -397,8 +416,8 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/nexthop_encap.c \
 	lib/route/nh_encap_mpls.c \
 	lib/route/pktloc.c \
-	lib/route/qdisc/blackhole.c \
 	lib/route/qdisc.c \
+	lib/route/qdisc/blackhole.c \
 	lib/route/qdisc/cbq.c \
 	lib/route/qdisc/dsmark.c \
 	lib/route/qdisc/fifo.c \
@@ -406,6 +425,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/qdisc/hfsc.c \
 	lib/route/qdisc/htb.c \
 	lib/route/qdisc/ingress.c \
+	lib/route/qdisc/mqprio.c \
 	lib/route/qdisc/netem.c \
 	lib/route/qdisc/plug.c \
 	lib/route/qdisc/prio.c \
@@ -436,11 +456,12 @@ $(lib_libnl_route_3_la_OBJECTS): $(grammar_files_headers)
 lib_LTLIBRARIES += lib/libnl-idiag-3.la
 
 lib_libnl_idiag_3_la_SOURCES = \
+	lib/idiag/idiag.c \
 	lib/idiag/idiag_meminfo_obj.c \
-	lib/idiag/idiag_vegasinfo_obj.c \
 	lib/idiag/idiag_msg_obj.c \
 	lib/idiag/idiag_req_obj.c \
-	lib/idiag/idiag.c
+	lib/idiag/idiag_vegasinfo_obj.c \
+	$(NULL)
 EXTRA_lib_libnl_idiag_3_la_DEPENDENCIES = \
 	libnl-idiag-3.sym
 lib_libnl_idiag_3_la_CPPFLAGS = \
@@ -457,7 +478,8 @@ lib_libnl_genl_3_la_SOURCES = \
 	lib/genl/ctrl.c \
 	lib/genl/family.c \
 	lib/genl/genl.c \
-	lib/genl/mngt.c
+	lib/genl/mngt.c \
+	$(NULL)
 EXTRA_lib_libnl_genl_3_la_DEPENDENCIES = \
 	libnl-genl-3.sym
 lib_libnl_genl_3_la_CPPFLAGS = \
@@ -473,6 +495,8 @@ lib_LTLIBRARIES += lib/libnl-nf-3.la
 lib_libnl_nf_3_la_SOURCES = \
 	lib/netfilter/ct.c \
 	lib/netfilter/ct_obj.c \
+	lib/netfilter/exp.c \
+	lib/netfilter/exp_obj.c \
 	lib/netfilter/log.c \
 	lib/netfilter/log_msg.c \
 	lib/netfilter/log_msg_obj.c \
@@ -483,8 +507,7 @@ lib_libnl_nf_3_la_SOURCES = \
 	lib/netfilter/queue_msg.c \
 	lib/netfilter/queue_msg_obj.c \
 	lib/netfilter/queue_obj.c \
-	lib/netfilter/exp.c \
-	lib/netfilter/exp_obj.c
+	$(NULL)
 lib_libnl_nf_3_la_CPPFLAGS = \
 	$(lib_cppflags)
 EXTRA_lib_libnl_nf_3_la_DEPENDENCIES = \
@@ -504,7 +527,8 @@ lib_libnl_xfrm_3_la_SOURCES = \
 	lib/xfrm/sa.c \
 	lib/xfrm/selector.c \
 	lib/xfrm/sp.c \
-	lib/xfrm/template.c
+	lib/xfrm/template.c \
+	$(NULL)
 lib_libnl_xfrm_3_la_CPPFLAGS = \
 	$(lib_cppflags)
 lib_libnl_xfrm_3_la_LDFLAGS = \
@@ -517,7 +541,8 @@ lib_libnl_xfrm_3_la_LIBADD = \
 
 lib_cli_ltlibraries_cls = \
 	lib/cli/cls/basic.la \
-	lib/cli/cls/cgroup.la
+	lib/cli/cls/cgroup.la \
+	$(NULL)
 lib_cli_ltlibraries_qdisc = \
 	lib/cli/qdisc/bfifo.la \
 	lib/cli/qdisc/blackhole.la \
@@ -526,7 +551,8 @@ lib_cli_ltlibraries_qdisc = \
 	lib/cli/qdisc/htb.la \
 	lib/cli/qdisc/ingress.la \
 	lib/cli/qdisc/pfifo.la \
-	lib/cli/qdisc/plug.la
+	lib/cli/qdisc/plug.la \
+	$(NULL)
 
 if ENABLE_CLI
 pkglib_clsdir = $(pkglibdir)/cli/cls
@@ -575,18 +601,19 @@ check_LTLIBRARIES += src/lib/libnl-cli-3.la
 endif
 
 src_lib_libnl_cli_3_la_SOURCES = \
-	src/lib/utils.c \
 	src/lib/addr.c \
-	src/lib/ct.c \
-	src/lib/link.c \
-	src/lib/neigh.c \
-	src/lib/rule.c \
-	src/lib/route.c \
-	src/lib/tc.c \
-	src/lib/qdisc.c \
 	src/lib/class.c \
 	src/lib/cls.c \
-	src/lib/exp.c
+	src/lib/ct.c \
+	src/lib/exp.c \
+	src/lib/link.c \
+	src/lib/neigh.c \
+	src/lib/qdisc.c \
+	src/lib/route.c \
+	src/lib/rule.c \
+	src/lib/tc.c \
+	src/lib/utils.c \
+	$(NULL)
 EXTRA_src_lib_libnl_cli_3_la_DEPENDENCIES = \
 	libnl-cli-3.sym
 src_lib_libnl_cli_3_la_CPPFLAGS = \
@@ -605,7 +632,8 @@ src_lib_libnl_cli_3_la_LIBADD = \
 	lib/libnl-route-3.la \
 	lib/libnl-nf-3.la \
 	lib/libnl-genl-3.la \
-	-ldl
+	-ldl \
+	$(NULL)
 
 ###############################################################################
 
@@ -623,7 +651,8 @@ src_ldadd = \
 	lib/libnl-nf-3.la \
 	lib/libnl-genl-3.la \
 	lib/libnl-route-3.la \
-	lib/libnl-idiag-3.la
+	lib/libnl-idiag-3.la \
+	$(NULL)
 
 cli_programs = \
 	src/genl-ctrl-list \
@@ -895,11 +924,12 @@ check_programs += tests/check-all
 endif
 
 tests_check_all_SOURCES = \
-	tests/util.h \
-	tests/check-all.c \
 	tests/check-addr.c \
+	tests/check-all.c \
 	tests/check-attr.c \
-	tests/check-ematch-tree-clone.c
+	tests/check-ematch-tree-clone.c \
+	tests/util.h \
+	$(NULL)
 
 tests_check_all_CPPFLAGS = \
 	$(tests_cppflags) \
@@ -912,12 +942,13 @@ tests_check_all_LDADD = \
 ###############################################################################
 
 dist_man8_MANS = \
+	man/genl-ctrl-list.8 \
 	man/nl-classid-lookup.8 \
 	man/nl-pktloc-lookup.8 \
 	man/nl-qdisc-add.8 \
 	man/nl-qdisc-delete.8 \
 	man/nl-qdisc-list.8 \
-	man/genl-ctrl-list.8
+	$(NULL)
 
 ###############################################################################
 
@@ -980,4 +1011,5 @@ EXTRA_DIST += \
 	libnl-idiag-3.sym \
 	libnl-nf-3.sym \
 	libnl-route-3.sym \
-	libnl-xfrm-3.sym
+	libnl-xfrm-3.sym \
+	$(NULL)

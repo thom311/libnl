@@ -308,7 +308,7 @@ int rtnl_flower_get_proto(struct rtnl_cls *cls, uint16_t *proto)
 	struct rtnl_flower *f;
 
 	if (!(f = rtnl_tc_data_peek(TC_CAST(cls))))
-		return -NLE_NOMEM;
+		return -NLE_INVAL;
 
 	if (!(f->cf_mask & FLOWER_ATTR_PROTO))
 		return -NLE_MISSING_ATTR;
@@ -351,7 +351,7 @@ int rtnl_flower_get_vlan_id(struct rtnl_cls *cls, uint16_t *vid)
 	struct rtnl_flower *f;
 
 	if (!(f = rtnl_tc_data_peek(TC_CAST(cls))))
-		return -NLE_NOMEM;
+		return -NLE_INVAL;
 
 	if (!(f->cf_mask & FLOWER_ATTR_VLAN_ID))
 		return -NLE_MISSING_ATTR;
@@ -394,7 +394,7 @@ int rtnl_flower_get_vlan_prio(struct rtnl_cls *cls, uint8_t *prio)
 	struct rtnl_flower *f;
 
 	if (!(f = rtnl_tc_data_peek(TC_CAST(cls))))
-		return -NLE_NOMEM;
+		return -NLE_INVAL;
 
 	if (!(f->cf_mask & FLOWER_ATTR_VLAN_PRIO))
 		return -NLE_MISSING_ATTR;
@@ -472,7 +472,7 @@ int rtnl_flower_get_dst_mac(struct rtnl_cls *cls, unsigned char *mac,
 	struct rtnl_flower *f;
 
 	if (!(f = rtnl_tc_data_peek(TC_CAST(cls))))
-		return -NLE_NOMEM;
+		return -NLE_INVAL;
 
 	if (!(f->cf_mask & FLOWER_ATTR_DST_MAC))
 		return -NLE_MISSING_ATTR;
@@ -529,7 +529,7 @@ int rtnl_flower_get_src_mac(struct rtnl_cls *cls, unsigned char *mac,
 	struct rtnl_flower *f;
 
 	if (!(f = rtnl_tc_data_peek(TC_CAST(cls))))
-		return -NLE_NOMEM;
+		return -NLE_INVAL;
 
 	if (!(f->cf_mask & FLOWER_ATTR_SRC_MAC))
 		return -NLE_MISSING_ATTR;
@@ -586,7 +586,7 @@ int rtnl_flower_get_ip_dscp(struct rtnl_cls *cls, uint8_t *dscp, uint8_t *mask)
 	struct rtnl_flower *f;
 
 	if (!(f = rtnl_tc_data_peek(TC_CAST(cls))))
-		return -NLE_NOMEM;
+		return -NLE_INVAL;
 
 	if (!(f->cf_mask & FLOWER_ATTR_IP_DSCP))
 		return -NLE_MISSING_ATTR;

@@ -42,15 +42,16 @@
 #define FLOWER_VLAN_PRIO_MAX        7
 
 static struct nla_policy flower_policy[TCA_FLOWER_MAX + 1] = {
-        [TCA_FLOWER_KEY_ETH_TYPE]	= { .type = NLA_U16 },
-        [TCA_FLOWER_KEY_ETH_DST]	= { .maxlen = ETH_ALEN },
-	[TCA_FLOWER_KEY_ETH_DST_MASK]	= { .maxlen = ETH_ALEN },
-	[TCA_FLOWER_KEY_ETH_SRC]	= { .maxlen = ETH_ALEN },
-	[TCA_FLOWER_KEY_ETH_SRC_MASK]	= { .maxlen = ETH_ALEN },
-        [TCA_FLOWER_KEY_VLAN_ID]	= { .type = NLA_U16 },
-	[TCA_FLOWER_KEY_VLAN_PRIO]	= { .type = NLA_U8 },
-        [TCA_FLOWER_KEY_IP_TOS]		= { .type = NLA_U8 },
-	[TCA_FLOWER_KEY_IP_TOS_MASK]	= { .type = NLA_U8 },
+    [TCA_FLOWER_FLAGS]              = { .type = NLA_U32 },
+    [TCA_FLOWER_KEY_ETH_TYPE]	    = { .type = NLA_U16 },
+    [TCA_FLOWER_KEY_ETH_DST]	    = { .maxlen = ETH_ALEN },
+    [TCA_FLOWER_KEY_ETH_DST_MASK]	= { .maxlen = ETH_ALEN },
+    [TCA_FLOWER_KEY_ETH_SRC]	    = { .maxlen = ETH_ALEN },
+    [TCA_FLOWER_KEY_ETH_SRC_MASK]	= { .maxlen = ETH_ALEN },
+    [TCA_FLOWER_KEY_VLAN_ID]	    = { .type = NLA_U16 },
+    [TCA_FLOWER_KEY_VLAN_PRIO]	    = { .type = NLA_U8 },
+    [TCA_FLOWER_KEY_IP_TOS]		    = { .type = NLA_U8 },
+    [TCA_FLOWER_KEY_IP_TOS_MASK]	= { .type = NLA_U8 },
 };
 
 static int flower_msg_parser(struct rtnl_tc *tc, void *data)

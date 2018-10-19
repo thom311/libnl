@@ -27,8 +27,8 @@ extern int      rtnl_flower_get_proto(struct rtnl_cls *cls, uint16_t *);
 extern int	rtnl_flower_set_vlan_id(struct rtnl_cls *, uint16_t);
 extern int	rtnl_flower_get_vlan_id(struct rtnl_cls *, uint16_t *);
 
-extern int	rtnl_flower_set_vlan_prio(struct rtnl_cls *, uint16_t);
-extern int	rtnl_flower_get_vlan_prio(struct rtnl_cls *, uint16_t *);
+extern int	rtnl_flower_set_vlan_prio(struct rtnl_cls *, uint8_t);
+extern int	rtnl_flower_get_vlan_prio(struct rtnl_cls *, uint8_t *);
 
 extern int	rtnl_flower_set_vlan_ethtype(struct rtnl_cls *, uint16_t);
 

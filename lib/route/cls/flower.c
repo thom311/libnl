@@ -96,7 +96,7 @@ static int flower_msg_parser(struct rtnl_tc *tc, void *data)
 	}
 
 	if (tb[TCA_FLOWER_KEY_VLAN_PRIO]) {
-	        f->cf_vlan_prio = nla_get_u16(tb[TCA_FLOWER_KEY_VLAN_PRIO]);
+	        f->cf_vlan_prio = nla_get_u8(tb[TCA_FLOWER_KEY_VLAN_PRIO]);
 		f->cf_mask |= FLOWER_ATTR_VLAN_PRIO;
 	}
 
@@ -418,7 +418,7 @@ int rtnl_flower_get_vlan_id(struct rtnl_cls *cls, uint16_t *vid)
  * @arg prio		vlan priority
  * @return 0 on success or a negative error code.
  */
-int rtnl_flower_set_vlan_prio(struct rtnl_cls *cls, uint16_t prio)
+int rtnl_flower_set_vlan_prio(struct rtnl_cls *cls, uint8_t prio)
 {
         struct rtnl_flower *f;
 
@@ -440,7 +440,7 @@ int rtnl_flower_set_vlan_prio(struct rtnl_cls *cls, uint16_t prio)
  * @arg prio		vlan priority
  * @return 0 on success or a negative error code.
 */
-int rtnl_flower_get_vlan_prio(struct rtnl_cls *cls, uint16_t *prio)
+int rtnl_flower_get_vlan_prio(struct rtnl_cls *cls, uint8_t *prio)
 {
         struct rtnl_flower *f;
 

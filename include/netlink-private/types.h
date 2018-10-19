@@ -617,7 +617,7 @@ struct rtnl_flower
 {
         uint16_t                cf_proto;
         uint16_t                cf_vlan_id;
-        uint16_t                cf_vlan_prio;
+        uint8_t                 cf_vlan_prio;
         uint16_t                cf_vlan_ethtype;
         struct nl_data  *       cf_src_mac;
         struct nl_data  *       cf_src_mac_mask;

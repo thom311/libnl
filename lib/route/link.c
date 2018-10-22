@@ -71,6 +71,7 @@
 #define LINK_ATTR_PHYS_SWITCH_ID	((uint64_t) 1 << 36)
 #define LINK_ATTR_GSO_MAX_SEGS		((uint64_t) 1 << 37)
 #define LINK_ATTR_GSO_MAX_SIZE		((uint64_t) 1 << 38)
+#define LINK_ATTR_LINKINFO_SLAVE_KIND	((uint64_t) 1 << 39)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -276,6 +277,7 @@ static void link_free_data(struct nl_object *c)
 
 		free(link->l_ifalias);
 		free(link->l_info_kind);
+		free(link->l_info_slave_kind);
 
 		do_foreach_af(link, af_free, NULL);
 
@@ -307,6 +309,10 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	if (src->l_info_kind)
 		if (!(dst->l_info_kind = strdup(src->l_info_kind)))
+			return -NLE_NOMEM;
+
+	if (src->l_info_slave_kind)
+		if (!(dst->l_info_slave_kind = strdup(src->l_info_slave_kind)))
 			return -NLE_NOMEM;
 
 	if (src->l_info_ops && src->l_info_ops->io_clone) {
@@ -520,7 +526,7 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 	}
 
 	if (tb[IFLA_MAP]) {
-		nla_memcpy(&link->l_map, tb[IFLA_MAP], 
+		nla_memcpy(&link->l_map, tb[IFLA_MAP],
 			   sizeof(struct rtnl_link_ifmap));
 		link->ce_mask |= LINK_ATTR_MAP;
 	}
@@ -645,7 +651,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 		if (li[IFLA_INFO_KIND]) {
 			struct rtnl_link_info_ops *ops;
-			char *kind = nla_get_string(li[IFLA_INFO_KIND]);
+			const char *kind = nla_get_string(li[IFLA_INFO_KIND]);
 			int af;
 
 			err = rtnl_link_set_type(link, kind);
@@ -676,8 +682,19 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 					/* XXX: Warn about unparsed info? */
 				}
 			}
+
+			link->ce_mask |= LINK_ATTR_LINKINFO;
 		}
-		link->ce_mask |= LINK_ATTR_LINKINFO;
+
+		if (li[IFLA_INFO_SLAVE_KIND]) {
+			const char *kind = nla_get_string(li[IFLA_INFO_SLAVE_KIND]);
+
+			err = rtnl_link_set_slave_type(link, kind);
+			if (err < 0)
+				goto errout;
+
+			link->ce_mask |= LINK_ATTR_LINKINFO_SLAVE_KIND;
+		}
 	}
 
 	if (tb[IFLA_PROTINFO] && af_ops && af_ops->ao_parse_protinfo) {
@@ -1580,18 +1597,24 @@ static int build_link_msg(int cmd, struct ifinfomsg *hdr,
 	if (link->ce_mask & LINK_ATTR_GROUP)
 		NLA_PUT_U32(msg, IFLA_GROUP, link->l_group);
 
-	if (link->ce_mask & LINK_ATTR_LINKINFO) {
+	if (link->ce_mask & (LINK_ATTR_LINKINFO|LINK_ATTR_LINKINFO_SLAVE_KIND)) {
 		struct nlattr *info;
 
 		if (!(info = nla_nest_start(msg, IFLA_LINKINFO)))
 			goto nla_put_failure;
 
-		NLA_PUT_STRING(msg, IFLA_INFO_KIND, link->l_info_kind);
+		if (link->ce_mask & LINK_ATTR_LINKINFO) {
+			NLA_PUT_STRING(msg, IFLA_INFO_KIND, link->l_info_kind);
 
-		if (link->l_info_ops) {
-			if (link->l_info_ops->io_put_attrs &&
-			    link->l_info_ops->io_put_attrs(msg, link) < 0)
-				goto nla_put_failure;
+			if (link->l_info_ops) {
+				if (link->l_info_ops->io_put_attrs &&
+				    link->l_info_ops->io_put_attrs(msg, link) < 0)
+					goto nla_put_failure;
+			}
+		}
+
+		if (link->ce_mask & LINK_ATTR_LINKINFO_SLAVE_KIND) {
+			NLA_PUT_STRING(msg, IFLA_INFO_SLAVE_KIND, link->l_info_slave_kind);
 		}
 
 		nla_nest_end(msg, info);
@@ -2539,7 +2562,7 @@ int rtnl_link_set_stat(struct rtnl_link *link, rtnl_link_stat_id_t id,
  * be released with all link type specific attributes lost.
  *
  * @route_doc{link_modules, Link Modules}
- * @return 0 on success or a negative errror code.
+ * @return 0 on success or a negative error code.
  */
 int rtnl_link_set_type(struct rtnl_link *link, const char *type)
 {
@@ -2587,6 +2610,49 @@ char *rtnl_link_get_type(struct rtnl_link *link)
 {
 	return link->l_info_kind;
 }
+
+/**
+ * Set type of slave link object
+ * @arg link		Link object (slave)
+ * @arg type		Name of link type
+ *
+ * If a slave type has been assigned already it will be released.
+ *
+ * @route_doc{link_modules, Link Modules}
+ * @return 0 on success or a negative error code.
+ */
+int rtnl_link_set_slave_type(struct rtnl_link *link, const char *type)
+{
+	char *kind;
+
+	free(link->l_info_slave_kind);
+	link->ce_mask &= ~LINK_ATTR_LINKINFO_SLAVE_KIND;
+
+	if (!type)
+		return 0;
+
+	kind = strdup(type);
+	if (!kind)
+		return -NLE_NOMEM;
+
+	link->l_info_slave_kind = kind;
+	link->ce_mask |= LINK_ATTR_LINKINFO_SLAVE_KIND;
+
+	return 0;
+}
+
+/**
+ * Return type of enslaved link
+ * @arg link		Link object
+ *
+ * @route_doc{link_modules, Link Modules}
+ * @return Name of enslaved link type or NULL if not specified.
+ */
+const char *rtnl_link_get_slave_type(const struct rtnl_link *link)
+{
+	return link->l_info_slave_kind;
+}
+
 
 /**
  * Set link promiscuity count

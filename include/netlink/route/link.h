@@ -223,6 +223,9 @@ extern int	rtnl_link_set_stat(struct rtnl_link *, rtnl_link_stat_id_t,
 extern int	rtnl_link_set_type(struct rtnl_link *, const char *);
 extern char *	rtnl_link_get_type(struct rtnl_link *);
 
+extern int		rtnl_link_set_slave_type(struct rtnl_link *, const char *);
+extern const char *	rtnl_link_get_slave_type(const struct rtnl_link *);
+
 extern void	rtnl_link_set_promiscuity(struct rtnl_link *, uint32_t);
 extern uint32_t	rtnl_link_get_promiscuity(struct rtnl_link *);
 

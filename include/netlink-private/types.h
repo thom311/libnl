@@ -619,10 +619,10 @@ struct rtnl_flower
         uint16_t                cf_vlan_id;
         uint8_t                 cf_vlan_prio;
         uint16_t                cf_vlan_ethtype;
-        struct nl_data  *       cf_src_mac;
-        struct nl_data  *       cf_src_mac_mask;
-        struct nl_data  *       cf_dst_mac;
-        struct nl_data  *       cf_dst_mac_mask;
+        uint8_t                 cf_src_mac[ETH_ALEN];
+        uint8_t                 cf_src_mac_mask[ETH_ALEN];
+        uint8_t                 cf_dst_mac[ETH_ALEN];
+        uint8_t                 cf_dst_mac_mask[ETH_ALEN];
         uint8_t                 cf_ip_dscp;
         uint8_t                 cf_ip_dscp_mask;
         uint32_t                cf_flags;

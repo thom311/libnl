@@ -106,34 +106,22 @@ static int flower_msg_parser(struct rtnl_tc *tc, void *data)
 	}
 
 	if (tb[TCA_FLOWER_KEY_ETH_DST]) {
-	        f->cf_dst_mac = nl_data_alloc_attr(tb[TCA_FLOWER_KEY_ETH_DST]);
-		if (!f->cf_dst_mac)
-		        return -NLE_NOMEM;
-
+		nla_memcpy(f->cf_dst_mac, tb[TCA_FLOWER_KEY_ETH_DST], ETH_ALEN);
 		f->cf_mask |= FLOWER_ATTR_DST_MAC;
 	}
 
 	if (tb[TCA_FLOWER_KEY_ETH_DST_MASK]) {
-	        f->cf_dst_mac_mask = nl_data_alloc_attr(tb[TCA_FLOWER_KEY_ETH_DST_MASK]);
-		if (!f->cf_dst_mac_mask)
-		        return -NLE_NOMEM;
-
+		nla_memcpy(f->cf_dst_mac_mask, tb[TCA_FLOWER_KEY_ETH_DST_MASK], ETH_ALEN);
 		f->cf_mask |= FLOWER_ATTR_DST_MAC_MASK;
 	}
 
 	if (tb[TCA_FLOWER_KEY_ETH_SRC]) {
-	        f->cf_src_mac = nl_data_alloc_attr(tb[TCA_FLOWER_KEY_ETH_SRC]);
-		if (!f->cf_src_mac)
-		        return -NLE_NOMEM;
-
+		nla_memcpy(f->cf_src_mac, tb[TCA_FLOWER_KEY_ETH_SRC], ETH_ALEN);
 		f->cf_mask |= FLOWER_ATTR_SRC_MAC;
 	}
 
 	if (tb[TCA_FLOWER_KEY_ETH_SRC_MASK]) {
-	        f->cf_src_mac_mask = nl_data_alloc_attr(tb[TCA_FLOWER_KEY_ETH_SRC_MASK]);
-		if (!f->cf_src_mac_mask)
-		        return -NLE_NOMEM;
-
+		nla_memcpy(f->cf_src_mac_mask, tb[TCA_FLOWER_KEY_ETH_SRC_MASK], ETH_ALEN);
 		f->cf_mask |= FLOWER_ATTR_SRC_MAC_MASK;
 	}
 
@@ -183,16 +171,16 @@ static int flower_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 	        NLA_PUT_U16(msg, TCA_FLOWER_KEY_VLAN_ETH_TYPE, f->cf_vlan_ethtype);
 
 	if (f->cf_mask & FLOWER_ATTR_DST_MAC)
-	        NLA_PUT_DATA(msg, TCA_FLOWER_KEY_ETH_DST, f->cf_dst_mac);
+	        NLA_PUT(msg, TCA_FLOWER_KEY_ETH_DST, ETH_ALEN, f->cf_dst_mac);
 
 	if (f->cf_mask & FLOWER_ATTR_DST_MAC_MASK)
-	        NLA_PUT_DATA(msg, TCA_FLOWER_KEY_ETH_DST_MASK, f->cf_dst_mac_mask);
+	        NLA_PUT(msg, TCA_FLOWER_KEY_ETH_DST_MASK, ETH_ALEN, f->cf_dst_mac_mask);
 
 	if (f->cf_mask & FLOWER_ATTR_SRC_MAC)
-	        NLA_PUT_DATA(msg, TCA_FLOWER_KEY_ETH_SRC, f->cf_src_mac);
+	        NLA_PUT(msg, TCA_FLOWER_KEY_ETH_SRC, ETH_ALEN, f->cf_src_mac);
 
 	if (f->cf_mask & FLOWER_ATTR_SRC_MAC_MASK)
-	        NLA_PUT_DATA(msg, TCA_FLOWER_KEY_ETH_SRC_MASK, f->cf_src_mac_mask);
+	        NLA_PUT(msg, TCA_FLOWER_KEY_ETH_SRC_MASK, ETH_ALEN, f->cf_src_mac_mask);
 
 	if (f->cf_mask & FLOWER_ATTR_IP_DSCP)
 	        NLA_PUT_U8(msg, TCA_FLOWER_KEY_IP_TOS, f->cf_ip_dscp);
@@ -215,37 +203,23 @@ static void flower_free_data(struct rtnl_tc *tc, void *data)
 
 	if (f->cf_police)
 		nl_data_free(f->cf_police);
-
-	if (f->cf_dst_mac)
-	        nl_data_free(f->cf_dst_mac);
-
-	if (f->cf_dst_mac_mask)
-	        nl_data_free(f->cf_dst_mac_mask);
-
-	if (f->cf_src_mac)
-	        nl_data_free(f->cf_src_mac);
-
-	if (f->cf_src_mac_mask)
-	        nl_data_free(f->cf_src_mac_mask);
 }
 
 static int flower_clone(void *_dst, void *_src)
 {
         struct rtnl_flower *dst = _dst, *src = _src;
 
-	if (src->cf_dst_mac && !(dst->cf_dst_mac = nl_data_clone(src->cf_dst_mac)))
-	        return -NLE_NOMEM;
+	if (src->cf_mask & FLOWER_ATTR_DST_MAC)
+		memcpy(dst->cf_dst_mac, src->cf_dst_mac, ETH_ALEN);
 
-	if (src->cf_dst_mac_mask &&
-	    !(dst->cf_dst_mac_mask = nl_data_clone(src->cf_dst_mac_mask)))
-	        return -NLE_NOMEM;
+	if (src->cf_mask & FLOWER_ATTR_DST_MAC_MASK)
+		memcpy(dst->cf_dst_mac_mask, src->cf_dst_mac_mask, ETH_ALEN);
 
-	if (src->cf_src_mac && !(dst->cf_src_mac = nl_data_clone(src->cf_src_mac)))
-	        return -NLE_NOMEM;
+	if (src->cf_mask & FLOWER_ATTR_SRC_MAC)
+		memcpy(dst->cf_src_mac, src->cf_src_mac, ETH_ALEN);
 
-	if (src->cf_src_mac_mask &&
-	    !(dst->cf_src_mac_mask = nl_data_clone(src->cf_src_mac_mask)))
-	        return -NLE_NOMEM;
+	if (src->cf_mask & FLOWER_ATTR_SRC_MAC_MASK)
+		memcpy(dst->cf_src_mac_mask, src->cf_src_mac_mask, ETH_ALEN);
 
 	if (src->cf_act) {
 		if (!(dst->cf_act = rtnl_act_alloc()))
@@ -306,16 +280,28 @@ static void flower_dump_details(struct rtnl_tc *tc, void *data,
 	        nl_dump(p, " vlan_ethtype %u", f->cf_vlan_ethtype);
 
 	if (f->cf_mask & FLOWER_ATTR_DST_MAC)
-	        nl_dump(p, " dst_mac %s", f->cf_dst_mac);
+	        nl_dump(p, " dst_mac %02x:%02x:%02x:%02x:%02x:%02x",
+			f->cf_dst_mac[0], f->cf_dst_mac[1],
+			f->cf_dst_mac[2], f->cf_dst_mac[3],
+			f->cf_dst_mac[4], f->cf_dst_mac[5]);
 
 	if (f->cf_mask & FLOWER_ATTR_DST_MAC_MASK)
-	        nl_dump(p, " dst_mac_mask %s", f->cf_dst_mac_mask);
+	        nl_dump(p, " dst_mac_mask %02x:%02x:%02x:%02x:%02x:%02x",
+			f->cf_dst_mac_mask[0], f->cf_dst_mac_mask[1],
+			f->cf_dst_mac_mask[2], f->cf_dst_mac_mask[3],
+			f->cf_dst_mac_mask[4], f->cf_dst_mac_mask[5]);
 
 	if (f->cf_mask & FLOWER_ATTR_SRC_MAC)
-	        nl_dump(p, " src_mac %s", f->cf_src_mac);
+	        nl_dump(p, " src_mac %02x:%02x:%02x:%02x:%02x:%02x",
+			f->cf_src_mac[0], f->cf_src_mac[1],
+			f->cf_src_mac[2], f->cf_src_mac[3],
+			f->cf_src_mac[4], f->cf_src_mac[5]);
 
 	if (f->cf_mask & FLOWER_ATTR_SRC_MAC_MASK)
-	        nl_dump(p, " src_mac_mask %s", f->cf_src_mac_mask);
+	        nl_dump(p, " src_mac_mask %02x:%02x:%02x:%02x:%02x:%02x",
+			f->cf_src_mac_mask[0], f->cf_src_mac_mask[1],
+			f->cf_src_mac_mask[2], f->cf_src_mac_mask[3],
+			f->cf_src_mac_mask[4], f->cf_src_mac_mask[5]);
 
 	if (f->cf_mask & FLOWER_ATTR_IP_DSCP)
 	        nl_dump(p, " dscp %u", f->cf_ip_dscp);
@@ -496,19 +482,11 @@ int rtnl_flower_set_dst_mac(struct rtnl_cls *cls, unsigned char *mac,
 	        return -NLE_NOMEM;
 
 	if (mac) {
-	        f->cf_dst_mac = nl_data_alloc(NULL, ETH_ALEN * sizeof(unsigned char));
-		if (!f->cf_dst_mac)
-		        return -NLE_NOMEM;
-
-		memcpy(f->cf_dst_mac->d_data, mac, ETH_ALEN);
+		memcpy(f->cf_dst_mac, mac, ETH_ALEN);
 		f->cf_mask |= FLOWER_ATTR_DST_MAC;
 
 		if (mask) {
-		        f->cf_dst_mac_mask = nl_data_alloc(NULL, ETH_ALEN * sizeof(unsigned char));
-			if (!f->cf_dst_mac_mask)
-			        return -NLE_NOMEM;
-
-			memcpy(f->cf_dst_mac_mask->d_data, mask, ETH_ALEN);
+			memcpy(f->cf_dst_mac_mask, mask, ETH_ALEN);
 			f->cf_mask |= FLOWER_ATTR_DST_MAC_MASK;
 		}
 
@@ -536,10 +514,10 @@ int rtnl_flower_get_dst_mac(struct rtnl_cls *cls, unsigned char *mac,
         if (!(f->cf_mask & FLOWER_ATTR_DST_MAC))
 	        return -NLE_MISSING_ATTR;
 
-	memcpy(mac, f->cf_dst_mac->d_data, ETH_ALEN);
+	memcpy(mac, f->cf_dst_mac, ETH_ALEN);
 
 	if (f->cf_mask & FLOWER_ATTR_DST_MAC_MASK)
-	        memcpy(mask, f->cf_dst_mac_mask->d_data, ETH_ALEN);
+	        memcpy(mask, f->cf_dst_mac_mask, ETH_ALEN);
 
         return 0;
 }
@@ -560,19 +538,11 @@ int rtnl_flower_set_src_mac(struct rtnl_cls *cls, unsigned char *mac,
 	        return -NLE_NOMEM;
 
 	if (mac) {
-	        f->cf_src_mac = nl_data_alloc(NULL, ETH_ALEN * sizeof(unsigned char));
-		if (!f->cf_src_mac)
-		        return -NLE_NOMEM;
-
-		memcpy(f->cf_src_mac->d_data, mac, ETH_ALEN);
+		memcpy(f->cf_src_mac, mac, ETH_ALEN);
 		f->cf_mask |= FLOWER_ATTR_SRC_MAC;
 
 		if (mask) {
-		        f->cf_src_mac_mask = nl_data_alloc(NULL, ETH_ALEN * sizeof(unsigned char));
-			if (!f->cf_src_mac_mask)
-			        return -NLE_NOMEM;
-
-			memcpy(f->cf_src_mac_mask->d_data, mask, ETH_ALEN);
+			memcpy(f->cf_src_mac_mask, mask, ETH_ALEN);
 			f->cf_mask |= FLOWER_ATTR_SRC_MAC_MASK;
 		}
 
@@ -600,10 +570,10 @@ int rtnl_flower_get_src_mac(struct rtnl_cls *cls, unsigned char *mac,
         if (!(f->cf_mask & FLOWER_ATTR_SRC_MAC))
 	        return -NLE_MISSING_ATTR;
 
-	memcpy(mac, f->cf_src_mac->d_data, ETH_ALEN);
+	memcpy(mac, f->cf_src_mac, ETH_ALEN);
 
 	if (f->cf_mask & FLOWER_ATTR_SRC_MAC_MASK)
-	        memcpy(mask, f->cf_src_mac_mask->d_data, ETH_ALEN);
+	        memcpy(mask, f->cf_src_mac_mask, ETH_ALEN);
 
         return 0;
 }

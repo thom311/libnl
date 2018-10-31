@@ -646,7 +646,7 @@ int rtnl_tc_str2stat(const char *name)
  * 
  * @return Required transmit time in micro seconds.
  */
-int rtnl_tc_calc_txtime(int bufsize, int rate)
+int rtnl_tc_calc_txtime(int bufsize, uint64_t rate)
 {
 	double tx_time_secs;
 	
@@ -669,7 +669,7 @@ int rtnl_tc_calc_txtime(int bufsize, int rate)
  *
  * @return Size of buffer in bytes.
  */
-int rtnl_tc_calc_bufsize(int txtime, int rate)
+int rtnl_tc_calc_bufsize(int txtime, uint64_t rate)
 {
 	double bufsize;
 

@@ -776,6 +776,8 @@ struct rtnl_htb_class
 	uint32_t		ch_quantum;
 	uint32_t		ch_mask;
 	uint32_t		ch_level;
+	uint64_t		ch_rate64;
+	uint64_t		ch_ceil64;
 };
 
 struct rtnl_cbq

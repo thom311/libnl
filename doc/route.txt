@@ -1886,8 +1886,8 @@ or erqual than the rate of its children.
 +
 [source,c]
 -----
-uint32_t rtnl_htb_get_rate(struct rtnl_class *class);
-int rtnl_htb_set_rate(struct rtnl_class *class, uint32_t ceil);
+uint64_t rtnl_htb_get_rate(struct rtnl_class *class);
+int rtnl_htb_set_rate(struct rtnl_class *class, uint64_t ceil);
 -----
 
 Ceil Rate::
@@ -1899,8 +1899,8 @@ be greater or erqual than the ceil rate of its children.
 +
 [source,c]
 -----
-uint32_t rtnl_htb_get_ceil(struct rtnl_class *class);
-int rtnl_htb_set_ceil(struct rtnl_class *class, uint32_t ceil);
+uint64_t rtnl_htb_get_ceil(struct rtnl_class *class);
+int rtnl_htb_set_ceil(struct rtnl_class *class, uint64_t ceil);
 -----
 
 Burst::

@@ -377,7 +377,7 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 		return -NLE_MISSING_ATTR;
 
 	nla_strlcpy(link->l_name, tb[IFLA_IFNAME], IFNAMSIZ);
-
+	link->ce_mask |= LINK_ATTR_IFNAME;
 
 	if (tb[IFLA_STATS]) {
 		struct rtnl_link_stats *st = nla_data(tb[IFLA_STATS]);
@@ -593,7 +593,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	link->l_index = ifi->ifi_index;
 	link->l_flags = ifi->ifi_flags;
 	link->l_change = ifi->ifi_change;
-	link->ce_mask = (LINK_ATTR_IFNAME | LINK_ATTR_FAMILY |
+	link->ce_mask = (LINK_ATTR_FAMILY |
 			 LINK_ATTR_ARPTYPE| LINK_ATTR_IFINDEX |
 			 LINK_ATTR_FLAGS | LINK_ATTR_CHANGE);
 

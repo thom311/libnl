@@ -1087,7 +1087,9 @@ global:
 	rtnl_link_geneve_set_udp_csum;
 	rtnl_link_geneve_set_udp_zero_csum6_rx;
 	rtnl_link_geneve_set_udp_zero_csum6_tx;
+	rtnl_link_get_slave_type;
 	rtnl_link_is_geneve;
+	rtnl_link_set_slave_type;
 	rtnl_mall_append_action;
 	rtnl_mall_del_action;
 	rtnl_mall_get_classid;

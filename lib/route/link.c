@@ -2623,21 +2623,21 @@ char *rtnl_link_get_type(struct rtnl_link *link)
  */
 int rtnl_link_set_slave_type(struct rtnl_link *link, const char *type)
 {
-	char *kind;
+	char *kind = NULL;
+
+	if (type) {
+		kind = strdup(type);
+		if (!kind)
+			return -NLE_NOMEM;
+	}
 
 	free(link->l_info_slave_kind);
-	link->ce_mask &= ~LINK_ATTR_LINKINFO_SLAVE_KIND;
-
-	if (!type)
-		return 0;
-
-	kind = strdup(type);
-	if (!kind)
-		return -NLE_NOMEM;
-
 	link->l_info_slave_kind = kind;
-	link->ce_mask |= LINK_ATTR_LINKINFO_SLAVE_KIND;
 
+	if (kind)
+		link->ce_mask |= LINK_ATTR_LINKINFO_SLAVE_KIND;
+	else
+		link->ce_mask &= ~LINK_ATTR_LINKINFO_SLAVE_KIND;
 	return 0;
 }
 

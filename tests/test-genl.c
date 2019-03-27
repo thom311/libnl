@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 	if ((err = nla_put_u32(msg, TASKSTATS_CMD_ATTR_PID, 1)) < 0)
 		nl_cli_fatal(err, "Unable to add attribute: %s", nl_geterror(err));
 
-	if ((err = nl_send_auto_complete(sock, msg)) < 0)
+	if ((err = nl_send_auto(sock, msg)) < 0)
 		nl_cli_fatal(err, "Unable to send message: %s", nl_geterror(err));
 
 	nlmsg_free(msg);

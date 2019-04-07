@@ -1090,6 +1090,12 @@ global:
 	rtnl_link_get_slave_type;
 	rtnl_link_is_geneve;
 	rtnl_link_set_slave_type;
+	rtnl_link_is_xfrmi;
+	rtnl_link_xfrmi_alloc;
+	rtnl_link_xfrmi_get_link;
+	rtnl_link_xfrmi_get_if_id;
+	rtnl_link_xfrmi_set_link;
+	rtnl_link_xfrmi_set_if_id;
 	rtnl_mall_append_action;
 	rtnl_mall_del_action;
 	rtnl_mall_get_classid;

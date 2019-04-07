@@ -949,7 +949,7 @@ extern uint8_t rtnl_link_ipip_get_pmtudisc(struct rtnl_link *link);
 struct rtnl_link *link
 struct in_addr addr
 
-/* allocate new link object of type vxlan */
+/* allocate new link object of type ipip */
 if(!(link = rtnl_link_ipip_alloc()))
         /* error */
 
@@ -1027,7 +1027,7 @@ extern uint8_t rtnl_link_ipgre_get_pmtudisc(struct rtnl_link *link);
 struct rtnl_link *link
 struct in_addr addr
 
-/* allocate new link object of type vxlan */
+/* allocate new link object of type ipgre */
 if(!(link = rtnl_link_ipgre_alloc()))
 	/* error */
 
@@ -1105,7 +1105,7 @@ extern uint8_t rtnl_link_sit_get_pmtudisc(struct rtnl_link *link);
 struct rtnl_link *link
 struct in_addr addr
 
-/* allocate new link object of type vxlan */
+/* allocate new link object of type sit */
 if(!(link = rtnl_link_sit_alloc()))
 	/* error */
 
@@ -1169,7 +1169,7 @@ extern uint32_t rtnl_link_ipvti_get_remote(struct rtnl_link *link);
 struct rtnl_link *link
 struct in_addr addr
 
-/* allocate new link object of type vxlan */
+/* allocate new link object of type ipvti */
 if(!(link = rtnl_link_ipvti_alloc()))
 	/* error */
 

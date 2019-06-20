@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * lib/netfilter/ct_obj.c	Conntrack Object
  *

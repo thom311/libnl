@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * This code was taken from http://ccodearchive.net/info/hash.html
  * The original file was modified to remove unwanted code

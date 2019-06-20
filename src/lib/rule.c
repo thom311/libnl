@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * src/lib/rule.c     CLI Routing Rule Helpers
  *

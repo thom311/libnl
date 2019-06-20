@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  *  lib/idiag/idiag.c    Inet Diag Netlink
  *

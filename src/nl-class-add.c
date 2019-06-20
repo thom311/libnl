@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * src/nl-class-add.c     Add/Update/Replace Traffic Class
  *

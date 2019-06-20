@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * nl-list-sockets.c	Pretty-print /proc/net/netlink
  *

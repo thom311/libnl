@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * lib/idiag/idiagnl_vegasinfo_obj.c Inet Diag TCP Vegas Info Object
  *

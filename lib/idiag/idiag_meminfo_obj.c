@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * lib/idiag/idiagnl_meminfo_obj.c Inet Diag Meminfo Object
  *

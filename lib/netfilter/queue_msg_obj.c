@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * lib/netfilter/queue_msg_obj.c	Netfilter Queue Message Object
  *

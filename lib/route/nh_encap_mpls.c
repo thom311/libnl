@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 
 #include <netlink-private/netlink.h>
 #include <netlink-private/types.h>

@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * src/nl-link-ifindex2name.c     Transform a interface index to its name
  *

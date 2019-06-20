@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * Adapted from mpls_ntop and mpls_pton copied from iproute2,
  * lib/mpls_ntop.c and lib/mpls_pton.c

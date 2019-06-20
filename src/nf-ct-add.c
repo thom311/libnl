@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * src/nf-ct-add.c     Add Conntrack Entry
  *

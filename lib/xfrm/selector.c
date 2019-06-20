@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * Copyright (C) 2012 Texas Instruments Incorporated - http://www.ti.com/
  *

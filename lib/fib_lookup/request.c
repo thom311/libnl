@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * lib/fib_lookup/request.c	FIB Lookup Request
  *

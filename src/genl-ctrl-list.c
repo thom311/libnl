@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * src/genl-ctrl-list.c	List Generic Netlink Families
  *

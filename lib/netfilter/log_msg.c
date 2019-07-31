@@ -43,7 +43,36 @@ static struct nla_policy log_msg_policy[NFULA_MAX+1] = {
 	[NFULA_GID]			= { .type = NLA_U32 },
 	[NFULA_SEQ]			= { .type = NLA_U32 },
 	[NFULA_SEQ_GLOBAL]		= { .type = NLA_U32 },
+	[NFULA_VLAN]			= { .type = NLA_NESTED },
 };
+
+static struct nla_policy log_msg_vlan_policy[NFULA_VLAN_MAX+1] = {
+	[NFULA_VLAN_PROTO]		= { .type = NLA_U16 },
+	[NFULA_VLAN_TCI]		= { .type = NLA_U16 },
+};
+
+static int
+nfnlmsg_log_msg_parse_vlan(struct nlattr *attr_full, struct nfnl_log_msg *msg)
+{
+	struct nlattr *tb[NFULA_VLAN_MAX+1];
+	struct nlattr *attr;
+	int err;
+
+	err = nla_parse_nested(tb, NFULA_VLAN_MAX, attr_full,
+			       log_msg_vlan_policy);
+	if (err < 0)
+		return err;
+
+	attr = tb[NFULA_VLAN_PROTO];
+	if (attr)
+		nfnl_log_msg_set_vlan_proto(msg, nla_get_u16(attr));
+
+	attr = tb[NFULA_VLAN_TCI];
+	if (attr)
+		nfnl_log_msg_set_vlan_tag(msg, ntohs(nla_get_u16(attr)));
+
+	return 0;
+}
 
 int nfnlmsg_log_msg_parse(struct nlmsghdr *nlh, struct nfnl_log_msg **result)
 {
@@ -140,6 +169,13 @@ int nfnlmsg_log_msg_parse(struct nlmsghdr *nlh, struct nfnl_log_msg **result)
 	attr = tb[NFULA_SEQ_GLOBAL];
 	if (attr)
 		nfnl_log_msg_set_seq_global(msg, ntohl(nla_get_u32(attr)));
+
+	attr = tb[NFULA_VLAN];
+	if (attr) {
+		err = nfnlmsg_log_msg_parse_vlan(attr, msg);
+		if (err < 0)
+			goto errout;
+	}
 
 	*result = msg;
 	return 0;

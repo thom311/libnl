@@ -1009,6 +1009,8 @@ struct nfnl_log_msg {
 	uint32_t		log_msg_gid;
 	uint32_t		log_msg_seq;
 	uint32_t		log_msg_seq_global;
+	uint16_t		log_msg_vlan_tag;
+	uint16_t		log_msg_vlan_proto;
 };
 
 struct nfnl_queue {

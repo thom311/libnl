@@ -27,6 +27,8 @@
 #define LOG_MSG_ATTR_GID		(1UL << 13)
 #define LOG_MSG_ATTR_SEQ		(1UL << 14)
 #define LOG_MSG_ATTR_SEQ_GLOBAL		(1UL << 15)
+#define LOG_MSG_ATTR_VLAN_PROTO		(1UL << 16)
+#define LOG_MSG_ATTR_VLAN_TAG		(1UL << 17)
 /** @endcond */
 
 static void log_msg_free_data(struct nl_object *c)
@@ -159,6 +161,12 @@ static void log_msg_dump(struct nl_object *a, struct nl_dump_params *p)
 
 	if (msg->ce_mask & LOG_MSG_ATTR_SEQ_GLOBAL)
 		nl_dump(p, "SEQGLOBAL=%d ", msg->log_msg_seq_global);
+
+	if (msg->ce_mask & LOG_MSG_ATTR_VLAN_TAG)
+		nl_dump(p, "VLAN=%d CFI=%d PRIO=%d",
+		        (int) nfnl_log_msg_get_vlan_id(msg),
+		        (int) nfnl_log_msg_get_vlan_cfi(msg),
+		        (int) nfnl_log_msg_get_vlan_prio(msg));
 
 	nl_dump(p, "\n");
 
@@ -436,6 +444,53 @@ int nfnl_log_msg_test_seq_global(const struct nfnl_log_msg *msg)
 uint32_t nfnl_log_msg_get_seq_global(const struct nfnl_log_msg *msg)
 {
 	return msg->log_msg_seq_global;
+}
+
+void nfnl_log_msg_set_vlan_proto(struct nfnl_log_msg *msg, uint16_t vlan_proto)
+{
+	msg->log_msg_vlan_proto = vlan_proto;
+	msg->ce_mask |= LOG_MSG_ATTR_VLAN_PROTO;
+}
+
+int nfnl_log_msg_test_vlan_proto(const struct nfnl_log_msg *msg)
+{
+	return !!(msg->ce_mask & LOG_MSG_ATTR_VLAN_PROTO);
+}
+
+uint16_t nfnl_log_msg_get_vlan_proto(const struct nfnl_log_msg *msg)
+{
+	return msg->log_msg_vlan_proto;
+}
+
+void nfnl_log_msg_set_vlan_tag(struct nfnl_log_msg *msg, uint16_t vlan_tag)
+{
+	msg->log_msg_vlan_tag = vlan_tag;
+	msg->ce_mask |= LOG_MSG_ATTR_VLAN_TAG;
+}
+
+int nfnl_log_msg_test_vlan_tag(const struct nfnl_log_msg *msg)
+{
+	return !!(msg->ce_mask & LOG_MSG_ATTR_VLAN_TAG);
+}
+
+uint16_t nfnl_log_msg_get_vlan_tag(const struct nfnl_log_msg *msg)
+{
+	return msg->log_msg_vlan_tag;
+}
+
+uint16_t nfnl_log_msg_get_vlan_id(const struct nfnl_log_msg *msg)
+{
+	return msg->log_msg_vlan_tag & 0x0fff;
+}
+
+uint16_t nfnl_log_msg_get_vlan_cfi(const struct nfnl_log_msg *msg)
+{
+	return !!(msg->log_msg_vlan_tag & 0x1000);
+}
+
+uint16_t nfnl_log_msg_get_vlan_prio(const struct nfnl_log_msg *msg)
+{
+	return (msg->log_msg_vlan_tag & 0xe000 ) >> 13;
 }
 
 /** @} */

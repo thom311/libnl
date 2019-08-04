@@ -208,9 +208,15 @@ void nfnl_log_unset_flags(struct nfnl_log *log, unsigned int flags)
 	log->log_flag_mask |= flags;
 }
 
+unsigned int nfnl_log_get_flags(const struct nfnl_log *log)
+{
+	return log->log_flags;
+}
+
 static const struct trans_tbl log_flags[] = {
 	__ADD(NFNL_LOG_FLAG_SEQ,	seq),
 	__ADD(NFNL_LOG_FLAG_SEQ_GLOBAL,	seq_global),
+	__ADD(NFNL_LOG_FLAG_CONNTRACK,	conntrack),
 };
 
 char *nfnl_log_flags2str(unsigned int flags, char *buf, size_t len)

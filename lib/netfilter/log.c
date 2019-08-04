@@ -144,6 +144,11 @@ static int nfnl_log_build_request(const struct nfnl_log *log,
 			htonl(nfnl_log_get_queue_threshold(log))) < 0)
 		goto nla_put_failure;
 
+	if (nfnl_log_get_flags(log) &&
+	    nla_put_u16(msg, NFULA_CFG_FLAGS,
+			htons(nfnl_log_get_flags(log))) < 0)
+		goto nla_put_failure;
+
 	*result = msg;
 	return 0;
 

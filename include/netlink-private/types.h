@@ -1009,6 +1009,10 @@ struct nfnl_log_msg {
 	uint32_t		log_msg_gid;
 	uint32_t		log_msg_seq;
 	uint32_t		log_msg_seq_global;
+	uint16_t		log_msg_hwtype;
+	uint16_t		log_msg_hwlen;
+	void *			log_msg_hwheader;
+	int			log_msg_hwheader_len;
 	uint16_t		log_msg_vlan_tag;
 	uint16_t		log_msg_vlan_proto;
 };

@@ -27,8 +27,11 @@
 #define LOG_MSG_ATTR_GID		(1UL << 13)
 #define LOG_MSG_ATTR_SEQ		(1UL << 14)
 #define LOG_MSG_ATTR_SEQ_GLOBAL		(1UL << 15)
-#define LOG_MSG_ATTR_VLAN_PROTO		(1UL << 16)
-#define LOG_MSG_ATTR_VLAN_TAG		(1UL << 17)
+#define LOG_MSG_ATTR_HWTYPE		(1UL << 16)
+#define LOG_MSG_ATTR_HWLEN		(1UL << 17)
+#define LOG_MSG_ATTR_HWHEADER		(1UL << 18)
+#define LOG_MSG_ATTR_VLAN_PROTO		(1UL << 19)
+#define LOG_MSG_ATTR_VLAN_TAG		(1UL << 20)
 /** @endcond */
 
 static void log_msg_free_data(struct nl_object *c)
@@ -40,6 +43,7 @@ static void log_msg_free_data(struct nl_object *c)
 
 	free(msg->log_msg_payload);
 	free(msg->log_msg_prefix);
+	free(msg->log_msg_hwheader);
 }
 
 static int log_msg_clone(struct nl_object *_dst, struct nl_object *_src)
@@ -57,6 +61,13 @@ static int log_msg_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	if (src->log_msg_prefix) {
 		err = nfnl_log_msg_set_prefix(dst, src->log_msg_prefix);
+		if (err < 0)
+			goto errout;
+	}
+
+	if (src->log_msg_hwheader) {
+		err = nfnl_log_msg_set_hwheader(dst, src->log_msg_hwheader,
+		                                src->log_msg_hwheader_len);
 		if (err < 0)
 			goto errout;
 	}
@@ -161,6 +172,21 @@ static void log_msg_dump(struct nl_object *a, struct nl_dump_params *p)
 
 	if (msg->ce_mask & LOG_MSG_ATTR_SEQ_GLOBAL)
 		nl_dump(p, "SEQGLOBAL=%d ", msg->log_msg_seq_global);
+
+	if (msg->ce_mask & LOG_MSG_ATTR_HWTYPE)
+		nl_dump(p, "HWTYPE=%u ", msg->log_msg_hwtype);
+
+	if (msg->ce_mask & LOG_MSG_ATTR_HWLEN)
+		nl_dump(p, "HWLEN=%u ", msg->log_msg_hwlen);
+
+	if (msg->ce_mask & LOG_MSG_ATTR_HWHEADER) {
+		int i;
+
+		nl_dump(p, "HWHEADER");
+		for (i = 0; i < msg->log_msg_hwheader_len; i++)
+			nl_dump(p, "%c%02x", i?':':'=', ((uint8_t*) msg->log_msg_hwheader) [i]);
+		nl_dump(p, " ");
+	}
 
 	if (msg->ce_mask & LOG_MSG_ATTR_VLAN_TAG)
 		nl_dump(p, "VLAN=%d CFI=%d PRIO=%d",
@@ -444,6 +470,67 @@ int nfnl_log_msg_test_seq_global(const struct nfnl_log_msg *msg)
 uint32_t nfnl_log_msg_get_seq_global(const struct nfnl_log_msg *msg)
 {
 	return msg->log_msg_seq_global;
+}
+
+void nfnl_log_msg_set_hwtype(struct nfnl_log_msg *msg, uint16_t hwtype)
+{
+	msg->log_msg_hwtype = hwtype;
+	msg->ce_mask |= LOG_MSG_ATTR_HWTYPE;
+}
+
+int nfnl_log_msg_test_hwtype(const struct nfnl_log_msg *msg)
+{
+	return !!(msg->ce_mask & LOG_MSG_ATTR_HWTYPE);
+}
+
+uint16_t nfnl_log_msg_get_hwtype(const struct nfnl_log_msg *msg)
+{
+	return msg->log_msg_hwtype;
+}
+
+void nfnl_log_msg_set_hwlen(struct nfnl_log_msg *msg, uint16_t hwlen)
+{
+	msg->log_msg_hwlen = hwlen;
+	msg->ce_mask |= LOG_MSG_ATTR_HWLEN;
+}
+
+int nfnl_log_msg_test_hwlen(const struct nfnl_log_msg *msg)
+{
+	return !!(msg->ce_mask & LOG_MSG_ATTR_HWLEN);
+}
+
+uint16_t nfnl_log_msg_get_hwlen(const struct nfnl_log_msg *msg)
+{
+	return msg->log_msg_hwlen;
+}
+
+int nfnl_log_msg_set_hwheader(struct nfnl_log_msg *msg, void *data, int len)
+{
+	free(msg->log_msg_hwheader);
+	msg->log_msg_hwheader = malloc(len);
+	if (!msg->log_msg_hwheader)
+		return -NLE_NOMEM;
+
+	memcpy(msg->log_msg_hwheader, data, len);
+	msg->log_msg_hwheader_len = len;
+	msg->ce_mask |= LOG_MSG_ATTR_HWHEADER;
+	return 0;
+}
+
+int nfnl_log_msg_test_hwheader(const struct nfnl_log_msg *msg)
+{
+	return !!(msg->ce_mask & LOG_MSG_ATTR_HWHEADER);
+}
+
+const void *nfnl_log_msg_get_hwheader(const struct nfnl_log_msg *msg, int *len)
+{
+	if (!(msg->ce_mask & LOG_MSG_ATTR_HWHEADER)) {
+		*len = 0;
+		return NULL;
+	}
+
+	*len = msg->log_msg_hwheader_len;
+	return msg->log_msg_hwheader;
 }
 
 void nfnl_log_msg_set_vlan_proto(struct nfnl_log_msg *msg, uint16_t vlan_proto)

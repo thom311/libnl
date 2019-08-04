@@ -84,6 +84,18 @@ extern void		nfnl_log_msg_set_seq_global(struct nfnl_log_msg *, uint32_t);
 extern int		nfnl_log_msg_test_seq_global(const struct nfnl_log_msg *);
 extern uint32_t		nfnl_log_msg_get_seq_global(const struct nfnl_log_msg *);
 
+extern void		nfnl_log_msg_set_hwtype(struct nfnl_log_msg *, uint16_t);
+extern int		nfnl_log_msg_test_hwtype(const struct nfnl_log_msg *);
+extern uint16_t		nfnl_log_msg_get_hwtype(const struct nfnl_log_msg *);
+
+extern void		nfnl_log_msg_set_hwlen(struct nfnl_log_msg *, uint16_t);
+extern int		nfnl_log_msg_test_hwlen(const struct nfnl_log_msg *);
+extern uint16_t		nfnl_log_msg_get_hwlen(const struct nfnl_log_msg *);
+
+extern int		nfnl_log_msg_set_hwheader(struct nfnl_log_msg *, void *, int);
+extern int		nfnl_log_msg_test_hwheader(const struct nfnl_log_msg *);
+extern const void *	nfnl_log_msg_get_hwheader(const struct nfnl_log_msg *, int *);
+
 extern void		nfnl_log_msg_set_vlan_proto(struct nfnl_log_msg *, uint16_t);
 extern int		nfnl_log_msg_test_vlan_proto(const struct nfnl_log_msg *);
 extern uint16_t		nfnl_log_msg_get_vlan_proto(const struct nfnl_log_msg *);

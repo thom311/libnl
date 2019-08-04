@@ -214,8 +214,9 @@ static void ct_dump_details(struct nl_object *a, struct nl_dump_params *p)
 	ct_dump_line(a, p);
 
 	nl_dump(p, "    id 0x%x ", ct->ct_id);
-	nl_dump_line(p, "family %s ",
-		nl_af2str(ct->ct_family, buf, sizeof(buf)));
+	if (ct->ce_mask & CT_ATTR_FAMILY)
+		nl_dump_line(p, "family %s ",
+			nl_af2str(ct->ct_family, buf, sizeof(buf)));
 
 	if (nfnl_ct_test_use(ct))
 		nl_dump(p, "refcnt %u ", nfnl_ct_get_use(ct));

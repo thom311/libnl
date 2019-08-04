@@ -17,6 +17,7 @@ extern "C" {
 
 struct nlmsghdr;
 struct nfnl_log_msg;
+struct nfnl_ct;
 
 extern struct nl_object_ops log_msg_obj_ops;
 
@@ -105,6 +106,14 @@ extern uint16_t		nfnl_log_msg_get_vlan_tag(const struct nfnl_log_msg *);
 extern uint16_t		nfnl_log_msg_get_vlan_id(const struct nfnl_log_msg *);
 extern uint16_t		nfnl_log_msg_get_vlan_cfi(const struct nfnl_log_msg *);
 extern uint16_t		nfnl_log_msg_get_vlan_prio(const struct nfnl_log_msg *);
+
+extern void		nfnl_log_msg_set_ct_info(struct nfnl_log_msg *, uint32_t);
+extern int		nfnl_log_msg_test_ct_info(const struct nfnl_log_msg *);
+extern uint32_t		nfnl_log_msg_get_ct_info(const struct nfnl_log_msg *);
+
+extern void		nfnl_log_msg_set_ct(struct nfnl_log_msg *, struct nfnl_ct *);
+extern int		nfnl_log_msg_test_ct(const struct nfnl_log_msg *);
+extern struct nfnl_ct * nfnl_log_msg_get_ct(const struct nfnl_log_msg *);
 
 #ifdef __cplusplus
 }

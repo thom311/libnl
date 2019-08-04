@@ -30,6 +30,7 @@ enum nfnl_log_copy_mode {
 enum nfnl_log_flags {
 	NFNL_LOG_FLAG_SEQ		= 0x1,
 	NFNL_LOG_FLAG_SEQ_GLOBAL	= 0x2,
+	NFNL_LOG_FLAG_CONNTRACK		= 0x4,
 };
 
 /* General */

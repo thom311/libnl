@@ -32,6 +32,8 @@
 #define LOG_MSG_ATTR_HWHEADER		(1UL << 18)
 #define LOG_MSG_ATTR_VLAN_PROTO		(1UL << 19)
 #define LOG_MSG_ATTR_VLAN_TAG		(1UL << 20)
+#define LOG_MSG_ATTR_CT_INFO		(1UL << 21)
+#define LOG_MSG_ATTR_CT			(1UL << 22)
 /** @endcond */
 
 static void log_msg_free_data(struct nl_object *c)
@@ -44,6 +46,8 @@ static void log_msg_free_data(struct nl_object *c)
 	free(msg->log_msg_payload);
 	free(msg->log_msg_prefix);
 	free(msg->log_msg_hwheader);
+	if (msg->log_msg_ct)
+		nfnl_ct_put(msg->log_msg_ct);
 }
 
 static int log_msg_clone(struct nl_object *_dst, struct nl_object *_src)
@@ -70,6 +74,14 @@ static int log_msg_clone(struct nl_object *_dst, struct nl_object *_src)
 		                                src->log_msg_hwheader_len);
 		if (err < 0)
 			goto errout;
+	}
+
+	if (src->log_msg_ct) {
+		dst->log_msg_ct = (struct nfnl_ct *) nl_object_clone((struct nl_object *) src->log_msg_ct);
+		if (!dst->log_msg_ct) {
+			err = -NLE_NOMEM;
+			goto errout;
+		}
 	}
 
 	return 0;
@@ -194,7 +206,13 @@ static void log_msg_dump(struct nl_object *a, struct nl_dump_params *p)
 		        (int) nfnl_log_msg_get_vlan_cfi(msg),
 		        (int) nfnl_log_msg_get_vlan_prio(msg));
 
+	if (msg->ce_mask & LOG_MSG_ATTR_CT_INFO)
+		nl_dump(p, "CTINFO=%u ", msg->log_msg_ct_info);
+
 	nl_dump(p, "\n");
+
+	if (msg->ce_mask & LOG_MSG_ATTR_CT)
+		ct_obj_ops.oo_dump[NL_DUMP_LINE]((struct nl_object *)msg->log_msg_ct, p);
 
 	if (link_cache)
 		nl_cache_put(link_cache);
@@ -578,6 +596,38 @@ uint16_t nfnl_log_msg_get_vlan_cfi(const struct nfnl_log_msg *msg)
 uint16_t nfnl_log_msg_get_vlan_prio(const struct nfnl_log_msg *msg)
 {
 	return (msg->log_msg_vlan_tag & 0xe000 ) >> 13;
+}
+
+void nfnl_log_msg_set_ct_info(struct nfnl_log_msg *msg, uint32_t ct_info)
+{
+	msg->log_msg_ct_info = ct_info;
+	msg->ce_mask |= LOG_MSG_ATTR_CT_INFO;
+}
+
+int nfnl_log_msg_test_ct_info(const struct nfnl_log_msg *msg)
+{
+	return !!(msg->ce_mask & LOG_MSG_ATTR_CT_INFO);
+}
+
+uint32_t nfnl_log_msg_get_ct_info(const struct nfnl_log_msg *msg)
+{
+	return msg->log_msg_ct_info;
+}
+
+void nfnl_log_msg_set_ct(struct nfnl_log_msg *msg, struct nfnl_ct *ct)
+{
+	msg->log_msg_ct = (struct nfnl_ct *) nl_object_clone((struct nl_object *)ct);
+	msg->ce_mask |= LOG_MSG_ATTR_CT;
+}
+
+int nfnl_log_msg_test_ct(const struct nfnl_log_msg *msg)
+{
+	return !!(msg->ce_mask & LOG_MSG_ATTR_CT);
+}
+
+struct nfnl_ct *nfnl_log_msg_get_ct(const struct nfnl_log_msg *msg)
+{
+	return msg->log_msg_ct;
 }
 
 /** @} */

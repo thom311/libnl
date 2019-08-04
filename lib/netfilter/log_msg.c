@@ -46,6 +46,8 @@ static struct nla_policy log_msg_policy[NFULA_MAX+1] = {
 	[NFULA_HWTYPE]			= { .type = NLA_U16 },
 	[NFULA_HWLEN]			= { .type = NLA_U16 },
 	[NFULA_VLAN]			= { .type = NLA_NESTED },
+	[NFULA_CT]			= { .type = NLA_NESTED },
+	[NFULA_CT_INFO]			= { .type = NLA_U32 },
 };
 
 static struct nla_policy log_msg_vlan_policy[NFULA_VLAN_MAX+1] = {
@@ -190,6 +192,20 @@ int nfnlmsg_log_msg_parse(struct nlmsghdr *nlh, struct nfnl_log_msg **result)
 		if (err < 0)
 			goto errout;
 	}
+
+	attr = tb[NFULA_CT];
+	if (attr) {
+		struct nfnl_ct *ct = NULL;
+		err = nfnlmsg_ct_parse_nested(attr, &ct);
+		if (err < 0)
+			goto errout;
+		nfnl_log_msg_set_ct(msg, ct);
+		nfnl_ct_put(ct);
+	}
+
+	attr = tb[NFULA_CT_INFO];
+	if (attr)
+		nfnl_log_msg_set_ct_info(msg, ntohl(nla_get_u32(attr)));
 
 	*result = msg;
 	return 0;

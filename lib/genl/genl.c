@@ -178,7 +178,7 @@ int genlmsg_validate(struct nlmsghdr *nlh, int hdrlen, int maxtype,
  * @code
  * struct nlattr *attrs[MY_TYPE_MAX+1];
  *
- * if ((err = genlsmg_parse(nlmsg_nlh(msg), sizeof(struct my_hdr), attrs,
+ * if ((err = genlmsg_parse(nlmsg_hdr(msg), sizeof(struct my_hdr), attrs,
  *                          MY_TYPE_MAX, attr_policy)) < 0)
  * 	// ERROR
  * @endcode

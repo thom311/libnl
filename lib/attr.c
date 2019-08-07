@@ -903,7 +903,7 @@ struct nlattr *nla_nest_start(struct nl_msg *msg, int attrtype)
 {
 	struct nlattr *start = (struct nlattr *) nlmsg_tail(msg->nm_nlh);
 
-	if (nla_put(msg, attrtype, 0, NULL) < 0)
+	if (nla_put(msg, NLA_F_NESTED | attrtype, 0, NULL) < 0)
 		return NULL;
 
 	NL_DBG(2, "msg %p: attr <%p> %d: starting nesting\n",

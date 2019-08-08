@@ -92,6 +92,7 @@ void rtnl_ematch_text_set_algo(struct rtnl_ematch *e, const char *algo)
 	struct text_data *t = rtnl_ematch_data(e);
 
 	strncpy(t->cfg.algo, algo, sizeof(t->cfg.algo));
+	t->cfg.algo[sizeof(t->cfg.algo) - 1] = '\0';
 }
 
 char *rtnl_ematch_text_get_algo(struct rtnl_ematch *e)

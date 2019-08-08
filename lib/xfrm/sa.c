@@ -1190,6 +1190,7 @@ static int build_xfrm_sa_message(struct xfrmnl_sa *tmpl, int cmd, int flags, str
 			}
 
 			strncpy(auth->alg_name, tmpl->auth->alg_name, sizeof(auth->alg_name));
+			auth->alg_name[sizeof(auth->alg_name) - 1] = '\0';
 			auth->alg_key_len = tmpl->auth->alg_key_len;
 			memcpy(auth->alg_key, tmpl->auth->alg_key, (tmpl->auth->alg_key_len + 7) / 8);
 			if (nla_put(msg, XFRMA_ALG_AUTH, len, auth) < 0) {

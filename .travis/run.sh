@@ -2,7 +2,7 @@
 
 set -e
 
-CFLAGS="-Werror -Wall -Wdeclaration-after-statement"
+CFLAGS="-Werror -Wall -Wdeclaration-after-statement -Wvla"
 
 if [ "$CC" = "clang" ]; then
 	CFLAGS="$CFLAGS -Wno-error=unused-command-line-argument -Wno-error=unused-function"

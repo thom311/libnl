@@ -24,6 +24,8 @@
 #include <netlink/genl/family.h>
 #include <netlink/utils.h>
 
+#include "netlink-private/utils.h"
+
 /** @cond SKIP */
 #define FAMILY_ATTR_ID		0x01
 #define FAMILY_ATTR_NAME	0x02
@@ -364,16 +366,20 @@ int genl_family_add_op(struct genl_family *family, int id, int flags)
 }
 
 int genl_family_add_grp(struct genl_family *family, uint32_t id,
-	       		const char *name)
+                        const char *name)
 {
-	struct genl_family_grp *grp;  
+	struct genl_family_grp *grp;
+
+	if (   !name
+	    || strlen (name) >= GENL_NAMSIZ)
+		return -NLE_INVAL;
 
 	grp = calloc(1, sizeof(*grp));
 	if (grp == NULL)
 		return -NLE_NOMEM;
 
 	grp->id = id;
-	strncpy(grp->name, name, GENL_NAMSIZ - 1);
+	_nl_strncpy(grp->name, name, GENL_NAMSIZ);
 
 	nl_list_add_tail(&grp->list, &family->gf_mc_grps);
 

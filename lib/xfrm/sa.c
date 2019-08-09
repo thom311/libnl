@@ -47,6 +47,8 @@
 #include <netlink/xfrm/lifetime.h>
 #include <time.h>
 
+#include "netlink-private/utils.h"
+
 /** @cond SKIP */
 #define XFRM_SA_ATTR_SEL            0x01
 #define XFRM_SA_ATTR_DADDR          0x02
@@ -1680,23 +1682,24 @@ int xfrmnl_sa_get_aead_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 
 int xfrmnl_sa_set_aead_params (struct xfrmnl_sa* sa, const char* alg_name, unsigned int key_len, unsigned int icv_len, const char* key)
 {
-	size_t      keysize = sizeof (uint8_t) * ((key_len + 7)/8);
-	uint32_t    newlen = sizeof (struct xfrmnl_algo_aead) + keysize;
+	_nl_auto_free struct xfrmnl_algo_aead *b = NULL;
+	size_t keysize = sizeof (uint8_t) * ((key_len + 7)/8);
+	uint32_t newlen = sizeof (struct xfrmnl_algo_aead) + keysize;
 
 	/* Free up the old key and allocate memory to hold new key */
-	if (sa->aead)
-		free (sa->aead);
-	if (strlen (alg_name) >= sizeof (sa->aead->alg_name) || (sa->aead = calloc (1, newlen)) == NULL)
+	if (strlen (alg_name) >= sizeof (sa->aead->alg_name))
+		return -1;
+	if (!(b = calloc (1, newlen)))
 		return -1;
 
-	/* Save the new info */
-	strcpy (sa->aead->alg_name, alg_name);
-	sa->aead->alg_key_len   = key_len;
-	sa->aead->alg_icv_len   = icv_len;
-	memcpy (sa->aead->alg_key, key, keysize);
+	strcpy (b->alg_name, alg_name);
+	b->alg_key_len   = key_len;
+	b->alg_icv_len   = icv_len;
+	memcpy (b->alg_key, key, keysize);
 
+	free (sa->aead);
+	sa->aead = _nl_steal_pointer (&b);
 	sa->ce_mask |= XFRM_SA_ATTR_ALG_AEAD;
-
 	return 0;
 }
 
@@ -1737,23 +1740,23 @@ int xfrmnl_sa_get_auth_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 
 int xfrmnl_sa_set_auth_params (struct xfrmnl_sa* sa, const char* alg_name, unsigned int key_len, unsigned int trunc_len, const char* key)
 {
-	size_t      keysize = sizeof (uint8_t) * ((key_len + 7)/8);
-	uint32_t    newlen = sizeof (struct xfrmnl_algo_auth) + keysize;
+	_nl_auto_free struct xfrmnl_algo_auth *b = NULL;
+	size_t keysize = sizeof (uint8_t) * ((key_len + 7)/8);
+	uint32_t newlen = sizeof (struct xfrmnl_algo_auth) + keysize;
 
-	/* Free up the old auth data and allocate new one */
-	if (sa->auth)
-		free (sa->auth);
-	if (strlen (alg_name) >= sizeof (sa->auth->alg_name) || (sa->auth = calloc (1, newlen)) == NULL)
+	if (strlen (alg_name) >= sizeof (sa->auth->alg_name))
+		return -1;
+	if (!(b = calloc (1, newlen)))
 		return -1;
 
-	/* Save the new info */
-	strcpy (sa->auth->alg_name, alg_name);
-	sa->auth->alg_key_len   = key_len;
-	sa->auth->alg_trunc_len = trunc_len;
-	memcpy (sa->auth->alg_key, key, keysize);
+	strcpy (b->alg_name, alg_name);
+	b->alg_key_len   = key_len;
+	b->alg_trunc_len = trunc_len;
+	memcpy (b->alg_key, key, keysize);
 
+	free (sa->auth);
+	sa->auth = _nl_steal_pointer (&b);
 	sa->ce_mask |= XFRM_SA_ATTR_ALG_AUTH;
-
 	return 0;
 }
 
@@ -1791,22 +1794,22 @@ int xfrmnl_sa_get_crypto_params (struct xfrmnl_sa* sa, char* alg_name, unsigned 
 
 int xfrmnl_sa_set_crypto_params (struct xfrmnl_sa* sa, const char* alg_name, unsigned int key_len, const char* key)
 {
-	size_t      keysize = sizeof (uint8_t) * ((key_len + 7)/8);
-	uint32_t    newlen = sizeof (struct xfrmnl_algo) + keysize;
+	_nl_auto_free struct xfrmnl_algo *b = NULL;
+	size_t keysize = sizeof (uint8_t) * ((key_len + 7)/8);
+	uint32_t newlen = sizeof (struct xfrmnl_algo) + keysize;
 
-	/* Free up the old crypto and allocate new one */
-	if (sa->crypt)
-		free (sa->crypt);
-	if (strlen (alg_name) >= sizeof (sa->crypt->alg_name) || (sa->crypt = calloc (1, newlen)) == NULL)
+	if (strlen (alg_name) >= sizeof (sa->crypt->alg_name))
+		return -1;
+	if (!(b = calloc (1, newlen)))
 		return -1;
 
-	/* Save the new info */
-	strcpy (sa->crypt->alg_name, alg_name);
-	sa->crypt->alg_key_len  = key_len;
-	memcpy (sa->crypt->alg_key, key, keysize);
+	strcpy (b->alg_name, alg_name);
+	b->alg_key_len  = key_len;
+	memcpy (b->alg_key, key, keysize);
 
+	free(sa->crypt);
+	sa->crypt = _nl_steal_pointer(&b);
 	sa->ce_mask |= XFRM_SA_ATTR_ALG_CRYPT;
-
 	return 0;
 }
 
@@ -1844,22 +1847,22 @@ int xfrmnl_sa_get_comp_params (struct xfrmnl_sa* sa, char* alg_name, unsigned in
 
 int xfrmnl_sa_set_comp_params (struct xfrmnl_sa* sa, const char* alg_name, unsigned int key_len, const char* key)
 {
-	size_t      keysize = sizeof (uint8_t) * ((key_len + 7)/8);
-	uint32_t    newlen = sizeof (struct xfrmnl_algo) + keysize;
+	_nl_auto_free struct xfrmnl_algo *b = NULL;
+	size_t keysize = sizeof (uint8_t) * ((key_len + 7)/8);
+	uint32_t newlen = sizeof (struct xfrmnl_algo) + keysize;
 
-	/* Free up the old compression algo params and allocate new one */
-	if (sa->comp)
-		free (sa->comp);
-	if (strlen (alg_name) >= sizeof (sa->comp->alg_name) || (sa->comp = calloc (1, newlen)) == NULL)
+	if (strlen (alg_name) >= sizeof (sa->comp->alg_name))
+		return -1;
+	if (!(b = calloc (1, newlen)))
 		return -1;
 
-	/* Save the new info */
-	strcpy (sa->comp->alg_name, alg_name);
-	sa->comp->alg_key_len  = key_len;
-	memcpy (sa->comp->alg_key, key, keysize);
+	strcpy (b->alg_name, alg_name);
+	b->alg_key_len  = key_len;
+	memcpy (b->alg_key, key, keysize);
 
+	free(sa->comp);
+	sa->comp = _nl_steal_pointer(&b);
 	sa->ce_mask |= XFRM_SA_ATTR_ALG_COMP;
-
 	return 0;
 }
 
@@ -2017,25 +2020,24 @@ int xfrmnl_sa_get_sec_ctx (struct xfrmnl_sa* sa, unsigned int* doi, unsigned int
  * @return 0 on success or a negative error code.
  */
 int xfrmnl_sa_set_sec_ctx (struct xfrmnl_sa* sa, unsigned int doi, unsigned int alg, unsigned int len,
-		unsigned int sid, const char* ctx_str)
+                           unsigned int sid, const char* ctx_str)
 {
-	/* Free up the old context string and allocate new one */
-	if (sa->sec_ctx)
-		free (sa->sec_ctx);
-	if ((sa->sec_ctx = calloc(1, sizeof (struct xfrmnl_user_sec_ctx) + 1 + len)) == NULL)
+	_nl_auto_free struct xfrmnl_user_sec_ctx *b = NULL;
+
+	if (!(b = calloc(1, sizeof (struct xfrmnl_user_sec_ctx) + 1 + len)))
 		return -1;
 
-	/* Save the new info */
-	sa->sec_ctx->len        =   sizeof(struct xfrmnl_user_sec_ctx) + len;
-	sa->sec_ctx->exttype    =   XFRMA_SEC_CTX;
-	sa->sec_ctx->ctx_alg    =   alg;
-	sa->sec_ctx->ctx_doi    =   doi;
-	sa->sec_ctx->ctx_len    =   len;
-	memcpy (sa->sec_ctx->ctx, ctx_str, len);
-	sa->sec_ctx->ctx[len] = '\0';
+	b->len     = sizeof(struct xfrmnl_user_sec_ctx) + len;
+	b->exttype = XFRMA_SEC_CTX;
+	b->ctx_alg = alg;
+	b->ctx_doi = doi;
+	b->ctx_len = len;
+	memcpy (b->ctx, ctx_str, len);
+	b->ctx[len] = '\0';
 
+	free(sa->sec_ctx);
+	sa->sec_ctx = _nl_steal_pointer(&b);
 	sa->ce_mask |= XFRM_SA_ATTR_SECCTX;
-
 	return 0;
 }
 
@@ -2133,21 +2135,22 @@ int xfrmnl_sa_set_replay_state_esn (struct xfrmnl_sa* sa, unsigned int oseq, uns
                                     unsigned int oseq_hi, unsigned int seq_hi, unsigned int replay_window,
                                     unsigned int bmp_len, unsigned int* bmp)
 {
-	/* Free the old replay state and allocate space to hold new one */
-	if (sa->replay_state_esn)
-		free (sa->replay_state_esn);
+	_nl_auto_free struct xfrmnl_replay_state_esn *b = NULL;
 
-	if ((sa->replay_state_esn = calloc (1, sizeof (struct xfrmnl_replay_state_esn) + (sizeof (uint32_t) * bmp_len))) == NULL)
+	if (!(b = calloc (1, sizeof (struct xfrmnl_replay_state_esn) + (sizeof (uint32_t) * bmp_len))))
 		return -1;
-	sa->replay_state_esn->oseq = oseq;
-	sa->replay_state_esn->seq = seq;
-	sa->replay_state_esn->oseq_hi = oseq_hi;
-	sa->replay_state_esn->seq_hi = seq_hi;
-	sa->replay_state_esn->replay_window = replay_window;
-	sa->replay_state_esn->bmp_len = bmp_len; // In number of 32 bit words
-	memcpy (sa->replay_state_esn->bmp, bmp, bmp_len * sizeof (uint32_t));
-	sa->ce_mask |= XFRM_SA_ATTR_REPLAY_STATE;
 
+	b->oseq = oseq;
+	b->seq = seq;
+	b->oseq_hi = oseq_hi;
+	b->seq_hi = seq_hi;
+	b->replay_window = replay_window;
+	b->bmp_len = bmp_len; // In number of 32 bit words
+	memcpy (b->bmp, bmp, bmp_len * sizeof (uint32_t));
+
+	free(sa->replay_state_esn);
+	sa->replay_state_esn = _nl_steal_pointer(&b);
+	sa->ce_mask |= XFRM_SA_ATTR_REPLAY_STATE;
 	return 0;
 }
 

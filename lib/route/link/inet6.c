@@ -16,6 +16,8 @@
 #include <netlink/route/link/inet6.h>
 #include <netlink-private/route/link/api.h>
 
+#include "netlink-private/utils.h"
+
 #define I6_ADDR_GEN_MODE_UNKNOWN	UINT8_MAX
 
 struct inet6_data
@@ -320,36 +322,36 @@ static void inet6_dump_details(struct rtnl_link *link,
 {
 	struct inet6_data *i6 = data;
 	struct nl_addr *addr;
-	char buf[64], buf2[64];
 	int i, n = 0;
+	char buf[64];
 
 	nl_dump_line(p, "    ipv6 max-reasm-len %s",
-		nl_size2str(i6->i6_cacheinfo.max_reasm_len, buf, sizeof(buf)));
+	             nl_size2str(i6->i6_cacheinfo.max_reasm_len, buf, sizeof(buf)));
 
 	nl_dump(p, " <%s>\n",
-		rtnl_link_inet6_flags2str(i6->i6_flags, buf, sizeof(buf)));
-
+	        rtnl_link_inet6_flags2str(i6->i6_flags, buf, sizeof(buf)));
 
 	nl_dump_line(p, "      create-stamp %.2fs reachable-time %s",
-		(double) i6->i6_cacheinfo.tstamp / 100.,
-		nl_msec2str(i6->i6_cacheinfo.reachable_time, buf, sizeof(buf)));
+	             (double) i6->i6_cacheinfo.tstamp / 100.,
+	             nl_msec2str(i6->i6_cacheinfo.reachable_time, buf, sizeof(buf)));
 
 	nl_dump(p, " retrans-time %s\n",
-		nl_msec2str(i6->i6_cacheinfo.retrans_time, buf, sizeof(buf)));
+	        nl_msec2str(i6->i6_cacheinfo.retrans_time, buf, sizeof(buf)));
 
 	addr = nl_addr_build(AF_INET6, &i6->i6_token, sizeof(i6->i6_token));
 	nl_dump(p, "      token %s\n",
-		nl_addr2str(addr, buf, sizeof(buf)));
+	        nl_addr2str(addr, buf, sizeof(buf)));
 	nl_addr_put(addr);
 
 	nl_dump(p, "      link-local address mode %s\n",
-		rtnl_link_inet6_addrgenmode2str(i6->i6_addr_gen_mode,
-						buf, sizeof(buf)));
+	        rtnl_link_inet6_addrgenmode2str(i6->i6_addr_gen_mode,
+	                                        buf, sizeof(buf)));
 
 	nl_dump_line(p, "      devconf:\n");
 	nl_dump_line(p, "      ");
 
 	for (i = 0; i < DEVCONF_MAX; i++) {
+		char buf2[64];
 		uint32_t value = i6->i6_conf[i];
 		int x, offset;
 
@@ -368,7 +370,6 @@ static void inet6_dump_details(struct rtnl_link *link,
 		default:
 			snprintf(buf2, sizeof(buf2), "%u", value);
 			break;
-			
 		}
 
 		inet6_devconf2str(i, buf, sizeof(buf));
@@ -380,7 +381,7 @@ static void inet6_dump_details(struct rtnl_link *link,
 		for (x = strlen(buf); x < offset; x++)
 			buf[x] = ' ';
 
-		strncpy(&buf[offset], buf2, strlen(buf2));
+		_nl_strncpy_trunc(&buf[offset], buf2, sizeof(buf) - offset);
 
 		nl_dump_line(p, "%s", buf);
 

@@ -24,6 +24,8 @@
 #include <netlink/route/tc.h>
 #include <netlink-private/route/tc-api.h>
 
+#include "netlink-private/utils.h"
+
 /** @cond SKIP */
 
 static struct nl_list_head tc_ops_list[__RTNL_TC_TYPE_MAX];
@@ -529,7 +531,12 @@ int rtnl_tc_set_kind(struct rtnl_tc *tc, const char *kind)
 	if (tc->ce_mask & TCA_ATTR_KIND)
 		return -NLE_EXIST;
 
-	strncpy(tc->tc_kind, kind, sizeof(tc->tc_kind) - 1);
+	if (   !kind
+	    || strlen (kind) >= sizeof (tc->tc_kind))
+		return -NLE_INVAL;
+
+	_nl_strncpy(tc->tc_kind, kind, sizeof(tc->tc_kind));
+
 	tc->ce_mask |= TCA_ATTR_KIND;
 
 	/* Force allocation of data */

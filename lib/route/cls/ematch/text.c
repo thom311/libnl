@@ -117,7 +117,7 @@ static int text_parse(struct rtnl_ematch *e, void *data, size_t len)
 		if (!(t->pattern = calloc(1, t->cfg.pattern_len)))
 			return -NLE_NOMEM;
 
-		memcpy(t->pattern, data + hdrlen, t->cfg.pattern_len);
+		memcpy(t->pattern, (char *) data + hdrlen, t->cfg.pattern_len);
 	}
 
 	return 0;

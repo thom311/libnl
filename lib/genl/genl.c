@@ -260,7 +260,7 @@ void *genlmsg_user_hdr(const struct genlmsghdr *gnlh)
  */
 void *genlmsg_user_data(const struct genlmsghdr *gnlh, const int hdrlen)
 {
-	return genlmsg_user_hdr(gnlh) + NLMSG_ALIGN(hdrlen);
+	return (char *) genlmsg_user_hdr(gnlh) + NLMSG_ALIGN(hdrlen);
 }
 
 /**
@@ -364,7 +364,7 @@ void *genlmsg_put(struct nl_msg *msg, uint32_t port, uint32_t seq, int family,
 	NL_DBG(2, "msg %p: Added generic netlink header cmd=%d version=%d\n",
 	       msg, cmd, version);
 
-	return nlmsg_data(nlh) + GENL_HDRLEN;
+	return (char *) nlmsg_data(nlh) + GENL_HDRLEN;
 }
 
 /** @} */

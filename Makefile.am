@@ -37,6 +37,7 @@ warn_cppflags = \
 	-Wno-unused-parameter \
 	-Wno-sign-compare \
 	-Wno-missing-field-initializers \
+	-Wpointer-arith \
 	$(NULL)
 
 ###############################################################################

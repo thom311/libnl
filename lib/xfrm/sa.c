@@ -682,7 +682,7 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 	}
 	else if (n->nlmsg_type == XFRM_MSG_DELSA)
 	{
-		sa_info = (struct xfrm_usersa_info*)(nlmsg_data(n) + sizeof (struct xfrm_usersa_id) + NLA_HDRLEN);
+		sa_info = (struct xfrm_usersa_info*)((char *)nlmsg_data(n) + sizeof (struct xfrm_usersa_id) + NLA_HDRLEN);
 	}
 	else
 	{

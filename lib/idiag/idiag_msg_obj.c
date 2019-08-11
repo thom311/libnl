@@ -459,7 +459,7 @@ static void idiag_msg_dump_details(struct nl_object *a, struct nl_dump_params *p
 
 	nl_dump(p, "tos: 0x%x\n", msg->idiag_tos);
 	nl_dump(p, "traffic class: %d\n", msg->idiag_tclass);
-	nl_dump(p, "congestion algorithm: %s\n", msg->idiag_cong ? : "");
+	nl_dump(p, "congestion algorithm: %s\n", msg->idiag_cong ? msg->idiag_cong : "");
 }
 
 static void idiag_msg_dump_stats(struct nl_object *obj, struct nl_dump_params *p)

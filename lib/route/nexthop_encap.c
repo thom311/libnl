@@ -19,10 +19,14 @@ static struct lwtunnel_encap_type {
 
 static const char *nh_encap_type2str(unsigned int type)
 {
+	const char *name;
+
 	if (type > LWTUNNEL_ENCAP_MAX)
 		return "unknown";
 
-	return lwtunnel_encap_types[type].name ? : "unknown";
+	name = lwtunnel_encap_types[type].name;
+
+	return name ? name : "unknown";
 }
 
 void nh_encap_dump(struct rtnl_nh_encap *rtnh_encap, struct nl_dump_params *dp)

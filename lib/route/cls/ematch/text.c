@@ -130,7 +130,7 @@ static void text_dump(struct rtnl_ematch *e, struct nl_dump_params *p)
 
 	nl_dump(p, "text(%s \"%s\"",
 		t->cfg.algo[0] ? t->cfg.algo : "no-algo",
-		t->pattern ? : "no-pattern");
+		t->pattern ? t->pattern : "no-pattern");
 
 	if (t->cfg.from_layer || t->cfg.from_offset) {
 		nl_dump(p, " from %s",

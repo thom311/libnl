@@ -132,7 +132,7 @@ struct nl_object *nl_object_clone(struct nl_object *obj)
 	new->ce_mask = obj->ce_mask;
 
 	if (size)
-		memcpy((void *)new + doff, (void *)obj + doff, size);
+		memcpy((char *)new + doff, (char *)obj + doff, size);
 
 	if (ops->oo_clone) {
 		if (ops->oo_clone(new, obj) < 0) {

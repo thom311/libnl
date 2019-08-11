@@ -76,7 +76,7 @@ static int netem_msg_parser(struct rtnl_tc *tc, void *data)
 		struct nlattr *tb[TCA_NETEM_MAX+1];
 
 		err = nla_parse(tb, TCA_NETEM_MAX, (struct nlattr *)
-				(tc->tc_opts->d_data + sizeof(*opts)),
+				((char *) tc->tc_opts->d_data + sizeof(*opts)),
 				len, netem_policy);
 		if (err < 0) {
 			free(netem);
@@ -323,14 +323,14 @@ static int netem_msg_fill_raw(struct rtnl_tc *tc, void *data,
 	 * remainder of the message. That's just the way that sch_netem expects it.
 	 * Maybe there's a more succinct way to do this at a higher level.
 	 */
-	head = (struct nlattr *)(NLMSG_DATA(msg->nm_nlh) +
+	head = (struct nlattr *)(((char *) NLMSG_DATA(msg->nm_nlh)) +
 	                         NLMSG_LENGTH(sizeof(struct tcmsg)) - NLMSG_ALIGNTO);
 
-	tail = (struct nlattr *)(((void *) (msg->nm_nlh)) +
+	tail = (struct nlattr *)(((char *) (msg->nm_nlh)) +
 	                         NLMSG_ALIGN(msg->nm_nlh->nlmsg_len));
 
 	old_len = head->nla_len;
-	head->nla_len = (void *)tail - (void *)head;
+	head->nla_len = (char *)tail - (char *)head;
 	msg->nm_nlh->nlmsg_len += (head->nla_len - old_len);
 
 	return err;

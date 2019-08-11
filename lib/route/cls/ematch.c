@@ -465,7 +465,7 @@ int rtnl_ematch_parse_attr(struct nlattr *attr, struct rtnl_ematch_tree **result
 		}
 
 		hdr = nla_data(a);
-		data = nla_data(a) + NLA_ALIGN(sizeof(*hdr));
+		data = (char *) nla_data(a) + NLA_ALIGN(sizeof(*hdr));
 		len = nla_len(a) - NLA_ALIGN(sizeof(*hdr));
 
 		NL_DBG(3, "ematch attribute matchid=%u, kind=%u, flags=%u\n",

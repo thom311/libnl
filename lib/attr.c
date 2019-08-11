@@ -478,7 +478,7 @@ struct nlattr *nla_reserve(struct nl_msg *msg, int attrtype, int attrlen)
 	NL_DBG(2, "msg %p: attr <%p> %d: Reserved %d (%d) bytes at offset +%td "
 		  "nlmsg_len=%d\n", msg, nla, nla->nla_type,
 		  nla_total_size(attrlen), attrlen,
-		  (void *) nla - nlmsg_data(msg->nm_nlh),
+		  (char *) nla - (char *) nlmsg_data(msg->nm_nlh),
 		  msg->nm_nlh->nlmsg_len);
 
 	return nla;
@@ -514,7 +514,7 @@ int nla_put(struct nl_msg *msg, int attrtype, int datalen, const void *data)
 		memcpy(nla_data(nla), data, datalen);
 		NL_DBG(2, "msg %p: attr <%p> %d: Wrote %d bytes at offset +%td\n",
 		       msg, nla, nla->nla_type, datalen,
-		       (void *) nla - nlmsg_data(msg->nm_nlh));
+		       (char *) nla - (char *) nlmsg_data(msg->nm_nlh));
 	}
 
 	return 0;
@@ -917,7 +917,7 @@ static int _nest_end(struct nl_msg *msg, struct nlattr *start, int keep_empty)
 {
 	size_t pad, len;
 
-	len = (void *) nlmsg_tail(msg->nm_nlh) - (void *) start;
+	len = (char *) nlmsg_tail(msg->nm_nlh) - (char *) start;
 
 	if (   len > USHRT_MAX
 	    || (!keep_empty && len == NLA_HDRLEN)) {
@@ -996,7 +996,7 @@ void nla_nest_cancel(struct nl_msg *msg, const struct nlattr *attr)
 {
 	ssize_t len;
 
-	len = (void *) nlmsg_tail(msg->nm_nlh) - (void *) attr;
+	len = (char *) nlmsg_tail(msg->nm_nlh) - (char *) attr;
 	if (len < 0)
 		BUG();
 	else if (len > 0) {

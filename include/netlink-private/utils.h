@@ -108,8 +108,8 @@ extern const char *nl_strerror_l(int err);
 
 #define _nl_clear_pointer(pp, destroy) \
 	({ \
-		typeof (*(pp)) *_pp = (pp); \
-		typeof (*_pp) _p; \
+		__typeof__ (*(pp)) *_pp = (pp); \
+		__typeof__ (*_pp) _p; \
 		int _changed = 0; \
 		\
 		if (   _pp \
@@ -129,8 +129,8 @@ extern const char *nl_strerror_l(int err);
 
 #define _nl_steal_pointer(pp) \
 	({ \
-		typeof (*(pp)) *const _pp = (pp); \
-		typeof (*_pp) _p = NULL; \
+		__typeof__ (*(pp)) *const _pp = (pp); \
+		__typeof__ (*_pp) _p = NULL; \
 		\
 		if (   _pp \
 		    && (_p = *_pp)) { \
@@ -145,8 +145,8 @@ extern const char *nl_strerror_l(int err);
 #define _nl_malloc_maybe_a(alloca_maxlen, bytes, to_free) \
 	({ \
 		const size_t _bytes = (bytes); \
-		typeof (to_free) _to_free = (to_free); \
-		typeof (*_to_free) _ptr; \
+		__typeof__ (to_free) _to_free = (to_free); \
+		__typeof__ (*_to_free) _ptr; \
 		\
 		_NL_STATIC_ASSERT ((alloca_maxlen) <= 500); \
 		_nl_assert (_to_free && !*_to_free); \

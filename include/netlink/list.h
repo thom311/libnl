@@ -60,7 +60,7 @@ static inline int nl_list_empty(struct nl_list_head *head)
 }
 
 #define nl_container_of(ptr, type, member) ({			\
-        const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
+        const __typeof__( ((type *)0)->member ) *__mptr = (ptr);\
         (type *)( (char *)__mptr - (offsetof(type, member)));})
 
 #define nl_list_entry(ptr, type, member) \
@@ -79,15 +79,15 @@ static inline int nl_list_empty(struct nl_list_head *head)
 	nl_list_entry((head)->next, type, member)
 
 #define nl_list_for_each_entry(pos, head, member)				\
-	for (pos = nl_list_entry((head)->next, typeof(*pos), member);	\
+	for (pos = nl_list_entry((head)->next, __typeof__(*pos), member);	\
 	     &(pos)->member != (head); 	\
-	     (pos) = nl_list_entry((pos)->member.next, typeof(*(pos)), member))
+	     (pos) = nl_list_entry((pos)->member.next, __typeof__(*(pos)), member))
 
 #define nl_list_for_each_entry_safe(pos, n, head, member)			\
-	for (pos = nl_list_entry((head)->next, typeof(*pos), member),	\
-		n = nl_list_entry(pos->member.next, typeof(*pos), member);	\
+	for (pos = nl_list_entry((head)->next, __typeof__(*pos), member),	\
+		n = nl_list_entry(pos->member.next, __typeof__(*pos), member);	\
 	     &(pos)->member != (head); 					\
-	     pos = n, n = nl_list_entry(n->member.next, typeof(*n), member))
+	     pos = n, n = nl_list_entry(n->member.next, __typeof__(*n), member))
 
 #define nl_init_list_head(head) \
 	do { (head)->next = (head); (head)->prev = (head); } while (0)

@@ -422,7 +422,7 @@ void nl_cache_free(struct nl_cache *cache)
 
 void nl_cache_put(struct nl_cache *cache)
 {
-	return nl_cache_free(cache);
+	nl_cache_free(cache);
 }
 
 /** @} */

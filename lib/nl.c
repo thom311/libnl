@@ -682,7 +682,7 @@ int nl_recv(struct nl_sock *sk, struct sockaddr_nl *nla,
 	if (page_size == 0)
 		page_size = getpagesize() * 4;
 
-	iov.iov_len = sk->s_bufsize ? : page_size;
+	iov.iov_len = sk->s_bufsize ? sk->s_bufsize : page_size;
 	iov.iov_base = malloc(iov.iov_len);
 
 	if (!iov.iov_base) {

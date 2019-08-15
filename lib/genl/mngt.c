@@ -64,7 +64,7 @@ static int cmd_msg_parser(struct sockaddr_nl *who, struct nlmsghdr *nlh,
 	if (cmd->c_msg_parser == NULL)
 		return -NLE_OPNOTSUPP;
 
-	tb = _nl_malloc_maybe_a (300, ((size_t) cmd->c_maxattr) + 1, &tb_free);
+	tb = _nl_malloc_maybe_a (300, (((size_t) cmd->c_maxattr) + 1u) * sizeof (struct nlattr *), &tb_free);
 	if (!tb)
 		return -NLE_NOMEM;
 

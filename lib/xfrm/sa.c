@@ -1032,7 +1032,7 @@ int xfrmnl_sa_build_get_request(struct nl_addr* daddr, unsigned int spi, unsigne
 	if (!daddr || !spi)
 	{
 		fprintf(stderr, "APPLICATION BUG: %s:%d:%s: A valid destination address, spi must be specified\n",
-		        __FILE__, __LINE__, __PRETTY_FUNCTION__);
+		        __FILE__, __LINE__, __func__);
 		assert(0);
 		return -NLE_MISSING_ATTR;
 	}

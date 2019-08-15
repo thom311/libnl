@@ -63,7 +63,7 @@ static void __init init_routing_table_names(void)
 	add_routing_table_name(RT_TABLE_DEFAULT, "default");
 	add_routing_table_name(RT_TABLE_MAIN, "main");
 	add_routing_table_name(RT_TABLE_LOCAL, "local");
-};
+}
 
 static void __exit release_routing_table_names(void)
 {
@@ -109,7 +109,7 @@ static void __init init_proto_names(void)
 	add_proto_name(RTPROT_KERNEL, "kernel");
 	add_proto_name(RTPROT_BOOT, "boot");
 	add_proto_name(RTPROT_STATIC, "static");
-};
+}
 
 static void __exit release_proto_names(void)
 {

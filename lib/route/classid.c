@@ -445,10 +445,11 @@ static void __init classid_init(void)
 		NL_DBG(1, "Failed to read classid file: %s\n", nl_geterror(err));
 }
 
-static void free_map(void *map) {
+static void free_map(void *map)
+{
 	free(((struct classid_map *)map)->name);
 	free(map);
-};
+}
 
 static void __exit classid_exit(void)
 {

@@ -1,9 +1,9 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 #ifndef _NFNETLINK_COMPAT_H
 #define _NFNETLINK_COMPAT_H
 
 #include <linux/types.h>
 
-#ifndef __KERNEL__
 /* Old nfnetlink macros for userspace */
 
 /* nfnetlink groups: Up to 32 maximum */
@@ -59,5 +59,4 @@ struct nfattr {
         + NLMSG_ALIGN(sizeof(struct nfgenmsg))))
 #define NFM_PAYLOAD(n)  NLMSG_PAYLOAD(n, sizeof(struct nfgenmsg))
 
-#endif /* ! __KERNEL__ */
 #endif /* _NFNETLINK_COMPAT_H */

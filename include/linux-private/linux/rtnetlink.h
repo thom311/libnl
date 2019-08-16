@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 #ifndef __LINUX_RTNETLINK_H
 #define __LINUX_RTNETLINK_H
 
@@ -146,6 +147,16 @@ enum {
 	RTM_GETSTATS = 94,
 #define RTM_GETSTATS RTM_GETSTATS
 
+	RTM_NEWCACHEREPORT = 96,
+#define RTM_NEWCACHEREPORT RTM_NEWCACHEREPORT
+
+	RTM_NEWCHAIN = 100,
+#define RTM_NEWCHAIN RTM_NEWCHAIN
+	RTM_DELCHAIN,
+#define RTM_DELCHAIN RTM_DELCHAIN
+	RTM_GETCHAIN,
+#define RTM_GETCHAIN RTM_GETCHAIN
+
 	__RTM_MAX,
 #define RTM_MAX		(((__RTM_MAX + 3) & ~3) - 1)
 };
@@ -250,6 +261,11 @@ enum {
 #define RTPROT_DHCP	16      /* DHCP client */
 #define RTPROT_MROUTED	17      /* Multicast daemon */
 #define RTPROT_BABEL	42      /* Babel daemon */
+#define RTPROT_BGP	186     /* BGP Routes */
+#define RTPROT_ISIS	187     /* ISIS Routes */
+#define RTPROT_OSPF	188     /* OSPF Routes */
+#define RTPROT_RIP	189     /* RIP Routes */
+#define RTPROT_EIGRP	192     /* EIGRP Routes */
 
 /* rtm_scope
 
@@ -278,7 +294,7 @@ enum rt_scope_t {
 #define RTM_F_EQUALIZE		0x400	/* Multipath equalizer: NI	*/
 #define RTM_F_PREFIX		0x800	/* Prefix addresses		*/
 #define RTM_F_LOOKUP_TABLE	0x1000	/* set rtm_table to FIB lookup result */
-#define RTM_F_FIB_MATCH		0x2000	/* return full fib lookup match */
+#define RTM_F_FIB_MATCH	        0x2000	/* return full fib lookup match */
 
 /* Reserved table identifiers */
 
@@ -323,6 +339,9 @@ enum rtattr_type_t {
 	RTA_PAD,
 	RTA_UID,
 	RTA_TTL_PROPAGATE,
+	RTA_IP_PROTO,
+	RTA_SPORT,
+	RTA_DPORT,
 	__RTA_MAX
 };
 
@@ -427,6 +446,8 @@ enum {
 #define RTAX_QUICKACK RTAX_QUICKACK
 	RTAX_CC_ALGO,
 #define RTAX_CC_ALGO RTAX_CC_ALGO
+	RTAX_FASTOPEN_NO_COOKIE,
+#define RTAX_FASTOPEN_NO_COOKIE RTAX_FASTOPEN_NO_COOKIE
 	__RTAX_MAX
 };
 
@@ -535,8 +556,18 @@ struct tcmsg {
 	int		tcm_ifindex;
 	__u32		tcm_handle;
 	__u32		tcm_parent;
+/* tcm_block_index is used instead of tcm_parent
+ * in case tcm_ifindex == TCM_IFINDEX_MAGIC_BLOCK
+ */
+#define tcm_block_index tcm_parent
 	__u32		tcm_info;
 };
+
+/* For manipulation of filters in shared block, tcm_ifindex is set to
+ * TCM_IFINDEX_MAGIC_BLOCK, and tcm_parent is aliased to tcm_block_index
+ * which is the block index.
+ */
+#define TCM_IFINDEX_MAGIC_BLOCK (0xFFFFFFFFU)
 
 enum {
 	TCA_UNSPEC,
@@ -551,6 +582,9 @@ enum {
 	TCA_PAD,
 	TCA_DUMP_INVISIBLE,
 	TCA_CHAIN,
+	TCA_HW_OFFLOAD,
+	TCA_INGRESS_BLOCK,
+	TCA_EGRESS_BLOCK,
 	__TCA_MAX
 };
 
@@ -664,6 +698,10 @@ enum rtnetlink_groups {
 #define RTNLGRP_NSID		RTNLGRP_NSID
 	RTNLGRP_MPLS_NETCONF,
 #define RTNLGRP_MPLS_NETCONF	RTNLGRP_MPLS_NETCONF
+	RTNLGRP_IPV4_MROUTE_R,
+#define RTNLGRP_IPV4_MROUTE_R	RTNLGRP_IPV4_MROUTE_R
+	RTNLGRP_IPV6_MROUTE_R,
+#define RTNLGRP_IPV6_MROUTE_R	RTNLGRP_IPV6_MROUTE_R
 	__RTNLGRP_MAX
 };
 #define RTNLGRP_MAX	(__RTNLGRP_MAX - 1)
@@ -674,10 +712,29 @@ struct tcamsg {
 	unsigned char	tca__pad1;
 	unsigned short	tca__pad2;
 };
+
+enum {
+	TCA_ROOT_UNSPEC,
+	TCA_ROOT_TAB,
+#define TCA_ACT_TAB TCA_ROOT_TAB
+#define TCAA_MAX TCA_ROOT_TAB
+	TCA_ROOT_FLAGS,
+	TCA_ROOT_COUNT,
+	TCA_ROOT_TIME_DELTA, /* in msecs */
+	__TCA_ROOT_MAX,
+#define	TCA_ROOT_MAX (__TCA_ROOT_MAX - 1)
+};
+
 #define TA_RTA(r)  ((struct rtattr*)(((char*)(r)) + NLMSG_ALIGN(sizeof(struct tcamsg))))
 #define TA_PAYLOAD(n) NLMSG_PAYLOAD(n,sizeof(struct tcamsg))
-#define TCA_ACT_TAB 1 /* attr type must be >=1 */	
-#define TCAA_MAX 1
+/* tcamsg flags stored in attribute TCA_ROOT_FLAGS
+ *
+ * TCA_FLAG_LARGE_DUMP_ON user->kernel to request for larger than TCA_ACT_MAX_PRIO
+ * actions in a dump. All dump responses will contain the number of actions
+ * being dumped stored in for user app's consumption in TCA_ROOT_COUNT
+ *
+ */
+#define TCA_FLAG_LARGE_DUMP_ON		(1 << 0)
 
 /* New extended info filters for IFLA_EXT_MASK */
 #define RTEXT_FILTER_VF		(1 << 0)

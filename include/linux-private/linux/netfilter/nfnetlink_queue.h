@@ -1,12 +1,9 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 #ifndef _NFNETLINK_QUEUE_H
 #define _NFNETLINK_QUEUE_H
 
 #include <linux/types.h>
 #include <linux/netfilter/nfnetlink.h>
-
-#ifndef __aligned_be64
-#define __aligned_be64 u_int64_t __attribute__((aligned(8)))
-#endif
 
 enum nfqnl_msg_types {
 	NFQNL_MSG_PACKET,		/* packet from kernel to userspace */
@@ -34,6 +31,14 @@ struct nfqnl_msg_packet_timestamp {
 	__aligned_be64	usec;
 };
 
+enum nfqnl_vlan_attr {
+	NFQA_VLAN_UNSPEC,
+	NFQA_VLAN_PROTO,		/* __be16 skb vlan_proto */
+	NFQA_VLAN_TCI,			/* __be16 skb htons(vlan_tci) */
+	__NFQA_VLAN_MAX,
+};
+#define NFQA_VLAN_MAX (__NFQA_VLAN_MAX - 1)
+
 enum nfqnl_attr_type {
 	NFQA_UNSPEC,
 	NFQA_PACKET_HDR,
@@ -49,6 +54,13 @@ enum nfqnl_attr_type {
 	NFQA_CT,			/* nf_conntrack_netlink.h */
 	NFQA_CT_INFO,			/* enum ip_conntrack_info */
 	NFQA_CAP_LEN,			/* __u32 length of captured packet */
+	NFQA_SKB_INFO,			/* __u32 skb meta information */
+	NFQA_EXP,			/* nf_conntrack_netlink.h */
+	NFQA_UID,			/* __u32 sk uid */
+	NFQA_GID,			/* __u32 sk gid */
+	NFQA_SECCTX,			/* security context string */
+	NFQA_VLAN,			/* nested attribute: packet vlan info */
+	NFQA_L2HDR,			/* full L2 header */
 
 	__NFQA_MAX
 };
@@ -100,6 +112,17 @@ enum nfqnl_attr_config {
 /* Flags for NFQA_CFG_FLAGS */
 #define NFQA_CFG_F_FAIL_OPEN			(1 << 0)
 #define NFQA_CFG_F_CONNTRACK			(1 << 1)
-#define NFQA_CFG_F_MAX				(1 << 2)
+#define NFQA_CFG_F_GSO				(1 << 2)
+#define NFQA_CFG_F_UID_GID			(1 << 3)
+#define NFQA_CFG_F_SECCTX			(1 << 4)
+#define NFQA_CFG_F_MAX				(1 << 5)
+
+/* flags for NFQA_SKB_INFO */
+/* packet appears to have wrong checksums, but they are ok */
+#define NFQA_SKB_CSUMNOTREADY (1 << 0)
+/* packet is GSO (i.e., exceeds device mtu) */
+#define NFQA_SKB_GSO (1 << 1)
+/* csum not validated (incoming device doesn't support hw checksum, etc.) */
+#define NFQA_SKB_CSUM_NOTVERIFIED (1 << 2)
 
 #endif /* _NFNETLINK_QUEUE_H */

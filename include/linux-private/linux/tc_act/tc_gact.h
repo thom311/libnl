@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 #ifndef __LINUX_TC_GACT_H
 #define __LINUX_TC_GACT_H
 
@@ -19,7 +20,7 @@ struct tc_gact_p {
 	__u16                 pval;
 	int                   paction;
 };
-
+ 
 enum {
 	TCA_GACT_UNSPEC,
 	TCA_GACT_TM,
@@ -29,5 +30,5 @@ enum {
 	__TCA_GACT_MAX
 };
 #define TCA_GACT_MAX (__TCA_GACT_MAX - 1)
-
+ 
 #endif

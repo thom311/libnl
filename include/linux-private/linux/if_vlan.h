@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0+ WITH Linux-syscall-note */
 /*
  * VLAN		An implementation of 802.1Q VLAN tagging.
  *
@@ -12,6 +13,7 @@
 
 #ifndef _LINUX_IF_VLAN_H_
 #define _LINUX_IF_VLAN_H_
+
 
 /* VLAN IOCTLs are found in sockios.h */
 
@@ -54,10 +56,10 @@ struct vlan_ioctl_args {
 		unsigned int skb_priority;
 		unsigned int name_type;
 		unsigned int bind_type;
-		unsigned int flag; /* Matches vlan_dev_info flags */
+		unsigned int flag; /* Matches vlan_dev_priv flags */
         } u;
 
 	short vlan_qos;   
 };
 
-#endif /* !(_LINUX_IF_VLAN_H_) */
+#endif /* _LINUX_IF_VLAN_H_ */

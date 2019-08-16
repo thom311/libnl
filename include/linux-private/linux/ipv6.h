@@ -1,8 +1,11 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 #ifndef _IPV6_H
 #define _IPV6_H
 
-#include <asm/byteorder.h>
+#include <linux/libc-compat.h>
+#include <linux/types.h>
 #include <linux/in6.h>
+#include <asm/byteorder.h>
 
 /* The latest drafts declared increase in minimal mtu up to 1280. */
 
@@ -14,10 +17,30 @@
  *	*under construction*
  */
 
+#if __UAPI_DEF_IN6_PKTINFO
+struct in6_pktinfo {
+	struct in6_addr	ipi6_addr;
+	int		ipi6_ifindex;
+};
+#endif
+
+#if __UAPI_DEF_IP6_MTUINFO
+struct ip6_mtuinfo {
+	struct sockaddr_in6	ip6m_addr;
+	__u32			ip6m_mtu;
+};
+#endif
+
+struct in6_ifreq {
+	struct in6_addr	ifr6_addr;
+	__u32		ifr6_prefixlen;
+	int		ifr6_ifindex; 
+};
 
 #define IPV6_SRCRT_STRICT	0x01	/* Deprecated; will be removed */
 #define IPV6_SRCRT_TYPE_0	0	/* Deprecated; will be removed */
 #define IPV6_SRCRT_TYPE_2	2	/* IPv6 type 2 Routing Header	*/
+#define IPV6_SRCRT_TYPE_4	4	/* Segment Routing with IPv6 */
 
 /*
  *	routing header
@@ -46,6 +69,8 @@ struct ipv6_opt_hdr {
 #define ipv6_destopt_hdr ipv6_opt_hdr
 #define ipv6_hopopt_hdr  ipv6_opt_hdr
 
+/* Router Alert option values (RFC2711) */
+#define IPV6_OPT_ROUTERALERT_MLD	0x0000	/* MLD(RFC2710) */
 
 /*
  *	routing header type 0 (used in cmsghdr struct)
@@ -140,6 +165,28 @@ enum {
 	DEVCONF_DISABLE_IPV6,
 	DEVCONF_ACCEPT_DAD,
 	DEVCONF_FORCE_TLLAO,
+	DEVCONF_NDISC_NOTIFY,
+	DEVCONF_MLDV1_UNSOLICITED_REPORT_INTERVAL,
+	DEVCONF_MLDV2_UNSOLICITED_REPORT_INTERVAL,
+	DEVCONF_SUPPRESS_FRAG_NDISC,
+	DEVCONF_ACCEPT_RA_FROM_LOCAL,
+	DEVCONF_USE_OPTIMISTIC,
+	DEVCONF_ACCEPT_RA_MTU,
+	DEVCONF_STABLE_SECRET,
+	DEVCONF_USE_OIF_ADDRS_ONLY,
+	DEVCONF_ACCEPT_RA_MIN_HOP_LIMIT,
+	DEVCONF_IGNORE_ROUTES_WITH_LINKDOWN,
+	DEVCONF_DROP_UNICAST_IN_L2_MULTICAST,
+	DEVCONF_DROP_UNSOLICITED_NA,
+	DEVCONF_KEEP_ADDR_ON_DOWN,
+	DEVCONF_RTR_SOLICIT_MAX_INTERVAL,
+	DEVCONF_SEG6_ENABLED,
+	DEVCONF_SEG6_REQUIRE_HMAC,
+	DEVCONF_ENHANCED_DAD,
+	DEVCONF_ADDR_GEN_MODE,
+	DEVCONF_DISABLE_POLICY,
+	DEVCONF_ACCEPT_RA_RT_INFO_MIN_PLEN,
+	DEVCONF_NDISC_TCLASS,
 	DEVCONF_MAX
 };
 

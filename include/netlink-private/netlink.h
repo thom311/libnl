@@ -48,7 +48,6 @@
 #include <linux/pkt_sched.h>
 #include <linux/pkt_cls.h>
 #include <linux/gen_stats.h>
-#include <linux/ip_mp_alg.h>
 #include <linux/atm.h>
 #include <linux/ip.h>
 #include <linux/ipv6.h>

@@ -229,7 +229,6 @@ noinst_HEADERS = \
 	include/linux-private/linux/in6.h \
 	include/linux-private/linux/inet_diag.h \
 	include/linux-private/linux/ip.h \
-	include/linux-private/linux/ip_mp_alg.h \
 	include/linux-private/linux/ipv6.h \
 	include/linux-private/linux/libc-compat.h \
 	include/linux-private/linux/lwtunnel.h \

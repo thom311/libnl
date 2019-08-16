@@ -3103,8 +3103,8 @@ static const struct trans_tbl link_modes[] = {
 };
 
 static const struct trans_tbl carrier_states[] = {
-	__ADD(IF_CARRIER_DOWN, down),
-	__ADD(IF_CARRIER_UP, up),
+	__ADD(0, down),
+	__ADD(1, up),
 };
 
 char *rtnl_link_mode2str(uint8_t st, char *buf, size_t len)

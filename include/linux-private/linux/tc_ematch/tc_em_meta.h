@@ -1,5 +1,9 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 #ifndef __LINUX_TC_EM_META_H
 #define __LINUX_TC_EM_META_H
+
+#include <linux/types.h>
+#include <linux/pkt_cls.h>
 
 enum {
 	TCA_EM_META_UNSPEC,
@@ -64,7 +68,7 @@ enum {
 	TCF_META_ID_SK_FORWARD_ALLOCS,
 	TCF_META_ID_SK_SNDBUF,
  	TCF_META_ID_SK_ALLOCS,
- 	TCF_META_ID_SK_ROUTE_CAPS,
+	__TCF_META_ID_SK_ROUTE_CAPS,	/* unimplemented but in ABI already */
  	TCF_META_ID_SK_HASH,
  	TCF_META_ID_SK_LINGERTIME,
  	TCF_META_ID_SK_ACK_BACKLOG,

@@ -1,5 +1,6 @@
-#ifndef __LINUX_LWTUNNEL_H_
-#define __LINUX_LWTUNNEL_H_
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+#ifndef _LWTUNNEL_H_
+#define _LWTUNNEL_H_
 
 #include <linux/types.h>
 
@@ -11,6 +12,7 @@ enum lwtunnel_encap_types {
 	LWTUNNEL_ENCAP_IP6,
 	LWTUNNEL_ENCAP_SEG6,
 	LWTUNNEL_ENCAP_BPF,
+	LWTUNNEL_ENCAP_SEG6_LOCAL,
 	__LWTUNNEL_ENCAP_MAX,
 };
 
@@ -66,4 +68,4 @@ enum {
 
 #define LWT_BPF_MAX_HEADROOM 256
 
-#endif /* __LINUX_LWTUNNEL_H_ */
+#endif /* _LWTUNNEL_H_ */

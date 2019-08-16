@@ -1,13 +1,10 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 #ifndef _NFNETLINK_LOG_H
 #define _NFNETLINK_LOG_H
 
 /* This file describes the netlink messages (i.e. 'protocol packets'),
  * and not any kind of function definitions.  It is shared between kernel and
  * userspace.  Don't put kernel specific stuff in here */
-
-#ifndef __aligned_be64
-#define __aligned_be64 u_int64_t __attribute__((aligned(8)))
-#endif
 
 #include <linux/types.h>
 #include <linux/netfilter/nfnetlink.h>
@@ -55,6 +52,8 @@ enum nfulnl_attr_type {
 	NFULA_HWTYPE,			/* hardware type */
 	NFULA_HWHEADER,			/* hardware header */
 	NFULA_HWLEN,			/* hardware header length */
+	NFULA_CT,                       /* nf_conntrack_netlink.h */
+	NFULA_CT_INFO,                  /* enum ip_conntrack_info */
 
 	__NFULA_MAX
 };
@@ -97,5 +96,6 @@ enum nfulnl_attr_config {
 
 #define NFULNL_CFG_F_SEQ	0x0001
 #define NFULNL_CFG_F_SEQ_GLOBAL	0x0002
+#define NFULNL_CFG_F_CONNTRACK	0x0004
 
 #endif /* _NFNETLINK_LOG_H */

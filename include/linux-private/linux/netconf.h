@@ -1,5 +1,6 @@
-#ifndef __LINUX_NETCONF_H_
-#define __LINUX_NETCONF_H_
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+#ifndef _LINUX_NETCONF_H_
+#define _LINUX_NETCONF_H_
 
 #include <linux/types.h>
 #include <linux/netlink.h>
@@ -17,6 +18,7 @@ enum {
 	NETCONFA_PROXY_NEIGH,
 	NETCONFA_IGNORE_ROUTES_WITH_LINKDOWN,
 	NETCONFA_INPUT,
+	NETCONFA_BC_FORWARDING,
 	__NETCONFA_MAX
 };
 #define NETCONFA_MAX	(__NETCONFA_MAX - 1)
@@ -25,4 +27,4 @@ enum {
 #define NETCONFA_IFINDEX_ALL		-1
 #define NETCONFA_IFINDEX_DEFAULT	-2
 
-#endif /* __LINUX_NETCONF_H_ */
+#endif /* _LINUX_NETCONF_H_ */

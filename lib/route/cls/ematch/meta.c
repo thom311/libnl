@@ -199,7 +199,7 @@ static const struct trans_tbl meta_int[] = {
 	__ADD(TCF_META_ID_SK_ERR_QLEN, sk_err_qlen),
 	__ADD(TCF_META_ID_SK_FORWARD_ALLOCS, sk_forward_allocs),
 	__ADD(TCF_META_ID_SK_ALLOCS, sk_allocs),
-	__ADD(TCF_META_ID_SK_ROUTE_CAPS, sk_route_caps),
+	__ADD(__TCF_META_ID_SK_ROUTE_CAPS, sk_route_caps),
 	__ADD(TCF_META_ID_SK_HASH, sk_hash),
 	__ADD(TCF_META_ID_SK_LINGERTIME, sk_lingertime),
 	__ADD(TCF_META_ID_SK_ACK_BACKLOG, sk_ack_backlog),

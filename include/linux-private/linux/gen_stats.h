@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 #ifndef __LINUX_GEN_STATS_H
 #define __LINUX_GEN_STATS_H
 
@@ -9,6 +10,8 @@ enum {
 	TCA_STATS_RATE_EST,
 	TCA_STATS_QUEUE,
 	TCA_STATS_APP,
+	TCA_STATS_RATE_EST64,
+	TCA_STATS_PAD,
 	__TCA_STATS_MAX,
 };
 #define TCA_STATS_MAX (__TCA_STATS_MAX - 1)
@@ -35,6 +38,16 @@ struct gnet_stats_basic_packed {
 struct gnet_stats_rate_est {
 	__u32	bps;
 	__u32	pps;
+};
+
+/**
+ * struct gnet_stats_rate_est64 - rate estimator
+ * @bps: current byte rate
+ * @pps: current packet rate
+ */
+struct gnet_stats_rate_est64 {
+	__u64	bps;
+	__u64	pps;
 };
 
 /**

@@ -532,7 +532,7 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 	sp->ce_msgtype = n->nlmsg_type;
 	if (n->nlmsg_type == XFRM_MSG_DELPOLICY)
 	{
-		sp_info = (struct xfrm_userpolicy_info*)(nlmsg_data(n) + sizeof (struct xfrm_userpolicy_id) + NLA_HDRLEN);
+		sp_info = (struct xfrm_userpolicy_info*)((char *)nlmsg_data(n) + sizeof (struct xfrm_userpolicy_id) + NLA_HDRLEN);
 	}
 	else
 	{

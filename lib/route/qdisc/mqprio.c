@@ -63,7 +63,7 @@ static int mqprio_msg_parser(struct rtnl_tc *tc, void *data)
 		struct nlattr *tb[TCA_MQPRIO_MAX + 1];
 
 		err = nla_parse(tb, TCA_MQPRIO_MAX, (struct nlattr *)
-		                (tc->tc_opts->d_data + NLA_ALIGN(sizeof(*qopt))),
+		                ((char *) tc->tc_opts->d_data + NLA_ALIGN(sizeof(*qopt))),
 		                len, mqprio_policy);
 		if (err < 0)
 			return err;

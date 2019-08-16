@@ -1472,8 +1472,8 @@ int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)
 			    nh_encap_build_msg(msg, nh->rtnh_encap) < 0)
 				goto nla_put_failure;
 
-			rtnh->rtnh_len = nlmsg_tail(msg->nm_nlh) -
-						(void *) rtnh;
+			rtnh->rtnh_len = (char *) nlmsg_tail(msg->nm_nlh) -
+						(char *) rtnh;
 		}
 
 		nla_nest_end(msg, multipath);

@@ -682,7 +682,7 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 	}
 	else if (n->nlmsg_type == XFRM_MSG_DELSA)
 	{
-		sa_info = (struct xfrm_usersa_info*)(nlmsg_data(n) + sizeof (struct xfrm_usersa_id) + NLA_HDRLEN);
+		sa_info = (struct xfrm_usersa_info*)((char *)nlmsg_data(n) + sizeof (struct xfrm_usersa_id) + NLA_HDRLEN);
 	}
 	else
 	{
@@ -1032,7 +1032,7 @@ int xfrmnl_sa_build_get_request(struct nl_addr* daddr, unsigned int spi, unsigne
 	if (!daddr || !spi)
 	{
 		fprintf(stderr, "APPLICATION BUG: %s:%d:%s: A valid destination address, spi must be specified\n",
-		        __FILE__, __LINE__, __PRETTY_FUNCTION__);
+		        __FILE__, __LINE__, __func__);
 		assert(0);
 		return -NLE_MISSING_ATTR;
 	}

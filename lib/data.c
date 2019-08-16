@@ -112,7 +112,7 @@ struct nl_data *nl_data_clone(const struct nl_data *src)
 int nl_data_append(struct nl_data *data, const void *buf, size_t size)
 {
 	if (size > 0) {
-		void *d_data = realloc(data->d_data, data->d_size + size);
+		char *d_data = realloc(data->d_data, data->d_size + size);
 		if (!d_data)
 			return -NLE_NOMEM;
 

@@ -94,7 +94,7 @@ static int nbyte_parse(struct rtnl_ematch *e, void *data, size_t len)
 		if (!(n->pattern = calloc(1, plen)))
 			return -NLE_NOMEM;
 
-		memcpy(n->pattern, data + hdrlen, plen);
+		memcpy(n->pattern, (char *) data + hdrlen, plen);
 	}
 
 	return 0;

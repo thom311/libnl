@@ -90,7 +90,7 @@ struct trans_list {
 			fprintf(stderr,					\
 				"DBG<" #LVL ">%20s:%-4u %s: " FMT,	\
 				__FILE__, __LINE__,			\
-				__PRETTY_FUNCTION__, ##ARG);		\
+				__func__, ##ARG);			\
 			errno = _errsv;					\
 		}							\
 	} while (0)
@@ -101,7 +101,7 @@ struct trans_list {
 #define BUG()                            				\
 	do {                                 				\
 		fprintf(stderr, "BUG at file position %s:%d:%s\n",  	\
-			__FILE__, __LINE__, __PRETTY_FUNCTION__); 	\
+			__FILE__, __LINE__, __func__); 			\
 		assert(0);						\
 	} while (0)
 
@@ -115,7 +115,7 @@ struct trans_list {
 #define APPBUG(msg)							\
 	do {								\
 		fprintf(stderr, "APPLICATION BUG: %s:%d:%s: %s\n",	\
-			__FILE__, __LINE__, __PRETTY_FUNCTION__, msg);	\
+			__FILE__, __LINE__, __func__, msg);		\
 		assert(0);						\
 	} while(0)
 
@@ -160,14 +160,14 @@ static inline int nl_cb_call(struct nl_cb *cb, enum nl_cb_type type, struct nl_m
 #define __deprecated __attribute__ ((deprecated))
 
 #define min(x,y) ({ \
-	typeof(x) _x = (x);	\
-	typeof(y) _y = (y);	\
+	__typeof__(x) _x = (x);	\
+	__typeof__(y) _y = (y);	\
 	(void) (&_x == &_y);		\
 	_x < _y ? _x : _y; })
 
 #define max(x,y) ({ \
-	typeof(x) _x = (x);	\
-	typeof(y) _y = (y);	\
+	__typeof__(x) _x = (x);	\
+	__typeof__(y) _y = (y);	\
 	(void) (&_x == &_y);		\
 	_x > _y ? _x : _y; })
 

@@ -63,8 +63,8 @@ static int veth_parse(struct rtnl_link *link, struct nlattr *data,
 		peer->l_index = ifi->ifi_index;
 		peer->l_flags = ifi->ifi_flags;
 		peer->l_change = ifi->ifi_change;
-		err = nla_parse(peer_tb, IFLA_MAX,
-				nla_data(nla_peer) + sizeof(struct ifinfomsg),
+		err = nla_parse(peer_tb, IFLA_MAX, (struct nlattr *)
+		                ((char *) nla_data(nla_peer) + sizeof(struct ifinfomsg)),
 				nla_len(nla_peer) - sizeof(struct ifinfomsg),
 				rtln_link_policy);
 		if (err < 0)

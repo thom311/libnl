@@ -410,7 +410,7 @@ struct nl_msg *nlmsg_convert(struct nlmsghdr *hdr)
  */
 void *nlmsg_reserve(struct nl_msg *n, size_t len, int pad)
 {
-	void *buf = n->nm_nlh;
+	char *buf = (char *) n->nm_nlh;
 	size_t nlmsg_len = n->nm_nlh->nlmsg_len;
 	size_t tlen;
 
@@ -838,7 +838,7 @@ static void print_genl_hdr(FILE *ofd, void *start)
 static void *print_genl_msg(struct nl_msg *msg, FILE *ofd, struct nlmsghdr *hdr,
 			    struct nl_cache_ops *ops, int *payloadlen)
 {
-	void *data = nlmsg_data(hdr);
+	char *data = nlmsg_data(hdr);
 
 	if (*payloadlen < GENL_HDRLEN)
 		return data;
@@ -901,7 +901,7 @@ static void dump_attrs(FILE *ofd, struct nlattr *attrs, int attrlen,
 			prefix_line(ofd, prefix);
 			fprintf(ofd, "  [PADDING] %d octets\n",
 				padlen);
-			dump_hex(ofd, nla_data(nla) + alen,
+			dump_hex(ofd, (char *) nla_data(nla) + alen,
 				 padlen, prefix);
 		}
 	}

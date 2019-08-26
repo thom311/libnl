@@ -90,7 +90,17 @@ static int idiagnl_request_update(struct nl_cache *cache, struct nl_sock *sk)
 	int family = cache->c_iarg1;
 	int states = cache->c_iarg2;
 
-	return idiagnl_send_simple(sk, 0, family, states, _INET_DIAG_ALL);
+	/* idiagnl_send_simple()'s "ext" argument is u16, which is too small for _INET_DIAG_ALL,
+	 * which is more than 16 bits on recent kernels.
+	 *
+	 * Actually, internally idiagnl_send_simple() sets "struct inet_diag_req"'s "idiag_ext"
+	 * field, which is only 8 bits. So, it's even worse.
+	 *
+	 * FIXME: this probably should be fixed (by adding idiagnl_send_simple2() function), but for
+	 *    the moment it means we cannot request more than 0xFF.
+	 */
+
+	return idiagnl_send_simple(sk, 0, family, states, (uint16_t) _INET_DIAG_ALL);
 }
 
 static struct nl_cache_ops idiagnl_msg_ops = {

@@ -492,6 +492,8 @@ static int nfnl_exp_build_message(const struct nfnl_exp *exp, int cmd, int flags
 	return 0;
 
 nla_put_failure:
+	err = -NLE_NOMEM;
+
 err_out:
 	nlmsg_free(msg);
 	return err;

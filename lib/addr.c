@@ -585,8 +585,16 @@ int nl_addr_shared(const struct nl_addr *addr)
  */
 int nl_addr_cmp(const struct nl_addr *a, const struct nl_addr *b)
 {
-	int d = a->a_family - b->a_family;
+	int d;
 
+	if (a == b)
+		return 0;
+	if (!a)
+		return -1;
+	if (!b)
+		return 1;
+
+	d = a->a_family - b->a_family;
 	if (d == 0) {
 		d = a->a_len - b->a_len;
 

@@ -1223,7 +1223,7 @@ int nl_has_capability (int capability)
 			NL_CAPABILITY_VERSION_3_3_0,
 			NL_CAPABILITY_VERSION_3_4_0,
 			NL_CAPABILITY_ROUTE_FIX_VLAN_SET_EGRESS_MAP,
-			0,
+			NL_CAPABILITY_VERSION_3_5_0,
 			0,
 			0),
 		/* IMPORTANT: these capability numbers are intended to be universal and stable

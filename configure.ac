@@ -12,7 +12,7 @@
 
 # copied from glib
 m4_define([libnl_major_version], [3])
-m4_define([libnl_minor_version], [4])
+m4_define([libnl_minor_version], [5])
 m4_define([libnl_micro_version], [0])
 m4_define([libnl_git_sha], [m4_esyscmd([ ( [ -d ./.git/ ] && [ "$(readlink -f ./.git/)" = "$(readlink -f "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null)" ] && git rev-parse --verify -q HEAD 2>/dev/null ) || true ])])
 

@@ -23,6 +23,7 @@
 /test-create-vlan
 /test-create-vrf
 /test-create-vxlan
+/test-create-xfrmi
 /test-delete-link
 /test-genl
 /test-loopback-up-down

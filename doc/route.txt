@@ -949,7 +949,7 @@ extern uint8_t rtnl_link_ipip_get_pmtudisc(struct rtnl_link *link);
 struct rtnl_link *link
 struct in_addr addr
 
-/* allocate new link object of type vxlan */
+/* allocate new link object of type ipip */
 if(!(link = rtnl_link_ipip_alloc()))
         /* error */
 
@@ -1027,7 +1027,7 @@ extern uint8_t rtnl_link_ipgre_get_pmtudisc(struct rtnl_link *link);
 struct rtnl_link *link
 struct in_addr addr
 
-/* allocate new link object of type vxlan */
+/* allocate new link object of type ipgre */
 if(!(link = rtnl_link_ipgre_alloc()))
 	/* error */
 
@@ -1105,7 +1105,7 @@ extern uint8_t rtnl_link_sit_get_pmtudisc(struct rtnl_link *link);
 struct rtnl_link *link
 struct in_addr addr
 
-/* allocate new link object of type vxlan */
+/* allocate new link object of type sit */
 if(!(link = rtnl_link_sit_alloc()))
 	/* error */
 
@@ -1169,7 +1169,7 @@ extern uint32_t rtnl_link_ipvti_get_remote(struct rtnl_link *link);
 struct rtnl_link *link
 struct in_addr addr
 
-/* allocate new link object of type vxlan */
+/* allocate new link object of type ipvti */
 if(!(link = rtnl_link_ipvti_alloc()))
 	/* error */
 
@@ -1256,6 +1256,49 @@ rtnl_link_put(link);
 
 -----
 
+
+[[link_xfrmi]]
+==== XFRMI
+
+[source,c]
+-----
+extern struct rtnl_link *rtnl_link_xfrmi_alloc(void);
+
+extern int rtnl_link_xfrmi_set_link(struct rtnl_link *link,  uint32_t index);
+extern uint32_t rtnl_link_xfrmi_get_link(struct rtnl_link *link);
+
+extern int rtnl_link_xfrmi_set_if_id(struct rtnl_link *link, uint32_t if_id);
+extern uint32_t rtnl_link_xfrmi_get_if_id(struct rtnl_link *link);
+
+-----
+
+.Example: Add a xfrmi device
+[source,c]
+-----
+struct rtnl_link *link
+struct in_addr addr
+
+/* allocate new link object of type xfrmi */
+if(!(link = rtnl_link_xfrmi_alloc()))
+	/* error */
+
+/* set xfrmi name */
+if ((err = rtnl_link_set_name(link, "ipsec0")) < 0)
+	/* error */
+
+/* set link index  */
+if ((err = rtnl_link_xfrmi_set_link(link, if_index)) < 0)
+	/* error */
+
+/* set if_id */
+if ((err = rtnl_link_xfrmi_set_if_id(link, 16)) < 0)
+	/* error */
+
+if((err = rtnl_link_add(sk, link, NLM_F_CREATE)) < 0)
+	/* error */
+
+rtnl_link_put(link);
+-----
 
 == Neighbouring
 

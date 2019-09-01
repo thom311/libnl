@@ -25,10 +25,10 @@ extern "C" {
 	extern int rtnl_link_is_xfrmi(struct rtnl_link *link);
 
 	extern int rtnl_link_xfrmi_set_link(struct rtnl_link *link,  uint32_t index);
-	extern uint32_t rtnl_link_xfrmi_get_link(struct rtnl_link *link);
+	extern int rtnl_link_xfrmi_get_link(struct rtnl_link *link, uint32_t *out_link);
 
 	extern int rtnl_link_xfrmi_set_if_id(struct rtnl_link *link, uint32_t if_id);
-	extern uint32_t rtnl_link_xfrmi_get_if_id(struct rtnl_link *link);
+	extern int rtnl_link_xfrmi_get_if_id(struct rtnl_link *link, uint32_t *out_if_id);
 
 #ifdef __cplusplus
 }

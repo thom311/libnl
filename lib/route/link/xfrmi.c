@@ -67,7 +67,7 @@ static int xfrmi_alloc(struct rtnl_link *link)
 }
 
 static int xfrmi_parse(struct rtnl_link *link, struct nlattr *data,
-		       struct nlattr *xstats)
+                       struct nlattr *xstats)
 {
 	struct nlattr *tb[IFLA_XFRM_MAX + 1];
 	struct xfrmi_info *xfrmi;
@@ -77,11 +77,11 @@ static int xfrmi_parse(struct rtnl_link *link, struct nlattr *data,
 
 	err = nla_parse_nested(tb, IFLA_XFRM_MAX, data, xfrmi_policy);
 	if (err < 0)
-		goto errout;
+		return err;
 
 	err = xfrmi_alloc(link);
 	if (err < 0)
-		goto errout;
+		return err;
 
 	xfrmi = link->l_info;
 
@@ -95,10 +95,7 @@ static int xfrmi_parse(struct rtnl_link *link, struct nlattr *data,
 		xfrmi->xfrmi_mask |= XFRMI_ATTR_IF_ID;
 	}
 
-	err = 0;
-
-errout:
-	return err;
+	return 0;
 }
 
 static int xfrmi_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
@@ -255,16 +252,21 @@ int rtnl_link_xfrmi_set_link(struct rtnl_link *link, uint32_t index)
 /**
  * Get XFRMI link interface index
  * @arg link            Link object
+ * @arg out_link        The output value on success
  *
- * @return interface index
+ * @return 0 on sucess or a negative error code
  */
-uint32_t rtnl_link_xfrmi_get_link(struct rtnl_link *link)
+int rtnl_link_xfrmi_get_link(struct rtnl_link *link, uint32_t *out_link)
 {
 	struct xfrmi_info *xfrmi = link->l_info;
 
 	IS_XFRMI_LINK_ASSERT(link);
 
-	return xfrmi->link;
+	if (!(xfrmi->xfrmi_mask & XFRMI_ATTR_LINK))
+		return -NLE_NOATTR;
+
+	*out_link = xfrmi->link;
+	return 0;
 }
 
 /**
@@ -289,16 +291,21 @@ int rtnl_link_xfrmi_set_if_id(struct rtnl_link *link, uint32_t if_id)
 /**
  * Get XFRMI if_id
  * @arg link            Link object
+ * @arg out_if_id       The output value on success
  *
- * @return if_id
+ * @return 0 on sucess or a negative error code
  */
-uint32_t rtnl_link_xfrmi_get_if_id(struct rtnl_link *link)
+int rtnl_link_xfrmi_get_if_id(struct rtnl_link *link, uint32_t *out_if_id)
 {
 	struct xfrmi_info *xfrmi = link->l_info;
 
 	IS_XFRMI_LINK_ASSERT(link);
 
-	return xfrmi->if_id;
+	if (!(xfrmi->xfrmi_mask & XFRMI_ATTR_IF_ID))
+		return -NLE_NOATTR;
+
+	*out_if_id = xfrmi->if_id;
+	return 0;
 }
 
 static void __init xfrmi_init(void)

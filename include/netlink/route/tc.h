@@ -100,8 +100,8 @@ extern uint64_t		rtnl_tc_get_stat(struct rtnl_tc *, enum rtnl_tc_stat);
 extern char *		rtnl_tc_stat2str(enum rtnl_tc_stat, char *, size_t);
 extern int		rtnl_tc_str2stat(const char *);
 
-extern int		rtnl_tc_calc_txtime(int, uint64_t);
-extern int		rtnl_tc_calc_bufsize(int, uint64_t);
+extern int		rtnl_tc_calc_txtime(int, int);
+extern int		rtnl_tc_calc_bufsize(int, int);
 extern int		rtnl_tc_calc_cell_log(int);
 
 extern int		rtnl_tc_read_classid_file(void);

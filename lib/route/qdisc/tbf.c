@@ -44,24 +44,24 @@ static int tbf_msg_parser(struct rtnl_tc *tc, void *data)
 
 	if ((err = tca_parse(tb, TCA_TBF_MAX, tc, tbf_policy)) < 0)
 		return err;
-	
+
 	if (tb[TCA_TBF_PARMS]) {
 		struct tc_tbf_qopt opts;
 		int bufsize;
 
 		nla_memcpy(&opts, tb[TCA_TBF_PARMS], sizeof(opts));
 		tbf->qt_limit = opts.limit;
-	
+
 		rtnl_copy_ratespec(&tbf->qt_rate, &opts.rate);
 		tbf->qt_rate_txtime = opts.buffer;
-		bufsize = rtnl_tc_calc_bufsize(nl_ticks2us(opts.buffer),
-					       opts.rate.rate);
+		bufsize = rtnl_tc_calc_bufsize64(nl_ticks2us(opts.buffer),
+		                                 tbf->qt_rate.rs_rate64);
 		tbf->qt_rate_bucket = bufsize;
 
 		rtnl_copy_ratespec(&tbf->qt_peakrate, &opts.peakrate);
 		tbf->qt_peakrate_txtime = opts.mtu;
-		bufsize = rtnl_tc_calc_bufsize(nl_ticks2us(opts.mtu),
-					       opts.peakrate.rate);
+		bufsize = rtnl_tc_calc_bufsize64(nl_ticks2us(opts.mtu),
+		                                 tbf->qt_peakrate.rs_rate64);
 		tbf->qt_peakrate_bucket = bufsize;
 
 		rtnl_tc_set_mpu(tc, tbf->qt_rate.rs_mpu);
@@ -83,8 +83,8 @@ static void tbf_dump_line(struct rtnl_tc *tc, void *data,
 	if (!tbf)
 		return;
 
-	r = nl_cancel_down_bytes(tbf->qt_rate.rs_rate, &ru);
-	rbit = nl_cancel_down_bits(tbf->qt_rate.rs_rate*8, &rubit);
+	r = nl_cancel_down_bytes(tbf->qt_rate.rs_rate64, &ru);
+	rbit = nl_cancel_down_bits(tbf->qt_rate.rs_rate64*8, &rubit);
 	lim = nl_cancel_down_bytes(tbf->qt_limit, &limu);
 
 	nl_dump(p, " rate %.2f%s/s (%.0f%s) limit %.2f%s",
@@ -114,9 +114,9 @@ static void tbf_dump_details(struct rtnl_tc *tc, void *data,
 	if (tbf->qt_mask & TBF_ATTR_PEAKRATE) {
 		char *pru, *prbu, *bsu, *clu;
 		double pr, prb, bs, cl;
-		
-		pr = nl_cancel_down_bytes(tbf->qt_peakrate.rs_rate, &pru);
-		prb = nl_cancel_down_bits(tbf->qt_peakrate.rs_rate * 8, &prbu);
+
+		pr = nl_cancel_down_bytes(tbf->qt_peakrate.rs_rate64, &pru);
+		prb = nl_cancel_down_bits(tbf->qt_peakrate.rs_rate64 * 8, &prbu);
 		bs = nl_cancel_down_bits(tbf->qt_peakrate_bucket, &bsu);
 		cl = nl_cancel_down_bits(1 << tbf->qt_peakrate.rs_cell_log,
 					 &clu);
@@ -191,7 +191,7 @@ static inline double calc_limit(struct rtnl_ratespec *spec, int latency,
 {
 	double limit;
 
-	limit = (double) spec->rs_rate * ((double) latency / 1000000.);
+	limit = (double) spec->rs_rate64 * ((double) latency / 1000000.);
 	limit += bucket;
 
 	return limit;
@@ -278,7 +278,7 @@ void rtnl_qdisc_tbf_set_rate(struct rtnl_qdisc *qdisc, int rate, int bucket,
 {
 	struct rtnl_tbf *tbf;
 	int cell_log;
-	
+
 	if (!(tbf = rtnl_tc_data(TC_CAST(qdisc))))
 		BUG();
 
@@ -287,10 +287,10 @@ void rtnl_qdisc_tbf_set_rate(struct rtnl_qdisc *qdisc, int rate, int bucket,
 	else
 		cell_log = rtnl_tc_calc_cell_log(cell);
 
-	tbf->qt_rate.rs_rate = rate;
+	tbf->qt_rate.rs_rate64 = (uint32_t)rate;
 	tbf->qt_rate_bucket = bucket;
 	tbf->qt_rate.rs_cell_log = cell_log;
-	tbf->qt_rate_txtime = nl_us2ticks(rtnl_tc_calc_txtime(bucket, rate));
+	tbf->qt_rate_txtime = nl_us2ticks(rtnl_tc_calc_txtime64(bucket, tbf->qt_rate.rs_rate64));
 	tbf->qt_mask |= TBF_ATTR_RATE;
 }
 
@@ -307,7 +307,7 @@ int rtnl_qdisc_tbf_get_rate(struct rtnl_qdisc *qdisc)
 		BUG();
 
 	if (tbf->qt_mask & TBF_ATTR_RATE)
-		return tbf->qt_rate.rs_rate;
+		return tbf->qt_rate.rs_rate64;
 	else
 		return -1;
 }
@@ -361,7 +361,7 @@ int rtnl_qdisc_tbf_set_peakrate(struct rtnl_qdisc *qdisc, int rate, int bucket,
 {
 	struct rtnl_tbf *tbf;
 	int cell_log;
-	
+
 	if (!(tbf = rtnl_tc_data(TC_CAST(qdisc))))
 		BUG();
 
@@ -369,11 +369,11 @@ int rtnl_qdisc_tbf_set_peakrate(struct rtnl_qdisc *qdisc, int rate, int bucket,
 	if (cell_log < 0)
 		return cell_log;
 
-	tbf->qt_peakrate.rs_rate = rate;
+	tbf->qt_peakrate.rs_rate64 = (uint32_t)rate;
 	tbf->qt_peakrate_bucket = bucket;
 	tbf->qt_peakrate.rs_cell_log = cell_log;
-	tbf->qt_peakrate_txtime = nl_us2ticks(rtnl_tc_calc_txtime(bucket, rate));
-	
+	tbf->qt_peakrate_txtime = nl_us2ticks(rtnl_tc_calc_txtime64(bucket, tbf->qt_peakrate.rs_rate64));
+
 	tbf->qt_mask |= TBF_ATTR_PEAKRATE;
 
 	return 0;
@@ -392,7 +392,7 @@ int rtnl_qdisc_tbf_get_peakrate(struct rtnl_qdisc *qdisc)
 		BUG();
 
 	if (tbf->qt_mask & TBF_ATTR_PEAKRATE)
-		return tbf->qt_peakrate.rs_rate;
+		return tbf->qt_peakrate.rs_rate64;
 	else
 		return -1;
 }

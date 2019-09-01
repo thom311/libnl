@@ -495,11 +495,11 @@ struct rtnl_neightbl
 
 struct rtnl_ratespec
 {
-	uint8_t			rs_cell_log;
+	uint64_t		rs_rate64;
 	uint16_t		rs_overhead;
 	int16_t			rs_cell_align;
 	uint16_t		rs_mpu;
-	uint32_t		rs_rate;
+	uint8_t			rs_cell_log;
 };
 
 struct rtnl_tstats
@@ -776,8 +776,6 @@ struct rtnl_htb_class
 	uint32_t		ch_quantum;
 	uint32_t		ch_mask;
 	uint32_t		ch_level;
-	uint64_t		ch_rate64;
-	uint64_t		ch_ceil64;
 };
 
 struct rtnl_cbq

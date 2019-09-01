@@ -648,11 +648,7 @@ int rtnl_tc_str2stat(const char *name)
  */
 int rtnl_tc_calc_txtime(int bufsize, int rate)
 {
-	double tx_time_secs;
-	
-	tx_time_secs = (double) bufsize / (double) rate;
-
-	return tx_time_secs * 1000000.;
+	return ((double) bufsize / (double) rate) * 1000000.0;
 }
 
 /**
@@ -671,11 +667,7 @@ int rtnl_tc_calc_txtime(int bufsize, int rate)
  */
 int rtnl_tc_calc_bufsize(int txtime, int rate)
 {
-	double bufsize;
-
-	bufsize = (double) txtime * (double) rate;
-
-	return bufsize / 1000000.;
+	return ((double) txtime * (double) rate) / 1000000.0;
 }
 
 /**
@@ -784,7 +776,7 @@ int rtnl_tc_build_rate_table(struct rtnl_tc *tc, struct rtnl_ratespec *spec,
 
 	for (i = 0; i < RTNL_TC_RTABLE_SIZE; i++) {
 		size = adjust_size((i + 1) << cell_log, spec->rs_mpu, linktype);
-		dst[i] = nl_us2ticks(rtnl_tc_calc_txtime(size, spec->rs_rate));
+		dst[i] = nl_us2ticks(rtnl_tc_calc_txtime64(size, spec->rs_rate64));
 	}
 
 	spec->rs_cell_align = -1;

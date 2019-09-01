@@ -186,7 +186,7 @@ static inline void rtnl_copy_ratespec(struct rtnl_ratespec *dst,
 	dst->rs_overhead = src->overhead;
 	dst->rs_cell_align = src->cell_align;
 	dst->rs_mpu = src->mpu;
-	dst->rs_rate = src->rate;
+	dst->rs_rate64 = src->rate;
 }
 
 static inline void rtnl_rcopy_ratespec(struct tc_ratespec *dst,
@@ -196,7 +196,7 @@ static inline void rtnl_rcopy_ratespec(struct tc_ratespec *dst,
 	dst->overhead = src->rs_overhead;
 	dst->cell_align = src->rs_cell_align;
 	dst->mpu = src->rs_mpu;
-	dst->rate = src->rs_rate;
+	dst->rate = src->rs_rate64 > 0xFFFFFFFFull ? 0xFFFFFFFFull : (uint32_t) src->rs_rate64;
 }
 
 static inline const char *nl_cache_name(struct nl_cache *cache)
@@ -275,5 +275,15 @@ static inline void nl_write_unlock(pthread_rwlock_t *lock)
 #define nl_write_lock(LOCK) do { } while(0)
 #define nl_write_unlock(LOCK) do { } while(0)
 #endif
+
+static inline int rtnl_tc_calc_txtime64(int bufsize, uint64_t rate)
+{
+	return ((double) bufsize / (double) rate) * 1000000.0;
+}
+
+static inline int rtnl_tc_calc_bufsize64(int txtime, uint64_t rate)
+{
+	return ((double) txtime * (double) rate) / 1000000.0;
+}
 
 #endif

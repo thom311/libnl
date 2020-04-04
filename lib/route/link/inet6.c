@@ -135,6 +135,7 @@ static const uint8_t map_stat_id_from_IPSTATS_MIB_v2[__IPSTATS_MIB_MAX] = {
 	[33] = RTNL_LINK_IP6_ECT1PKTS,                  /* IPSTATS_MIB_ECT1PKTS                 */
 	[34] = RTNL_LINK_IP6_ECT0PKTS,                  /* IPSTATS_MIB_ECT0PKTS                 */
 	[35] = RTNL_LINK_IP6_CEPKTS,                    /* IPSTATS_MIB_CEPKTS                   */
+	[36] = RTNL_LINK_REASM_OVERLAPS,                /* IPSTATS_MIB_REASM_OVERLAPS           */
 };
 
 static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,

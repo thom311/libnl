@@ -3007,6 +3007,7 @@ static const struct trans_tbl link_stats[] = {
 	__ADD(RTNL_LINK_IP6_ECT0PKTS, Ip6_InECT0Pkts),
 	__ADD(RTNL_LINK_IP6_CEPKTS, Ip6_InCEPkts),
 	__ADD(RTNL_LINK_RX_NOHANDLER, rx_nohandler),
+	__ADD(RTNL_LINK_REASM_OVERLAPS, ReasmOverlaps),
 };
 
 char *rtnl_link_stat2str(int st, char *buf, size_t len)

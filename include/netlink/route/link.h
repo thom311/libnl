@@ -93,6 +93,7 @@ typedef enum {
 	RTNL_LINK_IP6_ECT0PKTS,		/*!< IPv6 SNMP InECT0Pkts */
 	RTNL_LINK_IP6_CEPKTS,		/*!< IPv6 SNMP InCEPkts */
 	RTNL_LINK_RX_NOHANDLER,		/*!< Received packets dropped on inactive device */
+	RTNL_LINK_REASM_OVERLAPS,       /*!< SNMP ReasmOverlaps */
 	__RTNL_LINK_STATS_MAX,
 } rtnl_link_stat_id_t;
 

@@ -730,7 +730,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 					err = af_ops->ao_parse_af(link, af_attr, af_data);
 					if (err < 0)
-						goto errout;
+						return err;
 				}
 			}
 			link->ce_mask |= LINK_ATTR_AF_SPEC;

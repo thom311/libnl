@@ -121,7 +121,7 @@ static int u32_msg_parser(struct rtnl_tc *tc, void *data)
 	if (tb[TCA_U32_ACT]) {
 		u->cu_mask |= U32_ATTR_ACTION;
 		err = rtnl_act_parse(&u->cu_act, tb[TCA_U32_ACT]);
-		if (err)
+		if (err < 0)
 			return err;
 	}
 
@@ -373,7 +373,7 @@ static int u32_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 		int err;
 
 		err = rtnl_act_fill(msg, TCA_U32_ACT, u->cu_act);
-		if (err)
+		if (err < 0)
 			return err;
 	}
 

@@ -1077,7 +1077,7 @@ static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 
 				err = rtnl_route_nh_set_newdst(nh, addr);
 				nl_addr_put(addr);
-				if (err)
+				if (err < 0)
 					goto errout;
 			}
 
@@ -1090,7 +1090,7 @@ static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 
 				err = rtnl_route_nh_set_via(nh, addr);
 				nl_addr_put(addr);
-				if (err)
+				if (err < 0)
 					goto errout;
 			}
 
@@ -1098,7 +1098,7 @@ static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 				err = nh_encap_parse_msg(ntb[RTA_ENCAP],
 							 ntb[RTA_ENCAP_TYPE],
 							 nh);
-				if (err)
+				if (err < 0)
 					goto errout;
 			}
 		}
@@ -1267,7 +1267,7 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 
 		err = rtnl_route_nh_set_newdst(old_nh, addr);
 		nl_addr_put(addr);
-		if (err)
+		if (err < 0)
 			goto errout;
 	}
 
@@ -1284,7 +1284,7 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 
 		err = rtnl_route_nh_set_via(old_nh, addr);
 		nl_addr_put(addr);
-		if (err)
+		if (err < 0)
 			goto errout;
 	}
 
@@ -1299,7 +1299,7 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 
 		err = nh_encap_parse_msg(tb[RTA_ENCAP],
 					 tb[RTA_ENCAP_TYPE], old_nh);
-		if (err)
+		if (err < 0)
 			goto errout;
 	}
 

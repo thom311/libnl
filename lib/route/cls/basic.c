@@ -93,7 +93,7 @@ static int basic_msg_parser(struct rtnl_tc *tc, void *data)
 	if (tb[TCA_BASIC_ACT]) {
 		b->b_mask |= BASIC_ATTR_ACTION;
 		err = rtnl_act_parse(&b->b_act, tb[TCA_BASIC_ACT]);
-		if (err)
+		if (err < 0)
 			return err;
 	}
 

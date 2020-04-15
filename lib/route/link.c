@@ -818,13 +818,13 @@ static int link_request_update(struct nl_cache *cache, struct nl_sock *sk)
 	ops = rtnl_link_af_ops_lookup(family);
 	if (ops && ops->ao_get_af) {
 		err = ops->ao_get_af(msg, &ext_filter_mask);
-		if (err)
+		if (err < 0)
 			goto nla_put_failure;
 	}
 
 	if (ext_filter_mask) {
 		err = nla_put(msg, IFLA_EXT_MASK, sizeof(ext_filter_mask), &ext_filter_mask);
-		if (err)
+		if (err < 0)
 			goto nla_put_failure;
 	}
 
@@ -1396,7 +1396,7 @@ int rtnl_link_build_get_request(int ifindex, const char *name,
 		NLA_PUT_STRING(msg, IFLA_IFNAME, name);
 
 	err = nla_put(msg, IFLA_EXT_MASK, sizeof(vf_mask), &vf_mask);
-	if (err)
+	if (err < 0)
 		goto nla_put_failure;
 
 	*result = msg;

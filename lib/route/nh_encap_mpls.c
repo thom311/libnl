@@ -34,7 +34,7 @@ static int mpls_encap_build_msg(struct nl_msg *msg, void *priv)
 	return 0;
 
 nla_put_failure:
-        return -NLE_MSGSIZE;
+	return -NLE_MSGSIZE;
 }
 
 static void mpls_encap_destructor(void *priv)
@@ -56,9 +56,8 @@ static int mpls_encap_parse_msg(struct nlattr *nla, struct rtnl_nexthop *nh)
 	uint8_t ttl = 0;
 	int err;
 
-
 	err = nla_parse_nested(tb, MPLS_IPTUNNEL_MAX, nla, mpls_encap_policy);
-	if (err)
+	if (err < 0)
 		return err;
 
 	if (!tb[MPLS_IPTUNNEL_DST])

@@ -125,7 +125,7 @@ int rtnl_act_fill(struct nl_msg *msg, int attrtype, struct rtnl_act *act)
 
 	while (p_act) {
 		err = rtnl_act_fill_one(msg, p_act, ++order);
-		if (err)
+		if (err < 0)
 			return err;
 		p_act = p_act->a_next;
 	}
@@ -519,8 +519,13 @@ static int act_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	p_act = act;
 	while(p_act) {
 		err = pp->pp_cb(OBJ_CAST(act), pp);
-		if (err)
+		if (err) {
+			if (err > 0) {
+				BUG();
+				err = -NLE_FAILURE;
+			}
 			break;
+		}
 		p_act = p_act->a_next;
 	}
 errout:

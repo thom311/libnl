@@ -55,7 +55,7 @@ int nh_encap_build_msg(struct nl_msg *msg, struct rtnl_nh_encap *rtnh_encap)
 		goto nla_put_failure;
 
 	err = rtnh_encap->ops->build_msg(msg, rtnh_encap->priv);
-	if (err)
+	if (err < 0)
 		return err;
 
 	nla_nest_end(msg, encap);

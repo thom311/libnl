@@ -722,6 +722,8 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			int remaining;
 
 			nla_for_each_nested(af_attr, tb[IFLA_AF_SPEC], remaining) {
+				_nl_auto_rtnl_link_af_ops struct rtnl_link_af_ops *af_ops = NULL;
+
 				af_ops = af_lookup_and_alloc(link, nla_type(af_attr));
 				if (af_ops && af_ops->ao_parse_af) {
 					char *af_data = link->l_af_data[nla_type(af_attr)];

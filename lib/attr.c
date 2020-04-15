@@ -257,7 +257,7 @@ int nla_parse(struct nlattr *tb[], int maxtype, struct nlattr *head, int len,
 		if (policy) {
 			err = validate_nla(nla, maxtype, policy);
 			if (err < 0)
-				goto errout;
+				return err;
 		}
 
 		if (tb[type])
@@ -267,13 +267,12 @@ int nla_parse(struct nlattr *tb[], int maxtype, struct nlattr *head, int len,
 		tb[type] = nla;
 	}
 
-	if (rem > 0)
+	if (rem > 0) {
 		NL_DBG(1, "netlink: %d bytes leftover after parsing "
 		       "attributes.\n", rem);
+	}
 
-	err = 0;
-errout:
-	return err;
+	return 0;
 }
 
 /**

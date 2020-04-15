@@ -18,6 +18,7 @@
  */
 
 #include <netlink-private/netlink.h>
+#include <netlink-private/utils.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
@@ -631,7 +632,7 @@ void rtnl_neightbl_set_gc_tresh3(struct rtnl_neightbl *ntbl, int thresh)
 
 void rtnl_neightbl_set_name(struct rtnl_neightbl *ntbl, const char *name)
 {
-	strncpy(ntbl->nt_name, name, sizeof(ntbl->nt_name) - 1);
+	_nl_strncpy_trunc(ntbl->nt_name, name, sizeof(ntbl->nt_name));
 	ntbl->ce_mask |= NEIGHTBL_ATTR_NAME;
 }
 

@@ -211,8 +211,8 @@ static void route_dump_line(struct nl_object *a, struct nl_dump_params *p)
 
 static void route_dump_details(struct nl_object *a, struct nl_dump_params *p)
 {
+	_nl_auto_nl_cache struct nl_cache *link_cache = NULL;
 	struct rtnl_route *r = (struct rtnl_route *) a;
-	struct nl_cache *link_cache;
 	char buf[256];
 	int i;
 
@@ -282,9 +282,6 @@ static void route_dump_details(struct nl_object *a, struct nl_dump_params *p)
 					r->rt_metrics[i]);
 		nl_dump(p, "]\n");
 	}
-
-	if (link_cache)
-		nl_cache_put(link_cache);
 }
 
 static void route_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
@@ -310,13 +307,13 @@ static void route_keygen(struct nl_object *obj, uint32_t *hashkey,
 	struct rtnl_route *route = (struct rtnl_route *) obj;
 	unsigned int rkey_sz;
 	struct nl_addr *addr = NULL;
-	struct route_hash_key {
+	_nl_auto_free struct route_hash_key {
 		uint8_t		rt_family;
 		uint8_t		rt_tos;
 		uint32_t	rt_table;
 		uint32_t	rt_prio;
 		char 		rt_addr[0];
-	} __attribute__((packed)) *rkey;
+	} __attribute__((packed)) *rkey = NULL;
 #ifdef NL_DEBUG
 	char buf[INET6_ADDRSTRLEN+5];
 #endif
@@ -347,8 +344,6 @@ static void route_keygen(struct nl_object *obj, uint32_t *hashkey,
 		"hash 0x%x\n", route, rkey->rt_family, rkey->rt_tos,
 		rkey->rt_table, nl_addr2str(addr, buf, sizeof(buf)),
 		rkey_sz, *hashkey);
-
-	free(rkey);
 
 	return;
 }
@@ -1022,12 +1017,13 @@ static struct nla_policy route_policy[RTA_MAX+1] = {
 
 static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 {
-	struct rtnl_nexthop *nh = NULL;
 	struct rtnexthop *rtnh = nla_data(attr);
 	size_t tlen = nla_len(attr);
 	int err;
 
 	while (tlen >= sizeof(*rtnh) && tlen >= rtnh->rtnh_len) {
+		_nl_auto_rtnl_nexthop struct rtnl_nexthop *nh = NULL;
+
 		nh = rtnl_route_nh_alloc();
 		if (!nh)
 			return -NLE_NOMEM;
@@ -1044,20 +1040,17 @@ static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 					rtnh->rtnh_len - sizeof(*rtnh),
 					route_policy);
 			if (err < 0)
-				goto errout;
+				return err;
 
 			if (ntb[RTA_GATEWAY]) {
-				struct nl_addr *addr;
+				_nl_auto_nl_addr struct nl_addr *addr = NULL;
 
 				addr = nl_addr_alloc_attr(ntb[RTA_GATEWAY],
 							  route->rt_family);
-				if (!addr) {
-					err = -NLE_NOMEM;
-					goto errout;
-				}
+				if (!addr)
+					return -NLE_NOMEM;
 
 				rtnl_route_nh_set_gateway(nh, addr);
-				nl_addr_put(addr);
 			}
 
 			if (ntb[RTA_FLOW]) {
@@ -1068,38 +1061,36 @@ static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 			}
 
 			if (ntb[RTA_NEWDST]) {
-				struct nl_addr *addr;
+				_nl_auto_nl_addr struct nl_addr *addr = NULL;
 
 				addr = nl_addr_alloc_attr(ntb[RTA_NEWDST],
 							  route->rt_family);
 				if (!addr)
-					goto errout;
+					return -NLE_NOMEM;
 
 				err = rtnl_route_nh_set_newdst(nh, addr);
-				nl_addr_put(addr);
-				if (err)
-					goto errout;
+				if (err < 0)
+					return err;
 			}
 
 			if (ntb[RTA_VIA]) {
-				struct nl_addr *addr;
+				_nl_auto_nl_addr struct nl_addr *addr = NULL;
 
 				addr = rtnl_route_parse_via(ntb[RTA_VIA]);
 				if (!addr)
-					goto errout;
+					return -NLE_NOMEM;
 
 				err = rtnl_route_nh_set_via(nh, addr);
-				nl_addr_put(addr);
-				if (err)
-					goto errout;
+				if (err < 0)
+					return err;
 			}
 
 			if (ntb[RTA_ENCAP] && ntb[RTA_ENCAP_TYPE]) {
 				err = nh_encap_parse_msg(ntb[RTA_ENCAP],
 							 ntb[RTA_ENCAP_TYPE],
 							 nh);
-				if (err)
-					goto errout;
+				if (err < 0)
+					return err;
 			}
 		}
 
@@ -1108,32 +1099,29 @@ static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 		rtnh = RTNH_NEXT(rtnh);
 	}
 
-	err = 0;
-errout:
-	if (err && nh)
-		rtnl_route_nh_free(nh);
-
-	return err;
+	return 0;
 }
 
 int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 {
-	struct rtmsg *rtm;
-	struct rtnl_route *route;
+	_nl_auto_rtnl_route struct rtnl_route *route = NULL;
+	_nl_auto_rtnl_nexthop struct rtnl_nexthop *old_nh = NULL;
+	_nl_auto_nl_addr struct nl_addr *src = NULL;
+	_nl_auto_nl_addr struct nl_addr *dst = NULL;
 	struct nlattr *tb[RTA_MAX + 1];
-	struct nl_addr *src = NULL, *dst = NULL, *addr;
-	struct rtnl_nexthop *old_nh = NULL;
-	int err, family;
+	struct rtmsg *rtm;
+	int family;
+	int err;
 
 	route = rtnl_route_alloc();
 	if (!route)
-		goto errout_nomem;
+		return -NLE_NOMEM;
 
 	route->ce_msgtype = nlh->nlmsg_type;
 
 	err = nlmsg_parse(nlh, sizeof(struct rtmsg), tb, RTA_MAX, route_policy);
 	if (err < 0)
-		goto errout;
+		return err;
 
 	rtm = nlmsg_data(nlh);
 	route->rt_family = family = rtm->rtm_family;
@@ -1158,31 +1146,28 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 
 	if (tb[RTA_DST]) {
 		if (!(dst = nl_addr_alloc_attr(tb[RTA_DST], family)))
-			goto errout_nomem;
+			return -NLE_NOMEM;
 	} else {
 		if (!(dst = nl_addr_alloc(0)))
-			goto errout_nomem;
+			return -NLE_NOMEM;
 		nl_addr_set_family(dst, rtm->rtm_family);
 	}
 
 	nl_addr_set_prefixlen(dst, rtm->rtm_dst_len);
 	err = rtnl_route_set_dst(route, dst);
 	if (err < 0)
-		goto errout;
-
-	nl_addr_put(dst);
+		return err;
 
 	if (tb[RTA_SRC]) {
 		if (!(src = nl_addr_alloc_attr(tb[RTA_SRC], family)))
-			goto errout_nomem;
+			return -NLE_NOMEM;
 	} else if (rtm->rtm_src_len)
 		if (!(src = nl_addr_alloc(0)))
-			goto errout_nomem;
+			return -NLE_NOMEM;
 
 	if (src) {
 		nl_addr_set_prefixlen(src, rtm->rtm_src_len);
 		rtnl_route_set_src(route, src);
-		nl_addr_put(src);
 	}
 
 	if (tb[RTA_TABLE])
@@ -1195,10 +1180,11 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 		rtnl_route_set_priority(route, nla_get_u32(tb[RTA_PRIORITY]));
 
 	if (tb[RTA_PREFSRC]) {
+		_nl_auto_nl_addr struct nl_addr *addr = NULL;
+
 		if (!(addr = nl_addr_alloc_attr(tb[RTA_PREFSRC], family)))
-			goto errout_nomem;
+			return -NLE_NOMEM;
 		rtnl_route_set_pref_src(route, addr);
-		nl_addr_put(addr);
 	}
 
 	if (tb[RTA_METRICS]) {
@@ -1207,7 +1193,7 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 
 		err = nla_parse_nested(mtb, RTAX_MAX, tb[RTA_METRICS], NULL);
 		if (err < 0)
-			goto errout;
+			return err;
 
 		for (i = 1; i <= RTAX_MAX; i++) {
 			if (mtb[i] && nla_len(mtb[i]) >= sizeof(uint32_t)) {
@@ -1215,14 +1201,15 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 
 				err = rtnl_route_set_metric(route, i, m);
 				if (err < 0)
-					goto errout;
+					return err;
 			}
 		}
 	}
 
-	if (tb[RTA_MULTIPATH])
+	if (tb[RTA_MULTIPATH]) {
 		if ((err = parse_multipath(route, tb[RTA_MULTIPATH])) < 0)
-			goto errout;
+			return err;
+	}
 
 	if (tb[RTA_CACHEINFO]) {
 		nla_memcpy(&route->rt_cacheinfo, tb[RTA_CACHEINFO],
@@ -1232,60 +1219,60 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 
 	if (tb[RTA_OIF]) {
 		if (!old_nh && !(old_nh = rtnl_route_nh_alloc()))
-			goto errout_nomem;
+			return -NLE_NOMEM;
 
 		rtnl_route_nh_set_ifindex(old_nh, nla_get_u32(tb[RTA_OIF]));
 	}
 
 	if (tb[RTA_GATEWAY]) {
+		_nl_auto_nl_addr struct nl_addr *addr = NULL;
+
 		if (!old_nh && !(old_nh = rtnl_route_nh_alloc()))
-			goto errout_nomem;
+			return -NLE_NOMEM;
 
 		if (!(addr = nl_addr_alloc_attr(tb[RTA_GATEWAY], family)))
-			goto errout_nomem;
+			return -NLE_NOMEM;
 
 		rtnl_route_nh_set_gateway(old_nh, addr);
-		nl_addr_put(addr);
 	}
 
 	if (tb[RTA_FLOW]) {
 		if (!old_nh && !(old_nh = rtnl_route_nh_alloc()))
-			goto errout_nomem;
+			return -NLE_NOMEM;
 
 		rtnl_route_nh_set_realms(old_nh, nla_get_u32(tb[RTA_FLOW]));
 	}
 
 	if (tb[RTA_NEWDST]) {
-		struct nl_addr *addr;
+		_nl_auto_nl_addr struct nl_addr *addr = NULL;
 
 		if (!old_nh && !(old_nh = rtnl_route_nh_alloc()))
-			goto errout_nomem;
+			return -NLE_NOMEM;
 
 		addr = nl_addr_alloc_attr(tb[RTA_NEWDST], route->rt_family);
 		if (!addr)
-			goto errout_nomem;
+			return -NLE_NOMEM;
 
 		err = rtnl_route_nh_set_newdst(old_nh, addr);
-		nl_addr_put(addr);
-		if (err)
-			goto errout;
+		if (err < 0)
+			return err;
 	}
 
 	if (tb[RTA_VIA]) {
 		int alen = nla_len(tb[RTA_VIA]) - offsetof(struct rtvia, rtvia_addr);
+		_nl_auto_nl_addr struct nl_addr *addr = NULL;
 		struct rtvia *via = nla_data(tb[RTA_VIA]);
 
 		if (!old_nh && !(old_nh = rtnl_route_nh_alloc()))
-			goto errout_nomem;
+			return -NLE_NOMEM;
 
 		addr = nl_addr_build(via->rtvia_family, via->rtvia_addr, alen);
 		if (!addr)
-			goto errout_nomem;
+			return -NLE_NOMEM;
 
 		err = rtnl_route_nh_set_via(old_nh, addr);
-		nl_addr_put(addr);
-		if (err)
-			goto errout;
+		if (err < 0)
+			return err;
 	}
 
 	if (tb[RTA_TTL_PROPAGATE]) {
@@ -1295,12 +1282,12 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 
 	if (tb[RTA_ENCAP] && tb[RTA_ENCAP_TYPE]) {
 		if (!old_nh && !(old_nh = rtnl_route_nh_alloc()))
-			goto errout_nomem;
+			return -NLE_NOMEM;
 
 		err = nh_encap_parse_msg(tb[RTA_ENCAP],
 					 tb[RTA_ENCAP_TYPE], old_nh);
-		if (err)
-			goto errout;
+		if (err < 0)
+			return err;
 	}
 
 	if (old_nh) {
@@ -1309,7 +1296,7 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 			/* If no nexthops have been provided via RTA_MULTIPATH
 			 * we add it as regular nexthop to maintain backwards
 			 * compatibility */
-			rtnl_route_add_nexthop(route, old_nh);
+			rtnl_route_add_nexthop(route, _nl_steal_pointer(&old_nh));
 		} else {
 			/* Kernel supports new style nexthop configuration,
 			 * verify that it is a duplicate and discard nexthop. */
@@ -1323,27 +1310,13 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 
 			if (rtnl_route_nh_compare(old_nh, first,
 						  old_nh->ce_mask, 0)) {
-				err = -NLE_INVAL;
-				goto errout;
+				return -NLE_INVAL;
 			}
-
-			rtnl_route_nh_free(old_nh);
 		}
-		old_nh = NULL;
 	}
 
-	*result = route;
+	*result = _nl_steal_pointer(&route);
 	return 0;
-
-errout:
-	if (old_nh)
-		rtnl_route_nh_free(old_nh);
-	rtnl_route_put(route);
-	return err;
-
-errout_nomem:
-	err = -NLE_NOMEM;
-	goto errout;
 }
 
 int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)

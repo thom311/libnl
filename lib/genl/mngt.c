@@ -133,13 +133,13 @@ char *genl_op2name(int family, int op, char *buf, size_t len)
 			cmd = &ops->o_cmds[i];
 
 			if (cmd->c_id == op) {
-				strncpy(buf, cmd->c_name, len - 1);
+				_nl_strncpy_trunc(buf, cmd->c_name, len);
 				return buf;
 			}
 		}
 	}
 
-	strncpy(buf, "unknown", len - 1);
+	_nl_strncpy_trunc(buf, "unknown", len);
 	return NULL;
 }
 

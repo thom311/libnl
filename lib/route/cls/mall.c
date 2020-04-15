@@ -108,7 +108,7 @@ int rtnl_mall_append_action(struct rtnl_cls *cls, struct rtnl_act *act)
 
 	mall->m_mask |= MALL_ATTR_ACTION;
 	err = rtnl_act_append(&mall->m_act, act);
-	if (err)
+	if (err < 0)
 	        return err;
 
 	rtnl_act_get(act);
@@ -188,7 +188,7 @@ static int mall_msg_parser(struct rtnl_tc *tc, void *data)
 	if (tb[TCA_MATCHALL_ACT]) {
 		mall->m_mask |= MALL_ATTR_ACTION;
 		err = rtnl_act_parse(&mall->m_act, tb[TCA_MATCHALL_ACT]);
-		if (err)
+		if (err < 0)
 			return err;
 	}
 
@@ -212,13 +212,13 @@ static int mall_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 		int err;
 
 		err = rtnl_act_fill(msg, TCA_MATCHALL_ACT, mall->m_act);
-		if (err)
+		if (err < 0)
 			return err;
 	}
 
 	return 0;
 
- nla_put_failure:
+nla_put_failure:
 	return -NLE_NOMEM;
 }
 

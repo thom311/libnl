@@ -260,7 +260,7 @@ char *genl_family_get_name(struct genl_family *family)
  */
 void genl_family_set_name(struct genl_family *family, const char *name)
 {
-	strncpy(family->gf_name, name, GENL_NAMSIZ-1);
+	_nl_strncpy_trunc(family->gf_name, name, GENL_NAMSIZ);
 	family->ce_mask |= FAMILY_ATTR_NAME;
 }
 
@@ -380,7 +380,7 @@ int genl_family_add_grp(struct genl_family *family, uint32_t id,
 		return -NLE_NOMEM;
 
 	grp->id = id;
-	_nl_strncpy(grp->name, name, GENL_NAMSIZ);
+	_nl_strncpy_assert(grp->name, name, GENL_NAMSIZ);
 
 	nl_list_add_tail(&grp->list, &family->gf_mc_grps);
 

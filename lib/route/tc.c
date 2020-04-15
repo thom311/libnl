@@ -536,7 +536,7 @@ int rtnl_tc_set_kind(struct rtnl_tc *tc, const char *kind)
 	    || strlen (kind) >= sizeof (tc->tc_kind))
 		return -NLE_INVAL;
 
-	_nl_strncpy(tc->tc_kind, kind, sizeof(tc->tc_kind));
+	_nl_strncpy_assert(tc->tc_kind, kind, sizeof(tc->tc_kind));
 
 	tc->ce_mask |= TCA_ATTR_KIND;
 

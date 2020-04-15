@@ -81,17 +81,7 @@
 #define _nl_assert(cond) do { if (0) { assert(cond); } } while (0)
 #endif
 
-/*****************************************************************************/
-
-#define _NL_AUTO_DEFINE_FCN_VOID0(CastType, name, func) \
-static inline void name (void *v) \
-{ \
-	if (*((CastType *) v)) \
-		func (*((CastType *) v)); \
-}
-
-#define _nl_auto_free _nl_auto(_nl_auto_free_fcn)
-_NL_AUTO_DEFINE_FCN_VOID0 (void *, _nl_auto_free_fcn, free)
+#define _nl_assert_not_reached() assert(0)
 
 /*****************************************************************************/
 
@@ -167,7 +157,7 @@ static inline char *
 _nl_strncpy_trunc(char *dst, const char *src, size_t len)
 {
 	/* we don't use/reimplement strlcpy(), because we want the fill-all-with-NUL
-	 * behavior of strncpy(). This is just strncpy() with gracefully handling trunction
+	 * behavior of strncpy(). This is just strncpy() with gracefully handling truncation
 	 * (and disabling the "-Wstringop-truncation" warning).
 	 *
 	 * Note that truncation is silently accepted.
@@ -192,15 +182,18 @@ _nl_strncpy_trunc(char *dst, const char *src, size_t len)
 }
 
 static inline char *
-_nl_strncpy(char *dst, const char *src, size_t len)
+_nl_strncpy_assert(char *dst, const char *src, size_t len)
 {
 	/* we don't use/reimplement strlcpy(), because we want the fill-all-with-NUL
-	 * behavior of strncpy(). This is just strncpy() with gracefully handling trunction
+	 * behavior of strncpy(). This is just strncpy() with assertion against truncation
 	 * (and disabling the "-Wstringop-truncation" warning).
 	 *
 	 * Note that truncation is still a bug and there is an _nl_assert()
 	 * against that.
 	 */
+
+	_NL_PRAGMA_WARNING_DISABLE ("-Wstringop-truncation");
+	_NL_PRAGMA_WARNING_DISABLE ("-Wstringop-overflow");
 
 	if (len > 0) {
 		_nl_assert(dst);
@@ -208,16 +201,60 @@ _nl_strncpy(char *dst, const char *src, size_t len)
 
 		strncpy(dst, src, len);
 
-		/* Truncation is a bug and we assert against it. But note that this
-		 * assertion is disabled by default because we cannot be sure that
-		 * there are not wrong uses of _nl_strncpy() where truncation might
-		 * happen (wrongly!!). */
-		_nl_assert (memchr(dst, '\0', len));
+		_nl_assert (dst[len - 1] == '\0');
 
 		dst[len - 1] = '\0';
 	}
 
+	_NL_PRAGMA_WARNING_REENABLE;
+	_NL_PRAGMA_WARNING_REENABLE;
+
 	return dst;
 }
+
+#include "nl-auto.h"
+
+#define _NL_RETURN_ON_ERR(cmd) \
+	do { \
+		int _err; \
+		\
+		_err = (cmd); \
+		if (_err < 0) \
+			return _err; \
+	} while (0)
+
+#define _NL_RETURN_E_ON_ERR(e, cmd) \
+	do { \
+		int _err; \
+		\
+		_err = (cmd); \
+		if (_err < 0) { \
+			_NL_STATIC_ASSERT((e) > 0); \
+			return -(e); \
+		} \
+	} while (0)
+
+/* _NL_RETURN_ON_PUT_ERR() shall only be used with a put command (nla_put or nlmsg_append).
+ * These commands can either fail with a regular error code (which gets propagated)
+ * or with -NLE_NOMEM. However, they don't really try to allocate memory, so we don't
+ * want to propagate -NLE_NOMEM. Instead, we coerce such failure to -NLE_MSGSIZE. */
+#define _NL_RETURN_ON_PUT_ERR(put_cmd) \
+	do { \
+		int _err; \
+		\
+		_err = (put_cmd); \
+		if (_err < 0) { \
+			if (_err == -NLE_NOMEM) { \
+				/* nla_put() returns -NLE_NOMEM in case of out of buffer size. We don't
+				 * want to propagate that error and map it to -NLE_MSGSIZE. */ \
+				return -NLE_MSGSIZE; \
+			} \
+			/* any other error can only be due to invalid parameters. Propagate the
+			 * error, however also assert that it cannot be reached. */ \
+			_nl_assert_not_reached (); \
+			return _err; \
+		} else \
+			_nl_assert (_err == 0); \
+	} while (0)
 
 #endif

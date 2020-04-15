@@ -157,7 +157,7 @@ static inline char *
 _nl_strncpy_trunc(char *dst, const char *src, size_t len)
 {
 	/* we don't use/reimplement strlcpy(), because we want the fill-all-with-NUL
-	 * behavior of strncpy(). This is just strncpy() with gracefully handling trunction
+	 * behavior of strncpy(). This is just strncpy() with gracefully handling truncation
 	 * (and disabling the "-Wstringop-truncation" warning).
 	 *
 	 * Note that truncation is silently accepted.
@@ -185,12 +185,15 @@ static inline char *
 _nl_strncpy_assert(char *dst, const char *src, size_t len)
 {
 	/* we don't use/reimplement strlcpy(), because we want the fill-all-with-NUL
-	 * behavior of strncpy(). This is just strncpy() with gracefully handling trunction
+	 * behavior of strncpy(). This is just strncpy() with assertion against truncation
 	 * (and disabling the "-Wstringop-truncation" warning).
 	 *
 	 * Note that truncation is still a bug and there is an _nl_assert()
 	 * against that.
 	 */
+
+	_NL_PRAGMA_WARNING_DISABLE ("-Wstringop-truncation");
+	_NL_PRAGMA_WARNING_DISABLE ("-Wstringop-overflow");
 
 	if (len > 0) {
 		_nl_assert(dst);
@@ -198,14 +201,13 @@ _nl_strncpy_assert(char *dst, const char *src, size_t len)
 
 		strncpy(dst, src, len);
 
-		/* Truncation is a bug and we assert against it. But note that this
-		 * assertion is disabled by default because we cannot be sure that
-		 * there are not wrong uses of _nl_strncpy_assert() where truncation might
-		 * happen (wrongly!!). */
-		_nl_assert (memchr(dst, '\0', len));
+		_nl_assert (dst[len - 1] == '\0');
 
 		dst[len - 1] = '\0';
 	}
+
+	_NL_PRAGMA_WARNING_REENABLE;
+	_NL_PRAGMA_WARNING_REENABLE;
 
 	return dst;
 }

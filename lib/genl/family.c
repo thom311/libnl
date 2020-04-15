@@ -260,7 +260,7 @@ char *genl_family_get_name(struct genl_family *family)
  */
 void genl_family_set_name(struct genl_family *family, const char *name)
 {
-	strncpy(family->gf_name, name, GENL_NAMSIZ-1);
+	_nl_strncpy_trunc(family->gf_name, name, GENL_NAMSIZ);
 	family->ce_mask |= FAMILY_ATTR_NAME;
 }
 

@@ -210,4 +210,43 @@ _nl_strncpy(char *dst, const char *src, size_t len)
 
 #include "nl-auto.h"
 
+#define _NL_RETURN_ON_ERR(cmd) \
+	do { \
+		int _err; \
+		\
+		_err = (cmd); \
+		if (_err < 0) \
+			return _err; \
+	} while (0)
+
+#define _NL_RETURN_E_ON_ERR(e, cmd) \
+	do { \
+		int _err; \
+		\
+		_err = (cmd); \
+		if (_err < 0) { \
+			_NL_STATIC_ASSERT((e) > 0); \
+			return -(e); \
+		} \
+	} while (0)
+
+/* _NL_RETURN_ON_PUT_ERR() shall only be used with a put command (nla_put or nlmsg_append).
+ * These commands can either fail with a regular error code (which gets propagated)
+ * or with -NLE_NOMEM. However, they don't really try to allocate memory, so we don't
+ * want to propagate -NLE_NOMEM. Instead, we coerce such failure to -NLE_MSGSIZE. */
+#define _NL_RETURN_ON_PUT_ERR(put_cmd) \
+	do { \
+		int _err; \
+		\
+		_err = (put_cmd); \
+		if (_err < 0) { \
+			if (_err == -NLE_NOMEM) { \
+				/* nla_put() returns -NLE_NOMEM in case of out of buffer size. We don't
+				 * want to propagate that error and map it to -NLE_MSGSIZE. */ \
+				return -NLE_MSGSIZE; \
+			} \
+			return _err; \
+		} \
+	} while (0)
+
 #endif

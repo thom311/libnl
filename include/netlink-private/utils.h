@@ -81,6 +81,8 @@
 #define _nl_assert(cond) do { if (0) { assert(cond); } } while (0)
 #endif
 
+#define _nl_assert_not_reached() assert(0)
+
 /*****************************************************************************/
 
 #define _NL_AUTO_DEFINE_FCN_VOID0(CastType, name, func) \

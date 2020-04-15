@@ -182,7 +182,7 @@ _nl_strncpy_trunc(char *dst, const char *src, size_t len)
 }
 
 static inline char *
-_nl_strncpy(char *dst, const char *src, size_t len)
+_nl_strncpy_assert(char *dst, const char *src, size_t len)
 {
 	/* we don't use/reimplement strlcpy(), because we want the fill-all-with-NUL
 	 * behavior of strncpy(). This is just strncpy() with gracefully handling trunction
@@ -200,7 +200,7 @@ _nl_strncpy(char *dst, const char *src, size_t len)
 
 		/* Truncation is a bug and we assert against it. But note that this
 		 * assertion is disabled by default because we cannot be sure that
-		 * there are not wrong uses of _nl_strncpy() where truncation might
+		 * there are not wrong uses of _nl_strncpy_assert() where truncation might
 		 * happen (wrongly!!). */
 		_nl_assert (memchr(dst, '\0', len));
 

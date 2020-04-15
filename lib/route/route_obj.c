@@ -1072,8 +1072,10 @@ static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 
 				addr = nl_addr_alloc_attr(ntb[RTA_NEWDST],
 							  route->rt_family);
-				if (!addr)
+				if (!addr) {
+					err = -NLE_NOMEM;
 					goto errout;
+				}
 
 				err = rtnl_route_nh_set_newdst(nh, addr);
 				nl_addr_put(addr);
@@ -1085,8 +1087,10 @@ static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 				struct nl_addr *addr;
 
 				addr = rtnl_route_parse_via(ntb[RTA_VIA]);
-				if (!addr)
+				if (!addr) {
+					err = -NLE_NOMEM;
 					goto errout;
+				}
 
 				err = rtnl_route_nh_set_via(nh, addr);
 				nl_addr_put(addr);

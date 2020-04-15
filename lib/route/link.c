@@ -1487,7 +1487,7 @@ char * rtnl_link_i2name(struct nl_cache *cache, int ifindex, char *dst,
 	struct rtnl_link *link = rtnl_link_get(cache, ifindex);
 
 	if (link) {
-		strncpy(dst, link->l_name, len - 1);
+		_nl_strncpy_trunc(dst, link->l_name, len);
 		rtnl_link_put(link);
 		return dst;
 	}
@@ -1958,7 +1958,7 @@ void rtnl_link_put(struct rtnl_link *link)
  */
 void rtnl_link_set_name(struct rtnl_link *link, const char *name)
 {
-	strncpy(link->l_name, name, sizeof(link->l_name) - 1);
+	_nl_strncpy_trunc(link->l_name, name, sizeof(link->l_name));
 	link->ce_mask |= LINK_ATTR_IFNAME;
 }
 
@@ -2482,7 +2482,7 @@ void rtnl_link_set_ifalias(struct rtnl_link *link, const char *alias)
  */
 void rtnl_link_set_qdisc(struct rtnl_link *link, const char *name)
 {
-	strncpy(link->l_qdisc, name, sizeof(link->l_qdisc) - 1);
+	_nl_strncpy_trunc(link->l_qdisc, name, sizeof(link->l_qdisc));
 	link->ce_mask |= LINK_ATTR_QDISC;
 }
 

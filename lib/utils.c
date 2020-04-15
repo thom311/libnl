@@ -475,7 +475,7 @@ static void get_psched_settings(void)
 		else if ((ev = getenv("PROC_ROOT")))
 			snprintf(name, sizeof(name), "%s/net/psched", ev);
 		else
-			strncpy(name, "/proc/net/psched", sizeof(name) - 1);
+			_nl_strncpy_assert(name, "/proc/net/psched", sizeof(name));
 
 		if ((fd = fopen(name, "re"))) {
 			unsigned int ns_per_usec, ns_per_tick, nom, denom;

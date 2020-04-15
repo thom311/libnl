@@ -83,18 +83,6 @@
 
 /*****************************************************************************/
 
-#define _NL_AUTO_DEFINE_FCN_VOID0(CastType, name, func) \
-static inline void name (void *v) \
-{ \
-	if (*((CastType *) v)) \
-		func (*((CastType *) v)); \
-}
-
-#define _nl_auto_free _nl_auto(_nl_auto_free_fcn)
-_NL_AUTO_DEFINE_FCN_VOID0 (void *, _nl_auto_free_fcn, free)
-
-/*****************************************************************************/
-
 extern const char *nl_strerror_l(int err);
 
 /*****************************************************************************/
@@ -219,5 +207,7 @@ _nl_strncpy(char *dst, const char *src, size_t len)
 
 	return dst;
 }
+
+#include "nl-auto.h"
 
 #endif

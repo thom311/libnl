@@ -1,14 +1,8 @@
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
- * test/tests-u32-with-actions.c     Add ingress qdisc, create some hash filters, and add redirect action
- *
- *      This library is free software; you can redistribute it and/or
- *      modify it under the terms of the GNU Lesser General Public
- *      License as published by the Free Software Foundation version 2.1
- *      of the License.
+ * Copyright (c) 2013 Cong Wang <xiyou.wangcong@gmail.com>
  *
  * Stolen from tests/test-complex-HTB-with-hash-filters.c
- *
- * Copyright (c) 2013 Cong Wang <xiyou.wangcong@gmail.com>
  */
 
 #include <netlink/route/link.h>

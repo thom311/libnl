@@ -1,15 +1,8 @@
 /* SPDX-License-Identifier: LGPL-2.1-only */
 /*
- * lib/route/addr.c		Addresses
- *
- *	This library is free software; you can redistribute it and/or
- *	modify it under the terms of the GNU Lesser General Public
- *	License as published by the Free Software Foundation version 2.1
- *	of the License.
- *
  * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
- * Copyright (c) 2003-2006 Baruch Even <baruch@ev-en.org>,
- *                         Mediatrix Telecom, inc. <ericb@mediatrix.com>
+ * Copyright (c) 2003-2006 Baruch Even <baruch@ev-en.org>
+ * Copyright (c) 2003-2006 Mediatrix Telecom, inc. <ericb@mediatrix.com>
  */
 
 /**

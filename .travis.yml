@@ -3,6 +3,11 @@ compiler:
   - gcc
   - clang
 
+addons:
+  apt:
+    packages:
+      - check
+
 before_install:
 
 script: ./.travis/run.sh

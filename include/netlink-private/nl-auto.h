@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: LGPL-2.1+
+/* SPDX-License-Identifier: LGPL-2.1-only */
 
 #ifndef NETLINK_NL_AUTO_H_
 #define NETLINK_NL_AUTO_H_

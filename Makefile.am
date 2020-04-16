@@ -949,6 +949,31 @@ tests_check_all_LDADD = \
 	$(tests_ldadd) \
 	$(CHECK_LIBS)
 
+if WITH_CHECK
+check_programs += tests/check-direct
+endif
+
+tests_check_direct_SOURCES = \
+	tests/check-direct.c \
+	$(NULL)
+
+tests_check_direct_CPPFLAGS = \
+	$(tests_cppflags) \
+	$(CHECK_CFLAGS) \
+	$(NULL)
+
+tests_check_direct_LDFLAGS = \
+	-static \
+	$(NULL)
+
+tests_check_direct_LDADD = \
+	lib/libnl-3.la \
+	lib/libnl-nf-3.la \
+	lib/libnl-genl-3.la \
+	lib/libnl-route-3.la \
+	$(CHECK_LIBS) \
+	$(NULL)
+
 ###############################################################################
 
 dist_man8_MANS = \

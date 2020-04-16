@@ -1,14 +1,8 @@
-#
-# configure.in
-#
-# 	This library is free software; you can redistribute it and/or
-#	modify it under the terms of the GNU Lesser General Public
-#	License as published by the Free Software Foundation version 2.1
-#	of the License.
+# SPDX-License-Identifier: LGPL-2.1-only
+
 #
 # Copyright (c) 2003-2013 Thomas Graf <tgraf@suug.ch>
 #
-
 
 # copied from glib
 m4_define([libnl_major_version], [3])

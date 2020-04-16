@@ -7,6 +7,7 @@
 #define NETLINK_UTILS_PRIV_H_
 
 #include <byteswap.h>
+#include <assert.h>
 
 #if __BYTE_ORDER == __BIG_ENDIAN
 #define ntohll(x) (x)

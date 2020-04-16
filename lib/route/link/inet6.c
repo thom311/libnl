@@ -10,6 +10,7 @@
 #include <netlink/route/link/inet6.h>
 #include <netlink-private/route/link/api.h>
 
+#include "netlink-private/route/utils.h"
 #include "netlink-private/utils.h"
 
 #define I6_ADDR_GEN_MODE_UNKNOWN	UINT8_MAX
@@ -138,6 +139,8 @@ static const uint8_t map_stat_id_from_IPSTATS_MIB_v2[__IPSTATS_MIB_MAX] = {
 	[36] = RTNL_LINK_REASM_OVERLAPS,                /* IPSTATS_MIB_REASM_OVERLAPS           */
 };
 
+const uint8_t *const _nltst_map_stat_id_from_IPSTATS_MIB_v2 = map_stat_id_from_IPSTATS_MIB_v2;
+
 static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 				void *data)
 {
@@ -206,6 +209,9 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 		uint64_t stat;
 		int i;
 		int len = min_t(int, __ICMP6_MIB_MAX, nla_len(tb[IFLA_INET6_ICMP6STATS]) / 8);
+
+		_NL_STATIC_ASSERT (__ICMP6_MIB_MAX == 6);
+		_NL_STATIC_ASSERT (RTNL_LINK_ICMP6_CSUMERRORS - RTNL_LINK_ICMP6_INMSGS + 1 == 5);
 
 		for (i = 1; i < len; i++) {
 			memcpy(&stat, &cnt[i * sizeof(stat)], sizeof(stat));

@@ -3,6 +3,8 @@
 #ifndef NETLINK_NL_AUTO_H_
 #define NETLINK_NL_AUTO_H_
 
+#include <stdlib.h>
+
 #define _nl_auto(fcn)               __attribute__ ((__cleanup__(fcn)))
 
 #define _NL_AUTO_DEFINE_FCN_VOID0(CastType, name, func) \

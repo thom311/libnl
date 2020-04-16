@@ -1,11 +1,5 @@
-/* SPDX-License-Identifier: LGPL-2.1-only */
+/* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * src/nl-addr-delete.c     Delete addresses
- *
- *	This library is free software; you can redistribute it and/or
- *	modify it under the terms of the GNU General Public License as
- *	published by the Free Software Foundation version 2 of the License.
- *
  * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 

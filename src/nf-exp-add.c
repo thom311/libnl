@@ -11,7 +11,6 @@
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
  * Copyright (c) 2012 Rich Fought <rich.fought@watchguard.com>
- *
  */
 
 #include <netlink/cli/utils.h>

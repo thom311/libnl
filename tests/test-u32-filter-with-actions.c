@@ -6,9 +6,9 @@
  *      License as published by the Free Software Foundation version 2.1
  *      of the License.
  *
- * Stolen from tests/test-complex-HTB-with-hash-filters.c
- *
  * Copyright (c) 2013 Cong Wang <xiyou.wangcong@gmail.com>
+ *
+ * Stolen from tests/test-complex-HTB-with-hash-filters.c
  */
 
 #include <netlink/route/link.h>

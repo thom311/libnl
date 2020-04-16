@@ -10,7 +10,7 @@
  * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  * Copyright (c) 2007 Philip Craig <philipc@snapgear.com>
  * Copyright (c) 2007 Secure Computing Corporation
- * Copyright (c= 2008 Patrick McHardy <kaber@trash.net>
+ * Copyright (c) 2008 Patrick McHardy <kaber@trash.net>
  */
 
 /**

@@ -8,8 +8,8 @@
  *	of the License.
  *
  * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
- * Copyright (c) 2003-2006 Baruch Even <baruch@ev-en.org>,
- *                         Mediatrix Telecom, inc. <ericb@mediatrix.com>
+ * Copyright (c) 2003-2006 Baruch Even <baruch@ev-en.org>
+ * Copyright (c) 2003-2006 Mediatrix Telecom, inc. <ericb@mediatrix.com>
  */
 
 /**

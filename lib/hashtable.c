@@ -162,20 +162,20 @@ int nl_hash_table_del(nl_hash_table_t *ht, struct nl_object *obj)
 	prev = node = ht->nodes[key_hash];
 
 	while (node) {
-	       if (nl_object_identical(node->obj, obj)) {
-		   nl_object_put(obj);
+		if (nl_object_identical(node->obj, obj)) {
+			nl_object_put(obj);
 
-		   NL_DBG (5, "deleting cache entry of obj %p in table %p, with"
-			   " hash 0x%x\n", obj, ht, key_hash);
+			NL_DBG (5, "deleting cache entry of obj %p in table %p, with"
+			        " hash 0x%x\n", obj, ht, key_hash);
 
-	           if (node == ht->nodes[key_hash])
-		       ht->nodes[key_hash] = node->next;
-	           else
-		       prev->next = node->next;
+			if (node == ht->nodes[key_hash])
+				ht->nodes[key_hash] = node->next;
+			else
+				prev->next = node->next;
 
-	           free(node);
+			free(node);
 
-	           return 0;
+			return 0;
 		}
 		prev = node;
 		node = node->next;

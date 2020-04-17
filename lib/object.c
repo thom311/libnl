@@ -309,6 +309,9 @@ int nl_object_identical(struct nl_object *a, struct nl_object *b)
 	struct nl_object_ops *ops = obj_ops(a);
 	uint32_t req_attrs;
 
+	if (a == b)
+		return 1;
+
 	/* Both objects must be of same type */
 	if (ops != obj_ops(b))
 		return 0;

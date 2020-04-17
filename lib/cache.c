@@ -44,6 +44,7 @@
  */
 
 #include <netlink-private/netlink.h>
+#include <netlink-private/utils.h>
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/object.h>
@@ -1201,7 +1202,7 @@ void nl_cache_dump(struct nl_cache *cache, struct nl_dump_params *params)
 /**
  * Dump all elements of a cache (filtered).
  * @arg cache		cache to dump
- * @arg params		dumping parameters (optional)
+ * @arg params		dumping parameters
  * @arg filter		filter object
  *
  * Dumps all elements of the \a cache to the file descriptor \a fd
@@ -1211,12 +1212,29 @@ void nl_cache_dump_filter(struct nl_cache *cache,
 			  struct nl_dump_params *params,
 			  struct nl_object *filter)
 {
-	int type = params ? params->dp_type : NL_DUMP_DETAILS;
+	struct nl_dump_params params_copy;
 	struct nl_object_ops *ops;
 	struct nl_object *obj;
+	int type;
 
 	NL_DBG(2, "Dumping cache %p <%s> with filter %p\n",
 	       cache, nl_cache_name(cache), filter);
+
+	if (!params) {
+		/* It doesn't really make sense that @params is an optional parameter. In the
+		 * past, nl_cache_dump() was documented that the @params would be optional, so
+		 * try to save it.
+		 *
+		 * Note that this still isn't useful, because we don't set any dump option.
+		 * It only exists not to crash applications that wrongly pass %NULL here. */
+		_nl_assert_not_reached ();
+		params_copy = (struct nl_dump_params) {
+			.dp_type = NL_DUMP_DETAILS,
+		};
+		params = &params_copy;
+	}
+
+	type = params->dp_type;
 
 	if (type > NL_DUMP_MAX || type < 0)
 		BUG();
@@ -1228,7 +1246,7 @@ void nl_cache_dump_filter(struct nl_cache *cache,
 	if (!ops->oo_dump[type])
 		return;
 
-	if (params && params->dp_buf)
+	if (params->dp_buf)
 		memset(params->dp_buf, 0, params->dp_buflen);
 
 	nl_list_for_each_entry(obj, &cache->c_items, ce_list) {

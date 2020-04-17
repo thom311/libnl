@@ -306,42 +306,42 @@ void nl_object_dump_buf(struct nl_object *obj, char *buf, size_t len)
  */
 int nl_object_identical(struct nl_object *a, struct nl_object *b)
 {
-	struct nl_object_ops *ops = obj_ops(a);
-	uint32_t req_attrs;
+	struct nl_object_ops *ops;
+	uint64_t req_attrs_a;
+	uint64_t req_attrs_b;
 
 	if (a == b)
 		return 1;
 
 	/* Both objects must be of same type */
+	ops = obj_ops(a);
 	if (ops != obj_ops(b))
-		return 0;
-
-	if (ops->oo_id_attrs_get) {
-		uint32_t req_attrs_a = ops->oo_id_attrs_get(a);
-		uint32_t req_attrs_b = ops->oo_id_attrs_get(b);
-
-		if (req_attrs_a != req_attrs_b)
-			return 0;
-		req_attrs = req_attrs_a;
-	} else if (ops->oo_id_attrs) {
-		req_attrs = ops->oo_id_attrs;
-	} else {
-		req_attrs = 0xFFFFFFFF;
-	}
-	if (req_attrs == 0xFFFFFFFF)
-		req_attrs = a->ce_mask & b->ce_mask;
-
-	/* Both objects must provide all required attributes to uniquely
-	 * identify an object */
-	if ((a->ce_mask & req_attrs) != req_attrs ||
-	    (b->ce_mask & req_attrs) != req_attrs)
 		return 0;
 
 	/* Can't judge unless we can compare */
 	if (ops->oo_compare == NULL)
 		return 0;
 
-	return !(ops->oo_compare(a, b, req_attrs, ID_COMPARISON));
+	if (ops->oo_id_attrs_get) {
+		req_attrs_a = ops->oo_id_attrs_get(a);
+		req_attrs_b = ops->oo_id_attrs_get(b);
+	} else if (ops->oo_id_attrs) {
+		req_attrs_a = ops->oo_id_attrs;
+		req_attrs_b = req_attrs_a;
+	} else {
+		req_attrs_a = UINT64_MAX;
+		req_attrs_b = req_attrs_a;
+	}
+
+	req_attrs_a &= a->ce_mask;
+	req_attrs_b &= b->ce_mask;
+
+	/* Both objects must provide all required attributes to uniquely
+	 * identify an object */
+	if (req_attrs_a != req_attrs_b)
+		return 0;
+
+	return !(ops->oo_compare(a, b, req_attrs_a, ID_COMPARISON));
 }
 
 /**

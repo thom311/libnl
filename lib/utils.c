@@ -1217,7 +1217,7 @@ int nl_has_capability (int capability)
 			NL_CAPABILITY_VERSION_3_4_0,
 			NL_CAPABILITY_ROUTE_FIX_VLAN_SET_EGRESS_MAP,
 			NL_CAPABILITY_VERSION_3_5_0,
-			0,
+			NL_CAPABILITY_NL_OBJECT_IDENTICAL_PARTIAL,
 			0),
 		/* IMPORTANT: these capability numbers are intended to be universal and stable
 		 * for libnl3. Don't allocate new numbers on your own that differ from upstream

@@ -360,7 +360,7 @@ uint64_t nl_object_diff64(struct nl_object *a, struct nl_object *b)
 	if (ops != obj_ops(b) || ops->oo_compare == NULL)
 		return UINT64_MAX;
 
-	return ops->oo_compare(a, b, ~0, 0);
+	return ops->oo_compare(a, b, UINT64_MAX, 0);
 }
 
 /**

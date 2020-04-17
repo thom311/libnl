@@ -314,8 +314,9 @@ int nl_object_identical(struct nl_object *a, struct nl_object *b)
 		return 0;
 
 	if (ops->oo_id_attrs_get) {
-		int req_attrs_a = ops->oo_id_attrs_get(a);
-		int req_attrs_b = ops->oo_id_attrs_get(b);
+		uint32_t req_attrs_a = ops->oo_id_attrs_get(a);
+		uint32_t req_attrs_b = ops->oo_id_attrs_get(b);
+
 		if (req_attrs_a != req_attrs_b)
 			return 0;
 		req_attrs = req_attrs_a;

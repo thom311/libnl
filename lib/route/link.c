@@ -571,6 +571,7 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			   struct nlmsghdr *n, struct nl_parser_param *pp)
 {
 	_nl_auto_rtnl_link struct rtnl_link *link = NULL;
+	struct rtnl_link_af_ops *af_ops_family;
 	struct ifinfomsg *ifi;
 	struct nlattr *tb[IFLA_MAX+1];
 	int err, family;
@@ -604,6 +605,8 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			       sizeof(struct nla_policy));
 		}
 	}
+
+	af_ops_family = link->l_af_ops;
 
 	err = nlmsg_parse(n, sizeof(*ifi), tb, IFLA_MAX, real_link_policy);
 	if (err < 0)
@@ -691,11 +694,11 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		/* parsing of IFLA_AF_SPEC is dependent on the family used
 		 * in the request message.
 		 */
-		if (   link->l_af_ops
-		    && link->l_af_ops->ao_parse_af_full) {
-			err = link->l_af_ops->ao_parse_af_full(link,
-			                                       tb[IFLA_AF_SPEC],
-			                                       link->l_af_data[link->l_af_ops->ao_family]);
+		if (   af_ops_family
+		    && af_ops_family->ao_parse_af_full) {
+			err = af_ops_family->ao_parse_af_full(link,
+			                                      tb[IFLA_AF_SPEC],
+			                                      link->l_af_data[af_ops_family->ao_family]);
 			if (err < 0)
 				return err;
 			link->ce_mask |= LINK_ATTR_AF_SPEC;

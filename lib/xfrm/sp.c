@@ -508,11 +508,7 @@ static struct nla_policy xfrm_sp_policy[XFRMA_MAX+1] = {
 
 static int xfrm_sp_request_update(struct nl_cache *c, struct nl_sock *h)
 {
-	struct xfrm_userpolicy_id sp_id;
-
-	memset (&sp_id, 0, sizeof (sp_id));
-	return nl_send_simple (h, XFRM_MSG_GETPOLICY, NLM_F_DUMP,
-	                       &sp_id, sizeof (sp_id));
+	return nl_send_simple (h, XFRM_MSG_GETPOLICY, NLM_F_DUMP, NULL, 0);
 }
 
 int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)

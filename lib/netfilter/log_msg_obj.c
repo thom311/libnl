@@ -94,7 +94,7 @@ static void log_msg_dump(struct nl_object *a, struct nl_dump_params *p)
 						 msg->log_msg_physindev,
 						 buf, sizeof(buf)));
 		else
-			nl_dump(p, "IN=%d ", msg->log_msg_physindev);
+			nl_dump(p, "PHYSIN=%d ", msg->log_msg_physindev);
 	}
 
 	if (msg->ce_mask & LOG_MSG_ATTR_OUTDEV) {

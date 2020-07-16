@@ -653,6 +653,9 @@ static int link_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 					tb[IFLA_PROTINFO] = (struct nlattr *)link->l_af_ops->ao_protinfo_policy;
 			}
 
+			if (link->l_info_ops)
+				release_link_info(link);
+
 			ops = rtnl_link_info_ops_lookup(kind);
 			link->l_info_ops = ops;
 

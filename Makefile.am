@@ -153,6 +153,7 @@ libnlinclude_netlink_route_link_HEADERS = \
 	include/netlink/route/link/info-api.h \
 	include/netlink/route/link/ip6tnl.h \
 	include/netlink/route/link/ipgre.h \
+	include/netlink/route/link/ip6gre.h \
 	include/netlink/route/link/ipip.h \
 	include/netlink/route/link/ipvlan.h \
 	include/netlink/route/link/ipvti.h \
@@ -403,6 +404,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/link/inet6.c \
 	lib/route/link/ip6tnl.c \
 	lib/route/link/ipgre.c \
+	lib/route/link/ip6gre.c \
 	lib/route/link/ipip.c \
 	lib/route/link/ipvlan.c \
 	lib/route/link/ipvti.c \

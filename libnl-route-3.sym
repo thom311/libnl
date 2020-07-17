@@ -1150,3 +1150,32 @@ global:
 	rtnl_vlan_set_vlan_id;
 	rtnl_vlan_set_vlan_prio;
 } libnl_3_4;
+
+libnl_3_6 {
+global:
+	rtnl_link_is_ip6gre;
+	rtnl_link_ip6gre_add;
+	rtnl_link_ip6gre_alloc;
+	rtnl_link_ip6gre_get_encaplimit;
+	rtnl_link_ip6gre_get_flags;
+	rtnl_link_ip6gre_get_flowinfo;
+	rtnl_link_ip6gre_get_iflags;
+	rtnl_link_ip6gre_get_ikey;
+	rtnl_link_ip6gre_get_link;
+	rtnl_link_ip6gre_get_local;
+	rtnl_link_ip6gre_get_oflags;
+	rtnl_link_ip6gre_get_okey;
+	rtnl_link_ip6gre_get_remote;
+	rtnl_link_ip6gre_get_ttl;
+	rtnl_link_ip6gre_set_encaplimit;
+	rtnl_link_ip6gre_set_flags;
+	rtnl_link_ip6gre_set_flowinfo;
+	rtnl_link_ip6gre_set_iflags;
+	rtnl_link_ip6gre_set_ikey;
+	rtnl_link_ip6gre_set_link;
+	rtnl_link_ip6gre_set_local;
+	rtnl_link_ip6gre_set_oflags;
+	rtnl_link_ip6gre_set_okey;
+	rtnl_link_ip6gre_set_remote;
+	rtnl_link_ip6gre_set_ttl;
+} libnl_3_5;

@@ -5,6 +5,7 @@
 
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>
+#include <netlink/cli/mdb.h>
 
 #include <linux/rtnetlink.h>
 
@@ -29,6 +30,7 @@ static const struct {
 	{ RTNLGRP_IPV4_NETCONF, "ipv4-netconf" },
 	{ RTNLGRP_IPV6_NETCONF, "ipv6-netconf" },
 	{ RTNLGRP_MPLS_NETCONF, "mpls-netconf" },
+	{ RTNLGRP_MDB, "mdb" },
 	{ RTNLGRP_NONE, NULL }
 };
 

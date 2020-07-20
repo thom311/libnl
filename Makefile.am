@@ -105,6 +105,7 @@ libnlinclude_netlink_route_HEADERS = \
 	include/netlink/route/class.h \
 	include/netlink/route/classifier.h \
 	include/netlink/route/link.h \
+	include/netlink/route/mdb.h \
 	include/netlink/route/neighbour.h \
 	include/netlink/route/neightbl.h \
 	include/netlink/route/netconf.h \
@@ -212,6 +213,7 @@ libnlinclude_netlink_cli_HEADERS = \
 	include/netlink/cli/rule.h \
 	include/netlink/cli/tc.h \
 	include/netlink/cli/utils.h \
+	include/netlink/cli/mdb.h \
 	$(NULL)
 endif
 
@@ -426,6 +428,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/neightbl.c \
 	lib/route/netconf.c \
 	lib/route/nexthop.c \
+	lib/route/mdb.c \
 	lib/route/nexthop_encap.c \
 	lib/route/nh_encap_mpls.c \
 	lib/route/pktloc.c \

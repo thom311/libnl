@@ -1150,3 +1150,16 @@ global:
 	rtnl_vlan_set_vlan_id;
 	rtnl_vlan_set_vlan_prio;
 } libnl_3_4;
+
+libnl_3_6 {
+	rtnl_mdb_add_entry;
+	rtnl_mdb_alloc_cache_flags;
+	rtnl_mdb_foreach_entry;
+	rtnl_mdb_get_ifindex;
+	rtnl_mdb_alloc_cache;
+	rtnl_mdb_entry_get_addr;
+	rtnl_mdb_entry_get_ifindex;
+	rtnl_mdb_entry_get_proto;
+	rtnl_mdb_entry_get_state;
+	rtnl_mdb_entry_get_vid;
+} libnl_3_5;

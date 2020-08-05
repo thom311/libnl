@@ -907,7 +907,7 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 	size_t i;
 	size_t len = 2048;
 	char *line;
-	char name[NAME_MAX];
+	char name[PATH_MAX];
 	char dist_suffix[] = ".dist";
 	int16_t *data;
 	char *test_suffix;
@@ -927,7 +927,7 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 		strcpy(dist_suffix, "");
 
 	for (i = 0; i < ARRAY_SIZE(test_path); i++) {
-		snprintf(name, NAME_MAX, "%s%s%s", test_path[i], dist_type, dist_suffix);
+		snprintf(name, PATH_MAX, "%s%s%s", test_path[i], dist_type, dist_suffix);
 		if ((f = fopen(name, "re")))
 			break;
 	}

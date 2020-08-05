@@ -12,6 +12,7 @@
  * @{
  */
 
+#include <dirent.h>
 #include <netlink-private/netlink.h>
 #include <netlink-private/tc.h>
 #include <netlink/netlink.h>

@@ -709,7 +709,7 @@ static int build_neigh_msg(struct rtnl_neigh *tmpl, int cmd, int flags,
 	if (nlmsg_append(msg, &nhdr, sizeof(nhdr), NLMSG_ALIGNTO) < 0)
 		goto nla_put_failure;
 
-	if (tmpl->n_family != AF_BRIDGE)
+	if (tmpl->ce_mask & NEIGH_ATTR_DST)
 		NLA_PUT_ADDR(msg, NDA_DST, tmpl->n_dst);
 
 	if (tmpl->ce_mask & NEIGH_ATTR_LLADDR)

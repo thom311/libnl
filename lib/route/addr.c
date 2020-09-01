@@ -1129,6 +1129,7 @@ static const struct trans_tbl addr_flags[] = {
 	__ADD(IFA_F_SECONDARY, secondary),
 	__ADD(IFA_F_NODAD, nodad),
 	__ADD(IFA_F_OPTIMISTIC, optimistic),
+	__ADD(IFA_F_DADFAILED, dadfailed),
 	__ADD(IFA_F_HOMEADDRESS, homeaddress),
 	__ADD(IFA_F_DEPRECATED, deprecated),
 	__ADD(IFA_F_TENTATIVE, tentative),

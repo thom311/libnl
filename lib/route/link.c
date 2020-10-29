@@ -3163,6 +3163,7 @@ static struct nl_object_ops link_obj_ops = {
 static struct nl_af_group link_groups[] = {
 	{ AF_UNSPEC,	RTNLGRP_LINK },
 	{ AF_BRIDGE,    RTNLGRP_LINK },
+	{ AF_INET6,     RTNLGRP_IPV6_IFINFO },
 	{ END_OF_GROUP_LIST },
 };
 

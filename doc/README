@@ -4,7 +4,7 @@ mscgen
   http://www.mcternan.me.uk/mscgen/
 
 mscgen-filter-1.2
-  http://code.google.com/p/asciidoc-mscgen-filter/
+  https://github.com/hwmaier/asciidoc-mscgen-filter
 
 asciidoc > 8.6.x
 doxygen > 1.8.0

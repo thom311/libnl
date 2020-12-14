@@ -5,6 +5,7 @@
 
 #include <check.h>
 #include <netlink/addr.h>
+#include <netlink/route/addr.h>
 
 #include "util.h"
 
@@ -192,6 +193,20 @@ START_TEST(addr_info)
 }
 END_TEST
 
+START_TEST(addr_flags2str)
+{
+	int ifa_flags = IFA_F_TENTATIVE | IFA_F_DADFAILED;
+	int ifa_flags2;
+	char buf[128];
+
+	rtnl_addr_flags2str(ifa_flags, buf, sizeof(buf));
+	ck_assert_str_eq(buf, "dadfailed,tentative");
+
+	ifa_flags2 = rtnl_addr_str2flags(buf);
+	ck_assert_int_eq(ifa_flags2, ifa_flags);
+}
+END_TEST
+
 Suite *make_nl_addr_suite(void)
 {
 	Suite *suite = suite_create("Abstract addresses");
@@ -202,6 +217,7 @@ Suite *make_nl_addr_suite(void)
 	tcase_add_test(tc_addr, addr_parse4);
 	tcase_add_test(tc_addr, addr_parse6);
 	tcase_add_test(tc_addr, addr_info);
+	tcase_add_test(tc_addr, addr_flags2str);
 	suite_add_tcase(suite, tc_addr);
 
 	return suite;

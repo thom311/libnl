@@ -404,6 +404,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/link.c \
 	lib/route/link/api.c \
 	lib/route/link/bonding.c \
+	lib/route/link/bridge_info.c \
 	lib/route/link/bridge.c \
 	lib/route/link/can.c \
 	lib/route/link/dummy.c \

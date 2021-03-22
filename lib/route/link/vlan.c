@@ -288,9 +288,12 @@ static int vlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 {
 	struct vlan_info *vi = link->l_info;
 	struct nlattr *data;
+	int32_t nest_count = 0;
 
 	if (!(data = nla_nest_start(msg, IFLA_INFO_DATA)))
-		return -NLE_MSGSIZE;
+		goto nla_put_failure;
+	else
+		nest_count++;
 
 	if (vi->vi_mask & VLAN_HAS_ID)
 		NLA_PUT_U16(msg, IFLA_VLAN_ID, vi->vi_vlan_id);
@@ -314,6 +317,8 @@ static int vlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 
 		if (!(qos = nla_nest_start(msg, IFLA_VLAN_INGRESS_QOS)))
 			goto nla_put_failure;
+		else
+			nest_count++;
 
 		for (i = 0; i <= VLAN_PRIO_MAX; i++) {
 			if (vi->vi_ingress_qos_mask & (1 << i)) {
@@ -325,6 +330,7 @@ static int vlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 		}
 
 		nla_nest_end(msg, qos);
+		nest_count--;
 	}
 
 	if (vi->vi_mask & VLAN_HAS_EGRESS_QOS) {
@@ -334,6 +340,8 @@ static int vlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 
 		if (!(qos = nla_nest_start(msg, IFLA_VLAN_EGRESS_QOS)))
 			goto nla_put_failure;
+		else
+			nest_count++;
 
 		for (i = 0; i < vi->vi_negress; i++) {
 			map.from = vi->vi_egress_qos[i].vm_from;
@@ -343,13 +351,18 @@ static int vlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 		}
 
 		nla_nest_end(msg, qos);
+		nest_count--;
 	}
 
 	nla_nest_end(msg, data);
+	nest_count--;
+	return 0;
 
 nla_put_failure:
-
-	return 0;
+	for(uint32_t i = 0; i < nest_count; i++) {
+		nla_nest_cancel(msg, data);
+	}
+	return -NLE_MSGSIZE;
 }
 
 static struct rtnl_link_info_ops vlan_info_ops = {

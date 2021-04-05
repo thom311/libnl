@@ -1086,16 +1086,16 @@ int xfrmnl_sp_set_lifetime_cfg (struct xfrmnl_sp* sp, struct xfrmnl_ltime_cfg* l
 	return 0;
 }
 
-int xfrmnl_sp_get_curlifetime (struct xfrmnl_sp* sa, unsigned long long int* curr_bytes,
+int xfrmnl_sp_get_curlifetime (struct xfrmnl_sp* sp, unsigned long long int* curr_bytes,
                                unsigned long long int* curr_packets, unsigned long long int* curr_add_time, unsigned long long int* curr_use_time)
 {
-	if (sa == NULL || curr_bytes == NULL || curr_packets == NULL || curr_add_time == NULL || curr_use_time == NULL)
+	if (sp == NULL || curr_bytes == NULL || curr_packets == NULL || curr_add_time == NULL || curr_use_time == NULL)
 		return -1;
 
-	*curr_bytes     =   sa->curlft.bytes;
-	*curr_packets   =   sa->curlft.packets;
-	*curr_add_time  =   sa->curlft.add_time;
-	*curr_use_time  =   sa->curlft.use_time;
+	*curr_bytes     =   sp->curlft.bytes;
+	*curr_packets   =   sp->curlft.packets;
+	*curr_add_time  =   sp->curlft.add_time;
+	*curr_use_time  =   sp->curlft.use_time;
 
 	return 0;
 }

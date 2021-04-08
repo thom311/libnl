@@ -751,7 +751,10 @@ static int __nl_cache_pickup(struct nl_sock *sk, struct nl_cache *cache,
  * @arg cache		Cache to put items into.
  *
  * Waits for netlink messages to arrive, parses them and puts them into
- * the specified cache.
+ * the specified cache. If an old object with same key attributes is
+ * present in the cache, it is replaced with the new object.
+ * If the old object type supports an update operation, an update is
+ * attempted before a replace.
  *
  * @return 0 on success or a negative error code.
  */
@@ -766,10 +769,7 @@ int nl_cache_pickup_checkdup(struct nl_sock *sk, struct nl_cache *cache)
  * @arg cache		Cache to put items into.
  *
  * Waits for netlink messages to arrive, parses them and puts them into
- * the specified cache. If an old object with same key attributes is
- * present in the cache, it is replaced with the new object.
- * If the old object type supports an update operation, an update is
- * attempted before a replace.
+ * the specified cache.
  *
  * @return 0 on success or a negative error code.
  */

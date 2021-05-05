@@ -501,20 +501,24 @@ static int nfnl_ct_build_message(const struct nfnl_ct *ct, int cmd, int flags,
 {
 	struct nl_msg *msg;
 	int err;
+	int reply = 0;
 
 	msg = nfnlmsg_alloc_simple(NFNL_SUBSYS_CTNETLINK, cmd, flags,
 				   nfnl_ct_get_family(ct), 0);
 	if (msg == NULL)
 		return -NLE_NOMEM;
 
-	if ((err = nfnl_ct_build_tuple(msg, ct, 0)) < 0)
-		goto err_out;
-
-	/* REPLY tuple is optional, dont add unless at least src/dst specified */
-
-	if ( nfnl_ct_get_src(ct, 1) && nfnl_ct_get_dst(ct, 1) )
+	/* We use REPLY || ORIG, depending on requests. */
+	if (nfnl_ct_get_src(ct, 1) || nfnl_ct_get_dst(ct, 1)) {
+		reply = 1;
 		if ((err = nfnl_ct_build_tuple(msg, ct, 1)) < 0)
 			goto err_out;
+	}
+
+	if (!reply || nfnl_ct_get_src(ct, 0) || nfnl_ct_get_dst(ct, 0)) {
+		if ((err = nfnl_ct_build_tuple(msg, ct, 0)) < 0)
+			goto err_out;
+	}
 
 	if (nfnl_ct_test_status(ct))
 		NLA_PUT_U32(msg, CTA_STATUS, htonl(nfnl_ct_get_status(ct)));

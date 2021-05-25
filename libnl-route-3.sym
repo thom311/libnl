@@ -1127,6 +1127,8 @@ global:
 	rtnl_qdisc_mqprio_set_priomap;
 	rtnl_qdisc_mqprio_set_queue;
 	rtnl_qdisc_mqprio_set_shaper;
+	rtnl_route_nh_get_encap_mpls_dst;
+	rtnl_route_nh_get_encap_mpls_ttl;
 	rtnl_rule_get_dport;
 	rtnl_rule_get_ipproto;
 	rtnl_rule_get_protocol;

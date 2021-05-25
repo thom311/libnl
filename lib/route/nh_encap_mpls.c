@@ -108,10 +108,6 @@ int rtnl_route_nh_encap_mpls(struct rtnl_nexthop *nh,
 	if (!addr)
 		return -NLE_INVAL;
 
-	if (!nl_addr_valid(nl_addr_get_binary_addr(addr),
-			   nl_addr_get_len(addr)))
-		return -NLE_INVAL;
-
 	rtnh_encap = calloc(1, sizeof(*rtnh_encap));
 	if (!rtnh_encap)
 		return -NLE_NOMEM;
@@ -131,4 +127,32 @@ int rtnl_route_nh_encap_mpls(struct rtnl_nexthop *nh,
 	nh_set_encap(nh, rtnh_encap);
 
 	return 0;
+}
+
+struct nl_addr *rtnl_route_nh_get_encap_mpls_dst(struct rtnl_nexthop *nh)
+{
+	struct mpls_iptunnel_encap *mpls_encap;
+
+	if (!nh->rtnh_encap || nh->rtnh_encap->ops->encap_type != LWTUNNEL_ENCAP_MPLS)
+		return NULL;
+
+	mpls_encap = (struct mpls_iptunnel_encap *)nh->rtnh_encap->priv;
+	if (!mpls_encap)
+		return NULL;
+
+	return mpls_encap->dst;
+}
+
+uint8_t rtnl_route_nh_get_encap_mpls_ttl(struct rtnl_nexthop *nh)
+{
+	struct mpls_iptunnel_encap *mpls_encap;
+
+	if (!nh->rtnh_encap || nh->rtnh_encap->ops->encap_type != LWTUNNEL_ENCAP_MPLS)
+		return 0;
+
+	mpls_encap = (struct mpls_iptunnel_encap *)nh->rtnh_encap->priv;
+	if (!mpls_encap)
+		return 0;
+
+	return mpls_encap->ttl;
 }

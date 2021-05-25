@@ -236,7 +236,7 @@ static void geneve_dump_details(struct rtnl_link *link, struct nl_dump_params *p
 
         if (geneve->mask & GENEVE_ATTR_UDP_ZERO_CSUM6_RX) {
                 nl_dump(p, "      udp-zero-csum6-rx ");
-                if (geneve->udp_zero_csum6_tx)
+                if (geneve->udp_zero_csum6_rx)
                         nl_dump_line(p, "enabled (%#x)\n", geneve->udp_zero_csum6_rx);
                 else
                         nl_dump_line(p, "disabled\n");

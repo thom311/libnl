@@ -64,6 +64,8 @@ extern int		rtnl_route_nh_str2flags(const char *);
 extern int		rtnl_route_nh_encap_mpls(struct rtnl_nexthop *nh,
 						 struct nl_addr *addr,
 						 uint8_t ttl);
+extern struct nl_addr *	rtnl_route_nh_get_encap_mpls_dst(struct rtnl_nexthop *);
+extern uint8_t		rtnl_route_nh_get_encap_mpls_ttl(struct rtnl_nexthop *);
 #ifdef __cplusplus
 }
 #endif

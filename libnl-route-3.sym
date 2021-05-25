@@ -1152,6 +1152,8 @@ global:
 } libnl_3_4;
 
 libnl_3_6 {
-	rtnl_link_macsec_set_offload;
 	rtnl_link_macsec_get_offload;
+	rtnl_link_macsec_set_offload;
+	rtnl_route_nh_get_encap_mpls_dst;
+	rtnl_route_nh_get_encap_mpls_ttl;
 } libnl_3_5;

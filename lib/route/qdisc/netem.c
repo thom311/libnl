@@ -936,9 +936,12 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 	if (f == NULL)
 		return -nl_syserr2nlerr(errno);
 
-	data = (int16_t *) calloc (MAXDIST, sizeof(int16_t));
-
-	line = (char *) calloc (sizeof(char), len + 1);
+	data = (int16_t *) calloc(MAXDIST, sizeof(int16_t));
+	line = (char *) calloc(sizeof(char), len + 1);
+	if (!data || !line) {
+	    fclose(f);
+	    return -NLE_NOMEM;
+	}
 
 	while (getline(&line, &len, f) != -1) {
 		char *p, *endp;

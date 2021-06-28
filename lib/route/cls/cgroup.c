@@ -30,17 +30,12 @@ static struct nla_policy cgroup_policy[TCA_CGROUP_MAX+1] = {
 
 static int cgroup_clone(void *_dst, void *_src)
 {
-	struct rtnl_cgroup *dst = NULL, *src = _src;
+	struct rtnl_cgroup *dst = _dst, *src = _src;
 
-	dst = calloc(1, sizeof(*dst));
-	if (!dst)
-		return -NLE_NOMEM;
-
-	dst->cg_mask = src->cg_mask;
-	dst->cg_ematch = rtnl_ematch_tree_clone(src->cg_ematch);
-	if (!dst) {
-		free(dst);
-		return -NLE_NOMEM;
+	if (src->cg_ematch) {
+		dst->cg_ematch = rtnl_ematch_tree_clone(src->cg_ematch);
+		if (!dst->cg_ematch)
+			return -NLE_NOMEM;
 	}
 
 	return 0;

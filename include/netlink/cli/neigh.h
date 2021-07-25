@@ -8,6 +8,10 @@
 
 #include <netlink/route/neighbour.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define nl_cli_neigh_alloc_cache(sk) \
 		nl_cli_alloc_cache_flags((sk), "neighbour", NL_CACHE_AF_ITER, \
 					 rtnl_neigh_alloc_cache_flags)
@@ -18,5 +22,9 @@ extern void nl_cli_neigh_parse_lladdr(struct rtnl_neigh *, char *);
 extern void nl_cli_neigh_parse_dev(struct rtnl_neigh *, struct nl_cache *, char *);
 extern void nl_cli_neigh_parse_family(struct rtnl_neigh *, char *);
 extern void nl_cli_neigh_parse_state(struct rtnl_neigh *, char *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

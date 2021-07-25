@@ -8,6 +8,10 @@
 
 #include <netlink/route/addr.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define nl_cli_addr_alloc_cache(sk) \
 		nl_cli_alloc_cache((sk), "address", rtnl_addr_alloc_cache)
 
@@ -22,5 +26,9 @@ extern void nl_cli_addr_parse_scope(struct rtnl_addr *, char *);
 extern void nl_cli_addr_parse_broadcast(struct rtnl_addr *, char *);
 extern void nl_cli_addr_parse_preferred(struct rtnl_addr *, char *);
 extern void nl_cli_addr_parse_valid(struct rtnl_addr *, char *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

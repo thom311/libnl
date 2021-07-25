@@ -8,6 +8,10 @@
 
 #include <netlink/route/tc.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct rtnl_tc_ops;
 
 extern void nl_cli_tc_parse_dev(struct rtnl_tc *, struct nl_cache *, char *);
@@ -31,5 +35,9 @@ struct nl_cli_tc_module
 extern struct nl_cli_tc_module *nl_cli_tc_lookup(struct rtnl_tc_ops *);
 extern void nl_cli_tc_register(struct nl_cli_tc_module *);
 extern void nl_cli_tc_unregister(struct nl_cli_tc_module *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

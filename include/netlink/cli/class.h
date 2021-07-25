@@ -9,7 +9,15 @@
 #include <netlink/route/class.h>
 #include <netlink/cli/tc.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern struct rtnl_class *nl_cli_class_alloc(void);
 extern struct nl_cache *nl_cli_class_alloc_cache(struct nl_sock *, int);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

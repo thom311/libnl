@@ -8,8 +8,16 @@
 
 #include <netlink/route/rule.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern struct rtnl_rule *nl_cli_rule_alloc(void);
 extern struct nl_cache *nl_cli_rule_alloc_cache(struct nl_sock *);
 extern void nl_cli_rule_parse_family(struct rtnl_rule *, char *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

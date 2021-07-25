@@ -8,10 +8,18 @@
 
 #include <netlink/route/qdisc.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define nl_cli_qdisc_alloc_cache(sk) \
 		nl_cli_alloc_cache((sk), "queueing disciplines", \
 				   rtnl_qdisc_alloc_cache)
 
 extern struct rtnl_qdisc *nl_cli_qdisc_alloc(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

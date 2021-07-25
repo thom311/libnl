@@ -9,6 +9,10 @@
 #include <netlink/route/link.h>
 #include <netlink/cli/utils.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern struct rtnl_link *nl_cli_link_alloc(void);
 extern struct nl_cache *nl_cli_link_alloc_cache_family(struct nl_sock *, int);
 extern struct nl_cache *nl_cli_link_alloc_cache_family_flags(struct nl_sock *, int,
@@ -24,5 +28,9 @@ extern void nl_cli_link_parse_ifindex(struct rtnl_link *, char *);
 extern void nl_cli_link_parse_txqlen(struct rtnl_link *, char *);
 extern void nl_cli_link_parse_weight(struct rtnl_link *, char *);
 extern void nl_cli_link_parse_ifalias(struct rtnl_link *, char *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

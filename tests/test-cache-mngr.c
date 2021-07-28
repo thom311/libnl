@@ -9,7 +9,7 @@
 
 static int quit = 0;
 
-static struct nl_dump_params dp = {
+static struct nl_dump_params params = {
 	.dp_type = NL_DUMP_LINE,
 };
 
@@ -24,7 +24,7 @@ static void change_cb(struct nl_cache *cache, struct nl_object *obj,
 	else if (action == NL_ACT_CHANGE)
 		printf("CHANGE ");
 
-	nl_object_dump(obj, &dp);
+	nl_object_dump(obj, &params);
 }
 
 static void sigint(int arg)
@@ -32,34 +32,72 @@ static void sigint(int arg)
 	quit = 1;
 }
 
+static void print_usage(FILE* stream, const char *name)
+{
+	fprintf(stream,
+		"Usage: %s [OPTIONS]... <cache name>... \n"
+		"\n"
+		"OPTIONS\n"
+		" -f, --format=TYPE     Output format { brief | details | stats }\n"
+		"                       Default: brief\n"
+		" -h, --help            Show this help text.\n"
+		, name);
+}
+
 int main(int argc, char *argv[])
 {
 	struct nl_cache_mngr *mngr;
 	struct nl_cache *cache;
-	int err, i;
+	int err;
 
-	dp.dp_fd = stdout;
+	for (;;) {
+		static struct option long_opts[] = {
+			{ "format", required_argument, 0, 'f' },
+			{ "help", 0, 0, 'h' },
+			{ 0, 0, 0, 0 }
+		};
+		int c;
 
-	signal(SIGINT, sigint);
+		c = getopt_long(argc, argv, "hf:", long_opts, NULL);
+		if (c == -1)
+			break;
+
+		switch (c) {
+		case 'f':
+			params.dp_type = nl_cli_parse_dumptype(optarg);
+			break;
+		case 'h':
+			print_usage(stdout, argv[0]);
+			exit(0);
+		case '?':
+			print_usage(stderr, argv[0]);
+			exit(1);
+		}
+	}
 
 	err = nl_cache_mngr_alloc(NULL, NETLINK_ROUTE, NL_AUTO_PROVIDE, &mngr);
 	if (err < 0)
 		nl_cli_fatal(err, "Unable to allocate cache manager: %s",
 			     nl_geterror(err));
 
-	for (i = 1; i < argc; i++) {
-		err = nl_cache_mngr_add(mngr, argv[i], &change_cb, NULL, &cache);
+	while (optind < argc) {
+		err = nl_cache_mngr_add(mngr, argv[optind], &change_cb, NULL,
+					&cache);
 		if (err < 0)
 			nl_cli_fatal(err, "Unable to add cache %s: %s",
-				     argv[i], nl_geterror(err));
+				     argv[optind], nl_geterror(err));
+		optind++;
 	}
+
+	params.dp_fd = stdout;
+	signal(SIGINT, sigint);
 
 	while (!quit) {
 		int err = nl_cache_mngr_poll(mngr, 1000);
 		if (err < 0 && err != -NLE_INTR)
 			nl_cli_fatal(err, "Polling failed: %s", nl_geterror(err));
 
-		nl_cache_mngr_info(mngr, &dp);
+		nl_cache_mngr_info(mngr, &params);
 	}
 
 	nl_cache_mngr_free(mngr);

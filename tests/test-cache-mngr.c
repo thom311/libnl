@@ -47,28 +47,29 @@ static void print_usage(FILE* stream, const char *name)
 		" -d, --dump             Dump cache content after a change.\n"
 		" -i, --interval=TIME    Dump cache content after TIME seconds when there is no\n"
 		"                        change; 0 to disable. Default: 1\n"
+		" -I, --iter             Iterate over all address families when updating caches.\n"
 		" -h, --help             Show this help text.\n"
 		, name);
 }
 
 int main(int argc, char *argv[])
 {
-	bool dump_on_change = false, dump_on_timeout = true;
+	bool dump_on_change = false, dump_on_timeout = true, iter = false;
 	struct nl_cache_mngr *mngr;
 	int timeout = 1000, err;
-	struct nl_cache *cache;
 
 	for (;;) {
 		static struct option long_opts[] = {
 			{ "format", required_argument, 0, 'f' },
 			{ "dump", no_argument, 0, 'd' },
 			{ "interval", required_argument, 0, 'i' },
+			{ "iter", no_argument, 0, 'I' },
 			{ "help", 0, 0, 'h' },
 			{ 0, 0, 0, 0 }
 		};
 		int c;
 
-		c = getopt_long(argc, argv, "hf:di:", long_opts, NULL);
+		c = getopt_long(argc, argv, "hf:di:I", long_opts, NULL);
 		if (c == -1)
 			break;
 
@@ -100,6 +101,10 @@ int main(int argc, char *argv[])
 
 			break;
 
+		case 'I':
+			iter = true;
+			break;
+
 		case 'h':
 			print_usage(stdout, argv[0]);
 			exit(0);
@@ -116,11 +121,21 @@ int main(int argc, char *argv[])
 			     nl_geterror(err));
 
 	while (optind < argc) {
-		err = nl_cache_mngr_add(mngr, argv[optind], &change_cb, NULL,
-					&cache);
+		struct nl_cache *cache;
+
+		err = nl_cache_alloc_name(argv[optind], &cache);
+		if (err < 0)
+			nl_cli_fatal(err, "Couldn't add cache %s: %s\n",
+				     argv[optind], nl_geterror(err));
+
+		if (iter)
+			nl_cache_set_flags(cache, NL_CACHE_AF_ITER);
+
+		err = nl_cache_mngr_add_cache(mngr, cache, &change_cb, NULL);
 		if (err < 0)
 			nl_cli_fatal(err, "Unable to add cache %s: %s",
 				     argv[optind], nl_geterror(err));
+
 		optind++;
 	}
 

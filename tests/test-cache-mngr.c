@@ -46,6 +46,7 @@ static void change_cb(struct nl_cache *cache, struct nl_object *obj,
 		printf("CHANGE ");
 
 	nl_object_dump(obj, &params);
+	fflush(stdout);
 
 	change = 1;
 }
@@ -174,6 +175,7 @@ int main(int argc, char *argv[])
 
 		if (dump_on_timeout || (dump_on_change && change)) {
 			nl_cache_mngr_info(mngr, &params);
+			fflush(stdout);
 			change = 0;
 		}
 	}

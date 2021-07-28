@@ -3,6 +3,8 @@
 #include <netlink/cli/utils.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <sys/time.h>
+#include <time.h>
 
 #include <netlink-private/cache-api.h>
 
@@ -10,15 +12,32 @@
 
 static int quit = 0;
 static int change = 1;
+static int print_ts = 0;
 
 static struct nl_dump_params params = {
 	.dp_type = NL_DUMP_LINE,
 };
 
 
+static void print_timestamp(FILE *fp)
+{
+	struct timeval tv;
+	char tshort[40];
+	struct tm *tm;
+
+	gettimeofday(&tv, NULL);
+	tm = localtime(&tv.tv_sec);
+
+	strftime(tshort, sizeof(tshort), "%Y-%m-%dT%H:%M:%S", tm);
+	fprintf(fp, "[%s.%06ld] ", tshort, tv.tv_usec);
+}
+
 static void change_cb(struct nl_cache *cache, struct nl_object *obj,
 		      int action, void *data)
 {
+	if (print_ts)
+		print_timestamp(stdout);
+
 	if (action == NL_ACT_NEW)
 		printf("NEW ");
 	else if (action == NL_ACT_DEL)
@@ -48,6 +67,7 @@ static void print_usage(FILE* stream, const char *name)
 		" -i, --interval=TIME    Dump cache content after TIME seconds when there is no\n"
 		"                        change; 0 to disable. Default: 1\n"
 		" -I, --iter             Iterate over all address families when updating caches.\n"
+		" -t, --tshort           Print a short timestamp before change messages.\n"
 		" -h, --help             Show this help text.\n"
 		, name);
 }
@@ -64,12 +84,13 @@ int main(int argc, char *argv[])
 			{ "dump", no_argument, 0, 'd' },
 			{ "interval", required_argument, 0, 'i' },
 			{ "iter", no_argument, 0, 'I' },
+			{ "tshort", no_argument, 0, 't' },
 			{ "help", 0, 0, 'h' },
 			{ 0, 0, 0, 0 }
 		};
 		int c;
 
-		c = getopt_long(argc, argv, "hf:di:I", long_opts, NULL);
+		c = getopt_long(argc, argv, "hf:di:It", long_opts, NULL);
 		if (c == -1)
 			break;
 
@@ -103,6 +124,10 @@ int main(int argc, char *argv[])
 
 		case 'I':
 			iter = true;
+			break;
+
+		case 't':
+			print_ts = true;
 			break;
 
 		case 'h':

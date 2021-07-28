@@ -2,12 +2,14 @@
 #include <netlink/cache.h>
 #include <netlink/cli/utils.h>
 #include <signal.h>
+#include <stdbool.h>
 
 #include <netlink-private/cache-api.h>
 
 #include <linux/netlink.h>
 
 static int quit = 0;
+static int change = 1;
 
 static struct nl_dump_params params = {
 	.dp_type = NL_DUMP_LINE,
@@ -25,6 +27,8 @@ static void change_cb(struct nl_cache *cache, struct nl_object *obj,
 		printf("CHANGE ");
 
 	nl_object_dump(obj, &params);
+
+	change = 1;
 }
 
 static void sigint(int arg)
@@ -38,37 +42,68 @@ static void print_usage(FILE* stream, const char *name)
 		"Usage: %s [OPTIONS]... <cache name>... \n"
 		"\n"
 		"OPTIONS\n"
-		" -f, --format=TYPE     Output format { brief | details | stats }\n"
-		"                       Default: brief\n"
-		" -h, --help            Show this help text.\n"
+		" -f, --format=TYPE      Output format { brief | details | stats }\n"
+		"                        Default: brief\n"
+		" -d, --dump             Dump cache content after a change.\n"
+		" -i, --interval=TIME    Dump cache content after TIME seconds when there is no\n"
+		"                        change; 0 to disable. Default: 1\n"
+		" -h, --help             Show this help text.\n"
 		, name);
 }
 
 int main(int argc, char *argv[])
 {
+	bool dump_on_change = false, dump_on_timeout = true;
 	struct nl_cache_mngr *mngr;
+	int timeout = 1000, err;
 	struct nl_cache *cache;
-	int err;
 
 	for (;;) {
 		static struct option long_opts[] = {
 			{ "format", required_argument, 0, 'f' },
+			{ "dump", no_argument, 0, 'd' },
+			{ "interval", required_argument, 0, 'i' },
 			{ "help", 0, 0, 'h' },
 			{ 0, 0, 0, 0 }
 		};
 		int c;
 
-		c = getopt_long(argc, argv, "hf:", long_opts, NULL);
+		c = getopt_long(argc, argv, "hf:di:", long_opts, NULL);
 		if (c == -1)
 			break;
 
 		switch (c) {
+			char *endptr;
+			long interval;
+
 		case 'f':
 			params.dp_type = nl_cli_parse_dumptype(optarg);
 			break;
+
+		case 'd':
+			dump_on_change = true;
+			break;
+
+		case 'i':
+			errno = 0;
+			interval = strtol(optarg, &endptr, 0);
+			if (interval < 0 || errno || *endptr) {
+				nl_cli_fatal(EINVAL, "Invalid interval \"%s\".\n",
+					     optarg);
+				exit(1);
+			}
+			if (!interval) {
+				dump_on_timeout = false;
+			} else {
+				timeout = interval * 1000;
+			}
+
+			break;
+
 		case 'h':
 			print_usage(stdout, argv[0]);
 			exit(0);
+
 		case '?':
 			print_usage(stderr, argv[0]);
 			exit(1);
@@ -93,11 +128,14 @@ int main(int argc, char *argv[])
 	signal(SIGINT, sigint);
 
 	while (!quit) {
-		int err = nl_cache_mngr_poll(mngr, 1000);
+		err = nl_cache_mngr_poll(mngr, timeout);
 		if (err < 0 && err != -NLE_INTR)
 			nl_cli_fatal(err, "Polling failed: %s", nl_geterror(err));
 
-		nl_cache_mngr_info(mngr, &params);
+		if (dump_on_timeout || (dump_on_change && change)) {
+			nl_cache_mngr_info(mngr, &params);
+			change = 0;
+		}
 	}
 
 	nl_cache_mngr_free(mngr);

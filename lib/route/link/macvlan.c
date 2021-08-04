@@ -117,6 +117,10 @@ static int macvlan_parse(struct rtnl_link *link, struct nlattr *data,
 
 			mvi->mvi_macaddr = calloc(mvi->mvi_maccount,
 			                          sizeof(*(mvi->mvi_macaddr)));
+			if (mvi->mvi_macaddr == NULL) {
+				err = -NLE_NOMEM;
+				goto errout;
+			}
 
 			i = 0;
 			for (; nla_ok(nla, len); nla = nla_next(nla, &len)) {

@@ -460,6 +460,34 @@ nh_mismatch:
 #undef ROUTE_DIFF
 }
 
+static void route_replace_nh(struct rtnl_route *route)
+{
+	int i, found_removable;
+#ifdef NL_DEBUG
+	char buf[INET6_ADDRSTRLEN + 5];
+#endif
+
+	do {
+		found_removable = 0;
+		for (i = 0; i < rtnl_route_get_nnexthops(route); i++) {
+			struct rtnl_nexthop *nh =
+				rtnl_route_nexthop_n(route, i);
+
+			if (rtnl_route_nh_get_gateway(nh)) {
+				NL_DBG(2,
+				       "Route obj %p removed nh %p via %s due "
+				       "to replace",
+				       route, nh,
+				       nl_addr2str(nh->rtnh_gateway, buf,
+						   sizeof(buf)));
+				rtnl_route_remove_nexthop(route, nh);
+				found_removable = 1;
+				break;
+			}
+		}
+	} while (found_removable);
+}
+
 static int route_update(struct nl_object *old_obj, struct nl_object *new_obj)
 {
 	struct rtnl_route *new_route = (struct rtnl_route *) new_obj;
@@ -507,12 +535,16 @@ static int route_update(struct nl_object *old_obj, struct nl_object *new_obj)
 		cloned_nh = rtnl_route_nh_clone(new_nh);
 		if (!cloned_nh)
 			return -NLE_NOMEM;
+		if (new_obj->ce_flags & NLM_F_REPLACE)
+			route_replace_nh(old_route);
 		rtnl_route_add_nexthop(old_route, cloned_nh);
 
-		NL_DBG(2, "Route obj %p updated. Added "
-			"nexthop %p via %s\n", old_route, cloned_nh,
-			nl_addr2str(cloned_nh->rtnh_gateway, buf,
-					sizeof(buf)));
+		NL_DBG(2,
+		       "Route obj (flags: %x, mask: %x, %p) updated. Added "
+		       "nexthop %p via %s\n",
+		       new_obj->ce_flags, new_obj->ce_mask, old_route,
+		       cloned_nh,
+		       nl_addr2str(cloned_nh->rtnh_gateway, buf, sizeof(buf)));
 	}
 		break;
 	case RTM_DELROUTE : {
@@ -1111,6 +1143,8 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 		return -NLE_NOMEM;
 
 	route->ce_msgtype = nlh->nlmsg_type;
+	if (nlh->nlmsg_flags & NLM_F_REPLACE)
+		route->ce_flags |= NLM_F_REPLACE;
 
 	err = nlmsg_parse(nlh, sizeof(struct rtmsg), tb, RTA_MAX, route_policy);
 	if (err < 0)

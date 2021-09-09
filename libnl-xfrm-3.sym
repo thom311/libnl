@@ -94,6 +94,7 @@ global:
 	xfrmnl_sa_get_spi;
 	xfrmnl_sa_get_stats;
 	xfrmnl_sa_get_tfcpad;
+	xfrmnl_sa_get_user_offload;
 	xfrmnl_sa_is_expiry_reached;
 	xfrmnl_sa_is_hardexpiry_reached;
 	xfrmnl_sa_mode2str;
@@ -123,6 +124,7 @@ global:
 	xfrmnl_sa_set_sel;
 	xfrmnl_sa_set_spi;
 	xfrmnl_sa_set_tfcpad;
+	xfrmnl_sa_set_user_offload;
 	xfrmnl_sa_str2flag;
 	xfrmnl_sa_str2mode;
 	xfrmnl_sa_update;

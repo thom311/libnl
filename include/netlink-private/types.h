@@ -1231,6 +1231,11 @@ struct xfrmnl_encap_tmpl {
 	struct nl_addr* encap_oa;
 };
 
+struct xfrmnl_user_offload {
+	int             ifindex;
+	uint8_t         flags;
+};
+
 struct xfrmnl_sa {
 	NLHDR_COMMON
 
@@ -1260,6 +1265,7 @@ struct xfrmnl_sa {
 	struct xfrmnl_replay_state      replay_state;
 	struct xfrmnl_replay_state_esn* replay_state_esn;
 	uint8_t                         hard;
+	struct xfrmnl_user_offload*     user_offload;
 };
 
 struct xfrmnl_usersa_flush {

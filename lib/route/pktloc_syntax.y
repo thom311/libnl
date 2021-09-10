@@ -24,6 +24,7 @@
 %{
 extern int pktloc_lex(YYSTYPE *, YYLTYPE *, void *);
 
+#define pktloc_error yyerror
 static void yyerror(YYLTYPE *locp, void *scanner, const char *msg)
 {
 	NL_DBG(1, "Error while parsing packet location file: %s\n", msg);

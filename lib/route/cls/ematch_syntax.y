@@ -46,6 +46,7 @@
 %{
 extern int ematch_lex(YYSTYPE *, void *);
 
+#define ematch_error yyerror
 static void yyerror(void *scanner, char **errp, struct nl_list_head *root, const char *msg)
 {
 	if (msg)

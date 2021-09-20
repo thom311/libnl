@@ -1331,6 +1331,7 @@ static int build_xfrm_sa_delete_message(struct xfrmnl_sa *tmpl, int cmd, int fla
 		!(tmpl->ce_mask & XFRM_SA_ATTR_PROTO))
 		return -NLE_MISSING_ATTR;
 
+	memset(&sa_id, 0, sizeof(struct xfrm_usersa_id));
 	memcpy (&sa_id.daddr, nl_addr_get_binary_addr (tmpl->id.daddr),
 	        sizeof (uint8_t) * nl_addr_get_len (tmpl->id.daddr));
 	sa_id.family = nl_addr_get_family (tmpl->id.daddr);

@@ -908,6 +908,8 @@ global:
 	rtnl_link_macsec_get_protect;
 	rtnl_link_macsec_set_encrypt;
 	rtnl_link_macsec_get_encrypt;
+	rtnl_link_macsec_set_offload;
+	rtnl_link_macsec_get_offload;
 	rtnl_link_macsec_set_encoding_sa;
 	rtnl_link_macsec_get_encoding_sa;
 	rtnl_link_macsec_set_validation_type;

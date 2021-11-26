@@ -41,6 +41,7 @@
 #define MACSEC_ATTR_REPLAY_PROTECT	(1 << 10)
 #define MACSEC_ATTR_VALIDATION		(1 << 11)
 #define MACSEC_ATTR_PORT		(1 << 12)
+#define MACSEC_ATTR_OFFLOAD		(1 << 13)
 
 struct macsec_info {
 	int ifindex;
@@ -52,7 +53,7 @@ struct macsec_info {
 	enum macsec_validation_type validate;
 	uint8_t encoding_sa;
 
-	uint8_t send_sci, end_station, scb, replay_protect, protect, encrypt;
+	uint8_t send_sci, end_station, scb, replay_protect, protect, encrypt, offload;
 
 	uint32_t ce_mask;
 };
@@ -74,6 +75,7 @@ static struct nla_policy macsec_policy[IFLA_MACSEC_MAX+1] = {
 	[IFLA_MACSEC_SCB] = { .type = NLA_U8 },
 	[IFLA_MACSEC_REPLAY_PROTECT] = { .type = NLA_U8 },
 	[IFLA_MACSEC_VALIDATION] = { .type = NLA_U8 },
+	[IFLA_MACSEC_OFFLOAD] = { .type = NLA_U8 },
 };
 
 /**
@@ -156,6 +158,11 @@ static int macsec_parse(struct rtnl_link *link, struct nlattr *data,
 	if (tb[IFLA_MACSEC_ENCRYPT]) {
 		info->encrypt = nla_get_u8(tb[IFLA_MACSEC_ENCRYPT]);
 		info->ce_mask |= MACSEC_ATTR_ENCRYPT;
+	}
+
+	if (tb[IFLA_MACSEC_OFFLOAD]) {
+		info->offload = nla_get_u8(tb[IFLA_MACSEC_OFFLOAD]);
+		info->ce_mask |= MACSEC_ATTR_OFFLOAD;
 	}
 
 	if (tb[IFLA_MACSEC_INC_SCI]) {
@@ -305,6 +312,9 @@ static int macsec_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 
 	if ((info->ce_mask & MACSEC_ATTR_ENCRYPT))
 		NLA_PUT_U8(msg, IFLA_MACSEC_ENCRYPT, info->encrypt);
+
+	if ((info->ce_mask & MACSEC_ATTR_OFFLOAD))
+		NLA_PUT_U8(msg, IFLA_MACSEC_OFFLOAD, info->offload);
 
 	if (info->cipher_suite != MACSEC_DEFAULT_CIPHER_ID || info->icv_len != DEFAULT_ICV_LEN) {
 		NLA_PUT_U64(msg, IFLA_MACSEC_CIPHER_SUITE, info->cipher_suite);
@@ -628,6 +638,36 @@ int rtnl_link_macsec_get_encrypt(struct rtnl_link *link, uint8_t *encrypt)
 
 	if (encrypt)
 		*encrypt = info->encrypt;
+
+	return 0;
+}
+
+int rtnl_link_macsec_set_offload(struct rtnl_link *link, uint8_t offload)
+{
+	struct macsec_info *info = link->l_info;
+
+	IS_MACSEC_LINK_ASSERT(link);
+
+	if (offload > 1)
+		return -NLE_INVAL;
+
+	info->offload = offload;
+	info->ce_mask |= MACSEC_ATTR_OFFLOAD;
+
+	return 0;
+}
+
+int rtnl_link_macsec_get_offload(struct rtnl_link *link, uint8_t *offload)
+{
+	struct macsec_info *info = link->l_info;
+
+	IS_MACSEC_LINK_ASSERT(link);
+
+	if (!(info->ce_mask & MACSEC_ATTR_OFFLOAD))
+		return -NLE_NOATTR;
+
+	if (offload)
+		*offload = info->offload;
 
 	return 0;
 }

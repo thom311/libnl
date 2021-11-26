@@ -37,6 +37,9 @@ int rtnl_link_macsec_get_protect(struct rtnl_link *, uint8_t *);
 int rtnl_link_macsec_set_encrypt(struct rtnl_link *, uint8_t);
 int rtnl_link_macsec_get_encrypt(struct rtnl_link *, uint8_t *);
 
+int rtnl_link_macsec_set_offload(struct rtnl_link *, uint8_t);
+int rtnl_link_macsec_get_offload(struct rtnl_link *, uint8_t *);
+
 int rtnl_link_macsec_set_encoding_sa(struct rtnl_link *, uint8_t);
 int rtnl_link_macsec_get_encoding_sa(struct rtnl_link *, uint8_t *);
 

@@ -1150,3 +1150,8 @@ global:
 	rtnl_vlan_set_vlan_id;
 	rtnl_vlan_set_vlan_prio;
 } libnl_3_4;
+
+libnl_3_6 {
+	rtnl_link_macsec_set_offload;
+	rtnl_link_macsec_get_offload;
+} libnl_3_5;

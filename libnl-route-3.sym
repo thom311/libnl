@@ -1268,3 +1268,13 @@ global:
 	rtnl_nat_set_new_addr;
 	rtnl_nat_set_old_addr;
 } libnl_3_6;
+
+libnl_3_8 {
+global:
+	rtnl_link_bridge_get_vlan_filtering;
+	rtnl_link_bridge_get_vlan_protocol;
+	rtnl_link_bridge_get_vlan_stats_enabled;
+	rtnl_link_bridge_set_vlan_filtering;
+	rtnl_link_bridge_set_vlan_protocol;
+	rtnl_link_bridge_set_vlan_stats_enabled;
+} libnl_3_7;

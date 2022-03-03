@@ -78,6 +78,7 @@
 #define XFRM_SA_ATTR_REPLAY_MAXDIFF 0x1000000
 #define XFRM_SA_ATTR_REPLAY_STATE   0x2000000
 #define XFRM_SA_ATTR_EXPIRE         0x4000000
+#define XFRM_SA_ATTR_OFFLOAD_DEV    0x8000000
 
 static struct nl_cache_ops  xfrmnl_sa_ops;
 static struct nl_object_ops xfrm_sa_obj_ops;
@@ -125,6 +126,8 @@ static void xfrm_sa_free_data(struct nl_object *c)
 		free (sa->sec_ctx);
 	if (sa->replay_state_esn)
 		free (sa->replay_state_esn);
+	if (sa->user_offload)
+		free(sa->user_offload);
 }
 
 static int xfrm_sa_clone(struct nl_object *_dst, struct nl_object *_src)
@@ -333,6 +336,7 @@ static const struct trans_tbl sa_attrs[] = {
 	__ADD(XFRM_SA_ATTR_REPLAY_MAXDIFF, replay_maxdiff),
 	__ADD(XFRM_SA_ATTR_REPLAY_STATE, replay_state),
 	__ADD(XFRM_SA_ATTR_EXPIRE, expire),
+	__ADD(XFRM_SA_ATTR_OFFLOAD_DEV, user_offload),
 };
 
 static char* xfrm_sa_attrs2str(int attrs, char *buf, size_t len)
@@ -639,6 +643,7 @@ static struct nla_policy xfrm_sa_policy[XFRMA_MAX+1] = {
 	[XFRMA_SEC_CTX]         = { .minlen = sizeof(struct xfrm_sec_ctx) },
 	[XFRMA_LTIME_VAL]       = { .minlen = sizeof(struct xfrm_lifetime_cur) },
 	[XFRMA_REPLAY_VAL]      = { .minlen = sizeof(struct xfrm_replay_state) },
+	[XFRMA_OFFLOAD_DEV]     = { .minlen = sizeof(struct xfrm_user_offload) },
 	[XFRMA_REPLAY_THRESH]   = { .type = NLA_U32 },
 	[XFRMA_ETIMER_THRESH]   = { .type = NLA_U32 },
 	[XFRMA_SRCADDR]         = { .minlen = sizeof(xfrm_address_t) },
@@ -907,6 +912,22 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 		sa->replay_state.bitmap     =   replay_state->bitmap;
 		sa->ce_mask |= XFRM_SA_ATTR_REPLAY_STATE;
 		sa->replay_state_esn = NULL;
+	}
+
+	if (tb[XFRMA_OFFLOAD_DEV]) {
+		struct xfrm_user_offload *offload;
+
+		len = sizeof(struct xfrmnl_user_offload);
+
+		if ((sa->user_offload = calloc(1, len)) == NULL) {
+			err = -NLE_NOMEM;
+			goto errout;
+		}
+
+		offload = nla_data(tb[XFRMA_OFFLOAD_DEV]);
+		sa->user_offload->ifindex = offload->ifindex;
+		sa->user_offload->flags = offload->flags;
+		sa->ce_mask |= XFRM_SA_ATTR_OFFLOAD_DEV;
 	}
 
 	*result = sa;
@@ -1257,6 +1278,21 @@ static int build_xfrm_sa_message(struct xfrmnl_sa *tmpl, int cmd, int flags, str
 		else {
 			NLA_PUT (msg, XFRMA_REPLAY_VAL, sizeof (struct xfrm_replay_state), &tmpl->replay_state);
 		}
+	}
+
+	if (tmpl->ce_mask & XFRM_SA_ATTR_OFFLOAD_DEV) {
+		struct xfrm_user_offload *offload;
+		struct nlattr *attr;
+
+		len = sizeof(struct xfrm_user_offload);
+		attr = nla_reserve(msg, XFRMA_OFFLOAD_DEV, len);
+
+		if (!attr)
+			goto nla_put_failure;
+
+		offload = nla_data(attr);
+		offload->ifindex = tmpl->user_offload->ifindex;
+		offload->flags = tmpl->user_offload->flags;
 	}
 
 	*result = msg;
@@ -2151,6 +2187,57 @@ int xfrmnl_sa_set_replay_state_esn (struct xfrmnl_sa* sa, unsigned int oseq, uns
 	return 0;
 }
 
+
+/**
+ * Get interface id and flags from xfrm_user_offload.
+ *
+ * @arg sa              The xfrmnl_sa object.
+ * @arg ifindex         An optional output value for the offload interface index.
+ * @arg flags           An optional output value for the offload flags.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int xfrmnl_sa_get_user_offload(struct xfrmnl_sa *sa, int *ifindex, uint8_t *flags)
+{
+	int ret = -1;
+
+	if (sa->ce_mask & XFRM_SA_ATTR_OFFLOAD_DEV && sa->user_offload) {
+		if (ifindex)
+			*ifindex = sa->user_offload->ifindex;
+		if (flags)
+			*flags = sa->user_offload->flags;
+		ret = 0;
+	}
+
+	return ret;
+}
+
+
+/**
+ * Set interface id and flags for xfrm_user_offload.
+ *
+ * @arg sa              The xfrmnl_sa object.
+ * @arg ifindex         Id of the offload interface.
+ * @arg flags           Offload flags for the state.
+ *
+ * @return 0 on success or a negative error code.
+ */
+int xfrmnl_sa_set_user_offload(struct xfrmnl_sa *sa, int ifindex, uint8_t flags)
+{
+	_nl_auto_free struct xfrmnl_user_offload *b = NULL;
+
+	if (!(b = calloc(1, sizeof(*b))))
+		return -1;
+
+	b->ifindex = ifindex;
+	b->flags = flags;
+
+	free(sa->user_offload);
+	sa->user_offload = _nl_steal_pointer(&b);
+	sa->ce_mask |= XFRM_SA_ATTR_OFFLOAD_DEV;
+
+	return 0;
+}
 
 int xfrmnl_sa_is_hardexpiry_reached (struct xfrmnl_sa* sa)
 {

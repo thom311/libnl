@@ -1,0 +1,27 @@
+name: libnl3-ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install packages
+        run: sudo apt-get -y install check
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Build and Test
+        run: |
+          CFLAGS="-DNL_MORE_ASSERTS=1000 -O2 -Werror -Wall -Wdeclaration-after-statement -Wvla"
+          if [ "$CC" = "clang" ]; then
+                  CFLAGS="$CFLAGS -Wno-error=unused-command-line-argument -Wno-error=unused-function"
+          fi
+          export CFLAGS
+          ./autogen.sh
+          ./configure
+          make -j 5
+          make -j 5 check
+        shell: bash
+      - run: echo "🍏 This job's status is ${{ job.status }}."

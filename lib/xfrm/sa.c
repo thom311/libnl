@@ -643,6 +643,7 @@ static struct nla_policy xfrm_sa_policy[XFRMA_MAX+1] = {
 	[XFRMA_SEC_CTX]         = { .minlen = sizeof(struct xfrm_sec_ctx) },
 	[XFRMA_LTIME_VAL]       = { .minlen = sizeof(struct xfrm_lifetime_cur) },
 	[XFRMA_REPLAY_VAL]      = { .minlen = sizeof(struct xfrm_replay_state) },
+	[XFRMA_OFFLOAD_DEV]     = { .minlen = sizeof(struct xfrm_user_offload) },
 	[XFRMA_REPLAY_THRESH]   = { .type = NLA_U32 },
 	[XFRMA_ETIMER_THRESH]   = { .type = NLA_U32 },
 	[XFRMA_SRCADDR]         = { .minlen = sizeof(xfrm_address_t) },

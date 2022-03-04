@@ -3,11 +3,15 @@
  * Copyright (c) 2013 Thomas Graf <tgraf@suug.ch>
  */
 
-#include "util.h"
-#include <netlink/attr.h>
-#include <netlink/msg.h>
-
 #include <linux/netlink.h>
+#include <linux/if_ether.h>
+
+#include "util.h"
+#include "netlink/attr.h"
+#include "netlink/msg.h"
+#include "netlink/route/cls/u32.h"
+#include "netlink-private/route/tc-api.h"
+#include "netlink-private/nl-auto.h"
 
 START_TEST(attr_size)
 {
@@ -71,6 +75,47 @@ START_TEST(msg_construct)
 }
 END_TEST
 
+START_TEST(clone_cls_u32)
+{
+    _nl_auto_rtnl_link struct rtnl_link *link = NULL;
+    _nl_auto_rtnl_cls struct rtnl_cls *cls = NULL;
+    _nl_auto_rtnl_cls struct rtnl_cls *cls2 = NULL;
+    int r;
+    const uint32_t direction = 16;
+
+    link = rtnl_link_alloc();
+    ck_assert(link);
+
+    rtnl_link_set_ifindex(link, 5);
+
+    cls = rtnl_cls_alloc();
+    ck_assert(cls);
+
+    rtnl_tc_set_link(TC_CAST(cls), link);
+
+    r = rtnl_tc_set_kind(TC_CAST(cls), "u32");
+    ck_assert(r == 0);
+
+    rtnl_cls_set_prio(cls, 1);
+    rtnl_cls_set_protocol(cls, ETH_P_IP);
+
+    rtnl_tc_set_parent(TC_CAST(cls), TC_HANDLE(1, 0));
+
+    rtnl_u32_set_hashtable(cls, 5);
+
+    rtnl_u32_add_key_uint32(cls,  0x0a000914, 0xffffffff, direction, 0);
+
+    rtnl_u32_set_hashmask(cls, 0xff000000, direction);
+
+    rtnl_u32_add_mark(cls, 55, 66);
+
+    rtnl_u32_set_link(cls, 44);
+
+    cls2 = (struct rtnl_cls *)nl_object_clone((struct nl_object *)cls);
+    ck_assert(cls2);
+}
+END_TEST
+
 Suite *make_nl_attr_suite(void)
 {
 	Suite *suite = suite_create("Netlink attributes");
@@ -78,6 +123,7 @@ Suite *make_nl_attr_suite(void)
 	TCase *nl_attr = tcase_create("Core");
 	tcase_add_test(nl_attr, attr_size);
 	tcase_add_test(nl_attr, msg_construct);
+	tcase_add_test(nl_attr, clone_cls_u32);
 	suite_add_tcase(suite, nl_attr);
 
 	return suite;

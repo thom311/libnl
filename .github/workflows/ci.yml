@@ -9,19 +9,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install packages
-        run: sudo apt-get -y install check
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install check valgrind libtool-bin
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Build and Test
         run: |
+          set -x
+
           CFLAGS="-DNL_MORE_ASSERTS=1000 -O2 -Werror -Wall -Wdeclaration-after-statement -Wvla"
           if [ "$CC" = "clang" ]; then
                   CFLAGS="$CFLAGS -Wno-error=unused-command-line-argument -Wno-error=unused-function"
           fi
           export CFLAGS
+
           ./autogen.sh
           ./configure
           make -j 5
           make -j 5 check
+
+          CK_FORK=no libtool --mode=execute valgrind --error-exitcode=66 --leak-check=full -s --show-leak-kinds=all ./tests/check-all
+          CK_FORK=no libtool --mode=execute valgrind --error-exitcode=66 --leak-check=full -s --show-leak-kinds=all ./tests/check-direct
         shell: bash
       - run: echo "🍏 This job's status is ${{ job.status }}."

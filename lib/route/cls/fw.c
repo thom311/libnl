@@ -88,9 +88,12 @@ static int fw_clone(void *_dst, void *_src)
 {
 	struct rtnl_fw *dst = _dst, *src = _src;
 
+	dst->cf_act = NULL;
+	dst->cf_police = NULL;
+
 	if (src->cf_act && !(dst->cf_act = nl_data_clone(src->cf_act)))
 		return -NLE_NOMEM;
-	
+
 	if (src->cf_police && !(dst->cf_police = nl_data_clone(src->cf_police)))
 		return -NLE_NOMEM;
 

@@ -32,6 +32,8 @@ static int cgroup_clone(void *_dst, void *_src)
 {
 	struct rtnl_cgroup *dst = _dst, *src = _src;
 
+	dst->cg_ematch = NULL;
+
 	if (src->cg_ematch) {
 		dst->cg_ematch = rtnl_ematch_tree_clone(src->cg_ematch);
 		if (!dst->cg_ematch)

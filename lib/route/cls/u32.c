@@ -178,6 +178,12 @@ static int u32_clone(void *_dst, void *_src)
 {
 	struct rtnl_u32 *dst = _dst, *src = _src;
 
+	dst->cu_pcnt = NULL;
+	dst->cu_selector = NULL;
+	dst->cu_mark = NULL;
+	dst->cu_act = NULL;
+	dst->cu_police = NULL;
+
 	if (src->cu_selector &&
 	    !(dst->cu_selector = nl_data_clone(src->cu_selector)))
 		return -NLE_NOMEM;

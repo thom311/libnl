@@ -222,6 +222,8 @@ static int mall_clone(void *_dst, void *_src)
 	struct rtnl_act *next, *new;
 	int err;
 
+	dst->m_act = NULL;
+
 	if (src->m_act) {
 		if (!(dst->m_act = rtnl_act_alloc()))
 			return -NLE_NOMEM;

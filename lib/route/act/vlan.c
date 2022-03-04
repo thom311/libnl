@@ -103,14 +103,6 @@ static void vlan_free_data(struct rtnl_tc *tc, void *data)
 {
 }
 
-static int vlan_clone(void *_dst, void *_src)
-{
-	struct rtnl_vlan *dst = _dst, *src = _src;
-
-	memcpy(&dst->v_parm, &src->v_parm, sizeof(src->v_parm));
-	return 0;
-}
-
 static void vlan_dump_line(struct rtnl_tc *tc, void *data,
                            struct nl_dump_params *p)
 {
@@ -399,7 +391,7 @@ static struct rtnl_tc_ops vlan_ops = {
 	.to_size                = sizeof(struct rtnl_vlan),
 	.to_msg_parser          = vlan_msg_parser,
 	.to_free_data           = vlan_free_data,
-	.to_clone               = vlan_clone,
+	.to_clone               = NULL,
 	.to_msg_fill            = vlan_msg_fill,
 	.to_dump = {
 	    [NL_DUMP_LINE]      = vlan_dump_line,

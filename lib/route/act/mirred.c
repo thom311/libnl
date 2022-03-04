@@ -43,14 +43,6 @@ static void mirred_free_data(struct rtnl_tc *tc, void *data)
 {
 }
 
-static int mirred_clone(void *_dst, void *_src)
-{
-	struct rtnl_mirred *dst = _dst, *src = _src;
-
-	memcpy(&dst->m_parm, &src->m_parm, sizeof(src->m_parm));
-	return 0;
-}
-
 static void mirred_dump_line(struct rtnl_tc *tc, void *data,
 			  struct nl_dump_params *p)
 {
@@ -214,7 +206,7 @@ static struct rtnl_tc_ops mirred_ops = {
 	.to_size		= sizeof(struct rtnl_mirred),
 	.to_msg_parser		= mirred_msg_parser,
 	.to_free_data		= mirred_free_data,
-	.to_clone		= mirred_clone,
+	.to_clone		= NULL,
 	.to_msg_fill		= mirred_msg_fill,
 	.to_dump = {
 	    [NL_DUMP_LINE]	= mirred_dump_line,

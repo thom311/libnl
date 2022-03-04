@@ -44,14 +44,6 @@ static void gact_free_data(struct rtnl_tc *tc, void *data)
 {
 }
 
-static int gact_clone(void *_dst, void *_src)
-{
-	struct rtnl_gact *dst = _dst, *src = _src;
-
-	memcpy(&dst->g_parm, &src->g_parm, sizeof(src->g_parm));
-	return 0;
-}
-
 static void gact_dump_line(struct rtnl_tc *tc, void *data,
 			  struct nl_dump_params *p)
 {
@@ -155,7 +147,7 @@ static struct rtnl_tc_ops gact_ops = {
 	.to_size		= sizeof(struct rtnl_gact),
 	.to_msg_parser		= gact_msg_parser,
 	.to_free_data		= gact_free_data,
-	.to_clone		= gact_clone,
+	.to_clone		= NULL,
 	.to_msg_fill		= gact_msg_fill,
 	.to_dump = {
 	    [NL_DUMP_LINE]	= gact_dump_line,

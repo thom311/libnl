@@ -61,14 +61,6 @@ static void skbedit_free_data(struct rtnl_tc *tc, void *data)
 {
 }
 
-static int skbedit_clone(void *_dst, void *_src)
-{
-	struct rtnl_skbedit *dst = _dst, *src = _src;
-
-	memcpy(dst, src, sizeof(*src));
-	return 0;
-}
-
 static void skbedit_dump_line(struct rtnl_tc *tc, void *data,
 			  struct nl_dump_params *p)
 {
@@ -262,7 +254,7 @@ static struct rtnl_tc_ops skbedit_ops = {
 	.to_size		= sizeof(struct rtnl_skbedit),
 	.to_msg_parser		= skbedit_msg_parser,
 	.to_free_data		= skbedit_free_data,
-	.to_clone		= skbedit_clone,
+	.to_clone		= NULL,
 	.to_msg_fill		= skbedit_msg_fill,
 	.to_dump = {
 	    [NL_DUMP_LINE]	= skbedit_dump_line,

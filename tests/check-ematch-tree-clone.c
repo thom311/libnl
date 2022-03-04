@@ -122,9 +122,9 @@ START_TEST(ematch_tree_clone)
 	dst = rtnl_ematch_tree_clone(src);
 	dump_ematch_tree(dst, dst_result, &j);
 
-	fail_if(!dst);
-	fail_if(i != j);
-	fail_if(compare(src_result, dst_result, i));
+	ck_assert(dst);
+	ck_assert(i == j);
+	ck_assert(!compare(src_result, dst_result, i));
 
 	free(src_result);
 	free(dst_result);

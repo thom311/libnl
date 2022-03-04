@@ -11,35 +11,35 @@
 
 START_TEST(attr_size)
 {
-	fail_if(nla_attr_size(0) != NLA_HDRLEN,
+	ck_assert_msg(nla_attr_size(0) == NLA_HDRLEN,
 		"Length of empty attribute should match header size");
-	fail_if(nla_attr_size(1) != NLA_HDRLEN + 1,
+	ck_assert_msg(nla_attr_size(1) == NLA_HDRLEN + 1,
 	        "Length of 1 bytes payload should be NLA_HDRLEN + 1");
-	fail_if(nla_attr_size(2) != NLA_HDRLEN + 2,
+	ck_assert_msg(nla_attr_size(2) == NLA_HDRLEN + 2,
 	        "Length of 2 bytes payload should be NLA_HDRLEN + 2");
-	fail_if(nla_attr_size(3) != NLA_HDRLEN + 3,
+	ck_assert_msg(nla_attr_size(3) == NLA_HDRLEN + 3,
 	        "Length of 3 bytes payload should be NLA_HDRLEN + 3");
-	fail_if(nla_attr_size(4) != NLA_HDRLEN + 4,
+	ck_assert_msg(nla_attr_size(4) == NLA_HDRLEN + 4,
 	        "Length of 4 bytes payload should be NLA_HDRLEN + 4");
 
-	fail_if(nla_total_size(1) != NLA_HDRLEN + 4,
+	ck_assert_msg(nla_total_size(1) == NLA_HDRLEN + 4,
 		"Total size of 1 bytes payload should result in 8 bytes");
-	fail_if(nla_total_size(2) != NLA_HDRLEN + 4,
+	ck_assert_msg(nla_total_size(2) == NLA_HDRLEN + 4,
 		"Total size of 2 bytes payload should result in 8 bytes");
-	fail_if(nla_total_size(3) != NLA_HDRLEN + 4,
+	ck_assert_msg(nla_total_size(3) == NLA_HDRLEN + 4,
 		"Total size of 3 bytes payload should result in 8 bytes");
-	fail_if(nla_total_size(4) != NLA_HDRLEN + 4,
+	ck_assert_msg(nla_total_size(4) == NLA_HDRLEN + 4,
 		"Total size of 4 bytes payload should result in 8 bytes");
 
-	fail_if(nla_padlen(1) != 3,
+	ck_assert_msg(nla_padlen(1) == 3,
 		"2 bytes of payload should result in 3 padding bytes");
-	fail_if(nla_padlen(2) != 2,
+	ck_assert_msg(nla_padlen(2) == 2,
 		"2 bytes of payload should result in 2 padding bytes");
-	fail_if(nla_padlen(3) != 1,
+	ck_assert_msg(nla_padlen(3) == 1,
 		"3 bytes of payload should result in 1 padding bytes");
-	fail_if(nla_padlen(4) != 0,
+	ck_assert_msg(nla_padlen(4) == 0,
 		"4 bytes of payload should result in 0 padding bytes");
-	fail_if(nla_padlen(5) != 3,
+	ck_assert_msg(nla_padlen(5) == 3,
 		"5 bytes of payload should result in 3 padding bytes");
 }
 END_TEST
@@ -52,19 +52,19 @@ START_TEST(msg_construct)
 	int i, rem;
 
 	msg = nlmsg_alloc();
-	fail_if(!msg, "Unable to allocate netlink message");
+	ck_assert_msg(msg, "Unable to allocate netlink message");
 
 	for (i = 1; i < 256; i++) {
-		fail_if(nla_put_u32(msg, i, i+1) != 0,
+		ck_assert_msg(nla_put_u32(msg, i, i+1) == 0,
 			"Unable to add attribute %d", i);
 	}
 
 	nlh = nlmsg_hdr(msg);
 	i = 1;
 	nlmsg_for_each_attr(a, nlh, 0, rem) {
-		fail_if(nla_type(a) != i, "Expected attribute %d", i);
+		ck_assert_msg(nla_type(a) == i, "Expected attribute %d", i);
 		i++;
-		fail_if(nla_get_u32(a) != i, "Expected attribute value %d", i);
+		ck_assert_msg(nla_get_u32(a) == i, "Expected attribute value %d", i);
 	}
 
 	nlmsg_free(msg);

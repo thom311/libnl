@@ -507,9 +507,10 @@ static int route_update(struct nl_object *old_obj, struct nl_object *new_obj)
 		 */
 		nl_list_for_each_entry(old_nh, &old_route->rt_nexthops, rtnh_list) {
 			if (!rtnl_route_nh_compare(old_nh, new_nh, ~0, 0)) {
-				return -NLE_OPNOTSUPP;
+				return 0;
 			}
 		}
+
 		/*
 		 * Add the nexthop to old route
 		 */

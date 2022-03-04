@@ -297,26 +297,26 @@ static int can_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 		return -NLE_MSGSIZE;
 
 	if (ci->ci_mask & CAN_HAS_RESTART)
-		NLA_PUT_U32(msg, CAN_HAS_RESTART, ci->ci_restart);
+		NLA_PUT_U32(msg, IFLA_CAN_RESTART, ci->ci_restart);
 
 	if (ci->ci_mask & CAN_HAS_RESTART_MS)
-		NLA_PUT_U32(msg, CAN_HAS_RESTART_MS, ci->ci_restart_ms);
+		NLA_PUT_U32(msg, IFLA_CAN_RESTART_MS, ci->ci_restart_ms);
 
 	if (ci->ci_mask & CAN_HAS_CTRLMODE)
-		NLA_PUT(msg, CAN_HAS_CTRLMODE, sizeof(ci->ci_ctrlmode),
+		NLA_PUT(msg, IFLA_CAN_CTRLMODE, sizeof(ci->ci_ctrlmode),
 			&ci->ci_ctrlmode);
 
 	if (ci->ci_mask & CAN_HAS_BITTIMING)
-		NLA_PUT(msg, CAN_HAS_BITTIMING, sizeof(ci->ci_bittiming),
+		NLA_PUT(msg, IFLA_CAN_BITTIMING, sizeof(ci->ci_bittiming),
 			&ci->ci_bittiming);
 
 	if (ci->ci_mask & CAN_HAS_BITTIMING_CONST)
-		NLA_PUT(msg, CAN_HAS_BITTIMING_CONST,
+		NLA_PUT(msg, IFLA_CAN_BITTIMING_CONST,
 			sizeof(ci->ci_bittiming_const),
 			&ci->ci_bittiming_const);
 
 	if (ci->ci_mask & CAN_HAS_CLOCK)
-		NLA_PUT(msg, CAN_HAS_CLOCK, sizeof(ci->ci_clock),
+		NLA_PUT(msg, IFLA_CAN_CLOCK, sizeof(ci->ci_clock),
 			&ci->ci_clock);
 
 	nla_nest_end(msg, data);
@@ -483,7 +483,7 @@ int rtnl_link_can_berr(struct rtnl_link *link, struct can_berr_counter *berr)
 }
 
 /**
- * Get CAN harware-dependent bit-timing constant
+ * Get CAN hardware-dependent bit-timing constant
  * @arg link            Link object
  * @arg bt_const	Bit-timing constant
  *

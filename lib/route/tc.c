@@ -837,18 +837,16 @@ int rtnl_tc_clone(struct nl_object *dstobj, struct nl_object *srcobj)
 		if (!(dst->tc_subdata = nl_data_clone(src->tc_subdata))) {
 			return -NLE_NOMEM;
 		}
-	}
 
-	ops = rtnl_tc_get_ops(src);
-	if (ops && ops->to_clone) {
-		void *a = rtnl_tc_data(dst), *b = rtnl_tc_data(src);
+		/* Warning: if the data contains pointer, then at this point, dst->tc_subdata
+		 * will alias those pointers.
+		 *
+		 * ops->to_clone() MUST fix that. */
 
-		if (!a)
-			return 0;
-		else if (!b)
-			return -NLE_NOMEM;
-
-		return ops->to_clone(a, b);
+		ops = rtnl_tc_get_ops(src);
+		if (ops && ops->to_clone) {
+			return ops->to_clone(rtnl_tc_data(dst), rtnl_tc_data(src));
+		}
 	}
 
 	return 0;

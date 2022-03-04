@@ -108,10 +108,6 @@ int rtnl_route_nh_encap_mpls(struct rtnl_nexthop *nh,
 	if (!addr)
 		return -NLE_INVAL;
 
-	if (!nl_addr_valid(nl_addr_get_binary_addr(addr),
-			   nl_addr_get_len(addr)))
-		return -NLE_INVAL;
-
 	rtnh_encap = calloc(1, sizeof(*rtnh_encap));
 	if (!rtnh_encap)
 		return -NLE_NOMEM;

@@ -1,13 +1,12 @@
-#include <netlink-private/types.h>
-#include <netlink/route/cls/ematch.h>
-
 #include <linux/netlink.h>
-
 #include <stdio.h>
 #include <time.h>
-
 #include <check.h>
+
+#include "netlink-private/types.h"
+#include "netlink/route/cls/ematch.h"
 #include "util.h"
+#include "netlink-private/nl-auto.h"
 
 #define MAX_DEPTH		6
 #define MAX_CHILDREN		5
@@ -15,8 +14,6 @@
 static int current_depth = 0;
 static int id = 1;
 static long long array_size = 0;
-
-static int *src_result = NULL, *dst_result = NULL;
 
 static long long my_pow(long long x, long long y)
 {
@@ -107,8 +104,12 @@ static int compare(int *r1, int *r2, int len)
 
 START_TEST(ematch_tree_clone)
 {
-	struct rtnl_ematch_tree *src = NULL, *dst = NULL;
-	int i = 0, j = 0;
+	_nl_auto_rtnl_ematch_tree struct rtnl_ematch_tree *src = NULL;
+	_nl_auto_rtnl_ematch_tree struct rtnl_ematch_tree *dst = NULL;
+	_nl_auto_free int *src_result = NULL;
+	_nl_auto_free int *dst_result = NULL;
+	int i = 0;
+	int j = 0;
 
 	array_size = (MAX_DEPTH * my_pow(MAX_CHILDREN, MAX_DEPTH)) / 2;
 	src_result = calloc(4, array_size);
@@ -125,9 +126,6 @@ START_TEST(ematch_tree_clone)
 	ck_assert(dst);
 	ck_assert(i == j);
 	ck_assert(!compare(src_result, dst_result, i));
-
-	free(src_result);
-	free(dst_result);
 }
 END_TEST
 

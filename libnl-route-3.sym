@@ -1149,7 +1149,6 @@ global:
 	rtnl_vlan_set_protocol;
 	rtnl_vlan_set_vlan_id;
 	rtnl_vlan_set_vlan_prio;
-	rtnl_route_lookup;
 } libnl_3_4;
 
 libnl_3_6 {
@@ -1187,6 +1186,7 @@ global:
 	rtnl_netconf_get_ignore_routes_linkdown;
 	rtnl_netconf_get_proxy_neigh;
 	rtnl_qdisc_get_by_kind;
+	rtnl_route_lookup;
 	rtnl_route_nh_get_encap_mpls_dst;
 	rtnl_route_nh_get_encap_mpls_ttl;
 } libnl_3_5;

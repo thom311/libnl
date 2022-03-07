@@ -11,6 +11,7 @@
  */
 
 #include <netlink-private/netlink.h>
+#include <netlink-private/nl-auto.h>
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/utils.h>
@@ -125,22 +126,20 @@ int rtnl_route_build_add_request(struct rtnl_route *tmpl, int flags,
 }
 
 int rtnl_route_lookup(struct nl_sock *sk, struct nl_addr *dst,
-		      struct rtnl_route **result)
+                      struct rtnl_route **result)
 {
-	struct nl_msg *msg;
-	struct rtnl_route *tmpl;
+	_nl_auto_nl_msg struct nl_msg *msg = NULL;
+	_nl_auto_rtnl_route struct rtnl_route *tmpl = NULL;
 	struct nl_object *obj;
 	int err;
 
 	tmpl = rtnl_route_alloc();
 	rtnl_route_set_dst(tmpl, dst);
 	err = build_route_msg(tmpl, RTM_GETROUTE, 0, &msg);
-	rtnl_route_put(tmpl);
 	if (err < 0)
 		return err;
 
 	err = nl_send_auto(sk, msg);
-	nlmsg_free(msg);
 	if (err < 0)
 		return err;
 
@@ -148,7 +147,8 @@ int rtnl_route_lookup(struct nl_sock *sk, struct nl_addr *dst,
 		return err;
 
 	*result = (struct rtnl_route *)obj;
-	return wait_for_ack(sk);
+	wait_for_ack(sk);
+	return 0;
 }
 
 int rtnl_route_add(struct nl_sock *sk, struct rtnl_route *route, int flags)

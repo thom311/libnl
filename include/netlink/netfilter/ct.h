@@ -12,6 +12,7 @@
 #include <netlink/addr.h>
 #include <netlink/cache.h>
 #include <netlink/msg.h>
+#include <netlink/attr.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,6 +32,7 @@ extern int	nfnl_ct_alloc_cache(struct nl_sock *, struct nl_cache **);
 
 extern int	nfnlmsg_ct_group(struct nlmsghdr *);
 extern int	nfnlmsg_ct_parse(struct nlmsghdr *, struct nfnl_ct **);
+extern int	nfnlmsg_ct_parse_nested(struct nlattr *, struct nfnl_ct **);
 
 extern void	nfnl_ct_get(struct nfnl_ct *);
 extern void	nfnl_ct_put(struct nfnl_ct *);

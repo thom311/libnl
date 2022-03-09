@@ -308,6 +308,61 @@ static int ct_parse_timestamp(struct nfnl_ct *ct, struct nlattr *attr)
 	return 0;
 }
 
+static int _nfnlmsg_ct_parse(struct nlattr **tb, struct nfnl_ct *ct)
+{
+	int err;
+
+	if (tb[CTA_TUPLE_ORIG]) {
+		err = ct_parse_tuple(ct, 0, tb[CTA_TUPLE_ORIG]);
+		if (err < 0)
+			return err;
+	}
+	if (tb[CTA_TUPLE_REPLY]) {
+		err = ct_parse_tuple(ct, 1, tb[CTA_TUPLE_REPLY]);
+		if (err < 0)
+			return err;
+	}
+
+	if (tb[CTA_PROTOINFO]) {
+		err = ct_parse_protoinfo(ct, tb[CTA_PROTOINFO]);
+		if (err < 0)
+			return err;
+	}
+
+	if (tb[CTA_STATUS])
+		nfnl_ct_set_status(ct, ntohl(nla_get_u32(tb[CTA_STATUS])));
+	if (tb[CTA_TIMEOUT])
+		nfnl_ct_set_timeout(ct, ntohl(nla_get_u32(tb[CTA_TIMEOUT])));
+	if (tb[CTA_MARK])
+		nfnl_ct_set_mark(ct, ntohl(nla_get_u32(tb[CTA_MARK])));
+	if (tb[CTA_USE])
+		nfnl_ct_set_use(ct, ntohl(nla_get_u32(tb[CTA_USE])));
+	if (tb[CTA_ID])
+		nfnl_ct_set_id(ct, ntohl(nla_get_u32(tb[CTA_ID])));
+	if (tb[CTA_ZONE])
+		nfnl_ct_set_zone(ct, ntohs(nla_get_u16(tb[CTA_ZONE])));
+
+	if (tb[CTA_COUNTERS_ORIG]) {
+		err = ct_parse_counters(ct, 0, tb[CTA_COUNTERS_ORIG]);
+		if (err < 0)
+			return err;
+	}
+
+	if (tb[CTA_COUNTERS_REPLY]) {
+		err = ct_parse_counters(ct, 1, tb[CTA_COUNTERS_REPLY]);
+		if (err < 0)
+			return err;
+	}
+
+	if (tb[CTA_TIMESTAMP]) {
+		err = ct_parse_timestamp(ct, tb[CTA_TIMESTAMP]);
+		if (err < 0)
+			return err;
+	}
+
+	return 0;
+}
+
 int nfnlmsg_ct_parse(struct nlmsghdr *nlh, struct nfnl_ct **result)
 {
 	struct nfnl_ct *ct;
@@ -327,57 +382,43 @@ int nfnlmsg_ct_parse(struct nlmsghdr *nlh, struct nfnl_ct **result)
 
 	nfnl_ct_set_family(ct, nfnlmsg_family(nlh));
 
-	if (tb[CTA_TUPLE_ORIG]) {
-		err = ct_parse_tuple(ct, 0, tb[CTA_TUPLE_ORIG]);
-		if (err < 0)
-			goto errout;
-	}
-	if (tb[CTA_TUPLE_REPLY]) {
-		err = ct_parse_tuple(ct, 1, tb[CTA_TUPLE_REPLY]);
-		if (err < 0)
-			goto errout;
-	}
-
-	if (tb[CTA_PROTOINFO]) {
-		err = ct_parse_protoinfo(ct, tb[CTA_PROTOINFO]);
-		if (err < 0)
-			goto errout;
-	}
-
-	if (tb[CTA_STATUS])
-		nfnl_ct_set_status(ct, ntohl(nla_get_u32(tb[CTA_STATUS])));
-	if (tb[CTA_TIMEOUT])
-		nfnl_ct_set_timeout(ct, ntohl(nla_get_u32(tb[CTA_TIMEOUT])));
-	if (tb[CTA_MARK])
-		nfnl_ct_set_mark(ct, ntohl(nla_get_u32(tb[CTA_MARK])));
-	if (tb[CTA_USE])
-		nfnl_ct_set_use(ct, ntohl(nla_get_u32(tb[CTA_USE])));
-	if (tb[CTA_ID])
-		nfnl_ct_set_id(ct, ntohl(nla_get_u32(tb[CTA_ID])));
-	if (tb[CTA_ZONE])
-		nfnl_ct_set_zone(ct, ntohs(nla_get_u16(tb[CTA_ZONE])));
-
-	if (tb[CTA_COUNTERS_ORIG]) {
-		err = ct_parse_counters(ct, 0, tb[CTA_COUNTERS_ORIG]);
-		if (err < 0)
-			goto errout;
-	}
-
-	if (tb[CTA_COUNTERS_REPLY]) {
-		err = ct_parse_counters(ct, 1, tb[CTA_COUNTERS_REPLY]);
-		if (err < 0)
-			goto errout;
-	}
-
-	if (tb[CTA_TIMESTAMP]) {
-		err = ct_parse_timestamp(ct, tb[CTA_TIMESTAMP]);
-		if (err < 0)
-			goto errout;
-	}
+	err = _nfnlmsg_ct_parse(tb, ct);
+	if (err < 0)
+		goto errout;
 
 	*result = ct;
 	return 0;
+errout:
+	nfnl_ct_put(ct);
+	return err;
+}
 
+int nfnlmsg_ct_parse_nested(struct nlattr *attr, struct nfnl_ct **result)
+{
+	struct nfnl_ct *ct;
+	struct nlattr *tb[CTA_MAX+1];
+	int err;
+
+	ct = nfnl_ct_alloc();
+	if (!ct)
+		return -NLE_NOMEM;
+
+	// msgtype not given for nested
+	//ct->ce_msgtype = nlh->nlmsg_type;
+
+	err = nla_parse_nested(tb, CTA_MAX, attr, ct_policy);
+	if (err < 0)
+		goto errout;
+
+	// family not known
+	//nfnl_ct_set_family(ct, nfnlmsg_family(nlh));
+
+	err = _nfnlmsg_ct_parse(tb, ct);
+	if (err < 0)
+		goto errout;
+
+	*result = ct;
+	return 0;
 errout:
 	nfnl_ct_put(ct);
 	return err;

@@ -1095,8 +1095,6 @@ global:
 	rtnl_link_is_geneve;
 	rtnl_link_is_xfrmi;
 	rtnl_link_set_slave_type;
-	rtnl_link_team_add;
-	rtnl_link_team_alloc;
 	rtnl_link_xfrmi_alloc;
 	rtnl_link_xfrmi_get_if_id;
 	rtnl_link_xfrmi_get_link;
@@ -1182,6 +1180,8 @@ global:
 	rtnl_link_is_ip6gre;
 	rtnl_link_macsec_get_offload;
 	rtnl_link_macsec_set_offload;
+	rtnl_link_team_add;
+	rtnl_link_team_alloc;
 	rtnl_netconf_alloc_cache;
 	rtnl_netconf_get_ignore_routes_linkdown;
 	rtnl_netconf_get_proxy_neigh;

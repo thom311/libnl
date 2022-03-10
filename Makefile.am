@@ -151,12 +151,11 @@ libnlinclude_netlink_route_link_HEADERS = \
 	include/netlink/route/link/inet.h \
 	include/netlink/route/link/inet6.h \
 	include/netlink/route/link/info-api.h \
+	include/netlink/route/link/ip6gre.h \
 	include/netlink/route/link/ip6tnl.h \
 	include/netlink/route/link/ipgre.h \
-	include/netlink/route/link/ip6gre.h \
 	include/netlink/route/link/ipip.h \
 	include/netlink/route/link/ipvlan.h \
-	include/netlink/route/link/team.h \
 	include/netlink/route/link/ipvti.h \
 	include/netlink/route/link/macsec.h \
 	include/netlink/route/link/macvlan.h \
@@ -164,6 +163,7 @@ libnlinclude_netlink_route_link_HEADERS = \
 	include/netlink/route/link/ppp.h \
 	include/netlink/route/link/sit.h \
 	include/netlink/route/link/sriov.h \
+	include/netlink/route/link/team.h \
 	include/netlink/route/link/veth.h \
 	include/netlink/route/link/vlan.h \
 	include/netlink/route/link/vrf.h \
@@ -403,18 +403,18 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/link/ifb.c \
 	lib/route/link/inet.c \
 	lib/route/link/inet6.c \
+	lib/route/link/ip6gre.c \
 	lib/route/link/ip6tnl.c \
 	lib/route/link/ipgre.c \
-	lib/route/link/ip6gre.c \
 	lib/route/link/ipip.c \
 	lib/route/link/ipvlan.c \
-	lib/route/link/team.c \
 	lib/route/link/ipvti.c \
 	lib/route/link/macsec.c \
 	lib/route/link/macvlan.c \
 	lib/route/link/ppp.c \
 	lib/route/link/sit.c \
 	lib/route/link/sriov.c \
+	lib/route/link/team.c \
 	lib/route/link/veth.c \
 	lib/route/link/vlan.c \
 	lib/route/link/vrf.c \

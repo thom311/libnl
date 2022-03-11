@@ -52,6 +52,9 @@ extern void	rtnl_route_get(struct rtnl_route *);
 extern int	rtnl_route_parse(struct nlmsghdr *, struct rtnl_route **);
 extern int	rtnl_route_build_msg(struct nl_msg *, struct rtnl_route *);
 
+extern int	rtnl_route_lookup(struct nl_sock *sk, struct nl_addr *dst,
+				  struct rtnl_route **result);
+
 extern int	rtnl_route_build_add_request(struct rtnl_route *, int,
 					     struct nl_msg **);
 extern int	rtnl_route_add(struct nl_sock *, struct rtnl_route *, int);

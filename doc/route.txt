@@ -941,6 +941,9 @@ extern uint8_t rtnl_link_ipip_get_tos(struct rtnl_link *link);
 extern int rtnl_link_ipip_set_pmtudisc(struct rtnl_link *link, uint8_t pmtudisc);
 extern uint8_t rtnl_link_ipip_get_pmtudisc(struct rtnl_link *link);
 
+extern int rtnl_link_ipip_set_fwmark(struct rtnl_link *link, uint32_t fwmark);
+extern int rtnl_link_ipip_get_fwmark(struct rtnl_link *link, uint32_t *fwmark);
+
 -----
 
 .Example: Add a ipip tunnel device
@@ -1018,6 +1021,9 @@ extern uint8_t rtnl_link_ipgre_get_tos(struct rtnl_link *link);
 
 extern int rtnl_link_ipgre_set_pmtudisc(struct rtnl_link *link, uint8_t pmtudisc);
 extern uint8_t rtnl_link_ipgre_get_pmtudisc(struct rtnl_link *link);
+
+extern int rtnl_link_ipgre_set_fwmark(struct rtnl_link *link, uint32_t fwmark);
+extern int rtnl_link_ipgre_get_fwmark(struct rtnl_link *link, uint32_t *fwmark);
 
 -----
 
@@ -1097,6 +1103,9 @@ extern uint8_t rtnl_link_sit_get_tos(struct rtnl_link *link);
 extern int rtnl_link_sit_set_pmtudisc(struct rtnl_link *link, uint8_t pmtudisc);
 extern uint8_t rtnl_link_sit_get_pmtudisc(struct rtnl_link *link);
 
+extern int rtnl_link_sit_set_fwmark(struct rtnl_link *link, uint32_t fwmark);
+extern int rtnl_link_sit_get_fwmark(struct rtnl_link *link, uint32_t *fwmark);
+
 -----
 
 .Example: Add a sit tunnel device
@@ -1160,6 +1169,9 @@ extern uint32_t rtnl_link_ipvti_get_local(struct rtnl_link *link);
 
 extern int rtnl_link_ipvti_set_remote(struct rtnl_link *link, uint32_t addr);
 extern uint32_t rtnl_link_ipvti_get_remote(struct rtnl_link *link);
+
+extern int rtnl_link_ipvti_set_fwmark(struct rtnl_link *link, uint32_t fwmark);
+extern int rtnl_link_ipvti_get_fwmark(struct rtnl_link *link, uint32_t *fwmark);
 
 -----
 
@@ -1232,6 +1244,9 @@ extern int rtnl_link_ip6_tnl_set_flowinfo(struct rtnl_link *link, uint32_t flowi
 extern int rtnl_link_ip6_tnl_set_proto(struct rtnl_link *link, uint8_t proto);
 extern uint8_t rtnl_link_ip6_tnl_get_proto(struct rtnl_link *link);
 
+extern int rtnl_link_ip6_tnl_set_fwmark(struct rtnl_link *link, uint32_t fwmark);
+extern int rtnl_link_ip6_tnl_get_fwmark(struct rtnl_link *link, uint32_t *fwmark);
+
 -----
 
 .Example: Add a ip6tnl tunnel device
@@ -1299,6 +1314,9 @@ extern int rtnl_link_ip6gre_get_flowinfo(struct rtnl_link *link, uint32_t *flowi
 extern int rtnl_link_ip6gre_set_flags(struct rtnl_link *link, uint32_t flags);
 extern int rtnl_link_ip6gre_get_flags(struct rtnl_link *link, uint32_t *flags);
 
+extern int rtnl_link_ip6gre_set_fwmark(struct rtnl_link *link, uint32_t fwmark);
+extern int rtnl_link_ip6gre_get_fwmark(struct rtnl_link *link, uint32_t *fwmark);
+
 ----
 
 .Example: Add a ip6gre tunnel device
@@ -1323,6 +1341,57 @@ rtnl_link_put(link);
 
 -----
 
+[[link_ip6vti]]
+==== IP6VTI
+
+[source,c]
+----
+int rtnl_link_is_ip6vti(struct rtnl_link *link);
+
+extern struct rtnl_link *rtnl_link_ip6vti_alloc(void);
+extern int rtnl_link_ip6vti_add(struct nl_sock *sk, const char *name);
+
+extern int rtnl_link_ip6vti_set_link(struct rtnl_link *link, uint32_t index);
+extern int rtnl_link_ip6vti_get_link(struct rtnl_link *link, uint32_t *index);
+
+extern int rtnl_link_ip6vti_set_ikey(struct rtnl_link *link, uint32_t ikey);
+extern int rtnl_link_ip6vti_get_ikey(struct rtnl_link *link, uint32_t *ikey);
+
+extern int rtnl_link_ip6vti_set_okey(struct rtnl_link *link, uint32_t okey);
+extern int rtnl_link_ip6vti_get_okey(struct rtnl_link *link, uint32_t *okey);
+
+extern int rtnl_link_ip6vti_set_local(struct rtnl_link *link, struct in6_addr *local);
+extern int rtnl_link_ip6vti_get_local(struct rtnl_link *link, struct in6_addr *remote);
+
+extern int rtnl_link_ip6vti_set_remote(struct rtnl_link *link, struct in6_addr *remote);
+extern int rtnl_link_ip6vti_get_remote(struct rtnl_link *link, struct in6_addr *remote);
+
+extern int rtnl_link_ip6vti_set_fwmark(struct rtnl_link *link, uint32_t fwmark);
+extern int rtnl_link_ip6vti_get_fwmark(struct rtnl_link *link, uint32_t *fwmark);
+
++----
++
+.Example: Add a ip6vti tunnel device
+[source,c]
+----
+struct rtnl_link *link
+struct in6_addr addr
+
+link = rtnl_link_ip6vti_alloc();
+
+rtnl_link_set_name(link, "ip6vti-tun");
+rtnl_link_ip6vti_set_link(link, if_index);
+
+inet_pton(AF_INET6, "2607:f0d0:1002:51::4", &addr);
+rtnl_link_ip6vti_set_local(link, &addr);
+
+inet_pton(AF_INET6, "2607:f0d0:1002:52::5", &addr);
+rtnl_link_ip6vti_set_remote(link, &addr);
+
+rtnl_link_add(sk, link, NLM_F_CREATE);
+rtnl_link_put(link);
+
+-----
 
 [[link_xfrmi]]
 ==== XFRMI

@@ -1153,11 +1153,14 @@ global:
 
 libnl_3_6 {
 global:
+	rtnl_link_ip6_tnl_get_fwmark;
+	rtnl_link_ip6_tnl_set_fwmark;
 	rtnl_link_ip6gre_add;
 	rtnl_link_ip6gre_alloc;
 	rtnl_link_ip6gre_get_encaplimit;
 	rtnl_link_ip6gre_get_flags;
 	rtnl_link_ip6gre_get_flowinfo;
+	rtnl_link_ip6gre_get_fwmark;
 	rtnl_link_ip6gre_get_iflags;
 	rtnl_link_ip6gre_get_ikey;
 	rtnl_link_ip6gre_get_link;
@@ -1169,6 +1172,7 @@ global:
 	rtnl_link_ip6gre_set_encaplimit;
 	rtnl_link_ip6gre_set_flags;
 	rtnl_link_ip6gre_set_flowinfo;
+	rtnl_link_ip6gre_set_fwmark;
 	rtnl_link_ip6gre_set_iflags;
 	rtnl_link_ip6gre_set_ikey;
 	rtnl_link_ip6gre_set_link;
@@ -1177,9 +1181,32 @@ global:
 	rtnl_link_ip6gre_set_okey;
 	rtnl_link_ip6gre_set_remote;
 	rtnl_link_ip6gre_set_ttl;
+	rtnl_link_ip6vti_add;
+	rtnl_link_ip6vti_alloc;
+	rtnl_link_ip6vti_get_ikey;
+	rtnl_link_ip6vti_get_fwmark;
+	rtnl_link_ip6vti_get_link;
+	rtnl_link_ip6vti_get_local;
+	rtnl_link_ip6vti_get_okey;
+	rtnl_link_ip6vti_get_remote;
+	rtnl_link_ip6vti_set_ikey;
+	rtnl_link_ip6vti_set_fwmark;
+	rtnl_link_ip6vti_set_link;
+	rtnl_link_ip6vti_set_local;
+	rtnl_link_ip6vti_set_okey;
+	rtnl_link_ip6vti_set_remote;
+	rtnl_link_ipgre_get_fwmark;
+	rtnl_link_ipgre_set_fwmark;
+	rtnl_link_ipip_get_fwmark;
+	rtnl_link_ipip_set_fwmark;
+	rtnl_link_ipvti_get_fwmark;
+	rtnl_link_ipvti_set_fwmark;
 	rtnl_link_is_ip6gre;
+	rtnl_link_is_ip6vti;
 	rtnl_link_macsec_get_offload;
 	rtnl_link_macsec_set_offload;
+	rtnl_link_sit_get_fwmark;
+	rtnl_link_sit_set_fwmark;
 	rtnl_link_team_add;
 	rtnl_link_team_alloc;
 	rtnl_netconf_alloc_cache;

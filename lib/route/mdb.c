@@ -107,9 +107,6 @@ static int mdb_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct rtnl_mdb *src = nl_object_priv(_src);
 	struct rtnl_mdb_entry *entry;
 
-	if (src->ifindex)
-		dst->ifindex = src->ifindex;
-
 	nl_init_list_head(&dst->mdb_entry_list);
 	nl_list_for_each_entry(entry, &src->mdb_entry_list, mdb_list) {
 		struct rtnl_mdb_entry *copy = mdb_entry_clone(entry);

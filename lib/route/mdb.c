@@ -15,6 +15,8 @@
 #define MDB_ATTR_ADDRESS         0x000004
 #define MDB_ATTR_VID             0x000008
 
+static struct rtnl_mdb_entry *rtnl_mdb_entry_alloc(void);
+
 static struct nl_cache_ops rtnl_mdb_ops;
 static struct nl_object_ops mdb_obj_ops;
 /** @endcond */
@@ -401,7 +403,7 @@ struct rtnl_mdb *rtnl_mdb_alloc(void)
 	return (struct rtnl_mdb *) nl_object_alloc(&mdb_obj_ops);
 }
 
-struct rtnl_mdb_entry *rtnl_mdb_entry_alloc(void)
+static struct rtnl_mdb_entry *rtnl_mdb_entry_alloc(void)
 {
 	struct rtnl_mdb_entry *mdb;
 

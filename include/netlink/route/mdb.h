@@ -22,8 +22,6 @@ int rtnl_mdb_alloc_cache_flags(struct nl_sock *sock,
 			       struct nl_cache **result,
 			       unsigned int flags);
 
-struct rtnl_mdb_entry *rtnl_mdb_entry_alloc(void);
-
 uint32_t rtnl_mdb_get_ifindex(struct rtnl_mdb *mdb);
 void rtnl_mdb_add_entry(struct rtnl_mdb *mdb,
 			struct rtnl_mdb_entry *_entry);

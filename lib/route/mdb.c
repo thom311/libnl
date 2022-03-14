@@ -26,19 +26,17 @@ static void mdb_constructor(struct nl_object *obj)
 	nl_init_list_head(&_mdb->mdb_entry_list);
 }
 
-static void mdb_entry_free_data(struct rtnl_mdb_entry *entry)
-{
-	nl_addr_put(entry->addr);
-	free(entry);
-}
-
 static void mdb_free_data(struct nl_object *obj)
 {
 	struct rtnl_mdb *mdb = (struct rtnl_mdb *) obj;
 	struct rtnl_mdb_entry *mdb_entry;
+	struct rtnl_mdb_entry *mdb_entry_safe;
 
-	nl_list_for_each_entry(mdb_entry, &mdb->mdb_entry_list, mdb_list)
-	    mdb_entry_free_data(mdb_entry);
+	nl_list_for_each_entry_safe(mdb_entry, mdb_entry_safe, &mdb->mdb_entry_list, mdb_list) {
+		nl_list_del(&mdb_entry->mdb_list);
+		nl_addr_put(mdb_entry->addr);
+		free(mdb_entry);
+	}
 }
 
 static uint64_t mdb_entry_compare(struct nl_object *_a, struct nl_object *_b,

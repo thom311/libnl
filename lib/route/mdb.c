@@ -11,9 +11,7 @@
 
 /** @cond SKIP */
 #define MDB_ATTR_IFINDEX         0x000001
-#define MDB_ATTR_PORT            0x000002
-#define MDB_ATTR_ADDRESS         0x000004
-#define MDB_ATTR_VID             0x000008
+#define MDB_ATTR_ENTRIES         0x000002
 
 static struct rtnl_mdb_entry *rtnl_mdb_entry_alloc(void);
 
@@ -41,20 +39,13 @@ static void mdb_free_data(struct nl_object *obj)
 	}
 }
 
-static uint64_t mdb_entry_compare(struct nl_object *_a, struct nl_object *_b,
-				  uint64_t attrs, int flags)
+static int mdb_entry_equal(struct rtnl_mdb_entry *a, struct rtnl_mdb_entry *b)
 {
-	uint64_t diff = 0;
-	struct rtnl_mdb_entry *a = (struct rtnl_mdb_entry *) _a;
-	struct rtnl_mdb_entry *b = (struct rtnl_mdb_entry *) _b;
-
-#define MDB_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, MDB_ATTR_##ATTR, a, b, EXPR)
-	diff |= MDB_DIFF(PORT, a->ifindex != b->ifindex);
-	diff |= MDB_DIFF(VID, a->vid != b->vid);
-	diff |= MDB_DIFF(ADDRESS, nl_addr_cmp(a->addr, b->addr));
-#undef MDB_DIFF
-
-	return diff;
+	return    a->ifindex == b->ifindex
+	       && a->vid == b->vid
+	       && a->proto == b->proto
+	       && a->state == b->state
+	       && nl_addr_cmp(a->addr, b->addr) == 0;
 }
 
 static uint64_t mdb_compare(struct nl_object *_a, struct nl_object *_b,
@@ -67,15 +58,25 @@ static uint64_t mdb_compare(struct nl_object *_a, struct nl_object *_b,
 
 #define MDB_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, MDB_ATTR_##ATTR, a, b, EXPR)
 	diff |= MDB_DIFF(IFINDEX, a->ifindex != b->ifindex);
-
-	nl_list_for_each_entry(b_entry, &b->mdb_entry_list, mdb_list) {
-		nl_list_for_each_entry(a_entry, &a->mdb_entry_list, mdb_list) {
-			diff |= mdb_entry_compare((struct nl_object *) a_entry,
-						  (struct nl_object *) b_entry,
-						  attrs, flags);
-		}
-	}
 #undef MDB_DIFF
+
+	a_entry = nl_list_entry(a->mdb_entry_list.next, struct rtnl_mdb_entry, mdb_list);
+	b_entry = nl_list_entry(b->mdb_entry_list.next, struct rtnl_mdb_entry, mdb_list);
+	while (1) {
+		if (   &a_entry->mdb_list == &a->mdb_entry_list
+		    || &b_entry->mdb_list == &b->mdb_entry_list) {
+			if (   &a_entry->mdb_list != &a->mdb_entry_list
+			    || &b_entry->mdb_list != &b->mdb_entry_list)
+				diff |= MDB_ATTR_ENTRIES;
+			break;
+		}
+		if (!mdb_entry_equal(a_entry, b_entry)) {
+			diff |= MDB_ATTR_ENTRIES;
+			break;
+		}
+		a_entry = nl_list_entry(a_entry->mdb_list.next, struct rtnl_mdb_entry, mdb_list);
+		b_entry = nl_list_entry(b_entry->mdb_list.next, struct rtnl_mdb_entry, mdb_list);
+	}
 
 	return diff;
 }
@@ -213,11 +214,11 @@ static int mdb_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 				e = nla_data(nla2);
 
+				mdb->ce_mask |= MDB_ATTR_ENTRIES;
+
 				entry->ifindex = e->ifindex;
-				mdb->ce_mask |= MDB_ATTR_PORT;
 
 				entry->vid = e->vid;
-				mdb->ce_mask |= MDB_ATTR_VID;
 
 				entry->state = e->state;
 
@@ -240,8 +241,6 @@ static int mdb_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 				}
 				if (!entry->addr)
 					goto errout;
-
-				mdb->ce_mask |= MDB_ATTR_ADDRESS;
 
 				rtnl_mdb_add_entry(mdb, entry);
 			}

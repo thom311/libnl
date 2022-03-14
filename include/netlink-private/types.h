@@ -1356,7 +1356,6 @@ struct rtnl_mdb {
 struct rtnl_mdb_entry {
 	struct nl_list_head mdb_list;
 	struct nl_addr *addr;
-	uint32_t  ce_mask; /* HACK to support attr macros */
 	uint32_t ifindex;
 	uint16_t vid;
 	uint16_t proto;

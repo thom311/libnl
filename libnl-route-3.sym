@@ -1211,6 +1211,16 @@ global:
 	rtnl_link_sit_set_fwmark;
 	rtnl_link_team_add;
 	rtnl_link_team_alloc;
+	rtnl_mdb_add_entry;
+	rtnl_mdb_alloc_cache;
+	rtnl_mdb_alloc_cache_flags;
+	rtnl_mdb_entry_get_addr;
+	rtnl_mdb_entry_get_ifindex;
+	rtnl_mdb_entry_get_proto;
+	rtnl_mdb_entry_get_state;
+	rtnl_mdb_entry_get_vid;
+	rtnl_mdb_foreach_entry;
+	rtnl_mdb_get_ifindex;
 	rtnl_netconf_alloc_cache;
 	rtnl_netconf_get_ignore_routes_linkdown;
 	rtnl_netconf_get_proxy_neigh;

@@ -105,6 +105,7 @@ libnlinclude_netlink_route_HEADERS = \
 	include/netlink/route/class.h \
 	include/netlink/route/classifier.h \
 	include/netlink/route/link.h \
+	include/netlink/route/mdb.h \
 	include/netlink/route/neighbour.h \
 	include/netlink/route/neightbl.h \
 	include/netlink/route/netconf.h \
@@ -206,6 +207,7 @@ libnlinclude_netlink_cli_HEADERS = \
 	include/netlink/cli/ct.h \
 	include/netlink/cli/exp.h \
 	include/netlink/cli/link.h \
+	include/netlink/cli/mdb.h \
 	include/netlink/cli/neigh.h \
 	include/netlink/cli/qdisc.h \
 	include/netlink/cli/route.h \
@@ -422,6 +424,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/link/vrf.c \
 	lib/route/link/vxlan.c \
 	lib/route/link/xfrmi.c \
+	lib/route/mdb.c \
 	lib/route/neigh.c \
 	lib/route/neightbl.c \
 	lib/route/netconf.c \

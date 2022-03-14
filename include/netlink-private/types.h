@@ -1346,4 +1346,19 @@ struct rtnl_vlan
 	uint32_t       v_flags;
 };
 
+struct rtnl_mdb {
+	NLHDR_COMMON
+	uint32_t ifindex;
+
+	struct nl_list_head mdb_entry_list;
+};
+
+struct rtnl_mdb_entry {
+	struct nl_list_head mdb_list;
+	struct nl_addr *addr;
+	uint32_t ifindex;
+	uint16_t vid;
+	uint16_t proto;
+	uint8_t state;
+};
 #endif

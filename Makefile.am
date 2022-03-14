@@ -207,13 +207,13 @@ libnlinclude_netlink_cli_HEADERS = \
 	include/netlink/cli/ct.h \
 	include/netlink/cli/exp.h \
 	include/netlink/cli/link.h \
+	include/netlink/cli/mdb.h \
 	include/netlink/cli/neigh.h \
 	include/netlink/cli/qdisc.h \
 	include/netlink/cli/route.h \
 	include/netlink/cli/rule.h \
 	include/netlink/cli/tc.h \
 	include/netlink/cli/utils.h \
-	include/netlink/cli/mdb.h \
 	$(NULL)
 endif
 
@@ -424,11 +424,11 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/link/vrf.c \
 	lib/route/link/vxlan.c \
 	lib/route/link/xfrmi.c \
+	lib/route/mdb.c \
 	lib/route/neigh.c \
 	lib/route/neightbl.c \
 	lib/route/netconf.c \
 	lib/route/nexthop.c \
-	lib/route/mdb.c \
 	lib/route/nexthop_encap.c \
 	lib/route/nh_encap_mpls.c \
 	lib/route/pktloc.c \

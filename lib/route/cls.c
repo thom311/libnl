@@ -373,8 +373,8 @@ void rtnl_cls_cache_set_tc_params(struct nl_cache *cache,
  *
  * @return Classifier or NULL if no match was found.
  */
-struct rtnl_cls *rtnl_cls_get(struct nl_cache *cache, int ifindex, uint32_t parent,
-			      uint32_t handle)
+struct rtnl_cls *rtnl_cls_find_by_handle(struct nl_cache *cache, int ifindex, uint32_t parent,
+                                         uint32_t handle)
 {
 	struct rtnl_cls *cls;
 
@@ -409,8 +409,8 @@ struct rtnl_cls *rtnl_cls_get(struct nl_cache *cache, int ifindex, uint32_t pare
  *
  * @return Classifier or NULL if no match was found.
  */
-struct rtnl_cls *rtnl_cls_get_by_prio(struct nl_cache *cache, int ifindex,
-				      uint32_t parent, uint16_t prio)
+struct rtnl_cls *rtnl_cls_find_by_prio(struct nl_cache *cache, int ifindex,
+                                       uint32_t parent, uint16_t prio)
 {
 	struct rtnl_cls *cls;
 

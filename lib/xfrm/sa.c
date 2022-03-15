@@ -152,40 +152,35 @@ static int xfrm_sa_clone(struct nl_object *_dst, struct nl_object *_src)
 		if ((dst->saddr = nl_addr_clone (src->saddr)) == NULL)
 			return -NLE_NOMEM;
 
-	if (src->aead)
-	{
+	if (src->aead) {
 		len = sizeof (struct xfrmnl_algo_aead) + ((src->aead->alg_key_len + 7) / 8);
 		if ((dst->aead = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
 		memcpy ((void *)dst->aead, (void *)src->aead, len);
 	}
 
-	if (src->auth)
-	{
+	if (src->auth) {
 		len = sizeof (struct xfrmnl_algo_auth) + ((src->auth->alg_key_len + 7) / 8);
 		if ((dst->auth = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
 		memcpy ((void *)dst->auth, (void *)src->auth, len);
 	}
 
-	if (src->crypt)
-	{
+	if (src->crypt) {
 		len = sizeof (struct xfrmnl_algo) + ((src->crypt->alg_key_len + 7) / 8);
 		if ((dst->crypt = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
 		memcpy ((void *)dst->crypt, (void *)src->crypt, len);
 	}
 
-	if (src->comp)
-	{
+	if (src->comp) {
 		len = sizeof (struct xfrmnl_algo) + ((src->comp->alg_key_len + 7) / 8);
 		if ((dst->comp = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
 		memcpy ((void *)dst->comp, (void *)src->comp, len);
 	}
 
-	if (src->encap)
-	{
+	if (src->encap) {
 		len = sizeof (struct xfrmnl_encap_tmpl);
 		if ((dst->encap = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
@@ -196,16 +191,14 @@ static int xfrm_sa_clone(struct nl_object *_dst, struct nl_object *_src)
 		if ((dst->coaddr = nl_addr_clone (src->coaddr)) == NULL)
 			return -NLE_NOMEM;
 
-	if (src->sec_ctx)
-	{
+	if (src->sec_ctx) {
 		len = sizeof (*src->sec_ctx) + src->sec_ctx->ctx_len;
 		if ((dst->sec_ctx = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
 		memcpy ((void *)dst->sec_ctx, (void *)src->sec_ctx, len);
 	}
 
-	if (src->replay_state_esn)
-	{
+	if (src->replay_state_esn) {
 		len = sizeof (struct xfrmnl_replay_state_esn) + (src->replay_state_esn->bmp_len * sizeof (uint32_t));
 		if ((dst->replay_state_esn = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;

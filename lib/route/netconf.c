@@ -74,16 +74,6 @@ static struct rtnl_netconf *rtnl_netconf_alloc(void)
 	return (struct rtnl_netconf *) nl_object_alloc(&netconf_obj_ops);
 }
 
-static int netconf_clone(struct nl_object *_dst, struct nl_object *_src)
-{
-	struct rtnl_netconf *dst = nl_object_priv(_dst);
-	struct rtnl_netconf *src = nl_object_priv(_src);
-
-	*dst = *src;
-
-	return 0;
-}
-
 static int netconf_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			      struct nlmsghdr *nlh, struct nl_parser_param *pp)
 {
@@ -528,7 +518,6 @@ int rtnl_netconf_get_input(struct rtnl_netconf *nc, int *val)
 static struct nl_object_ops netconf_obj_ops = {
 	.oo_name		= "route/netconf",
 	.oo_size		= sizeof(struct rtnl_netconf),
-	.oo_clone		= netconf_clone,
 	.oo_dump = {
 	    [NL_DUMP_LINE] 	= netconf_dump_line,
 	    [NL_DUMP_DETAILS] 	= netconf_dump_line,

@@ -205,6 +205,12 @@ static int xfrm_sa_clone(struct nl_object *_dst, struct nl_object *_src)
 		memcpy ((void *)dst->replay_state_esn, (void *)src->replay_state_esn, len);
 	}
 
+	if (src->user_offload) {
+		dst->user_offload = _nl_memdup_ptr(src->user_offload);
+		if (!dst->user_offload)
+			return -NLE_NOMEM;
+	}
+
 	return 0;
 }
 

@@ -363,3 +363,8 @@ libnl_3_5 {
 global:
 	nla_nest_end_keep_empty;
 } libnl_3_2_29;
+
+libnl_3_6 {
+global:
+	rtnl_link_info_ops_get;
+} libnl_3_5;

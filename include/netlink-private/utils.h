@@ -280,4 +280,24 @@ _nl_close(int fd)
 	return r;
 }
 
+static inline void *
+_nl_memdup(const void *ptr, size_t len)
+{
+	void *p;
+
+	if (len == 0) {
+		/* malloc() leaves it implementation defined whether to return NULL.
+		 * Callers rely on returning NULL if len is zero. */
+		return NULL;
+	}
+
+	p = malloc(len);
+	if (!p)
+		return NULL;
+	memcpy(p, ptr, len);
+	return p;
+}
+
+#define _nl_memdup_ptr(ptr) ((__typeof__(ptr)) _nl_memdup((ptr), sizeof(*(ptr))))
+
 #endif

@@ -188,18 +188,6 @@ static int flower_clone(void *_dst, void *_src)
 {
 	struct rtnl_flower *dst = _dst, *src = _src;
 
-	if (src->cf_mask & FLOWER_ATTR_DST_MAC)
-		memcpy(dst->cf_dst_mac, src->cf_dst_mac, ETH_ALEN);
-
-	if (src->cf_mask & FLOWER_ATTR_DST_MAC_MASK)
-		memcpy(dst->cf_dst_mac_mask, src->cf_dst_mac_mask, ETH_ALEN);
-
-	if (src->cf_mask & FLOWER_ATTR_SRC_MAC)
-		memcpy(dst->cf_src_mac, src->cf_src_mac, ETH_ALEN);
-
-	if (src->cf_mask & FLOWER_ATTR_SRC_MAC_MASK)
-		memcpy(dst->cf_src_mac_mask, src->cf_src_mac_mask, ETH_ALEN);
-
 	if (src->cf_act) {
 		if (!(dst->cf_act = rtnl_act_alloc()))
 			return -NLE_NOMEM;

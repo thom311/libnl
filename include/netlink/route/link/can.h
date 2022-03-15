@@ -58,12 +58,6 @@ extern int rtnl_link_can_get_data_bittiming(struct rtnl_link *,
 extern int rtnl_link_can_set_data_bittiming(struct rtnl_link *,
                                             struct can_bittiming *);
 
-extern int rtnl_link_can_get_data_bitrate(struct rtnl_link *, uint32_t *);
-extern int rtnl_link_can_set_data_bitrate(struct rtnl_link *, uint32_t);
-
-extern int rtnl_link_can_get_data_sample_point(struct rtnl_link *, uint32_t *);
-extern int rtnl_link_can_set_data_sample_point(struct rtnl_link *, uint32_t);
-
 #ifdef __cplusplus
 }
 #endif

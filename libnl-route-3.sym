@@ -1155,6 +1155,10 @@ libnl_3_6 {
 global:
 	rtnl_cls_find_by_handle;
 	rtnl_cls_find_by_prio;
+	rtnl_link_can_get_data_bittiming;
+	rtnl_link_can_get_data_bittiming_const;
+	rtnl_link_can_set_data_bittiming;
+	rtnl_link_can_set_data_bittiming_const;
 	rtnl_link_ip6_tnl_get_fwmark;
 	rtnl_link_ip6_tnl_set_fwmark;
 	rtnl_link_ip6gre_add;

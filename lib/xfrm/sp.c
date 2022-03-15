@@ -93,9 +93,8 @@ static void xfrm_sp_free_data(struct nl_object *c)
 	xfrmnl_sel_put (sp->sel);
 	xfrmnl_ltime_cfg_put (sp->lft);
 
-	if(sp->sec_ctx)
-	{
-		free (sp->sec_ctx);
+	if (sp->sec_ctx) {
+		free(sp->sec_ctx);
 	}
 
 	nl_list_for_each_entry_safe(utmpl, tmp, &sp->usertmpl_list, utmpl_list) {
@@ -106,33 +105,38 @@ static void xfrm_sp_free_data(struct nl_object *c)
 
 static int xfrm_sp_clone(struct nl_object *_dst, struct nl_object *_src)
 {
-	struct xfrmnl_sp*       dst = nl_object_priv(_dst);
-	struct xfrmnl_sp*       src = nl_object_priv(_src);
-	uint32_t                len = 0;
-	struct xfrmnl_user_tmpl *utmpl, *new;
+	struct xfrmnl_sp*        dst = nl_object_priv(_dst);
+	struct xfrmnl_sp*        src = nl_object_priv(_src);
+	struct xfrmnl_user_tmpl *utmpl;
+	struct xfrmnl_user_tmpl *new;
 
-	if (src->sel)
+	dst->sel = NULL;
+	dst->lft = NULL;
+	dst->sec_ctx = NULL;
+	nl_init_list_head(&dst->usertmpl_list);
+
+	if (src->sel) {
 		if ((dst->sel = xfrmnl_sel_clone (src->sel)) == NULL)
 			return -NLE_NOMEM;
-
-	if (src->lft)
-		if ((dst->lft = xfrmnl_ltime_cfg_clone (src->lft)) == NULL)
-			return -NLE_NOMEM;
-
-	if(src->sec_ctx)
-	{
-		len =   sizeof (struct xfrmnl_user_sec_ctx) + src->sec_ctx->ctx_len;
-		if ((dst->sec_ctx = calloc (1, len)) == NULL)
-			return -NLE_NOMEM;
-		memcpy ((void *)dst->sec_ctx, (void *)src->sec_ctx, len);
 	}
 
-	nl_init_list_head(&dst->usertmpl_list);
+	if (src->lft) {
+		if ((dst->lft = xfrmnl_ltime_cfg_clone (src->lft)) == NULL)
+			return -NLE_NOMEM;
+	}
+
+	if (src->sec_ctx) {
+		uint32_t len =   sizeof (struct xfrmnl_user_sec_ctx) + src->sec_ctx->ctx_len;
+
+		if ((dst->sec_ctx = malloc (len)) == NULL)
+			return -NLE_NOMEM;
+		memcpy(dst->sec_ctx, src->sec_ctx, len);
+	}
+
 	nl_list_for_each_entry(utmpl, &src->usertmpl_list, utmpl_list) {
 		new = xfrmnl_user_tmpl_clone (utmpl);
 		if (!new)
 			return -NLE_NOMEM;
-
 		xfrmnl_sp_add_usertemplate(dst, new);
 	}
 

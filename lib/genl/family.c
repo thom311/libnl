@@ -67,6 +67,9 @@ static int family_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct genl_family_grp *grp;
 	int err;
 
+	nl_init_list_head(&dst->gf_ops);
+	nl_init_list_head(&dst->gf_mc_grps);
+
 	nl_list_for_each_entry(ops, &src->gf_ops, o_list) {
 		err = genl_family_add_op(dst, ops->o_id, ops->o_flags);
 		if (err < 0)

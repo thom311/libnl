@@ -286,6 +286,19 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct rtnl_link *src = nl_object_priv(_src);
 	int err;
 
+	dst->l_addr = NULL;
+	dst->l_bcast = NULL;
+	dst->l_info_kind = NULL;
+	dst->l_info_slave_kind = NULL;
+	dst->l_info_ops = NULL;
+	memset(dst->l_af_data, 0, sizeof (dst->l_af_data));
+	dst->l_info = NULL;
+	dst->l_ifalias = NULL;
+	dst->l_af_ops = NULL;
+	dst->l_phys_port_id = NULL;
+	dst->l_phys_switch_id = NULL;
+	dst->l_vf_list = NULL;
+
 	if (src->l_addr)
 		if (!(dst->l_addr = nl_addr_clone(src->l_addr)))
 			return -NLE_NOMEM;

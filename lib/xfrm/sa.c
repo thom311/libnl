@@ -136,6 +136,20 @@ static int xfrm_sa_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct xfrmnl_sa*   src = nl_object_priv(_src);
 	uint32_t            len = 0;
 
+	dst->sel = NULL;
+	dst->id.daddr = NULL;
+	dst->saddr = NULL;
+	dst->lft = NULL;
+	dst->aead = NULL;
+	dst->auth = NULL;
+	dst->crypt = NULL;
+	dst->comp = NULL;
+	dst->encap = NULL;
+	dst->coaddr = NULL;
+	dst->sec_ctx = NULL;
+	dst->replay_state_esn = NULL;
+	dst->user_offload = NULL;
+
 	if (src->sel)
 		if ((dst->sel = xfrmnl_sel_clone (src->sel)) == NULL)
 			return -NLE_NOMEM;

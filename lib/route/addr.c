@@ -153,6 +153,13 @@ static int addr_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct rtnl_addr *dst = nl_object_priv(_dst);
 	struct rtnl_addr *src = nl_object_priv(_src);
 
+	dst->a_peer = NULL;
+	dst->a_local = NULL;
+	dst->a_bcast = NULL;
+	dst->a_anycast = NULL;
+	dst->a_multicast = NULL;
+	dst->a_link = NULL;
+
 	if (src->a_link) {
 		nl_object_get(OBJ_CAST(src->a_link));
 		dst->a_link = src->a_link;
@@ -161,7 +168,7 @@ static int addr_clone(struct nl_object *_dst, struct nl_object *_src)
 	if (src->a_peer)
 		if (!(dst->a_peer = nl_addr_clone(src->a_peer)))
 			return -NLE_NOMEM;
-	
+
 	if (src->a_local)
 		if (!(dst->a_local = nl_addr_clone(src->a_local)))
 			return -NLE_NOMEM;

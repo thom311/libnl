@@ -169,6 +169,9 @@ static int idiagnl_req_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct idiagnl_req *dst = (struct idiagnl_req *) _dst;
 	struct idiagnl_req *src = (struct idiagnl_req *) _src;
 
+	src->idiag_src = NULL;
+	src->idiag_dst = NULL;
+
 	if (src->idiag_src)
 		if (!(dst->idiag_src = nl_addr_clone(src->idiag_src)))
 			return -NLE_NOMEM;

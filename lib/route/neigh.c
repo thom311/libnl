@@ -185,6 +185,9 @@ static int neigh_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct rtnl_neigh *dst = nl_object_priv(_dst);
 	struct rtnl_neigh *src = nl_object_priv(_src);
 
+	dst->n_lladdr = NULL;
+	dst->n_dst = NULL;
+
 	if (src->n_lladdr)
 		if (!(dst->n_lladdr = nl_addr_clone(src->n_lladdr)))
 			return -NLE_NOMEM;

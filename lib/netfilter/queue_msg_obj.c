@@ -42,16 +42,17 @@ static int nfnl_queue_msg_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct nfnl_queue_msg *src = (struct nfnl_queue_msg *) _src;
 	int err;
 
+	dst->queue_msg_payload = NULL;
+	dst->queue_msg_payload_len = 0;
+
 	if (src->queue_msg_payload) {
 		err = nfnl_queue_msg_set_payload(dst, src->queue_msg_payload,
-						 src->queue_msg_payload_len);
+		                                 src->queue_msg_payload_len);
 		if (err < 0)
-			goto errout;
+			return err;
 	}
 
 	return 0;
-errout:
-	return err;
 }
 
 static void nfnl_queue_msg_dump(struct nl_object *a, struct nl_dump_params *p)

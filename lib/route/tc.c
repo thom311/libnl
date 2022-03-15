@@ -808,14 +808,17 @@ int rtnl_tc_clone(struct nl_object *dstobj, struct nl_object *srcobj)
 	struct rtnl_tc *src = TC_CAST(srcobj);
 	struct rtnl_tc_ops *ops;
 
+	dst->tc_opts = NULL;
+	dst->tc_xstats = NULL;
+	dst->tc_subdata = NULL;
+	dst->tc_link = NULL;
+	dst->tc_ops = NULL;
+
 	if (src->tc_link) {
 		nl_object_get(OBJ_CAST(src->tc_link));
 		dst->tc_link = src->tc_link;
 	}
 
-	dst->tc_opts = NULL;
-	dst->tc_xstats = NULL;
-	dst->tc_subdata = NULL;
 	dst->ce_mask &= ~(TCA_ATTR_OPTS |
 	                  TCA_ATTR_XSTATS);
 
@@ -841,7 +844,10 @@ int rtnl_tc_clone(struct nl_object *dstobj, struct nl_object *srcobj)
 		/* Warning: if the data contains pointer, then at this point, dst->tc_subdata
 		 * will alias those pointers.
 		 *
-		 * ops->to_clone() MUST fix that. */
+		 * ops->to_clone() MUST fix that.
+		 *
+		 * If the type is actually "struct rtnl_act", then to_clone() must also
+		 * fix dangling "a_next" pointer. */
 
 		ops = rtnl_tc_get_ops(src);
 		if (ops && ops->to_clone) {

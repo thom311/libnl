@@ -81,7 +81,17 @@ static int exp_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct nfnl_exp *src = (struct nfnl_exp *) _src;
 	struct nl_addr *addr;
 
-	// Expectation
+	dst->exp_helper_name = NULL;
+	dst->exp_fn = NULL;
+	dst->exp_expect.src = NULL;
+	dst->exp_expect.dst = NULL;
+	dst->exp_master.src = NULL;
+	dst->exp_master.dst = NULL;
+	dst->exp_mask.src = NULL;
+	dst->exp_mask.dst = NULL;
+	dst->exp_nat.src = NULL;
+	dst->exp_nat.dst = NULL;
+
 	if (src->exp_expect.src) {
 		addr = nl_addr_clone(src->exp_expect.src);
 		if (!addr)
@@ -96,7 +106,6 @@ static int exp_clone(struct nl_object *_dst, struct nl_object *_src)
 		dst->exp_expect.dst = addr;
 	}
 
-	// Master CT
 	if (src->exp_master.src) {
 		addr = nl_addr_clone(src->exp_master.src);
 		if (!addr)
@@ -111,7 +120,6 @@ static int exp_clone(struct nl_object *_dst, struct nl_object *_src)
 		dst->exp_master.dst = addr;
 	}
 
-	// Mask
 	if (src->exp_mask.src) {
 		addr = nl_addr_clone(src->exp_mask.src);
 		if (!addr)
@@ -126,7 +134,6 @@ static int exp_clone(struct nl_object *_dst, struct nl_object *_src)
 		dst->exp_mask.dst = addr;
 	}
 
-	// NAT
 	if (src->exp_nat.src) {
 		addr = nl_addr_clone(src->exp_nat.src);
 		if (!addr)

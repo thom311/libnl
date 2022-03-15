@@ -489,9 +489,10 @@ int rtnl_flower_get_dst_mac(struct rtnl_cls *cls, unsigned char *mac,
 	if (!(f->cf_mask & FLOWER_ATTR_DST_MAC))
 		return -NLE_MISSING_ATTR;
 
-	memcpy(mac, f->cf_dst_mac, ETH_ALEN);
+	if (mac)
+		memcpy(mac, f->cf_dst_mac, ETH_ALEN);
 
-	if (f->cf_mask & FLOWER_ATTR_DST_MAC_MASK)
+	if (mask)
 		memcpy(mask, f->cf_dst_mac_mask, ETH_ALEN);
 
 	return 0;
@@ -535,7 +536,7 @@ int rtnl_flower_set_src_mac(struct rtnl_cls *cls, unsigned char *mac,
  * @return 0 on success or a negative error code.
 */
 int rtnl_flower_get_src_mac(struct rtnl_cls *cls, unsigned char *mac,
-			    unsigned char *mask)
+                            unsigned char *mask)
 {
 	struct rtnl_flower *f;
 
@@ -545,9 +546,10 @@ int rtnl_flower_get_src_mac(struct rtnl_cls *cls, unsigned char *mac,
 	if (!(f->cf_mask & FLOWER_ATTR_SRC_MAC))
 		return -NLE_MISSING_ATTR;
 
-	memcpy(mac, f->cf_src_mac, ETH_ALEN);
+	if (mac)
+		memcpy(mac, f->cf_src_mac, ETH_ALEN);
 
-	if (f->cf_mask & FLOWER_ATTR_SRC_MAC_MASK)
+	if (mask)
 		memcpy(mask, f->cf_src_mac_mask, ETH_ALEN);
 
 	return 0;

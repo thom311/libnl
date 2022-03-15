@@ -613,19 +613,19 @@ struct rtnl_mall
 
 struct rtnl_flower
 {
-        uint16_t                cf_proto;
-        uint16_t                cf_vlan_id;
-        uint8_t                 cf_vlan_prio;
-        uint16_t                cf_vlan_ethtype;
-        uint8_t                 cf_src_mac[ETH_ALEN];
-        uint8_t                 cf_src_mac_mask[ETH_ALEN];
-        uint8_t                 cf_dst_mac[ETH_ALEN];
-        uint8_t                 cf_dst_mac_mask[ETH_ALEN];
-        uint8_t                 cf_ip_dscp;
-        uint8_t                 cf_ip_dscp_mask;
-        uint32_t                cf_flags;
-        struct rtnl_act *       cf_act;
-        int                     cf_mask;
+	struct rtnl_act *cf_act;
+	int              cf_mask;
+	uint32_t         cf_flags;
+	uint16_t         cf_proto;
+	uint16_t         cf_vlan_id;
+	uint16_t         cf_vlan_ethtype;
+	uint8_t          cf_vlan_prio;
+	uint8_t          cf_src_mac[ETH_ALEN];
+	uint8_t          cf_src_mac_mask[ETH_ALEN];
+	uint8_t          cf_dst_mac[ETH_ALEN];
+	uint8_t          cf_dst_mac_mask[ETH_ALEN];
+	uint8_t          cf_ip_dscp;
+	uint8_t          cf_ip_dscp_mask;
 };
 
 struct rtnl_cgroup

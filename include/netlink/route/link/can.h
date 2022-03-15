@@ -53,6 +53,8 @@ extern int rtnl_link_can_unset_ctrlmode(struct rtnl_link *, uint32_t);
 
 extern int rtnl_link_can_get_data_bittiming_const(struct rtnl_link *,
                                                   struct can_bittiming_const *);
+extern int rtnl_link_can_set_data_bittiming_const(struct rtnl_link *,
+                                                  const struct can_bittiming_const *);
 extern int rtnl_link_can_get_data_bittiming(struct rtnl_link *,
                                             struct can_bittiming *);
 extern int rtnl_link_can_set_data_bittiming(struct rtnl_link *,

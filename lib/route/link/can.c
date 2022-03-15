@@ -794,6 +794,28 @@ int rtnl_link_can_get_data_bittiming_const(struct rtnl_link *link,
 }
 
 /**
+ * Set CAN FD device data bit-timing-const
+ * @arg link					Link object
+ * @arg data_bit_timing		CAN FD data bit-timing
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_set_data_bittiming_const(struct rtnl_link *link,
+                                           const struct can_bittiming_const *data_bt_const)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+	if (!data_bt_const)
+		return -NLE_INVAL;
+
+	ci->ci_data_bittiming_const = *data_bt_const;
+	ci->ci_mask |= CAN_HAS_DATA_BITTIMING_CONST;
+
+	return 0;
+}
+
+/**
  * Get CAN FD device data bit-timing
  * @arg link					Link object
  * @arg data_bit_timing		CAN FD data bit-timing

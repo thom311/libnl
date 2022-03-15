@@ -566,7 +566,7 @@ int rtnl_link_can_get_bittiming(struct rtnl_link *link,
  * @return 0 on success or a negative error code
  */
 int rtnl_link_can_set_bittiming(struct rtnl_link *link,
-				struct can_bittiming *bit_timing)
+                                const struct can_bittiming *bit_timing)
 {
 	struct can_info *ci = link->l_info;
 
@@ -847,7 +847,7 @@ int rtnl_link_can_get_data_bittiming(struct rtnl_link *link,
  * @return 0 on success or a negative error code
  */
 int rtnl_link_can_set_data_bittiming(struct rtnl_link *link,
-                                     struct can_bittiming *data_bit_timing)
+                                     const struct can_bittiming *data_bit_timing)
 {
 	struct can_info *ci = link->l_info;
 

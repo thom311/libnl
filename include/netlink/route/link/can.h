@@ -36,7 +36,7 @@ extern int rtnl_link_can_get_bt_const(struct rtnl_link *,
 extern int rtnl_link_can_get_bittiming(struct rtnl_link *,
                                        struct can_bittiming *);
 extern int rtnl_link_can_set_bittiming(struct rtnl_link *,
-                                       struct can_bittiming *);
+                                       const struct can_bittiming *);
 
 extern int rtnl_link_can_get_bitrate(struct rtnl_link *, uint32_t *);
 extern int rtnl_link_can_set_bitrate(struct rtnl_link *, uint32_t);
@@ -58,7 +58,7 @@ extern int rtnl_link_can_set_data_bittiming_const(struct rtnl_link *,
 extern int rtnl_link_can_get_data_bittiming(struct rtnl_link *,
                                             struct can_bittiming *);
 extern int rtnl_link_can_set_data_bittiming(struct rtnl_link *,
-                                            struct can_bittiming *);
+                                            const struct can_bittiming *);
 
 #ifdef __cplusplus
 }

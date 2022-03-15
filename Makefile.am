@@ -130,6 +130,7 @@ libnlinclude_netlink_route_cls_HEADERS = \
 	include/netlink/route/cls/basic.h \
 	include/netlink/route/cls/cgroup.h \
 	include/netlink/route/cls/ematch.h \
+	include/netlink/route/cls/flower.h \
 	include/netlink/route/cls/fw.h \
 	include/netlink/route/cls/matchall.h \
 	include/netlink/route/cls/police.h \
@@ -392,6 +393,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/cls/ematch/meta.c \
 	lib/route/cls/ematch/nbyte.c \
 	lib/route/cls/ematch/text.c \
+	lib/route/cls/flower.c \
 	lib/route/cls/fw.c \
 	lib/route/cls/mall.c \
 	lib/route/cls/police.c \

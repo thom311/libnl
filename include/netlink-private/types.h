@@ -27,6 +27,7 @@
 #include <linux/tc_act/tc_vlan.h>
 #include <linux/sock_diag.h>
 #include <linux/fib_rules.h>
+#include <linux/if_ether.h>
 
 #define NL_SOCK_PASSCRED	(1<<1)
 #define NL_OWN_PORT		(1<<2)
@@ -608,6 +609,23 @@ struct rtnl_mall
 	uint32_t         m_flags;
 	struct rtnl_act *m_act;
 	int              m_mask;
+};
+
+struct rtnl_flower
+{
+	struct rtnl_act *cf_act;
+	int              cf_mask;
+	uint32_t         cf_flags;
+	uint16_t         cf_proto;
+	uint16_t         cf_vlan_id;
+	uint16_t         cf_vlan_ethtype;
+	uint8_t          cf_vlan_prio;
+	uint8_t          cf_src_mac[ETH_ALEN];
+	uint8_t          cf_src_mac_mask[ETH_ALEN];
+	uint8_t          cf_dst_mac[ETH_ALEN];
+	uint8_t          cf_dst_mac_mask[ETH_ALEN];
+	uint8_t          cf_ip_dscp;
+	uint8_t          cf_ip_dscp_mask;
 };
 
 struct rtnl_cgroup

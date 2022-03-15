@@ -306,10 +306,16 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 		if (!(dst->l_info_slave_kind = strdup(src->l_info_slave_kind)))
 			return -NLE_NOMEM;
 
-	if (src->l_info_ops && src->l_info_ops->io_clone) {
-		err = src->l_info_ops->io_clone(dst, src);
-		if (err < 0)
-			return err;
+	if (src->l_info_ops) {
+
+		rtnl_link_info_ops_get(src->l_info_ops);
+		dst->l_info_ops = src->l_info_ops;
+
+		if (src->l_info_ops->io_clone) {
+			err = src->l_info_ops->io_clone(dst, src);
+			if (err < 0)
+				return err;
+		}
 	}
 
 	if ((err = do_foreach_af(src, af_clone, dst)) < 0)

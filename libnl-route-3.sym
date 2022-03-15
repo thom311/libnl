@@ -1157,7 +1157,7 @@ global:
 	rtnl_cls_find_by_prio;
 	rtnl_link_can_get_data_bitrate;
 	rtnl_link_can_get_data_bittiming;
-	rtnl_link_can_get_data_bt_const;
+	rtnl_link_can_get_data_bittiming_const;
 	rtnl_link_can_get_data_sample_point;
 	rtnl_link_can_set_data_bitrate;
 	rtnl_link_can_set_data_bittiming;

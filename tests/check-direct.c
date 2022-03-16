@@ -42,10 +42,10 @@ END_TEST
 static Suite *make_suite(void)
 {
 	Suite *suite = suite_create("Direct");
+	TCase *tc = tcase_create("Core");
 
-	TCase *nl_attr = tcase_create("Core");
-	tcase_add_test(nl_attr, static_checks);
-	suite_add_tcase(suite, nl_attr);
+	tcase_add_test(tc, static_checks);
+	suite_add_tcase(suite, tc);
 	return suite;
 }
 

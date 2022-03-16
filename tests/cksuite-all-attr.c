@@ -119,12 +119,12 @@ END_TEST
 Suite *make_nl_attr_suite(void)
 {
 	Suite *suite = suite_create("Netlink attributes");
+	TCase *tc = tcase_create("Core");
 
-	TCase *nl_attr = tcase_create("Core");
-	tcase_add_test(nl_attr, attr_size);
-	tcase_add_test(nl_attr, msg_construct);
-	tcase_add_test(nl_attr, clone_cls_u32);
-	suite_add_tcase(suite, nl_attr);
+	tcase_add_test(tc, attr_size);
+	tcase_add_test(tc, msg_construct);
+	tcase_add_test(tc, clone_cls_u32);
+	suite_add_tcase(suite, tc);
 
 	return suite;
 }

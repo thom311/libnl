@@ -6,6 +6,11 @@ on:
 
 jobs:
   ci:
+    strategy:
+      matrix:
+        include:
+          - cc: gcc
+          - cc: clang
     runs-on: ubuntu-latest
     steps:
       - name: Install packages
@@ -18,6 +23,7 @@ jobs:
         run: |
           set -x
 
+          export CC="${{ matrix.cc }}"
           CFLAGS="-DNL_MORE_ASSERTS=1000 -O2 -Werror -Wall -Wdeclaration-after-statement -Wvla -std=gnu11"
           if [ "$CC" = "clang" ]; then
                   CFLAGS="$CFLAGS -Wno-error=unused-command-line-argument -Wno-error=unused-function"

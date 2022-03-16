@@ -1059,3 +1059,11 @@ EXTRA_DIST += \
 	libnl-route-3.sym \
 	libnl-xfrm-3.sym \
 	$(NULL)
+
+###############################################################################
+
+check-progs: all $(check_PROGRAMS) $(check_LTLIBRARIES)
+
+###############################################################################
+
+.PHONY = check-progs

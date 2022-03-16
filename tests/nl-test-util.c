@@ -11,6 +11,9 @@
 #include <unistd.h>
 
 #include "netlink-private/utils.h"
+#include "netlink/netlink.h"
+#include "netlink/route/link.h"
+#include "netlink/socket.h"
 
 /*****************************************************************************/
 
@@ -113,4 +116,113 @@ void nltst_netns_leave(struct nltst_netns *nsdata)
 	 * such things. */
 
 	free(nsdata);
+}
+
+/*****************************************************************************/
+
+void _nltst_object_identical(const void *a, const void *b)
+{
+	struct nl_object *o_a = (void *)a;
+	struct nl_object *o_b = (void *)b;
+
+	ck_assert(a);
+	ck_assert(b);
+
+	ck_assert_int_eq(nl_object_identical(o_a, o_b), 1);
+	ck_assert_int_eq(nl_object_identical(o_b, o_a), 1);
+	ck_assert_int_eq(nl_object_diff64(o_b, o_a), 0);
+	ck_assert_int_eq(nl_object_diff64(o_a, o_b), 0);
+	ck_assert_int_eq(nl_object_diff(o_a, o_b), 0);
+	ck_assert_int_eq(nl_object_diff(o_b, o_a), 0);
+}
+
+/*****************************************************************************/
+
+struct cache_get_all_data {
+	struct nl_object **arr;
+	size_t len;
+	size_t idx;
+};
+
+static void _cache_get_all_fcn(struct nl_object *obj, void *user_data)
+{
+	struct cache_get_all_data *data = user_data;
+	size_t i;
+
+	ck_assert(obj);
+	ck_assert_int_lt(data->idx, data->len);
+
+	for (i = 0; i < data->idx; i++)
+		ck_assert_ptr_ne(data->arr[i], obj);
+
+	data->arr[data->idx++] = obj;
+}
+
+struct nl_object **_nltst_cache_get_all(struct nl_cache *cache, size_t *out_len)
+{
+	int nitems;
+	struct cache_get_all_data data = {
+		.idx = 0,
+		.len = 0,
+	};
+
+	ck_assert(cache);
+
+	nitems = nl_cache_nitems(cache);
+	ck_assert_int_ge(nitems, 0);
+
+	data.len = nitems;
+	data.arr = malloc(sizeof(struct nl_object *) * (data.len + 1));
+	ck_assert_ptr_nonnull(data.arr);
+
+	nl_cache_foreach(cache, _cache_get_all_fcn, &data);
+
+	ck_assert_int_eq(data.idx, data.len);
+
+	data.arr[data.len] = NULL;
+	if (out_len)
+		*out_len = data.len;
+	return data.arr;
+}
+
+/*****************************************************************************/
+
+struct nl_sock *_nltst_socket(int protocol)
+{
+	struct nl_sock *sk;
+	int r;
+
+	sk = nl_socket_alloc();
+	ck_assert(sk);
+
+	r = nl_connect(sk, protocol);
+	ck_assert_int_eq(r, 0);
+
+	return sk;
+}
+
+void _nltst_add_link(struct nl_sock *sk, const char *ifname, const char *kind)
+{
+	_nl_auto_nl_socket struct nl_sock *sk_free = NULL;
+	_nl_auto_rtnl_link struct rtnl_link *link = NULL;
+	int r;
+
+	ck_assert(ifname);
+	ck_assert(kind);
+
+	if (!sk) {
+		sk = _nltst_socket(NETLINK_ROUTE);
+		sk_free = sk;
+	}
+
+	link = rtnl_link_alloc();
+	ck_assert(link);
+
+	r = rtnl_link_set_type(link, kind);
+	ck_assert_int_eq(r, 0);
+
+	rtnl_link_set_name(link, ifname);
+
+	r = rtnl_link_add(sk, link, NLM_F_CREATE);
+	ck_assert_int_eq(r, 0);
 }

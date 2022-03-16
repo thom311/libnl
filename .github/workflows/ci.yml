@@ -14,7 +14,7 @@ jobs:
           sudo apt-get -y install check valgrind libtool-bin
       - name: Check out repository code
         uses: actions/checkout@v2
-      - name: Build and Test
+      - name: Build
         run: |
           set -x
 
@@ -27,8 +27,14 @@ jobs:
           ./autogen.sh
           ./configure
           make -j 5
-          make -j 5 check
-
+        shell: bash
+      - name: Build Unit Tests
+        run: make -j 5 check-progs
+      - name: Run Unit Tests
+        run: make -j 5 check
+      - name: Run Unit Tests w/Valgrind
+        run: |
+          set -x
           CK_FORK=no libtool --mode=execute valgrind --error-exitcode=66 --leak-check=full -s --show-leak-kinds=all ./tests/check-all
           CK_FORK=no libtool --mode=execute valgrind --error-exitcode=66 --leak-check=full -s --show-leak-kinds=all ./tests/check-direct
         shell: bash

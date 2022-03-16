@@ -8,6 +8,8 @@
 
 #include <byteswap.h>
 #include <assert.h>
+#include <unistd.h>
+#include <errno.h>
 
 #if __BYTE_ORDER == __BIG_ENDIAN
 #define ntohll(x) (x)
@@ -251,5 +253,15 @@ _nl_strncpy_assert(char *dst, const char *src, size_t len)
 		} else \
 			_nl_assert (_err == 0); \
 	} while (0)
+
+static inline int
+_nl_close(int fd)
+{
+	int r;
+
+	r = close(fd);
+	_nl_assert(r == 0 || fd < 0 || errno != EBADF);
+	return r;
+}
 
 #endif

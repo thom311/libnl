@@ -5,7 +5,7 @@
 
 #include <check.h>
 
-#include "util.h"
+#include "cksuite-all.h"
 
 static Suite *main_suite(void)
 {
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 {
 	SRunner *runner;
 	int nfailed;
-	
+
 	runner = srunner_create(main_suite());
 
 	/* Add testsuites below */

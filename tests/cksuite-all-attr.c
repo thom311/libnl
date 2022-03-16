@@ -6,7 +6,7 @@
 #include <linux/netlink.h>
 #include <linux/if_ether.h>
 
-#include "util.h"
+#include "cksuite-all.h"
 #include "netlink/attr.h"
 #include "netlink/msg.h"
 #include "netlink/route/cls/u32.h"

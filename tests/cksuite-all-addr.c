@@ -7,7 +7,7 @@
 #include <netlink/addr.h>
 #include <netlink/route/addr.h>
 
-#include "util.h"
+#include "cksuite-all.h"
 
 START_TEST(addr_alloc)
 {

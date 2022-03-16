@@ -845,7 +845,25 @@ tests_ldadd = \
 	lib/libnl-3.la \
 	lib/libnl-nf-3.la \
 	lib/libnl-genl-3.la \
-	lib/libnl-route-3.la
+	lib/libnl-route-3.la \
+	$(NULL)
+
+if WITH_CHECK
+check_LTLIBRARIES += tests/libnl-test-util.la
+endif
+
+tests_libnl_test_util_la_SOURCES = \
+	tests/nl-test-util.h \
+	tests/nl-test-util.c \
+	$(NULL)
+tests_libnl_test_util_la_CPPFLAGS = \
+	$(tests_cppflags) \
+	$(CHECK_CFLAGS) \
+	$(NULL)
+tests_libnl_test_util_la_LIBADD = \
+	$(tests_ldadd) \
+	$(CHECK_LIBS) \
+	$(NULL)
 
 check_PROGRAMS += \
 	tests/test-complex-HTB-with-hash-filters \
@@ -926,11 +944,13 @@ tests_test_u32_filter_with_actions_LDADD          = $(tests_ldadd)
 check_PROGRAMS += \
 	tests/test-cache-mngr \
 	tests/test-genl \
-	tests/test-nf-cache-mngr
+	tests/test-nf-cache-mngr \
+	$(NULL)
 
 tests_cli_ldadd = \
 	$(tests_ldadd) \
-	src/lib/libnl-cli-3.la
+	src/lib/libnl-cli-3.la \
+	$(NULL)
 
 tests_test_cache_mngr_CPPFLAGS                    = $(tests_cppflags)
 tests_test_cache_mngr_LDADD                       = $(tests_cli_ldadd)
@@ -945,11 +965,12 @@ check_programs += tests/check-all
 endif
 
 tests_check_all_SOURCES = \
-	tests/check-addr.c \
 	tests/check-all.c \
-	tests/check-attr.c \
-	tests/check-ematch-tree-clone.c \
-	tests/util.h \
+	tests/cksuite-all-addr.c \
+	tests/cksuite-all-attr.c \
+	tests/cksuite-all-ematch-tree-clone.c \
+	tests/cksuite-all-netns.c \
+	tests/cksuite-all.h \
 	$(NULL)
 
 tests_check_all_CPPFLAGS = \
@@ -958,7 +979,9 @@ tests_check_all_CPPFLAGS = \
 
 tests_check_all_LDADD = \
 	$(tests_ldadd) \
-	$(CHECK_LIBS)
+	tests/libnl-test-util.la \
+	$(CHECK_LIBS) \
+	$(NULL)
 
 if WITH_CHECK
 check_programs += tests/check-direct
@@ -978,10 +1001,8 @@ tests_check_direct_LDFLAGS = \
 	$(NULL)
 
 tests_check_direct_LDADD = \
-	lib/libnl-3.la \
-	lib/libnl-nf-3.la \
-	lib/libnl-genl-3.la \
-	lib/libnl-route-3.la \
+	$(tests_ldadd) \
+	tests/libnl-test-util.la \
 	$(CHECK_LIBS) \
 	$(NULL)
 

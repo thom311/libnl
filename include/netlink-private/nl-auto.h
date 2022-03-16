@@ -81,4 +81,9 @@ void rtnl_cls_put(struct rtnl_cls *);
 #define _nl_auto_rtnl_cls _nl_auto(_nl_auto_rtnl_cls_fcn)
 _NL_AUTO_DEFINE_FCN_TYPED0(struct rtnl_cls *, _nl_auto_rtnl_cls_fcn, rtnl_cls_put);
 
+struct nl_sock;
+void nl_socket_free(struct nl_sock *);
+#define _nl_auto_nl_socket _nl_auto(_nl_auto_nl_socket_fcn)
+_NL_AUTO_DEFINE_FCN_TYPED0(struct nl_sock *, _nl_auto_nl_socket_fcn, nl_socket_free);
+
 #endif /* NETLINK_NL_AUTO_H_ */

@@ -5,7 +5,7 @@
 
 #include <check.h>
 
-#include "util.h"
+#include "cksuite-all.h"
 
 static Suite *main_suite(void)
 {
@@ -18,16 +18,13 @@ int main(int argc, char *argv[])
 {
 	SRunner *runner;
 	int nfailed;
-	
-	runner = srunner_create(main_suite());
 
-	/* Add testsuites below */
+	runner = srunner_create(main_suite());
 
 	srunner_add_suite(runner, make_nl_addr_suite());
 	srunner_add_suite(runner, make_nl_attr_suite());
 	srunner_add_suite(runner, make_nl_ematch_tree_clone_suite());
-
-	/* Do not add testsuites below this line */
+	srunner_add_suite(runner, make_nl_netns_suite());
 
 	srunner_run_all(runner, CK_ENV);
 

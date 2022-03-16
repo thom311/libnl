@@ -7,7 +7,7 @@
 #include <netlink/addr.h>
 #include <netlink/route/addr.h>
 
-#include "util.h"
+#include "cksuite-all.h"
 
 START_TEST(addr_alloc)
 {
@@ -210,15 +210,15 @@ END_TEST
 Suite *make_nl_addr_suite(void)
 {
 	Suite *suite = suite_create("Abstract addresses");
+	TCase *tc = tcase_create("Core");
 
-	TCase *tc_addr = tcase_create("Core");
-	tcase_add_test(tc_addr, addr_alloc);
-	tcase_add_test(tc_addr, addr_binary_addr);
-	tcase_add_test(tc_addr, addr_parse4);
-	tcase_add_test(tc_addr, addr_parse6);
-	tcase_add_test(tc_addr, addr_info);
-	tcase_add_test(tc_addr, addr_flags2str);
-	suite_add_tcase(suite, tc_addr);
+	tcase_add_test(tc, addr_alloc);
+	tcase_add_test(tc, addr_binary_addr);
+	tcase_add_test(tc, addr_parse4);
+	tcase_add_test(tc, addr_parse6);
+	tcase_add_test(tc, addr_info);
+	tcase_add_test(tc, addr_flags2str);
+	suite_add_tcase(suite, tc);
 
 	return suite;
 }

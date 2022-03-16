@@ -5,7 +5,7 @@
 
 #include "netlink-private/types.h"
 #include "netlink/route/cls/ematch.h"
-#include "util.h"
+#include "cksuite-all.h"
 #include "netlink-private/nl-auto.h"
 
 #define MAX_DEPTH		6
@@ -132,10 +132,10 @@ END_TEST
 Suite *make_nl_ematch_tree_clone_suite(void)
 {
 	Suite *suite = suite_create("Clone ematch tree");
+	TCase *tc = tcase_create("Core");
 
-	TCase *ematch_tree = tcase_create("Core");
-	tcase_add_test(ematch_tree, ematch_tree_clone);
-	suite_add_tcase(suite, ematch_tree);
+	tcase_add_test(tc, ematch_tree_clone);
+	suite_add_tcase(suite, tc);
 
 	return suite;
 }

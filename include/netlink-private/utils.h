@@ -8,6 +8,10 @@
 
 #include <byteswap.h>
 #include <assert.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <stdbool.h>
 
 #if __BYTE_ORDER == __BIG_ENDIAN
 #define ntohll(x) (x)
@@ -80,6 +84,10 @@
 
 /*****************************************************************************/
 
+#define _NL_N_ELEMENTS(arr) (sizeof(arr) / sizeof((arr)[0]))
+
+/*****************************************************************************/
+
 extern const char *nl_strerror_l(int err);
 
 /*****************************************************************************/
@@ -147,6 +155,16 @@ extern const char *nl_strerror_l(int err);
 	})
 
 /*****************************************************************************/
+
+static inline bool _nl_streq(const char *a, const char *b)
+{
+	return !strcmp(a, b);
+}
+
+static inline bool _nl_streq0(const char *a, const char *b)
+{
+	return a == b || (a && b && _nl_streq(a, b));
+}
 
 static inline char *
 _nl_strncpy_trunc(char *dst, const char *src, size_t len)
@@ -251,5 +269,15 @@ _nl_strncpy_assert(char *dst, const char *src, size_t len)
 		} else \
 			_nl_assert (_err == 0); \
 	} while (0)
+
+static inline int
+_nl_close(int fd)
+{
+	int r;
+
+	r = close(fd);
+	_nl_assert(r == 0 || fd < 0 || errno != EBADF);
+	return r;
+}
 
 #endif

@@ -10,6 +10,8 @@
 #include <assert.h>
 #include <unistd.h>
 #include <errno.h>
+#include <string.h>
+#include <stdbool.h>
 
 #if __BYTE_ORDER == __BIG_ENDIAN
 #define ntohll(x) (x)
@@ -149,6 +151,16 @@ extern const char *nl_strerror_l(int err);
 	})
 
 /*****************************************************************************/
+
+static inline bool _nl_streq(const char *a, const char *b)
+{
+	return !strcmp(a, b);
+}
+
+static inline bool _nl_streq0(const char *a, const char *b)
+{
+	return a == b || (a && b && _nl_streq(a, b));
+}
 
 static inline char *
 _nl_strncpy_trunc(char *dst, const char *src, size_t len)

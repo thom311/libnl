@@ -55,11 +55,13 @@ static int result_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct flnl_result *dst = nl_object_priv(_dst);
 	struct flnl_result *src = nl_object_priv(_src);
 
-	if (src->fr_req)
-		if (!(dst->fr_req = (struct flnl_request *)
-				nl_object_clone(OBJ_CAST(src->fr_req))))
+	dst->fr_req = NULL;
+
+	if (src->fr_req) {
+		if (!(dst->fr_req = (struct flnl_request *) nl_object_clone(OBJ_CAST(src->fr_req))))
 			return -NLE_NOMEM;
-	
+	}
+
 	return 0;
 }
 

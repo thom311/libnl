@@ -62,6 +62,7 @@ struct rtnl_link_info_ops
 };
 
 extern struct rtnl_link_info_ops *rtnl_link_info_ops_lookup(const char *);
+extern void			rtnl_link_info_ops_get(struct rtnl_link_info_ops *);
 extern void			rtnl_link_info_ops_put(struct rtnl_link_info_ops *);
 extern int			rtnl_link_register_info(struct rtnl_link_info_ops *);
 extern int			rtnl_link_unregister_info(struct rtnl_link_info_ops *);

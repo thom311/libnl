@@ -164,17 +164,23 @@ static int xfrm_ae_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct xfrmnl_ae* dst = nl_object_priv(_dst);
 	struct xfrmnl_ae* src = nl_object_priv(_src);
 
-	if (src->sa_id.daddr)
+	dst->sa_id.daddr = NULL;
+	dst->saddr = NULL;
+	dst->replay_state_esn = NULL;
+
+	if (src->sa_id.daddr) {
 		if ((dst->sa_id.daddr = nl_addr_clone (src->sa_id.daddr)) == NULL)
 			return -NLE_NOMEM;
+	}
 
-	if (src->saddr)
+	if (src->saddr) {
 		if ((dst->saddr = nl_addr_clone (src->saddr)) == NULL)
 			return -NLE_NOMEM;
+	}
 
-	if (src->replay_state_esn)
-	{
+	if (src->replay_state_esn) {
 		uint32_t len = sizeof (struct xfrmnl_replay_state_esn) + (sizeof (uint32_t) * src->replay_state_esn->bmp_len);
+
 		if ((dst->replay_state_esn = malloc (len)) == NULL)
 			return -NLE_NOMEM;
 		memcpy (dst->replay_state_esn, src->replay_state_esn, len);

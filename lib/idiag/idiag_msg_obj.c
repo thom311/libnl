@@ -622,9 +622,9 @@ static int idiagnl_msg_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct idiagnl_msg *dst = (struct idiagnl_msg *) _dst;
 	struct idiagnl_msg *src = (struct idiagnl_msg *) _src;
 
-	dst->idiag_cong = NULL;
 	dst->idiag_src = NULL;
 	dst->idiag_dst = NULL;
+	dst->idiag_cong = NULL;
 	dst->idiag_meminfo = NULL;
 	dst->idiag_vegasinfo = NULL;
 	dst->ce_mask &= ~(IDIAGNL_ATTR_CONG |

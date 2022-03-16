@@ -40,9 +40,12 @@ static int request_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct flnl_request *dst = nl_object_priv(_dst);
 	struct flnl_request *src = nl_object_priv(_src);
 
-	if (src->lr_addr)
+	dst->lr_addr = NULL;
+
+	if (src->lr_addr) {
 		if (!(dst->lr_addr = nl_addr_clone(src->lr_addr)))
 			return -NLE_NOMEM;
+	}
 
 	return 0;
 }

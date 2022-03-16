@@ -42,16 +42,17 @@ static int nfnl_queue_msg_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct nfnl_queue_msg *src = (struct nfnl_queue_msg *) _src;
 	int err;
 
+	dst->queue_msg_payload = NULL;
+	dst->queue_msg_payload_len = 0;
+
 	if (src->queue_msg_payload) {
 		err = nfnl_queue_msg_set_payload(dst, src->queue_msg_payload,
-						 src->queue_msg_payload_len);
+		                                 src->queue_msg_payload_len);
 		if (err < 0)
-			goto errout;
+			return err;
 	}
 
 	return 0;
-errout:
-	return err;
 }
 
 static void nfnl_queue_msg_dump(struct nl_object *a, struct nl_dump_params *p)
@@ -385,7 +386,7 @@ int nfnl_queue_msg_test_hwaddr(const struct nfnl_queue_msg *msg)
 }
 
 const uint8_t *nfnl_queue_msg_get_hwaddr(const struct nfnl_queue_msg *msg,
-					 int *len)
+                                         int *len)
 {
 	if (!(msg->ce_mask & QUEUE_MSG_ATTR_HWADDR)) {
 		*len = 0;
@@ -397,19 +398,24 @@ const uint8_t *nfnl_queue_msg_get_hwaddr(const struct nfnl_queue_msg *msg,
 }
 
 int nfnl_queue_msg_set_payload(struct nfnl_queue_msg *msg, uint8_t *payload,
-			       int len)
+                               int len)
 {
-	void *new_payload = malloc(len);
+	void *p = NULL;
 
-	if (new_payload == NULL)
+	if (len < 0)
+		return -NLE_INVAL;
+
+	p = _nl_memdup(payload, len);
+	if (!p && len > 0)
 		return -NLE_NOMEM;
-	memcpy(new_payload, payload, len);
 
 	free(msg->queue_msg_payload);
-
-	msg->queue_msg_payload = new_payload;
+	msg->queue_msg_payload = p;
 	msg->queue_msg_payload_len = len;
-	msg->ce_mask |= QUEUE_MSG_ATTR_PAYLOAD;
+	if (len > 0)
+		msg->ce_mask |= QUEUE_MSG_ATTR_PAYLOAD;
+	else
+		msg->ce_mask &= ~QUEUE_MSG_ATTR_PAYLOAD;
 	return 0;
 }
 

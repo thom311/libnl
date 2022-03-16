@@ -81,13 +81,31 @@ struct rtnl_link_info_ops *rtnl_link_info_ops_lookup(const char *name)
 }
 
 /**
+ * Take reference to a set of operations.
+ * @arg ops		Link info operations.
+ */
+void rtnl_link_info_ops_get(struct rtnl_link_info_ops *ops)
+{
+	if (!ops)
+		return;
+
+	nl_write_lock(&info_lock);
+	ops->io_refcnt++;
+	nl_write_unlock(&info_lock);
+}
+
+/**
  * Give back reference to a set of operations.
  * @arg ops		Link info operations.
  */
 void rtnl_link_info_ops_put(struct rtnl_link_info_ops *ops)
 {
-	if (ops)
-		ops->io_refcnt--;
+	if (!ops)
+		return;
+
+	nl_write_lock(&info_lock);
+	ops->io_refcnt--;
+	nl_write_unlock(&info_lock);
 }
 
 /**

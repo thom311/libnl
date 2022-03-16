@@ -127,6 +127,11 @@ struct nl_object *nl_object_clone(struct nl_object *obj)
 	if (size)
 		memcpy((char *)new + doff, (char *)obj + doff, size);
 
+	/* Note that the base implementation already initializes @new via memcpy().
+	 * That means, simple fields don't need to be handled via oo_clone().
+	 * However, this is only a shallow-copy, so oo_clone() MUST fix all
+	 * pointer values accordingly. */
+
 	if (ops->oo_clone) {
 		if (ops->oo_clone(new, obj) < 0) {
 			nl_object_free(new);

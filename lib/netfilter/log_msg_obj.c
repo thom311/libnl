@@ -56,37 +56,41 @@ static int log_msg_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct nfnl_log_msg *src = (struct nfnl_log_msg *) _src;
 	int err;
 
+	dst->log_msg_payload = NULL;
+	dst->log_msg_payload_len = 0;
+	dst->log_msg_prefix = NULL;
+	dst->log_msg_hwheader = NULL;
+	dst->log_msg_hwheader_len = 0;
+	dst->log_msg_ct = NULL;
+
 	if (src->log_msg_payload) {
 		err = nfnl_log_msg_set_payload(dst, src->log_msg_payload,
-					       src->log_msg_payload_len);
+		                               src->log_msg_payload_len);
 		if (err < 0)
-			goto errout;
+			return err;
 	}
 
 	if (src->log_msg_prefix) {
 		err = nfnl_log_msg_set_prefix(dst, src->log_msg_prefix);
 		if (err < 0)
-			goto errout;
+			return err;
 	}
 
 	if (src->log_msg_hwheader) {
 		err = nfnl_log_msg_set_hwheader(dst, src->log_msg_hwheader,
 		                                src->log_msg_hwheader_len);
 		if (err < 0)
-			goto errout;
+			return err;
 	}
 
 	if (src->log_msg_ct) {
 		dst->log_msg_ct = (struct nfnl_ct *) nl_object_clone((struct nl_object *) src->log_msg_ct);
 		if (!dst->log_msg_ct) {
-			err = -NLE_NOMEM;
-			goto errout;
+			return -NLE_NOMEM;
 		}
 	}
 
 	return 0;
-errout:
-	return err;
 }
 
 static void log_msg_dump(struct nl_object *a, struct nl_dump_params *p)
@@ -387,14 +391,22 @@ const uint8_t *nfnl_log_msg_get_hwaddr(const struct nfnl_log_msg *msg, int *len)
 
 int nfnl_log_msg_set_payload(struct nfnl_log_msg *msg, uint8_t *payload, int len)
 {
-	free(msg->log_msg_payload);
-	msg->log_msg_payload = malloc(len);
-	if (!msg->log_msg_payload)
+	uint8_t *p = NULL;
+
+	if (len < 0)
+		return -NLE_INVAL;
+
+	p = _nl_memdup(payload, len);
+	if (!p && len > 0)
 		return -NLE_NOMEM;
 
-	memcpy(msg->log_msg_payload, payload, len);
+	free(msg->log_msg_payload);
+	msg->log_msg_payload = p;
 	msg->log_msg_payload_len = len;
-	msg->ce_mask |= LOG_MSG_ATTR_PAYLOAD;
+	if (len > 0)
+		msg->ce_mask |= LOG_MSG_ATTR_PAYLOAD;
+	else
+		msg->ce_mask &= ~LOG_MSG_ATTR_PAYLOAD;
 	return 0;
 }
 
@@ -411,12 +423,21 @@ const void *nfnl_log_msg_get_payload(const struct nfnl_log_msg *msg, int *len)
 
 int nfnl_log_msg_set_prefix(struct nfnl_log_msg *msg, void *prefix)
 {
-	free(msg->log_msg_prefix);
-	msg->log_msg_prefix = strdup(prefix);
-	if (!msg->log_msg_prefix)
-		return -NLE_NOMEM;
+	char *p = NULL;
 
-	msg->ce_mask |= LOG_MSG_ATTR_PREFIX;
+	if (prefix) {
+		p = strdup(prefix);
+		if (!p)
+			return -NLE_NOMEM;
+	}
+
+	free(msg->log_msg_prefix);
+	msg->log_msg_prefix = p;
+
+	if (p)
+		msg->ce_mask |= LOG_MSG_ATTR_PREFIX;
+	else
+		msg->ce_mask &= ~LOG_MSG_ATTR_PREFIX;
 	return 0;
 }
 
@@ -524,14 +545,22 @@ uint16_t nfnl_log_msg_get_hwlen(const struct nfnl_log_msg *msg)
 
 int nfnl_log_msg_set_hwheader(struct nfnl_log_msg *msg, void *data, int len)
 {
-	free(msg->log_msg_hwheader);
-	msg->log_msg_hwheader = malloc(len);
-	if (!msg->log_msg_hwheader)
+	void *p = NULL;
+
+	if (len < 0)
+		return -NLE_INVAL;
+
+	p = _nl_memdup(data, len);
+	if (!p && len > 0)
 		return -NLE_NOMEM;
 
-	memcpy(msg->log_msg_hwheader, data, len);
+	free(msg->log_msg_hwheader);
+	msg->log_msg_hwheader = p;
 	msg->log_msg_hwheader_len = len;
-	msg->ce_mask |= LOG_MSG_ATTR_HWHEADER;
+	if (len > 0)
+		msg->ce_mask |= LOG_MSG_ATTR_HWHEADER;
+	else
+		msg->ce_mask &= ~LOG_MSG_ATTR_HWHEADER;
 	return 0;
 }
 

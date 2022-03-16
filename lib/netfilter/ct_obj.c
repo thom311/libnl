@@ -68,6 +68,11 @@ static int ct_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct nfnl_ct *src = (struct nfnl_ct *) _src;
 	struct nl_addr *addr;
 
+	dst->ct_orig.src = NULL;
+	dst->ct_orig.dst = NULL;
+	dst->ct_repl.src = NULL;
+	dst->ct_repl.dst = NULL;
+
 	if (src->ct_orig.src) {
 		addr = nl_addr_clone(src->ct_orig.src);
 		if (!addr)

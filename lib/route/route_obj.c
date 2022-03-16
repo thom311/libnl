@@ -98,22 +98,27 @@ static int route_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct rtnl_route *src = (struct rtnl_route *) _src;
 	struct rtnl_nexthop *nh, *new;
 
-	if (src->rt_dst)
-		if (!(dst->rt_dst = nl_addr_clone(src->rt_dst)))
-			return -NLE_NOMEM;
-
-	if (src->rt_src)
-		if (!(dst->rt_src = nl_addr_clone(src->rt_src)))
-			return -NLE_NOMEM;
-
-	if (src->rt_pref_src)
-		if (!(dst->rt_pref_src = nl_addr_clone(src->rt_pref_src)))
-			return -NLE_NOMEM;
-
-	/* Will be inc'ed again while adding the nexthops of the source */
+	dst->rt_dst = NULL;
+	dst->rt_src = NULL;
+	dst->rt_pref_src = NULL;
+	nl_init_list_head(&dst->rt_nexthops);
 	dst->rt_nr_nh = 0;
 
-	nl_init_list_head(&dst->rt_nexthops);
+	if (src->rt_dst) {
+		if (!(dst->rt_dst = nl_addr_clone(src->rt_dst)))
+			return -NLE_NOMEM;
+	}
+
+	if (src->rt_src) {
+		if (!(dst->rt_src = nl_addr_clone(src->rt_src)))
+			return -NLE_NOMEM;
+	}
+
+	if (src->rt_pref_src) {
+		if (!(dst->rt_pref_src = nl_addr_clone(src->rt_pref_src)))
+			return -NLE_NOMEM;
+	}
+
 	nl_list_for_each_entry(nh, &src->rt_nexthops, rtnh_list) {
 		new = rtnl_route_nh_clone(nh);
 		if (!new)

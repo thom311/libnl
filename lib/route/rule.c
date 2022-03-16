@@ -59,6 +59,9 @@ static int rule_clone(struct nl_object *_dst, struct nl_object *_src)
 	struct rtnl_rule *dst = nl_object_priv(_dst);
 	struct rtnl_rule *src = nl_object_priv(_src);
 
+	dst->r_src = NULL;
+	dst->r_dst = NULL;
+
 	if (src->r_src)
 		if (!(dst->r_src = nl_addr_clone(src->r_src)))
 			return -NLE_NOMEM;

@@ -104,6 +104,7 @@ void rtnl_link_info_ops_put(struct rtnl_link_info_ops *ops)
 		return;
 
 	nl_write_lock(&info_lock);
+	_nl_assert(ops->io_refcnt > 0);
 	ops->io_refcnt--;
 	nl_write_unlock(&info_lock);
 }
@@ -164,6 +165,7 @@ int rtnl_link_unregister_info(struct rtnl_link_info_ops *ops)
 
 	nl_list_for_each_entry(t, &info_ops, io_list) {
 		if (t == ops) {
+			_nl_assert(t->io_refcnt >= 0);
 			if (t->io_refcnt > 0) {
 				err = -NLE_BUSY;
 				goto errout;

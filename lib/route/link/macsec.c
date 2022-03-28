@@ -708,7 +708,7 @@ int rtnl_link_macsec_set_validation_type(struct rtnl_link *link, enum macsec_val
 
 	IS_MACSEC_LINK_ASSERT(link);
 
-	if (validate > 1)
+	if (validate > MACSEC_VALIDATE_MAX)
 		return -NLE_INVAL;
 
 	info->validate = validate;

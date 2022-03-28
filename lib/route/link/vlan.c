@@ -641,6 +641,7 @@ static const struct trans_tbl vlan_flags[] = {
 	__ADD(VLAN_FLAG_GVRP, gvrp),
 	__ADD(VLAN_FLAG_LOOSE_BINDING, loose_binding),
 	__ADD(VLAN_FLAG_MVRP, mvrp),
+	__ADD(VLAN_FLAG_BRIDGE_BINDING, bridge_binding),
 };
 
 /**

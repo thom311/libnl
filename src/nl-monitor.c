@@ -87,6 +87,7 @@ int main(int argc, char *argv[])
 		int c, optidx = 0;
 		static struct option long_opts[] = {
 			{ "format", 1, 0, 'f' },
+			{ "help",   0, 0, 'h' },
 			{ 0, 0, 0, 0 }
 		};
 

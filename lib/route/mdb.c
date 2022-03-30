@@ -277,6 +277,16 @@ static void mdb_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 	}
 }
 
+static void mdb_dump_details(struct nl_object *obj, struct nl_dump_params *p)
+{
+	mdb_dump_line(obj, p);
+}
+
+static void mdb_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
+{
+	mdb_dump_details(obj, p);
+}
+
 void rtnl_mdb_put(struct rtnl_mdb *mdb)
 {
 	nl_object_put((struct nl_object *) mdb);
@@ -384,8 +394,10 @@ static struct nl_object_ops mdb_obj_ops = {
 	.oo_size = sizeof(struct rtnl_mdb),
 	.oo_constructor = mdb_constructor,
 	.oo_dump = {
-	            [NL_DUMP_LINE] = mdb_dump_line,
-	           },
+	            [NL_DUMP_LINE]    = mdb_dump_line,
+	            [NL_DUMP_DETAILS] = mdb_dump_details,
+	            [NL_DUMP_STATS]   = mdb_dump_stats,
+	},
 	.oo_clone = mdb_clone,
 	.oo_compare = mdb_compare,
 	.oo_update = mdb_update,

@@ -232,7 +232,12 @@ static int mdb_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 					entry->addr = nl_addr_build(AF_INET6,
 					                            &e->addr.u.ip6,
 					                            sizeof(e->addr.u.ip6));
+				} else {
+					entry->addr = nl_addr_build(AF_LLC,
+								    e->addr.u.mac_addr,
+								    sizeof(e->addr.u.mac_addr));
 				}
+
 				if (!entry->addr)
 					goto errout;
 

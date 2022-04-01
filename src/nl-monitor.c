@@ -56,6 +56,7 @@ static void print_usage(void)
 	"Usage: nl-monitor [OPTION] [<groups>]\n"
 	"\n"
 	"Options\n"
+	" -d, --debug=LEVEL     Set libnl debug level { 0 - 7 }\n"
 	" -f, --format=TYPE     Output format { brief | details | stats }\n"
 	" -h, --help            Show this help.\n"
 	"\n"
@@ -86,15 +87,20 @@ int main(int argc, char *argv[])
 	for (;;) {
 		int c, optidx = 0;
 		static struct option long_opts[] = {
+			{ "debug",  1, 0, 'd' },
 			{ "format", 1, 0, 'f' },
+			{ "help",   0, 0, 'h' },
 			{ 0, 0, 0, 0 }
 		};
 
-		c = getopt_long(argc, argv, "f:h", long_opts, &optidx);
+		c = getopt_long(argc, argv, "d:f:h", long_opts, &optidx);
 		if (c == -1)
                         break;
 
                 switch (c) {
+		case 'd':
+			nl_debug = atoi(optarg);
+			break;
                 case 'f':
 			dp.dp_type = nl_cli_parse_dumptype(optarg);
 			break;

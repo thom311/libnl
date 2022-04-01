@@ -232,7 +232,12 @@ static int mdb_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 					entry->addr = nl_addr_build(AF_INET6,
 					                            &e->addr.u.ip6,
 					                            sizeof(e->addr.u.ip6));
+				} else {
+					entry->addr = nl_addr_build(AF_LLC,
+								    e->addr.u.mac_addr,
+								    sizeof(e->addr.u.mac_addr));
 				}
+
 				if (!entry->addr)
 					goto errout;
 
@@ -275,6 +280,16 @@ static void mdb_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 		p->dp_ivar = NH_DUMP_FROM_ONELINE;
 		mdb_entry_dump_line(_mdb, p);
 	}
+}
+
+static void mdb_dump_details(struct nl_object *obj, struct nl_dump_params *p)
+{
+	mdb_dump_line(obj, p);
+}
+
+static void mdb_dump_stats(struct nl_object *obj, struct nl_dump_params *p)
+{
+	mdb_dump_details(obj, p);
 }
 
 void rtnl_mdb_put(struct rtnl_mdb *mdb)
@@ -384,8 +399,10 @@ static struct nl_object_ops mdb_obj_ops = {
 	.oo_size = sizeof(struct rtnl_mdb),
 	.oo_constructor = mdb_constructor,
 	.oo_dump = {
-	            [NL_DUMP_LINE] = mdb_dump_line,
-	           },
+	            [NL_DUMP_LINE]    = mdb_dump_line,
+	            [NL_DUMP_DETAILS] = mdb_dump_details,
+	            [NL_DUMP_STATS]   = mdb_dump_stats,
+	},
 	.oo_clone = mdb_clone,
 	.oo_compare = mdb_compare,
 	.oo_update = mdb_update,

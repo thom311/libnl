@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import fileinput
 import re
 import sys
@@ -22,4 +24,4 @@ def translate(match):
 
 rc = re.compile('|'.join(map(re.escape, sorted(refs, reverse=True))))
 for line in open(sys.argv[1], 'r'):
-	print rc.sub(translate, line),
+	print(rc.sub(translate, line), end='')

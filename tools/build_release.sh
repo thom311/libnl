@@ -64,8 +64,8 @@ Copy() {
 }
 
 BuildAll() {
-     Build || return
-     Copy || return
+     Build
+     Copy
      echo "BuildAll: success"
 }
 

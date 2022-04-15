@@ -13,6 +13,7 @@ jobs:
           - cc: clang
     runs-on: ubuntu-latest
     steps:
+
       - name: Install packages
         run: |
           sudo apt-get update
@@ -20,18 +21,19 @@ jobs:
             check \
             valgrind \
             libtool-bin
+
       - name: Check out repository code
         uses: actions/checkout@v2
+
       - name: Build
         run: |
           set -x
 
           export CC="${{ matrix.cc }}"
-          CFLAGS="-DNL_MORE_ASSERTS=1000 -O2 -Werror -Wall -Wdeclaration-after-statement -Wvla -std=gnu11"
+          export CFLAGS="-DNL_MORE_ASSERTS=1000 -O2 -Werror -Wall -Wdeclaration-after-statement -Wvla -std=gnu11"
           if [ "$CC" = "clang" ]; then
                   CFLAGS="$CFLAGS -Wno-error=unused-command-line-argument -Wno-error=unused-function"
           fi
-          export CFLAGS
 
           ./autogen.sh
           ./configure
@@ -39,14 +41,17 @@ jobs:
         shell: bash
       - name: Build Unit Tests
         run: make -j 5 check-progs
+
       - name: Run Unit Tests
         run: make -j 5 check
+
       - name: Run Unit Tests w/Valgrind
         run: |
           set -x
           CK_FORK=no libtool --mode=execute valgrind --error-exitcode=66 --leak-check=full -s --show-leak-kinds=all ./tests/check-all
           CK_FORK=no libtool --mode=execute valgrind --error-exitcode=66 --leak-check=full -s --show-leak-kinds=all ./tests/check-direct
         shell: bash
+
       - name: Install packages for Release
         run: |
           test "${{ matrix.cc }}" == gcc || exit 0
@@ -57,10 +62,32 @@ jobs:
             mscgen \
             source-highlight \
             python3-pygments
+
       - name: Build Release
         run: |
           test "${{ matrix.cc }}" == gcc || exit 0
           set -x
           git clean -fdx
           NO_GPG_SIGN=1 ./tools/build_release.sh BuildAll
+
+      - name: Build out-of-tree and disable-static
+        run: |
+          set -x
+
+          git clean -fdx
+
+          export CC="${{ matrix.cc }}"
+          export CFLAGS="-Werror -Wall -Wdeclaration-after-statement -Wvla -std=gnu11"
+          if [ "$CC" = "clang" ]; then
+                  CFLAGS="$CFLAGS -Wno-error=unused-command-line-argument -Wno-error=unused-function"
+          fi
+
+          ./autogen.sh
+          mkdir build
+          cd build
+          ../configure --disable-static
+          make -j 5
+          make -j 5 check-progs
+          make -j 5 check
+
       - run: echo "🍏 This job's status is ${{ job.status }}."

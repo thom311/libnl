@@ -16,7 +16,10 @@ jobs:
       - name: Install packages
         run: |
           sudo apt-get update
-          sudo apt-get -y install check valgrind libtool-bin
+          sudo apt-get -y --no-install-recommends install \
+            check \
+            valgrind \
+            libtool-bin
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Build
@@ -44,4 +47,20 @@ jobs:
           CK_FORK=no libtool --mode=execute valgrind --error-exitcode=66 --leak-check=full -s --show-leak-kinds=all ./tests/check-all
           CK_FORK=no libtool --mode=execute valgrind --error-exitcode=66 --leak-check=full -s --show-leak-kinds=all ./tests/check-direct
         shell: bash
+      - name: Install packages for Release
+        run: |
+          test "${{ matrix.cc }}" == gcc || exit 0
+          sudo apt-get -y --no-install-recommends install \
+            asciidoc \
+            doxygen \
+            graphviz \
+            mscgen \
+            source-highlight \
+            python3-pygments
+      - name: Build Release
+        run: |
+          test "${{ matrix.cc }}" == gcc || exit 0
+          set -x
+          git clean -fdx
+          NO_GPG_SIGN=1 ./tools/build_release.sh BuildAll
       - run: echo "🍏 This job's status is ${{ job.status }}."

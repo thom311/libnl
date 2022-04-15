@@ -56,7 +56,9 @@ Copy() {
         for F in "libnl-$V.tar.gz" "libnl-doc-$V.tar.gz"; do
             md5sum "./$F" > "./$F.md5sum"
             sha256sum "./$F" > "./$F.sha256sum"
-            gpg ${GPG_USER--u thaller@redhat.com} --armor --verbose -o "./$F.sig" --detach-sign "./$F"
+            if [ "$NO_GPG_SIGN" != 1 ]; then
+                gpg ${GPG_USER--u thaller@redhat.com} --armor --verbose -o "./$F.sig" --detach-sign "./$F"
+            fi
         done
     )
     tar -cvf "./$REL.tar" "./$REL/"

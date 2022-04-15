@@ -107,6 +107,8 @@ else
     AC_CHECK_LIB([pthread], [pthread_mutex_lock], [], AC_MSG_ERROR([libpthread is required]))
 fi
 
+AM_CONDITIONAL([ENABLE_STATIC], [test "$enable_static" != "no"])
+
 AC_ARG_ENABLE([debug],
 	AS_HELP_STRING([--disable-debug], [Do not include debugging statements]),
 	[enable_debug="$enableval"], [enable_debug="yes"])

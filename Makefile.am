@@ -984,7 +984,9 @@ tests_check_all_LDADD = \
 	$(NULL)
 
 if WITH_CHECK
+if ENABLE_STATIC
 check_programs += tests/check-direct
+endif
 endif
 
 tests_check_direct_SOURCES = \

@@ -29,6 +29,8 @@
 #include <linux/fib_rules.h>
 #include <linux/if_ether.h>
 
+#include <netinet/in.h>
+
 #define NL_SOCK_PASSCRED	(1<<1)
 #define NL_OWN_PORT		(1<<2)
 #define NL_MSG_PEEK		(1<<3)
@@ -624,6 +626,10 @@ struct rtnl_flower
 	uint8_t          cf_src_mac_mask[ETH_ALEN];
 	uint8_t          cf_dst_mac[ETH_ALEN];
 	uint8_t          cf_dst_mac_mask[ETH_ALEN];
+	in_addr_t        cf_ipv4_src;
+	in_addr_t        cf_ipv4_src_mask;
+	in_addr_t        cf_ipv4_dst;
+	in_addr_t        cf_ipv4_dst_mask;
 	uint8_t          cf_ip_dscp;
 	uint8_t          cf_ip_dscp_mask;
 };

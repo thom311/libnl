@@ -25,6 +25,14 @@ struct nltst_netns {
 
 /*****************************************************************************/
 
+#define _assert_nltst_netns(nsdata)                                            \
+	do {                                                                   \
+		const struct nltst_netns *_nsdata = (nsdata);                  \
+                                                                               \
+		ck_assert_ptr_nonnull(_nsdata);                                \
+		ck_assert_int_eq(_nsdata->canary, _CANARY);                    \
+	} while (0)
+
 static struct {
 	struct nltst_netns *nsdata;
 } _netns_fixture_global;
@@ -34,12 +42,12 @@ void nltst_netns_fixture_setup(void)
 	ck_assert(!_netns_fixture_global.nsdata);
 
 	_netns_fixture_global.nsdata = nltst_netns_enter();
-	ck_assert(_netns_fixture_global.nsdata);
+	_assert_nltst_netns(_netns_fixture_global.nsdata);
 }
 
 void nltst_netns_fixture_teardown(void)
 {
-	ck_assert(_netns_fixture_global.nsdata);
+	_assert_nltst_netns(_netns_fixture_global.nsdata);
 	_nl_clear_pointer(&_netns_fixture_global.nsdata, nltst_netns_leave);
 }
 

@@ -75,7 +75,15 @@ static void unshare_user(void)
 
 	/* Map current UID to root in NS to be created. */
 	f = fopen("/proc/self/uid_map", "we");
-	_nltst_assert_errno(f);
+	if (!f) {
+		if (errno == EACCES) {
+			/* Accessing uid_map might fail due to sandboxing.
+			 * We ignore that error and proceed with the test. It will probably
+			 * still work. */
+			return;
+		}
+		_nltst_assert_errno(f);
+	}
 	r = fprintf(f, "0 %d 1", uid);
 	_nltst_assert_errno(r > 0);
 	_nltst_fclose(f);

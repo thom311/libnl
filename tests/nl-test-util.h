@@ -34,6 +34,14 @@
 		_nltst_assert_errno(_r == 0);                                  \
 	} while (0)
 
+#define _nltst_fclose(f)                                                       \
+	do {                                                                   \
+		int _r;                                                        \
+                                                                               \
+		_r = fclose((f));                                              \
+		_nltst_assert_errno(_r == 0);                                  \
+	} while (0)
+
 /*****************************************************************************/
 
 void nltst_netns_fixture_setup(void);

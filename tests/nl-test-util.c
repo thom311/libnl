@@ -65,24 +65,27 @@ static void unshare_user(void)
 	_nltst_assert_errno(r == 0);
 
 	/* Since Linux 3.19 we have to disable setgroups() in order to map users.
-     * Just proceed if the file is not there. */
+	 * Just proceed if the file is not there. */
 	f = fopen("/proc/self/setgroups", "we");
 	if (f) {
-		fprintf(f, "deny");
-		fclose(f);
+		r = fprintf(f, "deny");
+		_nltst_assert_errno(r > 0);
+		_nltst_fclose(f);
 	}
 
 	/* Map current UID to root in NS to be created. */
 	f = fopen("/proc/self/uid_map", "we");
-	ck_assert(f);
-	fprintf(f, "0 %d 1", uid);
-	fclose(f);
+	_nltst_assert_errno(f);
+	r = fprintf(f, "0 %d 1", uid);
+	_nltst_assert_errno(r > 0);
+	_nltst_fclose(f);
 
 	/* Map current GID to root in NS to be created. */
 	f = fopen("/proc/self/gid_map", "we");
-	ck_assert(f);
-	fprintf(f, "0 %d 1", gid);
-	fclose(f);
+	_nltst_assert_errno(f);
+	r = fprintf(f, "0 %d 1", gid);
+	_nltst_assert_errno(r > 0);
+	_nltst_fclose(f);
 }
 
 struct nltst_netns *nltst_netns_enter(void)

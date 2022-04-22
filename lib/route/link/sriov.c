@@ -123,7 +123,7 @@ int rtnl_link_sriov_clone(struct rtnl_link *dst, struct rtnl_link *src) {
 			dst_vlan_info = dst_vlans->vlans;
 			memcpy(dst_vlans, src_vlans, sizeof(nl_vf_vlans_t));
 			memcpy(dst_vlan_info, src_vlan_info,
-			       dst_vlans->size * sizeof(dst_vlan_info));
+			       dst_vlans->size * sizeof(*dst_vlan_info));
 			d_vf->vf_vlans = dst_vlans;
 		}
 

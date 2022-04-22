@@ -193,7 +193,7 @@ static int mdb_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	mdb->ce_mask |= MDB_ATTR_IFINDEX;
 
 	if (tb[MDBA_MDB]) {
-		struct nlattr *db_attr[MDBA_MDB_MAX];
+		struct nlattr *db_attr[MDBA_MDB_MAX+1];
 
 		nla_parse_nested(db_attr, MDBA_MDB_MAX, tb[MDBA_MDB],
 		                 mdb_db_policy);

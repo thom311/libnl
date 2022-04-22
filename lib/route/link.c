@@ -2560,9 +2560,10 @@ int rtnl_link_set_type(struct rtnl_link *link, const char *type)
 
 	io = rtnl_link_info_ops_lookup(type);
 	if (io) {
-		if (   io->io_alloc
-		    && (err = io->io_alloc(link)) < 0)
+		if (io->io_alloc && (err = io->io_alloc(link)) < 0) {
+			_nl_clear_free(&kind);
 			return err;
+		}
 
 		link->l_info_ops = io;
 	}

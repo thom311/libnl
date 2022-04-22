@@ -13,6 +13,12 @@
 extern "C" {
 #endif
 
+#if defined(__GNUC__) && __GNUC__ > 5
+#define _nl_attribute_printf(a, b) __attribute__((__format__(printf, a, b)))
+#else
+#define _nl_attribute_printf(a, b)
+#endif
+
 /**
  * @name Probability Constants
  * @{

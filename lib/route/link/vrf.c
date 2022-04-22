@@ -233,8 +233,8 @@ int rtnl_link_vrf_set_tableid(struct rtnl_link *link, uint32_t id)
 	struct vrf_info *vi = link->l_info;
 
 	IS_VRF_LINK_ASSERT(link);
-	if(id > VRF_TABLE_ID_MAX)
-		return -NLE_INVAL;
+
+	_NL_STATIC_ASSERT(VRF_TABLE_ID_MAX == UINT32_MAX);
 
 	vi->table_id = id;
 	vi->vi_mask |= VRF_HAS_TABLE_ID;

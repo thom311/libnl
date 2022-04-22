@@ -352,12 +352,11 @@ static struct rtnl_link_info_ops geneve_info_ops = {
 struct rtnl_link *rtnl_link_geneve_alloc(void)
 {
         struct rtnl_link *link;
-        int err;
 
         if (!(link = rtnl_link_alloc()))
                 return NULL;
 
-        if ((err = rtnl_link_set_type(link, "geneve")) < 0) {
+        if (rtnl_link_set_type(link, "geneve") < 0) {
                 rtnl_link_put(link);
                 return NULL;
         }

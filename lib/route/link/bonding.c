@@ -27,12 +27,11 @@
 struct rtnl_link *rtnl_link_bond_alloc(void)
 {
 	struct rtnl_link *link;
-	int err;
 
 	if (!(link = rtnl_link_alloc()))
 		return NULL;
 
-	if ((err = rtnl_link_set_type(link, "bond")) < 0) {
+	if (rtnl_link_set_type(link, "bond") < 0) {
 		rtnl_link_put(link);
 		return NULL;
 	}

@@ -86,13 +86,12 @@ static struct rtnl_link_af_ops *af_lookup_and_alloc(struct rtnl_link *link,
 						    int family)
 {
 	struct rtnl_link_af_ops *af_ops;
-	void *data;
 
 	af_ops = rtnl_link_af_ops_lookup(family);
 	if (!af_ops)
 		return NULL;
 
-	if (!(data = rtnl_link_af_alloc(link, af_ops))) {
+	if (!rtnl_link_af_alloc(link, af_ops)) {
 		rtnl_link_af_ops_put(af_ops);
 		return NULL;
 	}
@@ -3107,22 +3106,16 @@ int rtnl_link_has_vf_list(struct rtnl_link *link) {
 		return 0;
 }
 
-void rtnl_link_set_vf_list(struct rtnl_link *link) {
-	int err;
-
-	if (!(err = rtnl_link_has_vf_list(link)))
+void rtnl_link_set_vf_list(struct rtnl_link *link)
+{
+	if (!rtnl_link_has_vf_list(link))
 		link->ce_mask |= LINK_ATTR_VF_LIST;
-
-	return;
 }
 
-void rtnl_link_unset_vf_list(struct rtnl_link *link) {
-	int err;
-
-	if ((err = rtnl_link_has_vf_list(link)))
+void rtnl_link_unset_vf_list(struct rtnl_link *link)
+{
+	if (rtnl_link_has_vf_list(link))
 		link->ce_mask &= ~LINK_ATTR_VF_LIST;
-
-	return;
 }
 
 /** @} */

@@ -117,7 +117,7 @@ static int read_pktlocs(void)
 		nl_init_list_head(&pktloc_name_ht[i]);
 	}
 
-	if ((err = pktloc_lex_init(&scanner)) < 0) {
+	if (pktloc_lex_init(&scanner) < 0) {
 		err = -NLE_FAILURE;
 		goto errout_close;
 	}

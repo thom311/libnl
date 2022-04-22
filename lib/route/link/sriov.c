@@ -86,7 +86,7 @@ int rtnl_link_sriov_clone(struct rtnl_link *dst, struct rtnl_link *src) {
 	nl_vf_vlans_t *src_vlans = NULL, *dst_vlans = NULL;
 	nl_vf_vlan_info_t *src_vlan_info = NULL, *dst_vlan_info = NULL;
 
-	if (!(err = rtnl_link_has_vf_list(src)))
+	if (!rtnl_link_has_vf_list(src))
 		return 0;
 
 	dst->l_vf_list = rtnl_link_vf_alloc();
@@ -207,10 +207,9 @@ static void dump_vf_details(struct rtnl_link_vf *vf_data,
 /* Loop through SRIOV VF list dump details */
 void rtnl_link_sriov_dump_details(struct rtnl_link *link,
 				  struct nl_dump_params *p) {
-	int err;
 	struct rtnl_link_vf *vf_data, *list, *next;
 
-	if (!(err = rtnl_link_has_vf_list(link)))
+	if (!rtnl_link_has_vf_list(link))
 		BUG();
 
 	nl_dump(p, "    SRIOV VF List\n");
@@ -271,10 +270,9 @@ void rtnl_link_sriov_dump_stats(struct rtnl_link *link,
 
 /* Free stored SRIOV VF data */
 void rtnl_link_sriov_free_data(struct rtnl_link *link) {
-	int err = 0;
 	struct rtnl_link_vf *list, *vf, *next;
 
-	if (!(err = rtnl_link_has_vf_list(link)))
+	if (!rtnl_link_has_vf_list(link))
 		return;
 
 	list = link->l_vf_list;

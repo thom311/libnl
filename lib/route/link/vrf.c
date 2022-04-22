@@ -175,12 +175,11 @@ static struct rtnl_link_info_ops vrf_info_ops = {
 struct rtnl_link *rtnl_link_vrf_alloc(void)
 {
 	struct rtnl_link *link;
-	int err;
 
 	if (!(link = rtnl_link_alloc()))
 		return NULL;
 
-	if ((err = rtnl_link_set_type(link, "vrf")) < 0) {
+	if (rtnl_link_set_type(link, "vrf") < 0) {
 		rtnl_link_put(link);
 		return NULL;
 	}

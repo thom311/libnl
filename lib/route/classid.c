@@ -408,7 +408,7 @@ int rtnl_classid_generate(const char *name, uint32_t *result, uint32_t parent)
 
 	fclose(fd);
 
-	if ((err = classid_map_add(classid, name)) < 0) {
+	if (classid_map_add(classid, name) < 0) {
 		/*
 		 * Error adding classid map, re-read classid file is best
 		 * option here. It is likely to fail as well but better

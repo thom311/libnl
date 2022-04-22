@@ -76,8 +76,8 @@ extern int	nl_str2ip_proto(const char *);
 
 /* Dumping helpers */
 extern void	nl_new_line(struct nl_dump_params *);
-extern void	nl_dump(struct nl_dump_params *, const char *, ...);
-extern void	nl_dump_line(struct nl_dump_params *, const char *, ...);
+extern void	nl_dump(struct nl_dump_params *, const char *, ...) _nl_attribute_printf(2, 3);
+extern void	nl_dump_line(struct nl_dump_params *, const char *, ...) _nl_attribute_printf(2, 3);
 
 enum {
 	NL_CAPABILITY_NONE,

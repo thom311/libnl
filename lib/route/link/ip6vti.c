@@ -172,7 +172,8 @@ static void ip6vti_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 static void ip6vti_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct ip6vti_info *ip6vti = link->l_info;
-	char *name, addr[INET6_ADDRSTRLEN];
+	char *name;
+	char addr[INET6_ADDRSTRLEN];
 
 	if (ip6vti->ip6vti_mask & IP6VTI_ATTR_LINK) {
 		nl_dump(p, "      link ");
@@ -195,18 +196,14 @@ static void ip6vti_dump_details(struct rtnl_link *link, struct nl_dump_params *p
 
 	if (ip6vti->ip6vti_mask & IP6VTI_ATTR_LOCAL) {
 		nl_dump(p, "      local ");
-		if(inet_ntop(AF_INET6, &ip6vti->local, addr, sizeof(addr)))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "%#x\n", ip6vti->local);
+		nl_dump_line(p, "%s\n",
+			     _nl_inet_ntop(AF_INET6, &ip6vti->local, addr));
 	}
 
 	if (ip6vti->ip6vti_mask & IP6VTI_ATTR_REMOTE) {
 		nl_dump(p, "      remote ");
-		if(inet_ntop(AF_INET6, &ip6vti->remote, addr, sizeof(addr)))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "%#x\n", ip6vti->remote);
+		nl_dump_line(p, "%s\n",
+			     _nl_inet_ntop(AF_INET6, &ip6vti->remote, addr));
 	}
 
 	if (ip6vti->ip6vti_mask & IP6VTI_ATTR_FWMARK) {

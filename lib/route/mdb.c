@@ -194,8 +194,10 @@ static int mdb_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (tb[MDBA_MDB]) {
 		struct nlattr *db_attr[MDBA_MDB_MAX+1];
 
-		nla_parse_nested(db_attr, MDBA_MDB_MAX, tb[MDBA_MDB],
-		                 mdb_db_policy);
+		err = nla_parse_nested(db_attr, MDBA_MDB_MAX, tb[MDBA_MDB],
+				       mdb_db_policy);
+		if (err < 0)
+			return err;
 		rem = nla_len(tb[MDBA_MDB]);
 
 		for (nla = nla_data(tb[MDBA_MDB]); nla_ok(nla, rem);

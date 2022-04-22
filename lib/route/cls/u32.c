@@ -358,11 +358,6 @@ static void u32_dump_details(struct rtnl_tc *tc, void *data,
 	if (!u)
 		return;
 
-	if (!(u->cu_mask & (U32_ATTR_SELECTOR & U32_ATTR_MARK))) {
-		nl_dump(p, "no-selector no-mark\n");
-		return;
-	}
-
 	if (!(u->cu_mask & U32_ATTR_SELECTOR)) {
 		nl_dump(p, "no-selector");
 	} else {

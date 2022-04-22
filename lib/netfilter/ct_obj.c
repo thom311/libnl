@@ -204,7 +204,7 @@ static void ct_dump_line(struct nl_object *a, struct nl_dump_params *p)
 			delta_time /= NSEC_PER_SEC;
 		else
 			delta_time = 0;
-		nl_dump(p, "delta-time %llu ", delta_time);
+		nl_dump(p, "delta-time %llu ", (long long unsigned)delta_time);
 	}
 
 	nl_dump(p, "\n");

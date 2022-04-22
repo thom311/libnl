@@ -228,7 +228,7 @@ static void dump_vf_stats(struct rtnl_link_vf *vf_data,
 	char *unit;
 	float res;
 
-	nl_dump(p, "    VF %" PRIu64 " Stats:\n", vf_data->vf_index);
+	nl_dump(p, "    VF %u Stats:\n", vf_data->vf_index);
 	nl_dump_line(p, "\tRX:    %-14s %-10s   %-10s %-10s\n",
 		     "bytes", "packets", "multicast", "broadcast");
 

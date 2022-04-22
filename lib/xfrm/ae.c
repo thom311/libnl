@@ -314,8 +314,9 @@ static void xfrm_ae_dump_line(struct nl_object *a, struct nl_dump_params *p)
 				ae->flags, ae->mark.m, ae->mark.v);
 
 	nl_dump_line(p, "\tlifetime current: \n");
-	nl_dump_line(p, "\t\tbytes %llu packets %llu \n", ae->lifetime_cur.bytes,
-				ae->lifetime_cur.packets);
+	nl_dump_line(p, "\t\tbytes %llu packets %llu \n",
+		     (long long unsigned)ae->lifetime_cur.bytes,
+		     (long long unsigned)ae->lifetime_cur.packets);
 	if (ae->lifetime_cur.add_time != 0)
 	{
 		add_time = ae->lifetime_cur.add_time;

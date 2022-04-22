@@ -316,16 +316,12 @@ static void vxlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (vxi->ce_mask & VXLAN_ATTR_GROUP) {
 		nl_dump(p, "      group ");
-		if (inet_ntop(AF_INET, &vxi->vxi_group, addr, sizeof(addr)))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "%#x\n", ntohs(vxi->vxi_group));
+		nl_dump_line(p, "%s\n",
+			     _nl_inet_ntop(AF_INET, &vxi->vxi_group, addr));
 	} else if (vxi->ce_mask & VXLAN_ATTR_GROUP6) {
 		nl_dump(p, "      group ");
-		if (inet_ntop(AF_INET6, &vxi->vxi_group6, addr, sizeof(addr)))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "%#x\n", vxi->vxi_group6);
+		nl_dump_line(p, "%s\n",
+			     _nl_inet_ntop(AF_INET6, &vxi->vxi_group6, addr));
 	}
 
 	if (vxi->ce_mask & VXLAN_ATTR_LINK) {
@@ -344,18 +340,13 @@ static void vxlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (vxi->ce_mask & VXLAN_ATTR_LOCAL) {
 		nl_dump(p, "      local ");
-		if (inet_ntop(AF_INET, &vxi->vxi_local, addr, sizeof(addr)))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "%#x\n", ntohs(vxi->vxi_local));
+		nl_dump_line(p, "%s\n",
+			     _nl_inet_ntop(AF_INET, &vxi->vxi_local, addr));
 	} else if (vxi->ce_mask & VXLAN_ATTR_LOCAL6) {
 		nl_dump(p, "      local ");
-		if (inet_ntop(AF_INET6, &vxi->vxi_local6, addr, sizeof(addr)))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "%#x\n", vxi->vxi_local6);
+		nl_dump_line(p, "%s\n",
+			     _nl_inet_ntop(AF_INET6, &vxi->vxi_local6, addr));
 	}
-
 
 	if (vxi->ce_mask & VXLAN_ATTR_TTL) {
 		nl_dump(p, "      ttl ");
@@ -368,7 +359,7 @@ static void vxlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 	if (vxi->ce_mask & VXLAN_ATTR_TOS) {
 		nl_dump(p, "      tos ");
 		if (vxi->vxi_tos == 1)
-			nl_dump_line(p, "inherit\n", vxi->vxi_tos);
+			nl_dump_line(p, "inherit\n");
 		else
 			nl_dump_line(p, "%#x\n", vxi->vxi_tos);
 	}

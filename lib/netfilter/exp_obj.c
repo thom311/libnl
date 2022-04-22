@@ -218,7 +218,7 @@ static void exp_dump_tuples(struct nfnl_exp *exp, struct nl_dump_params *p)
 	}
 
 	if (nfnl_exp_test_nat_dir(exp))
-		nl_dump(p, "nat dir %s ", exp->exp_nat_dir);
+		nl_dump(p, "nat dir %u ", exp->exp_nat_dir);
 
 }
 

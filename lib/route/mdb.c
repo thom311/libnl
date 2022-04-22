@@ -14,6 +14,7 @@
 #define MDB_ATTR_ENTRIES         0x000002
 
 static struct rtnl_mdb_entry *rtnl_mdb_entry_alloc(void);
+static void rtnl_mdb_entry_free(struct rtnl_mdb_entry *mdb_entry);
 
 static struct nl_cache_ops rtnl_mdb_ops;
 static struct nl_object_ops mdb_obj_ops;
@@ -28,15 +29,13 @@ static void mdb_constructor(struct nl_object *obj)
 
 static void mdb_free_data(struct nl_object *obj)
 {
-	struct rtnl_mdb *mdb = (struct rtnl_mdb *) obj;
+	struct rtnl_mdb *mdb = (struct rtnl_mdb *)obj;
 	struct rtnl_mdb_entry *mdb_entry;
 	struct rtnl_mdb_entry *mdb_entry_safe;
 
-	nl_list_for_each_entry_safe(mdb_entry, mdb_entry_safe, &mdb->mdb_entry_list, mdb_list) {
-		nl_list_del(&mdb_entry->mdb_list);
-		nl_addr_put(mdb_entry->addr);
-		free(mdb_entry);
-	}
+	nl_list_for_each_entry_safe(mdb_entry, mdb_entry_safe,
+				    &mdb->mdb_entry_list, mdb_list)
+		rtnl_mdb_entry_free(mdb_entry);
 }
 
 static int mdb_entry_equal(struct rtnl_mdb_entry *a, struct rtnl_mdb_entry *b)
@@ -422,6 +421,13 @@ static struct rtnl_mdb_entry *rtnl_mdb_entry_alloc(void)
 
 	return mdb;
 
+}
+
+static void rtnl_mdb_entry_free(struct rtnl_mdb_entry *mdb_entry)
+{
+	nl_list_del(&mdb_entry->mdb_list);
+	nl_addr_put(mdb_entry->addr);
+	free(mdb_entry);
 }
 
 static struct nl_af_group mdb_groups[] = {

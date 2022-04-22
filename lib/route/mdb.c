@@ -176,7 +176,7 @@ static int mdb_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	struct br_port_msg *port;
 	struct nlattr *nla;
 	struct br_mdb_entry *e;
-	struct rtnl_mdb *mdb = rtnl_mdb_alloc();
+	_nl_auto_rtnl_mdb struct rtnl_mdb *mdb = rtnl_mdb_alloc();
 
 	if (!mdb)
 		return -NLE_NOMEM;
@@ -184,7 +184,7 @@ static int mdb_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	err = nlmsg_parse(nlh, sizeof(struct br_port_msg), tb, MDBA_MAX,
 	                  mdb_policy);
 	if (err < 0)
-		goto errout;
+		return err;
 
 	mdb->ce_msgtype = nlh->nlmsg_type;
 
@@ -206,51 +206,47 @@ static int mdb_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 			for (nla2 = nla_data(nla); nla_ok(nla2, rm);
 			     nla2 = nla_next(nla2, &rm)) {
-				struct rtnl_mdb_entry *entry = rtnl_mdb_entry_alloc();
-
-				if (!entry) {
-					goto errout;
-				}
+				_nl_auto_nl_addr struct nl_addr *addr = NULL;
+				struct rtnl_mdb_entry *entry;
+				uint16_t proto;
 
 				e = nla_data(nla2);
+
+				proto = ntohs(e->addr.proto);
+
+				if (proto == ETH_P_IP) {
+					addr = nl_addr_build(
+						AF_INET, &e->addr.u.ip4,
+						sizeof(e->addr.u.ip4));
+				} else if (proto == ETH_P_IPV6) {
+					addr = nl_addr_build(
+						AF_INET6, &e->addr.u.ip6,
+						sizeof(e->addr.u.ip6));
+				} else {
+					addr = nl_addr_build(
+						AF_LLC, e->addr.u.mac_addr,
+						sizeof(e->addr.u.mac_addr));
+				}
+				if (!addr)
+					return -NLE_NOMEM;
+
+				entry = rtnl_mdb_entry_alloc();
+				if (!entry)
+					return -NLE_NOMEM;
 
 				mdb->ce_mask |= MDB_ATTR_ENTRIES;
 
 				entry->ifindex = e->ifindex;
-
 				entry->vid = e->vid;
-
 				entry->state = e->state;
-
 				entry->proto = ntohs(e->addr.proto);
-
-				if (entry->proto == ETH_P_IP) {
-					entry->addr = nl_addr_build(AF_INET,
-					                            &e->addr.u.ip4,
-					                            sizeof(e->addr.u.ip4));
-				} else if (entry->proto == ETH_P_IPV6) {
-					entry->addr = nl_addr_build(AF_INET6,
-					                            &e->addr.u.ip6,
-					                            sizeof(e->addr.u.ip6));
-				} else {
-					entry->addr = nl_addr_build(AF_LLC,
-								    e->addr.u.mac_addr,
-								    sizeof(e->addr.u.mac_addr));
-				}
-
-				if (!entry->addr)
-					goto errout;
-
+				entry->addr = _nl_steal_pointer(&addr);
 				rtnl_mdb_add_entry(mdb, entry);
 			}
 		}
 	}
 
-	err = pp->pp_cb((struct nl_object *) mdb, pp);
-errout:
-	rtnl_mdb_put(mdb);
-
-	return err;
+	return pp->pp_cb((struct nl_object *) mdb, pp);
 }
 
 static int mdb_request_update(struct nl_cache *cache, struct nl_sock *sk)

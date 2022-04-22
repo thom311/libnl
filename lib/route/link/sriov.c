@@ -648,7 +648,7 @@ int rtnl_link_sriov_parse_vflist(struct rtnl_link *link, struct nlattr **tb) {
 		}
 
 		if (t[IFLA_VF_STATS]) {
-			err = nla_parse_nested(stb, IFLA_VF_STATS_MAX,
+			err = nla_parse_nested(stb, RTNL_LINK_VF_STATS_MAX,
 					       t[IFLA_VF_STATS],
 					       sriov_stats_policy);
 			if (err < 0) {

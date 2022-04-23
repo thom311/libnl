@@ -382,6 +382,8 @@ static int build_xfrm_ae_message(struct xfrmnl_ae *tmpl, int cmd, int flags,
 		!(tmpl->ce_mask & XFRM_AE_ATTR_PROTO))
 		return -NLE_MISSING_ATTR;
 
+	memset(&ae_id, 0, sizeof(ae_id));
+
 	memcpy (&ae_id.sa_id.daddr, nl_addr_get_binary_addr (tmpl->sa_id.daddr), sizeof (uint8_t) * nl_addr_get_len (tmpl->sa_id.daddr));
 	ae_id.sa_id.spi    = htonl(tmpl->sa_id.spi);
 	ae_id.sa_id.family = tmpl->sa_id.family;

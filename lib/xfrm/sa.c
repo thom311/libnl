@@ -713,6 +713,8 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 		addr    = nl_addr_build (sa_info->sel.family, &sa_info->sel.daddr.a6, sizeof (sa_info->sel.daddr.a6));
 	nl_addr_set_prefixlen (addr, sa_info->sel.prefixlen_d);
 	xfrmnl_sel_set_daddr (sa->sel, addr);
+	/* Drop the reference count from the above set operation */
+	nl_addr_put(addr);
 	xfrmnl_sel_set_prefixlen_d (sa->sel, sa_info->sel.prefixlen_d);
 
 	if (sa_info->sel.family == AF_INET)
@@ -721,6 +723,8 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 		addr    = nl_addr_build (sa_info->sel.family, &sa_info->sel.saddr.a6, sizeof (sa_info->sel.saddr.a6));
 	nl_addr_set_prefixlen (addr, sa_info->sel.prefixlen_s);
 	xfrmnl_sel_set_saddr (sa->sel, addr);
+	/* Drop the reference count from the above set operation */
+	nl_addr_put(addr);
 	xfrmnl_sel_set_prefixlen_s (sa->sel, sa_info->sel.prefixlen_s);
 
 	xfrmnl_sel_set_dport (sa->sel, ntohs(sa_info->sel.dport));

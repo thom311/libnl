@@ -333,6 +333,9 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 	if ((err = do_foreach_af(src, af_clone, dst)) < 0)
 		return err;
 
+	if (src->l_af_ops)
+		dst->l_af_ops = af_lookup_and_alloc(dst, src->l_af_ops->ao_family);
+
 	if (src->l_phys_port_id)
 		if (!(dst->l_phys_port_id = nl_data_clone(src->l_phys_port_id)))
 			return -NLE_NOMEM;

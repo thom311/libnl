@@ -31,10 +31,13 @@ static const char *nh_encap_type2str(unsigned int type)
 
 void nh_encap_dump(struct rtnl_nh_encap *rtnh_encap, struct nl_dump_params *dp)
 {
+	if (!rtnh_encap->ops)
+		return;
+
 	nl_dump(dp, " encap %s ",
 		nh_encap_type2str(rtnh_encap->ops->encap_type));
 
-	if (rtnh_encap->ops && rtnh_encap->ops->dump)
+	if (rtnh_encap->ops->dump)
 		rtnh_encap->ops->dump(rtnh_encap->priv, dp);
 }
 

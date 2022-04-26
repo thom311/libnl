@@ -263,7 +263,8 @@ static void macsec_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 	struct macsec_info *info = link->l_info;
 	char tmp[128];
 
-	nl_dump(p, "sci %016llx <%s>", ntohll(info->sci), flags_str(tmp, sizeof(tmp), info));
+	nl_dump(p, "sci %016llx <%s>", (long long unsigned)ntohll(info->sci),
+		flags_str(tmp, sizeof(tmp), info));
 }
 
 static void macsec_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
@@ -271,12 +272,15 @@ static void macsec_dump_details(struct rtnl_link *link, struct nl_dump_params *p
 	struct macsec_info *info = link->l_info;
 	char tmp[128];
 
-	nl_dump(p, "    sci %016llx protect %s encoding_sa %d encrypt %s send_sci %s validate %s %s\n",
-		ntohll(info->sci), values_on_off[info->protect], info->encoding_sa, values_on_off[info->encrypt], values_on_off[info->send_sci],
+	nl_dump(p,
+		"    sci %016llx protect %s encoding_sa %d encrypt %s send_sci %s validate %s %s\n",
+		(long long unsigned)ntohll(info->sci),
+		values_on_off[info->protect], info->encoding_sa,
+		values_on_off[info->encrypt], values_on_off[info->send_sci],
 		VALIDATE_STR[info->validate],
 		replay_protect_str(tmp, info->replay_protect, info->window));
 	nl_dump(p, "    cipher suite: %016llx, icv_len %d\n",
-		info->cipher_suite, info->icv_len);
+		(long long unsigned)info->cipher_suite, info->icv_len);
 }
 
 static int macsec_clone(struct rtnl_link *dst, struct rtnl_link *src)

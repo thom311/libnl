@@ -314,8 +314,9 @@ static void xfrm_ae_dump_line(struct nl_object *a, struct nl_dump_params *p)
 				ae->flags, ae->mark.m, ae->mark.v);
 
 	nl_dump_line(p, "\tlifetime current: \n");
-	nl_dump_line(p, "\t\tbytes %llu packets %llu \n", ae->lifetime_cur.bytes,
-				ae->lifetime_cur.packets);
+	nl_dump_line(p, "\t\tbytes %llu packets %llu \n",
+		     (long long unsigned)ae->lifetime_cur.bytes,
+		     (long long unsigned)ae->lifetime_cur.packets);
 	if (ae->lifetime_cur.add_time != 0)
 	{
 		add_time = ae->lifetime_cur.add_time;
@@ -380,6 +381,8 @@ static int build_xfrm_ae_message(struct xfrmnl_ae *tmpl, int cmd, int flags,
 		!(tmpl->ce_mask & XFRM_AE_ATTR_SPI) ||
 		!(tmpl->ce_mask & XFRM_AE_ATTR_PROTO))
 		return -NLE_MISSING_ATTR;
+
+	memset(&ae_id, 0, sizeof(ae_id));
 
 	memcpy (&ae_id.sa_id.daddr, nl_addr_get_binary_addr (tmpl->sa_id.daddr), sizeof (uint8_t) * nl_addr_get_len (tmpl->sa_id.daddr));
 	ae_id.sa_id.spi    = htonl(tmpl->sa_id.spi);

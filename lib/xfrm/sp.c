@@ -361,15 +361,25 @@ static void xfrm_sp_dump_line(struct nl_object *a, struct nl_dump_params *p)
 		sprintf (share, "INF");
 	else
 		sprintf (share, "%" PRIu64, sp->lft->hard_packet_limit);
-	nl_dump_line(p, "\t\tsoft limit: %s (bytes), %s (packets) \n", dir, action);
-	nl_dump_line(p, "\t\thard limit: %s (bytes), %s (packets) \n", flags, share);
-	nl_dump_line(p, "\t\tsoft add_time: %llu (seconds), soft use_time: %llu (seconds) \n",
-	             sp->lft->soft_add_expires_seconds, sp->lft->soft_use_expires_seconds);
-	nl_dump_line(p, "\t\thard add_time: %llu (seconds), hard use_time: %llu (seconds) \n",
-	             sp->lft->hard_add_expires_seconds, sp->lft->hard_use_expires_seconds);
+	nl_dump_line(p, "\t\tsoft limit: %s (bytes), %s (packets) \n", dir,
+		     action);
+	nl_dump_line(p, "\t\thard limit: %s (bytes), %s (packets) \n", flags,
+		     share);
+	nl_dump_line(
+		p,
+		"\t\tsoft add_time: %llu (seconds), soft use_time: %llu (seconds) \n",
+		(long long unsigned)sp->lft->soft_add_expires_seconds,
+		(long long unsigned)sp->lft->soft_use_expires_seconds);
+	nl_dump_line(
+		p,
+		"\t\thard add_time: %llu (seconds), hard use_time: %llu (seconds) \n",
+		(long long unsigned)sp->lft->hard_add_expires_seconds,
+		(long long unsigned)sp->lft->hard_use_expires_seconds);
 
 	nl_dump_line(p, "\tlifetime current: \n");
-	nl_dump_line(p, "\t\t%llu bytes, %llu packets\n", sp->curlft.bytes, sp->curlft.packets);
+	nl_dump_line(p, "\t\t%llu bytes, %llu packets\n",
+		     (long long unsigned)sp->curlft.bytes,
+		     (long long unsigned)sp->curlft.packets);
 
 	if (sp->curlft.add_time != 0)
 	{

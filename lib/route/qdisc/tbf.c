@@ -115,9 +115,9 @@ static void tbf_dump_details(struct rtnl_tc *tc, void *data,
 		cl = nl_cancel_down_bits(1 << tbf->qt_peakrate.rs_cell_log,
 					 &clu);
 
-		nl_dump_line(p, "    peak-rate %.2f%s/s (%.0f%s) "
-				"bucket-size %.1f%s cell-size %.1f%s"
-				"latency %.1f%s",
+		nl_dump_line(p,
+			     "    peak-rate %.2f%s/s (%.0f%s) "
+			     "bucket-size %.1f%s cell-size %.1f%s",
 			     pr, pru, prb, prbu, bs, bsu, cl, clu);
 	}
 }

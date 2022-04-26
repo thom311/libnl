@@ -229,10 +229,13 @@ void nl_cli_load_module(const char *prefix, const char *name)
 	{
 		void *handle;
 
-		if (!(handle = dlopen(path, RTLD_NOW))) {
+		handle = dlopen(path, RTLD_NOW);
+		if (!handle) {
 			nl_cli_fatal(ENOENT, "Unable to load module \"%s\": %s\n",
 			             path, dlerror());
 		}
+		/* We intentionally leak the dlopen handle. */
+		/* coverity[RESOURCE_LEAK] */
 	}
 #else
 	nl_cli_fatal(ENOTSUP, "Unable to load module \"%s\": built without dynamic libraries support\n",

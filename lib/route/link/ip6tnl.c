@@ -241,20 +241,14 @@ static void ip6_tnl_dump_details(struct rtnl_link *link, struct nl_dump_params *
 
 	if (ip6_tnl->ip6_tnl_mask & IP6_TNL_ATTR_LOCAL) {
 		nl_dump(p, "      local ");
-
-		if(inet_ntop(AF_INET6, &ip6_tnl->local, addr, INET6_ADDRSTRLEN))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "%#x\n", ip6_tnl->local);
+		nl_dump_line(p, "%s\n",
+			     _nl_inet_ntop(AF_INET6, &ip6_tnl->local, addr));
 	}
 
 	if (ip6_tnl->ip6_tnl_mask & IP6_TNL_ATTR_REMOTE) {
 		nl_dump(p, "      remote ");
-
-		if(inet_ntop(AF_INET6, &ip6_tnl->remote, addr, INET6_ADDRSTRLEN))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "%#x\n", ip6_tnl->remote);
+		nl_dump_line(p, "%s\n",
+			     _nl_inet_ntop(AF_INET6, &ip6_tnl->remote, addr));
 	}
 
 	if (ip6_tnl->ip6_tnl_mask & IP6_TNL_ATTR_TTL) {

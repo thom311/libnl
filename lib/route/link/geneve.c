@@ -186,16 +186,12 @@ static void geneve_dump_details(struct rtnl_link *link, struct nl_dump_params *p
 
         if (geneve->mask & GENEVE_ATTR_REMOTE) {
                 nl_dump(p, "     remote ");
-                if (inet_ntop(AF_INET, &geneve->remote, addr, sizeof(addr)))
-                        nl_dump_line(p, "%s\n", addr);
-                else
-                        nl_dump_line(p, "%#x\n", ntohs(geneve->remote));
+                nl_dump_line(p, "%s\n",
+                             _nl_inet_ntop(AF_INET, &geneve->remote, addr));
         } else if (geneve->mask & GENEVE_ATTR_REMOTE6) {
                 nl_dump(p, "      remote ");
-                if (inet_ntop(AF_INET6, &geneve->remote6, addr, sizeof(addr)))
-                        nl_dump_line(p, "%s\n", addr);
-                else
-                        nl_dump_line(p, "%#x\n", geneve->remote6);
+                nl_dump_line(p, "%s\n",
+                             _nl_inet_ntop(AF_INET6, &geneve->remote6, addr));
         }
 
         if (geneve->mask & GENEVE_ATTR_TTL) {
@@ -352,12 +348,11 @@ static struct rtnl_link_info_ops geneve_info_ops = {
 struct rtnl_link *rtnl_link_geneve_alloc(void)
 {
         struct rtnl_link *link;
-        int err;
 
         if (!(link = rtnl_link_alloc()))
                 return NULL;
 
-        if ((err = rtnl_link_set_type(link, "geneve")) < 0) {
+        if (rtnl_link_set_type(link, "geneve") < 0) {
                 rtnl_link_put(link);
                 return NULL;
         }

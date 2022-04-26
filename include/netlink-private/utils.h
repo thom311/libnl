@@ -12,6 +12,8 @@
 #include <errno.h>
 #include <string.h>
 #include <stdbool.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #if __BYTE_ORDER == __BIG_ENDIAN
 #define ntohll(x) (x)
@@ -81,6 +83,40 @@
 #endif
 
 #define _nl_assert_not_reached() assert(0)
+
+/*****************************************************************************/
+
+#define _nl_assert_addr_family_or_unspec(addr_family)                          \
+	do {                                                                   \
+		typeof(addr_family) _addr_family = (addr_family);              \
+                                                                               \
+		_nl_assert(_addr_family == AF_UNSPEC ||                        \
+			   _addr_family == AF_INET ||                          \
+			   _addr_family == AF_INET6);                          \
+	} while (0)
+
+#define _nl_assert_addr_family(addr_family)                                    \
+	do {                                                                   \
+		typeof(addr_family) _addr_family = (addr_family);              \
+                                                                               \
+		_nl_assert(_addr_family == AF_INET ||                          \
+			   _addr_family == AF_INET6);                          \
+	} while (0)
+
+/*****************************************************************************/
+
+#define _NL_SWAP(pa, pb)                                                       \
+	do {                                                                   \
+		typeof(*(pa)) *_pa = (pa);                                     \
+		typeof(*(pb)) *_pb = (pb);                                     \
+		typeof(*_pa) _tmp;                                             \
+                                                                               \
+		_nl_assert(_pa);                                               \
+		_nl_assert(_pb);                                               \
+		_tmp = *_pa;                                                   \
+		*_pa = *_pb;                                                   \
+		*_pb = _tmp;                                                   \
+	} while (0)
 
 /*****************************************************************************/
 
@@ -299,5 +335,42 @@ _nl_memdup(const void *ptr, size_t len)
 }
 
 #define _nl_memdup_ptr(ptr) ((__typeof__(ptr)) _nl_memdup((ptr), sizeof(*(ptr))))
+
+/*****************************************************************************/
+
+typedef union {
+	in_addr_t addr4;
+	struct in_addr a4;
+	struct in6_addr a6;
+} _NLIPAddr;
+
+static inline char *_nl_inet_ntop(int addr_family, const void *addr,
+				  char buf[static INET_ADDRSTRLEN])
+{
+	char *r;
+
+	_nl_assert_addr_family(addr_family);
+	_nl_assert(addr);
+
+	/* inet_ntop() is documented to fail, but if we pass a known address family
+	 * and a suitably large buffer, it cannot. Assert for that. */
+
+	r = (char *)inet_ntop(addr_family, addr, buf,
+			      (addr_family == AF_INET) ? INET_ADDRSTRLEN :
+							       INET6_ADDRSTRLEN);
+	_nl_assert(r == buf);
+	_nl_assert(strlen(r) < ((addr_family == AF_INET) ? INET_ADDRSTRLEN :
+								 INET6_ADDRSTRLEN));
+
+	return r;
+}
+
+static inline char *_nl_inet_ntop_dup(int addr_family, const void *addr)
+{
+	return (char *)_nl_inet_ntop(addr_family, addr,
+				     malloc((addr_family == AF_INET) ?
+						    INET_ADDRSTRLEN :
+							  INET6_ADDRSTRLEN));
+}
 
 #endif

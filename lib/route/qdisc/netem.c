@@ -161,39 +161,39 @@ static void netem_dump_details(struct rtnl_tc *tc, void *data,
 				nl_dump(p, " jitter %s", buf);
 
 				if (netem->qnm_mask & SCH_NETEM_ATTR_DELAY_CORR && netem->qnm_corr.nmc_delay > 0)
-					nl_dump(p, " %d%", netem->qnm_corr.nmc_delay);
+					nl_dump(p, " %d", netem->qnm_corr.nmc_delay);
 			}
 		}
 
 		if (netem->qnm_mask & SCH_NETEM_ATTR_LOSS && netem->qnm_loss > 0) {
-			nl_dump(p, " loss %d%", netem->qnm_loss);
+			nl_dump(p, " loss %d", netem->qnm_loss);
 
 			if (netem->qnm_mask & SCH_NETEM_ATTR_LOSS_CORR && netem->qnm_corr.nmc_loss > 0)
-				nl_dump(p, " %d%", netem->qnm_corr.nmc_loss);
+				nl_dump(p, " %d", netem->qnm_corr.nmc_loss);
 		}
 
 		if (netem->qnm_mask & SCH_NETEM_ATTR_DUPLICATE && netem->qnm_duplicate > 0) {
-			nl_dump(p, " duplicate %d%", netem->qnm_duplicate);
+			nl_dump(p, " duplicate %d", netem->qnm_duplicate);
 
 			if (netem->qnm_mask & SCH_NETEM_ATTR_DUP_CORR && netem->qnm_corr.nmc_duplicate > 0)
-				nl_dump(p, " %d%", netem->qnm_corr.nmc_duplicate);
+				nl_dump(p, " %d", netem->qnm_corr.nmc_duplicate);
 		}
 
 		if (netem->qnm_mask & SCH_NETEM_ATTR_RO_PROB && netem->qnm_ro.nmro_probability > 0) {
-			nl_dump(p, " reorder %d%", netem->qnm_ro.nmro_probability);
+			nl_dump(p, " reorder %d", netem->qnm_ro.nmro_probability);
 
 			if (netem->qnm_mask & SCH_NETEM_ATTR_RO_CORR && netem->qnm_ro.nmro_correlation > 0)
-				nl_dump(p, " %d%", netem->qnm_ro.nmro_correlation);
+				nl_dump(p, " %d", netem->qnm_ro.nmro_correlation);
 
 			if (netem->qnm_mask & SCH_NETEM_ATTR_GAP && netem->qnm_gap > 0)
 				nl_dump(p, " gap %d", netem->qnm_gap);
 		}
 
 		if (netem->qnm_mask & SCH_NETEM_ATTR_CORRUPT_PROB && netem->qnm_crpt.nmcr_probability > 0) {
-			nl_dump(p, " reorder %d%", netem->qnm_crpt.nmcr_probability);
+			nl_dump(p, " reorder %d", netem->qnm_crpt.nmcr_probability);
 
 			if (netem->qnm_mask & SCH_NETEM_ATTR_CORRUPT_CORR && netem->qnm_crpt.nmcr_correlation > 0)
-				nl_dump(p, " %d%", netem->qnm_crpt.nmcr_correlation);
+				nl_dump(p, " %d", netem->qnm_crpt.nmcr_correlation);
 		}
 	}
 }

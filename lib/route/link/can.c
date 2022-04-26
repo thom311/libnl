@@ -273,7 +273,7 @@ static void can_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 	}
 
 	if (ci->ci_mask & CAN_HAS_CLOCK) {
-		nl_dump_line(p,"    base freq %d Hz\n", ci->ci_clock);
+		nl_dump_line(p,"    base freq %u Hz\n", ci->ci_clock.freq);
 
 	}
 

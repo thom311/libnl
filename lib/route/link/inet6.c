@@ -413,7 +413,7 @@ static void inet6_dump_stats(struct rtnl_link *link,
 	if (octets)
 		nl_dump(p, "%14.2f %3s ", octets, octetsUnit);
 	else
-		nl_dump(p, "%16" PRIu64 " B ", 0);
+		nl_dump(p, "%16u B ", 0);
 	
 	nl_dump(p, "%18" PRIu64 " %18" PRIu64 "\n",
 		link->l_stats[RTNL_LINK_IP6_INDISCARDS],
@@ -429,7 +429,7 @@ static void inet6_dump_stats(struct rtnl_link *link,
 	if (octets)
 		nl_dump(p, "%14.2f %3s ", octets, octetsUnit);
 	else
-		nl_dump(p, "%16" PRIu64 " B ", 0);
+		nl_dump(p, "%16u B ", 0);
 
 	nl_dump(p, "%18" PRIu64 " %18" PRIu64 "\n",
 		link->l_stats[RTNL_LINK_IP6_OUTDISCARDS],
@@ -445,7 +445,7 @@ static void inet6_dump_stats(struct rtnl_link *link,
 	if (octets)
 		nl_dump(p, "%14.2f %3s ", octets, octetsUnit);
 	else
-		nl_dump(p, "%16" PRIu64 " B ", 0);
+		nl_dump(p, "%16u B ", 0);
 
 	nl_dump(p, "%18" PRIu64 " ", link->l_stats[RTNL_LINK_IP6_INBCASTPKTS]);
 	octets = nl_cancel_down_bytes(link->l_stats[RTNL_LINK_IP6_INBCASTOCTETS],
@@ -453,7 +453,7 @@ static void inet6_dump_stats(struct rtnl_link *link,
 	if (octets)
 		nl_dump(p, "%14.2f %3s\n", octets, octetsUnit);
 	else
-		nl_dump(p, "%16" PRIu64 " B\n", 0);
+		nl_dump(p, "%16u B\n", 0);
 
 	nl_dump(p, "          OutMcastPkts     OutMcastOctets     "
 		   "  OutBcastPkts    OutBcastOctests\n");
@@ -465,7 +465,7 @@ static void inet6_dump_stats(struct rtnl_link *link,
 	if (octets)
 		nl_dump(p, "%14.2f %3s ", octets, octetsUnit);
 	else
-		nl_dump(p, "%16" PRIu64 " B ", 0);
+		nl_dump(p, "%16u B ", 0);
 
 	nl_dump(p, "%18" PRIu64 " ", link->l_stats[RTNL_LINK_IP6_OUTBCASTPKTS]);
 	octets = nl_cancel_down_bytes(link->l_stats[RTNL_LINK_IP6_OUTBCASTOCTETS],
@@ -473,7 +473,7 @@ static void inet6_dump_stats(struct rtnl_link *link,
 	if (octets)
 		nl_dump(p, "%14.2f %3s\n", octets, octetsUnit);
 	else
-		nl_dump(p, "%16" PRIu64 " B\n", 0);
+		nl_dump(p, "%16u B\n", 0);
 
 	nl_dump(p, "              ReasmOKs         ReasmFails     "
 		   "    ReasmReqds       ReasmTimeout\n");

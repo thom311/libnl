@@ -240,9 +240,9 @@ static void dump_value(struct rtnl_meta_value *v, struct nl_dump_params *p)
 					nl_dump(p, " >> %u", v->mv_shift);
 
 				if (v->mv_len == 4)
-					nl_dump(p, " & %#x", *(uint32_t *) (v + 1));
+					nl_dump(p, " & %#lx", (long unsigned) *(uint32_t *) (v + 1));
 				else if (v->mv_len == 8)
-					nl_dump(p, " & %#x", *(uint64_t *) (v + 1));
+					nl_dump(p, " & %#llx", (long long unsigned) (*(uint64_t *) (v + 1)));
 			}
 		break;
 

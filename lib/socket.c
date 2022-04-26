@@ -59,7 +59,8 @@ static NL_RW_LOCK(port_map_lock);
 
 static uint32_t generate_local_port(void)
 {
-	int i, j, n, m;
+	int i, j, m;
+	uint16_t n;
 	static uint16_t idx_state = 0;
 	uint32_t pid = getpid() & 0x3FFFFF;
 
@@ -91,7 +92,7 @@ static uint32_t generate_local_port(void)
 			continue;
 
 		for (m = 0; m < 32; m++) {
-			n = (n + 13) % 32;
+			n = (n + 13u) % 32u;
 			if (1UL & (used_ports_map[i] >> n))
 				continue;
 
@@ -104,7 +105,7 @@ static uint32_t generate_local_port(void)
 			nl_write_unlock(&port_map_lock);
 
 			/* ensure we don't return zero. */
-			pid = pid + (((uint32_t)n) << 22);
+			pid = pid + (n << 22);
 			return pid ? pid : 1024;
 		}
 	}

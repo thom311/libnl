@@ -343,7 +343,9 @@ static void print_selector(struct nl_dump_params *p, struct tc_u32_sel *sel,
 		if (p->dp_type == NL_DUMP_STATS &&
 		    (u->cu_mask & U32_ATTR_PCNT)) {
 			struct tc_u32_pcnt *pcnt = u->cu_pcnt->d_data;
-			nl_dump(p, " successful %" PRIu64, pcnt->kcnts[i]);
+
+			nl_dump(p, " successful %llu",
+				(long long unsigned)pcnt->kcnts[i]);
 		}
 	}
 }
@@ -357,11 +359,6 @@ static void u32_dump_details(struct rtnl_tc *tc, void *data,
 
 	if (!u)
 		return;
-
-	if (!(u->cu_mask & (U32_ATTR_SELECTOR & U32_ATTR_MARK))) {
-		nl_dump(p, "no-selector no-mark\n");
-		return;
-	}
 
 	if (!(u->cu_mask & U32_ATTR_SELECTOR)) {
 		nl_dump(p, "no-selector");
@@ -403,9 +400,11 @@ static void u32_dump_stats(struct rtnl_tc *tc, void *data,
 
 	if (u->cu_mask & U32_ATTR_PCNT) {
 		struct tc_u32_pcnt *pc = u->cu_pcnt->d_data;
+
 		nl_dump(p, "\n");
-		nl_dump_line(p, "    hit %8" PRIu64 " count %8" PRIu64 "\n",
-			     pc->rhit, pc->rcnt);
+		nl_dump_line(p, "    hit %8llu count %8llu\n",
+			     (long long unsigned)pc->rhit,
+			     (long long unsigned)pc->rcnt);
 	}
 }
 

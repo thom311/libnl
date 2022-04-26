@@ -416,7 +416,6 @@ nla_put_failure:
 static int nfnl_exp_build_nat(struct nl_msg *msg, const struct nfnl_exp *exp)
 {
 	struct nlattr *nat;
-	int err;
 
 	nat = nla_nest_start(msg, CTA_EXPECT_NAT);
 
@@ -425,7 +424,7 @@ static int nfnl_exp_build_nat(struct nl_msg *msg, const struct nfnl_exp *exp)
 				nfnl_exp_get_nat_dir(exp));
 	}
 
-	if ((err = nfnl_exp_build_tuple(msg, exp, CTA_EXPECT_NAT)) < 0)
+	if (nfnl_exp_build_tuple(msg, exp, CTA_EXPECT_NAT) < 0)
 		goto nla_put_failure;
 
 	nla_nest_end(msg, nat);

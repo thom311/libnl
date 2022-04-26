@@ -222,8 +222,11 @@ struct rtnl_link_af_ops *rtnl_link_af_ops_lookup(const unsigned int family)
  */
 void rtnl_link_af_ops_put(struct rtnl_link_af_ops *ops)
 {
-	if (ops)
+	if (ops) {
+		nl_write_lock(&info_lock);
 		ops->ao_refcnt--;
+		nl_write_unlock(&info_lock);
+	}
 }
 
 /**

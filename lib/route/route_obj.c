@@ -1102,7 +1102,7 @@ static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 			}
 		}
 
-		rtnl_route_add_nexthop(route, nh);
+		rtnl_route_add_nexthop(route, _nl_steal_pointer(&nh));
 		tlen -= RTNH_ALIGN(rtnh->rtnh_len);
 		rtnh = RTNH_NEXT(rtnh);
 	}

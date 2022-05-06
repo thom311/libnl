@@ -43,11 +43,14 @@ jobs:
         run: make -j 5 check-progs
 
       - name: Run Unit Tests
-        run: make -j 5 check
+        run: |
+          export NLTST_SEED_RAND=
+          make -j 5 check
 
       - name: Run Unit Tests w/Valgrind
         run: |
           set -x
+          export NLTST_SEED_RAND=
           CK_FORK=no libtool --mode=execute valgrind --error-exitcode=66 --leak-check=full -s --show-leak-kinds=all ./tests/check-all
           CK_FORK=no libtool --mode=execute valgrind --error-exitcode=66 --leak-check=full -s --show-leak-kinds=all ./tests/check-direct
         shell: bash
@@ -88,6 +91,7 @@ jobs:
           ../configure --disable-static
           make -j 5
           make -j 5 check-progs
+          export NLTST_SEED_RAND=
           make -j 5 check
 
       - run: echo "🍏 This job's status is ${{ job.status }}."

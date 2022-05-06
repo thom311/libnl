@@ -990,3 +990,53 @@ bool _nltst_select_route_match(struct nl_object *route,
 
 	return false;
 }
+
+/*****************************************************************************/
+
+void _nltst_assert_route_list(struct nl_object *const *objs, ssize_t len,
+			      const char *const *expected_routes)
+{
+	size_t l;
+	size_t i;
+
+	if (len < 0) {
+		l = 0;
+		if (objs) {
+			while (objs[l])
+				l++;
+		}
+	} else
+		l = len;
+
+	for (i = 0; i < l; i++) {
+		struct nl_object *route = objs[i];
+		_nltst_auto_clear_select_route NLTstSelectRoute select_route = {
+			0
+		};
+		_nl_auto_free char *s = _nltst_object_to_string(route);
+
+		if (!expected_routes[i]) {
+			ck_abort_msg(
+				"No more expected route, but have route %zu (of %zu) as %s",
+				i + 1, l, s);
+		}
+
+		_nltst_select_route_parse(expected_routes[i], &select_route);
+
+		_nltst_select_route_match(route, &select_route, true);
+	}
+}
+
+void _nltst_assert_route_cache_v(struct nl_cache *cache,
+				 const char *const *expected_routes)
+{
+	_nl_auto_free struct nl_object **objs = NULL;
+	size_t len;
+
+	ck_assert(cache);
+	ck_assert(expected_routes);
+
+	objs = _nltst_cache_get_all(cache, &len);
+
+	_nltst_assert_route_list(objs, len, expected_routes);
+}

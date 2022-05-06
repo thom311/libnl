@@ -507,4 +507,14 @@ void _nltst_delete_link(struct nl_sock *sk, const char *ifname);
 void _nltst_get_link(struct nl_sock *sk, const char *ifname, int *out_ifindex,
 		     struct rtnl_link **out_link);
 
+void _nltst_assert_route_list(struct nl_object *const *objs, ssize_t len,
+			      const char *const *expected_routes);
+
+void _nltst_assert_route_cache_v(struct nl_cache *cache,
+				 const char *const *expected_routes);
+
+#define _nltst_assert_route_cache(cache, ...) \
+	_nltst_assert_route_cache_v(cache,    \
+				    ((const char *const[200]){ __VA_ARGS__ }))
+
 #endif /* __NL_TEST_UTIL_H__ */

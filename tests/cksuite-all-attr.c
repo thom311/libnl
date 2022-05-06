@@ -117,6 +117,31 @@ START_TEST(clone_cls_u32)
 }
 END_TEST
 
+/*****************************************************************************/
+
+START_TEST(test_nltst_strtok)
+{
+#define _assert_strtok(str, ...)                                               \
+	do {                                                                   \
+		const char *const _expected[] = { NULL, ##__VA_ARGS__, NULL }; \
+		_nltst_auto_strfreev char **_tokens = NULL;                    \
+                                                                               \
+		_tokens = _nltst_strtokv(str);                                 \
+		_nltst_assert_strv_equal(_tokens, &_expected[1]);              \
+	} while (0)
+
+	_assert_strtok("");
+	_assert_strtok("    \n");
+	_assert_strtok("a", "a");
+	_assert_strtok(" a ", "a");
+	_assert_strtok(" a\\  b", "a\\ ", "b");
+	_assert_strtok(" a\\  b   cc\\d", "a\\ ", "b", "cc\\d");
+	_assert_strtok(" a\\  b\\   cc\\d", "a\\ ", "b\\ ", "cc\\d");
+}
+END_TEST
+
+/*****************************************************************************/
+
 Suite *make_nl_attr_suite(void)
 {
 	Suite *suite = suite_create("Netlink attributes");
@@ -125,6 +150,7 @@ Suite *make_nl_attr_suite(void)
 	tcase_add_test(tc, attr_size);
 	tcase_add_test(tc, msg_construct);
 	tcase_add_test(tc, clone_cls_u32);
+	tcase_add_test(tc, test_nltst_strtok);
 	suite_add_tcase(suite, tc);
 
 	return suite;

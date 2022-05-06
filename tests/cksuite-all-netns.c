@@ -45,7 +45,8 @@ START_TEST(cache_and_clone)
 
 	for (i = 0; i < _NL_N_ELEMENTS(links); i++) {
 		if (links[i].add)
-			_nltst_add_link(NULL, links[i].ifname, links[i].kind);
+			_nltst_add_link(NULL, links[i].ifname, links[i].kind,
+					NULL);
 	}
 
 	sk = _nltst_socket(NETLINK_ROUTE);
@@ -57,11 +58,11 @@ START_TEST(cache_and_clone)
 	ck_assert_int_eq(r, 0);
 
 	for (i = 0; i < _NL_N_ELEMENTS(links); i++) {
-		_nl_auto_rtnl_link struct rtnl_link *link = NULL;
 		_nl_auto_rtnl_link struct rtnl_link *link_clone = NULL;
+		struct rtnl_link *link;
 
-		link = rtnl_link_get_by_name(link_cache, links[i].ifname);
-		ck_assert(link);
+		link = _nltst_cache_get_link(link_cache, links[i].ifname);
+		ck_assert_ptr_nonnull(link);
 
 		ck_assert_str_eq(rtnl_link_get_name(link), links[i].ifname);
 

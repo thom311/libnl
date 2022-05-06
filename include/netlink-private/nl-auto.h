@@ -15,6 +15,14 @@ static inline void name(void *v) \
 } \
 struct _nl_dummy_for_tailing_semicolon
 
+#define _NL_AUTO_DEFINE_FCN_STRUCT(CastType, name, func) \
+static inline void name(CastType *v) \
+{ \
+	if (v) \
+		func(v); \
+} \
+struct _nl_dummy_for_tailing_semicolon
+
 #define _NL_AUTO_DEFINE_FCN_TYPED0(CastType, name, func) \
 static inline void name(CastType *v) \
 { \

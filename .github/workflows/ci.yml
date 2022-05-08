@@ -44,8 +44,13 @@ jobs:
 
       - name: Run Unit Tests
         run: |
+          set -x
           export NLTST_SEED_RAND=
-          make -j 5 check
+          for i in `seq 1 5`; do
+            tests/check-all
+            tests/check-direct
+            make -j check
+          done
 
       - name: Run Unit Tests w/Valgrind
         run: |

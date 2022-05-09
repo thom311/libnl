@@ -72,6 +72,23 @@
 
 /*****************************************************************************/
 
+#ifdef thread_local
+#define _nl_thread_local thread_local
+/*
+ * Don't break on glibc < 2.16 that doesn't define __STDC_NO_THREADS__
+ * see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=53769
+ */
+#elif __STDC_VERSION__ >= 201112L &&                                           \
+	!(defined(__STDC_NO_THREADS__) ||                                      \
+	  (defined(__GNU_LIBRARY__) && __GLIBC__ == 2 &&                       \
+	   __GLIBC_MINOR__ < 16))
+#define _nl_thread_local _Thread_local
+#else
+#define _nl_thread_local __thread
+#endif
+
+/*****************************************************************************/
+
 #define _NL_STATIC_ASSERT(cond) ((void) sizeof (char[(cond) ? 1 : -1]))
 
 /*****************************************************************************/

@@ -8,8 +8,8 @@
 #include "cksuite-all.h"
 #include "netlink-private/nl-auto.h"
 
-#define MAX_DEPTH		6
-#define MAX_CHILDREN		5
+#define MAX_DEPTH 6
+#define MAX_CHILDREN 5
 
 static int current_depth = 0;
 static int id = 1;
@@ -25,7 +25,7 @@ static long long my_pow(long long x, long long y)
 	if (y < 0 || x == 0)
 		return 0;
 
-	while(--y) {
+	while (--y) {
 		ret *= x;
 	}
 
@@ -76,7 +76,7 @@ static void dump_ematch_list(struct nl_list_head *head, int *result, int *index)
 {
 	struct rtnl_ematch *pos = NULL;
 
-	nl_list_for_each_entry(pos, head, e_list) {
+	nl_list_for_each_entry (pos, head, e_list) {
 		if (!nl_list_empty(&pos->e_childs))
 			dump_ematch_list(&pos->e_childs, result, index);
 		result[*index] = pos->e_id;
@@ -84,7 +84,8 @@ static void dump_ematch_list(struct nl_list_head *head, int *result, int *index)
 	}
 }
 
-static void dump_ematch_tree(struct rtnl_ematch_tree *tree, int *result, int *index)
+static void dump_ematch_tree(struct rtnl_ematch_tree *tree, int *result,
+			     int *index)
 {
 	if (!tree)
 		return;

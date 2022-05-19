@@ -133,7 +133,7 @@ static int flower_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 		return 0;
 
 	if (f->cf_mask & FLOWER_ATTR_FLAGS)
-		NLA_PUT_U32(msg, TCA_FLOWER_FLAGS, f->cf_mask);
+		NLA_PUT_U32(msg, TCA_FLOWER_FLAGS, f->cf_flags);
 
 	if (f->cf_mask & FLOWER_ATTR_ACTION) {
 		err = rtnl_act_fill(msg, TCA_FLOWER_ACT, f->cf_act);

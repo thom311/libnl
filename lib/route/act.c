@@ -24,11 +24,15 @@ static struct nl_cache_ops rtnl_act_ops;
 
 struct rtnl_act * rtnl_act_next(struct rtnl_act *act)
 {
-    if (act == NULL) {
-        return NULL;
-    }
+        struct rtnl_act *next;
 
-    return act->a_next;
+	if ((act != NULL) && (act->a_next != NULL)) {
+		next = act->a_next;
+		rtnl_act_get(next);
+	        return next;
+	}
+
+	return NULL;
 }
 
 int rtnl_act_append(struct rtnl_act **head, struct rtnl_act *new)

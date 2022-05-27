@@ -65,7 +65,7 @@ nla_put_failure:
 }
 
 static void nat_dump_line(struct rtnl_tc *tc, void *data,
-                          struct nl_dump_params *p)
+			  struct nl_dump_params *p)
 {
 	struct tc_nat *nat = data;
 	char buf[32];
@@ -113,7 +113,7 @@ int rtnl_nat_set_old_addr(struct rtnl_act *act, in_addr_t addr)
 {
 	struct tc_nat *nat;
 
-	if (!(nat = (struct tc_nat *) rtnl_tc_data(TC_CAST(act))))
+	if (!(nat = (struct tc_nat *)rtnl_tc_data(TC_CAST(act))))
 		return -NLE_NOMEM;
 
 	nat->old_addr = addr;
@@ -125,7 +125,7 @@ int rtnl_nat_get_old_addr(struct rtnl_act *act, in_addr_t *addr)
 {
 	struct tc_nat *nat;
 
-	if (!(nat = (struct tc_nat *) rtnl_tc_data_peek(TC_CAST(act))))
+	if (!(nat = (struct tc_nat *)rtnl_tc_data_peek(TC_CAST(act))))
 		return -NLE_NOATTR;
 
 	*addr = nat->old_addr;
@@ -144,7 +144,7 @@ int rtnl_nat_set_new_addr(struct rtnl_act *act, in_addr_t addr)
 {
 	struct tc_nat *nat;
 
-	if (!(nat = (struct tc_nat *) rtnl_tc_data(TC_CAST(act))))
+	if (!(nat = (struct tc_nat *)rtnl_tc_data(TC_CAST(act))))
 		return -NLE_NOMEM;
 
 	nat->new_addr = addr;
@@ -156,7 +156,7 @@ int rtnl_nat_get_new_addr(struct rtnl_act *act, in_addr_t *addr)
 {
 	struct tc_nat *nat;
 
-	if (!(nat = (struct tc_nat *) rtnl_tc_data_peek(TC_CAST(act))))
+	if (!(nat = (struct tc_nat *)rtnl_tc_data_peek(TC_CAST(act))))
 		return -NLE_NOATTR;
 
 	*addr = nat->new_addr;
@@ -175,7 +175,7 @@ int rtnl_nat_set_mask(struct rtnl_act *act, in_addr_t bitmask)
 {
 	struct tc_nat *nat;
 
-	if (!(nat = (struct tc_nat *) rtnl_tc_data(TC_CAST(act))))
+	if (!(nat = (struct tc_nat *)rtnl_tc_data(TC_CAST(act))))
 		return -NLE_NOMEM;
 
 	nat->mask = bitmask;
@@ -187,7 +187,7 @@ int rtnl_nat_get_mask(struct rtnl_act *act, in_addr_t *bitmask)
 {
 	struct tc_nat *nat;
 
-	if (!(nat = (struct tc_nat *) rtnl_tc_data_peek(TC_CAST(act))))
+	if (!(nat = (struct tc_nat *)rtnl_tc_data_peek(TC_CAST(act))))
 		return -NLE_NOATTR;
 
 	*bitmask = nat->mask;
@@ -209,7 +209,7 @@ int rtnl_nat_set_flags(struct rtnl_act *act, uint32_t flags)
 {
 	struct tc_nat *nat;
 
-	if (!(nat = (struct tc_nat *) rtnl_tc_data(TC_CAST(act))))
+	if (!(nat = (struct tc_nat *)rtnl_tc_data(TC_CAST(act))))
 		return -NLE_NOMEM;
 
 	nat->flags = flags;
@@ -221,7 +221,7 @@ int rtnl_nat_get_flags(struct rtnl_act *act, uint32_t *flags)
 {
 	struct tc_nat *nat;
 
-	if (!(nat = (struct tc_nat *) rtnl_tc_data_peek(TC_CAST(act))))
+	if (!(nat = (struct tc_nat *)rtnl_tc_data_peek(TC_CAST(act))))
 		return -NLE_NOATTR;
 
 	*flags = nat->flags;
@@ -233,7 +233,7 @@ int rtnl_nat_set_action(struct rtnl_act *act, int action)
 {
 	struct tc_nat *nat;
 
-	if (!(nat = (struct tc_nat *) rtnl_tc_data(TC_CAST(act))))
+	if (!(nat = (struct tc_nat *)rtnl_tc_data(TC_CAST(act))))
 		return -NLE_NOMEM;
 
 	if (action < TC_ACT_UNSPEC)
@@ -246,10 +246,10 @@ int rtnl_nat_set_action(struct rtnl_act *act, int action)
 
 int rtnl_nat_get_action(struct rtnl_act *act, int *action)
 {
-        struct tc_nat *nat;
+	struct tc_nat *nat;
 
-	if (!(nat = (struct tc_nat *) rtnl_tc_data_peek(TC_CAST(act))))
-	        return -NLE_NOATTR;
+	if (!(nat = (struct tc_nat *)rtnl_tc_data_peek(TC_CAST(act))))
+		return -NLE_NOATTR;
 
 	*action = nat->action;
 

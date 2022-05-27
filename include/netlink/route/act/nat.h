@@ -32,4 +32,4 @@ extern int rtnl_nat_get_action(struct rtnl_act *act, int *action);
 }
 #endif
 
-#endif	/* NETLINK_NAT_H */
+#endif /* NETLINK_NAT_H */

@@ -381,9 +381,9 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/act.c \
 	lib/route/act/gact.c \
 	lib/route/act/mirred.c \
+	lib/route/act/nat.c \
 	lib/route/act/skbedit.c \
 	lib/route/act/vlan.c \
-	lib/route/act/nat.c \
 	lib/route/addr.c \
 	lib/route/class.c \
 	lib/route/classid.c \

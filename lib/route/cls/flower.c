@@ -135,7 +135,8 @@ static int flower_msg_parser(struct rtnl_tc *tc, void *data)
 	}
 
 	if (tb[TCA_FLOWER_KEY_IPV4_SRC_MASK]) {
-		f->cf_ipv4_src_mask = nla_get_u32(tb[TCA_FLOWER_KEY_IPV4_SRC_MASK]);
+		f->cf_ipv4_src_mask =
+			nla_get_u32(tb[TCA_FLOWER_KEY_IPV4_SRC_MASK]);
 		f->cf_mask |= FLOWER_ATTR_IPV4_SRC_MASK;
 	}
 
@@ -145,7 +146,8 @@ static int flower_msg_parser(struct rtnl_tc *tc, void *data)
 	}
 
 	if (tb[TCA_FLOWER_KEY_IPV4_DST_MASK]) {
-		f->cf_ipv4_dst_mask = nla_get_u32(tb[TCA_FLOWER_KEY_IPV4_DST_MASK]);
+		f->cf_ipv4_dst_mask =
+			nla_get_u32(tb[TCA_FLOWER_KEY_IPV4_DST_MASK]);
 		f->cf_mask |= FLOWER_ATTR_IPV4_DST_MASK;
 	}
 
@@ -203,13 +205,15 @@ static int flower_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 		NLA_PUT_U32(msg, TCA_FLOWER_KEY_IPV4_SRC, f->cf_ipv4_src);
 
 	if (f->cf_mask & FLOWER_ATTR_IPV4_SRC_MASK)
-	        NLA_PUT_U32(msg, TCA_FLOWER_KEY_IPV4_SRC_MASK, f->cf_ipv4_src_mask);
+		NLA_PUT_U32(msg, TCA_FLOWER_KEY_IPV4_SRC_MASK,
+			    f->cf_ipv4_src_mask);
 
 	if (f->cf_mask & FLOWER_ATTR_IPV4_DST)
-	        NLA_PUT_U32(msg, TCA_FLOWER_KEY_IPV4_DST, f->cf_ipv4_dst);
+		NLA_PUT_U32(msg, TCA_FLOWER_KEY_IPV4_DST, f->cf_ipv4_dst);
 
 	if (f->cf_mask & FLOWER_ATTR_IPV4_DST_MASK)
-	        NLA_PUT_U32(msg, TCA_FLOWER_KEY_IPV4_DST_MASK, f->cf_ipv4_dst_mask);
+		NLA_PUT_U32(msg, TCA_FLOWER_KEY_IPV4_DST_MASK,
+			    f->cf_ipv4_dst_mask);
 
 	return 0;
 
@@ -659,7 +663,8 @@ int rtnl_flower_get_ip_dscp(struct rtnl_cls *cls, uint8_t *dscp, uint8_t *mask)
  * @arg mask		mask for IPv4 source address
  * @return 0 on success or a negative error code.
  */
-int rtnl_flower_set_ipv4_src(struct rtnl_cls *cls, in_addr_t addr, in_addr_t mask)
+int rtnl_flower_set_ipv4_src(struct rtnl_cls *cls, in_addr_t addr,
+			     in_addr_t mask)
 {
 	struct rtnl_flower *f;
 
@@ -719,7 +724,8 @@ int rtnl_flower_get_ipv4_src(struct rtnl_cls *cls, in_addr_t *out_addr,
  * @arg mask		mask for IPv4 destination address
  * @return 0 on success or a negative error code.
  */
-int rtnl_flower_set_ipv4_dst(struct rtnl_cls *cls, in_addr_t addr, in_addr_t mask)
+int rtnl_flower_set_ipv4_dst(struct rtnl_cls *cls, in_addr_t addr,
+			     in_addr_t mask)
 {
 	struct rtnl_flower *f;
 

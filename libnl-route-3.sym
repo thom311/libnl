@@ -1253,8 +1253,8 @@ global:
 
 libnl_3_7 {
 global:
-	rtnl_flower_set_ipv4_src;
+	rtnl_flower_get_ipv4_dst;
 	rtnl_flower_get_ipv4_src;
 	rtnl_flower_set_ipv4_dst;
-	rtnl_flower_get_ipv4_dst;
+	rtnl_flower_set_ipv4_src;
 } libnl_3_6;

@@ -112,19 +112,7 @@ int rtnl_gact_set_action(struct rtnl_act *act, int action)
 	if (!(u = (struct rtnl_gact *) rtnl_tc_data(TC_CAST(act))))
 		return -NLE_NOMEM;
 
-	if (action > TC_ACT_SHOT || action < TC_ACT_UNSPEC)
-		return -NLE_INVAL;
-
-	switch (action) {
-	case TC_ACT_UNSPEC:
-	case TC_ACT_SHOT:
-		u->g_parm.action = action;
-		break;
-	case TC_ACT_OK:
-	case TC_ACT_RECLASSIFY:
-	default:
-		return NLE_OPNOTSUPP;
-	}
+	u->g_parm.action = action;
 
 	return 0;
 }

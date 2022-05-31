@@ -152,10 +152,8 @@ int rtnl_skbedit_set_action(struct rtnl_act *act, int action)
 	if (!(u = (struct rtnl_skbedit *) rtnl_tc_data(TC_CAST(act))))
 		return -NLE_NOMEM;
 
-	if (action > TC_ACT_REPEAT || action < TC_ACT_UNSPEC)
-		return -NLE_INVAL;
-
 	u->s_parm.action = action;
+
 	return 0;
 }
 

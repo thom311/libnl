@@ -173,19 +173,8 @@ int rtnl_mirred_set_policy(struct rtnl_act *act, int policy)
 	if (!(u = (struct rtnl_mirred *) rtnl_tc_data(TC_CAST(act))))
 		return -NLE_NOMEM;
 
-	if (policy > TC_ACT_REPEAT || policy < TC_ACT_OK)
-		return -NLE_INVAL;
+	u->m_parm.action = policy;
 
-	switch (u->m_parm.eaction) {
-	case TCA_EGRESS_MIRROR:
-	case TCA_EGRESS_REDIR:
-		u->m_parm.action = policy;
-		break;
-	case TCA_INGRESS_REDIR:
-	case TCA_INGRESS_MIRROR:
-	default:
-		return NLE_OPNOTSUPP;
-	}
 	return 0;
 }
 

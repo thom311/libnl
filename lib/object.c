@@ -338,8 +338,13 @@ int nl_object_identical(struct nl_object *a, struct nl_object *b)
 		req_attrs_b = req_attrs_a;
 	}
 
-	req_attrs_a &= a->ce_mask;
-	req_attrs_b &= b->ce_mask;
+	if (ops->oo_id_attrs_get || ops->oo_id_attrs) {
+		req_attrs_a |= a->ce_mask;
+		req_attrs_b |= b->ce_mask;
+	} else {
+		req_attrs_a &= a->ce_mask;
+		req_attrs_b &= b->ce_mask;
+	}
 
 	/* Both objects must provide all required attributes to uniquely
 	 * identify an object */

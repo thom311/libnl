@@ -675,7 +675,7 @@ int rtnl_link_sriov_parse_vflist(struct rtnl_link *link, struct nlattr **tb) {
 				    RTNL_LINK_VF_STATS_MULTICAST,
 				    IFLA_VF_STATS_MULTICAST);
 
-			vf_data->ce_mask |= IFLA_VF_STATS;
+			vf_data->ce_mask |= SRIOV_ATTR_STATS;
 		}
 
 		if (t[IFLA_VF_TRUST]) {

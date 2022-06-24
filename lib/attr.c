@@ -541,6 +541,9 @@ int nla_put_data(struct nl_msg *msg, int attrtype, const struct nl_data *data)
  */
 int nla_put_addr(struct nl_msg *msg, int attrtype, struct nl_addr *addr)
 {
+	if (nl_addr_get_len(addr) == 0)
+		return -NLE_INVAL;
+
 	return nla_put(msg, attrtype, nl_addr_get_len(addr),
 		       nl_addr_get_binary_addr(addr));
 }

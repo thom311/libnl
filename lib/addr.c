@@ -226,7 +226,7 @@ struct nl_addr *nl_addr_build(int family, const void *buf, size_t size)
 		addr->a_prefixlen = size*8;
 	}
 
-	if (size)
+	if (size && buf)
 		memcpy(addr->a_addr, buf, size);
 
 	return addr;

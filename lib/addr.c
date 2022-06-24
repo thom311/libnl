@@ -325,14 +325,17 @@ int nl_addr_parse(const char *addrstr, int hint, struct nl_addr **result)
 				 * no hint given the user wants to have a IPv4
 				 * address given back. */
 				family = AF_INET;
+				len = 4;
 				goto prefix;
 
 			case AF_INET6:
 				family = AF_INET6;
+				len = 16;
 				goto prefix;
 
 			case AF_LLC:
 				family = AF_LLC;
+				len = 6;
 				goto prefix;
 
 			default:
@@ -449,6 +452,8 @@ prefix:
 
 	if (copy)
 		nl_addr_set_binary_addr(addr, buf, len);
+	else
+		addr->a_len = len;
 
 	if (prefix) {
 		char *p;
@@ -460,7 +465,7 @@ prefix:
 		}
 		nl_addr_set_prefixlen(addr, pl);
 	} else {
-		if (!plen)
+		if (copy && !plen)
 			plen = len * 8;
 		nl_addr_set_prefixlen(addr, plen);
 	}

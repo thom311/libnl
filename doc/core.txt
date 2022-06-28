@@ -13,10 +13,10 @@ Thomas Graf <tgraf@suug.ch>
 == Introduction
 
 The core library contains the fundamentals required to communicate
-over netlink sockets. It deals with connecting and disconnectng of
+over netlink sockets. It deals with connecting and disconnecting of
 sockets, sending and receiving of data, construction and parsing of
-messages, provides a customizeable receiving state machine, and
-provides a abstract data type framework which eases the implementation
+messages, provides a customizable receiving state machine, and
+provides an abstract data type framework which eases the implementation
 of object based netlink protocols where objects are added, removed, or
 modified using a netlink based protocol.
 
@@ -385,8 +385,8 @@ msc {
 --------
 
 The configuration may be changed by sending a +MSG_SETCFG+ which will
-be responded to with either a ACK (see <<core_msg_ack>>)
-or a error message (see <<core_errmsg>>).
+be responded to with either an ACK (see <<core_msg_ack>>)
+or an error message (see <<core_errmsg>>).
 
 ["mscgen"]
 --------
@@ -423,7 +423,7 @@ messages.  A multipart message has the flag +NLM_F_MULTI+ set and the
 receiver is expected to continue receiving and parsing until the special
 message type +NLMSG_DONE+ is received.
 
-Multipart messages unlike fragmented ip packets must not be reassmbled
+Multipart messages unlike fragmented ip packets must not be reassembled
 even though it is perfectly legal to do so if the protocols wishes to
 work this way. Often multipart message are used to send lists or trees
 of objects were each multipart message simply carries multiple objects
@@ -552,7 +552,7 @@ protocols.
 
 Netlink allows the use of sequence numbers to help relate replies to
 requests. It should be noted that unlike in protocols such as TCP
-there is no strict enforcment of the sequence number. The sole purpose
+there is no strict enforcement of the sequence number. The sole purpose
 of sequence numbers is to assist a sender in relating replies to the
 corresponding requests. See <<core_msg_types>> for more information.
 
@@ -733,7 +733,7 @@ struct nl_cb *nl_socket_get_cb(const struct nl_sock *sk);
 void nl_socket_set_cb(struct nl_sock *sk, struct nl_cb *cb);
 --------
 
-Additionaly a shortcut exists to modify the callback configuration
+Additionally a shortcut exists to modify the callback configuration
 assigned to a socket directly:
 
 [source,c]
@@ -930,7 +930,7 @@ higher level interfaces and the behaviour of nl_send() is to your
 dislike then you must overwrite the nl_send() function via
 nl_cb_overwrite_send()
 
-The purpose of nl_send() is to embed the netlink message into a iovec
+The purpose of nl_send() is to embed the netlink message into an iovec
 structure and pass it on to nl_send_iovec().
 
 [source,c]
@@ -1117,8 +1117,8 @@ by an own implementation using the function nl_cb_overwrite_recv().
 This may be useful if the netlink byte stream is in fact not received
 from a socket directly but is read from a file or another source.
 
-If data has been read, it will be attemped to parse the data. This
-will be done repeately until the parser returns NL_STOP, an error was
+If data has been read, it will be attempted to parse the data. This
+will be done repeatedly until the parser returns NL_STOP, an error was
 returned or all data has been parsed.
 
 In case the last message parsed successfully was a multipart message
@@ -1200,7 +1200,7 @@ protocol and its message format.
 .Alignment
 
 Most netlink protocols enforce a strict alignment policy for all
-boundries.  The alignment value is defined by NLMSG_ALIGNTO and is
+boundaries.  The alignment value is defined by NLMSG_ALIGNTO and is
 fixed to 4 bytes.  Therefore all netlink message headers, begin of
 payload sections, protocol specific headers, and attribute sections
 must start at an offset which is a multiple of NLMSG_ALIGNTO.
@@ -1321,7 +1321,7 @@ nlmsg_for_each(hdr, stream, length) {
 
 .Message Payload
 
-The message payload is appended to the message header and is guranteed
+The message payload is appended to the message header and is guaranteed
 to start at a multiple of +NLMSG_ALIGNTO+. Padding at the end of the
 message header is added if necessary to ensure this. The function
 nlmsg_data() will calculate the necessary offset based on the message
@@ -1348,8 +1348,8 @@ nlmsg_data(nlh) ---------------^                                  ^
 nlmsg_tail(nlh) --------------------------------------------------^
 --------
 
-The payload may consist of arbitary data but may have strict alignment
-and formatting rules depening on the actual netlink protocol.
+The payload may consist of arbitrary data but may have strict alignment
+and formatting rules depending on the actual netlink protocol.
 
 [[core_msg_attr]]
 .Message Attributes
@@ -1401,7 +1401,7 @@ int nlmsg_parse(struct nlmsghdr *hdr, int hdrlen, struct nlattr **attrs,
 
 The function nlmsg_validate() is based on nla_validate() and behaves
 exactly the same as nlmsg_parse() except that it only validates and
-will not fill a array with pointers to each attribute.
+will not fill anarray with pointers to each attribute.
 
 [source,c]
 --------
@@ -1470,7 +1470,7 @@ struct nl_msg *nlmsg_alloc_size(size_t max);
 --------
 
 Instead of changing the default message size, the function
-nlmsg_alloc_size() can be used to allocate a message with a individual
+nlmsg_alloc_size() can be used to allocate a message with an individual
 maximum message size.
 
 
@@ -1514,7 +1514,7 @@ struct nlmsghdr *nlmsg_put(struct nl_msg *msg, uint32_t port, uint32_t seqnr,
 
 The function nlmsg_put() will build a netlink message header out of
 +nlmsg_type+, +nlmsg_flags+, +seqnr+, and +port+ and copy it into the
-netlink message. +seqnr+ can be set to +NL_AUTO_SEQ+ to indiciate
+netlink message. +seqnr+ can be set to +NL_AUTO_SEQ+ to indicate
 that the next possible sequence number should be used automatically.
 To use this feature, the message must be sent using the function
 nl_send_auto(). Like +port+, the argument +seqnr+ can be set to
@@ -1538,7 +1538,7 @@ struct nlmsghdr *hdr;
 struct nl_msg *msg;
 struct myhdr {
 	uint32_t foo1, foo2;
-} hdr = { 10, 20 };
+} shdr = { 10, 20 };
 
 /* Allocate a message with the default maximum message size */
 msg = nlmsg_alloc();
@@ -1548,10 +1548,10 @@ msg = nlmsg_alloc();
  * let library fill port and sequence number, and reserve room for
  * struct myhdr
  */
-hdr = nlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, MY_MSGTYPE, sizeof(hdr), NLM_F_CREATE);
+hdr = nlmsg_put(msg, NL_AUTO_PORT, NL_AUTO_SEQ, MY_MSGTYPE, sizeof(shdr), NLM_F_CREATE);
 
 /* Copy own header into newly reserved payload section */
-memcpy(nlmsg_data(hdr), &hdr, sizeof(hdr));
+memcpy(nlmsg_data(hdr), &shdr, sizeof(shdr));
 
 /*
  * The message will now look like this:
@@ -1570,7 +1570,7 @@ memcpy(nlmsg_data(hdr), &hdr, sizeof(hdr));
 
 Most functions described later on will automatically take care of
 reserving room for the data that is added to the end of the netlink
-message. In some situations it may be requried for the application
+message. In some situations it may be required for the application
 to reserve room directly though.
 
 [source,c]
@@ -1619,10 +1619,10 @@ NOTE: `nlmsg_append()` will *not* align the start of the data. Any
       alignment requirements must be provided by the owner of the
       previous message section.
 
-.Adding attribtues to a message
+.Adding attributes to a message
 
-Construction of attributes and addition of attribtues to the message is
-covereted in section <<core_attr>>.
+Construction of attributes and addition of attributes to the message is
+covered in section <<core_attr>>.
 
 [[core_attr]]
 == Attributes
@@ -1654,7 +1654,7 @@ the message format will never ever change in the future.
 [[core_attr_format]]
 === Attribute Format
 
-Netlink attributes allow for any number of data chunks of arbitary
+Netlink attributes allow for any number of data chunks of arbitrary
 length to be attached to a netlink message. See <<core_msg_attr>>
 for more information on where attributes are stored in the message.
 
@@ -1791,10 +1791,10 @@ expectations. See <<core_attr_validation>>
 [[core_attr_validation]]
 .Attribute Validation
 
-When receiving netlink attributes, the receiver has certain expections
+When receiving netlink attributes, the receiver has certain expectations
 on how the attributes should look like. These expectations must be
-defined to make sure the sending side meets our expecations. For this
-purpose, a attribute validation interface exists which must be used
+defined to make sure the sending side meets our expectations. For this
+purpose, an attribute validation interface exists which must be used
 prior to accessing any payload.
 
 All functions providing attribute validation functionality are based
@@ -1817,7 +1817,7 @@ for most basic datatypes such as integers or flags. The +maxlen+
 member can be used to define a maximum payload length for an
 attribute to still be considered valid.
 
-NOTE: Specyfing a maximum payload length is not recommended when
+NOTE: Specifying a maximum payload length is not recommended when
       encoding structures in an attribute as it will prevent any
       extension of the structure in the future. Something that is
       frequently done in netlink protocols and does not break
@@ -1883,7 +1883,7 @@ to parse the message and its attributes in one step. See
 
 The following example demonstrates how to parse a netlink message sent
 over a netlink protocol which does not use protocol headers. The example
-does enforce a attribute policy however, the attribute MY_ATTR_FOO must
+does enforce an attribute policy however, the attribute MY_ATTR_FOO must
 be a 32 bit integer, and the attribute MY_ATTR_BAR must be a string with
 a maximum length of 16 characters.
 
@@ -1948,7 +1948,7 @@ NOTE: `nla_find()` and `nlmsg_find_attr()` will *not* search in nested
 
 In some situations it does not make sense to assign a unique attribute
 type to each attribute in the attribute stream. For example a list may
-be transferd using a stream of attributes and even if the attribute type
+be transferred using a stream of attributes and even if the attribute type
 is incremented for each attribute it may not make sense to use the
 nlmsg_parse() or nla_parse() function to fill an array.
 
@@ -2003,7 +2003,7 @@ attribute is properly aligned.
 int nla_put(struct nl_msg *msg, int attrtype, int attrlen, const void *data);
 --------
 
-The function nla_put() is base don nla_reserve() but takes an additional
+The function nla_put() is based on nla_reserve() but takes an additional
 pointer +data+ pointing to a buffer containing the attribute payload.
 It will copy the buffer into the message automatically.
 
@@ -2065,7 +2065,7 @@ exception based variants.
 
 A number of basic data types have been defined to simplify access and
 validation of attributes. The datatype is not encoded in the
-attribute, therefore bthe sender and receiver are required to use the
+attribute, therefore the sender and receiver are required to use the
 same definition on what attribute is of what type.
 
 [options="header", cols="1m,5"]
@@ -2095,7 +2095,7 @@ NLA_U32:: 32bit integer
 NLA_U64:: 64bit integer
 
 Note that due to the alignment requirements of attributes the integer
-attribtue +NLA_u8+ and +NLA_U16+ will not result in space savings in
+attribute +NLA_u8+ and +NLA_U16+ will not result in space savings in
 the netlink message. Their use is intended to limit the range of
 values.
 
@@ -2148,7 +2148,7 @@ integer when filling out a struct nla_policy array. It will
 automatically enforce the correct minimum payload length policy.
 
 Validation does not differ between signed and unsigned integers, only
-the size matters. If the appliaction wishes to enforce particular value
+the size matters. If the application wishes to enforce particular value
 ranges it must do so itself.
 
 [source,c]
@@ -2252,13 +2252,13 @@ NOTE: When validating the attributes using nlmsg_validate(),
       nlmsg_parse(), nla_validate(), or nla_parse() only the
       attributes on the first level are being validated. None of these
       functions will validate attributes recursively. Therefore you
-      must explicitely call nla_validate() or use nla_parse_nested()
+      must explicitly call nla_validate() or use nla_parse_nested()
       for each level of nested attributes.
 
 The type +NLA_NESTED+ should be used when defining nested attributes
 in a struct nla_policy definition. It will not enforce any minimum
-payload length unless +minlen+ is specified explicitely. This is
-because some netlink protocols implicitely allow empty container
+payload length unless +minlen+ is specified explicitly. This is
+because some netlink protocols implicitly allow empty container
 attributes.
 
 [source,c]
@@ -2294,7 +2294,7 @@ if (attrs[ATTR_OPTS]) {
 .Construction of Nested Attributes
 
 Attributes are nested by surrounding them with calls to nla_nest_start()
-and nla_nest_end(). nla_nest_start() will add a attribute header to
+and nla_nest_end(). nla_nest_start() will add an attribute header to
 the message but no actual payload. All data added to the message from
 this point on will be part of the container attribute until nla_nest_end()
 is called which "closes" the attribute, correcting its payload length to
@@ -2324,7 +2324,7 @@ nla_put_failure:
 ==== Unspecified Attribute
 
 This is the default attribute type and used when none of the basic
-datatypes is suitable. It represents data of arbitary type and length.
+datatypes is suitable. It represents data of arbitrary type and length.
 
 See <<core_addr_alloc, Address Allocation>> for a more information on
 a special interface allowing the allocation of abstract address object
@@ -2363,7 +2363,7 @@ struct nl_msg *build_msg(int ifindex, struct nl_addr *lladdr, int mtu)
 	/* Append a 32 bit integer attribute to carry the MTU */
 	NLA_PUT_U32(msg, IFLA_MTU, mtu);
 
-	/* Append a unspecific attribute to carry the link layer address */
+	/* Append an unspecific attribute to carry the link layer address */
 	NLA_PUT_ADDR(msg, IFLA_ADDRESS, lladdr);
 
 	/* Append a container for nested attributes to carry link information */
@@ -2417,7 +2417,7 @@ int parse_message(struct nlmsghdr *hdr)
 	 * The nlmsg_parse() function will make sure that the message contains
 	 * enough payload to hold the header (struct my_hdr), validates any
 	 * attributes attached to the messages and stores a pointer to each
-	 * attribute in the attrs[] array accessable by attribute type.
+	 * attribute in the attrs[] array accessible by attribute type.
 	 */
 	if ((err = nlmsg_parse(hdr, sizeof(struct my_hdr), attrs, ATTR_MAX,
 			       attr_policy)) < 0)
@@ -2456,7 +2456,7 @@ errout:
 == Callback Configurations
 
 Callback hooks and overwriting capabilities are provided in various places
-inside library to control the behaviour of several functions. All the
+inside the library to control the behaviour of several functions. All the
 callback and overwrite functions are packed together in struct nl_cb which
 is attached to a netlink socket or passed on to functions directly.
 
@@ -2479,7 +2479,7 @@ Callback functions may return the following return codes:
 .Default Callback Implementations
 
 The library provides three sets of default callback implementations:
-* +NL_CB_DEFAULT+ This is the default set. It implets the default behaviour.
+* +NL_CB_DEFAULT+ This is the default set. It implements the default behaviour.
      See the table below for more information on the return codes of each
      function.
 * +NL_CB_VERBOSE+ This set is based on the default set but will cause an
@@ -2583,7 +2583,7 @@ void nl_cb_overwrite_recvmsgs(struct nl_cb *cb,
                               int (*func)(struct nl_sock *sk, struct nl_cb *cb));
 --------
 
-The following criteras must be met if a recvmsgs() implementation is
+The following criterias must be met if a recvmsgs() implementation is
 supposed to work with high level interfaces:
 
 - MUST respect the callback configuration +cb+, therefore:
@@ -2618,14 +2618,14 @@ The following criteras must be met for an own `nl_recv()`
 implementation:
 
  - *MUST* return the number of bytes read or a negative error code if
-   an error occured. The function may also return 0 to indicate that
+   an error occurred. The function may also return 0 to indicate that
    no data has been read.
  - *MUST* set `*buf` to a buffer containing the data read. It must be
    safe for the caller to access the number of bytes read returned as
    return code.
  - *MAY* fill out `*addr` with the netlink address of the peer the
    data has been received from.
- - *MAY* set `*cred` to a newly allocated struct ucred containg
+ - *MAY* set `*cred` to a newly allocated struct ucred containing
    credentials.
 
 .Overwriting nl_send()
@@ -2829,7 +2829,7 @@ Abstract addresses use reference counting to account for all users of
 a particular address. After the last user has returned the reference
 the address is freed.
 
-If you pass on a address object to another function and you are not
+If you pass on an address object to another function and you are not
 sure how long it will be used, make sure to call nl_addr_get() to
 acquire an additional reference and have that function or code path
 call nl_addr_put() as soon as it has finished using the address.
@@ -2926,7 +2926,7 @@ int nl_addr_cmp_prefix(struct nl_addr *addr, struct nl_addr *addr);
 If an abstract address needs to presented to the user it should be
 done in a human readable format which differs depending on the address
 family. The function `nl_addr2str()` takes care of this by calling the
-appropriate conversion functions internaly. It expects a `buf` of
+appropriate conversion functions internally. It expects a `buf` of
 length `size` to write the character string into and returns a pointer
 to `buf` for easy `printf()` usage.
 
@@ -2955,9 +2955,9 @@ int nl_addr_guess_family(struct nl_addr *addr);
 Before allocating an address you may want to check if the character
 string actually represents a valid address of the address family you
 are expecting. The function `nl_addr_valid()` can be used for that, it
-returns 1 if the supplised `addr` is a valid address in the context of
+returns 1 if the supplied `addr` is a valid address in the context of
 `family`.  See `inet_pton(3)`, `dnet_pton(3)` for more information on
-valid adddress formats.
+valid address formats.
 
 [source,c]
 --------
@@ -2969,12 +2969,12 @@ int nl_addr_valid(char *addr, int family);
 === Abstract Data
 
 The abstract data type is a trivial datatype with the primary purpose
-to simplify usage of netlink attributes of arbitary length.
+to simplify usage of netlink attributes of arbitrary length.
 
 [[core_data_alloc]]
 .Allocation of a Data Object
 The function `nl_data_alloc()` alloctes a new abstract data object and
-fill it with the provided data. `nl_data_alloc_attr()` does the same
+fills it with the provided data. `nl_data_alloc_attr()` does the same
 but bases the data on the payload of a netlink attribute. New data
 objects can also be allocated by cloning existing ones by using
 `nl_data_clone()`.

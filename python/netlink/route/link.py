@@ -40,7 +40,6 @@ __version__ = '0.1'
 __all__ = [
     'LinkCache',
     'Link',
-    'get_from_kernel',
 ]
 
 import socket
@@ -159,7 +158,7 @@ class Link(netlink.Object):
         if exc_type is None:
             self.change()
         else:
-            return false
+            return False
 
     @classmethod
     def from_capi(cls, obj):

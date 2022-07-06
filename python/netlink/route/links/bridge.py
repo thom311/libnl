@@ -7,6 +7,7 @@
 """
 
 from __future__ import absolute_import
+from __future__ import print_function
 
 from ... import core as netlink
 from ..  import capi as capi
@@ -19,10 +20,10 @@ class BRIDGELink(object):
 
     def bridge_assert_ext_info(self):
         if self._has_ext_info == False:
-            print """
+            print("""
             Please update your kernel to be able to call this method.
             Your current kernel bridge version is too old to support this extention.
-            """
+            """)
             raise RuntimeWarning()
 
     def port_state2str(self, state):
@@ -51,12 +52,12 @@ class BRIDGELink(object):
     def priority(self):
         """bridge prio
         """
-        bridge_assert_ext_info()
+        self.bridge_assert_ext_info()
         return capi.rtnl_link_bridge_get_prio(self._link)
 
     @priority.setter
     def priority(self, prio):
-        bridge_assert_ext_info()
+        self.bridge_assert_ext_info()
         if prio < 0 or prio >= 2**16:
             raise ValueError()
         capi.rtnl_link_bridge_set_prio(self._link, int(prio))
@@ -66,12 +67,12 @@ class BRIDGELink(object):
     def cost(self):
         """bridge prio
         """
-        bridge_assert_ext_info()
+        self.bridge_assert_ext_info()
         return capi.rtnl_link_bridge_get_cost(self._link)
 
     @cost.setter
     def cost(self, cost):
-        bridge_assert_ext_info()
+        self.bridge_assert_ext_info()
         if cost < 0 or cost >= 2**32:
             raise ValueError()
         capi.rtnl_link_bridge_set_cost(self._link, int(cost))

@@ -8,9 +8,7 @@
 
 from __future__ import absolute_import
 
-__all__ = [
-    '',
-]
+__all__ = []
 
 from ... import core as netlink
 from ..  import capi as capi

@@ -127,7 +127,7 @@ class Message(object):
         capi.nlmsg_free(self._msg)
 
     def __len__(self):
-        return capi.nlmsg_len(nlmsg_hdr(self._msg))
+        return capi.nlmsg_len(capi.nlmsg_hdr(self._msg))
 
     @property
     def protocol(self):

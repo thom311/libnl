@@ -1,3 +1,4 @@
+from __future__ import print_function
 import netlink.capi as nl
 import netlink.genl.capi as genl
 import nl80211
@@ -6,23 +7,23 @@ import traceback
 
 class test_class:
 	def __init__(self):
-		self.done = 1;
+		self.done = 1
 
 def freq_to_ch(freq):
 	if freq == 2484:
-		return 14;
+		return 14
 
 	if freq < 2484:
-		return (freq - 2407) / 5;
+		return (freq - 2407) / 5
 
 	# FIXME: dot11ChannelStartingFactor (802.11-2007 17.3.8.3.2)
 	if freq < 45000:
-		return freq/5 - 1000;
+		return freq/5 - 1000
 
 	if freq >= 58320 and freq <= 64800:
-		return (freq - 56160) / 2160;
+		return (freq - 56160) / 2160
 
-	return 0;
+	return 0
 
 def handle_freq(attr, pol):
 	e, fattr = nl.py_nla_parse_nested(nl80211.NL80211_FREQUENCY_ATTR_MAX, attr, pol)
@@ -83,7 +84,7 @@ def msg_handler(m, a):
 			ciphers = nl.nla_data(attr[nl80211.NL80211_ATTR_CIPHER_SUITES])
 			num = len(ciphers) / 4
 			if num > 0:
-				print("\tSupported Ciphers:");
+				print("\tSupported Ciphers:")
 				for i in range(0, num, 4):
 					print("\t\t* %s" % cipher_name(ciphers[i:i+4]))
 		if nl80211.NL80211_ATTR_SUPPORTED_IFTYPES in attr:
@@ -99,7 +100,7 @@ def msg_handler(m, a):
 		return nl.NL_SKIP
 	except Exception as e:
 		(t,v,tb) = sys.exc_info()
-		print v.message
+		print(v.message)
 		traceback.print_tb(tb)
 
 def error_handler(err, a):
@@ -118,10 +119,10 @@ try:
 	tx_cb = nl.nl_cb_alloc(nl.NL_CB_DEFAULT)
 	rx_cb = nl.nl_cb_clone(tx_cb)
 	s = nl.nl_socket_alloc_cb(tx_cb)
-	nl.py_nl_cb_err(rx_cb, nl.NL_CB_CUSTOM, error_handler, cbd);
-	nl.py_nl_cb_set(rx_cb, nl.NL_CB_FINISH, nl.NL_CB_CUSTOM, finish_handler, cbd);
-	nl.py_nl_cb_set(rx_cb, nl.NL_CB_ACK, nl.NL_CB_CUSTOM, ack_handler, cbd);
-	nl.py_nl_cb_set(rx_cb, nl.NL_CB_VALID, nl.NL_CB_CUSTOM, msg_handler, cbd);
+	nl.py_nl_cb_err(rx_cb, nl.NL_CB_CUSTOM, error_handler, cbd)
+	nl.py_nl_cb_set(rx_cb, nl.NL_CB_FINISH, nl.NL_CB_CUSTOM, finish_handler, cbd)
+	nl.py_nl_cb_set(rx_cb, nl.NL_CB_ACK, nl.NL_CB_CUSTOM, ack_handler, cbd)
+	nl.py_nl_cb_set(rx_cb, nl.NL_CB_VALID, nl.NL_CB_CUSTOM, msg_handler, cbd)
 
 	genl.genl_connect(s)
 	family = genl.genl_ctrl_resolve(s, 'nl80211')
@@ -129,13 +130,13 @@ try:
 	genl.genlmsg_put(m, 0, 0, family, 0, 0, nl80211.NL80211_CMD_GET_WIPHY, 0)
 	nl.nla_put_u32(m, nl80211.NL80211_ATTR_WIPHY, 7)
 
-	err = nl.nl_send_auto_complete(s, m);
+	err = nl.nl_send_auto_complete(s, m)
 	if err < 0:
-		nl.nlmsg_free(msg)
+		nl.nlmsg_free(m)
 
 	while cbd.done > 0 and not err < 0:
 		err = nl.nl_recvmsgs(s, rx_cb)
 except Exception as e:
 	(t, v, tb) = sys.exc_info()
-	print v.message
+	print(v.message)
 	traceback.print_tb(tb)

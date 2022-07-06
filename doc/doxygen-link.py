@@ -11,7 +11,7 @@ rc_script = re.compile(r'\s*(.*\S)?\s*')
 def parse_dict(filename):
 	links = {}
 	for line in open(filename, 'r'):
-		m = re.match('^([^=]+)=([^\n]+)$', line);
+		m = re.match('^([^=]+)=([^\n]+)$', line)
 		if not m:
 			continue
 		name = m.group(1)

@@ -23,7 +23,17 @@ jobs:
             libtool-bin
 
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: Lint Python
+        run: |
+          python3 -m pip install flake8
+          flake8 . --count --select=E703,E9,F63,F7,F82,Y --show-source --statistics
 
       - name: Build
         run: |

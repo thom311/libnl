@@ -145,7 +145,8 @@ static void route_dump_line(struct nl_object *a, struct nl_dump_params *p)
 		nl_dump(p, "cache ");
 
 	if (!(r->ce_mask & ROUTE_ATTR_DST) ||
-	    nl_addr_get_len(r->rt_dst) == 0)
+	    (nl_addr_get_prefixlen(r->rt_dst) == 0 &&
+	     nl_addr_get_len(r->rt_dst) > 0 && nl_addr_iszero(r->rt_dst)))
 		nl_dump(p, "default ");
 	else
 		nl_dump(p, "%s ", nl_addr2str(r->rt_dst, buf, sizeof(buf)));
@@ -1156,9 +1157,23 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 		if (!(dst = nl_addr_alloc_attr(tb[RTA_DST], family)))
 			return -NLE_NOMEM;
 	} else {
-		if (!(dst = nl_addr_alloc(0)))
+		int len;
+
+		switch (family) {
+			case AF_INET:
+				len = 4;
+				break;
+
+			case AF_INET6:
+				len = 16;
+				break;
+			default:
+				len = 0;
+				break;
+		}
+
+		if (!(dst = nl_addr_build(family, NULL, len)))
 			return -NLE_NOMEM;
-		nl_addr_set_family(dst, rtm->rtm_family);
 	}
 
 	nl_addr_set_prefixlen(dst, rtm->rtm_dst_len);

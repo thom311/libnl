@@ -686,7 +686,7 @@ int rtnl_netem_get_duplicate(struct rtnl_qdisc *qdisc)
  * Set packet duplication correlation probability of netem qdisc.
  * @arg qdisc		Netem qdisc to be modified.
  * @arg prob		New packet duplication correlation probability.
- * @return 0 on sucess or a negative error code.
+ * @return 0 on success or a negative error code.
  */
 void rtnl_netem_set_duplicate_correlation(struct rtnl_qdisc *qdisc, int prob)
 {

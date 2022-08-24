@@ -538,7 +538,7 @@ int rtnl_rule_build_add_request(struct rtnl_rule *tmpl, int flags,
  * sends the request to the kernel and waits for the next ACK to be
  * received and thus blocks until the request has been fullfilled.
  *
- * @return 0 on sucess or a negative error if an error occured.
+ * @return 0 on success or a negative error if an error occured.
  */
 int rtnl_rule_add(struct nl_sock *sk, struct rtnl_rule *tmpl, int flags)
 {
@@ -593,7 +593,7 @@ int rtnl_rule_build_delete_request(struct rtnl_rule *rule, int flags,
  * sends the request to the kernel and waits for the next ACK to be
  * received and thus blocks until the request has been fullfilled.
  *
- * @return 0 on sucess or a negative error if an error occured.
+ * @return 0 on success or a negative error if an error occured.
  */
 int rtnl_rule_delete(struct nl_sock *sk, struct rtnl_rule *rule, int flags)
 {

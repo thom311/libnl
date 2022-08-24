@@ -424,7 +424,7 @@ void nl_socket_set_local_port(struct nl_sock *sk, uint32_t port)
  * bitmask definitions for nl_join_groups() are likely to still
  * be present for backward compatibility reasons.
  *
- * @return 0 on sucess or a negative error code.
+ * @return 0 on success or a negative error code.
  */
 int nl_socket_add_memberships(struct nl_sock *sk, int group, ...)
 {
@@ -802,7 +802,7 @@ int nl_socket_modify_err_cb(struct nl_sock *sk, enum nl_cb_kind kind,
  * good default value.
  *
  * @note It is not required to call this function prior to nl_connect().
- * @return 0 on sucess or a negative error code.
+ * @return 0 on success or a negative error code.
  */
 int nl_socket_set_buffer_size(struct nl_sock *sk, int rxbuf, int txbuf)
 {

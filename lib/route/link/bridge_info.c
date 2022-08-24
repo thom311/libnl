@@ -78,7 +78,8 @@ static int bridge_info_parse(struct rtnl_link *link, struct nlattr *data,
 	}
 
 	if (tb[IFLA_BR_VLAN_PROTOCOL]) {
-		bi->b_vlan_protocol = nla_get_u16(tb[IFLA_BR_VLAN_PROTOCOL]);
+		bi->b_vlan_protocol =
+			ntohs(nla_get_u16(tb[IFLA_BR_VLAN_PROTOCOL]));
 		bi->ce_mask |= BRIDGE_ATTR_VLAN_PROTOCOL;
 	}
 
@@ -105,7 +106,8 @@ static int bridge_info_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 		NLA_PUT_U8(msg, IFLA_BR_VLAN_FILTERING, bi->b_vlan_filtering);
 
 	if (bi->ce_mask & BRIDGE_ATTR_VLAN_PROTOCOL)
-		NLA_PUT_U16(msg, IFLA_BR_VLAN_PROTOCOL, bi->b_vlan_protocol);
+		NLA_PUT_U16(msg, IFLA_BR_VLAN_PROTOCOL,
+			    htons(bi->b_vlan_protocol));
 
 	if (bi->ce_mask & BRIDGE_ATTR_VLAN_STATS_ENABLED)
 		NLA_PUT_U8(msg, IFLA_BR_VLAN_STATS_ENABLED,
@@ -191,7 +193,8 @@ int rtnl_link_bridge_get_vlan_filtering(struct rtnl_link *link,
 /**
  * Set VLAN protocol
  * @arg link		Link object of type bridge
- * @arg vlan_protocol	VLAN protocol to set.
+ * @arg vlan_protocol	VLAN protocol to set. The protocol
+ *   numbers is in host byte order.
  *
  * @see rtnl_link_bridge_get_vlan_protocol()
  *
@@ -212,7 +215,7 @@ void rtnl_link_bridge_set_vlan_protocol(struct rtnl_link *link,
 /**
  * Get VLAN protocol
  * @arg link		Link object of type bridge
- * @arg vlan_protocol	Output argument.
+ * @arg vlan_protocol	Output argument. The protocol number is in host byte order.
  *
  * @see rtnl_link_bridge_set_vlan_protocol()
  *

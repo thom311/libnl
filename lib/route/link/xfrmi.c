@@ -248,7 +248,7 @@ int rtnl_link_xfrmi_set_link(struct rtnl_link *link, uint32_t index)
  * @arg link            Link object
  * @arg out_link        The output value on success
  *
- * @return 0 on sucess or a negative error code
+ * @return 0 on success or a negative error code
  */
 int rtnl_link_xfrmi_get_link(struct rtnl_link *link, uint32_t *out_link)
 {
@@ -287,7 +287,7 @@ int rtnl_link_xfrmi_set_if_id(struct rtnl_link *link, uint32_t if_id)
  * @arg link            Link object
  * @arg out_if_id       The output value on success
  *
- * @return 0 on sucess or a negative error code
+ * @return 0 on success or a negative error code
  */
 int rtnl_link_xfrmi_get_if_id(struct rtnl_link *link, uint32_t *out_if_id)
 {

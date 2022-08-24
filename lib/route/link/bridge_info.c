@@ -78,7 +78,7 @@ static int bridge_info_parse(struct rtnl_link *link, struct nlattr *data,
 	}
 
 	if (tb[IFLA_BR_VLAN_PROTOCOL]) {
-		bi->b_vlan_protocol = nla_get_u8(tb[IFLA_BR_VLAN_PROTOCOL]);
+		bi->b_vlan_protocol = nla_get_u16(tb[IFLA_BR_VLAN_PROTOCOL]);
 		bi->ce_mask |= BRIDGE_ATTR_VLAN_PROTOCOL;
 	}
 

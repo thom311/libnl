@@ -15,18 +15,18 @@
 #include <netlink/route/link/bridge_info.h>
 #include <netlink-private/route/link/api.h>
 
-#define BRIDGE_ATTR_VLAN_FILTERING (1 << 2)
-#define BRIDGE_ATTR_VLAN_PROTOCOL (1 << 3)
-#define BRIDGE_ATTR_VLAN_STATS_ENABLED (1 << 4)
+#define BRIDGE_ATTR_VLAN_FILTERING (1 << 0)
+#define BRIDGE_ATTR_VLAN_PROTOCOL (1 << 1)
+#define BRIDGE_ATTR_VLAN_STATS_ENABLED (1 << 2)
 
 struct bridge_info {
-	uint8_t b_vlan_filtering;
-	uint16_t b_vlan_protocol;
-	uint8_t b_vlan_stats_enabled;
 	uint32_t ce_mask; /* to support attr macros */
+	uint16_t b_vlan_protocol;
+	uint8_t b_vlan_filtering;
+	uint8_t b_vlan_stats_enabled;
 };
 
-static struct nla_policy bi_attrs_policy[IFLA_BR_MAX + 1] = {
+static const struct nla_policy bi_attrs_policy[IFLA_BR_MAX + 1] = {
 	[IFLA_BR_VLAN_FILTERING] = { .type = NLA_U8 },
 	[IFLA_BR_VLAN_PROTOCOL] = { .type = NLA_U16 },
 	[IFLA_BR_VLAN_STATS_ENABLED] = { .type = NLA_U8 },
@@ -121,8 +121,7 @@ nla_put_failure:
 
 static void bridge_info_free(struct rtnl_link *link)
 {
-	free(link->l_info);
-	link->l_info = NULL;
+	_nl_clear_free(&link->l_info);
 }
 
 static struct rtnl_link_info_ops bridge_info_ops = {

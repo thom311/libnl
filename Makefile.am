@@ -148,6 +148,7 @@ libnlinclude_netlink_route_linkdir = $(libnlincludedir)/netlink/route/link
 libnlinclude_netlink_route_link_HEADERS = \
 	include/netlink/route/link/api.h \
 	include/netlink/route/link/bonding.h \
+	include/netlink/route/link/bridge_info.h \
 	include/netlink/route/link/bridge.h \
 	include/netlink/route/link/can.h \
 	include/netlink/route/link/geneve.h \
@@ -404,6 +405,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/link.c \
 	lib/route/link/api.c \
 	lib/route/link/bonding.c \
+	lib/route/link/bridge_info.c \
 	lib/route/link/bridge.c \
 	lib/route/link/can.c \
 	lib/route/link/dummy.c \

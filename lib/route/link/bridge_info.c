@@ -157,7 +157,7 @@ void rtnl_link_bridge_set_vlan_filtering(struct rtnl_link *link,
 
 	IS_BRIDGE_INFO_ASSERT(link);
 
-	bi->b_vlan_filtering = !!vlan_filtering;
+	bi->b_vlan_filtering = vlan_filtering;
 
 	bi->ce_mask |= BRIDGE_ATTR_VLAN_FILTERING;
 }

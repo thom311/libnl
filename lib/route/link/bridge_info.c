@@ -21,22 +21,21 @@
 #include <netlink/route/link/bridge_info.h>
 #include <netlink-private/route/link/api.h>
 
-#define BRIDGE_ATTR_VLAN_FILTERING	(1 << 2)
-#define BRIDGE_ATTR_VLAN_PROTOCOL	(1 << 3)
-#define BRIDGE_ATTR_VLAN_STATS_ENABLED	(1 << 4)
+#define BRIDGE_ATTR_VLAN_FILTERING (1 << 2)
+#define BRIDGE_ATTR_VLAN_PROTOCOL (1 << 3)
+#define BRIDGE_ATTR_VLAN_STATS_ENABLED (1 << 4)
 
-struct bridge_info
-{
-	uint8_t 		b_vlan_filtering;
-	uint16_t		b_vlan_protocol;
-	uint8_t			b_vlan_stats_enabled;
-	uint32_t		ce_mask; /* to support attr macros */
+struct bridge_info {
+	uint8_t b_vlan_filtering;
+	uint16_t b_vlan_protocol;
+	uint8_t b_vlan_stats_enabled;
+	uint32_t ce_mask; /* to support attr macros */
 };
 
-static struct nla_policy bi_attrs_policy[IFLA_BR_MAX+1] = {
-	[IFLA_BR_VLAN_FILTERING]	= { .type = NLA_U8 },
-	[IFLA_BR_VLAN_PROTOCOL]		= { .type = NLA_U16 },
-	[IFLA_BR_VLAN_STATS_ENABLED]	= { .type = NLA_U8 },
+static struct nla_policy bi_attrs_policy[IFLA_BR_MAX + 1] = {
+	[IFLA_BR_VLAN_FILTERING] = { .type = NLA_U8 },
+	[IFLA_BR_VLAN_PROTOCOL] = { .type = NLA_U16 },
+	[IFLA_BR_VLAN_STATS_ENABLED] = { .type = NLA_U8 },
 };
 
 static inline struct bridge_info *bridge_info(struct rtnl_link *link)
@@ -64,13 +63,14 @@ static int bridge_info_alloc(struct rtnl_link *link)
 static int bridge_info_parse(struct rtnl_link *link, struct nlattr *data,
 			     struct nlattr *xstats)
 {
-	struct nlattr *tb[IFLA_BR_MAX+1];
+	struct nlattr *tb[IFLA_BR_MAX + 1];
 	struct bridge_info *bi;
 	int err = 0;
 
 	NL_DBG(3, "Parsing Bridge link info\n");
 
-	if ((err = nla_parse_nested(tb, IFLA_BR_MAX, data, bi_attrs_policy)) < 0)
+	if ((err = nla_parse_nested(tb, IFLA_BR_MAX, data, bi_attrs_policy)) <
+	    0)
 		goto errout;
 
 	if ((err = bridge_info_alloc(link)) < 0)
@@ -79,20 +79,18 @@ static int bridge_info_parse(struct rtnl_link *link, struct nlattr *data,
 	bi = link->l_info;
 
 	if (tb[IFLA_BR_VLAN_FILTERING]) {
-		bi->b_vlan_filtering =
-		    nla_get_u8(tb[IFLA_BR_VLAN_FILTERING]);
+		bi->b_vlan_filtering = nla_get_u8(tb[IFLA_BR_VLAN_FILTERING]);
 		bi->ce_mask |= BRIDGE_ATTR_VLAN_FILTERING;
 	}
 
 	if (tb[IFLA_BR_VLAN_PROTOCOL]) {
-		bi->b_vlan_protocol =
-		    nla_get_u8(tb[IFLA_BR_VLAN_PROTOCOL]);
+		bi->b_vlan_protocol = nla_get_u8(tb[IFLA_BR_VLAN_PROTOCOL]);
 		bi->ce_mask |= BRIDGE_ATTR_VLAN_PROTOCOL;
 	}
 
 	if (tb[IFLA_BR_VLAN_STATS_ENABLED]) {
 		bi->b_vlan_stats_enabled =
-		    nla_get_u8(tb[IFLA_BR_VLAN_STATS_ENABLED]);
+			nla_get_u8(tb[IFLA_BR_VLAN_STATS_ENABLED]);
 		bi->ce_mask |= BRIDGE_ATTR_VLAN_STATS_ENABLED;
 	}
 
@@ -110,12 +108,10 @@ static int bridge_info_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 		return -NLE_MSGSIZE;
 
 	if (bi->ce_mask & BRIDGE_ATTR_VLAN_FILTERING)
-		NLA_PUT_U8(msg, IFLA_BR_VLAN_FILTERING,
-			   bi->b_vlan_filtering);
+		NLA_PUT_U8(msg, IFLA_BR_VLAN_FILTERING, bi->b_vlan_filtering);
 
 	if (bi->ce_mask & BRIDGE_ATTR_VLAN_PROTOCOL)
-		NLA_PUT_U16(msg, IFLA_BR_VLAN_PROTOCOL,
-			   bi->b_vlan_protocol);
+		NLA_PUT_U16(msg, IFLA_BR_VLAN_PROTOCOL, bi->b_vlan_protocol);
 
 	if (bi->ce_mask & BRIDGE_ATTR_VLAN_STATS_ENABLED)
 		NLA_PUT_U8(msg, IFLA_BR_VLAN_STATS_ENABLED,
@@ -124,9 +120,9 @@ static int bridge_info_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	nla_nest_end(msg, data);
 	return 0;
 
-	nla_put_failure:
-		nla_nest_cancel(msg, data);
-		return -NLE_MSGSIZE;
+nla_put_failure:
+	nla_nest_cancel(msg, data);
+	return -NLE_MSGSIZE;
 }
 
 static void bridge_info_free(struct rtnl_link *link)
@@ -136,19 +132,19 @@ static void bridge_info_free(struct rtnl_link *link)
 }
 
 static struct rtnl_link_info_ops bridge_info_ops = {
-	.io_name		= "bridge",
-	.io_alloc		= bridge_info_alloc,
-	.io_parse		= bridge_info_parse,
-	.io_put_attrs		= bridge_info_put_attrs,
-	.io_free		= bridge_info_free,
+	.io_name = "bridge",
+	.io_alloc = bridge_info_alloc,
+	.io_parse = bridge_info_parse,
+	.io_put_attrs = bridge_info_put_attrs,
+	.io_free = bridge_info_free,
 };
 
-#define IS_BRIDGE_INFO_ASSERT(link) \
-	do { \
-		if ((link)->l_info_ops != &bridge_info_ops) { \
+#define IS_BRIDGE_INFO_ASSERT(link)                                                      \
+	do {                                                                             \
+		if ((link)->l_info_ops != &bridge_info_ops) {                            \
 			APPBUG("Link is not a bridge link. Set type \"bridge\" first."); \
-		} \
-	} while(0)
+		}                                                                        \
+	} while (0)
 
 /**
  * Set VLAN filtering flag
@@ -160,7 +156,7 @@ static struct rtnl_link_info_ops bridge_info_ops = {
  * @return void
  */
 void rtnl_link_bridge_set_vlan_filtering(struct rtnl_link *link,
-					uint8_t vlan_filtering)
+					 uint8_t vlan_filtering)
 {
 	struct bridge_info *bi = bridge_info(link);
 
@@ -182,7 +178,8 @@ void rtnl_link_bridge_set_vlan_filtering(struct rtnl_link *link,
  * @retval -NLE_NOATTR
  * @retval -NLE_INVAL
  */
-int rtnl_link_bridge_get_vlan_filtering(struct rtnl_link *link, uint8_t *vlan_filtering)
+int rtnl_link_bridge_get_vlan_filtering(struct rtnl_link *link,
+					uint8_t *vlan_filtering)
 {
 	struct bridge_info *bi = bridge_info(link);
 
@@ -258,7 +255,7 @@ int rtnl_link_bridge_get_vlan_protocol(struct rtnl_link *link,
  * @return void
  */
 void rtnl_link_bridge_set_vlan_stats_enabled(struct rtnl_link *link,
-					uint8_t vlan_stats_enabled)
+					     uint8_t vlan_stats_enabled)
 {
 	struct bridge_info *bi = bridge_info(link);
 
@@ -280,7 +277,8 @@ void rtnl_link_bridge_set_vlan_stats_enabled(struct rtnl_link *link,
  * @retval -NLE_NOATTR
  * @retval -NLE_INVAL
  */
-int rtnl_link_bridge_get_vlan_stats_enabled(struct rtnl_link *link, uint8_t *vlan_stats_enabled)
+int rtnl_link_bridge_get_vlan_stats_enabled(struct rtnl_link *link,
+					    uint8_t *vlan_stats_enabled)
 {
 	struct bridge_info *bi = bridge_info(link);
 

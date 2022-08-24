@@ -59,16 +59,16 @@ static int bridge_info_parse(struct rtnl_link *link, struct nlattr *data,
 {
 	struct nlattr *tb[IFLA_BR_MAX + 1];
 	struct bridge_info *bi;
-	int err = 0;
+	int err;
 
 	NL_DBG(3, "Parsing Bridge link info\n");
 
 	if ((err = nla_parse_nested(tb, IFLA_BR_MAX, data, bi_attrs_policy)) <
 	    0)
-		goto errout;
+		return err;
 
 	if ((err = bridge_info_alloc(link)) < 0)
-		goto errout;
+		return err;
 
 	bi = link->l_info;
 
@@ -89,8 +89,7 @@ static int bridge_info_parse(struct rtnl_link *link, struct nlattr *data,
 		bi->ce_mask |= BRIDGE_ATTR_VLAN_STATS_ENABLED;
 	}
 
-errout:
-	return err;
+	return 0;
 }
 
 static int bridge_info_put_attrs(struct nl_msg *msg, struct rtnl_link *link)

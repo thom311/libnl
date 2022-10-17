@@ -115,7 +115,7 @@ static int af_request_type(int af_type, struct rtnl_link *changes)
 	struct rtnl_link_af_ops *ops;
 
 	ops = rtnl_link_af_ops_lookup(af_type);
-	if (ops && ops->ao_override_rtm(changes))
+	if (ops && ops->ao_override_rtm && ops->ao_override_rtm(changes))
 		return RTM_SETLINK;
 
 	return RTM_NEWLINK;

@@ -652,9 +652,6 @@ int rtnl_link_macsec_set_offload(struct rtnl_link *link, uint8_t offload)
 
 	IS_MACSEC_LINK_ASSERT(link);
 
-	if (offload > 1)
-		return -NLE_INVAL;
-
 	info->offload = offload;
 	info->ce_mask |= MACSEC_ATTR_OFFLOAD;
 

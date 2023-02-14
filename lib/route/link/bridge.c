@@ -189,6 +189,7 @@ static int bridge_parse_af_full(struct rtnl_link *link, struct nlattr *attr_full
 		if (nla_type(attr) == IFLA_BRIDGE_MODE) {
 			bd->b_hwmode = nla_get_u16(attr);
 			bd->ce_mask |= BRIDGE_ATTR_HWMODE;
+			continue;
 		} else if (nla_type(attr) != IFLA_BRIDGE_VLAN_INFO)
 			continue;
 

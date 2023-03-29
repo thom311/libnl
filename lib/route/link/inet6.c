@@ -689,6 +689,64 @@ int rtnl_link_inet6_set_addr_gen_mode(struct rtnl_link *link, uint8_t mode)
 	return 0;
 }
 
+/**
+ * Get value of a ipv6 link configuration setting
+ * @arg link		Link object
+ * @arg cfgid		Configuration identifier
+ * @arg res		Result pointer
+ *
+ * Stores the value of the specified configuration setting in the provided
+ * result pointer.
+ *
+ * @return 0 on success or a negative error code.
+ * @return -NLE_RANGE cfgid is out of range, 0..DEVCONF_MAX
+ * @return -NLE_NOATTR configuration setting not available
+ */
+int rtnl_link_inet6_get_conf(struct rtnl_link *link, const unsigned int cfgid,
+			     uint32_t *res)
+{
+	struct inet6_data *id;
+
+	if (cfgid >= DEVCONF_MAX)
+		return -NLE_RANGE;
+
+	if (!(id = rtnl_link_af_data(link, &inet6_ops)))
+		return -NLE_NOATTR;
+
+	*res = id->i6_conf[cfgid];
+
+	return 0;
+}
+
+/**
+ * Change value of a ipv6 link configuration setting
+ * @arg link		Link object
+ * @arg cfgid		Configuration identifier
+ * @arg value		New value
+ *
+ * Changes the value in the per link ipv6 configuration array.
+ *
+ * @return 0 on success or a negative error code.
+ * @return -NLE_RANGE cfgid is out of range, 0..DEVCONF_MAX
+ * @return -NLE_NOMEM memory allocation failed
+ */
+int rtnl_link_inet6_set_conf(struct rtnl_link *link, const unsigned int cfgid,
+			     uint32_t value)
+{
+	struct inet6_data *id;
+
+	if (!(id = rtnl_link_af_alloc(link, &inet6_ops)))
+		return -NLE_NOMEM;
+
+	if (cfgid >= DEVCONF_MAX)
+		return -NLE_RANGE;
+
+	id->i6_conf[cfgid] = value;
+
+	return 0;
+}
+
+
 static void __init inet6_init(void)
 {
 	rtnl_link_af_register(&inet6_ops);

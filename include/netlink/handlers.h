@@ -117,6 +117,8 @@ extern struct nl_cb *	nl_cb_clone(struct nl_cb *);
 extern struct nl_cb *	nl_cb_get(struct nl_cb *);
 extern void		nl_cb_put(struct nl_cb *);
 
+extern int		nl_cb_get_refcnt(const struct nl_cb *cb);
+
 extern int  nl_cb_set(struct nl_cb *, enum nl_cb_type, enum nl_cb_kind,
 		      nl_recvmsg_msg_cb_t, void *);
 extern int  nl_cb_set_all(struct nl_cb *, enum nl_cb_kind,

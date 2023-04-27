@@ -270,6 +270,31 @@ enum nl_cb_type nl_cb_active_type(struct nl_cb *cb)
 /** @} */
 
 /**
+ * @name Attribute Access
+ * @{
+ */
+
+/**
+ * reference counter of callback handle
+ * @arg cb		netlink callback handle
+ *
+ * @returns reference counter of the callback handle
+ * or negative value if @p cb is NULL
+ */
+int nl_cb_get_refcnt(const struct nl_cb *cb)
+{
+	if (!cb)
+		return -1;
+
+	if (cb->cb_refcnt < 0)
+		BUG();
+
+	return cb->cb_refcnt;
+}
+
+/** @} */
+
+/**
  * @name Callback Setup
  * @{
  */

@@ -1913,7 +1913,7 @@ struct rtnl_link *rtnl_link_alloc(void)
 }
 
 /**
- * Return a link object reference
+ * Release a link object reference
  * @arg link		Link object
  */
 void rtnl_link_put(struct rtnl_link *link)

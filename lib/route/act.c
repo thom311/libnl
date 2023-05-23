@@ -386,6 +386,13 @@ void rtnl_act_put_all(struct rtnl_act **head)
 	*head = NULL;
 }
 
+static struct nla_policy tc_act_stats_policy[TCA_STATS_MAX+1] = {
+	[TCA_STATS_BASIC]    	= { .minlen = sizeof(struct gnet_stats_basic) },
+	[TCA_STATS_QUEUE]    	= { .minlen = sizeof(struct gnet_stats_queue) },
+	[TCA_STATS_RATE_EST] 	= { .minlen = sizeof(struct gnet_stats_rate_est) },
+	[TCA_STATS_RATE_EST64] 	= { .minlen = sizeof(struct gnet_stats_rate_est64) },
+};
+
 int rtnl_act_parse(struct rtnl_act **head, struct nlattr *tb)
 {
 	struct rtnl_act *act;
@@ -432,6 +439,45 @@ int rtnl_act_parse(struct rtnl_act **head, struct nlattr *tb)
 				goto err_free;
 			}
 			tc->ce_mask |= TCA_ATTR_OPTS;
+		}
+
+		if (tb2[TCA_ACT_STATS]) {
+			struct nlattr *tb3[TCA_STATS_MAX + 1];
+
+			err = nla_parse_nested(tb3, TCA_STATS_MAX, tb2[TCA_ACT_STATS],
+					       tc_act_stats_policy);
+			if (err < 0)
+				return err;
+
+			if (tb3[TCA_STATS_BASIC]) {
+				struct gnet_stats_basic bs;
+
+				memcpy(&bs, nla_data(tb3[TCA_STATS_BASIC]),
+				       sizeof(bs));
+				tc->tc_stats[RTNL_TC_BYTES] = bs.bytes;
+				tc->tc_stats[RTNL_TC_PACKETS] = bs.packets;
+			}
+			if (tb3[TCA_STATS_RATE_EST64]) {
+				struct gnet_stats_rate_est64 re;
+
+				memcpy(&re, nla_data(tb3[TCA_STATS_RATE_EST64]),
+				       sizeof(re));
+				tc->tc_stats[RTNL_TC_RATE_BPS] = re.bps;
+				tc->tc_stats[RTNL_TC_RATE_PPS] = re.pps;
+			} else if (tb3[TCA_STATS_RATE_EST]) {
+				struct gnet_stats_rate_est *re;
+
+				re = nla_data(tb3[TCA_STATS_RATE_EST]);
+				tc->tc_stats[RTNL_TC_RATE_BPS] = re->bps;
+				tc->tc_stats[RTNL_TC_RATE_PPS] = re->pps;
+			}
+			if (tb3[TCA_STATS_QUEUE]) {
+				struct gnet_stats_queue *q;
+
+				q = nla_data(tb3[TCA_STATS_QUEUE]);
+				tc->tc_stats[RTNL_TC_DROPS] = q->drops;
+				tc->tc_stats[RTNL_TC_OVERLIMITS] = q->overlimits;
+			}
 		}
 
 		ops = rtnl_tc_get_ops(tc);

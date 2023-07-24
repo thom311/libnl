@@ -322,8 +322,6 @@ global:
 	rtnl_link_inet_devconf2str;
 	rtnl_link_inet_get_conf;
 	rtnl_link_inet_set_conf;
-	rtnl_link_inet6_get_conf;
-	rtnl_link_inet6_set_conf;
 	rtnl_link_inet_str2devconf;
 	rtnl_link_info_parse;
 	rtnl_link_ip6_tnl_add;
@@ -1285,4 +1283,6 @@ global:
 	rtnl_link_bridge_set_vlan_filtering;
 	rtnl_link_bridge_set_vlan_protocol;
 	rtnl_link_bridge_set_vlan_stats_enabled;
+	rtnl_link_inet6_get_conf;
+	rtnl_link_inet6_set_conf;
 } libnl_3_7;

@@ -702,7 +702,7 @@ int rtnl_link_inet6_set_addr_gen_mode(struct rtnl_link *link, uint8_t mode)
  * @return -NLE_RANGE cfgid is out of range, 0..DEVCONF_MAX
  * @return -NLE_NOATTR configuration setting not available
  */
-int rtnl_link_inet6_get_conf(struct rtnl_link *link, const unsigned int cfgid,
+int rtnl_link_inet6_get_conf(struct rtnl_link *link, unsigned int cfgid,
 			     uint32_t *res)
 {
 	struct inet6_data *id;
@@ -730,7 +730,7 @@ int rtnl_link_inet6_get_conf(struct rtnl_link *link, const unsigned int cfgid,
  * @return -NLE_RANGE cfgid is out of range, 0..DEVCONF_MAX
  * @return -NLE_NOMEM memory allocation failed
  */
-int rtnl_link_inet6_set_conf(struct rtnl_link *link, const unsigned int cfgid,
+int rtnl_link_inet6_set_conf(struct rtnl_link *link, unsigned int cfgid,
 			     uint32_t value)
 {
 	struct inet6_data *id;

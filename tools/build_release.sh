@@ -32,7 +32,6 @@ Build() {
     ./autogen.sh
     ./configure
     pushd ./doc/
-        ./autogen.sh
         ./configure --enable-doc
     popd
     make -j 5

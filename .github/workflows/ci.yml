@@ -73,13 +73,15 @@ jobs:
       - name: Install packages for Release
         run: |
           test "${{ matrix.cc }}" == gcc || exit 0
-          sudo apt-get -y --no-install-recommends install \
+          python3 -m pip install \
             asciidoc \
+            graphviz \
+            pygments
+          sudo apt-get -y --no-install-recommends install \
             doxygen \
             graphviz \
             mscgen \
-            source-highlight \
-            python3-pygments
+            source-highlight
 
       - name: Build Release
         run: |

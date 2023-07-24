@@ -718,34 +718,6 @@ int rtnl_link_inet6_get_conf(struct rtnl_link *link, unsigned int cfgid,
 	return 0;
 }
 
-/**
- * Change value of a ipv6 link configuration setting
- * @arg link		Link object
- * @arg cfgid		Configuration identifier
- * @arg value		New value
- *
- * Changes the value in the per link ipv6 configuration array.
- *
- * @return 0 on success or a negative error code.
- * @return -NLE_RANGE cfgid is out of range, 0..DEVCONF_MAX
- * @return -NLE_NOMEM memory allocation failed
- */
-int rtnl_link_inet6_set_conf(struct rtnl_link *link, unsigned int cfgid,
-			     uint32_t value)
-{
-	struct inet6_data *id;
-
-	if (!(id = rtnl_link_af_alloc(link, &inet6_ops)))
-		return -NLE_NOMEM;
-
-	if (cfgid >= DEVCONF_MAX)
-		return -NLE_RANGE;
-
-	id->i6_conf[cfgid] = value;
-
-	return 0;
-}
-
 
 static void __init inet6_init(void)
 {

@@ -31,9 +31,16 @@ jobs:
           python-version: 3.x
 
       - name: Lint Python
+        if: ${{ matrix.cc == 'gcc' }}
         run: |
           python3 -m pip install flake8
           flake8 . --count --select=E703,E9,F63,F7,F82,Y --show-source --statistics
+
+      - name: Code formatting with Python black
+        if: ${{ matrix.cc == 'gcc' }}
+        run: |
+          python3 -m pip install black==22.12.0
+          black --check .
 
       - name: Build
         run: |
@@ -72,7 +79,6 @@ jobs:
 
       - name: Install packages for Release
         run: |
-          test "${{ matrix.cc }}" == gcc || exit 0
           python3 -m pip install \
             asciidoc \
             graphviz \
@@ -85,17 +91,15 @@ jobs:
 
       - name: Build Release
         run: |
-          test "${{ matrix.cc }}" == gcc || exit 0
           set -x
           git clean -fdx
+          export CC="${{ matrix.cc }}"
           NO_GPG_SIGN=1 ./tools/build_release.sh BuildAll
 
       - name: Build out-of-tree and disable-static
         run: |
           set -x
-
           git clean -fdx
-
           export CC="${{ matrix.cc }}"
           export CFLAGS="-Werror -Wall -Wdeclaration-after-statement -Wvla -std=gnu11"
           if [ "$CC" = "clang" ]; then

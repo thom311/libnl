@@ -11,7 +11,7 @@ complete_file = ""
 for line in open(sys.argv[1], "r"):
     complete_file += line
 
-for m in re.findall("\[\[(.+)\]\]\n=+ ([^\n]+)", complete_file):
+for m in re.findall("\\[\\[(.+)\\]\\]\n=+ ([^\n]+)", complete_file):
     ref, title = m
     refs["<<" + ref + ">>"] = "<<" + ref + ", " + title + ">>"
 

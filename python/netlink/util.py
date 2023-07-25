@@ -15,6 +15,7 @@ from string import Formatter
 
 __version__ = "1.0"
 
+
 # rename into colored_output
 def _color(t, c):
     return "{esc}[{color}m{text}{esc}[0m".format(esc=b"\x1b".decode(), color=c, text=t)

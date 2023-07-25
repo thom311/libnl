@@ -113,7 +113,7 @@ def msg_handler(m, a):
             for nl_mode in ifattr:
                 print("\t\t* %s" % nl80211.nl80211_iftype2str[nl.nla_type(nl_mode)])
         return nl.NL_SKIP
-    except Exception as e:
+    except Exception:
         (t, v, tb) = sys.exc_info()
         print(v.message)
         traceback.print_tb(tb)
@@ -155,7 +155,7 @@ try:
 
     while cbd.done > 0 and not err < 0:
         err = nl.nl_recvmsgs(s, rx_cb)
-except Exception as e:
+except Exception:
     (t, v, tb) = sys.exc_info()
     print(v.message)
     traceback.print_tb(tb)

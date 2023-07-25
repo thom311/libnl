@@ -5,6 +5,29 @@ on:
   pull_request:
 
 jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:38
+    steps:
+      - name: Install packages
+        run: |
+          sudo dnf install -y \
+            clang-tools-extra \
+            git
+
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Setup git
+        run: |
+          git config --global --add safe.directory "$PWD"
+
+      - name: Formatting with clang-format
+        run: |
+          clang-format --version
+          ./tools/clang-format.sh
+
   ci:
     strategy:
       matrix:

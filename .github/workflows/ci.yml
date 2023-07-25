@@ -72,7 +72,6 @@ jobs:
 
       - name: Install packages for Release
         run: |
-          test "${{ matrix.cc }}" == gcc || exit 0
           python3 -m pip install \
             asciidoc \
             graphviz \
@@ -85,17 +84,15 @@ jobs:
 
       - name: Build Release
         run: |
-          test "${{ matrix.cc }}" == gcc || exit 0
           set -x
           git clean -fdx
+          export CC="${{ matrix.cc }}"
           NO_GPG_SIGN=1 ./tools/build_release.sh BuildAll
 
       - name: Build out-of-tree and disable-static
         run: |
           set -x
-
           git clean -fdx
-
           export CC="${{ matrix.cc }}"
           export CFLAGS="-Werror -Wall -Wdeclaration-after-statement -Wvla -std=gnu11"
           if [ "$CC" = "clang" ]; then

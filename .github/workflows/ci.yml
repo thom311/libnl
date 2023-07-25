@@ -31,6 +31,7 @@ jobs:
           python-version: 3.x
 
       - name: Lint Python
+        if: ${{ matrix.cc == 'gcc' }}
         run: |
           python3 -m pip install flake8
           flake8 . --count --select=E703,E9,F63,F7,F82,Y --show-source --statistics

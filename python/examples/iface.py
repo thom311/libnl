@@ -63,7 +63,7 @@ def msg_handler(m, a):
 
             sys.stdout.write("\n")
         return nl.NL_SKIP
-    except Exception as e:
+    except Exception:
         (t, v, tb) = sys.exc_info()
         print(v.message)
         traceback.print_tb(tb)
@@ -106,7 +106,7 @@ try:
     while cbd.done > 0 and not err < 0:
         err = nl.nl_recvmsgs(s, rx_cb)
 
-except Exception as e:
+except Exception:
     (t, v, tb) = sys.exc_info()
     print(v.message)
     traceback.print_tb(tb)

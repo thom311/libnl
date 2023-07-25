@@ -10,12 +10,11 @@
 
 from __future__ import absolute_import
 
-from . import core as netlink
 from . import capi as capi
 from string import Formatter
-import types
 
 __version__ = "1.0"
+
 
 # rename into colored_output
 def _color(t, c):

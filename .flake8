@@ -1,0 +1,7 @@
+[flake8]
+extend-ignore =
+    E203
+    E501
+filename =
+    *.py
+    *.py.in

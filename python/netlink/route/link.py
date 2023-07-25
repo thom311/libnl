@@ -473,7 +473,7 @@ class Link(netlink.Object):
             buf += self._foreach_af("details", fmt)
 
         if stats:
-            l = [
+            lst = [
                 ["Packets", RX_PACKETS, TX_PACKETS],
                 ["Bytes", RX_BYTES, TX_BYTES],
                 ["Errors", RX_ERRORS, TX_ERRORS],
@@ -528,7 +528,7 @@ class Link(netlink.Object):
                 util.title("TX"),
             )
 
-            for row in l:
+            for row in lst:
                 row[0] = util.kw(row[0])
                 row[1] = self.get_stat(row[1]) if row[1] else ""
                 row[2] = self.get_stat(row[2]) if row[2] else ""

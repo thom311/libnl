@@ -421,10 +421,10 @@ class Object(object):
     # accessing properties of subclass/subtypes (e.g. link.vlan.id)
     def _resolve(self, attr):
         obj = self
-        l = attr.split(".")
-        while len(l) > 1:
-            obj = getattr(obj, l.pop(0))
-        return (obj, l.pop(0))
+        lst = attr.split(".")
+        while len(lst) > 1:
+            obj = getattr(obj, lst.pop(0))
+        return (obj, lst.pop(0))
 
     def _setattr(self, attr, val):
         obj, attr = self._resolve(attr)

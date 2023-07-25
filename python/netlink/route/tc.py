@@ -551,7 +551,7 @@ _qdisc_cache = QdiscCache()
 
 
 def get_qdisc(ifindex, handle=None, parent=None):
-    l = []
+    lst = []
 
     _qdisc_cache.refill()
 
@@ -562,16 +562,16 @@ def get_qdisc(ifindex, handle=None, parent=None):
             continue
         if (parent is not None) and (qdisc.parent != parent):
             continue
-        l.append(qdisc)
+        lst.append(qdisc)
 
-    return l
+    return lst
 
 
 _class_cache = {}
 
 
 def get_class(ifindex, parent, handle=None):
-    l = []
+    lst = []
 
     try:
         cache = _class_cache[ifindex]
@@ -586,9 +586,9 @@ def get_class(ifindex, parent, handle=None):
             continue
         if (handle is not None) and (cl.handle != handle):
             continue
-        l.append(cl)
+        lst.append(cl)
 
-    return l
+    return lst
 
 
 _cls_cache = {}

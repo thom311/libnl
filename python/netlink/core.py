@@ -191,7 +191,7 @@ class Socket(object):
     def __init__(self, cb=None):
         if isinstance(cb, Callback):
             self._sock = capi.nl_socket_alloc_cb(cb._cb)
-        elif cb == None:
+        elif cb is None:
             self._sock = capi.nl_socket_alloc()
         else:
             raise Exception("'cb' parameter has wrong type")

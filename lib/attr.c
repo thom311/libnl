@@ -991,6 +991,15 @@ void nla_nest_cancel(struct nl_msg *msg, const struct nlattr *attr)
 {
 	ssize_t len;
 
+	if (!attr) {
+		/* For robustness, allow a NULL attr to do nothing. NULL is also
+		 * what nla_nest_start() when out of buffer space.
+		 *
+		 * Warning, before libnl-3.8, the function did not accept NULL!
+		 * If you care, catch NULL yourself. */
+		return;
+	}
+
 	len = (char *) nlmsg_tail(msg->nm_nlh) - (char *) attr;
 	if (len < 0)
 		BUG();

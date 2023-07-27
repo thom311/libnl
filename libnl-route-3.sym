@@ -1288,4 +1288,18 @@ global:
 	rtnl_link_inet6_get_conf;
 	rtnl_neigh_get_nhid;
 	rtnl_neigh_set_nhid;
+	rtnl_nh_alloc;
+	rtnl_nh_alloc_cache;
+	rtnl_nh_clone;
+	rtnl_nh_compare;
+	rtnl_nh_dump;
+	rtnl_nh_get;
+	rtnl_nh_get_fdb;
+	rtnl_nh_get_gateway;
+	rtnl_nh_get_group_entry;
+	rtnl_nh_get_group_size;
+	rtnl_nh_get_id;
+	rtnl_nh_put;
+	rtnl_nh_set_fdb;
+	rtnl_nh_set_gateway;
 } libnl_3_7;

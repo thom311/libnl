@@ -69,6 +69,11 @@ void rtnl_route_nh_free(struct rtnl_nexthop *);
 #define _nl_auto_rtnl_nexthop _nl_auto(_nl_auto_rtnl_nexthop_fcn)
 _NL_AUTO_DEFINE_FCN_TYPED0(struct rtnl_nexthop *, _nl_auto_rtnl_nexthop_fcn, rtnl_route_nh_free);
 
+struct rtnl_nh;
+void rtnl_nh_put(struct rtnl_nh *);
+#define _nl_auto_rtnl_nh _nl_auto(_nl_auto_rtnl_nh_fcn)
+_NL_AUTO_DEFINE_FCN_TYPED0(struct rtnl_nh *, _nl_auto_rtnl_nh_fcn, rtnl_nh_put);
+
 struct nl_cache;
 void nl_cache_put(struct nl_cache *);
 #define _nl_auto_nl_cache _nl_auto(_nl_auto_nl_cache_fcn)

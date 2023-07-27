@@ -164,6 +164,7 @@
 #define NEIGH_ATTR_PROBES       0x100
 #define NEIGH_ATTR_MASTER       0x200
 #define NEIGH_ATTR_VLAN         0x400
+#define NEIGH_ATTR_NHID         0x800
 
 static struct nl_cache_ops rtnl_neigh_ops;
 static struct nl_object_ops neigh_obj_ops;
@@ -273,6 +274,7 @@ static uint64_t neigh_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= _DIFF(NEIGH_ATTR_DST, nl_addr_cmp(a->n_dst, b->n_dst));
 	diff |= _DIFF(NEIGH_ATTR_MASTER, a->n_master != b->n_master);
 	diff |= _DIFF(NEIGH_ATTR_VLAN, a->n_vlan != b->n_vlan);
+	diff |= _DIFF(NEIGH_ATTR_NHID, a->n_nhid != b->n_nhid);
 
 	if (flags & LOOSE_COMPARISON) {
 		diff |= _DIFF(NEIGH_ATTR_STATE,
@@ -300,6 +302,7 @@ static const struct trans_tbl neigh_attrs[] = {
 	__ADD(NEIGH_ATTR_PROBES, probes),
 	__ADD(NEIGH_ATTR_MASTER, master),
 	__ADD(NEIGH_ATTR_VLAN, vlan),
+	__ADD(NEIGH_ATTR_NHID, nhid),
 };
 
 static char *neigh_attrs2str(int attrs, char *buf, size_t len)
@@ -316,6 +319,7 @@ static uint32_t neigh_id_attrs_get(struct nl_object *obj)
 		if (neigh->n_flags & NTF_SELF)
 			return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY | NEIGH_ATTR_IFINDEX |
 				       ((neigh->ce_mask & NEIGH_ATTR_DST) ? NEIGH_ATTR_DST: 0) |
+				       ((neigh->ce_mask & NEIGH_ATTR_NHID) ? NEIGH_ATTR_NHID: 0) |
 				       ((neigh->ce_mask & NEIGH_ATTR_VLAN) ? NEIGH_ATTR_VLAN : 0));
 		else
 			return (NEIGH_ATTR_LLADDR | NEIGH_ATTR_FAMILY | NEIGH_ATTR_MASTER | NEIGH_ATTR_VLAN);
@@ -417,6 +421,11 @@ int rtnl_neigh_parse(struct nlmsghdr *n, struct rtnl_neigh **result)
 		neigh->ce_mask |= NEIGH_ATTR_VLAN;
 	}
 
+	if (tb[NDA_NH_ID]) {
+		neigh->n_nhid = nla_get_u32(tb[NDA_NH_ID]);
+		neigh->ce_mask |= NEIGH_ATTR_NHID;
+	}
+
 	/*
 	 * Get the bridge index for AF_BRIDGE family entries
 	 */
@@ -508,6 +517,9 @@ static void neigh_dump_line(struct nl_object *a, struct nl_dump_params *p)
 
 	if (n->ce_mask & NEIGH_ATTR_VLAN)
 		nl_dump(p, "vlan %d ", n->n_vlan);
+
+	if (n->ce_mask & NEIGH_ATTR_NHID)
+		nl_dump(p, "nhid %u ", n->n_nhid);
 
 	if (n->ce_mask & NEIGH_ATTR_MASTER) {
 		if (link_cache)
@@ -718,6 +730,9 @@ static int build_neigh_msg(struct rtnl_neigh *tmpl, int cmd, int flags,
 
 	if (tmpl->ce_mask & NEIGH_ATTR_VLAN)
 		NLA_PUT_U16(msg, NDA_VLAN, tmpl->n_vlan);
+
+	if (tmpl->ce_mask & NEIGH_ATTR_NHID)
+		NLA_PUT_U32(msg, NDA_NH_ID, tmpl->n_nhid);
 
 	*result = msg;
 	return 0;
@@ -1062,6 +1077,20 @@ void rtnl_neigh_set_master(struct rtnl_neigh *neigh, int ifindex)
 
 int rtnl_neigh_get_master(struct rtnl_neigh *neigh) {
 	return neigh->n_master;
+}
+
+void rtnl_neigh_set_nhid(struct rtnl_neigh *neigh, uint32_t nhid)
+{
+	neigh->n_nhid = nhid;
+	neigh->ce_mask |= NEIGH_ATTR_NHID;
+}
+
+int rtnl_neigh_get_nhid(struct rtnl_neigh *neigh, uint32_t *out_val) {
+	if (!(neigh->ce_mask & NEIGH_ATTR_NHID))
+		return -NLE_NOATTR;
+
+	*out_val = neigh->n_nhid;
+	return NLE_SUCCESS;
 }
 
 /** @} */

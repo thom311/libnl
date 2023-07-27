@@ -254,6 +254,7 @@ struct rtnl_neigh
 	uint8_t		n_type;
 	struct nl_addr *n_lladdr;
 	struct nl_addr *n_dst;
+	uint32_t	n_nhid;
 	uint32_t	n_probes;
 	struct rtnl_ncacheinfo n_cacheinfo;
 	uint32_t                n_state_mask;

@@ -1277,6 +1277,8 @@ global:
 
 libnl_3_8 {
 global:
+	rtnl_link_bond_set_activeslave;
+	rtnl_link_bond_set_mode;
 	rtnl_link_bridge_get_vlan_filtering;
 	rtnl_link_bridge_get_vlan_protocol;
 	rtnl_link_bridge_get_vlan_stats_enabled;
@@ -1284,6 +1286,4 @@ global:
 	rtnl_link_bridge_set_vlan_protocol;
 	rtnl_link_bridge_set_vlan_stats_enabled;
 	rtnl_link_inet6_get_conf;
-	rtnl_link_bond_set_activeslave;
-	rtnl_link_bond_set_mode;
 } libnl_3_7;

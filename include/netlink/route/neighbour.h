@@ -79,6 +79,9 @@ extern int			rtnl_neigh_get_vlan(struct rtnl_neigh *);
 extern void			rtnl_neigh_set_master(struct rtnl_neigh *, int);
 extern int			rtnl_neigh_get_master(struct rtnl_neigh *);
 
+extern void			rtnl_neigh_set_nhid(struct rtnl_neigh *, uint32_t);
+extern int			rtnl_neigh_get_nhid(struct rtnl_neigh *, uint32_t *);
+
 #ifdef __cplusplus
 }
 #endif

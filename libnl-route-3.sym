@@ -1286,4 +1286,6 @@ global:
 	rtnl_link_bridge_set_vlan_protocol;
 	rtnl_link_bridge_set_vlan_stats_enabled;
 	rtnl_link_inet6_get_conf;
+	rtnl_neigh_get_nhid;
+	rtnl_neigh_set_nhid;
 } libnl_3_7;

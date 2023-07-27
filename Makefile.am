@@ -253,6 +253,7 @@ noinst_HEADERS = \
 	include/linux-private/linux/netfilter/nfnetlink_log.h \
 	include/linux-private/linux/netfilter/nfnetlink_queue.h \
 	include/linux-private/linux/netlink.h \
+	include/linux-private/linux/nexthop.h \
 	include/linux-private/linux/pkt_cls.h \
 	include/linux-private/linux/pkt_sched.h \
 	include/linux-private/linux/rtnetlink.h \

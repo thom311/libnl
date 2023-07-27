@@ -97,6 +97,7 @@ test-suite.log
 /src/nl-neigh-delete
 /src/nl-neigh-list
 /src/nl-neightbl-list
+/src/nl-nh-list
 /src/nl-pktloc-lookup
 /src/nl-qdisc-add
 /src/nl-qdisc-delete

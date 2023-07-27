@@ -548,7 +548,9 @@ if [ $TEST_ONLY = 1 ]; then
             trap 'rm -f "$FF"' EXIT
             clang-format "$f" 2>/dev/null > "$FF"
             git --no-pager diff "$f" "$FF" || :
-            die "Error: file \"$f\" has style issues."$'\n'"Fix it by running \`\"$0\" -i \"$f\"\` using $(clang-format --version)"
+            FEDORA_VERSION="$(sed -n 's/^      image: fedora:\([0-9]\+\)$/\1/p' .github/workflows/ci.yml)"
+            die "Error: file \"$f\" has style issues."$'\n'"Fix it by running \`\"$0\"\` using $(clang-format --version)
+Alternatively, run \`./tools/clang-format-container.sh\` to use a podman container named \"libnl-code-format-f$FEDORA_VERSION\"."
         fi
     done
     die "an unknown error happened."

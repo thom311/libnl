@@ -52,7 +52,7 @@ struct nl_dump_params nl_debug_dp = {
 	.dp_type = NL_DUMP_DETAILS,
 };
 
-static void __init nl_debug_init(void)
+static void _nl_init nl_debug_init(void)
 {
 	char *nldbg, *end;
 

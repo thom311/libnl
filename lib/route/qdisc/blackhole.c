@@ -18,12 +18,12 @@ static struct rtnl_tc_ops blackhole_ops = {
 	.to_type		= RTNL_TC_TYPE_QDISC,
 };
 
-static void __init blackhole_init(void)
+static void _nl_init blackhole_init(void)
 {
 	rtnl_tc_register(&blackhole_ops);
 }
 
-static void __exit blackhole_exit(void)
+static void _nl_exit blackhole_exit(void)
 {
 	rtnl_tc_unregister(&blackhole_ops);
 }

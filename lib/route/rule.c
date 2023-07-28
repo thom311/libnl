@@ -979,12 +979,12 @@ static struct nl_cache_ops rtnl_rule_ops = {
 	.co_groups		= rule_groups,
 };
 
-static void __init rule_init(void)
+static void _nl_init rule_init(void)
 {
 	nl_cache_mngt_register(&rtnl_rule_ops);
 }
 
-static void __exit rule_exit(void)
+static void _nl_exit rule_exit(void)
 {
 	nl_cache_mngt_unregister(&rtnl_rule_ops);
 }

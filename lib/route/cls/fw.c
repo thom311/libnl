@@ -203,12 +203,12 @@ static struct rtnl_tc_ops fw_ops = {
 	},
 };
 
-static void __init fw_init(void)
+static void _nl_init fw_init(void)
 {
 	rtnl_tc_register(&fw_ops);
 }
 
-static void __exit fw_exit(void)
+static void _nl_exit fw_exit(void)
 {
 	rtnl_tc_unregister(&fw_ops);
 }

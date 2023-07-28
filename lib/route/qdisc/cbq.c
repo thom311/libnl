@@ -183,13 +183,13 @@ static struct rtnl_tc_ops cbq_class_ops = {
 	},
 };
 
-static void __init cbq_init(void)
+static void _nl_init cbq_init(void)
 {
 	rtnl_tc_register(&cbq_qdisc_ops);
 	rtnl_tc_register(&cbq_class_ops);
 }
 
-static void __exit cbq_exit(void)
+static void _nl_exit cbq_exit(void)
 {
 	rtnl_tc_unregister(&cbq_qdisc_ops);
 	rtnl_tc_unregister(&cbq_class_ops);

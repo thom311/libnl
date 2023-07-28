@@ -516,13 +516,13 @@ static struct nl_object_ops cls_obj_ops = {
 	.oo_id_attrs		= (TCA_ATTR_IFINDEX | TCA_ATTR_HANDLE),
 };
 
-static void __init cls_init(void)
+static void _nl_init cls_init(void)
 {
 	rtnl_tc_type_register(&cls_ops);
 	nl_cache_mngt_register(&rtnl_cls_ops);
 }
 
-static void __exit cls_exit(void)
+static void _nl_exit cls_exit(void)
 {
 	nl_cache_mngt_unregister(&rtnl_cls_ops);
 	rtnl_tc_type_unregister(&cls_ops);

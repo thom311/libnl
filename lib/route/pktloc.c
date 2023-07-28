@@ -242,7 +242,7 @@ void rtnl_pktloc_foreach(void (*cb)(struct rtnl_pktloc *, void *), void *arg)
 			cb(loc, arg);
 }
 
-static int __init pktloc_init(void)
+static int _nl_init pktloc_init(void)
 {
 	int i;
 

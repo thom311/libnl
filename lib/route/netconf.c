@@ -553,12 +553,12 @@ static struct nl_cache_ops rtnl_netconf_ops = {
 	.co_obj_ops		= &netconf_obj_ops,
 };
 
-static void __init netconf_init(void)
+static void _nl_init netconf_init(void)
 {
 	nl_cache_mngt_register(&rtnl_netconf_ops);
 }
 
-static void __exit netconf_exit(void)
+static void _nl_exit netconf_exit(void)
 {
 	nl_cache_mngt_unregister(&rtnl_netconf_ops);
 }

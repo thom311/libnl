@@ -282,12 +282,12 @@ static struct rtnl_tc_ops basic_ops = {
 	},
 };
 
-static void __init basic_init(void)
+static void _nl_init basic_init(void)
 {
 	rtnl_tc_register(&basic_ops);
 }
 
-static void __exit basic_exit(void)
+static void _nl_exit basic_exit(void)
 {
 	rtnl_tc_unregister(&basic_ops);
 }

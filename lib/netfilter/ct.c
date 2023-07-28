@@ -704,12 +704,12 @@ static struct nl_cache_ops nfnl_ct_ops = {
 	.co_obj_ops		= &ct_obj_ops,
 };
 
-static void __init ct_init(void)
+static void _nl_init ct_init(void)
 {
 	nl_cache_mngt_register(&nfnl_ct_ops);
 }
 
-static void __exit ct_exit(void)
+static void _nl_exit ct_exit(void)
 {
 	nl_cache_mngt_unregister(&nfnl_ct_ops);
 }

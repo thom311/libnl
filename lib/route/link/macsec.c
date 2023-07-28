@@ -418,12 +418,12 @@ static struct rtnl_link_info_ops macsec_info_ops = {
 	.io_compare		= macsec_compare,
 };
 
-static void __init macsec_init(void)
+static void _nl_init macsec_init(void)
 {
 	rtnl_link_register_info(&macsec_info_ops);
 }
 
-static void __exit macsec_exit(void)
+static void _nl_exit macsec_exit(void)
 {
 	rtnl_link_unregister_info(&macsec_info_ops);
 }

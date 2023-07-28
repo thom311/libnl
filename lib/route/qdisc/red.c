@@ -171,12 +171,12 @@ static struct rtnl_tc_ops red_ops = {
 	.to_msg_fill		= red_msg_fill,
 };
 
-static void __init red_init(void)
+static void _nl_init red_init(void)
 {
 	rtnl_tc_register(&red_ops);
 }
 
-static void __exit red_exit(void)
+static void _nl_exit red_exit(void)
 {
 	rtnl_tc_unregister(&red_ops);
 }

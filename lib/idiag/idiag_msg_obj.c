@@ -110,12 +110,12 @@ static struct nl_cache_ops idiagnl_msg_ops = {
 	.co_obj_ops		= &idiagnl_msg_obj_ops,
 };
 
-static void __init idiagnl_init(void)
+static void _nl_init idiagnl_init(void)
 {
 	nl_cache_mngt_register(&idiagnl_msg_ops);
 }
 
-static void __exit idiagnl_exit(void)
+static void _nl_exit idiagnl_exit(void)
 {
 	nl_cache_mngt_unregister(&idiagnl_msg_ops);
 }

@@ -302,12 +302,12 @@ int rtnl_link_xfrmi_get_if_id(struct rtnl_link *link, uint32_t *out_if_id)
 	return 0;
 }
 
-static void __init xfrmi_init(void)
+static void _nl_init xfrmi_init(void)
 {
 	rtnl_link_register_info(&xfrmi_info_ops);
 }
 
-static void __exit xfrmi_exit(void)
+static void _nl_exit xfrmi_exit(void)
 {
 	rtnl_link_unregister_info(&xfrmi_info_ops);
 }

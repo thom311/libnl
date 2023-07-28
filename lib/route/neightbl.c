@@ -805,12 +805,12 @@ static struct nl_cache_ops rtnl_neightbl_ops = {
 	.co_obj_ops		= &neightbl_obj_ops,
 };
 
-static void __init neightbl_init(void)
+static void _nl_init neightbl_init(void)
 {
 	nl_cache_mngt_register(&rtnl_neightbl_ops);
 }
 
-static void __exit neightbl_exit(void)
+static void _nl_exit neightbl_exit(void)
 {
 	nl_cache_mngt_unregister(&rtnl_neightbl_ops);
 }

@@ -158,12 +158,12 @@ static struct rtnl_tc_ops plug_ops = {
 	.to_msg_fill		= plug_msg_fill,
 };
 
-static void __init plug_init(void)
+static void _nl_init plug_init(void)
 {
 	rtnl_tc_register(&plug_ops);
 }
 
-static void __exit plug_exit(void)
+static void _nl_exit plug_exit(void)
 {
 	rtnl_tc_unregister(&plug_ops);
 }

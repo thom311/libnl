@@ -244,12 +244,12 @@ int rtnl_link_vrf_set_tableid(struct rtnl_link *link, uint32_t id)
 
 /** @} */
 
-static void __init vrf_init(void)
+static void _nl_init vrf_init(void)
 {
 	rtnl_link_register_info(&vrf_info_ops);
 }
 
-static void __exit vrf_exit(void)
+static void _nl_exit vrf_exit(void)
 {
 	rtnl_link_unregister_info(&vrf_info_ops);
 }

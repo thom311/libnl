@@ -879,13 +879,13 @@ int rtnl_link_ipgre_get_fwmark(struct rtnl_link *link, uint32_t *fwmark)
 	return 0;
 }
 
-static void __init ipgre_init(void)
+static void _nl_init ipgre_init(void)
 {
 	rtnl_link_register_info(&ipgre_info_ops);
 	rtnl_link_register_info(&ipgretap_info_ops);
 }
 
-static void __exit ipgre_exit(void)
+static void _nl_exit ipgre_exit(void)
 {
 	rtnl_link_unregister_info(&ipgre_info_ops);
 	rtnl_link_unregister_info(&ipgretap_info_ops);

@@ -3207,12 +3207,12 @@ static struct nl_cache_ops rtnl_link_ops = {
 	.co_obj_ops		= &link_obj_ops,
 };
 
-static void __init link_init(void)
+static void _nl_init link_init(void)
 {
 	nl_cache_mngt_register(&rtnl_link_ops);
 }
 
-static void __exit link_exit(void)
+static void _nl_exit link_exit(void)
 {
 	nl_cache_mngt_unregister(&rtnl_link_ops);
 }

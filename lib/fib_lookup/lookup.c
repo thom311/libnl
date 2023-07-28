@@ -333,12 +333,12 @@ static struct nl_cache_ops fib_lookup_ops = {
 	.co_obj_ops		= &result_obj_ops,
 };
 
-static void __init fib_lookup_init(void)
+static void _nl_init fib_lookup_init(void)
 {
 	nl_cache_mngt_register(&fib_lookup_ops);
 }
 
-static void __exit fib_lookup_exit(void)
+static void _nl_exit fib_lookup_exit(void)
 {
 	nl_cache_mngt_unregister(&fib_lookup_ops);
 }

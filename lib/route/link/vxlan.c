@@ -1771,12 +1771,12 @@ int rtnl_link_vxlan_get_flags(struct rtnl_link *link, uint32_t *out_flags)
 
 /** @} */
 
-static void __init vxlan_init(void)
+static void _nl_init vxlan_init(void)
 {
 	rtnl_link_register_info(&vxlan_info_ops);
 }
 
-static void __exit vxlan_exit(void)
+static void _nl_exit vxlan_exit(void)
 {
 	rtnl_link_unregister_info(&vxlan_info_ops);
 }

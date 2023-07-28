@@ -21,12 +21,12 @@ static struct rtnl_link_info_ops ifb_info_ops = {
 	.io_name		= "ifb",
 };
 
-static void __init ifb_init(void)
+static void _nl_init ifb_init(void)
 {
 	rtnl_link_register_info(&ifb_info_ops);
 }
 
-static void __exit ifb_exit(void)
+static void _nl_exit ifb_exit(void)
 {
 	rtnl_link_unregister_info(&ifb_info_ops);
 }

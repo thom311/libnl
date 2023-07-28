@@ -587,13 +587,13 @@ static struct nl_object_ops qdisc_obj_ops = {
 	.oo_id_attrs		= (TCA_ATTR_IFINDEX | TCA_ATTR_HANDLE),
 };
 
-static void __init qdisc_init(void)
+static void _nl_init qdisc_init(void)
 {
 	rtnl_tc_type_register(&qdisc_ops);
 	nl_cache_mngt_register(&rtnl_qdisc_ops);
 }
 
-static void __exit qdisc_exit(void)
+static void _nl_exit qdisc_exit(void)
 {
 	nl_cache_mngt_unregister(&rtnl_qdisc_ops);
 	rtnl_tc_type_unregister(&qdisc_ops);

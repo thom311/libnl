@@ -237,12 +237,12 @@ static struct nl_cache_ops nfnl_log_ops = {
 	},
 };
 
-static void __init log_init(void)
+static void _nl_init log_init(void)
 {
 	nl_cache_mngt_register(&nfnl_log_ops);
 }
 
-static void __exit log_exit(void)
+static void _nl_exit log_exit(void)
 {
 	nl_cache_mngt_unregister(&nfnl_log_ops);
 }

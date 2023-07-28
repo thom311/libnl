@@ -257,12 +257,12 @@ int rtnl_link_ipvlan_str2mode(const char *name)
 
 /** @} */
 
-static void __init ipvlan_init(void)
+static void _nl_init ipvlan_init(void)
 {
 	rtnl_link_register_info(&ipvlan_info_ops);
 }
 
-static void __exit ipvlan_exit(void)
+static void _nl_exit ipvlan_exit(void)
 {
 	rtnl_link_unregister_info(&ipvlan_info_ops);
 }

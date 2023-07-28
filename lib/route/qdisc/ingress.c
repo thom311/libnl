@@ -45,12 +45,12 @@ static struct rtnl_tc_ops ingress_ops = {
 	.to_msg_fill		= dumb_msg_fill,
 };
 
-static void __init ingress_init(void)
+static void _nl_init ingress_init(void)
 {
 	rtnl_tc_register(&ingress_ops);
 }
 
-static void __exit ingress_exit(void)
+static void _nl_exit ingress_exit(void)
 {
 	rtnl_tc_unregister(&ingress_ops);
 }

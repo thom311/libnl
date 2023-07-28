@@ -126,7 +126,7 @@ static struct rtnl_ematch_ops nbyte_ops = {
 	.eo_free	= nbyte_free,
 };
 
-static void __init nbyte_init(void)
+static void _nl_init nbyte_init(void)
 {
 	rtnl_ematch_register(&nbyte_ops);
 }

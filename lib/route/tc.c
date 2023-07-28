@@ -1017,7 +1017,7 @@ int rtnl_tc_register(struct rtnl_tc_ops *ops)
 	/*
 	 * Initialiation hack, make sure list is initialized when
 	 * the first tc module registers. Putting this in a
-	 * separate __init would required correct ordering of init
+	 * separate _nl_init would required correct ordering of init
 	 * functions
 	 */
 	if (!init) {

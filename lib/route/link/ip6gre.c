@@ -875,12 +875,12 @@ int rtnl_link_ip6gre_get_fwmark(struct rtnl_link *link, uint32_t *fwmark)
 	return 0;
 }
 
-static void __init ip6gre_init(void)
+static void _nl_init ip6gre_init(void)
 {
 	rtnl_link_register_info(&ip6gre_info_ops);
 }
 
-static void __exit ip6gre_exit(void)
+static void _nl_exit ip6gre_exit(void)
 {
 	rtnl_link_unregister_info(&ip6gre_info_ops);
 }

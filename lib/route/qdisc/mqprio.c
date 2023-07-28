@@ -591,12 +591,12 @@ static struct rtnl_tc_ops mqprio_ops = {
 	.to_msg_fill            = mqprio_msg_fill,
 };
 
-static void __init mqprio_init(void)
+static void _nl_init mqprio_init(void)
 {
 	rtnl_tc_register(&mqprio_ops);
 }
 
-static void __exit mqprio_exit(void)
+static void _nl_exit mqprio_exit(void)
 {
 	rtnl_tc_unregister(&mqprio_ops);
 }

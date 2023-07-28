@@ -180,12 +180,12 @@ static struct rtnl_tc_ops cgroup_ops = {
 	},
 };
 
-static void __init cgroup_init(void)
+static void _nl_init cgroup_init(void)
 {
 	rtnl_tc_register(&cgroup_ops);
 }
 
-static void __exit cgroup_exit(void)
+static void _nl_exit cgroup_exit(void)
 {
 	rtnl_tc_unregister(&cgroup_ops);
 }

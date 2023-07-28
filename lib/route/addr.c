@@ -1198,12 +1198,12 @@ static struct nl_cache_ops rtnl_addr_ops = {
 	.co_obj_ops		= &addr_obj_ops,
 };
 
-static void __init addr_init(void)
+static void _nl_init addr_init(void)
 {
 	nl_cache_mngt_register(&rtnl_addr_ops);
 }
 
-static void __exit addr_exit(void)
+static void _nl_exit addr_exit(void)
 {
 	nl_cache_mngt_unregister(&rtnl_addr_ops);
 }

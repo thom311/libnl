@@ -975,12 +975,12 @@ static struct rtnl_link_af_ops bridge_ops = {
 	.ao_fill_af_no_nest	= 1,
 };
 
-static void __init bridge_init(void)
+static void _nl_init bridge_init(void)
 {
 	rtnl_link_af_register(&bridge_ops);
 }
 
-static void __exit bridge_exit(void)
+static void _nl_exit bridge_exit(void)
 {
 	rtnl_link_af_unregister(&bridge_ops);
 }

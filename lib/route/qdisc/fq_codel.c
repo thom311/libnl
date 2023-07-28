@@ -358,12 +358,12 @@ static struct rtnl_tc_ops fq_codel_ops = {
 	.to_msg_fill		= fq_codel_msg_fill,
 };
 
-static void __init fq_codel_init(void)
+static void _nl_init fq_codel_init(void)
 {
 	rtnl_tc_register(&fq_codel_ops);
 }
 
-static void __exit fq_codel_exit(void)
+static void _nl_exit fq_codel_exit(void)
 {
 	rtnl_tc_unregister(&fq_codel_ops);
 }

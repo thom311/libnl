@@ -80,7 +80,7 @@ static struct rtnl_ematch_ops cmp_ops = {
 	.eo_dump	= cmp_dump,
 };
 
-static void __init cmp_init(void)
+static void _nl_init cmp_init(void)
 {
 	rtnl_ematch_register(&cmp_ops);
 }

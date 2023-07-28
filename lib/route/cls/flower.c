@@ -885,12 +885,12 @@ static struct rtnl_tc_ops flower_ops = {
 	},
 };
 
-static void __init flower_init(void)
+static void _nl_init flower_init(void)
 {
 	rtnl_tc_register(&flower_ops);
 }
 
-static void __exit flower_exit(void)
+static void _nl_exit flower_exit(void)
 {
 	rtnl_tc_unregister(&flower_ops);
 }

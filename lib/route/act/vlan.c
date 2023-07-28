@@ -399,12 +399,12 @@ static struct rtnl_tc_ops vlan_ops = {
 	},
 };
 
-static void __init vlan_init(void)
+static void _nl_init vlan_init(void)
 {
 	rtnl_tc_register(&vlan_ops);
 }
 
-static void __exit vlan_exit(void)
+static void _nl_exit vlan_exit(void)
 {
 	rtnl_tc_unregister(&vlan_ops);
 }

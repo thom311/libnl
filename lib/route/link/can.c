@@ -892,12 +892,12 @@ int rtnl_link_can_str2ctrlmode(const char *name)
 
 /** @} */
 
-static void __init can_init(void)
+static void _nl_init can_init(void)
 {
 	rtnl_link_register_info(&can_info_ops);
 }
 
-static void __exit can_exit(void)
+static void _nl_exit can_exit(void)
 {
 	rtnl_link_unregister_info(&can_info_ops);
 }

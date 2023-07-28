@@ -35,7 +35,7 @@ static struct rtnl_ematch_ops container_ops = {
 	.eo_fill	= container_fill,
 };
 
-static void __init container_init(void)
+static void _nl_init container_init(void)
 {
 	rtnl_ematch_register(&container_ops);
 }

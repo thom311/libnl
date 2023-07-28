@@ -322,7 +322,7 @@ static struct rtnl_ematch_ops meta_ops = {
 	.eo_free	= meta_free,
 };
 
-static void __init meta_init(void)
+static void _nl_init meta_init(void)
 {
 	rtnl_ematch_register(&meta_ops);
 }

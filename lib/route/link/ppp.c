@@ -204,12 +204,12 @@ int rtnl_link_ppp_get_fd(struct rtnl_link *link, int32_t *fd)
 
 /** @} */
 
-static void __init ppp_init(void)
+static void _nl_init ppp_init(void)
 {
 	rtnl_link_register_info(&ppp_info_ops);
 }
 
-static void __exit ppp_exit(void)
+static void _nl_exit ppp_exit(void)
 {
 	rtnl_link_unregister_info(&ppp_info_ops);
 }

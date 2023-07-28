@@ -788,12 +788,12 @@ int rtnl_link_geneve_get_flags(struct rtnl_link *link, uint8_t *flags)
 }
 
 /** @} */
-static void __init geneve_init(void)
+static void _nl_init geneve_init(void)
 {
         rtnl_link_register_info(&geneve_info_ops);
 }
 
-static void __exit geneve_exit(void)
+static void _nl_exit geneve_exit(void)
 {
         rtnl_link_unregister_info(&geneve_info_ops);
 }

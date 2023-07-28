@@ -885,12 +885,12 @@ static struct rtnl_tc_ops u32_ops = {
 	},
 };
 
-static void __init u32_init(void)
+static void _nl_init u32_init(void)
 {
 	rtnl_tc_register(&u32_ops);
 }
 
-static void __exit u32_exit(void)
+static void _nl_exit u32_exit(void)
 {
 	rtnl_tc_unregister(&u32_ops);
 }

@@ -610,12 +610,12 @@ static struct nl_cache_ops nfnl_exp_ops = {
 	.co_obj_ops		= &exp_obj_ops,
 };
 
-static void __init exp_init(void)
+static void _nl_init exp_init(void)
 {
 	nl_cache_mngt_register(&nfnl_exp_ops);
 }
 
-static void __exit exp_exit(void)
+static void _nl_exit exp_exit(void)
 {
 	nl_cache_mngt_unregister(&nfnl_exp_ops);
 }

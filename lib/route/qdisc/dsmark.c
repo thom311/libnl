@@ -392,13 +392,13 @@ static struct rtnl_tc_ops dsmark_class_ops = {
 	.to_msg_fill		= dsmark_class_msg_fill,
 };
 
-static void __init dsmark_init(void)
+static void _nl_init dsmark_init(void)
 {
 	rtnl_tc_register(&dsmark_qdisc_ops);
 	rtnl_tc_register(&dsmark_class_ops);
 }
 
-static void __exit dsmark_exit(void)
+static void _nl_exit dsmark_exit(void)
 {
 	rtnl_tc_unregister(&dsmark_qdisc_ops);
 	rtnl_tc_unregister(&dsmark_class_ops);

@@ -575,13 +575,13 @@ static struct nl_object_ops act_obj_ops = {
 	.oo_id_attrs		= (TCA_ATTR_IFINDEX | TCA_ATTR_HANDLE),
 };
 
-static void __init act_init(void)
+static void _nl_init act_init(void)
 {
 	rtnl_tc_type_register(&act_ops);
 	nl_cache_mngt_register(&rtnl_act_ops);
 }
 
-static void __exit act_exit(void)
+static void _nl_exit act_exit(void)
 {
 	nl_cache_mngt_unregister(&rtnl_act_ops);
 	rtnl_tc_type_unregister(&act_ops);

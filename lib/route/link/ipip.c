@@ -578,12 +578,12 @@ int rtnl_link_ipip_get_fwmark(struct rtnl_link *link, uint32_t *fwmark)
 	return 0;
 }
 
-static void __init ipip_init(void)
+static void _nl_init ipip_init(void)
 {
 	rtnl_link_register_info(&ipip_info_ops);
 }
 
-static void __exit ipip_exit(void)
+static void _nl_exit ipip_exit(void)
 {
 	rtnl_link_unregister_info(&ipip_info_ops);
 }

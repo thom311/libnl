@@ -289,12 +289,12 @@ int rtnl_link_veth_add(struct nl_sock *sock, const char *name,
 
 /** @} */
 
-static void __init veth_init(void)
+static void _nl_init veth_init(void)
 {
 	rtnl_link_register_info(&veth_info_ops);
 }
 
-static void __exit veth_exit(void)
+static void _nl_exit veth_exit(void)
 {
 	rtnl_link_unregister_info(&veth_info_ops);
 }

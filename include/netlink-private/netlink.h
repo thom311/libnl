@@ -148,9 +148,6 @@ static inline int nl_cb_call(struct nl_cb *cb, enum nl_cb_type type, struct nl_m
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 #endif
 
-#define __init __attribute__ ((constructor))
-#define __exit __attribute__ ((destructor))
-
 extern int nl_cache_parse(struct nl_cache_ops *, struct sockaddr_nl *,
 			  struct nlmsghdr *, struct nl_parser_param *);
 

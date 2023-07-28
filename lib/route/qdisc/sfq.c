@@ -237,12 +237,12 @@ static struct rtnl_tc_ops sfq_ops = {
 	.to_msg_fill		= sfq_msg_fill,
 };
 
-static void __init sfq_init(void)
+static void _nl_init sfq_init(void)
 {
 	rtnl_tc_register(&sfq_ops);
 }
 
-static void __exit sfq_exit(void)
+static void _nl_exit sfq_exit(void)
 {
 	rtnl_tc_unregister(&sfq_ops);
 }

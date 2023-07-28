@@ -441,12 +441,12 @@ static struct rtnl_tc_ops tbf_tc_ops = {
 	.to_msg_fill		= tbf_msg_fill,
 };
 
-static void __init tbf_init(void)
+static void _nl_init tbf_init(void)
 {
 	rtnl_tc_register(&tbf_tc_ops);
 }
 
-static void __exit tbf_exit(void)
+static void _nl_exit tbf_exit(void)
 {
 	rtnl_tc_unregister(&tbf_tc_ops);
 }

@@ -277,12 +277,12 @@ int rtnl_link_inet_set_conf(struct rtnl_link *link, const unsigned int cfgid,
 }
 
 
-static void __init inet_init(void)
+static void _nl_init inet_init(void)
 {
 	rtnl_link_af_register(&inet_ops);
 }
 
-static void __exit inet_exit(void)
+static void _nl_exit inet_exit(void)
 {
 	rtnl_link_af_unregister(&inet_ops);
 }

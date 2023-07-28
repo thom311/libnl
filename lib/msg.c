@@ -30,7 +30,7 @@
 
 static size_t default_msg_size;
 
-static void __init init_msg_size(void)
+static void _nl_init init_msg_size(void)
 {
 	default_msg_size = getpagesize();
 }

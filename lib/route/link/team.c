@@ -89,12 +89,12 @@ static struct rtnl_link_info_ops team_info_ops = {
 	.io_name		= "team",
 };
 
-static void __init team_init(void)
+static void _nl_init team_init(void)
 {
 	rtnl_link_register_info(&team_info_ops);
 }
 
-static void __exit team_exit(void)
+static void _nl_exit team_exit(void)
 {
 	rtnl_link_unregister_info(&team_info_ops);
 }

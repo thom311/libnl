@@ -543,12 +543,12 @@ int rtnl_link_ip6vti_get_fwmark(struct rtnl_link *link, uint32_t *fwmark)
 	return 0;
 }
 
-static void __init ip6vti_init(void)
+static void _nl_init ip6vti_init(void)
 {
 	rtnl_link_register_info(&ip6vti_info_ops);
 }
 
-static void __exit ip6vti_exit(void)
+static void _nl_exit ip6vti_exit(void)
 {
 	rtnl_link_unregister_info(&ip6vti_info_ops);
 }

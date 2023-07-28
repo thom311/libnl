@@ -171,7 +171,7 @@ static struct rtnl_ematch_ops text_ops = {
 	.eo_free	= text_free,
 };
 
-static void __init text_init(void)
+static void _nl_init text_init(void)
 {
 	rtnl_ematch_register(&text_ops);
 }

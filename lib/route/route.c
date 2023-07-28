@@ -215,12 +215,12 @@ static struct nl_cache_ops rtnl_route_ops = {
 	.co_obj_ops		= &route_obj_ops,
 };
 
-static void __init route_init(void)
+static void _nl_init route_init(void)
 {
 	nl_cache_mngt_register(&rtnl_route_ops);
 }
 
-static void __exit route_exit(void)
+static void _nl_exit route_exit(void)
 {
 	nl_cache_mngt_unregister(&rtnl_route_ops);
 }

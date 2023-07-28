@@ -49,7 +49,7 @@ static int add_routing_table_name(long id, const char *name)
 	return __trans_list_add(id, name, &table_names);
 }
 
-static void __init init_routing_table_names(void)
+static void _nl_init init_routing_table_names(void)
 {
 	add_routing_table_name(RT_TABLE_UNSPEC, "unspec");
 	add_routing_table_name(RT_TABLE_COMPAT, "compat");
@@ -58,7 +58,7 @@ static void __init init_routing_table_names(void)
 	add_routing_table_name(RT_TABLE_LOCAL, "local");
 }
 
-static void __exit release_routing_table_names(void)
+static void _nl_exit release_routing_table_names(void)
 {
 	__trans_list_clear(&table_names);
 }
@@ -95,7 +95,7 @@ static int add_proto_name(long id, const char *name)
 	return __trans_list_add(id, name, &proto_names);
 }
 
-static void __init init_proto_names(void)
+static void _nl_init init_proto_names(void)
 {
 	add_proto_name(RTPROT_UNSPEC, "unspec");
 	add_proto_name(RTPROT_REDIRECT, "redirect");
@@ -104,7 +104,7 @@ static void __init init_proto_names(void)
 	add_proto_name(RTPROT_STATIC, "static");
 }
 
-static void __exit release_proto_names(void)
+static void _nl_exit release_proto_names(void)
 {
 	__trans_list_clear(&proto_names);
 }

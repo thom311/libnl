@@ -858,12 +858,12 @@ int rtnl_link_sit_get_fwmark(struct rtnl_link *link, uint32_t *fwmark)
 	return 0;
 }
 
-static void __init sit_init(void)
+static void _nl_init sit_init(void)
 {
 	rtnl_link_register_info(&sit_info_ops);
 }
 
-static void __exit sit_exit(void)
+static void _nl_exit sit_exit(void)
 {
 	rtnl_link_unregister_info(&sit_info_ops);
 }

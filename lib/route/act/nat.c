@@ -273,12 +273,12 @@ static struct rtnl_tc_ops nat_ops = {
 	},
 };
 
-static void __init nat_init(void)
+static void _nl_init nat_init(void)
 {
 	rtnl_tc_register(&nat_ops);
 }
 
-static void __exit nat_exit(void)
+static void _nl_exit nat_exit(void)
 {
 	rtnl_tc_unregister(&nat_ops);
 }

@@ -330,13 +330,13 @@ static struct rtnl_tc_ops hfsc_class_ops = {
 	.to_msg_fill		= hfsc_class_msg_fill,
 };
 
-static void __init hfsc_init(void)
+static void _nl_init hfsc_init(void)
 {
 	rtnl_tc_register(&hfsc_qdisc_ops);
 	rtnl_tc_register(&hfsc_class_ops);
 }
 
-static void __exit hfsc_exit(void)
+static void _nl_exit hfsc_exit(void)
 {
 	rtnl_tc_unregister(&hfsc_qdisc_ops);
 	rtnl_tc_unregister(&hfsc_class_ops);

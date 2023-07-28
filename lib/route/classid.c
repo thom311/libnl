@@ -427,7 +427,7 @@ errout:
 
 /** @} */
 
-static void __init classid_init(void)
+static void _nl_init classid_init(void)
 {
 	int err, i;
 
@@ -444,7 +444,7 @@ static void free_map(void *map)
 	free(map);
 }
 
-static void __exit classid_exit(void)
+static void _nl_exit classid_exit(void)
 {
 	tdestroy(id_root, free_map);
 }

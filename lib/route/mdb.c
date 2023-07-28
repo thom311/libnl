@@ -453,12 +453,12 @@ static struct nl_cache_ops rtnl_mdb_ops = {
 	.co_obj_ops = &mdb_obj_ops,
 };
 
-static void __init mdb_init(void)
+static void _nl_init mdb_init(void)
 {
 	nl_cache_mngt_register(&rtnl_mdb_ops);
 }
 
-static void __exit mdb_exit(void)
+static void _nl_exit mdb_exit(void)
 {
 	nl_cache_mngt_unregister(&rtnl_mdb_ops);
 }

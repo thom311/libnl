@@ -724,12 +724,12 @@ int rtnl_link_inet6_get_conf(struct rtnl_link *link, unsigned int cfgid,
 }
 
 
-static void __init inet6_init(void)
+static void _nl_init inet6_init(void)
 {
 	rtnl_link_af_register(&inet6_ops);
 }
 
-static void __exit inet6_exit(void)
+static void _nl_exit inet6_exit(void)
 {
 	rtnl_link_af_unregister(&inet6_ops);
 }

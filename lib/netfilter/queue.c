@@ -232,12 +232,12 @@ static struct nl_cache_ops nfnl_queue_ops = {
 	},
 };
 
-static void __init nfnl_queue_init(void)
+static void _nl_init nfnl_queue_init(void)
 {
 	nl_cache_mngt_register(&nfnl_queue_ops);
 }
 
-static void __exit nfnl_queue_exit(void)
+static void _nl_exit nfnl_queue_exit(void)
 {
 	nl_cache_mngt_unregister(&nfnl_queue_ops);
 }

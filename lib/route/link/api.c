@@ -19,12 +19,12 @@
  * 	.io_free		= vlan_free,
  * };
  *
- * static void __init vlan_init(void)
+ * static void _nl_init vlan_init(void)
  * {
  * 	rtnl_link_register_info(&vlan_info_ops);
  * }
  *
- * static void __exit vlan_exit(void)
+ * static void _nl_exit vlan_exit(void)
  * {
  * 	rtnl_link_unregister_info(&vlan_info_ops);
  * }

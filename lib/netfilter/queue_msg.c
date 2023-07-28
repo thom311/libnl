@@ -290,12 +290,12 @@ static struct nl_cache_ops nfnl_queue_msg_ops = {
 	.co_obj_ops		= &queue_msg_obj_ops,
 };
 
-static void __init nfnl_msg_queue_init(void)
+static void _nl_init nfnl_msg_queue_init(void)
 {
 	nl_cache_mngt_register(&nfnl_queue_msg_ops);
 }
 
-static void __exit nfnl_queue_msg_exit(void)
+static void _nl_exit nfnl_queue_msg_exit(void)
 {
 	nl_cache_mngt_unregister(&nfnl_queue_msg_ops);
 }

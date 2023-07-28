@@ -204,12 +204,12 @@ static struct rtnl_tc_ops mirred_ops = {
 	},
 };
 
-static void __init mirred_init(void)
+static void _nl_init mirred_init(void)
 {
 	rtnl_tc_register(&mirred_ops);
 }
 
-static void __exit mirred_exit(void)
+static void _nl_exit mirred_exit(void)
 {
 	rtnl_tc_unregister(&mirred_ops);
 }

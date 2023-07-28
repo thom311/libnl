@@ -290,12 +290,12 @@ int rtnl_link_bridge_get_vlan_stats_enabled(struct rtnl_link *link,
 	return 0;
 }
 
-static void __init bridge_info_init(void)
+static void _nl_init bridge_info_init(void)
 {
 	rtnl_link_register_info(&bridge_info_ops);
 }
 
-static void __exit bridge_info_exit(void)
+static void _nl_exit bridge_info_exit(void)
 {
 	rtnl_link_unregister_info(&bridge_info_ops);
 }

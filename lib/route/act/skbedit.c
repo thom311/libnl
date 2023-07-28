@@ -261,12 +261,12 @@ static struct rtnl_tc_ops skbedit_ops = {
 	},
 };
 
-static void __init skbedit_init(void)
+static void _nl_init skbedit_init(void)
 {
 	rtnl_tc_register(&skbedit_ops);
 }
 
-static void __exit skbedit_exit(void)
+static void _nl_exit skbedit_exit(void)
 {
 	rtnl_tc_unregister(&skbedit_ops);
 }

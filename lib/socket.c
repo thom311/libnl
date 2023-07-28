@@ -36,7 +36,7 @@
 
 static int default_cb = NL_CB_DEFAULT;
 
-static void __init init_default_cb(void)
+static void _nl_init init_default_cb(void)
 {
 	char *nlcb;
 

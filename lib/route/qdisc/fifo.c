@@ -148,13 +148,13 @@ static struct rtnl_tc_ops bfifo_ops = {
 	.to_msg_fill		= fifo_msg_fill,
 };
 
-static void __init fifo_init(void)
+static void _nl_init fifo_init(void)
 {
 	rtnl_tc_register(&pfifo_ops);
 	rtnl_tc_register(&bfifo_ops);
 }
 
-static void __exit fifo_exit(void)
+static void _nl_exit fifo_exit(void)
 {
 	rtnl_tc_unregister(&pfifo_ops);
 	rtnl_tc_unregister(&bfifo_ops);

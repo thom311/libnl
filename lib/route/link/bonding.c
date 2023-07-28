@@ -307,12 +307,12 @@ int rtnl_link_bond_release(struct nl_sock *sock, struct rtnl_link *slave)
 				rtnl_link_get_ifindex(slave));
 }
 
-static void __init bonding_init(void)
+static void _nl_init bonding_init(void)
 {
 	rtnl_link_register_info(&bonding_info_ops);
 }
 
-static void __exit bonding_exit(void)
+static void _nl_exit bonding_exit(void)
 {
 	rtnl_link_unregister_info(&bonding_info_ops);
 }

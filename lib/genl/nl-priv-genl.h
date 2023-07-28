@@ -11,6 +11,7 @@
 
 #define GENL_HDRSIZE(hdrlen) (GENL_HDRLEN + (hdrlen))
 
+/* WARNING: this symbol is wrongly exported in libnl-genl-3.sym. */
 extern int		genl_resolve_id(struct genl_ops *ops);
 
 #endif

@@ -307,6 +307,7 @@ static int __genl_ops_resolve(struct nl_cache *ctrl, struct genl_ops *ops)
 	return -NLE_OBJ_NOTFOUND;
 }
 
+/* WARNING: this symbol is wrongly exported in libnl-genl-3.sym. */
 int genl_resolve_id(struct genl_ops *ops)
 {
 	struct nl_sock *sk;

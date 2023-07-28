@@ -15,7 +15,6 @@ EXCLUDE_PATHS_TOPLEVEL=(
 # Exclude them too.
 EXCLUDE_PATHS_TOPLEVEL+=(
     "include/netlink-private/cache-api.h"
-    "include/netlink-private/genl.h"
     "include/netlink-private/netlink.h"
     "include/netlink-private/object-api.h"
     "include/netlink-private/route/link/api.h"
@@ -168,6 +167,7 @@ EXCLUDE_PATHS_TOPLEVEL+=(
     "lib/genl/family.c"
     "lib/genl/genl.c"
     "lib/genl/mngt.c"
+    "lib/genl/nl-priv-genl.h"
     "lib/handlers.c"
     "lib/hash.c"
     "lib/hashtable.c"

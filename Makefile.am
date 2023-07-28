@@ -272,7 +272,6 @@ noinst_HEADERS = \
 	include/linux-private/linux/veth.h \
 	include/linux-private/linux/xfrm.h \
 	include/netlink-private/cache-api.h \
-	include/netlink-private/genl.h \
 	include/netlink-private/netlink.h \
 	include/netlink-private/object-api.h \
 	include/netlink-private/route/link/api.h \
@@ -507,6 +506,7 @@ lib_libnl_genl_3_la_SOURCES = \
 	lib/genl/family.c \
 	lib/genl/genl.c \
 	lib/genl/mngt.c \
+	lib/genl/nl-priv-genl.h \
 	$(NULL)
 EXTRA_lib_libnl_genl_3_la_DEPENDENCIES = \
 	libnl-genl-3.sym

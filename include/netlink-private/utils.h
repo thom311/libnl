@@ -86,6 +86,7 @@
 #define _nl_deprecated(msg) __attribute__((__deprecated__(msg)))
 #define _nl_init __attribute__((constructor))
 #define _nl_exit __attribute__((destructor))
+#define _nl_auto(fcn) __attribute__((__cleanup__(fcn)))
 
 /*****************************************************************************/
 
@@ -574,8 +575,6 @@ static inline char *_nl_strncpy_assert(char *dst, const char *src, size_t len)
 	return dst;
 }
 
-#include "nl-auto.h"
-
 #define _NL_RETURN_ON_ERR(cmd)                                                 \
 	do {                                                                   \
 		int _err;                                                      \
@@ -683,5 +682,34 @@ static inline char *_nl_inet_ntop_dup(int addr_family, const void *addr)
 						    INET_ADDRSTRLEN :
 						    INET6_ADDRSTRLEN));
 }
+
+/*****************************************************************************/
+
+#define _NL_AUTO_DEFINE_FCN_VOID0(CastType, name, func)                        \
+	static inline void name(void *v)                                       \
+	{                                                                      \
+		if (*((CastType *)v))                                          \
+			func(*((CastType *)v));                                \
+	}                                                                      \
+	struct _nl_dummy_for_tailing_semicolon
+
+#define _NL_AUTO_DEFINE_FCN_STRUCT(CastType, name, func)                       \
+	static inline void name(CastType *v)                                   \
+	{                                                                      \
+		if (v)                                                         \
+			func(v);                                               \
+	}                                                                      \
+	struct _nl_dummy_for_tailing_semicolon
+
+#define _NL_AUTO_DEFINE_FCN_TYPED0(CastType, name, func)                       \
+	static inline void name(CastType *v)                                   \
+	{                                                                      \
+		if (*v)                                                        \
+			func(*v);                                              \
+	}                                                                      \
+	struct _nl_dummy_for_tailing_semicolon
+
+#define _nl_auto_free _nl_auto(_nl_auto_free_fcn)
+_NL_AUTO_DEFINE_FCN_VOID0(void *, _nl_auto_free_fcn, free);
 
 #endif

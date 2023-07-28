@@ -5,34 +5,7 @@
 
 #include <stdlib.h>
 
-#define _nl_auto(fcn) __attribute__((__cleanup__(fcn)))
-
-#define _NL_AUTO_DEFINE_FCN_VOID0(CastType, name, func)                        \
-	static inline void name(void *v)                                       \
-	{                                                                      \
-		if (*((CastType *)v))                                          \
-			func(*((CastType *)v));                                \
-	}                                                                      \
-	struct _nl_dummy_for_tailing_semicolon
-
-#define _NL_AUTO_DEFINE_FCN_STRUCT(CastType, name, func)                       \
-	static inline void name(CastType *v)                                   \
-	{                                                                      \
-		if (v)                                                         \
-			func(v);                                               \
-	}                                                                      \
-	struct _nl_dummy_for_tailing_semicolon
-
-#define _NL_AUTO_DEFINE_FCN_TYPED0(CastType, name, func)                       \
-	static inline void name(CastType *v)                                   \
-	{                                                                      \
-		if (*v)                                                        \
-			func(*v);                                              \
-	}                                                                      \
-	struct _nl_dummy_for_tailing_semicolon
-
-#define _nl_auto_free _nl_auto(_nl_auto_free_fcn)
-_NL_AUTO_DEFINE_FCN_VOID0(void *, _nl_auto_free_fcn, free);
+#include "netlink-private/utils.h"
 
 struct nl_addr;
 void nl_addr_put(struct nl_addr *);

@@ -17,7 +17,6 @@ EXCLUDE_PATHS_TOPLEVEL+=(
     "include/netlink-private/cache-api.h"
     "include/netlink-private/genl.h"
     "include/netlink-private/netlink.h"
-    "include/netlink-private/nl-auto.h"
     "include/netlink-private/object-api.h"
     "include/netlink-private/route/link/api.h"
     "include/netlink-private/route/link/sriov.h"

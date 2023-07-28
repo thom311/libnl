@@ -406,7 +406,7 @@ pattern:
 			if (nl_addr_parse($1, AF_UNSPEC, &addr) == 0) {
 				$$.len = nl_addr_get_len(addr);
 
-				$$.index = min_t(int, $$.len, nl_addr_get_prefixlen(addr)/8);
+				$$.index = _NL_MIN($$.len, nl_addr_get_prefixlen(addr)/8);
 
 				if (!($$.data = calloc(1, $$.len))) {
 					nl_addr_put(addr);

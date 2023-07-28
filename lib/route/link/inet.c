@@ -104,7 +104,7 @@ static int inet_parse_af(struct rtnl_link *link, struct nlattr *attr, void *data
 
 	if (tb[IFLA_INET_CONF]) {
 		int i;
-		int len = min_t(int, IPV4_DEVCONF_MAX, nla_len(tb[IFLA_INET_CONF]) / 4);
+		int len = _NL_MIN(IPV4_DEVCONF_MAX, nla_len(tb[IFLA_INET_CONF]) / 4);
 
 		for (i = 0; i < len; i++)
 			id->i_confset[i] = 1;

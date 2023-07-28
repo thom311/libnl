@@ -625,7 +625,7 @@ int nl_addr_cmp_prefix(const struct nl_addr *a, const struct nl_addr *b)
 	int d = a->a_family - b->a_family;
 
 	if (d == 0) {
-		int len = min(a->a_prefixlen, b->a_prefixlen);
+		int len = _NL_MIN(a->a_prefixlen, b->a_prefixlen);
 		int bytes = len / 8;
 
 		d = memcmp(a->a_addr, b->a_addr, bytes);

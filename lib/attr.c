@@ -350,7 +350,7 @@ int nla_memcpy(void *dest, const struct nlattr *src, int count)
 	if (!src)
 		return 0;
 	
-	minlen = min_t(int, count, nla_len(src));
+	minlen = _NL_MIN(count, nla_len(src));
 	memcpy(dest, nla_data(src), minlen);
 
 	return minlen;

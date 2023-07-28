@@ -167,7 +167,7 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 			   sizeof(i6->i6_cacheinfo));
 
 	if (tb[IFLA_INET6_CONF]) {
-		i6->i6_conf_len = min(ARRAY_SIZE(i6->i6_conf),
+		i6->i6_conf_len = _NL_MIN(ARRAY_SIZE(i6->i6_conf),
 				      nla_len(tb[IFLA_INET6_CONF]) /
 					      sizeof(i6->i6_conf[0]));
 		nla_memcpy(&i6->i6_conf, tb[IFLA_INET6_CONF],
@@ -202,7 +202,7 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 			map_stat_id = map_stat_id_from_IPSTATS_MIB_v1;
 		}
 
-		len = min_t(int, __IPSTATS_MIB_MAX, len);
+		len = _NL_MIN(__IPSTATS_MIB_MAX, len);
 		for (i = 1; i < len; i++) {
 			memcpy(&stat, &cnt[i * sizeof(stat)], sizeof(stat));
 			rtnl_link_set_stat(link, map_stat_id[i], stat);
@@ -213,7 +213,7 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 		unsigned char *cnt = nla_data(tb[IFLA_INET6_ICMP6STATS]);
 		uint64_t stat;
 		int i;
-		int len = min_t(int, __ICMP6_MIB_MAX, nla_len(tb[IFLA_INET6_ICMP6STATS]) / 8);
+		int len = _NL_MIN(__ICMP6_MIB_MAX, nla_len(tb[IFLA_INET6_ICMP6STATS]) / 8);
 
 		_NL_STATIC_ASSERT (__ICMP6_MIB_MAX == 6);
 		_NL_STATIC_ASSERT (RTNL_LINK_ICMP6_CSUMERRORS - RTNL_LINK_ICMP6_INMSGS + 1 == 5);

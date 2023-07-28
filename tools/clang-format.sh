@@ -27,7 +27,6 @@ EXCLUDE_PATHS_TOPLEVEL+=(
     "include/netlink-private/socket.h"
     "include/netlink-private/tc.h"
     "include/netlink-private/types.h"
-    "include/netlink-private/utils.h"
     "include/netlink/addr.h"
     "include/netlink/attr.h"
     "include/netlink/cache-api.h"

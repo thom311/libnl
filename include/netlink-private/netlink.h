@@ -153,23 +153,6 @@ static inline int nl_cb_call(struct nl_cb *cb, enum nl_cb_type type, struct nl_m
 #undef __deprecated
 #define __deprecated __attribute__ ((deprecated))
 
-#define min(x,y) ({ \
-	__typeof__(x) _x = (x);	\
-	__typeof__(y) _y = (y);	\
-	(void) (&_x == &_y);		\
-	_x < _y ? _x : _y; })
-
-#define max(x,y) ({ \
-	__typeof__(x) _x = (x);	\
-	__typeof__(y) _y = (y);	\
-	(void) (&_x == &_y);		\
-	_x > _y ? _x : _y; })
-
-#define min_t(type,x,y) \
-	({ type __x = (x); type __y = (y); __x < __y ? __x: __y; })
-#define max_t(type,x,y) \
-	({ type __x = (x); type __y = (y); __x > __y ? __x: __y; })
-
 extern int nl_cache_parse(struct nl_cache_ops *, struct sockaddr_nl *,
 			  struct nlmsghdr *, struct nl_parser_param *);
 

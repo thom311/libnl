@@ -5,7 +5,7 @@
 
 #include <stdlib.h>
 
-#define _nl_auto(fcn)               __attribute__ ((__cleanup__(fcn)))
+#define _nl_auto(fcn)               __attribute__((__cleanup__(fcn)))
 
 #define _NL_AUTO_DEFINE_FCN_VOID0(CastType, name, func) \
 static inline void name(void *v) \

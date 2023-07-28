@@ -5,16 +5,18 @@
 
 #include <errno.h>
 #include <sys/stat.h>
-#include <check.h>
 #include <string.h>
 #include <stdbool.h>
 #include <arpa/inet.h>
 
+#include <check.h>
+
 #include "netlink/object.h"
 #include "netlink/cache.h"
 
-#include "netlink-private/nl-auto.h"
 #include "base/nl-base-utils.h"
+#include "nl-aux-core/nl-core.h"
+#include "nl-aux-route/nl-route.h"
 
 /*****************************************************************************/
 

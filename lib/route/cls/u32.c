@@ -22,7 +22,7 @@
 #include <netlink/route/cls/u32.h>
 #include <netlink/route/action.h>
 
-#include "base/nl-base-utils.h"
+#include "nl-aux-route/nl-route.h"
 
 /** @cond SKIP */
 #define U32_ATTR_DIVISOR      0x001

@@ -61,7 +61,8 @@
 #include <netlink-private/object-api.h>
 #include <netlink-private/cache-api.h>
 #include <netlink-private/types.h>
-#include <netlink-private/nl-auto.h>
+
+#include "nl-aux-core/nl-core.h"
 
 #define NSEC_PER_SEC	1000000000L
 

@@ -24,8 +24,9 @@
  * @{
  */
 
+#include <linux/in_route.h>
+
 #include <netlink-private/netlink.h>
-#include "base/nl-base-utils.h"
 #include <netlink-private/route/nexthop-encap.h>
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
@@ -36,7 +37,8 @@
 #include <netlink/route/route.h>
 #include <netlink/route/link.h>
 #include <netlink/route/nexthop.h>
-#include <linux/in_route.h>
+
+#include "nl-aux-route/nl-route.h"
 
 /** @cond SKIP */
 #define ROUTE_ATTR_FAMILY    0x000001

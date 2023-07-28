@@ -8,6 +8,8 @@
 #include <netlink/route/nh.h>
 #include <netlink/hashtable.h>
 
+#include "nl-aux-route/nl-route.h"
+
 /** @cond SKIP */
 #define NH_ATTR_FLAGS (1 << 0)
 #define NH_ATTR_ID (1 << 1)

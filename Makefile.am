@@ -274,7 +274,6 @@ noinst_HEADERS = \
 	include/netlink-private/cache-api.h \
 	include/netlink-private/genl.h \
 	include/netlink-private/netlink.h \
-	include/netlink-private/nl-auto.h \
 	include/netlink-private/object-api.h \
 	include/netlink-private/route/link/api.h \
 	include/netlink-private/route/link/sriov.h \
@@ -285,6 +284,8 @@ noinst_HEADERS = \
 	include/netlink-private/socket.h \
 	include/netlink-private/tc.h \
 	include/netlink-private/types.h \
+	include/nl-aux-core/nl-core.h \
+	include/nl-aux-route/nl-route.h \
 	$(NULL)
 
 ###############################################################################

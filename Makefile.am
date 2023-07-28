@@ -223,6 +223,7 @@ libnlinclude_netlink_cli_HEADERS = \
 endif
 
 noinst_HEADERS = \
+	include/base/nl-base-utils.h \
 	include/linux-private/linux/can/netlink.h \
 	include/linux-private/linux/fib_rules.h \
 	include/linux-private/linux/gen_stats.h \
@@ -284,7 +285,6 @@ noinst_HEADERS = \
 	include/netlink-private/socket.h \
 	include/netlink-private/tc.h \
 	include/netlink-private/types.h \
-	include/netlink-private/utils.h \
 	$(NULL)
 
 ###############################################################################

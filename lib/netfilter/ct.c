@@ -21,7 +21,7 @@
 #include <netlink/attr.h>
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/ct.h>
-#include <netlink-private/utils.h>
+#include "base/nl-base-utils.h"
 
 static struct nl_cache_ops nfnl_ct_ops;
 

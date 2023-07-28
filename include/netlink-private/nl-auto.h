@@ -5,7 +5,7 @@
 
 #include <stdlib.h>
 
-#include "netlink-private/utils.h"
+#include "base/nl-base-utils.h"
 
 struct nl_addr;
 void nl_addr_put(struct nl_addr *);

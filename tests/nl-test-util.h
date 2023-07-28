@@ -14,7 +14,7 @@
 #include "netlink/cache.h"
 
 #include "netlink-private/nl-auto.h"
-#include "netlink-private/utils.h"
+#include "base/nl-base-utils.h"
 
 /*****************************************************************************/
 

@@ -11,7 +11,7 @@
 #include <netlink-private/route/link/api.h>
 
 #include "netlink-private/route/utils.h"
-#include "netlink-private/utils.h"
+#include "base/nl-base-utils.h"
 
 #define I6_ADDR_GEN_MODE_UNKNOWN	UINT8_MAX
 

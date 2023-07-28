@@ -52,6 +52,8 @@
 #include <pthread.h>
 #endif
 
+#include "base/nl-base-utils.h"
+
 #include <netlink/netlink.h>
 #include <netlink/handlers.h>
 #include <netlink/cache.h>
@@ -59,7 +61,6 @@
 #include <netlink-private/object-api.h>
 #include <netlink-private/cache-api.h>
 #include <netlink-private/types.h>
-#include <netlink-private/utils.h>
 #include <netlink-private/nl-auto.h>
 
 #define NSEC_PER_SEC	1000000000L

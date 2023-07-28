@@ -25,7 +25,7 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/utils.h>
+#include "base/nl-base-utils.h"
 #include <netlink-private/route/nexthop-encap.h>
 #include <netlink/netlink.h>
 #include <netlink/cache.h>

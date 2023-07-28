@@ -8,7 +8,7 @@
 #include <netlink/route/qdisc/hfsc.h>
 #include <linux/pkt_sched.h>
 
-#include <netlink-private/utils.h>
+#include "base/nl-base-utils.h"
 
 static void print_qdisc_usage(void)
 {

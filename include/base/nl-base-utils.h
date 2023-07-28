@@ -3,10 +3,11 @@
  * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
-#ifndef NETLINK_UTILS_PRIV_H_
-#define NETLINK_UTILS_PRIV_H_
+#ifndef __NETLINK_BASE_NL_BASE_UTILS_H__
+#define __NETLINK_BASE_NL_BASE_UTILS_H__
 
 #include <byteswap.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <unistd.h>
 #include <errno.h>
@@ -712,4 +713,4 @@ static inline char *_nl_inet_ntop_dup(int addr_family, const void *addr)
 #define _nl_auto_free _nl_auto(_nl_auto_free_fcn)
 _NL_AUTO_DEFINE_FCN_VOID0(void *, _nl_auto_free_fcn, free);
 
-#endif
+#endif /* __NETLINK_BASE_NL_BASE_UTILS_H__ */

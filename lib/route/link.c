@@ -23,7 +23,7 @@
 #include <netlink/route/link.h>
 #include <netlink-private/route/link/api.h>
 #include <netlink-private/route/link/sriov.h>
-#include <netlink-private/utils.h>
+#include "base/nl-base-utils.h"
 
 /** @cond SKIP */
 #define LINK_ATTR_MTU		(1 <<  0)

@@ -48,7 +48,7 @@
 #include <netlink/xfrm/lifetime.h>
 #include <time.h>
 
-#include "netlink-private/utils.h"
+#include "base/nl-base-utils.h"
 
 /** @cond SKIP */
 #define XFRM_SA_ATTR_SEL            0x01

@@ -18,7 +18,7 @@
 #include <netlink/genl/family.h>
 #include <netlink/utils.h>
 
-#include "netlink-private/utils.h"
+#include "base/nl-base-utils.h"
 
 /** @cond SKIP */
 #define FAMILY_ATTR_ID		0x01

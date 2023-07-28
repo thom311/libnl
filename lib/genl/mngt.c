@@ -20,7 +20,7 @@
 #include <netlink/genl/ctrl.h>
 #include <netlink/utils.h>
 
-#include "netlink-private/utils.h"
+#include "base/nl-base-utils.h"
 
 /** @cond SKIP */
 

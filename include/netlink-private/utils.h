@@ -84,6 +84,8 @@
 #define _nl_alignof(type) __alignof(type)
 #define _nl_alignas(type) _nl_align(_nl_alignof(type))
 #define _nl_deprecated(msg) __attribute__((__deprecated__(msg)))
+#define _nl_init __attribute__((constructor))
+#define _nl_exit __attribute__((destructor))
 
 /*****************************************************************************/
 

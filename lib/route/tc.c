@@ -971,14 +971,12 @@ uint64_t rtnl_tc_compare(struct nl_object *aobj, struct nl_object *bobj,
 	struct rtnl_tc *b = TC_CAST(bobj);
 	uint64_t diff = 0;
 
-#define TC_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, TCA_ATTR_##ATTR, a, b, EXPR)
-
-	diff |= TC_DIFF(HANDLE,		a->tc_handle != b->tc_handle);
-	diff |= TC_DIFF(PARENT,		a->tc_parent != b->tc_parent);
-	diff |= TC_DIFF(IFINDEX,	a->tc_ifindex != b->tc_ifindex);
-	diff |= TC_DIFF(KIND,		strcmp(a->tc_kind, b->tc_kind));
-
-#undef TC_DIFF
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(TCA_ATTR_HANDLE, a->tc_handle != b->tc_handle);
+	diff |= _DIFF(TCA_ATTR_PARENT, a->tc_parent != b->tc_parent);
+	diff |= _DIFF(TCA_ATTR_IFINDEX, a->tc_ifindex != b->tc_ifindex);
+	diff |= _DIFF(TCA_ATTR_KIND, strcmp(a->tc_kind, b->tc_kind));
+#undef _DIFF
 
 	return diff;
 }

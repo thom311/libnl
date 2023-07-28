@@ -304,48 +304,46 @@ static uint64_t ct_compare(struct nl_object *_a, struct nl_object *_b,
 	struct nfnl_ct *b = (struct nfnl_ct *) _b;
 	uint64_t diff = 0;
 
-#define CT_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, CT_ATTR_##ATTR, a, b, EXPR)
-#define CT_DIFF_VAL(ATTR, FIELD) CT_DIFF(ATTR, a->FIELD != b->FIELD)
-#define CT_DIFF_ADDR(ATTR, FIELD) \
-	((flags & LOOSE_COMPARISON) \
-		? CT_DIFF(ATTR, nl_addr_cmp_prefix(a->FIELD, b->FIELD)) \
-		: CT_DIFF(ATTR, nl_addr_cmp(a->FIELD, b->FIELD)))
-
-	diff |= CT_DIFF_VAL(FAMILY,		ct_family);
-	diff |= CT_DIFF_VAL(PROTO,		ct_proto);
-	diff |= CT_DIFF_VAL(TCP_STATE,		ct_protoinfo.tcp.state);
-	diff |= CT_DIFF_VAL(TIMEOUT,		ct_timeout);
-	diff |= CT_DIFF_VAL(MARK,		ct_mark);
-	diff |= CT_DIFF_VAL(USE,		ct_use);
-	diff |= CT_DIFF_VAL(ID,			ct_id);
-	diff |= CT_DIFF_ADDR(ORIG_SRC,		ct_orig.src);
-	diff |= CT_DIFF_ADDR(ORIG_DST,		ct_orig.dst);
-	diff |= CT_DIFF_VAL(ORIG_SRC_PORT,	ct_orig.proto.port.src);
-	diff |= CT_DIFF_VAL(ORIG_DST_PORT,	ct_orig.proto.port.dst);
-	diff |= CT_DIFF_VAL(ORIG_ICMP_ID,	ct_orig.proto.icmp.id);
-	diff |= CT_DIFF_VAL(ORIG_ICMP_TYPE,	ct_orig.proto.icmp.type);
-	diff |= CT_DIFF_VAL(ORIG_ICMP_CODE,	ct_orig.proto.icmp.code);
-	diff |= CT_DIFF_VAL(ORIG_PACKETS,	ct_orig.packets);
-	diff |= CT_DIFF_VAL(ORIG_BYTES,		ct_orig.bytes);
-	diff |= CT_DIFF_ADDR(REPL_SRC,		ct_repl.src);
-	diff |= CT_DIFF_ADDR(REPL_DST,		ct_repl.dst);
-	diff |= CT_DIFF_VAL(REPL_SRC_PORT,	ct_repl.proto.port.src);
-	diff |= CT_DIFF_VAL(REPL_DST_PORT,	ct_repl.proto.port.dst);
-	diff |= CT_DIFF_VAL(REPL_ICMP_ID,	ct_repl.proto.icmp.id);
-	diff |= CT_DIFF_VAL(REPL_ICMP_TYPE,	ct_repl.proto.icmp.type);
-	diff |= CT_DIFF_VAL(REPL_ICMP_CODE,	ct_repl.proto.icmp.code);
-	diff |= CT_DIFF_VAL(REPL_PACKETS,	ct_repl.packets);
-	diff |= CT_DIFF_VAL(REPL_BYTES,		ct_repl.bytes);
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+#define _DIFF_VAL(ATTR, FIELD) _DIFF(ATTR, a->FIELD != b->FIELD)
+#define _DIFF_ADDR(ATTR, FIELD)                                                \
+	((flags & LOOSE_COMPARISON) ?                                          \
+		 _DIFF(ATTR, nl_addr_cmp_prefix(a->FIELD, b->FIELD)) :         \
+		 _DIFF(ATTR, nl_addr_cmp(a->FIELD, b->FIELD)))
+	diff |= _DIFF_VAL(CT_ATTR_FAMILY, ct_family);
+	diff |= _DIFF_VAL(CT_ATTR_PROTO, ct_proto);
+	diff |= _DIFF_VAL(CT_ATTR_TCP_STATE, ct_protoinfo.tcp.state);
+	diff |= _DIFF_VAL(CT_ATTR_TIMEOUT, ct_timeout);
+	diff |= _DIFF_VAL(CT_ATTR_MARK, ct_mark);
+	diff |= _DIFF_VAL(CT_ATTR_USE, ct_use);
+	diff |= _DIFF_VAL(CT_ATTR_ID, ct_id);
+	diff |= _DIFF_ADDR(CT_ATTR_ORIG_SRC, ct_orig.src);
+	diff |= _DIFF_ADDR(CT_ATTR_ORIG_DST, ct_orig.dst);
+	diff |= _DIFF_VAL(CT_ATTR_ORIG_SRC_PORT, ct_orig.proto.port.src);
+	diff |= _DIFF_VAL(CT_ATTR_ORIG_DST_PORT, ct_orig.proto.port.dst);
+	diff |= _DIFF_VAL(CT_ATTR_ORIG_ICMP_ID, ct_orig.proto.icmp.id);
+	diff |= _DIFF_VAL(CT_ATTR_ORIG_ICMP_TYPE, ct_orig.proto.icmp.type);
+	diff |= _DIFF_VAL(CT_ATTR_ORIG_ICMP_CODE, ct_orig.proto.icmp.code);
+	diff |= _DIFF_VAL(CT_ATTR_ORIG_PACKETS, ct_orig.packets);
+	diff |= _DIFF_VAL(CT_ATTR_ORIG_BYTES, ct_orig.bytes);
+	diff |= _DIFF_ADDR(CT_ATTR_REPL_SRC, ct_repl.src);
+	diff |= _DIFF_ADDR(CT_ATTR_REPL_DST, ct_repl.dst);
+	diff |= _DIFF_VAL(CT_ATTR_REPL_SRC_PORT, ct_repl.proto.port.src);
+	diff |= _DIFF_VAL(CT_ATTR_REPL_DST_PORT, ct_repl.proto.port.dst);
+	diff |= _DIFF_VAL(CT_ATTR_REPL_ICMP_ID, ct_repl.proto.icmp.id);
+	diff |= _DIFF_VAL(CT_ATTR_REPL_ICMP_TYPE, ct_repl.proto.icmp.type);
+	diff |= _DIFF_VAL(CT_ATTR_REPL_ICMP_CODE, ct_repl.proto.icmp.code);
+	diff |= _DIFF_VAL(CT_ATTR_REPL_PACKETS, ct_repl.packets);
+	diff |= _DIFF_VAL(CT_ATTR_REPL_BYTES, ct_repl.bytes);
 
 	if (flags & LOOSE_COMPARISON)
-		diff |= CT_DIFF(STATUS, (a->ct_status ^ b->ct_status) &
-					b->ct_status_mask);
+		diff |= _DIFF(CT_ATTR_STATUS, (a->ct_status ^ b->ct_status) &
+						      b->ct_status_mask);
 	else
-		diff |= CT_DIFF(STATUS, a->ct_status != b->ct_status);
-
-#undef CT_DIFF
-#undef CT_DIFF_VAL
-#undef CT_DIFF_ADDR
+		diff |= _DIFF(CT_ATTR_STATUS, a->ct_status != b->ct_status);
+#undef _DIFF
+#undef _DIFF_VAL
+#undef _DIFF_ADDR
 
 	return diff;
 }

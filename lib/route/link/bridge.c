@@ -431,21 +431,23 @@ static int bridge_compare(struct rtnl_link *_a, struct rtnl_link *_b,
 	struct bridge_data *b = bridge_data(_b);
 	int diff = 0;
 
-#define BRIDGE_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, BRIDGE_ATTR_##ATTR, a, b, EXPR)
-	diff |= BRIDGE_DIFF(PORT_STATE,	a->b_port_state != b->b_port_state);
-	diff |= BRIDGE_DIFF(PRIORITY, a->b_priority != b->b_priority);
-	diff |= BRIDGE_DIFF(COST, a->b_cost != b->b_cost);
-	diff |= BRIDGE_DIFF(PORT_VLAN, memcmp(&a->vlan_info, &b->vlan_info,
-					      sizeof(struct rtnl_link_bridge_vlan)));
-	diff |= BRIDGE_DIFF(HWMODE, a->b_hwmode != b->b_hwmode);
-	diff |= BRIDGE_DIFF(SELF, a->b_self != b->b_self);
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(BRIDGE_ATTR_PORT_STATE,
+		      a->b_port_state != b->b_port_state);
+	diff |= _DIFF(BRIDGE_ATTR_PRIORITY, a->b_priority != b->b_priority);
+	diff |= _DIFF(BRIDGE_ATTR_COST, a->b_cost != b->b_cost);
+	diff |= _DIFF(BRIDGE_ATTR_PORT_VLAN,
+		      memcmp(&a->vlan_info, &b->vlan_info,
+			     sizeof(struct rtnl_link_bridge_vlan)));
+	diff |= _DIFF(BRIDGE_ATTR_HWMODE, a->b_hwmode != b->b_hwmode);
+	diff |= _DIFF(BRIDGE_ATTR_SELF, a->b_self != b->b_self);
 
 	if (flags & LOOSE_COMPARISON)
-		diff |= BRIDGE_DIFF(FLAGS,
-				  (a->b_flags ^ b->b_flags) & b->b_flags_mask);
+		diff |= _DIFF(BRIDGE_ATTR_FLAGS,
+			      (a->b_flags ^ b->b_flags) & b->b_flags_mask);
 	else
-		diff |= BRIDGE_DIFF(FLAGS, a->b_flags != b->b_flags);
-#undef BRIDGE_DIFF
+		diff |= _DIFF(BRIDGE_ATTR_FLAGS, a->b_flags != b->b_flags);
+#undef _DIFF
 
 	return diff;
 }

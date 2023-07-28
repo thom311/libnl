@@ -236,51 +236,62 @@ static uint64_t xfrm_sa_compare(struct nl_object *_a, struct nl_object *_b,
 	uint64_t diff = 0;
 	int found = 0;
 
-#define XFRM_SA_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, XFRM_SA_ATTR_##ATTR, a, b, EXPR)
-	diff |= XFRM_SA_DIFF(SEL,	xfrmnl_sel_cmp(a->sel, b->sel));
-	diff |= XFRM_SA_DIFF(DADDR,	nl_addr_cmp(a->id.daddr, b->id.daddr));
-	diff |= XFRM_SA_DIFF(SPI,	a->id.spi != b->id.spi);
-	diff |= XFRM_SA_DIFF(PROTO,	a->id.proto != b->id.proto);
-	diff |= XFRM_SA_DIFF(SADDR,	nl_addr_cmp(a->saddr, b->saddr));
-	diff |= XFRM_SA_DIFF(LTIME_CFG,	xfrmnl_ltime_cfg_cmp(a->lft, b->lft));
-	diff |= XFRM_SA_DIFF(REQID,	a->reqid != b->reqid);
-	diff |= XFRM_SA_DIFF(FAMILY,a->family != b->family);
-	diff |= XFRM_SA_DIFF(MODE,a->mode != b->mode);
-	diff |= XFRM_SA_DIFF(REPLAY_WIN,a->replay_window != b->replay_window);
-	diff |= XFRM_SA_DIFF(FLAGS,a->flags != b->flags);
-	diff |= XFRM_SA_DIFF(ALG_AEAD,(strcmp(a->aead->alg_name, b->aead->alg_name) ||
-	                              (a->aead->alg_key_len != b->aead->alg_key_len) ||
-	                              (a->aead->alg_icv_len != b->aead->alg_icv_len) ||
-	                              memcmp(a->aead->alg_key, b->aead->alg_key,
-	                              ((a->aead->alg_key_len + 7)/8))));
-	diff |= XFRM_SA_DIFF(ALG_AUTH,(strcmp(a->auth->alg_name, b->auth->alg_name) ||
-	                              (a->auth->alg_key_len != b->auth->alg_key_len) ||
-	                              (a->auth->alg_trunc_len != b->auth->alg_trunc_len) ||
-	                              memcmp(a->auth->alg_key, b->auth->alg_key,
-	                              ((a->auth->alg_key_len + 7)/8))));
-	diff |= XFRM_SA_DIFF(ALG_CRYPT,(strcmp(a->crypt->alg_name, b->crypt->alg_name) ||
-	                              (a->crypt->alg_key_len != b->crypt->alg_key_len) ||
-	                              memcmp(a->crypt->alg_key, b->crypt->alg_key,
-	                              ((a->crypt->alg_key_len + 7)/8))));
-	diff |= XFRM_SA_DIFF(ALG_COMP,(strcmp(a->comp->alg_name, b->comp->alg_name) ||
-	                              (a->comp->alg_key_len != b->comp->alg_key_len) ||
-	                              memcmp(a->comp->alg_key, b->comp->alg_key,
-	                              ((a->comp->alg_key_len + 7)/8))));
-	diff |= XFRM_SA_DIFF(ENCAP,((a->encap->encap_type != b->encap->encap_type) ||
-	                            (a->encap->encap_sport != b->encap->encap_sport) ||
-	                            (a->encap->encap_dport != b->encap->encap_dport) ||
-	                            nl_addr_cmp(a->encap->encap_oa, b->encap->encap_oa)));
-	diff |= XFRM_SA_DIFF(TFCPAD,a->tfcpad != b->tfcpad);
-	diff |= XFRM_SA_DIFF(COADDR,nl_addr_cmp(a->coaddr, b->coaddr));
-	diff |= XFRM_SA_DIFF(MARK,(a->mark.m != b->mark.m) ||
-	                          (a->mark.v != b->mark.v));
-	diff |= XFRM_SA_DIFF(SECCTX,((a->sec_ctx->ctx_doi != b->sec_ctx->ctx_doi) ||
-	                            (a->sec_ctx->ctx_alg != b->sec_ctx->ctx_alg) ||
-	                            (a->sec_ctx->ctx_len != b->sec_ctx->ctx_len) ||
-	                            strcmp(a->sec_ctx->ctx, b->sec_ctx->ctx)));
-	diff |= XFRM_SA_DIFF(REPLAY_MAXAGE,a->replay_maxage != b->replay_maxage);
-	diff |= XFRM_SA_DIFF(REPLAY_MAXDIFF,a->replay_maxdiff != b->replay_maxdiff);
-	diff |= XFRM_SA_DIFF(EXPIRE,a->hard != b->hard);
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(XFRM_SA_ATTR_SEL, xfrmnl_sel_cmp(a->sel, b->sel));
+	diff |= _DIFF(XFRM_SA_ATTR_DADDR,
+		      nl_addr_cmp(a->id.daddr, b->id.daddr));
+	diff |= _DIFF(XFRM_SA_ATTR_SPI, a->id.spi != b->id.spi);
+	diff |= _DIFF(XFRM_SA_ATTR_PROTO, a->id.proto != b->id.proto);
+	diff |= _DIFF(XFRM_SA_ATTR_SADDR, nl_addr_cmp(a->saddr, b->saddr));
+	diff |= _DIFF(XFRM_SA_ATTR_LTIME_CFG,
+		      xfrmnl_ltime_cfg_cmp(a->lft, b->lft));
+	diff |= _DIFF(XFRM_SA_ATTR_REQID, a->reqid != b->reqid);
+	diff |= _DIFF(XFRM_SA_ATTR_FAMILY, a->family != b->family);
+	diff |= _DIFF(XFRM_SA_ATTR_MODE, a->mode != b->mode);
+	diff |= _DIFF(XFRM_SA_ATTR_REPLAY_WIN,
+		      a->replay_window != b->replay_window);
+	diff |= _DIFF(XFRM_SA_ATTR_FLAGS, a->flags != b->flags);
+	diff |= _DIFF(XFRM_SA_ATTR_ALG_AEAD,
+		      (strcmp(a->aead->alg_name, b->aead->alg_name) ||
+		       (a->aead->alg_key_len != b->aead->alg_key_len) ||
+		       (a->aead->alg_icv_len != b->aead->alg_icv_len) ||
+		       memcmp(a->aead->alg_key, b->aead->alg_key,
+			      ((a->aead->alg_key_len + 7) / 8))));
+	diff |= _DIFF(XFRM_SA_ATTR_ALG_AUTH,
+		      (strcmp(a->auth->alg_name, b->auth->alg_name) ||
+		       (a->auth->alg_key_len != b->auth->alg_key_len) ||
+		       (a->auth->alg_trunc_len != b->auth->alg_trunc_len) ||
+		       memcmp(a->auth->alg_key, b->auth->alg_key,
+			      ((a->auth->alg_key_len + 7) / 8))));
+	diff |= _DIFF(XFRM_SA_ATTR_ALG_CRYPT,
+		      (strcmp(a->crypt->alg_name, b->crypt->alg_name) ||
+		       (a->crypt->alg_key_len != b->crypt->alg_key_len) ||
+		       memcmp(a->crypt->alg_key, b->crypt->alg_key,
+			      ((a->crypt->alg_key_len + 7) / 8))));
+	diff |= _DIFF(XFRM_SA_ATTR_ALG_COMP,
+		      (strcmp(a->comp->alg_name, b->comp->alg_name) ||
+		       (a->comp->alg_key_len != b->comp->alg_key_len) ||
+		       memcmp(a->comp->alg_key, b->comp->alg_key,
+			      ((a->comp->alg_key_len + 7) / 8))));
+	diff |= _DIFF(XFRM_SA_ATTR_ENCAP,
+		      ((a->encap->encap_type != b->encap->encap_type) ||
+		       (a->encap->encap_sport != b->encap->encap_sport) ||
+		       (a->encap->encap_dport != b->encap->encap_dport) ||
+		       nl_addr_cmp(a->encap->encap_oa, b->encap->encap_oa)));
+	diff |= _DIFF(XFRM_SA_ATTR_TFCPAD, a->tfcpad != b->tfcpad);
+	diff |= _DIFF(XFRM_SA_ATTR_COADDR, nl_addr_cmp(a->coaddr, b->coaddr));
+	diff |= _DIFF(XFRM_SA_ATTR_MARK,
+		      (a->mark.m != b->mark.m) || (a->mark.v != b->mark.v));
+	diff |= _DIFF(XFRM_SA_ATTR_SECCTX,
+		      ((a->sec_ctx->ctx_doi != b->sec_ctx->ctx_doi) ||
+		       (a->sec_ctx->ctx_alg != b->sec_ctx->ctx_alg) ||
+		       (a->sec_ctx->ctx_len != b->sec_ctx->ctx_len) ||
+		       strcmp(a->sec_ctx->ctx, b->sec_ctx->ctx)));
+	diff |= _DIFF(XFRM_SA_ATTR_REPLAY_MAXAGE,
+		      a->replay_maxage != b->replay_maxage);
+	diff |= _DIFF(XFRM_SA_ATTR_REPLAY_MAXDIFF,
+		      a->replay_maxdiff != b->replay_maxdiff);
+	diff |= _DIFF(XFRM_SA_ATTR_EXPIRE, a->hard != b->hard);
 
 	/* Compare replay states */
 	found = AVAILABLE_MISMATCH (a, b, XFRM_SA_ATTR_REPLAY_STATE);
@@ -312,7 +323,7 @@ static uint64_t xfrm_sa_compare(struct nl_object *_a, struct nl_object *_b,
 			}
 		}
 	}
-#undef XFRM_SA_DIFF
+#undef _DIFF
 
 	return diff;
 }

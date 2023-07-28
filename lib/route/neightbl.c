@@ -56,16 +56,18 @@ static uint64_t neightbl_compare(struct nl_object *_a, struct nl_object *_b,
 	struct rtnl_neightbl *b = (struct rtnl_neightbl *)_b;
 	uint64_t diff = 0;
 
-#define NT_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, NEIGHTBL_ATTR_##ATTR, a, b, EXPR)
-
-	diff |= NT_DIFF(FAMILY, a->nt_family != b->nt_family);
-	diff |= NT_DIFF(NAME, strcmp(a->nt_name, b->nt_name));
-	diff |= NT_DIFF(THRESH1, a->nt_gc_thresh1 != b->nt_gc_thresh1);
-	diff |= NT_DIFF(THRESH2, a->nt_gc_thresh2 != b->nt_gc_thresh2);
-	diff |= NT_DIFF(THRESH3, a->nt_gc_thresh3 != b->nt_gc_thresh3);
-	diff |= NT_DIFF(GC_INTERVAL, a->nt_gc_interval != b->nt_gc_interval);
-
-#undef NT_DIFF
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(NEIGHTBL_ATTR_FAMILY, a->nt_family != b->nt_family);
+	diff |= _DIFF(NEIGHTBL_ATTR_NAME, strcmp(a->nt_name, b->nt_name));
+	diff |= _DIFF(NEIGHTBL_ATTR_THRESH1,
+		      a->nt_gc_thresh1 != b->nt_gc_thresh1);
+	diff |= _DIFF(NEIGHTBL_ATTR_THRESH2,
+		      a->nt_gc_thresh2 != b->nt_gc_thresh2);
+	diff |= _DIFF(NEIGHTBL_ATTR_THRESH3,
+		      a->nt_gc_thresh3 != b->nt_gc_thresh3);
+	diff |= _DIFF(NEIGHTBL_ATTR_GC_INTERVAL,
+		      a->nt_gc_interval != b->nt_gc_interval);
+#undef _DIFF
 
 	if (!(a->ce_mask & NEIGHTBL_ATTR_PARMS) &&
 	    !(b->ce_mask & NEIGHTBL_ATTR_PARMS))

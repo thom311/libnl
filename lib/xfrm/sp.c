@@ -151,31 +151,33 @@ static uint64_t xfrm_sp_compare(struct nl_object *_a, struct nl_object *_b,
 	struct xfrmnl_user_tmpl *tmpl_a, *tmpl_b;
 	uint64_t diff = 0;
 
-#define XFRM_SP_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, XFRM_SP_ATTR_##ATTR, a, b, EXPR)
-	diff |= XFRM_SP_DIFF(SEL,	xfrmnl_sel_cmp(a->sel, b->sel));
-	diff |= XFRM_SP_DIFF(LTIME_CFG,	xfrmnl_ltime_cfg_cmp(a->lft, b->lft));
-	diff |= XFRM_SP_DIFF(PRIO,	a->priority != b->priority);
-	diff |= XFRM_SP_DIFF(INDEX,	a->index != b->index);
-	diff |= XFRM_SP_DIFF(DIR,	a->dir != b->dir);
-	diff |= XFRM_SP_DIFF(ACTION,	a->action != b->action);
-	diff |= XFRM_SP_DIFF(FLAGS,	a->flags != b->flags);
-	diff |= XFRM_SP_DIFF(SHARE,	a->share != b->share);
-	diff |= XFRM_SP_DIFF(SECCTX,((a->sec_ctx->len != b->sec_ctx->len) ||
-	                            (a->sec_ctx->exttype != b->sec_ctx->exttype) ||
-	                            (a->sec_ctx->ctx_alg != b->sec_ctx->ctx_alg) ||
-	                            (a->sec_ctx->ctx_doi != b->sec_ctx->ctx_doi) ||
-	                            (a->sec_ctx->ctx_len != b->sec_ctx->ctx_len) ||
-	                            strcmp(a->sec_ctx->ctx, b->sec_ctx->ctx)));
-	diff |= XFRM_SP_DIFF(POLTYPE,(a->uptype.type != b->uptype.type));
-	diff |= XFRM_SP_DIFF(TMPL,(a->nr_user_tmpl != b->nr_user_tmpl));
-	diff |= XFRM_SP_DIFF(MARK,(a->mark.m != b->mark.m) ||
-	                          (a->mark.v != b->mark.v));
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(XFRM_SP_ATTR_SEL, xfrmnl_sel_cmp(a->sel, b->sel));
+	diff |= _DIFF(XFRM_SP_ATTR_LTIME_CFG,
+		      xfrmnl_ltime_cfg_cmp(a->lft, b->lft));
+	diff |= _DIFF(XFRM_SP_ATTR_PRIO, a->priority != b->priority);
+	diff |= _DIFF(XFRM_SP_ATTR_INDEX, a->index != b->index);
+	diff |= _DIFF(XFRM_SP_ATTR_DIR, a->dir != b->dir);
+	diff |= _DIFF(XFRM_SP_ATTR_ACTION, a->action != b->action);
+	diff |= _DIFF(XFRM_SP_ATTR_FLAGS, a->flags != b->flags);
+	diff |= _DIFF(XFRM_SP_ATTR_SHARE, a->share != b->share);
+	diff |= _DIFF(XFRM_SP_ATTR_SECCTX,
+		      ((a->sec_ctx->len != b->sec_ctx->len) ||
+		       (a->sec_ctx->exttype != b->sec_ctx->exttype) ||
+		       (a->sec_ctx->ctx_alg != b->sec_ctx->ctx_alg) ||
+		       (a->sec_ctx->ctx_doi != b->sec_ctx->ctx_doi) ||
+		       (a->sec_ctx->ctx_len != b->sec_ctx->ctx_len) ||
+		       strcmp(a->sec_ctx->ctx, b->sec_ctx->ctx)));
+	diff |= _DIFF(XFRM_SP_ATTR_POLTYPE, (a->uptype.type != b->uptype.type));
+	diff |= _DIFF(XFRM_SP_ATTR_TMPL, (a->nr_user_tmpl != b->nr_user_tmpl));
+	diff |= _DIFF(XFRM_SP_ATTR_MARK,
+		      (a->mark.m != b->mark.m) || (a->mark.v != b->mark.v));
 
 	/* Compare the templates */
 	nl_list_for_each_entry(tmpl_b, &b->usertmpl_list, utmpl_list)
 	nl_list_for_each_entry(tmpl_a, &a->usertmpl_list, utmpl_list)
 	diff |= xfrmnl_user_tmpl_cmp (tmpl_a, tmpl_b);
-#undef XFRM_SP_DIFF
+#undef _DIFF
 
 	return diff;
 }

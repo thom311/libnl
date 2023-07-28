@@ -237,17 +237,15 @@ static uint64_t nfnl_log_compare(struct nl_object *_a, struct nl_object *_b,
 	uint64_t diff = 0;
 
 #define NFNL_LOG_DIFF(ATTR, EXPR) \
-	ATTR_DIFF(attrs, LOG_ATTR_##ATTR, a, b, EXPR)
+	ATTR_DIFF(attrs, ATTR, a, b, EXPR)
 #define NFNL_LOG_DIFF_VAL(ATTR, FIELD) \
 	NFNL_LOG_DIFF(ATTR, a->FIELD != b->FIELD)
-
-	diff |= NFNL_LOG_DIFF_VAL(GROUP,		log_group);
-	diff |= NFNL_LOG_DIFF_VAL(COPY_MODE,		log_copy_mode);
-	diff |= NFNL_LOG_DIFF_VAL(COPY_RANGE,		log_copy_range);
-	diff |= NFNL_LOG_DIFF_VAL(FLUSH_TIMEOUT,	log_flush_timeout);
-	diff |= NFNL_LOG_DIFF_VAL(ALLOC_SIZE,		log_alloc_size);
-	diff |= NFNL_LOG_DIFF_VAL(QUEUE_THRESHOLD,	log_queue_threshold);
-
+	diff |= NFNL_LOG_DIFF_VAL(LOG_ATTR_GROUP,		log_group);
+	diff |= NFNL_LOG_DIFF_VAL(LOG_ATTR_COPY_MODE,		log_copy_mode);
+	diff |= NFNL_LOG_DIFF_VAL(LOG_ATTR_COPY_RANGE,		log_copy_range);
+	diff |= NFNL_LOG_DIFF_VAL(LOG_ATTR_FLUSH_TIMEOUT,	log_flush_timeout);
+	diff |= NFNL_LOG_DIFF_VAL(LOG_ATTR_ALLOC_SIZE,		log_alloc_size);
+	diff |= NFNL_LOG_DIFF_VAL(LOG_ATTR_QUEUE_THRESHOLD,	log_queue_threshold);
 #undef NFNL_LOG_DIFF
 #undef NFNL_LOG_DIFF_VAL
 

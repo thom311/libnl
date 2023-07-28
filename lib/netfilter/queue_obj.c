@@ -162,18 +162,14 @@ static uint64_t nfnl_queue_compare(struct nl_object *_a, struct nl_object *_b,
 	struct nfnl_queue *b = (struct nfnl_queue *) _b;
 	uint64_t diff = 0;
 
-#define NFNL_QUEUE_DIFF(ATTR, EXPR) \
-	ATTR_DIFF(attrs, QUEUE_ATTR_##ATTR, a, b, EXPR)
-#define NFNL_QUEUE_DIFF_VAL(ATTR, FIELD) \
-	NFNL_QUEUE_DIFF(ATTR, a->FIELD != b->FIELD)
-
-	diff |= NFNL_QUEUE_DIFF_VAL(GROUP,	queue_group);
-	diff |= NFNL_QUEUE_DIFF_VAL(MAXLEN,	queue_maxlen);
-	diff |= NFNL_QUEUE_DIFF_VAL(COPY_MODE,	queue_copy_mode);
-	diff |= NFNL_QUEUE_DIFF_VAL(COPY_RANGE,	queue_copy_range);
-
-#undef NFNL_QUEUE_DIFF
-#undef NFNL_QUEUE_DIFF_VAL
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+#define _DIFF_VAL(ATTR, FIELD) _DIFF(ATTR, a->FIELD != b->FIELD)
+	diff |= _DIFF_VAL(QUEUE_ATTR_GROUP, queue_group);
+	diff |= _DIFF_VAL(QUEUE_ATTR_MAXLEN, queue_maxlen);
+	diff |= _DIFF_VAL(QUEUE_ATTR_COPY_MODE, queue_copy_mode);
+	diff |= _DIFF_VAL(QUEUE_ATTR_COPY_RANGE, queue_copy_range);
+#undef _DIFF
+#undef _DIFF_VAL
 
 	return diff;
 }

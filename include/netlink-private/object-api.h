@@ -149,12 +149,12 @@ extern "C" {
  * 	// We help ourselves in defining our own DIFF macro which will
  *	// call ATTR_DIFF() on both objects which will make sure to only
  *	// compare the attributes if required.
- * 	#define MY_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, MY_ATTR_##ATTR, a, b, EXPR)
+ * 	#define MY_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
  *
  * 	// Call our own diff macro for each attribute to build a bitmask
  *	// representing the attributes which mismatch.
- * 	diff |= MY_DIFF(FOO, a->foo != b->foo)
- * 	diff |= MY_DIFF(BAR, strcmp(a->bar, b->bar))
+ * 	diff |= MY_DIFF(MY_ATTR_FOO, a->foo != b->foo)
+ * 	diff |= MY_DIFF(MY_ATTR_BAR, strcmp(a->bar, b->bar))
  *
  * 	return diff;
  * }

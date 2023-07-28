@@ -616,37 +616,41 @@ static int vxlan_compare(struct rtnl_link *link_a, struct rtnl_link *link_b,
 	int diff = 0;
 	uint32_t attrs = flags & LOOSE_COMPARISON ? b->ce_mask : ~0;
 
-#define VXLAN_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, VXLAN_ATTR_##ATTR, a, b, EXPR)
-
-	diff |= VXLAN_DIFF(ID,    a->vxi_id    != b->vxi_id);
-	diff |= VXLAN_DIFF(GROUP, a->vxi_group != b->vxi_group);
-	diff |= VXLAN_DIFF(LINK,  a->vxi_link  != b->vxi_link);
-	diff |= VXLAN_DIFF(LOCAL, a->vxi_local != b->vxi_local);
-	diff |= VXLAN_DIFF(TOS,   a->vxi_tos   != b->vxi_tos);
-	diff |= VXLAN_DIFF(TTL,   a->vxi_ttl   != b->vxi_ttl);
-	diff |= VXLAN_DIFF(LEARNING, a->vxi_learning != b->vxi_learning);
-	diff |= VXLAN_DIFF(AGEING, a->vxi_ageing != b->vxi_ageing);
-	diff |= VXLAN_DIFF(LIMIT, a->vxi_limit != b->vxi_limit);
-	diff |= VXLAN_DIFF(PORT_RANGE,
-	                   a->vxi_port_range.low != b->vxi_port_range.low);
-	diff |= VXLAN_DIFF(PORT_RANGE,
-	                   a->vxi_port_range.high != b->vxi_port_range.high);
-	diff |= VXLAN_DIFF(PROXY, a->vxi_proxy != b->vxi_proxy);
-	diff |= VXLAN_DIFF(RSC, a->vxi_proxy != b->vxi_proxy);
-	diff |= VXLAN_DIFF(L2MISS, a->vxi_proxy != b->vxi_proxy);
-	diff |= VXLAN_DIFF(L3MISS, a->vxi_proxy != b->vxi_proxy);
-	diff |= VXLAN_DIFF(PORT, a->vxi_port != b->vxi_port);
-	diff |= VXLAN_DIFF(GROUP6, memcmp(&a->vxi_group6, &b->vxi_group6, sizeof(a->vxi_group6)) != 0);
-	diff |= VXLAN_DIFF(LOCAL6,  memcmp(&a->vxi_local6, &b->vxi_local6, sizeof(a->vxi_local6)) != 0);
-	diff |= VXLAN_DIFF(UDP_CSUM, a->vxi_proxy != b->vxi_proxy);
-	diff |= VXLAN_DIFF(UDP_ZERO_CSUM6_TX, a->vxi_proxy != b->vxi_proxy);
-	diff |= VXLAN_DIFF(UDP_ZERO_CSUM6_RX, a->vxi_proxy != b->vxi_proxy);
-	diff |= VXLAN_DIFF(REMCSUM_TX, a->vxi_proxy != b->vxi_proxy);
-	diff |= VXLAN_DIFF(REMCSUM_RX, a->vxi_proxy != b->vxi_proxy);
-	diff |= VXLAN_DIFF(COLLECT_METADATA, a->vxi_collect_metadata != b->vxi_collect_metadata);
-	diff |= VXLAN_DIFF(LABEL, a->vxi_label != b->vxi_label);
-	diff |= VXLAN_DIFF(FLAGS, a->vxi_flags != b->vxi_flags);
-#undef VXLAN_DIFF
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(VXLAN_ATTR_ID, a->vxi_id != b->vxi_id);
+	diff |= _DIFF(VXLAN_ATTR_GROUP, a->vxi_group != b->vxi_group);
+	diff |= _DIFF(VXLAN_ATTR_LINK, a->vxi_link != b->vxi_link);
+	diff |= _DIFF(VXLAN_ATTR_LOCAL, a->vxi_local != b->vxi_local);
+	diff |= _DIFF(VXLAN_ATTR_TOS, a->vxi_tos != b->vxi_tos);
+	diff |= _DIFF(VXLAN_ATTR_TTL, a->vxi_ttl != b->vxi_ttl);
+	diff |= _DIFF(VXLAN_ATTR_LEARNING, a->vxi_learning != b->vxi_learning);
+	diff |= _DIFF(VXLAN_ATTR_AGEING, a->vxi_ageing != b->vxi_ageing);
+	diff |= _DIFF(VXLAN_ATTR_LIMIT, a->vxi_limit != b->vxi_limit);
+	diff |= _DIFF(VXLAN_ATTR_PORT_RANGE,
+		      a->vxi_port_range.low != b->vxi_port_range.low);
+	diff |= _DIFF(VXLAN_ATTR_PORT_RANGE,
+		      a->vxi_port_range.high != b->vxi_port_range.high);
+	diff |= _DIFF(VXLAN_ATTR_PROXY, a->vxi_proxy != b->vxi_proxy);
+	diff |= _DIFF(VXLAN_ATTR_RSC, a->vxi_proxy != b->vxi_proxy);
+	diff |= _DIFF(VXLAN_ATTR_L2MISS, a->vxi_proxy != b->vxi_proxy);
+	diff |= _DIFF(VXLAN_ATTR_L3MISS, a->vxi_proxy != b->vxi_proxy);
+	diff |= _DIFF(VXLAN_ATTR_PORT, a->vxi_port != b->vxi_port);
+	diff |= _DIFF(VXLAN_ATTR_GROUP6, memcmp(&a->vxi_group6, &b->vxi_group6,
+						sizeof(a->vxi_group6)) != 0);
+	diff |= _DIFF(VXLAN_ATTR_LOCAL6, memcmp(&a->vxi_local6, &b->vxi_local6,
+						sizeof(a->vxi_local6)) != 0);
+	diff |= _DIFF(VXLAN_ATTR_UDP_CSUM, a->vxi_proxy != b->vxi_proxy);
+	diff |= _DIFF(VXLAN_ATTR_UDP_ZERO_CSUM6_TX,
+		      a->vxi_proxy != b->vxi_proxy);
+	diff |= _DIFF(VXLAN_ATTR_UDP_ZERO_CSUM6_RX,
+		      a->vxi_proxy != b->vxi_proxy);
+	diff |= _DIFF(VXLAN_ATTR_REMCSUM_TX, a->vxi_proxy != b->vxi_proxy);
+	diff |= _DIFF(VXLAN_ATTR_REMCSUM_RX, a->vxi_proxy != b->vxi_proxy);
+	diff |= _DIFF(VXLAN_ATTR_COLLECT_METADATA,
+		      a->vxi_collect_metadata != b->vxi_collect_metadata);
+	diff |= _DIFF(VXLAN_ATTR_LABEL, a->vxi_label != b->vxi_label);
+	diff |= _DIFF(VXLAN_ATTR_FLAGS, a->vxi_flags != b->vxi_flags);
+#undef _DIFF
 
 	return diff;
 }

@@ -309,59 +309,67 @@ static uint64_t exp_compare(struct nl_object *_a, struct nl_object *_b,
 	struct nfnl_exp *b = (struct nfnl_exp *) _b;
 	uint64_t diff = 0;
 
-#define EXP_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, EXP_ATTR_##ATTR, a, b, EXPR)
-#define EXP_DIFF_VAL(ATTR, FIELD) EXP_DIFF(ATTR, a->FIELD != b->FIELD)
-#define EXP_DIFF_STRING(ATTR, FIELD) EXP_DIFF(ATTR, (strcmp(a->FIELD, b->FIELD) != 0))
-#define EXP_DIFF_ADDR(ATTR, FIELD) \
-		((flags & LOOSE_COMPARISON) \
-		? EXP_DIFF(ATTR, nl_addr_cmp_prefix(a->FIELD, b->FIELD)) \
-		: EXP_DIFF(ATTR, nl_addr_cmp(a->FIELD, b->FIELD)))
-#define EXP_DIFF_L4PROTO_PORTS(ATTR, FIELD) \
-		EXP_DIFF(ATTR, exp_cmp_l4proto_ports(&(a->FIELD), &(b->FIELD)))
-#define EXP_DIFF_L4PROTO_ICMP(ATTR, FIELD) \
-		EXP_DIFF(ATTR, exp_cmp_l4proto_icmp(&(a->FIELD), &(b->FIELD)))
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+#define _DIFF_VAL(ATTR, FIELD) _DIFF(ATTR, a->FIELD != b->FIELD)
+#define _DIFF_STRING(ATTR, FIELD) _DIFF(ATTR, (strcmp(a->FIELD, b->FIELD) != 0))
+#define _DIFF_ADDR(ATTR, FIELD)                                                \
+	((flags & LOOSE_COMPARISON) ?                                          \
+		 _DIFF(ATTR, nl_addr_cmp_prefix(a->FIELD, b->FIELD)) :         \
+		 _DIFF(ATTR, nl_addr_cmp(a->FIELD, b->FIELD)))
+#define _DIFF_L4PROTO_PORTS(ATTR, FIELD)                                       \
+	_DIFF(ATTR, exp_cmp_l4proto_ports(&(a->FIELD), &(b->FIELD)))
+#define _DIFF_L4PROTO_ICMP(ATTR, FIELD)                                        \
+	_DIFF(ATTR, exp_cmp_l4proto_icmp(&(a->FIELD), &(b->FIELD)))
+	diff |= _DIFF_VAL(EXP_ATTR_FAMILY, exp_family);
+	diff |= _DIFF_VAL(EXP_ATTR_TIMEOUT, exp_timeout);
+	diff |= _DIFF_VAL(EXP_ATTR_ID, exp_id);
+	diff |= _DIFF_VAL(EXP_ATTR_ZONE, exp_zone);
+	diff |= _DIFF_VAL(EXP_ATTR_CLASS, exp_class);
+	diff |= _DIFF_VAL(EXP_ATTR_FLAGS, exp_flags);
+	diff |= _DIFF_VAL(EXP_ATTR_NAT_DIR, exp_nat_dir);
 
-		diff |= EXP_DIFF_VAL(FAMILY,			exp_family);
-		diff |= EXP_DIFF_VAL(TIMEOUT,			exp_timeout);
-		diff |= EXP_DIFF_VAL(ID,			exp_id);
-		diff |= EXP_DIFF_VAL(ZONE,			exp_zone);
-		diff |= EXP_DIFF_VAL(CLASS,			exp_class);
-		diff |= EXP_DIFF_VAL(FLAGS,			exp_flags);
-		diff |= EXP_DIFF_VAL(NAT_DIR,			exp_nat_dir);
+	diff |= _DIFF_STRING(EXP_ATTR_FN, exp_fn);
+	diff |= _DIFF_STRING(EXP_ATTR_HELPER_NAME, exp_helper_name);
 
-		diff |= EXP_DIFF_STRING(FN,			exp_fn);
-		diff |= EXP_DIFF_STRING(HELPER_NAME,		exp_helper_name);
+	diff |= _DIFF_ADDR(EXP_ATTR_EXPECT_IP_SRC, exp_expect.src);
+	diff |= _DIFF_ADDR(EXP_ATTR_EXPECT_IP_DST, exp_expect.dst);
+	diff |= _DIFF_VAL(EXP_ATTR_EXPECT_L4PROTO_NUM,
+			  exp_expect.proto.l4protonum);
+	diff |= _DIFF_L4PROTO_PORTS(EXP_ATTR_EXPECT_L4PROTO_PORTS,
+				    exp_expect.proto.l4protodata);
+	diff |= _DIFF_L4PROTO_ICMP(EXP_ATTR_EXPECT_L4PROTO_ICMP,
+				   exp_expect.proto.l4protodata);
 
-		diff |= EXP_DIFF_ADDR(EXPECT_IP_SRC,			exp_expect.src);
-		diff |= EXP_DIFF_ADDR(EXPECT_IP_DST,			exp_expect.dst);
-		diff |= EXP_DIFF_VAL(EXPECT_L4PROTO_NUM,		exp_expect.proto.l4protonum);
-		diff |= EXP_DIFF_L4PROTO_PORTS(EXPECT_L4PROTO_PORTS,	exp_expect.proto.l4protodata);
-		diff |= EXP_DIFF_L4PROTO_ICMP(EXPECT_L4PROTO_ICMP,	exp_expect.proto.l4protodata);
+	diff |= _DIFF_ADDR(EXP_ATTR_MASTER_IP_SRC, exp_master.src);
+	diff |= _DIFF_ADDR(EXP_ATTR_MASTER_IP_DST, exp_master.dst);
+	diff |= _DIFF_VAL(EXP_ATTR_MASTER_L4PROTO_NUM,
+			  exp_master.proto.l4protonum);
+	diff |= _DIFF_L4PROTO_PORTS(EXP_ATTR_MASTER_L4PROTO_PORTS,
+				    exp_master.proto.l4protodata);
+	diff |= _DIFF_L4PROTO_ICMP(EXP_ATTR_MASTER_L4PROTO_ICMP,
+				   exp_master.proto.l4protodata);
 
-		diff |= EXP_DIFF_ADDR(MASTER_IP_SRC,			exp_master.src);
-		diff |= EXP_DIFF_ADDR(MASTER_IP_DST,			exp_master.dst);
-		diff |= EXP_DIFF_VAL(MASTER_L4PROTO_NUM,		exp_master.proto.l4protonum);
-		diff |= EXP_DIFF_L4PROTO_PORTS(MASTER_L4PROTO_PORTS,	exp_master.proto.l4protodata);
-		diff |= EXP_DIFF_L4PROTO_ICMP(MASTER_L4PROTO_ICMP,	exp_master.proto.l4protodata);
+	diff |= _DIFF_ADDR(EXP_ATTR_MASK_IP_SRC, exp_mask.src);
+	diff |= _DIFF_ADDR(EXP_ATTR_MASK_IP_DST, exp_mask.dst);
+	diff |= _DIFF_VAL(EXP_ATTR_MASK_L4PROTO_NUM, exp_mask.proto.l4protonum);
+	diff |= _DIFF_L4PROTO_PORTS(EXP_ATTR_MASK_L4PROTO_PORTS,
+				    exp_mask.proto.l4protodata);
+	diff |= _DIFF_L4PROTO_ICMP(EXP_ATTR_MASK_L4PROTO_ICMP,
+				   exp_mask.proto.l4protodata);
 
-		diff |= EXP_DIFF_ADDR(MASK_IP_SRC,			exp_mask.src);
-		diff |= EXP_DIFF_ADDR(MASK_IP_DST,			exp_mask.dst);
-		diff |= EXP_DIFF_VAL(MASK_L4PROTO_NUM,			exp_mask.proto.l4protonum);
-		diff |= EXP_DIFF_L4PROTO_PORTS(MASK_L4PROTO_PORTS,	exp_mask.proto.l4protodata);
-		diff |= EXP_DIFF_L4PROTO_ICMP(MASK_L4PROTO_ICMP,	exp_mask.proto.l4protodata);
-
-		diff |= EXP_DIFF_ADDR(NAT_IP_SRC,			exp_nat.src);
-		diff |= EXP_DIFF_ADDR(NAT_IP_DST,			exp_nat.dst);
-		diff |= EXP_DIFF_VAL(NAT_L4PROTO_NUM,			exp_nat.proto.l4protonum);
-		diff |= EXP_DIFF_L4PROTO_PORTS(NAT_L4PROTO_PORTS,	exp_nat.proto.l4protodata);
-		diff |= EXP_DIFF_L4PROTO_ICMP(NAT_L4PROTO_ICMP,		exp_nat.proto.l4protodata);
-
-#undef EXP_DIFF
-#undef EXP_DIFF_VAL
-#undef EXP_DIFF_STRING
-#undef EXP_DIFF_ADDR
-#undef EXP_DIFF_L4PROTO_PORTS
-#undef EXP_DIFF_L4PROTO_ICMP
+	diff |= _DIFF_ADDR(EXP_ATTR_NAT_IP_SRC, exp_nat.src);
+	diff |= _DIFF_ADDR(EXP_ATTR_NAT_IP_DST, exp_nat.dst);
+	diff |= _DIFF_VAL(EXP_ATTR_NAT_L4PROTO_NUM, exp_nat.proto.l4protonum);
+	diff |= _DIFF_L4PROTO_PORTS(EXP_ATTR_NAT_L4PROTO_PORTS,
+				    exp_nat.proto.l4protodata);
+	diff |= _DIFF_L4PROTO_ICMP(EXP_ATTR_NAT_L4PROTO_ICMP,
+				   exp_nat.proto.l4protodata);
+#undef _DIFF
+#undef _DIFF_VAL
+#undef _DIFF_STRING
+#undef _DIFF_ADDR
+#undef _DIFF_L4PROTO_PORTS
+#undef _DIFF_L4PROTO_ICMP
 
 	return diff;
 }

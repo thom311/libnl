@@ -289,19 +289,19 @@ static uint64_t netconf_compare(struct nl_object *_a, struct nl_object *_b,
 	struct rtnl_netconf *b = (struct rtnl_netconf *) _b;
 	uint64_t diff = 0;
 
-#define NETCONF_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, NETCONF_ATTR_##ATTR, a, b, EXPR)
-
-	diff |= NETCONF_DIFF(FAMILY,	a->family != b->family);
-	diff |= NETCONF_DIFF(IFINDEX,	a->ifindex != b->ifindex);
-	diff |= NETCONF_DIFF(RP_FILTER,	a->rp_filter != b->rp_filter);
-	diff |= NETCONF_DIFF(FWDING,	a->forwarding != b->forwarding);
-	diff |= NETCONF_DIFF(MC_FWDING,	a->mc_forwarding != b->mc_forwarding);
-	diff |= NETCONF_DIFF(PROXY_NEIGH, a->proxy_neigh != b->proxy_neigh);
-	diff |= NETCONF_DIFF(IGNORE_RT_LINKDWN,
-			a->ignore_routes_linkdown != b->ignore_routes_linkdown);
-	diff |= NETCONF_DIFF(INPUT,	a->input != b->input);
-
-#undef NETCONF_DIFF
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(NETCONF_ATTR_FAMILY, a->family != b->family);
+	diff |= _DIFF(NETCONF_ATTR_IFINDEX, a->ifindex != b->ifindex);
+	diff |= _DIFF(NETCONF_ATTR_RP_FILTER, a->rp_filter != b->rp_filter);
+	diff |= _DIFF(NETCONF_ATTR_FWDING, a->forwarding != b->forwarding);
+	diff |= _DIFF(NETCONF_ATTR_MC_FWDING,
+		      a->mc_forwarding != b->mc_forwarding);
+	diff |= _DIFF(NETCONF_ATTR_PROXY_NEIGH,
+		      a->proxy_neigh != b->proxy_neigh);
+	diff |= _DIFF(NETCONF_ATTR_IGNORE_RT_LINKDWN,
+		      a->ignore_routes_linkdown != b->ignore_routes_linkdown);
+	diff |= _DIFF(NETCONF_ATTR_INPUT, a->input != b->input);
+#undef _DIFF
 
 	return diff;
 }

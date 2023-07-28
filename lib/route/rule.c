@@ -320,23 +320,21 @@ static uint64_t rule_compare(struct nl_object *_a, struct nl_object *_b,
 	struct rtnl_rule *b = (struct rtnl_rule *) _b;
 	uint64_t diff = 0;
 
-#define RULE_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, RULE_ATTR_##ATTR, a, b, EXPR)
-
-	diff |= RULE_DIFF(FAMILY,	a->r_family != b->r_family);
-	diff |= RULE_DIFF(TABLE,	a->r_table != b->r_table);
-	diff |= RULE_DIFF(ACTION,	a->r_action != b->r_action);
-	diff |= RULE_DIFF(IIFNAME,	strcmp(a->r_iifname, b->r_iifname));
-	diff |= RULE_DIFF(OIFNAME,	strcmp(a->r_oifname, b->r_oifname));
-	diff |= RULE_DIFF(PRIO,		a->r_prio != b->r_prio);
-	diff |= RULE_DIFF(MARK,		a->r_mark != b->r_mark);
-	diff |= RULE_DIFF(MASK,		a->r_mask != b->r_mask);
-	diff |= RULE_DIFF(GOTO,		a->r_goto != b->r_goto);
-	diff |= RULE_DIFF(SRC,		nl_addr_cmp(a->r_src, b->r_src));
-	diff |= RULE_DIFF(DST,		nl_addr_cmp(a->r_dst, b->r_dst));
-	diff |= RULE_DIFF(DSFIELD,	a->r_dsfield != b->r_dsfield);
-	diff |= RULE_DIFF(FLOW,		a->r_flow != b->r_flow);
-	
-#undef RULE_DIFF
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(RULE_ATTR_FAMILY, a->r_family != b->r_family);
+	diff |= _DIFF(RULE_ATTR_TABLE, a->r_table != b->r_table);
+	diff |= _DIFF(RULE_ATTR_ACTION, a->r_action != b->r_action);
+	diff |= _DIFF(RULE_ATTR_IIFNAME, strcmp(a->r_iifname, b->r_iifname));
+	diff |= _DIFF(RULE_ATTR_OIFNAME, strcmp(a->r_oifname, b->r_oifname));
+	diff |= _DIFF(RULE_ATTR_PRIO, a->r_prio != b->r_prio);
+	diff |= _DIFF(RULE_ATTR_MARK, a->r_mark != b->r_mark);
+	diff |= _DIFF(RULE_ATTR_MASK, a->r_mask != b->r_mask);
+	diff |= _DIFF(RULE_ATTR_GOTO, a->r_goto != b->r_goto);
+	diff |= _DIFF(RULE_ATTR_SRC, nl_addr_cmp(a->r_src, b->r_src));
+	diff |= _DIFF(RULE_ATTR_DST, nl_addr_cmp(a->r_dst, b->r_dst));
+	diff |= _DIFF(RULE_ATTR_DSFIELD, a->r_dsfield != b->r_dsfield);
+	diff |= _DIFF(RULE_ATTR_FLOW, a->r_flow != b->r_flow);
+#undef _DIFF
 
 	return diff;
 }

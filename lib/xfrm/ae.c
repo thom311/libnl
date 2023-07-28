@@ -197,16 +197,20 @@ static uint64_t xfrm_ae_compare(struct nl_object *_a, struct nl_object *_b,
 	uint64_t diff = 0;
 	int found = 0;
 
-#define XFRM_AE_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, XFRM_AE_ATTR_##ATTR, a, b, EXPR)
-	diff |= XFRM_AE_DIFF(DADDR,	nl_addr_cmp(a->sa_id.daddr, b->sa_id.daddr));
-	diff |= XFRM_AE_DIFF(SPI,	a->sa_id.spi != b->sa_id.spi);
-	diff |= XFRM_AE_DIFF(PROTO,	a->sa_id.proto != b->sa_id.proto);
-	diff |= XFRM_AE_DIFF(SADDR,	nl_addr_cmp(a->saddr, b->saddr));
-	diff |= XFRM_AE_DIFF(FLAGS, a->flags != b->flags);
-	diff |= XFRM_AE_DIFF(REQID, a->reqid != b->reqid);
-	diff |= XFRM_AE_DIFF(MARK, (a->mark.v & a->mark.m) != (b->mark.v & b->mark.m));
-	diff |= XFRM_AE_DIFF(REPLAY_MAXAGE, a->replay_maxage != b->replay_maxage);
-	diff |= XFRM_AE_DIFF(REPLAY_MAXDIFF, a->replay_maxdiff != b->replay_maxdiff);
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(XFRM_AE_ATTR_DADDR,
+		      nl_addr_cmp(a->sa_id.daddr, b->sa_id.daddr));
+	diff |= _DIFF(XFRM_AE_ATTR_SPI, a->sa_id.spi != b->sa_id.spi);
+	diff |= _DIFF(XFRM_AE_ATTR_PROTO, a->sa_id.proto != b->sa_id.proto);
+	diff |= _DIFF(XFRM_AE_ATTR_SADDR, nl_addr_cmp(a->saddr, b->saddr));
+	diff |= _DIFF(XFRM_AE_ATTR_FLAGS, a->flags != b->flags);
+	diff |= _DIFF(XFRM_AE_ATTR_REQID, a->reqid != b->reqid);
+	diff |= _DIFF(XFRM_AE_ATTR_MARK,
+		      (a->mark.v & a->mark.m) != (b->mark.v & b->mark.m));
+	diff |= _DIFF(XFRM_AE_ATTR_REPLAY_MAXAGE,
+		      a->replay_maxage != b->replay_maxage);
+	diff |= _DIFF(XFRM_AE_ATTR_REPLAY_MAXDIFF,
+		      a->replay_maxdiff != b->replay_maxdiff);
 
 	/* Compare replay states */
 	found = AVAILABLE_MISMATCH (a, b, XFRM_AE_ATTR_REPLAY_STATE);
@@ -237,7 +241,7 @@ static uint64_t xfrm_ae_compare(struct nl_object *_a, struct nl_object *_b,
 			}
 		}
 	}
-#undef XFRM_AE_DIFF
+#undef _DIFF
 
 	return diff;
 }

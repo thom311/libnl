@@ -367,33 +367,38 @@ static int macsec_compare(struct rtnl_link *link_a, struct rtnl_link *link_b,
 	int diff = 0;
 	uint32_t attrs = flags & LOOSE_COMPARISON ? b->ce_mask : ~0;
 
-#define MACSEC_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, MACSEC_ATTR_##ATTR, a, b, EXPR)
-
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
 	if (a->ce_mask & MACSEC_ATTR_SCI && b->ce_mask & MACSEC_ATTR_SCI)
-		diff |= MACSEC_DIFF(SCI, a->sci != b->sci);
+		diff |= _DIFF(MACSEC_ATTR_SCI, a->sci != b->sci);
 	else if (a->ce_mask & MACSEC_ATTR_PORT && b->ce_mask & MACSEC_ATTR_PORT)
-		diff |= MACSEC_DIFF(PORT, a->port != b->port);
+		diff |= _DIFF(MACSEC_ATTR_PORT, a->port != b->port);
 
-	if (a->ce_mask & MACSEC_ATTR_CIPHER_SUITE && b->ce_mask & MACSEC_ATTR_CIPHER_SUITE) {
-		diff |= MACSEC_DIFF(ICV_LEN, a->icv_len != b->icv_len);
-		diff |= MACSEC_DIFF(CIPHER_SUITE, a->cipher_suite != b->cipher_suite);
+	if (a->ce_mask & MACSEC_ATTR_CIPHER_SUITE &&
+	    b->ce_mask & MACSEC_ATTR_CIPHER_SUITE) {
+		diff |= _DIFF(MACSEC_ATTR_ICV_LEN, a->icv_len != b->icv_len);
+		diff |= _DIFF(MACSEC_ATTR_CIPHER_SUITE,
+			      a->cipher_suite != b->cipher_suite);
 	}
 
-	if (a->ce_mask & MACSEC_ATTR_REPLAY_PROTECT && b->ce_mask & MACSEC_ATTR_REPLAY_PROTECT) {
-		int d = MACSEC_DIFF(REPLAY_PROTECT, a->replay_protect != b->replay_protect);
-		if (a->replay_protect && b->replay_protect)
-			d |= MACSEC_DIFF(WINDOW, a->window != b->window);
+	if (a->ce_mask & MACSEC_ATTR_REPLAY_PROTECT &&
+	    b->ce_mask & MACSEC_ATTR_REPLAY_PROTECT) {
+		int d = _DIFF(MACSEC_ATTR_REPLAY_PROTECT,
+			      a->replay_protect != b->replay_protect);
+		if (a->replay_protect && b->replay_protect) {
+			d |= _DIFF(MACSEC_ATTR_WINDOW, a->window != b->window);
+		}
 		diff |= d;
 	}
 
-	diff |= MACSEC_DIFF(ENCODING_SA, a->encoding_sa != b->encoding_sa);
-	diff |= MACSEC_DIFF(ENCRYPT, a->encrypt != b->encrypt);
-	diff |= MACSEC_DIFF(PROTECT, a->protect != b->protect);
-	diff |= MACSEC_DIFF(INC_SCI, a->send_sci != b->send_sci);
-	diff |= MACSEC_DIFF(ES, a->end_station != b->end_station);
-	diff |= MACSEC_DIFF(SCB, a->scb != b->scb);
-	diff |= MACSEC_DIFF(VALIDATION, a->validate != b->validate);
-#undef MACSEC_DIFF
+	diff |= _DIFF(MACSEC_ATTR_ENCODING_SA,
+		      a->encoding_sa != b->encoding_sa);
+	diff |= _DIFF(MACSEC_ATTR_ENCRYPT, a->encrypt != b->encrypt);
+	diff |= _DIFF(MACSEC_ATTR_PROTECT, a->protect != b->protect);
+	diff |= _DIFF(MACSEC_ATTR_INC_SCI, a->send_sci != b->send_sci);
+	diff |= _DIFF(MACSEC_ATTR_ES, a->end_station != b->end_station);
+	diff |= _DIFF(MACSEC_ATTR_SCB, a->scb != b->scb);
+	diff |= _DIFF(MACSEC_ATTR_VALIDATION, a->validate != b->validate);
+#undef _DIFF
 
 	return diff;
 }

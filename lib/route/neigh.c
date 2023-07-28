@@ -265,27 +265,25 @@ static uint64_t neigh_compare(struct nl_object *_a, struct nl_object *_b,
 	struct rtnl_neigh *b = (struct rtnl_neigh *) _b;
 	uint64_t diff = 0;
 
-#define NEIGH_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, NEIGH_ATTR_##ATTR, a, b, EXPR)
-
-	diff |= NEIGH_DIFF(IFINDEX,	a->n_ifindex != b->n_ifindex);
-	diff |= NEIGH_DIFF(FAMILY,	a->n_family != b->n_family);
-	diff |= NEIGH_DIFF(TYPE,	a->n_type != b->n_type);
-	diff |= NEIGH_DIFF(LLADDR,	nl_addr_cmp(a->n_lladdr, b->n_lladdr));
-	diff |= NEIGH_DIFF(DST,		nl_addr_cmp(a->n_dst, b->n_dst));
-	diff |= NEIGH_DIFF(MASTER,	a->n_master != b->n_master);
-	diff |= NEIGH_DIFF(VLAN,	a->n_vlan != b->n_vlan);
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(NEIGH_ATTR_IFINDEX, a->n_ifindex != b->n_ifindex);
+	diff |= _DIFF(NEIGH_ATTR_FAMILY, a->n_family != b->n_family);
+	diff |= _DIFF(NEIGH_ATTR_TYPE, a->n_type != b->n_type);
+	diff |= _DIFF(NEIGH_ATTR_LLADDR, nl_addr_cmp(a->n_lladdr, b->n_lladdr));
+	diff |= _DIFF(NEIGH_ATTR_DST, nl_addr_cmp(a->n_dst, b->n_dst));
+	diff |= _DIFF(NEIGH_ATTR_MASTER, a->n_master != b->n_master);
+	diff |= _DIFF(NEIGH_ATTR_VLAN, a->n_vlan != b->n_vlan);
 
 	if (flags & LOOSE_COMPARISON) {
-		diff |= NEIGH_DIFF(STATE,
-				  (a->n_state ^ b->n_state) & b->n_state_mask);
-		diff |= NEIGH_DIFF(FLAGS,
-				  (a->n_flags ^ b->n_flags) & b->n_flag_mask);
+		diff |= _DIFF(NEIGH_ATTR_STATE,
+			      (a->n_state ^ b->n_state) & b->n_state_mask);
+		diff |= _DIFF(NEIGH_ATTR_FLAGS,
+			      (a->n_flags ^ b->n_flags) & b->n_flag_mask);
 	} else {
-		diff |= NEIGH_DIFF(STATE, a->n_state != b->n_state);
-		diff |= NEIGH_DIFF(FLAGS, a->n_flags != b->n_flags);
+		diff |= _DIFF(NEIGH_ATTR_STATE, a->n_state != b->n_state);
+		diff |= _DIFF(NEIGH_ATTR_FLAGS, a->n_flags != b->n_flags);
 	}
-
-#undef NEIGH_DIFF
+#undef _DIFF
 
 	return diff;
 }

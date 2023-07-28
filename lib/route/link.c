@@ -1111,34 +1111,37 @@ static uint64_t link_compare(struct nl_object *_a, struct nl_object *_b,
 	struct rtnl_link *b = (struct rtnl_link *) _b;
 	uint64_t diff = 0;
 
-#define LINK_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, LINK_ATTR_##ATTR, a, b, EXPR)
-
-	diff |= LINK_DIFF(IFINDEX,	a->l_index != b->l_index);
-	diff |= LINK_DIFF(MTU,		a->l_mtu != b->l_mtu);
-	diff |= LINK_DIFF(LINK,		a->l_link != b->l_link);
-	diff |= LINK_DIFF(LINK_NETNSID, a->l_link_netnsid != b->l_link_netnsid);
-	diff |= LINK_DIFF(TXQLEN,	a->l_txqlen != b->l_txqlen);
-	diff |= LINK_DIFF(WEIGHT,	a->l_weight != b->l_weight);
-	diff |= LINK_DIFF(MASTER,	a->l_master != b->l_master);
-	diff |= LINK_DIFF(FAMILY,	a->l_family != b->l_family);
-	diff |= LINK_DIFF(OPERSTATE,	a->l_operstate != b->l_operstate);
-	diff |= LINK_DIFF(LINKMODE,	a->l_linkmode != b->l_linkmode);
-	diff |= LINK_DIFF(QDISC,	strcmp(a->l_qdisc, b->l_qdisc));
-	diff |= LINK_DIFF(IFNAME,	strcmp(a->l_name, b->l_name));
-	diff |= LINK_DIFF(ADDR,		nl_addr_cmp(a->l_addr, b->l_addr));
-	diff |= LINK_DIFF(BRD,		nl_addr_cmp(a->l_bcast, b->l_bcast));
-	diff |= LINK_DIFF(IFALIAS,	strcmp(a->l_ifalias, b->l_ifalias));
-	diff |= LINK_DIFF(NUM_VF,	a->l_num_vf != b->l_num_vf);
-	diff |= LINK_DIFF(PROMISCUITY,	a->l_promiscuity != b->l_promiscuity);
-	diff |= LINK_DIFF(NUM_TX_QUEUES,a->l_num_tx_queues != b->l_num_tx_queues);
-	diff |= LINK_DIFF(NUM_RX_QUEUES,a->l_num_rx_queues != b->l_num_rx_queues);
-	diff |= LINK_DIFF(GROUP,	a->l_group != b->l_group);
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(LINK_ATTR_IFINDEX, a->l_index != b->l_index);
+	diff |= _DIFF(LINK_ATTR_MTU, a->l_mtu != b->l_mtu);
+	diff |= _DIFF(LINK_ATTR_LINK, a->l_link != b->l_link);
+	diff |= _DIFF(LINK_ATTR_LINK_NETNSID,
+		      a->l_link_netnsid != b->l_link_netnsid);
+	diff |= _DIFF(LINK_ATTR_TXQLEN, a->l_txqlen != b->l_txqlen);
+	diff |= _DIFF(LINK_ATTR_WEIGHT, a->l_weight != b->l_weight);
+	diff |= _DIFF(LINK_ATTR_MASTER, a->l_master != b->l_master);
+	diff |= _DIFF(LINK_ATTR_FAMILY, a->l_family != b->l_family);
+	diff |= _DIFF(LINK_ATTR_OPERSTATE, a->l_operstate != b->l_operstate);
+	diff |= _DIFF(LINK_ATTR_LINKMODE, a->l_linkmode != b->l_linkmode);
+	diff |= _DIFF(LINK_ATTR_QDISC, strcmp(a->l_qdisc, b->l_qdisc));
+	diff |= _DIFF(LINK_ATTR_IFNAME, strcmp(a->l_name, b->l_name));
+	diff |= _DIFF(LINK_ATTR_ADDR, nl_addr_cmp(a->l_addr, b->l_addr));
+	diff |= _DIFF(LINK_ATTR_BRD, nl_addr_cmp(a->l_bcast, b->l_bcast));
+	diff |= _DIFF(LINK_ATTR_IFALIAS, strcmp(a->l_ifalias, b->l_ifalias));
+	diff |= _DIFF(LINK_ATTR_NUM_VF, a->l_num_vf != b->l_num_vf);
+	diff |= _DIFF(LINK_ATTR_PROMISCUITY,
+		      a->l_promiscuity != b->l_promiscuity);
+	diff |= _DIFF(LINK_ATTR_NUM_TX_QUEUES,
+		      a->l_num_tx_queues != b->l_num_tx_queues);
+	diff |= _DIFF(LINK_ATTR_NUM_RX_QUEUES,
+		      a->l_num_rx_queues != b->l_num_rx_queues);
+	diff |= _DIFF(LINK_ATTR_GROUP, a->l_group != b->l_group);
 
 	if (flags & LOOSE_COMPARISON)
-		diff |= LINK_DIFF(FLAGS,
+		diff |= _DIFF(LINK_ATTR_FLAGS,
 				  (a->l_flags ^ b->l_flags) & b->l_flag_mask);
 	else
-		diff |= LINK_DIFF(FLAGS, a->l_flags != b->l_flags);
+		diff |= _DIFF(LINK_ATTR_FLAGS, a->l_flags != b->l_flags);
 
 	/*
 	 * Compare LINK_ATTR_PROTINFO af_data
@@ -1148,15 +1151,15 @@ static uint64_t link_compare(struct nl_object *_a, struct nl_object *_b,
 			goto protinfo_mismatch;
 	}
 
-	diff |= LINK_DIFF(LINKINFO, rtnl_link_info_data_compare(a, b, flags) != 0);
+	diff |= _DIFF(LINK_ATTR_LINKINFO, rtnl_link_info_data_compare(a, b, flags) != 0);
 out:
 	return diff;
 
 protinfo_mismatch:
-	diff |= LINK_DIFF(PROTINFO, 1);
+	diff |= _DIFF(LINK_ATTR_PROTINFO, 1);
 	goto out;
 
-#undef LINK_DIFF
+#undef _DIFF
 }
 
 static const struct trans_tbl link_attrs[] = {

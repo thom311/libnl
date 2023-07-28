@@ -153,15 +153,13 @@ static uint64_t family_compare(struct nl_object *_a, struct nl_object *_b,
 	struct genl_family *b = (struct genl_family *) _b;
 	uint64_t diff = 0;
 
-#define FAM_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, FAMILY_ATTR_##ATTR, a, b, EXPR)
-
-	diff |= FAM_DIFF(ID,		a->gf_id != b->gf_id);
-	diff |= FAM_DIFF(VERSION,	a->gf_version != b->gf_version);
-	diff |= FAM_DIFF(HDRSIZE,	a->gf_hdrsize != b->gf_hdrsize);
-	diff |= FAM_DIFF(MAXATTR,	a->gf_maxattr != b->gf_maxattr);
-	diff |= FAM_DIFF(NAME,		strcmp(a->gf_name, b->gf_name));
-
-#undef FAM_DIFF
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(FAMILY_ATTR_ID, a->gf_id != b->gf_id);
+	diff |= _DIFF(FAMILY_ATTR_VERSION, a->gf_version != b->gf_version);
+	diff |= _DIFF(FAMILY_ATTR_HDRSIZE, a->gf_hdrsize != b->gf_hdrsize);
+	diff |= _DIFF(FAMILY_ATTR_MAXATTR, a->gf_maxattr != b->gf_maxattr);
+	diff |= _DIFF(FAMILY_ATTR_NAME, strcmp(a->gf_name, b->gf_name));
+#undef _DIFF
 
 	return diff;
 }

@@ -55,9 +55,9 @@ static uint64_t mdb_compare(struct nl_object *_a, struct nl_object *_b,
 	struct rtnl_mdb_entry *a_entry, *b_entry;
 	uint64_t diff = 0;
 
-#define MDB_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, MDB_ATTR_##ATTR, a, b, EXPR)
-	diff |= MDB_DIFF(IFINDEX, a->ifindex != b->ifindex);
-#undef MDB_DIFF
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(MDB_ATTR_IFINDEX, a->ifindex != b->ifindex);
+#undef _DIFF
 
 	a_entry = nl_list_entry(a->mdb_entry_list.next, struct rtnl_mdb_entry, mdb_list);
 	b_entry = nl_list_entry(b->mdb_entry_list.next, struct rtnl_mdb_entry, mdb_list);

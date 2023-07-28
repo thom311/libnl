@@ -349,10 +349,13 @@ int nla_memcpy(void *dest, const struct nlattr *src, int count)
 
 	if (!src)
 		return 0;
-	
-	minlen = _NL_MIN(count, nla_len(src));
-	memcpy(dest, nla_data(src), minlen);
 
+	minlen = _NL_MIN(count, nla_len(src));
+
+	if (minlen <= 0)
+		return 0;
+
+	memcpy(dest, nla_data(src), minlen);
 	return minlen;
 }
 

@@ -7,6 +7,8 @@
 #include <netlink/cli/tc.h>
 #include <netlink/route/qdisc/fq_codel.h>
 
+#include <netlink-private/utils.h>
+
 static void print_usage(void)
 {
 	printf(
@@ -95,12 +97,12 @@ static struct nl_cli_tc_module fq_codel_module =
 	.tm_parse_argv		= fq_codel_parse_argv,
 };
 
-static void __init fq_codel_init(void)
+static void _nl_init fq_codel_init(void)
 {
 	nl_cli_tc_register(&fq_codel_module);
 }
 
-static void __exit fq_codel_exit(void)
+static void _nl_exit fq_codel_exit(void)
 {
 	nl_cli_tc_unregister(&fq_codel_module);
 }

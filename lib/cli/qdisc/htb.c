@@ -7,6 +7,8 @@
 #include <netlink/cli/tc.h>
 #include <netlink/route/qdisc/htb.h>
 
+#include <netlink-private/utils.h>
+
 static void print_qdisc_usage(void)
 {
 	printf(
@@ -184,13 +186,13 @@ static struct nl_cli_tc_module htb_class_module =
 	.tm_parse_argv		= htb_parse_class_argv,
 };
 
-static void __init htb_init(void)
+static void _nl_init htb_init(void)
 {
 	nl_cli_tc_register(&htb_qdisc_module);
 	nl_cli_tc_register(&htb_class_module);
 }
 
-static void __exit htb_exit(void)
+static void _nl_exit htb_exit(void)
 {
 	nl_cli_tc_unregister(&htb_class_module);
 	nl_cli_tc_unregister(&htb_qdisc_module);

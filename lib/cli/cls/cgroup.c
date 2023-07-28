@@ -8,6 +8,8 @@
 #include <netlink/cli/cls.h>
 #include <netlink/route/cls/cgroup.h>
 
+#include <netlink-private/utils.h>
+
 static void print_usage(void)
 {
 	printf(
@@ -58,12 +60,12 @@ static struct nl_cli_tc_module cgroup_module =
 	.tm_parse_argv		= parse_argv,
 };
 
-static void __init cgroup_init(void)
+static void _nl_init cgroup_init(void)
 {
 	nl_cli_tc_register(&cgroup_module);
 }
 
-static void __exit cgroup_exit(void)
+static void _nl_exit cgroup_exit(void)
 {
 	nl_cli_tc_unregister(&cgroup_module);
 }

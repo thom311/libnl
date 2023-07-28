@@ -8,6 +8,8 @@
 #include <netlink/route/qdisc/hfsc.h>
 #include <linux/pkt_sched.h>
 
+#include <netlink-private/utils.h>
+
 static void print_qdisc_usage(void)
 {
 	printf(
@@ -233,13 +235,13 @@ static struct nl_cli_tc_module hfsc_class_module =
 	.tm_parse_argv		= hfsc_parse_class_argv,
 };
 
-static void __init hfsc_init(void)
+static void _nl_init hfsc_init(void)
 {
 	nl_cli_tc_register(&hfsc_qdisc_module);
 	nl_cli_tc_register(&hfsc_class_module);
 }
 
-static void __exit hfsc_exit(void)
+static void _nl_exit hfsc_exit(void)
 {
 	nl_cli_tc_unregister(&hfsc_class_module);
 	nl_cli_tc_unregister(&hfsc_qdisc_module);

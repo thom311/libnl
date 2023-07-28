@@ -7,6 +7,8 @@
 #include <netlink/cli/tc.h>
 #include <netlink/route/qdisc/plug.h>
 
+#include <netlink-private/utils.h>
+
 static void print_usage(void)
 {
 	printf(
@@ -95,12 +97,12 @@ static struct nl_cli_tc_module plug_module =
 	.tm_parse_argv		= plug_parse_argv,
 };
 
-static void __init plug_init(void)
+static void _nl_init plug_init(void)
 {
 	nl_cli_tc_register(&plug_module);
 }
 
-static void __exit plug_exit(void)
+static void _nl_exit plug_exit(void)
 {
 	nl_cli_tc_unregister(&plug_module);
 }

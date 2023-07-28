@@ -7,6 +7,8 @@
 #include <netlink/cli/tc.h>
 #include <netlink/route/qdisc/fifo.h>
 
+#include <netlink-private/utils.h>
+
 static void print_usage(void)
 {
 	printf(
@@ -66,12 +68,12 @@ static struct nl_cli_tc_module bfifo_module =
 	.tm_parse_argv		= bfifo_parse_argv,
 };
 
-static void __init bfifo_init(void)
+static void _nl_init bfifo_init(void)
 {
 	nl_cli_tc_register(&bfifo_module);
 }
 
-static void __exit bfifo_exit(void)
+static void _nl_exit bfifo_exit(void)
 {
 	nl_cli_tc_unregister(&bfifo_module);
 }

@@ -917,7 +917,7 @@ static void idiagnl_keygen(struct nl_object *obj, uint32_t *hashkey,
 		uint32_t dst_hash;
 		uint16_t sport;
 		uint16_t dport;
-	} __attribute__((packed)) key;
+	} _nl_packed key;
 
 	key_sz = sizeof(key);
 	key.family = msg->idiag_family;

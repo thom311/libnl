@@ -1090,7 +1090,7 @@ static void link_keygen(struct nl_object *obj, uint32_t *hashkey,
 	struct link_hash_key {
 		uint32_t	l_index;
 		uint32_t	l_family;
-	} __attribute__((packed)) lkey;
+	} _nl_packed lkey;
 
 	lkey_sz = sizeof(lkey);
 	lkey.l_index = link->l_index;

@@ -270,7 +270,7 @@ static void netconf_keygen(struct nl_object *obj, uint32_t *hashkey,
 	struct nc_hash_key {
 		int        nc_family;
 		int        nc_index;
-	} __attribute__((packed)) nckey;
+	} _nl_packed nckey;
 
 	nckey_sz = sizeof(nckey);
 	nckey.nc_family = nc->family;

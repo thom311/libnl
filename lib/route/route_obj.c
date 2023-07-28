@@ -312,7 +312,7 @@ static void route_keygen(struct nl_object *obj, uint32_t *hashkey,
 		uint32_t	rt_table;
 		uint32_t	rt_prio;
 		char 		rt_addr[0];
-	} __attribute__((packed)) *rkey = NULL;
+	} _nl_packed *rkey = NULL;
 #ifdef NL_DEBUG
 	char buf[INET6_ADDRSTRLEN+5];
 #endif

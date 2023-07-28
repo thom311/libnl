@@ -276,7 +276,6 @@ noinst_HEADERS = \
 	include/netlink-private/object-api.h \
 	include/netlink-private/route/link/api.h \
 	include/netlink-private/route/link/sriov.h \
-	include/netlink-private/route/mpls.h \
 	include/netlink-private/route/nexthop-encap.h \
 	include/netlink-private/route/tc-api.h \
 	include/netlink-private/route/utils.h \
@@ -362,6 +361,7 @@ lib_libnl_3_la_SOURCES = \
 	lib/hash.c \
 	lib/hashtable.c \
 	lib/mpls.c \
+	lib/mpls.h \
 	lib/msg.c \
 	lib/nl.c \
 	lib/object.c \

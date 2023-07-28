@@ -25,8 +25,9 @@
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/addr.h>
-#include <netlink-private/route/mpls.h>
 #include <linux/socket.h>
+
+#include "mpls.h"
 
 /* All this DECnet stuff is stolen from iproute2, thanks to whoever wrote
  * this, probably Alexey. */

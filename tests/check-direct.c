@@ -4,9 +4,9 @@
 
 #include "linux/snmp.h"
 #include "base/nl-base-utils.h"
-#include "netlink-private/route/utils.h"
 
 #include "netlink/route/link.h"
+#include "nl-intern-route/nl-intern-route.h"
 
 START_TEST(static_checks)
 {

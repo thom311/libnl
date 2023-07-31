@@ -278,7 +278,6 @@ noinst_HEADERS = \
 	include/netlink-private/route/link/sriov.h \
 	include/netlink-private/route/nexthop-encap.h \
 	include/netlink-private/route/tc-api.h \
-	include/netlink-private/route/utils.h \
 	include/netlink-private/socket.h \
 	include/netlink-private/tc.h \
 	include/netlink-private/types.h \
@@ -380,6 +379,7 @@ lib_libnl_3_la_LDFLAGS = \
 lib_LTLIBRARIES += lib/libnl-route-3.la
 
 lib_libnl_route_3_la_SOURCES = \
+	include/nl-intern-route/nl-intern-route.h \
 	lib/fib_lookup/lookup.c \
 	lib/fib_lookup/request.c \
 	lib/route/act.c \
@@ -408,8 +408,8 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/link.c \
 	lib/route/link/api.c \
 	lib/route/link/bonding.c \
-	lib/route/link/bridge_info.c \
 	lib/route/link/bridge.c \
+	lib/route/link/bridge_info.c \
 	lib/route/link/can.c \
 	lib/route/link/dummy.c \
 	lib/route/link/geneve.c \
@@ -439,8 +439,8 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/neightbl.c \
 	lib/route/netconf.c \
 	lib/route/nexthop.c \
-	lib/route/nh.c \
 	lib/route/nexthop_encap.c \
+	lib/route/nh.c \
 	lib/route/nh_encap_mpls.c \
 	lib/route/pktloc.c \
 	lib/route/qdisc.c \

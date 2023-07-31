@@ -369,6 +369,8 @@ static inline void *_nl_memcpy(void *restrict dest, const void *restrict src,
 		typeof(a) _a = (a);                                            \
 		typeof(b) _b = (b);                                            \
                                                                                \
+		_NL_STATIC_ASSERT(_NL_INT_SAME_SIGNEDNESS(_a, _b));            \
+                                                                               \
 		if (_a != _b)                                                  \
 			return (_a < _b) ? -1 : 1;                             \
 	} while (0)

@@ -493,41 +493,40 @@ static uint64_t addr_compare(struct nl_object *_a, struct nl_object *_b,
 	struct rtnl_addr *b = (struct rtnl_addr *) _b;
 	uint64_t diff = 0;
 
-#define ADDR_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
-
-	diff |= ADDR_DIFF(ADDR_ATTR_IFINDEX,	a->a_ifindex != b->a_ifindex);
-	diff |= ADDR_DIFF(ADDR_ATTR_FAMILY,	a->a_family != b->a_family);
-	diff |= ADDR_DIFF(ADDR_ATTR_SCOPE,	a->a_scope != b->a_scope);
-	diff |= ADDR_DIFF(ADDR_ATTR_LABEL,	strcmp(a->a_label, b->a_label));
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(ADDR_ATTR_IFINDEX, a->a_ifindex != b->a_ifindex);
+	diff |= _DIFF(ADDR_ATTR_FAMILY, a->a_family != b->a_family);
+	diff |= _DIFF(ADDR_ATTR_SCOPE, a->a_scope != b->a_scope);
+	diff |= _DIFF(ADDR_ATTR_LABEL, strcmp(a->a_label, b->a_label));
 	if (attrs & ADDR_ATTR_PEER) {
-		if (   (flags & ID_COMPARISON)
-		    && a->a_family == AF_INET
-		    && b->a_family == AF_INET
-		    && a->a_peer
-		    && b->a_peer
-		    && a->a_prefixlen == b->a_prefixlen) {
+		if ((flags & ID_COMPARISON) && a->a_family == AF_INET &&
+		    b->a_family == AF_INET && a->a_peer && b->a_peer &&
+		    a->a_prefixlen == b->a_prefixlen) {
 			/* when comparing two IPv4 addresses for id-equality, the network part
 			 * of the PEER address shall be compared.
 			 */
-			diff |= ADDR_DIFF(ADDR_ATTR_PEER, nl_addr_cmp_prefix(a->a_peer, b->a_peer));
+			diff |= _DIFF(ADDR_ATTR_PEER,
+				      nl_addr_cmp_prefix(a->a_peer, b->a_peer));
 		} else
-			diff |= ADDR_DIFF(ADDR_ATTR_PEER, nl_addr_cmp(a->a_peer, b->a_peer));
+			diff |= _DIFF(ADDR_ATTR_PEER,
+				      nl_addr_cmp(a->a_peer, b->a_peer));
 	}
-	diff |= ADDR_DIFF(ADDR_ATTR_LOCAL,	nl_addr_cmp(a->a_local, b->a_local));
-	diff |= ADDR_DIFF(ADDR_ATTR_MULTICAST,	nl_addr_cmp(a->a_multicast,
-							    b->a_multicast));
-	diff |= ADDR_DIFF(ADDR_ATTR_BROADCAST,	nl_addr_cmp(a->a_bcast, b->a_bcast));
-	diff |= ADDR_DIFF(ADDR_ATTR_ANYCAST,	nl_addr_cmp(a->a_anycast, b->a_anycast));
-	diff |= ADDR_DIFF(ADDR_ATTR_CACHEINFO,	memcmp(&a->a_cacheinfo, &b->a_cacheinfo,
-	                                       sizeof (a->a_cacheinfo)));
+	diff |= _DIFF(ADDR_ATTR_LOCAL, nl_addr_cmp(a->a_local, b->a_local));
+	diff |= _DIFF(ADDR_ATTR_MULTICAST,
+		      nl_addr_cmp(a->a_multicast, b->a_multicast));
+	diff |= _DIFF(ADDR_ATTR_BROADCAST, nl_addr_cmp(a->a_bcast, b->a_bcast));
+	diff |= _DIFF(ADDR_ATTR_ANYCAST,
+		      nl_addr_cmp(a->a_anycast, b->a_anycast));
+	diff |= _DIFF(ADDR_ATTR_CACHEINFO,
+		      memcmp(&a->a_cacheinfo, &b->a_cacheinfo,
+			     sizeof(a->a_cacheinfo)));
 
 	if (flags & LOOSE_COMPARISON)
-		diff |= ADDR_DIFF(ADDR_ATTR_FLAGS,
-				  (a->a_flags ^ b->a_flags) & b->a_flag_mask);
+		diff |= _DIFF(ADDR_ATTR_FLAGS,
+			      (a->a_flags ^ b->a_flags) & b->a_flag_mask);
 	else
-		diff |= ADDR_DIFF(ADDR_ATTR_FLAGS, a->a_flags != b->a_flags);
-
-#undef ADDR_DIFF
+		diff |= _DIFF(ADDR_ATTR_FLAGS, a->a_flags != b->a_flags);
+#undef _DIFF
 
 	return diff;
 }

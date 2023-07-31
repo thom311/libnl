@@ -410,16 +410,17 @@ static uint64_t nh_compare(struct nl_object *a, struct nl_object *b,
 	struct rtnl_nh *src = nl_object_priv(a);
 	struct rtnl_nh *dst = nl_object_priv(b);
 
-#define NH_DIFF(ATTR, EXPR) ATTR_DIFF(attrs, NH_ATTR_##ATTR, a, b, EXPR)
-
-	diff |= NH_DIFF(ID, src->nh_id != dst->nh_id);
-	diff |= NH_DIFF(GATEWAY, nl_addr_cmp(src->nh_gateway, dst->nh_gateway));
-	diff |= NH_DIFF(OIF, src->nh_oif != dst->nh_oif);
-	diff |= NH_DIFF(GROUP, rtnh_nh_grp_cmp(src->nh_group, dst->nh_group));
-	diff |= NH_DIFF(FLAG_FDB, false);
-	diff |= NH_DIFF(FLAG_GROUPS, false);
-	diff |= NH_DIFF(FLAG_BLACKHOLE, false);
-#undef NH_DIFF
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(NH_ATTR_ID, src->nh_id != dst->nh_id);
+	diff |= _DIFF(NH_ATTR_GATEWAY,
+		      nl_addr_cmp(src->nh_gateway, dst->nh_gateway));
+	diff |= _DIFF(NH_ATTR_OIF, src->nh_oif != dst->nh_oif);
+	diff |= _DIFF(NH_ATTR_GROUP,
+		      rtnh_nh_grp_cmp(src->nh_group, dst->nh_group));
+	diff |= _DIFF(NH_ATTR_FLAG_FDB, false);
+	diff |= _DIFF(NH_ATTR_FLAG_GROUPS, false);
+	diff |= _DIFF(NH_ATTR_FLAG_BLACKHOLE, false);
+#undef _DIFF
 
 	return diff;
 }

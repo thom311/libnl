@@ -20,7 +20,6 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/route/link/api.h>
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>
 
@@ -28,6 +27,8 @@
 #include <linux/if_link.h>
 #include <netlink-private/route/link/sriov.h>
 #include <netlink/route/link/sriov.h>
+
+#include "link-api.h"
 
 /** @cond SKIP */
 

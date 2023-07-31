@@ -17,7 +17,8 @@
 #include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
 #include <netlink/route/link/bonding.h>
-#include <netlink-private/route/link/api.h>
+
+#include "link-api.h"
 
 #define BOND_HAS_MODE		(1 << 0)
 #define BOND_HAS_ACTIVE_SLAVE	(1 << 1)

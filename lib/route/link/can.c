@@ -22,10 +22,11 @@
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
-#include <netlink-private/route/link/api.h>
 #include <netlink/route/link/can.h>
 
 #include <linux/can/netlink.h>
+
+#include "link-api.h"
 
 /** @cond SKIP */
 #define CAN_HAS_BITTIMING		(1<<0)

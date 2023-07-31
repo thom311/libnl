@@ -274,7 +274,6 @@ noinst_HEADERS = \
 	include/netlink-private/cache-api.h \
 	include/netlink-private/netlink.h \
 	include/netlink-private/object-api.h \
-	include/netlink-private/route/link/api.h \
 	include/netlink-private/route/link/sriov.h \
 	include/netlink-private/route/nexthop-encap.h \
 	include/netlink-private/route/tc-api.h \
@@ -423,6 +422,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/link/ipip.c \
 	lib/route/link/ipvlan.c \
 	lib/route/link/ipvti.c \
+	lib/route/link/link-api.h \
 	lib/route/link/macsec.c \
 	lib/route/link/macvlan.c \
 	lib/route/link/ppp.c \

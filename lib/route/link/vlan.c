@@ -22,10 +22,11 @@
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
-#include <netlink-private/route/link/api.h>
 #include <netlink/route/link/vlan.h>
 
 #include <linux/if_vlan.h>
+
+#include "link-api.h"
 
 /** @cond SKIP */
 #define VLAN_HAS_ID		(1<<0)

@@ -23,8 +23,9 @@
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/sit.h>
-#include <netlink-private/route/link/api.h>
 #include <linux/if_tunnel.h>
+
+#include "link-api.h"
 
 #define SIT_ATTR_LINK          (1 << 0)
 #define SIT_ATTR_LOCAL         (1 << 1)

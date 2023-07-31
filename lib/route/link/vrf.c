@@ -23,11 +23,12 @@
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
-#include <netlink-private/route/link/api.h>
 #include <netlink/route/link/vrf.h>
 
 #include <linux/if_link.h>
 #include <linux-private/linux/rtnetlink.h>
+
+#include "link-api.h"
 
 #define VRF_TABLE_ID_MAX  RT_TABLE_MAX
 

@@ -22,10 +22,11 @@
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/macsec.h>
-#include <netlink-private/route/link/api.h>
 #include "base/nl-base-utils.h"
 
 #include <linux/if_macsec.h>
+
+#include "link-api.h"
 
 /** @cond SKIP */
 #define MACSEC_ATTR_SCI			(1 << 0)

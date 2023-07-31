@@ -18,7 +18,8 @@
 
 #include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
-#include <netlink-private/route/link/api.h>
+
+#include "link-api.h"
 
 /** @cond SKIP */
 #define PPP_ATTR_FD		(1<<0)

@@ -20,9 +20,9 @@
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
-#include <netlink-private/route/link/api.h>
 #include <netlink/route/link/geneve.h>
 
+#include "link-api.h"
 
 /** @cond SKIP */
 #define GENEVE_ATTR_ID          (1<<0)

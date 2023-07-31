@@ -23,8 +23,9 @@
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/ipvti.h>
-#include <netlink-private/route/link/api.h>
 #include <linux/if_tunnel.h>
+
+#include "link-api.h"
 
 #define IPVTI_ATTR_LINK		 (1 << 0)
 #define IPVTI_ATTR_IKEY		 (1 << 1)

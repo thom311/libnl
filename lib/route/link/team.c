@@ -16,8 +16,9 @@
 
 #include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
-#include <netlink-private/route/link/api.h>
 #include <netlink/route/link/team.h>
+
+#include "link-api.h"
 
 /**
  * Allocate link object of type team

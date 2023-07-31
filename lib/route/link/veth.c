@@ -22,11 +22,12 @@
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
-#include <netlink-private/route/link/api.h>
 #include <netlink/route/link/veth.h>
 
 #include <linux/if_link.h>
 #include <linux/veth.h>
+
+#include "link-api.h"
 
 static struct nla_policy veth_policy[VETH_INFO_MAX+1] = {
 	[VETH_INFO_PEER]	= { .minlen = sizeof(struct ifinfomsg) },

@@ -11,7 +11,6 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/nl-auto.h>
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/utils.h>
@@ -19,6 +18,8 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/route.h>
 #include <netlink/route/link.h>
+
+#include "nl-aux-route/nl-route.h"
 
 static struct nl_cache_ops rtnl_route_ops;
 

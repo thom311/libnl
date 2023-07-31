@@ -3,11 +3,14 @@
  * lib/route/mdb.c		Multicast Database
  */
 
+#include <linux/if_bridge.h>
+
 #include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
 #include <netlink/route/mdb.h>
 #include <netlink/utils.h>
-#include <linux/if_bridge.h>
+
+#include "nl-aux-route/nl-route.h"
 
 /** @cond SKIP */
 #define MDB_ATTR_IFINDEX         0x000001

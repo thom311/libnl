@@ -8,8 +8,9 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <netlink/netlink-compat.h>
-#include <netlink-private/route/mpls.h>
 #include <linux-private/linux/mpls.h>
+
+#include "mpls.h"
 
 static const char *mpls_ntop1(const struct mpls_label *addr,
 			      char *buf, size_t buflen)

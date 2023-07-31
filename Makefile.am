@@ -223,6 +223,7 @@ libnlinclude_netlink_cli_HEADERS = \
 endif
 
 noinst_HEADERS = \
+	include/base/nl-base-utils.h \
 	include/linux-private/linux/can/netlink.h \
 	include/linux-private/linux/fib_rules.h \
 	include/linux-private/linux/gen_stats.h \
@@ -271,20 +272,16 @@ noinst_HEADERS = \
 	include/linux-private/linux/veth.h \
 	include/linux-private/linux/xfrm.h \
 	include/netlink-private/cache-api.h \
-	include/netlink-private/genl.h \
 	include/netlink-private/netlink.h \
-	include/netlink-private/nl-auto.h \
 	include/netlink-private/object-api.h \
-	include/netlink-private/route/link/api.h \
 	include/netlink-private/route/link/sriov.h \
-	include/netlink-private/route/mpls.h \
 	include/netlink-private/route/nexthop-encap.h \
 	include/netlink-private/route/tc-api.h \
-	include/netlink-private/route/utils.h \
 	include/netlink-private/socket.h \
 	include/netlink-private/tc.h \
 	include/netlink-private/types.h \
-	include/netlink-private/utils.h \
+	include/nl-aux-core/nl-core.h \
+	include/nl-aux-route/nl-route.h \
 	$(NULL)
 
 ###############################################################################
@@ -362,6 +359,7 @@ lib_libnl_3_la_SOURCES = \
 	lib/hash.c \
 	lib/hashtable.c \
 	lib/mpls.c \
+	lib/mpls.h \
 	lib/msg.c \
 	lib/nl.c \
 	lib/object.c \
@@ -380,6 +378,7 @@ lib_libnl_3_la_LDFLAGS = \
 lib_LTLIBRARIES += lib/libnl-route-3.la
 
 lib_libnl_route_3_la_SOURCES = \
+	include/nl-intern-route/nl-intern-route.h \
 	lib/fib_lookup/lookup.c \
 	lib/fib_lookup/request.c \
 	lib/route/act.c \
@@ -408,8 +407,8 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/link.c \
 	lib/route/link/api.c \
 	lib/route/link/bonding.c \
-	lib/route/link/bridge_info.c \
 	lib/route/link/bridge.c \
+	lib/route/link/bridge_info.c \
 	lib/route/link/can.c \
 	lib/route/link/dummy.c \
 	lib/route/link/geneve.c \
@@ -423,6 +422,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/link/ipip.c \
 	lib/route/link/ipvlan.c \
 	lib/route/link/ipvti.c \
+	lib/route/link/link-api.h \
 	lib/route/link/macsec.c \
 	lib/route/link/macvlan.c \
 	lib/route/link/ppp.c \
@@ -439,8 +439,8 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/neightbl.c \
 	lib/route/netconf.c \
 	lib/route/nexthop.c \
-	lib/route/nh.c \
 	lib/route/nexthop_encap.c \
+	lib/route/nh.c \
 	lib/route/nh_encap_mpls.c \
 	lib/route/pktloc.c \
 	lib/route/qdisc.c \
@@ -506,6 +506,7 @@ lib_libnl_genl_3_la_SOURCES = \
 	lib/genl/family.c \
 	lib/genl/genl.c \
 	lib/genl/mngt.c \
+	lib/genl/nl-priv-genl.h \
 	$(NULL)
 EXTRA_lib_libnl_genl_3_la_DEPENDENCIES = \
 	libnl-genl-3.sym

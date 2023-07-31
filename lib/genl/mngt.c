@@ -12,7 +12,7 @@
  * @{
  */
 
-#include <netlink-private/genl.h>
+#include "nl-priv-genl.h"
 #include <netlink/netlink.h>
 #include <netlink/genl/genl.h>
 #include <netlink/genl/mngt.h>
@@ -20,7 +20,7 @@
 #include <netlink/genl/ctrl.h>
 #include <netlink/utils.h>
 
-#include "netlink-private/utils.h"
+#include "base/nl-base-utils.h"
 
 /** @cond SKIP */
 
@@ -307,6 +307,7 @@ static int __genl_ops_resolve(struct nl_cache *ctrl, struct genl_ops *ops)
 	return -NLE_OBJ_NOTFOUND;
 }
 
+/* WARNING: this symbol is wrongly exported in libnl-genl-3.sym. */
 int genl_resolve_id(struct genl_ops *ops)
 {
 	struct nl_sock *sk;

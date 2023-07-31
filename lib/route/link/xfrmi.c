@@ -25,7 +25,8 @@
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/xfrmi.h>
-#include <netlink-private/route/link/api.h>
+
+#include "link-api.h"
 
 #define XFRMI_ATTR_LINK  (1 << 0)
 #define XFRMI_ATTR_IF_ID (1 << 1)

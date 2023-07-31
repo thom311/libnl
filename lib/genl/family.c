@@ -12,13 +12,13 @@
  * @{
  */
 
-#include <netlink-private/genl.h>
+#include "nl-priv-genl.h"
 #include <netlink/netlink.h>
 #include <netlink/genl/genl.h>
 #include <netlink/genl/family.h>
 #include <netlink/utils.h>
 
-#include "netlink-private/utils.h"
+#include "base/nl-base-utils.h"
 
 /** @cond SKIP */
 #define FAMILY_ATTR_ID		0x01

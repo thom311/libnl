@@ -3,10 +3,10 @@
 #include <check.h>
 
 #include "linux/snmp.h"
-#include "netlink-private/utils.h"
-#include "netlink-private/route/utils.h"
+#include "base/nl-base-utils.h"
 
 #include "netlink/route/link.h"
+#include "nl-intern-route/nl-intern-route.h"
 
 START_TEST(static_checks)
 {

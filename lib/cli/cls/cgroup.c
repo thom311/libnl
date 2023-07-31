@@ -8,7 +8,7 @@
 #include <netlink/cli/cls.h>
 #include <netlink/route/cls/cgroup.h>
 
-#include <netlink-private/utils.h>
+#include "base/nl-base-utils.h"
 
 static void print_usage(void)
 {

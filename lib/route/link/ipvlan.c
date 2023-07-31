@@ -22,10 +22,11 @@
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
-#include <netlink-private/route/link/api.h>
 #include <netlink/route/link/ipvlan.h>
 
 #include <linux/if_link.h>
+
+#include "link-api.h"
 
 /** @cond SKIP */
 #define IPVLAN_HAS_MODE	(1<<0)

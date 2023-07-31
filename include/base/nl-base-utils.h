@@ -3,10 +3,11 @@
  * Copyright (c) 2003-2012 Thomas Graf <tgraf@suug.ch>
  */
 
-#ifndef NETLINK_UTILS_PRIV_H_
-#define NETLINK_UTILS_PRIV_H_
+#ifndef __NETLINK_BASE_NL_BASE_UTILS_H__
+#define __NETLINK_BASE_NL_BASE_UTILS_H__
 
 #include <byteswap.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <unistd.h>
 #include <errno.h>
@@ -86,6 +87,7 @@
 #define _nl_deprecated(msg) __attribute__((__deprecated__(msg)))
 #define _nl_init __attribute__((constructor))
 #define _nl_exit __attribute__((destructor))
+#define _nl_auto(fcn) __attribute__((__cleanup__(fcn)))
 
 /*****************************************************************************/
 
@@ -574,8 +576,6 @@ static inline char *_nl_strncpy_assert(char *dst, const char *src, size_t len)
 	return dst;
 }
 
-#include "nl-auto.h"
-
 #define _NL_RETURN_ON_ERR(cmd)                                                 \
 	do {                                                                   \
 		int _err;                                                      \
@@ -684,4 +684,33 @@ static inline char *_nl_inet_ntop_dup(int addr_family, const void *addr)
 						    INET6_ADDRSTRLEN));
 }
 
-#endif
+/*****************************************************************************/
+
+#define _NL_AUTO_DEFINE_FCN_VOID0(CastType, name, func)                        \
+	static inline void name(void *v)                                       \
+	{                                                                      \
+		if (*((CastType *)v))                                          \
+			func(*((CastType *)v));                                \
+	}                                                                      \
+	struct _nl_dummy_for_tailing_semicolon
+
+#define _NL_AUTO_DEFINE_FCN_STRUCT(CastType, name, func)                       \
+	static inline void name(CastType *v)                                   \
+	{                                                                      \
+		if (v)                                                         \
+			func(v);                                               \
+	}                                                                      \
+	struct _nl_dummy_for_tailing_semicolon
+
+#define _NL_AUTO_DEFINE_FCN_TYPED0(CastType, name, func)                       \
+	static inline void name(CastType *v)                                   \
+	{                                                                      \
+		if (*v)                                                        \
+			func(*v);                                              \
+	}                                                                      \
+	struct _nl_dummy_for_tailing_semicolon
+
+#define _nl_auto_free _nl_auto(_nl_auto_free_fcn)
+_NL_AUTO_DEFINE_FCN_VOID0(void *, _nl_auto_free_fcn, free);
+
+#endif /* __NETLINK_BASE_NL_BASE_UTILS_H__ */

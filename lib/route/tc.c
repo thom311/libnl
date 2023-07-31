@@ -18,7 +18,7 @@
 #include <netlink/route/tc.h>
 #include <netlink-private/route/tc-api.h>
 
-#include "netlink-private/utils.h"
+#include "base/nl-base-utils.h"
 
 /** @cond SKIP */
 

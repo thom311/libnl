@@ -13,7 +13,8 @@
 
 #include <netlink-private/netlink.h>
 #include <netlink/route/link/bridge_info.h>
-#include <netlink-private/route/link/api.h>
+
+#include "link-api.h"
 
 #define BRIDGE_ATTR_VLAN_FILTERING (1 << 0)
 #define BRIDGE_ATTR_VLAN_PROTOCOL (1 << 1)

@@ -8,10 +8,11 @@
 #include <netlink/attr.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/inet6.h>
-#include <netlink-private/route/link/api.h>
 
-#include "netlink-private/route/utils.h"
-#include "netlink-private/utils.h"
+#include "link-api.h"
+
+#include "base/nl-base-utils.h"
+#include "nl-intern-route/nl-intern-route.h"
 
 #define I6_ADDR_GEN_MODE_UNKNOWN	UINT8_MAX
 

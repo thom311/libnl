@@ -7,7 +7,7 @@
 #include <netlink/route/pktloc.h>
 #include <linux/tc_ematch/tc_em_cmp.h>
 
-#include "netlink-private/utils.h"
+#include "base/nl-base-utils.h"
 
 static void print_usage(void)
 {

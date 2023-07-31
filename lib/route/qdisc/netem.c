@@ -20,7 +20,7 @@
 #include <netlink/route/qdisc.h>
 #include <netlink/route/qdisc/netem.h>
 
-#include "netlink-private/utils.h"
+#include "base/nl-base-utils.h"
 
 /** @cond SKIP */
 #define SCH_NETEM_ATTR_LATENCY		0x0001

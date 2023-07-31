@@ -12,11 +12,14 @@
 #include <sys/mount.h>
 #include <unistd.h>
 
-#include "netlink-private/utils.h"
+#include "base/nl-base-utils.h"
+
 #include "netlink/netlink.h"
 #include "netlink/route/link.h"
 #include "netlink/route/route.h"
 #include "netlink/socket.h"
+
+#include "nl-aux-route/nl-route.h"
 
 /*****************************************************************************/
 

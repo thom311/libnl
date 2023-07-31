@@ -18,7 +18,7 @@
 #include <netlink/attr.h>
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/queue_msg.h>
-#include <netlink-private/utils.h>
+#include "base/nl-base-utils.h"
 
 static struct nl_cache_ops nfnl_queue_msg_ops;
 

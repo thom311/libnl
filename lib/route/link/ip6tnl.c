@@ -23,9 +23,10 @@
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/ip6tnl.h>
-#include <netlink-private/route/link/api.h>
 #include <linux/if_tunnel.h>
 #include <netinet/in.h>
+
+#include "link-api.h"
 
 #define IP6_TNL_ATTR_LINK          (1 << 0)
 #define IP6_TNL_ATTR_LOCAL         (1 << 1)

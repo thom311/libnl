@@ -16,8 +16,9 @@
 #include <netlink/attr.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/bridge.h>
-#include <netlink-private/route/link/api.h>
 #include <linux/if_bridge.h>
+
+#include "link-api.h"
 
 #define VLAN_VID_MASK           0x0fff /* VLAN Identifier */
 

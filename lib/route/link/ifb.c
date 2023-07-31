@@ -15,7 +15,8 @@
 
 #include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
-#include <netlink-private/route/link/api.h>
+
+#include "link-api.h"
 
 static struct rtnl_link_info_ops ifb_info_ops = {
 	.io_name		= "ifb",

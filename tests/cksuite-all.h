@@ -2,6 +2,7 @@
 #define __LIBNL3_TESTS_CHECK_ALL_H__
 
 #include <check.h>
+
 #include "nl-test-util.h"
 
 Suite *make_nl_attr_suite(void);

@@ -20,8 +20,9 @@
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/ip6vti.h>
-#include <netlink-private/route/link/api.h>
 #include <linux/if_tunnel.h>
+
+#include "link-api.h"
 
 #define IP6VTI_ATTR_LINK      (1 << 0)
 #define IP6VTI_ATTR_IKEY      (1 << 1)

@@ -23,11 +23,12 @@
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
-#include <netlink-private/route/link/api.h>
 #include <netlink/route/link/macvlan.h>
 #include <netlink/route/link/macvtap.h>
 
 #include <linux/if_link.h>
+
+#include "link-api.h"
 
 /** @cond SKIP */
 #define MACVLAN_HAS_MODE        (1<<0)

@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <linux/netlink.h>
 
-#include "netlink-private/utils.h"
+#include "base/nl-base-utils.h"
 #include "netlink/route/link.h"
 #include "netlink/route/link/sit.h"
 #include <netlink/route/link/bonding.h>

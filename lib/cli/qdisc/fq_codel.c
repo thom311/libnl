@@ -7,7 +7,7 @@
 #include <netlink/cli/tc.h>
 #include <netlink/route/qdisc/fq_codel.h>
 
-#include <netlink-private/utils.h>
+#include "base/nl-base-utils.h"
 
 static void print_usage(void)
 {

@@ -7,7 +7,7 @@
 #include <netlink/cli/tc.h>
 #include <netlink/route/qdisc/htb.h>
 
-#include <netlink-private/utils.h>
+#include "base/nl-base-utils.h"
 
 static void print_qdisc_usage(void)
 {

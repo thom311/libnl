@@ -22,10 +22,11 @@
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
-#include <netlink-private/route/link/api.h>
 #include <netlink/route/link/vxlan.h>
 
 #include <linux/if_link.h>
+
+#include "link-api.h"
 
 /** @cond SKIP */
 #define VXLAN_ATTR_ID                  (1<<0)

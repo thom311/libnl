@@ -17,6 +17,7 @@
 #include <netlink-private/object-api.h>
 #include <netlink-private/route/tc-api.h>
 #include <netlink-private/route/link/sriov.h>
+#include <netlink/route/nh.h>
 #include <netlink-private/route/nexthop-encap.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
@@ -254,6 +255,7 @@ struct rtnl_neigh
 	uint8_t		n_type;
 	struct nl_addr *n_lladdr;
 	struct nl_addr *n_dst;
+	uint32_t	n_nhid;
 	uint32_t	n_probes;
 	struct rtnl_ncacheinfo n_cacheinfo;
 	uint32_t                n_state_mask;
@@ -321,6 +323,28 @@ struct rtnl_nexthop
 	struct nl_addr *	rtnh_newdst;
 	struct nl_addr *	rtnh_via;
 	struct rtnl_nh_encap *	rtnh_encap;
+};
+
+struct rtnl_nexthop_group
+{
+	struct nl_list_head	nexthop_list;
+	int			ce_refcnt;
+	uint32_t id;
+	uint8_t weight;
+};
+
+struct rtnl_nh
+{
+	NLHDR_COMMON
+
+	uint8_t nh_family;
+	uint32_t nh_flags;
+
+	uint32_t nh_id;
+	uint32_t nh_group_type;
+	nl_nh_group_t * nh_group;
+	uint32_t nh_oif;
+	struct nl_addr * nh_gateway;
 };
 
 struct rtnl_route

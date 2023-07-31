@@ -110,6 +110,7 @@ libnlinclude_netlink_route_HEADERS = \
 	include/netlink/route/neightbl.h \
 	include/netlink/route/netconf.h \
 	include/netlink/route/nexthop.h \
+	include/netlink/route/nh.h \
 	include/netlink/route/pktloc.h \
 	include/netlink/route/qdisc.h \
 	include/netlink/route/route.h \
@@ -212,6 +213,7 @@ libnlinclude_netlink_cli_HEADERS = \
 	include/netlink/cli/link.h \
 	include/netlink/cli/mdb.h \
 	include/netlink/cli/neigh.h \
+	include/netlink/cli/nh.h \
 	include/netlink/cli/qdisc.h \
 	include/netlink/cli/route.h \
 	include/netlink/cli/rule.h \
@@ -253,6 +255,7 @@ noinst_HEADERS = \
 	include/linux-private/linux/netfilter/nfnetlink_log.h \
 	include/linux-private/linux/netfilter/nfnetlink_queue.h \
 	include/linux-private/linux/netlink.h \
+	include/linux-private/linux/nexthop.h \
 	include/linux-private/linux/pkt_cls.h \
 	include/linux-private/linux/pkt_sched.h \
 	include/linux-private/linux/rtnetlink.h \
@@ -436,6 +439,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/neightbl.c \
 	lib/route/netconf.c \
 	lib/route/nexthop.c \
+	lib/route/nh.c \
 	lib/route/nexthop_encap.c \
 	lib/route/nh_encap_mpls.c \
 	lib/route/pktloc.c \
@@ -631,6 +635,7 @@ src_lib_libnl_cli_3_la_SOURCES = \
 	src/lib/exp.c \
 	src/lib/link.c \
 	src/lib/neigh.c \
+	src/lib/nh.c \
 	src/lib/qdisc.c \
 	src/lib/route.c \
 	src/lib/rule.c \
@@ -714,6 +719,7 @@ cli_programs = \
 	src/nl-neigh-delete \
 	src/nl-neigh-list \
 	src/nl-neightbl-list \
+	src/nl-nh-list \
 	src/nl-pktloc-lookup \
 	src/nl-qdisc-add \
 	src/nl-qdisc-delete \
@@ -813,6 +819,8 @@ src_nl_neigh_list_CPPFLAGS =        $(src_cppflags)
 src_nl_neigh_list_LDADD =           $(src_ldadd)
 src_nl_neightbl_list_CPPFLAGS =     $(src_cppflags)
 src_nl_neightbl_list_LDADD =        $(src_ldadd)
+src_nl_nh_list_CPPFLAGS =           $(src_cppflags)
+src_nl_nh_list_LDADD =              $(src_ldadd)
 src_nl_pktloc_lookup_CPPFLAGS =     $(src_cppflags)
 src_nl_pktloc_lookup_LDADD =        $(src_ldadd)
 src_nl_qdisc_add_CPPFLAGS =         $(src_cppflags)

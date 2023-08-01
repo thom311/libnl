@@ -274,7 +274,6 @@ noinst_HEADERS = \
 	include/netlink-private/cache-api.h \
 	include/netlink-private/netlink.h \
 	include/netlink-private/object-api.h \
-	include/netlink-private/route/link/sriov.h \
 	include/netlink-private/types.h \
 	include/nl-aux-core/nl-core.h \
 	include/nl-aux-route/nl-route.h \
@@ -401,6 +400,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/cls/mall.c \
 	lib/route/cls/police.c \
 	lib/route/cls/u32.c \
+	lib/route/link-sriov.h \
 	lib/route/link.c \
 	lib/route/link/api.c \
 	lib/route/link/bonding.c \

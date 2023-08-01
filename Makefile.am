@@ -275,7 +275,6 @@ noinst_HEADERS = \
 	include/netlink-private/netlink.h \
 	include/netlink-private/object-api.h \
 	include/netlink-private/route/link/sriov.h \
-	include/netlink-private/route/nexthop-encap.h \
 	include/netlink-private/socket.h \
 	include/netlink-private/types.h \
 	include/nl-aux-core/nl-core.h \
@@ -436,6 +435,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/neigh.c \
 	lib/route/neightbl.c \
 	lib/route/netconf.c \
+	lib/route/nexthop-encap.h \
 	lib/route/nexthop.c \
 	lib/route/nexthop_encap.c \
 	lib/route/nh.c \

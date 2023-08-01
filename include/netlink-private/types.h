@@ -17,7 +17,6 @@
 #include <netlink-private/object-api.h>
 #include <netlink-private/route/link/sriov.h>
 #include <netlink/route/nh.h>
-#include <netlink-private/route/nexthop-encap.h>
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 #include <linux/genetlink.h>

@@ -12,6 +12,39 @@
 
 #include "nl-hidden-route/nl-hidden-route.h"
 
+/*****************************************************************************/
+
+#define TCA_ATTR_HANDLE		0x0001
+#define TCA_ATTR_PARENT		0x0002
+#define TCA_ATTR_IFINDEX	0x0004
+#define TCA_ATTR_KIND		0x0008
+#define TCA_ATTR_FAMILY		0x0010
+#define TCA_ATTR_INFO		0x0020
+#define TCA_ATTR_OPTS		0x0040
+#define TCA_ATTR_STATS		0x0080
+#define TCA_ATTR_XSTATS		0x0100
+#define TCA_ATTR_LINK		0x0200
+#define TCA_ATTR_MTU		0x0400
+#define TCA_ATTR_MPU		0x0800
+#define TCA_ATTR_OVERHEAD	0x1000
+#define TCA_ATTR_LINKTYPE	0x2000
+#define TCA_ATTR_CHAIN          0x4000
+#define TCA_ATTR_MAX            TCA_ATTR_CHAIN
+
+extern int tca_parse(struct nlattr **, int, struct rtnl_tc *,
+                     const struct nla_policy *);
+
+#define RTNL_TC_RTABLE_SIZE	256
+
+static inline void *tca_xstats(struct rtnl_tc *tca)
+{
+	return tca->tc_xstats->d_data;
+}
+
+extern struct nl_af_group tc_groups[];
+
+/*****************************************************************************/
+
 struct rtnl_tc_type_ops
 {
 	enum rtnl_tc_type tt_type;

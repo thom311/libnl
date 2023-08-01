@@ -11,7 +11,6 @@
 
 #include <netlink-private/netlink.h>
 #include "base/nl-base-utils.h"
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/link.h>

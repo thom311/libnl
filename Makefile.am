@@ -277,7 +277,6 @@ noinst_HEADERS = \
 	include/netlink-private/route/link/sriov.h \
 	include/netlink-private/route/nexthop-encap.h \
 	include/netlink-private/socket.h \
-	include/netlink-private/tc.h \
 	include/netlink-private/types.h \
 	include/nl-aux-core/nl-core.h \
 	include/nl-aux-route/nl-route.h \

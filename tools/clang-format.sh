@@ -20,7 +20,6 @@ EXCLUDE_PATHS_TOPLEVEL+=(
     "include/netlink-private/route/link/sriov.h"
     "include/netlink-private/route/nexthop-encap.h"
     "include/netlink-private/socket.h"
-    "include/netlink-private/tc.h"
     "include/netlink-private/types.h"
     "include/netlink/addr.h"
     "include/netlink/attr.h"

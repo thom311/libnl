@@ -34,10 +34,6 @@ extern int tca_parse(struct nlattr **, int, struct rtnl_tc *,
 
 #define RTNL_TC_RTABLE_SIZE	256
 
-extern int rtnl_tc_build_rate_table(struct rtnl_tc *tc, struct rtnl_ratespec *,
-				    uint32_t *);
-
-
 static inline void *tca_xstats(struct rtnl_tc *tca)
 {
 	return tca->tc_xstats->d_data;

@@ -59,6 +59,10 @@ extern void 			rtnl_tc_unregister(struct rtnl_tc_ops *);
 extern void			rtnl_tc_type_register(struct rtnl_tc_type_ops *);
 extern void			rtnl_tc_type_unregister(struct rtnl_tc_type_ops *);
 
+
+extern int rtnl_tc_build_rate_table(struct rtnl_tc *tc, struct rtnl_ratespec *,
+				    uint32_t *);
+
 /*****************************************************************************/
 
 #endif

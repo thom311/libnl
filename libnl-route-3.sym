@@ -19,11 +19,11 @@ global:
 	rtnl_link_info_ops_put;
 	rtnl_link_register_info;
 	rtnl_link_unregister_info;
-	rtnl_tc_build_rate_table;
 
 	# these functions are in private header files and should have never
 	# been exported.
 	# declared in "lib/route/tc-api.h".
+	rtnl_tc_build_rate_table;
 	rtnl_tc_clone;
 	rtnl_tc_compare;
 	rtnl_tc_data;

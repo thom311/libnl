@@ -6,11 +6,29 @@
  * Copyright (c) 2008 Patrick McHardy <kaber@trash.net>
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/log.h>
 
+#include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/cache-api.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+
 /** @cond SKIP */
+struct nfnl_log {
+	NLHDR_COMMON
+
+	uint16_t		log_group;
+	uint8_t			log_copy_mode;
+	uint32_t		log_copy_range;
+	uint32_t		log_flush_timeout;
+	uint32_t		log_alloc_size;
+	uint32_t		log_queue_threshold;
+	uint32_t		log_flags;
+	uint32_t		log_flag_mask;
+};
+
 #define LOG_ATTR_GROUP			(1UL << 0)
 #define LOG_ATTR_COPY_MODE		(1UL << 1)
 #define LOG_ATTR_COPY_RANGE		(1UL << 3)

@@ -5,10 +5,12 @@
  * Copyright (c) 2007 Secure Computing Corporation
  */
 
-#include <netlink/cli/utils.h>
-#include <netlink/cli/ct.h>
+#include "nl-default.h"
 
 #include <linux/rtnetlink.h>
+
+#include <netlink/cli/utils.h>
+#include <netlink/cli/ct.h>
 
 static int quiet = 0;
 

@@ -12,7 +12,8 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/route/classifier.h>
 #include <netlink/route/cls/fw.h>
@@ -20,6 +21,15 @@
 #include "tc-api.h"
 
 /** @cond SKIP */
+struct rtnl_fw {
+	uint32_t cf_classid;
+	struct nl_data *cf_act;
+	struct nl_data *cf_police;
+	char cf_indev[IFNAMSIZ];
+	uint32_t cf_fwmask;
+	int cf_mask;
+};
+
 #define FW_ATTR_CLASSID      0x001
 #define FW_ATTR_ACTION       0x002
 #define FW_ATTR_POLICE       0x004

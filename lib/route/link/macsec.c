@@ -15,18 +15,21 @@
  *
  * @{
  */
-#include <netlink-private/netlink.h>
+
+#include "nl-default.h"
+
+#include <linux/if_macsec.h>
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/macsec.h>
-#include "base/nl-base-utils.h"
 
-#include <linux/if_macsec.h>
-
+#include "nl-route.h"
 #include "link-api.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /** @cond SKIP */
 #define MACSEC_ATTR_SCI			(1 << 0)

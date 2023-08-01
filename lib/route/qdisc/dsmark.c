@@ -10,7 +10,8 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/qdisc.h>
@@ -20,6 +21,19 @@
 #include "tc-api.h"
 
 /** @cond SKIP */
+struct rtnl_dsmark_qdisc {
+	uint16_t qdm_indices;
+	uint16_t qdm_default_index;
+	uint32_t qdm_set_tc_index;
+	uint32_t qdm_mask;
+};
+
+struct rtnl_dsmark_class {
+	uint8_t cdm_bmask;
+	uint8_t cdm_value;
+	uint32_t cdm_mask;
+};
+
 #define SCH_DSMARK_ATTR_INDICES		0x1
 #define SCH_DSMARK_ATTR_DEFAULT_INDEX	0x2
 #define SCH_DSMARK_ATTR_SET_TC_INDEX	0x4

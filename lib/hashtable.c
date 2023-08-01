@@ -3,11 +3,15 @@
  * Copyright (c) 2012 Cumulus Networks, Inc
  */
 
+#include "nl-default.h"
+
 #include <string.h>
-#include <netlink-private/netlink.h>
+
 #include <netlink/object.h>
 #include <netlink/hash.h>
 #include <netlink/hashtable.h>
+
+#include "nl-aux-core/nl-core.h"
 
 /**
  * @ingroup core_types

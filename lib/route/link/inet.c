@@ -51,7 +51,10 @@
  */
 
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <linux/ip.h>
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/route/rtnl.h>

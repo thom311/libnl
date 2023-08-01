@@ -54,12 +54,18 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/qdisc/plug.h>
 
 #include "tc-api.h"
+
+struct rtnl_plug {
+	int action;
+	uint32_t limit;
+};
 
 static int plug_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 {

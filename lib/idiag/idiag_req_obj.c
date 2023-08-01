@@ -3,9 +3,29 @@
  * Copyright (c) 2013 Sassano Systems LLC <joe@sassanosystems.com>
  */
 
-#include <netlink-private/netlink.h>
-#include <netlink/idiag/req.h>
+#include "nl-default.h"
+
 #include <linux/inet_diag.h>
+
+#include <netlink/idiag/req.h>
+#include <netlink/idiag/idiagnl.h>
+#include <netlink/data.h>
+#include <netlink/addr.h>
+#include <netlink/msg.h>
+
+#include "nl-priv-dynamic-core/object-api.h"
+
+struct idiagnl_req {
+	NLHDR_COMMON
+
+	uint8_t			idiag_family;
+	uint8_t			idiag_ext;
+	struct nl_addr *	idiag_src;
+	struct nl_addr *	idiag_dst;
+	uint32_t		idiag_ifindex;
+	uint32_t		idiag_states;
+	uint32_t		idiag_dbs;
+};
 
 /**
  * @ingroup idiag

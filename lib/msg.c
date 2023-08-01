@@ -20,13 +20,21 @@
  * ~~~~
  */
 
-#include <netlink-private/netlink.h>
-#include "base/nl-base-utils.h"
+#include "nl-default.h"
+
+#include <ctype.h>
+
+#include <linux/socket.h>
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/cache.h>
 #include <netlink/attr.h>
-#include <linux/socket.h>
+
+#include "nl-core.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
+#include "nl-aux-core/nl-core.h"
 
 static size_t default_msg_size;
 

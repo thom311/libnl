@@ -3,11 +3,13 @@
  * Copyright (c) 2011 Thomas Graf <tgraf@suug.ch>
  */
 
+#include "nl-default.h"
+
+#include <linux/netlink.h>
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>
 #include <netlink/route/link/bonding.h>
-
-#include <linux/netlink.h>
 
 int main(int argc, char *argv[])
 {

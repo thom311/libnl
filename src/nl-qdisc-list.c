@@ -3,15 +3,17 @@
  * Copyright (c) 2003-2010 Thomas Graf <tgraf@suug.ch>
  */
 
+#include "nl-default.h"
+
+#include <linux/pkt_sched.h>
+#include <linux/netlink.h>
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/tc.h>
 #include <netlink/cli/qdisc.h>
 #include <netlink/cli/class.h>
 #include <netlink/cli/cls.h>
 #include <netlink/cli/link.h>
-
-#include <linux/pkt_sched.h>
-#include <linux/netlink.h>
 
 #define NUM_INDENT 4
 

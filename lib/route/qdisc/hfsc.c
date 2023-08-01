@@ -10,7 +10,8 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/utils.h>
@@ -22,6 +23,18 @@
 #include "tc-api.h"
 
 /** @cond SKIP */
+struct rtnl_hfsc_qdisc {
+	uint32_t qh_defcls;
+	uint32_t qh_mask;
+};
+
+struct rtnl_hfsc_class {
+	struct tc_service_curve ch_rsc;
+	struct tc_service_curve ch_fsc;
+	struct tc_service_curve ch_usc;
+	uint32_t ch_mask;
+};
+
 #define SCH_HFSC_CLS_HAS_RSC		0x001
 #define SCH_HFSC_CLS_HAS_FSC		0x002
 #define SCH_HFSC_CLS_HAS_USC		0x004

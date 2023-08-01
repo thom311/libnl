@@ -3,8 +3,11 @@
  * Copyright (c) 2013 Sassano Systems LLC <joe@sassanosystems.com>
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/idiag/vegasinfo.h>
+
+#include "nl-idiag.h"
 
 /**
  * @ingroup idiag

@@ -9,7 +9,12 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <linux/if_arp.h>
+#include <linux/gen_stats.h>
+#include <linux/atm.h>
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
@@ -17,7 +22,6 @@
 #include <netlink/route/tc.h>
 
 #include "tc-api.h"
-#include "base/nl-base-utils.h"
 
 /** @cond SKIP */
 

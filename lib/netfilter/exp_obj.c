@@ -6,15 +6,21 @@
  * Copyright (c) 2012 Rich Fought <rich.fought@watchguard.com>
  */
 
+#include "nl-default.h"
+
 #include <sys/types.h>
 #include <netinet/in.h>
+
 #include <linux/netfilter/nfnetlink_conntrack.h>
 #include <linux/netfilter/nf_conntrack_common.h>
 #include <linux/netfilter/nf_conntrack_tcp.h>
 
-#include <netlink-private/netlink.h>
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/exp.h>
+
+#include "nl-priv-dynamic-core/object-api.h"
+#include "nl-netfilter.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 // The 32-bit attribute mask in the common object header isn't
 // big enough to handle all attributes of an expectation.  So

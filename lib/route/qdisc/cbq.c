@@ -3,7 +3,8 @@
  * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/qdisc.h>
@@ -13,6 +14,15 @@
 #include <netlink/route/cls/police.h>
 
 #include "tc-api.h"
+
+struct rtnl_cbq {
+	struct tc_cbq_lssopt cbq_lss;
+	struct tc_ratespec cbq_rate;
+	struct tc_cbq_wrropt cbq_wrr;
+	struct tc_cbq_ovl cbq_ovl;
+	struct tc_cbq_fopt cbq_fopt;
+	struct tc_cbq_police cbq_police;
+};
 
 /**
  * @ingroup qdisc

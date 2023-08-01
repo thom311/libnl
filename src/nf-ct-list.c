@@ -5,10 +5,12 @@
  * Copyright (c) 2007 Secure Computing Corporation
  */
 
-#include <netlink/cli/utils.h>
-#include <netlink/cli/ct.h>
+#include "nl-default.h"
 
 #include <linux/netlink.h>
+
+#include <netlink/cli/utils.h>
+#include <netlink/cli/ct.h>
 
 static void print_usage(void)
 {

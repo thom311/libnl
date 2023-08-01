@@ -10,8 +10,8 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
-#include "base/nl-base-utils.h"
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
@@ -21,7 +21,24 @@
 #include <netlink/fib_lookup/request.h>
 #include <netlink/fib_lookup/lookup.h>
 
+#include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/cache-api.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+
 /** @cond SKIP */
+struct flnl_result
+{
+	NLHDR_COMMON
+
+	struct flnl_request *	fr_req;
+	uint8_t			fr_table_id;
+	uint8_t			fr_prefixlen;
+	uint8_t			fr_nh_sel;
+	uint8_t			fr_type;
+	uint8_t			fr_scope;
+	uint32_t		fr_error;
+};
+
 static struct nl_cache_ops fib_lookup_ops;
 static struct nl_object_ops result_obj_ops;
 

@@ -6,10 +6,12 @@
  * Copyright (c) 2012 Rich Fought <rich.fought@watchguard.com>
  */
 
-#include <netlink/cli/utils.h>
-#include <netlink/cli/exp.h>
+#include "nl-default.h"
 
 #include <linux/netlink.h>
+
+#include <netlink/cli/utils.h>
+#include <netlink/cli/exp.h>
 
 static void print_usage(void)
 {

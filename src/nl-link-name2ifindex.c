@@ -3,10 +3,12 @@
  * Copyright (c) 2003-2008 Thomas Graf <tgraf@suug.ch>
  */
 
-#include <netlink/cli/utils.h>
-#include <netlink/cli/link.h>
+#include "nl-default.h"
 
 #include <linux/netlink.h>
+
+#include <netlink/cli/utils.h>
+#include <netlink/cli/link.h>
 
 static void print_usage(void)
 {

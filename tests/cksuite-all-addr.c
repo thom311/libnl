@@ -3,6 +3,8 @@
  * Copyright (c) 2013 Thomas Graf <tgraf@suug.ch>
  */
 
+#include "nl-default.h"
+
 #include <check.h>
 #include <netlink/addr.h>
 #include <netlink/route/addr.h>

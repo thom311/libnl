@@ -3,11 +3,13 @@
  * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
+#include "nl-default.h"
+
+#include <linux/rtnetlink.h>
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>
 #include <netlink/cli/mdb.h>
-
-#include <linux/rtnetlink.h>
 
 static const struct {
 	enum rtnetlink_groups gr_id;

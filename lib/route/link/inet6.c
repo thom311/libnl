@@ -3,16 +3,19 @@
  * Copyright (c) 2010 Thomas Graf <tgraf@suug.ch>
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <linux/ipv6.h>
+#include <linux/snmp.h>
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/inet6.h>
 
+#include "nl-route.h"
 #include "link-api.h"
-
-#include "base/nl-base-utils.h"
-#include "nl-intern-route/nl-intern-route.h"
+#include "nl-priv-static-route/nl-priv-static-route.h"
 
 #define I6_ADDR_GEN_MODE_UNKNOWN	UINT8_MAX
 

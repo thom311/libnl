@@ -12,7 +12,8 @@
  * @{
  */
 
-#include "nl-priv-genl.h"
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/genl/genl.h>
 #include <netlink/genl/mngt.h>
@@ -20,7 +21,7 @@
 #include <netlink/genl/ctrl.h>
 #include <netlink/utils.h>
 
-#include "base/nl-base-utils.h"
+#include "nl-genl.h"
 
 /** @cond SKIP */
 

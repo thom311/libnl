@@ -3,12 +3,14 @@
  * Copyright (c) 2018 Avast software
  */
 
-#include <netlink/cli/utils.h>
-#include <netlink/cli/ct.h>
+#include "nl-default.h"
 
 #include <linux/netlink.h>
 #include <linux/netfilter/nfnetlink.h>
 #include <linux/netfilter/nfnetlink_conntrack.h>
+
+#include <netlink/cli/utils.h>
+#include <netlink/cli/ct.h>
 
 struct private_nl_object
 {

@@ -3,12 +3,17 @@
  * Adapted from mpls_ntop and mpls_pton copied from iproute2,
  * lib/mpls_ntop.c and lib/mpls_pton.c
  */
+
+#include "nl-default.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <netinet/in.h>
-#include <netlink/netlink-compat.h>
+
 #include <linux-private/linux/mpls.h>
+
+#include <netlink/netlink-compat.h>
 
 #include "mpls.h"
 

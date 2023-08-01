@@ -55,11 +55,16 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
-#include <netlink/netlink.h>
-#include <netlink/netfilter/nfnl.h>
+#include "nl-default.h"
 
 #include <linux/netfilter/nfnetlink.h>
+
+#include <netlink/netlink.h>
+#include <netlink/netfilter/nfnl.h>
+#include <netlink/data.h>
+#include <netlink/msg.h>
+
+#include "nl-aux-core/nl-core.h"
 
 /**
  * @name Socket Creating

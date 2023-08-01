@@ -16,7 +16,10 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <linux/can/netlink.h>
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
@@ -24,8 +27,7 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/can.h>
 
-#include <linux/can/netlink.h>
-
+#include "nl-route.h"
 #include "link-api.h"
 
 /** @cond SKIP */

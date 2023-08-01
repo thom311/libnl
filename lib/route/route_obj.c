@@ -24,9 +24,10 @@
  * @{
  */
 
+#include "nl-default.h"
+
 #include <linux/in_route.h>
 
-#include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/utils.h>
@@ -37,10 +38,39 @@
 #include <netlink/route/link.h>
 #include <netlink/route/nexthop.h>
 
+#include "nl-route.h"
 #include "nl-aux-route/nl-route.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 #include "nexthop-encap.h"
 
 /** @cond SKIP */
+struct rtnl_route {
+	NLHDR_COMMON
+
+	uint8_t rt_family;
+	uint8_t rt_dst_len;
+	uint8_t rt_src_len;
+	uint8_t rt_tos;
+	uint8_t rt_protocol;
+	uint8_t rt_scope;
+	uint8_t rt_type;
+	uint8_t rt_nmetrics;
+	uint8_t rt_ttl_propagate;
+	uint32_t rt_flags;
+	struct nl_addr *rt_dst;
+	struct nl_addr *rt_src;
+	uint32_t rt_table;
+	uint32_t rt_iif;
+	uint32_t rt_prio;
+	uint32_t rt_metrics[RTAX_MAX];
+	uint32_t rt_metrics_mask;
+	uint32_t rt_nr_nh;
+	struct nl_addr *rt_pref_src;
+	struct nl_list_head rt_nexthops;
+	struct rtnl_rtcacheinfo rt_cacheinfo;
+	uint32_t rt_flag_mask;
+};
+
 #define ROUTE_ATTR_FAMILY    0x000001
 #define ROUTE_ATTR_TOS       0x000002
 #define ROUTE_ATTR_TABLE     0x000004

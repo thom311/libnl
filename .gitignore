@@ -41,7 +41,10 @@ test-suite.log
 /doc/images/asciidoc__*.png
 /doc/images/core__*
 /doc/libnl.dict
+/include/config.h
+/include/config.h.in
 /include/netlink/version.h
+/include/stamp-h1
 /lib/defs.h
 /lib/lex.yy.c
 /lib/libnl-*.so*

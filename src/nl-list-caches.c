@@ -3,8 +3,12 @@
  * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/cli/utils.h>
+
+#include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 static void print_usage(void)
 {

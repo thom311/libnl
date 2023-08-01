@@ -10,7 +10,8 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
@@ -19,6 +20,13 @@
 #include <netlink/route/action.h>
 
 #include "tc-api.h"
+
+struct rtnl_mall {
+	uint32_t m_classid;
+	uint32_t m_flags;
+	struct rtnl_act *m_act;
+	int m_mask;
+};
 
 #define MALL_ATTR_CLASSID 0x01
 #define MALL_ATTR_FLAGS   0x02

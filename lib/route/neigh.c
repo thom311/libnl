@@ -143,7 +143,8 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/hashtable.h>
@@ -152,7 +153,36 @@
 #include <netlink/route/link.h>
 #include <netlink/hashtable.h>
 
+#include "nl-route.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
+
 /** @cond SKIP */
+struct rtnl_ncacheinfo {
+	uint32_t nci_confirmed; /**< Time since neighbour validty was last confirmed */
+	uint32_t nci_used; /**< Time since neighbour entry was last ued */
+	uint32_t nci_updated; /**< Time since last update */
+	uint32_t nci_refcnt; /**< Reference counter */
+};
+
+struct rtnl_neigh {
+	NLHDR_COMMON
+	uint32_t n_family;
+	uint32_t n_ifindex;
+	uint16_t n_state;
+	uint8_t n_flags;
+	uint8_t n_type;
+	struct nl_addr *n_lladdr;
+	struct nl_addr *n_dst;
+	uint32_t n_nhid;
+	uint32_t n_probes;
+	struct rtnl_ncacheinfo n_cacheinfo;
+	uint32_t n_state_mask;
+	uint32_t n_flag_mask;
+	uint32_t n_master;
+	uint16_t n_vlan;
+};
+
 #define NEIGH_ATTR_FLAGS        0x01
 #define NEIGH_ATTR_STATE        0x02
 #define NEIGH_ATTR_LLADDR       0x04

@@ -3,12 +3,14 @@
  * Copyright (c) 2010 Thomas Graf <tgraf@suug.ch>
  */
 
+#include "nl-default.h"
+
+#include <linux/netlink.h>
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/tc.h>
 #include <netlink/cli/class.h>
 #include <netlink/cli/link.h>
-
-#include <linux/netlink.h>
 
 static struct nl_sock *sock;
 

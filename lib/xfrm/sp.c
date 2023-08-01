@@ -39,7 +39,8 @@
  * @brief
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/object.h>
@@ -47,6 +48,36 @@
 #include <netlink/xfrm/lifetime.h>
 #include <netlink/xfrm/template.h>
 #include <netlink/xfrm/sp.h>
+
+#include "nl-xfrm.h"
+#include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
+
+struct xfrmnl_userpolicy_type {
+	uint8_t                         type;
+	uint16_t                        reserved1;
+	uint16_t                        reserved2;
+};
+
+struct xfrmnl_sp {
+	NLHDR_COMMON
+
+	struct xfrmnl_sel*              sel;
+	struct xfrmnl_ltime_cfg*        lft;
+	struct xfrmnl_lifetime_cur      curlft;
+	uint32_t                        priority;
+	uint32_t                        index;
+	uint8_t                         dir;
+	uint8_t                         action;
+	uint8_t                         flags;
+	uint8_t                         share;
+	struct xfrmnl_user_sec_ctx*     sec_ctx;
+	struct xfrmnl_userpolicy_type   uptype;
+	uint32_t                        nr_user_tmpl;
+	struct nl_list_head             usertmpl_list;
+	struct xfrmnl_mark              mark;
+};
 
 /** @cond SKIP */
 #define XFRM_SP_ATTR_SEL            0x01

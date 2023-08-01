@@ -23,7 +23,8 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/qdisc/fifo.h>
@@ -32,6 +33,11 @@
 #include "tc-api.h"
 
 /** @cond SKIP */
+struct rtnl_fifo {
+	uint32_t qf_limit;
+	uint32_t qf_mask;
+};
+
 #define SCH_FIFO_ATTR_LIMIT 1
 /** @endcond */
 

@@ -9,6 +9,8 @@
  * @{
  */
 
+#include "nl-default.h"
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/cls.h>
 #include <netlink/route/cls/ematch.h>

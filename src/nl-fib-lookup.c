@@ -3,9 +3,11 @@
  * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
-#include <netlink/cli/utils.h>
+#include "nl-default.h"
 
 #include <linux/rtnetlink.h>
+
+#include <netlink/cli/utils.h>
 
 static void print_usage(void)
 {

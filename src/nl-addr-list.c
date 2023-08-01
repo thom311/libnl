@@ -3,11 +3,13 @@
  * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
+#include "nl-default.h"
+
+#include <linux/netlink.h>
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/addr.h>
 #include <netlink/cli/link.h>
-
-#include <linux/netlink.h>
 
 static void print_usage(void)
 {

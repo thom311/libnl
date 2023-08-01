@@ -8,6 +8,9 @@
 
 #include <byteswap.h>
 #include <stdlib.h>
+#include <stdarg.h>
+#include <limits.h>
+#include <inttypes.h>
 #include <assert.h>
 #include <unistd.h>
 #include <errno.h>
@@ -16,6 +19,12 @@
 #include <stdint.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
+#ifndef DISABLE_PTHREADS
+#include <pthread.h>
+#endif
+
+/*****************************************************************************/
 
 #if __BYTE_ORDER == __BIG_ENDIAN
 #define ntohll(x) (x)
@@ -178,9 +187,14 @@
 
 #define _NL_N_ELEMENTS(arr) (sizeof(arr) / sizeof((arr)[0]))
 
+#define ARRAY_SIZE(arr) _NL_N_ELEMENTS(arr)
+
 /*****************************************************************************/
 
-extern const char *nl_strerror_l(int err);
+/* This is also defined in stddef.h */
+#ifndef offsetof
+#define offsetof(TYPE, MEMBER) ((size_t) & ((TYPE *)0)->MEMBER)
+#endif
 
 /*****************************************************************************/
 
@@ -712,5 +726,99 @@ static inline char *_nl_inet_ntop_dup(int addr_family, const void *addr)
 
 #define _nl_auto_free _nl_auto(_nl_auto_free_fcn)
 _NL_AUTO_DEFINE_FCN_VOID0(void *, _nl_auto_free_fcn, free);
+
+/*****************************************************************************/
+
+#define NSEC_PER_SEC 1000000000L
+
+struct trans_tbl {
+	uint64_t i;
+	const char *a;
+};
+
+#define __ADD(id, name)                                                        \
+	{                                                                      \
+		.i = id, .a = #name                                            \
+	}
+
+#define BUG()                                                                  \
+	do {                                                                   \
+		fprintf(stderr, "BUG at file position %s:%d:%s\n", __FILE__,   \
+			__LINE__, __func__);                                   \
+		assert(0);                                                     \
+	} while (0)
+
+#define BUG_ON(condition)                                                      \
+	do {                                                                   \
+		if (condition)                                                 \
+			BUG();                                                 \
+	} while (0)
+
+#define APPBUG(msg)                                                            \
+	do {                                                                   \
+		fprintf(stderr, "APPLICATION BUG: %s:%d:%s: %s\n", __FILE__,   \
+			__LINE__, __func__, msg);                              \
+		assert(0);                                                     \
+	} while (0)
+
+/*****************************************************************************/
+
+#ifndef DISABLE_PTHREADS
+#define NL_LOCK(NAME) pthread_mutex_t(NAME) = PTHREAD_MUTEX_INITIALIZER
+#define NL_RW_LOCK(NAME) pthread_rwlock_t(NAME) = PTHREAD_RWLOCK_INITIALIZER
+
+static inline void nl_lock(pthread_mutex_t *lock)
+{
+	pthread_mutex_lock(lock);
+}
+
+static inline void nl_unlock(pthread_mutex_t *lock)
+{
+	pthread_mutex_unlock(lock);
+}
+
+static inline void nl_read_lock(pthread_rwlock_t *lock)
+{
+	pthread_rwlock_rdlock(lock);
+}
+
+static inline void nl_read_unlock(pthread_rwlock_t *lock)
+{
+	pthread_rwlock_unlock(lock);
+}
+
+static inline void nl_write_lock(pthread_rwlock_t *lock)
+{
+	pthread_rwlock_wrlock(lock);
+}
+
+static inline void nl_write_unlock(pthread_rwlock_t *lock)
+{
+	pthread_rwlock_unlock(lock);
+}
+
+#else
+#define NL_LOCK(NAME) int __unused_lock_##NAME __attribute__((unused))
+#define NL_RW_LOCK(NAME) int __unused_lock_##NAME __attribute__((unused))
+
+#define nl_lock(LOCK)                                                          \
+	do {                                                                   \
+	} while (0)
+#define nl_unlock(LOCK)                                                        \
+	do {                                                                   \
+	} while (0)
+#define nl_read_lock(LOCK)                                                     \
+	do {                                                                   \
+	} while (0)
+#define nl_read_unlock(LOCK)                                                   \
+	do {                                                                   \
+	} while (0)
+#define nl_write_lock(LOCK)                                                    \
+	do {                                                                   \
+	} while (0)
+#define nl_write_unlock(LOCK)                                                  \
+	do {                                                                   \
+	} while (0)
+#endif
 
 #endif /* __NETLINK_BASE_NL_BASE_UTILS_H__ */

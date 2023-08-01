@@ -15,13 +15,15 @@
  *
  * @{
  */
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/geneve.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 /** @cond SKIP */

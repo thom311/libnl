@@ -3,13 +3,18 @@
  * Copyright (c) 2003-2013 Thomas Graf <tgraf@suug.ch>
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <linux/socket.h>
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/addr.h>
 #include <netlink/attr.h>
 #include <netlink/msg.h>
-#include <linux/socket.h>
+
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-aux-core/nl-core.h"
 
 /**
  * @ingroup msg

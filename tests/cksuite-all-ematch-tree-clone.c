@@ -1,11 +1,18 @@
-#include <linux/netlink.h>
+/* SPDX-License-Identifier: LGPL-2.1-only */
+
+#include "nl-default.h"
+
 #include <stdio.h>
 #include <time.h>
 #include <check.h>
 
-#include "netlink-private/types.h"
-#include "netlink/route/cls/ematch.h"
+#include <linux/netlink.h>
+
+#include <netlink/route/cls/ematch.h>
+
 #include "nl-aux-route/nl-route.h"
+#include "nl-priv-dynamic-route/nl-priv-dynamic-route.h"
+
 #include "cksuite-all.h"
 
 #define MAX_DEPTH 6

@@ -15,14 +15,14 @@
  * accordingly via nl_cli_fatal().
  */
 
-#include <netlink/cli/utils.h>
+#include "nl-default.h"
+
 #include <locale.h>
-
-#include "lib/defs.h"
-
 #ifdef HAVE_DLFCN_H
 #include <dlfcn.h>
 #endif
+
+#include <netlink/cli/utils.h>
 
 /**
  * Parse a text based 32 bit unsigned integer argument

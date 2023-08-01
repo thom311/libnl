@@ -3,14 +3,33 @@
  * Copyright (c) 2022 Stanislav Zaikin <zstaseg@gmail.com>
  */
 
+#include "nl-default.h"
+
 #include <linux-private/linux/nexthop.h>
-#include <netlink-private/netlink.h>
+
 #include <netlink/route/nh.h>
 #include <netlink/hashtable.h>
+#include <netlink/route/nexthop.h>
 
 #include "nl-aux-route/nl-route.h"
+#include "nl-route.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 /** @cond SKIP */
+struct rtnl_nh {
+	NLHDR_COMMON
+
+	uint8_t nh_family;
+	uint32_t nh_flags;
+
+	uint32_t nh_id;
+	uint32_t nh_group_type;
+	nl_nh_group_t *nh_group;
+	uint32_t nh_oif;
+	struct nl_addr *nh_gateway;
+};
+
 #define NH_ATTR_FLAGS (1 << 0)
 #define NH_ATTR_ID (1 << 1)
 #define NH_ATTR_GROUP (1 << 2)

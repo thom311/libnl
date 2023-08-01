@@ -15,13 +15,18 @@
  * @{
  */
 
-#include "nl-priv-genl.h"
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/genl/genl.h>
 #include <netlink/genl/family.h>
 #include <netlink/genl/mngt.h>
 #include <netlink/genl/ctrl.h>
 #include <netlink/utils.h>
+
+#include "nl-genl.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/object-api.h"
 
 /** @cond SKIP */
 #define CTRL_VERSION		0x0001
@@ -516,6 +521,12 @@ static struct genl_ops genl_ops = {
 };
 
 extern struct nl_object_ops genl_family_ops;
+
+#define GENL_FAMILY(id, name) \
+	{ \
+		{ id, NL_ACT_UNSPEC, name }, \
+		END_OF_MSGTYPES_LIST, \
+	}
 
 static struct nl_cache_ops genl_ctrl_ops = {
 	.co_name		= "genl/family",

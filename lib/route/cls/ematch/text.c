@@ -10,12 +10,13 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
-#include "base/nl-base-utils.h"
+#include "nl-default.h"
+
+#include <linux/tc_ematch/tc_em_text.h>
+
 #include <netlink/netlink.h>
 #include <netlink/route/cls/ematch.h>
 #include <netlink/route/cls/ematch/text.h>
-#include <linux/tc_ematch/tc_em_text.h>
 
 struct text_data
 {

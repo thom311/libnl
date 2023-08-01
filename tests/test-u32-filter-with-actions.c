@@ -5,6 +5,15 @@
  * Stolen from tests/test-complex-HTB-with-hash-filters.c
  */
 
+#include "nl-default.h"
+
+#include <stdio.h>
+#include <string.h>
+
+#include <linux/if_ether.h>
+#include <linux/tc_act/tc_mirred.h>
+#include <linux/netlink.h>
+
 #include <netlink/route/link.h>
 #include <netlink/route/tc.h>
 #include <netlink/route/qdisc.h>
@@ -15,13 +24,6 @@
 #include <netlink/route/act/skbedit.h>
 #include <netlink/route/class.h>
 #include <netlink/attr.h>
-
-#include <stdio.h>
-#include <string.h>
-
-#include <linux/if_ether.h>
-#include <linux/tc_act/tc_mirred.h>
-#include <linux/netlink.h>
 
 #define 	TC_HANDLE(maj, min)   (TC_H_MAJ((maj) << 16) | TC_H_MIN(min))
 

@@ -18,15 +18,21 @@
  * ~~~~
  */
 
-#include <netlink-private/netlink.h>
-#include "base/nl-base-utils.h"
+#include "nl-default.h"
+
+#include <stdlib.h>
+#include <locale.h>
+
+#include <linux/socket.h>
+#include <linux/if_arp.h>
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
-#include <linux/socket.h>
-#include <stdlib.h> /* exit() */
-#ifdef HAVE_STRERROR_L
-#include <locale.h>
-#endif
+
+#include "nl-core.h"
+#include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-aux-core/nl-core.h"
 
 /**
  * Global variable indicating the desired level of debugging output.
@@ -116,6 +122,12 @@ int __nl_read_num_str_file(const char *path, int (*cb)(long, const char *))
 
 	return 0;
 }
+
+struct trans_list {
+	int i;
+	char *a;
+	struct nl_list_head list;
+};
 
 const char *nl_strerror_l(int err)
 {

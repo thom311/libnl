@@ -9,10 +9,17 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <sys/stat.h>
+#include <search.h>
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/tc.h>
+
+#include "nl-route.h"
+#include "nl-aux-core/nl-core.h"
 
 struct classid_map
 {

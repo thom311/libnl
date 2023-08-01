@@ -12,16 +12,52 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/qdisc/netem.h>
 
 #include "tc-api.h"
-#include "base/nl-base-utils.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /** @cond SKIP */
+struct rtnl_netem_corr {
+	uint32_t nmc_delay;
+	uint32_t nmc_loss;
+	uint32_t nmc_duplicate;
+};
+
+struct rtnl_netem_reo {
+	uint32_t nmro_probability;
+	uint32_t nmro_correlation;
+};
+
+struct rtnl_netem_crpt {
+	uint32_t nmcr_probability;
+	uint32_t nmcr_correlation;
+};
+
+struct rtnl_netem_dist {
+	int16_t *dist_data;
+	size_t dist_size;
+};
+
+struct rtnl_netem {
+	uint32_t qnm_latency;
+	uint32_t qnm_limit;
+	uint32_t qnm_loss;
+	uint32_t qnm_gap;
+	uint32_t qnm_duplicate;
+	uint32_t qnm_jitter;
+	uint32_t qnm_mask;
+	struct rtnl_netem_corr qnm_corr;
+	struct rtnl_netem_reo qnm_ro;
+	struct rtnl_netem_crpt qnm_crpt;
+	struct rtnl_netem_dist qnm_dist;
+};
+
 #define SCH_NETEM_ATTR_LATENCY		0x0001
 #define SCH_NETEM_ATTR_LIMIT		0x0002
 #define SCH_NETEM_ATTR_LOSS		0x0004

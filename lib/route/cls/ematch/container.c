@@ -3,9 +3,12 @@
  * Copyright (c) 2008-2013 Thomas Graf <tgraf@suug.ch>
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/route/cls/ematch.h>
+
+#include "nl-route.h"
 
 static int container_parse(struct rtnl_ematch *e, void *data, size_t len __attribute__((unused)))
 {

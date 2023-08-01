@@ -1,12 +1,17 @@
-#include <netlink/netlink.h>
-#include <netlink/cache.h>
-#include <netlink/cli/utils.h>
+/* SPDX-License-Identifier: LGPL-2.1-only */
+
+#include "nl-default.h"
+
 #include <signal.h>
 #include <stdbool.h>
 #include <sys/time.h>
 #include <time.h>
 
 #include <linux/netlink.h>
+
+#include <netlink/netlink.h>
+#include <netlink/cache.h>
+#include <netlink/cli/utils.h>
 
 static int quit = 0;
 static int change = 1;

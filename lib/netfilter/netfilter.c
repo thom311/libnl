@@ -3,9 +3,13 @@
  * Copyright (c) 2008 Patrick McHardy <kaber@trash.net>
  */
 
-#include <netlink-private/netlink.h>
-#include <netlink/netfilter/netfilter.h>
+#include "nl-default.h"
+
 #include <linux/netfilter.h>
+
+#include <netlink/netfilter/netfilter.h>
+
+#include "nl-priv-dynamic-core/nl-core.h"
 
 static const struct trans_tbl nfnl_verdicts[] = {
 	__ADD(NF_DROP,		NF_DROP),

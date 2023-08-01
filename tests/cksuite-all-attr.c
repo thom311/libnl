@@ -3,13 +3,16 @@
  * Copyright (c) 2013 Thomas Graf <tgraf@suug.ch>
  */
 
+#include "nl-default.h"
+
 #include <linux/netlink.h>
 #include <linux/if_ether.h>
 
+#include <netlink/attr.h>
+#include <netlink/msg.h>
+#include <netlink/route/cls/u32.h>
+
 #include "cksuite-all.h"
-#include "netlink/attr.h"
-#include "netlink/msg.h"
-#include "netlink/route/cls/u32.h"
 
 #include "nl-aux-route/nl-route.h"
 

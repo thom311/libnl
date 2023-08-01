@@ -31,12 +31,15 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/route.h>
-	
+
+#include "nl-priv-dynamic-core/nl-core.h"
+
 /**
  * @name Routing Table Identifier Translations
  * @{

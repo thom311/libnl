@@ -16,15 +16,18 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <linux/if_tunnel.h>
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/sit.h>
-#include <linux/if_tunnel.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 #define SIT_ATTR_LINK          (1 << 0)

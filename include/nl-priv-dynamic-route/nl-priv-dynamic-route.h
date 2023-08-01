@@ -1,10 +1,32 @@
 /* SPDX-License-Identifier: LGPL-2.1-only */
 /*
- * Copyright (c) 2011-2013 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2003-2013 Thomas Graf <tgraf@suug.ch>
+ * Copyright (c) 2013 Sassano Systems LLC <joe@sassanosystems.com>
  */
 
-#ifndef __NL_HIDDEN_ROUTE_NL_HIDDEN_ROUTE_H__
-#define __NL_HIDDEN_ROUTE_NL_HIDDEN_ROUTE_H__
+#ifndef __NL_PRIVATE_TYPES_NL_ROUTE_H__
+#define __NL_PRIVATE_TYPES_NL_ROUTE_H__
+
+struct rtnl_ematch {
+	uint16_t e_id;
+	uint16_t e_kind;
+	uint16_t e_flags;
+	uint16_t e_index;
+	size_t e_datalen;
+
+	struct nl_list_head e_childs;
+	struct nl_list_head e_list;
+	struct rtnl_ematch_ops *e_ops;
+
+	void *e_data;
+};
+
+struct rtnl_ematch_tree {
+	uint16_t et_progid;
+	struct nl_list_head et_list;
+};
+
+/*****************************************************************************/
 
 /**
  * Traffic control object operations
@@ -71,4 +93,4 @@ extern struct rtnl_tc_ops *rtnl_tc_lookup_ops(enum rtnl_tc_type, const char *);
 
 struct rtnl_tc_ops *rtnl_tc_get_ops(struct rtnl_tc *);
 
-#endif /* __NL_HIDDEN_ROUTE_NL_HIDDEN_ROUTE_H__ */
+#endif /* __NL_PRIVATE_TYPES_NL_ROUTE_H__ */

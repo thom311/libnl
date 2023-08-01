@@ -3,13 +3,15 @@
  * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
+#include "nl-default.h"
+
+#include <linux/netlink.h>
+#include <linux/pkt_sched.h>
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>
 #include <netlink/cli/qdisc.h>
 #include <netlink/cli/class.h>
-
-#include <linux/netlink.h>
-#include <linux/pkt_sched.h>
 
 static struct nl_sock *sock;
 static struct nl_cache *qdisc_cache, *class_cache;

@@ -26,13 +26,28 @@
  * ~~~~
  */
 
-#include <netlink-private/netlink.h>
-#include "base/nl-base-utils.h"
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/utils.h>
 
+#include "nl-core.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
+#include "nl-aux-core/nl-core.h"
+
 /** @cond SKIP */
+struct nl_cache_mngr
+{
+	int			cm_protocol;
+	int			cm_flags;
+	int			cm_nassocs;
+	struct nl_sock *	cm_sock;
+	struct nl_sock *	cm_sync_sock;
+	struct nl_cache_assoc *	cm_assocs;
+};
+
 #define NASSOC_INIT		16
 #define NASSOC_EXPAND		8
 /** @endcond */

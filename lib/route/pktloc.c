@@ -25,10 +25,15 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <sys/stat.h>
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/pktloc.h>
+
+#include "nl-route.h"
 
 #include "pktloc_syntax.h"
 #include "pktloc_grammar.h"

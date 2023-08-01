@@ -9,13 +9,16 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/route.h>
 
 #include "nexthop-encap.h"
+#include "nl-route.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /** @cond SKIP */
 #define NH_ATTR_FLAGS   0x000001

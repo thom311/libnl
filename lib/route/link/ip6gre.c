@@ -13,15 +13,18 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <linux/if_tunnel.h>
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/ip6gre.h>
-#include <linux/if_tunnel.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 #define IP6GRE_ATTR_LINK          (1 << 0)

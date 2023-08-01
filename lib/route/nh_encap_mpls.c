@@ -1,11 +1,13 @@
 /* SPDX-License-Identifier: LGPL-2.1-only */
 
-#include <netlink-private/netlink.h>
-#include <netlink-private/types.h>
-#include <netlink/route/nexthop.h>
+#include "nl-default.h"
+
 #include <linux/mpls_iptunnel.h>
 #include <linux/lwtunnel.h>
 
+#include <netlink/route/nexthop.h>
+
+#include "nl-route.h"
 #include "nexthop-encap.h"
 
 struct mpls_iptunnel_encap {

@@ -10,13 +10,129 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
-#include "base/nl-base-utils.h"
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/neightbl.h>
 #include <netlink/route/link.h>
+
+#include "nl-route.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
+
+struct rtnl_neightbl_parms {
+	/**
+	 * Interface index of the device this parameter set is assigned
+	 * to or 0 for the default set.
+	 */
+	uint32_t ntp_ifindex;
+
+	/**
+	 * Number of references to this parameter set.
+	 */
+	uint32_t ntp_refcnt;
+
+	/**
+	 * Queue length for pending arp requests, i.e. the number of
+	 * packets which are accepted from other layers while the
+	 * neighbour address is still being resolved
+	 */
+	uint32_t ntp_queue_len;
+
+	/**
+	 * Number of requests to send to the user level ARP daemon.
+	 * Specify 0 to disable.
+	 */
+	uint32_t ntp_app_probes;
+
+	/**
+	 * Maximum number of retries for unicast solicitation.
+	 */
+	uint32_t ntp_ucast_probes;
+
+	/**
+	 * Maximum number of retries for multicast solicitation.
+	 */
+	uint32_t ntp_mcast_probes;
+
+	/**
+	 * Base value in milliseconds to ompute reachable time, see RFC2461.
+	 */
+	uint64_t ntp_base_reachable_time;
+
+	/**
+	 * Actual reachable time (read-only)
+	 */
+	uint64_t ntp_reachable_time; /* secs */
+
+	/**
+	 * The time in milliseconds between retransmitted Neighbor
+	 * Solicitation messages.
+	 */
+	uint64_t ntp_retrans_time;
+
+	/**
+	 * Interval in milliseconds to check for stale neighbour
+	 * entries.
+	 */
+	uint64_t ntp_gc_stale_time; /* secs */
+
+	/**
+	 * Delay in milliseconds for the first time probe if
+	 * the neighbour is reachable.
+	 */
+	uint64_t ntp_probe_delay; /* secs */
+
+	/**
+	 * Maximum delay in milliseconds of an answer to a neighbour
+	 * solicitation message.
+	 */
+	uint64_t ntp_anycast_delay;
+
+	/**
+	 * Minimum age in milliseconds before a neighbour entry
+	 * may be replaced.
+	 */
+	uint64_t ntp_locktime;
+
+	/**
+	 * Delay in milliseconds before answering to an ARP request
+	 * for which a proxy ARP entry exists.
+	 */
+	uint64_t ntp_proxy_delay;
+
+	/**
+	 * Queue length for the delayed proxy arp requests.
+	 */
+	uint32_t ntp_proxy_qlen;
+
+	/**
+	 * Mask of available parameter attributes
+	 */
+	uint32_t ntp_mask;
+};
+
+#define NTBLNAMSIZ 32
+
+/**
+ * Neighbour table
+ * @ingroup neightbl
+ */
+struct rtnl_neightbl {
+	NLHDR_COMMON
+
+	char nt_name[NTBLNAMSIZ];
+	uint32_t nt_family;
+	uint32_t nt_gc_thresh1;
+	uint32_t nt_gc_thresh2;
+	uint32_t nt_gc_thresh3;
+	uint64_t nt_gc_interval;
+	struct ndt_config nt_config;
+	struct rtnl_neightbl_parms nt_parms;
+	struct ndt_stats nt_stats;
+};
 
 /** @cond SKIP */
 #define NEIGHTBL_ATTR_FAMILY 0x001

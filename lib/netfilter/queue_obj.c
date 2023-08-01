@@ -10,11 +10,24 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/queue.h>
 
+#include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+
 /** @cond SKIP */
+struct nfnl_queue {
+	NLHDR_COMMON
+
+	uint16_t		queue_group;
+	uint32_t		queue_maxlen;
+	uint32_t		queue_copy_range;
+	uint8_t			queue_copy_mode;
+};
+
 #define QUEUE_ATTR_GROUP		(1UL << 0)
 #define QUEUE_ATTR_MAXLEN		(1UL << 1)
 #define QUEUE_ATTR_COPY_MODE		(1UL << 2)

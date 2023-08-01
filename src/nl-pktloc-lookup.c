@@ -3,11 +3,12 @@
  * Copyright (c) 2010 Thomas Graf <tgraf@suug.ch>
  */
 
-#include <netlink/cli/utils.h>
-#include <netlink/route/pktloc.h>
+#include "nl-default.h"
+
 #include <linux/tc_ematch/tc_em_cmp.h>
 
-#include "base/nl-base-utils.h"
+#include <netlink/cli/utils.h>
+#include <netlink/route/pktloc.h>
 
 static void print_usage(void)
 {

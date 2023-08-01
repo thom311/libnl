@@ -16,15 +16,18 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <linux/if_tunnel.h>
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/ipip.h>
-#include <linux/if_tunnel.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 #define IPIP_ATTR_LINK          (1 << 0)

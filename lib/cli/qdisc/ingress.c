@@ -3,10 +3,10 @@
  * Copyright (c) 2013 Cong Wang <xiyou.wangcong@gmail.com>
  */
 
+#include "nl-default.h"
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/tc.h>
-
-#include "base/nl-base-utils.h"
 
 static void print_usage(void)
 {

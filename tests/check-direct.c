@@ -1,12 +1,14 @@
 /* SPDX-License-Identifier: LGPL-2.1-only */
 
+#include "nl-default.h"
+
 #include <check.h>
 
-#include "linux/snmp.h"
-#include "base/nl-base-utils.h"
+#include <linux/snmp.h>
 
-#include "netlink/route/link.h"
-#include "nl-intern-route/nl-intern-route.h"
+#include <netlink/route/link.h>
+
+#include "nl-priv-static-route/nl-priv-static-route.h"
 
 START_TEST(static_checks)
 {

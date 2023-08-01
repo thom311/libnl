@@ -4,7 +4,9 @@
  */
 
 %{
-#include <netlink-private/netlink.h>
+#include <linux/tc_ematch/tc_em_meta.h>
+#include <linux/tc_ematch/tc_em_cmp.h>
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/pktloc.h>
@@ -13,14 +15,24 @@
 #include <netlink/route/cls/ematch/nbyte.h>
 #include <netlink/route/cls/ematch/text.h>
 #include <netlink/route/cls/ematch/meta.h>
-#include <linux/tc_ematch/tc_em_meta.h>
-#include <linux/tc_ematch/tc_em_cmp.h>
+
+#include "nl-route.h"
 
 #define META_ALLOC rtnl_meta_value_alloc_id
 #define META_ID(name) TCF_META_ID_##name
 #define META_INT TCF_META_TYPE_INT
 #define META_VAR TCF_META_TYPE_VAR
 %}
+
+%code requires {
+
+struct ematch_quoted {
+	char *	data;
+	size_t	len;
+	int	index;
+};
+
+}
 
 %error-verbose
 %define api.pure

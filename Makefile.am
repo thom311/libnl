@@ -275,7 +275,6 @@ noinst_HEADERS = \
 	include/netlink-private/netlink.h \
 	include/netlink-private/object-api.h \
 	include/netlink-private/route/link/sriov.h \
-	include/netlink-private/socket.h \
 	include/netlink-private/types.h \
 	include/nl-aux-core/nl-core.h \
 	include/nl-aux-route/nl-route.h \
@@ -359,6 +358,7 @@ lib_libnl_3_la_SOURCES = \
 	lib/mpls.c \
 	lib/mpls.h \
 	lib/msg.c \
+	lib/nl-core.h \
 	lib/nl.c \
 	lib/object.c \
 	lib/socket.c \

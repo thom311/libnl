@@ -282,6 +282,7 @@ noinst_HEADERS = \
 	include/netlink-private/types.h \
 	include/nl-aux-core/nl-core.h \
 	include/nl-aux-route/nl-route.h \
+	include/nl-hidden-route/nl-hidden-route.h \
 	$(NULL)
 
 ###############################################################################

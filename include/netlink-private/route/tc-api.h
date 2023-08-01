@@ -10,72 +10,11 @@
 #include <netlink/msg.h>
 #include <netlink/route/tc.h>
 
+#include "nl-hidden-route/nl-hidden-route.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * Traffic control object operations
- * @ingroup tc
- *
- * This structure holds function pointers and settings implementing
- * the features of each traffic control object implementation.
- */
-struct rtnl_tc_ops
-{
-	/**
-	 * Name of traffic control module
-	 */
-	char *to_kind;
-
-	/**
-	 * Type of traffic control object
-	 */
-	enum rtnl_tc_type to_type;
-
-
-	/**
-	 * Size of private data
-	 */
-	size_t to_size;
-
-	/**
-	 * Dump callbacks
-	 */
-	void (*to_dump[NL_DUMP_MAX+1])(struct rtnl_tc *, void *,
-				       struct nl_dump_params *);
-	/**
-	 * Used to fill the contents of TCA_OPTIONS
-	 */
-	int (*to_msg_fill)(struct rtnl_tc *, void *, struct nl_msg *);
-
-	/**
-	 * Uesd to to fill tc related messages, unlike with to_msg_fill,
-	 * the contents is not encapsulated with a TCA_OPTIONS nested
-	 * attribute.
-	 */
-	int (*to_msg_fill_raw)(struct rtnl_tc *, void *, struct nl_msg *);
-
-	/**
-	 * TCA_OPTIONS message parser
-	 */
-	int (*to_msg_parser)(struct rtnl_tc *, void *);
-
-	/**
-	 * Called before a tc object is destroyed
-	 */
-	void (*to_free_data)(struct rtnl_tc *, void *);
-
-	/**
-	 * Called whenever a classifier object needs to be cloned
-	 */
-	int (*to_clone)(void *, void *);
-
-	/**
-	 * Internal, don't touch
-	 */
-	struct nl_list_head to_list;
-};
 
 struct rtnl_tc_type_ops
 {
@@ -113,9 +52,6 @@ extern void *			rtnl_tc_data(struct rtnl_tc *);
 extern void *			rtnl_tc_data_check(struct rtnl_tc *,
 						   struct rtnl_tc_ops *, int *);
 
-extern struct rtnl_tc_ops *	rtnl_tc_lookup_ops(enum rtnl_tc_type,
-						   const char *);
-extern struct rtnl_tc_ops *	rtnl_tc_get_ops(struct rtnl_tc *);
 extern int 			rtnl_tc_register(struct rtnl_tc_ops *);
 extern void 			rtnl_tc_unregister(struct rtnl_tc_ops *);
 

@@ -5,7 +5,8 @@
 
 #include <netlink/cli/utils.h>
 #include <netlink/cli/tc.h>
-#include <netlink-private/route/tc-api.h>
+
+#include "nl-hidden-route/nl-hidden-route.h"
 
 /**
  * @ingroup cli

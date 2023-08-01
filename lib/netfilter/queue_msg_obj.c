@@ -9,6 +9,8 @@
 #include <netlink/netfilter/queue_msg.h>
 #include <linux/netfilter.h>
 
+#include "nl-netfilter.h"
+
 /** @cond SKIP */
 #define QUEUE_MSG_ATTR_GROUP		(1UL << 0)
 #define QUEUE_MSG_ATTR_FAMILY		(1UL << 1)

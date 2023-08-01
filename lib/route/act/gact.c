@@ -18,6 +18,10 @@
 
 #include "tc-api.h"
 
+struct rtnl_gact {
+	struct tc_gact g_parm;
+};
+
 static struct nla_policy gact_policy[TCA_GACT_MAX + 1] = {
 	[TCA_GACT_PARMS]             = { .minlen = sizeof(struct tc_gact) },
 };

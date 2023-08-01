@@ -18,6 +18,10 @@
 
 #include "tc-api.h"
 
+struct rtnl_mirred {
+	struct tc_mirred m_parm;
+};
+
 static struct nla_policy mirred_policy[TCA_MIRRED_MAX + 1] = {
 	[TCA_MIRRED_PARMS]      = { .minlen = sizeof(struct tc_mirred) },
 };

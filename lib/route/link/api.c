@@ -38,6 +38,7 @@
 #include <netlink/utils.h>
 #include <netlink/route/link.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 static NL_LIST_HEAD(info_ops);

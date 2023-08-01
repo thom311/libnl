@@ -3,15 +3,47 @@
  * Copyright (c) 2013 Sassano Systems LLC <joe@sassanosystems.com>
  */
 
+#include <linux/inet_diag.h>
+
 #include <netlink-private/netlink.h>
 #include <netlink/hashtable.h>
 #include <netlink/idiag/msg.h>
 #include <netlink/idiag/meminfo.h>
 #include <netlink/idiag/vegasinfo.h>
-#include <linux/inet_diag.h>
+#include <netlink/idiag/idiagnl.h>
 
+#include "nl-idiag.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /** @cond SKIP */
+struct idiagnl_msg {
+	NLHDR_COMMON
+
+	uint8_t			    idiag_family;
+	uint8_t			    idiag_state;
+	uint8_t			    idiag_timer;
+	uint8_t			    idiag_retrans;
+	uint16_t		    idiag_sport;
+	uint16_t		    idiag_dport;
+	struct nl_addr *	    idiag_src;
+	struct nl_addr *	    idiag_dst;
+	uint32_t		    idiag_ifindex;
+	uint32_t		    idiag_expires;
+	uint32_t		    idiag_rqueue;
+	uint32_t		    idiag_wqueue;
+	uint32_t		    idiag_uid;
+	uint32_t		    idiag_inode;
+
+	uint8_t			    idiag_tos;
+	uint8_t			    idiag_tclass;
+	uint8_t			    idiag_shutdown;
+	char *			    idiag_cong;
+	struct idiagnl_meminfo *    idiag_meminfo;
+	struct idiagnl_vegasinfo *  idiag_vegasinfo;
+	struct tcp_info		    idiag_tcpinfo;
+	uint32_t		    idiag_skmeminfo[SK_MEMINFO_VARS];
+};
+
 #define IDIAGNL_ATTR_FAMILY                     (0x1 << 1)
 #define IDIAGNL_ATTR_STATE                      (0x1 << 2)
 #define IDIAGNL_ATTR_TIMER                      (0x1 << 3)

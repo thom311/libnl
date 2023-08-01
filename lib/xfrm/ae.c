@@ -120,14 +120,42 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include <linux/xfrm.h>
+
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/object.h>
 #include <netlink/xfrm/ae.h>
-#include <linux/xfrm.h>
+
+#include <netlink-private/netlink.h>
+
+#include "nl-xfrm.h"
+#include "nl-priv-dynamic-core/object-api.h"
 
 /** @cond SKIP */
+
+struct xfrmnl_sa_id {
+	struct nl_addr* daddr;
+	uint32_t        spi;
+	uint16_t        family;
+	uint8_t         proto;
+};
+
+struct xfrmnl_ae {
+	NLHDR_COMMON
+
+	struct xfrmnl_sa_id             sa_id;
+	struct nl_addr*                 saddr;
+	uint32_t                        flags;
+	uint32_t                        reqid;
+	struct xfrmnl_mark              mark;
+	struct xfrmnl_lifetime_cur      lifetime_cur;
+	uint32_t                        replay_maxage;
+	uint32_t                        replay_maxdiff;
+	struct xfrmnl_replay_state      replay_state;
+	struct xfrmnl_replay_state_esn* replay_state_esn;
+};
+
 #define XFRM_AE_ATTR_DADDR          0x01
 #define XFRM_AE_ATTR_SPI            0x02
 #define XFRM_AE_ATTR_PROTO          0x04

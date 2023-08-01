@@ -14,6 +14,26 @@
 #include "tc-api.h"
 
 /** @cond SKIP */
+struct rtnl_flower {
+	struct rtnl_act *cf_act;
+	int cf_mask;
+	uint32_t cf_flags;
+	uint16_t cf_proto;
+	uint16_t cf_vlan_id;
+	uint16_t cf_vlan_ethtype;
+	uint8_t cf_vlan_prio;
+	uint8_t cf_src_mac[ETH_ALEN];
+	uint8_t cf_src_mac_mask[ETH_ALEN];
+	uint8_t cf_dst_mac[ETH_ALEN];
+	uint8_t cf_dst_mac_mask[ETH_ALEN];
+	in_addr_t cf_ipv4_src;
+	in_addr_t cf_ipv4_src_mask;
+	in_addr_t cf_ipv4_dst;
+	in_addr_t cf_ipv4_dst_mask;
+	uint8_t cf_ip_dscp;
+	uint8_t cf_ip_dscp_mask;
+};
+
 #define FLOWER_ATTR_FLAGS         (1 << 0)
 #define FLOWER_ATTR_ACTION        (1 << 1)
 #define FLOWER_ATTR_VLAN_ID       (1 << 2)

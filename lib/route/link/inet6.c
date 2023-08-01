@@ -9,6 +9,7 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/inet6.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 #include "base/nl-base-utils.h"

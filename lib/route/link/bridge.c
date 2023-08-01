@@ -18,7 +18,9 @@
 #include <netlink/route/link/bridge.h>
 #include <linux/if_bridge.h>
 
+#include "nl-route.h"
 #include "link-api.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 #define VLAN_VID_MASK           0x0fff /* VLAN Identifier */
 

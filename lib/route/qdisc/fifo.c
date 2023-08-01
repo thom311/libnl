@@ -32,6 +32,11 @@
 #include "tc-api.h"
 
 /** @cond SKIP */
+struct rtnl_fifo {
+	uint32_t qf_limit;
+	uint32_t qf_mask;
+};
+
 #define SCH_FIFO_ATTR_LIMIT 1
 /** @endcond */
 

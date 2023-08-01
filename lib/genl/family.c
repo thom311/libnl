@@ -12,15 +12,24 @@
  * @{
  */
 
-#include "nl-genl.h"
 #include <netlink/netlink.h>
 #include <netlink/genl/genl.h>
 #include <netlink/genl/family.h>
 #include <netlink/utils.h>
 
+#include "nl-genl.h"
 #include "base/nl-base-utils.h"
+#include "nl-priv-dynamic-core/object-api.h"
 
 /** @cond SKIP */
+struct genl_family_op
+{
+	uint32_t		o_id;
+	uint32_t		o_flags;
+
+	struct nl_list_head	o_list;
+};
+
 #define FAMILY_ATTR_ID		0x01
 #define FAMILY_ATTR_NAME	0x02
 #define FAMILY_ATTR_VERSION	0x04

@@ -15,7 +15,6 @@ EXCLUDE_PATHS_TOPLEVEL=(
 # Exclude them too.
 EXCLUDE_PATHS_TOPLEVEL+=(
     "include/netlink-private/netlink.h"
-    "include/netlink-private/types.h"
     "include/netlink/addr.h"
     "include/netlink/attr.h"
     "include/netlink/cache-api.h"

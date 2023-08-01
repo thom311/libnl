@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: LGPL-2.1-only */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/types.h>
 #include <linux/lwtunnel.h>
 
+#include "nl-route.h"
 #include "nexthop-encap.h"
 
 static struct lwtunnel_encap_type {

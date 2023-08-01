@@ -6,6 +6,8 @@
 #include <netlink-private/netlink.h>
 #include <netlink/idiag/vegasinfo.h>
 
+#include "nl-idiag.h"
+
 /**
  * @ingroup idiag
  * @defgroup idiagnl_vegasinfo Inet Diag TCP Vegas Info

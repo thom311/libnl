@@ -22,6 +22,7 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/geneve.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 /** @cond SKIP */

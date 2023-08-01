@@ -22,6 +22,7 @@
 #include <netlink/route/link/ip6gre.h>
 #include <linux/if_tunnel.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 #define IP6GRE_ATTR_LINK          (1 << 0)

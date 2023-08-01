@@ -23,6 +23,9 @@
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/exp.h>
 
+#include "nl-netfilter.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+
 static struct nl_cache_ops nfnl_exp_ops;
 
 static struct nla_policy exp_policy[CTA_EXPECT_MAX+1] = {

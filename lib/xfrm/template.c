@@ -50,6 +50,8 @@
 #include <netlink/xfrm/template.h>
 #include <netlink-private/netlink.h>
 
+#include "nl-xfrm.h"
+
 void xfrmnl_user_tmpl_free(struct xfrmnl_user_tmpl* utmpl)
 {
 	if (!utmpl)

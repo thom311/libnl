@@ -14,6 +14,15 @@
 
 #include "tc-api.h"
 
+struct rtnl_cbq {
+	struct tc_cbq_lssopt cbq_lss;
+	struct tc_ratespec cbq_rate;
+	struct tc_cbq_wrropt cbq_wrr;
+	struct tc_cbq_ovl cbq_ovl;
+	struct tc_cbq_fopt cbq_fopt;
+	struct tc_cbq_police cbq_police;
+};
+
 /**
  * @ingroup qdisc
  * @ingroup class

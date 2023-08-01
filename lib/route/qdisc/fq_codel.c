@@ -20,6 +20,16 @@
 #include "tc-api.h"
 
 /** @cond SKIP */
+struct rtnl_fq_codel {
+	int fq_limit;
+	uint32_t fq_target;
+	uint32_t fq_interval;
+	int fq_flows;
+	uint32_t fq_quantum;
+	int fq_ecn;
+	uint32_t fq_mask;
+};
+
 #define SCH_FQ_CODEL_ATTR_TARGET	0x1
 #define SCH_FQ_CODEL_ATTR_LIMIT		0x2
 #define SCH_FQ_CODEL_ATTR_INTERVAL	0x4

@@ -26,6 +26,15 @@
 #include "tc-api.h"
 
 /** @cond SKIP */
+struct rtnl_sfq {
+	uint32_t qs_quantum;
+	uint32_t qs_perturb;
+	uint32_t qs_limit;
+	uint32_t qs_divisor;
+	uint32_t qs_flows;
+	uint32_t qs_mask;
+};
+
 #define SCH_SFQ_ATTR_QUANTUM	0x01
 #define SCH_SFQ_ATTR_PERTURB	0x02
 #define SCH_SFQ_ATTR_LIMIT	0x04

@@ -6,6 +6,8 @@
 #include <netlink-private/netlink.h>
 #include <netlink/idiag/meminfo.h>
 
+#include "nl-idiag.h"
+
 /**
  * @ingroup idiag
  * @defgroup idiagnl_meminfo Inet Diag Memory Info

@@ -61,6 +61,11 @@
 
 #include "tc-api.h"
 
+struct rtnl_plug {
+	int action;
+	uint32_t limit;
+};
+
 static int plug_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 {
 	struct rtnl_plug *plug = data;

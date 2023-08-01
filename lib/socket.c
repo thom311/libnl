@@ -34,6 +34,7 @@
 #include <netlink/attr.h>
 
 #include "nl-core.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 static int default_cb = NL_CB_DEFAULT;
 

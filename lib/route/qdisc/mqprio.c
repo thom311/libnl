@@ -12,6 +12,19 @@
 #include "tc-api.h"
 
 /** @cond SKIP */
+struct rtnl_mqprio {
+	uint8_t qm_num_tc;
+	uint8_t qm_prio_map[TC_QOPT_BITMASK + 1];
+	uint8_t qm_hw;
+	uint16_t qm_count[TC_QOPT_MAX_QUEUE];
+	uint16_t qm_offset[TC_QOPT_MAX_QUEUE];
+	uint16_t qm_mode;
+	uint16_t qm_shaper;
+	uint64_t qm_min_rate[TC_QOPT_MAX_QUEUE];
+	uint64_t qm_max_rate[TC_QOPT_MAX_QUEUE];
+	uint32_t qm_mask;
+};
+
 #define SCH_MQPRIO_ATTR_NUMTC           (1 << 0)
 #define SCH_MQPRIO_ATTR_PRIOMAP         (1 << 1)
 #define SCH_MQPRIO_ATTR_HW              (1 << 2)

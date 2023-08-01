@@ -26,6 +26,7 @@
 
 #include <linux/if_vlan.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 /** @cond SKIP */

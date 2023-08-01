@@ -26,6 +26,8 @@
 #include <netlink/msg.h>
 #include <netlink/handlers.h>
 
+#include "nl-core.h"
+
 static void print_header_content(FILE *ofd, struct nlmsghdr *n)
 {
 	char flags[128];

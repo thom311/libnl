@@ -19,6 +19,17 @@
 #include "tc-api.h"
 
 /** @cond SKIP */
+struct rtnl_red {
+	uint32_t qr_limit;
+	uint32_t qr_qth_min;
+	uint32_t qr_qth_max;
+	uint8_t qr_flags;
+	uint8_t qr_wlog;
+	uint8_t qr_plog;
+	uint8_t qr_scell_log;
+	uint32_t qr_mask;
+};
+
 #define RED_ATTR_LIMIT		0x01
 #define RED_ATTR_QTH_MIN	0x02
 #define RED_ATTR_QTH_MAX	0x04

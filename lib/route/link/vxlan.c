@@ -26,6 +26,7 @@
 
 #include <linux/if_link.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 /** @cond SKIP */

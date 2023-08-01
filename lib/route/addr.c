@@ -108,7 +108,46 @@
 #include <netlink/route/link.h>
 #include <netlink/utils.h>
 
+#include "nl-route.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+
 /** @cond SKIP */
+struct rtnl_addr_cacheinfo {
+	/* Preferred lifetime in seconds, ticking from when the message gets constructed */
+	uint32_t aci_prefered;
+
+	/* Valid lifetime in seconds, ticking from when the message gets constructed */
+	uint32_t aci_valid;
+
+	/* Timestamp of creation in 1/100s since boottime, clock_gettime(CLOCK_MONOTONIC) */
+	uint32_t aci_cstamp;
+
+	/* Timestamp of last update in 1/100s since boottime, clock_gettime(CLOCK_MONOTONIC) */
+	uint32_t aci_tstamp;
+};
+
+struct rtnl_addr {
+	NLHDR_COMMON
+
+	uint8_t a_family;
+	uint8_t a_prefixlen;
+	uint8_t a_scope;
+	uint32_t a_flags;
+	uint32_t a_ifindex;
+
+	struct nl_addr *a_peer;
+	struct nl_addr *a_local;
+	struct nl_addr *a_bcast;
+	struct nl_addr *a_anycast;
+	struct nl_addr *a_multicast;
+
+	struct rtnl_addr_cacheinfo a_cacheinfo;
+
+	char a_label[IFNAMSIZ];
+	uint32_t a_flag_mask;
+	struct rtnl_link *a_link;
+};
+
 #define ADDR_ATTR_FAMILY	0x0001
 #define ADDR_ATTR_PREFIXLEN	0x0002
 #define ADDR_ATTR_FLAGS		0x0004

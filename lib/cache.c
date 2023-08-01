@@ -51,6 +51,9 @@
 #include <netlink/hashtable.h>
 #include <netlink/utils.h>
 
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/object-api.h"
+
 /**
  * @name Access Functions
  * @{

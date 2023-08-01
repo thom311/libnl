@@ -29,6 +29,12 @@
 #include "tc-api.h"
 
 /** @cond SKIP */
+struct rtnl_prio {
+	uint32_t qp_bands;
+	uint8_t qp_priomap[TC_PRIO_MAX + 1];
+	uint32_t qp_mask;
+};
+
 #define SCH_PRIO_ATTR_BANDS	1
 #define SCH_PRIO_ATTR_PRIOMAP	2
 /** @endcond */

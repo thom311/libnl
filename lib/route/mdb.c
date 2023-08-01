@@ -5,16 +5,36 @@
 
 #include <linux/if_bridge.h>
 
-#include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
 #include <netlink/route/mdb.h>
+#include <netlink/route/nexthop.h>
 #include <netlink/utils.h>
+#include <netlink/route/rtnl.h>
+
+#include <netlink-private/netlink.h>
 
 #include "nl-aux-route/nl-route.h"
+#include "nl-priv-dynamic-core/object-api.h"
 
 /** @cond SKIP */
 #define MDB_ATTR_IFINDEX         0x000001
 #define MDB_ATTR_ENTRIES         0x000002
+
+struct rtnl_mdb {
+	NLHDR_COMMON
+	uint32_t ifindex;
+
+	struct nl_list_head mdb_entry_list;
+};
+
+struct rtnl_mdb_entry {
+	struct nl_list_head mdb_list;
+	struct nl_addr *addr;
+	uint32_t ifindex;
+	uint16_t vid;
+	uint16_t proto;
+	uint8_t state;
+};
 
 static struct rtnl_mdb_entry *rtnl_mdb_entry_alloc(void);
 static void rtnl_mdb_entry_free(struct rtnl_mdb_entry *mdb_entry);

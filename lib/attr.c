@@ -11,6 +11,8 @@
 #include <netlink/msg.h>
 #include <linux/socket.h>
 
+#include "nl-priv-dynamic-core/nl-core.h"
+
 /**
  * @ingroup msg
  * @defgroup attr Attributes

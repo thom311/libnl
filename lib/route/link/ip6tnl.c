@@ -26,6 +26,7 @@
 #include <linux/if_tunnel.h>
 #include <netinet/in.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 #define IP6_TNL_ATTR_LINK          (1 << 0)

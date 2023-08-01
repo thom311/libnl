@@ -19,6 +19,7 @@
 #include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 /** @cond SKIP */

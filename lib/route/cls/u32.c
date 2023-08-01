@@ -24,6 +24,20 @@
 #include "nl-aux-route/nl-route.h"
 
 /** @cond SKIP */
+struct rtnl_u32 {
+	uint32_t cu_divisor;
+	uint32_t cu_hash;
+	uint32_t cu_classid;
+	uint32_t cu_link;
+	struct nl_data *cu_pcnt;
+	struct nl_data *cu_selector;
+	struct nl_data *cu_mark;
+	struct rtnl_act *cu_act;
+	struct nl_data *cu_police;
+	char cu_indev[IFNAMSIZ];
+	int cu_mask;
+};
+
 #define U32_ATTR_DIVISOR      0x001
 #define U32_ATTR_HASH         0x002
 #define U32_ATTR_CLASSID      0x004

@@ -20,7 +20,19 @@
 #define META_ID(name) TCF_META_ID_##name
 #define META_INT TCF_META_TYPE_INT
 #define META_VAR TCF_META_TYPE_VAR
+
+#include "nl-route.h"
 %}
+
+%code requires {
+
+struct ematch_quoted {
+	char *	data;
+	size_t	len;
+	int	index;
+};
+
+}
 
 %error-verbose
 %define api.pure

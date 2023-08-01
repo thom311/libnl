@@ -15,13 +15,16 @@
  * @{
  */
 
-#include "nl-genl.h"
 #include <netlink/netlink.h>
 #include <netlink/genl/genl.h>
 #include <netlink/genl/family.h>
 #include <netlink/genl/mngt.h>
 #include <netlink/genl/ctrl.h>
 #include <netlink/utils.h>
+
+#include "nl-genl.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/object-api.h"
 
 /** @cond SKIP */
 #define CTRL_VERSION		0x0001

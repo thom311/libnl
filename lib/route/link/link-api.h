@@ -8,6 +8,8 @@
 
 #include <netlink/netlink.h>
 
+#include "nl-priv-dynamic-core/nl-core.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

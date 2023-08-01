@@ -20,6 +20,8 @@
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/log.h>
 
+#include "nl-priv-dynamic-core/nl-core.h"
+
 /**
  * @name Log Commands
  * @{

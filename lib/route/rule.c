@@ -18,7 +18,34 @@
 #include <inttypes.h>
 #include <linux/fib_rules.h>
 
+#include "nl-route.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+
 /** @cond SKIP */
+struct rtnl_rule {
+	NLHDR_COMMON
+	uint8_t r_family;
+	uint8_t r_action;
+	uint8_t r_dsfield; /* ipv4 only */
+	uint8_t r_l3mdev;
+	uint8_t r_protocol; /* protocol that installed rule */
+	uint8_t r_ip_proto; /* IP/IPv6 protocol */
+	uint32_t r_table;
+	uint32_t r_flags;
+	uint32_t r_prio;
+	uint32_t r_mark;
+	uint32_t r_mask;
+	uint32_t r_goto;
+	uint32_t r_flow; /* ipv4 only */
+	struct nl_addr *r_src;
+	struct nl_addr *r_dst;
+	char r_iifname[IFNAMSIZ];
+	char r_oifname[IFNAMSIZ];
+
+	struct fib_rule_port_range r_sport;
+	struct fib_rule_port_range r_dport;
+};
+
 #define RULE_ATTR_FAMILY	0x000001
 #define RULE_ATTR_TABLE		0x000002
 #define RULE_ATTR_ACTION	0x000004

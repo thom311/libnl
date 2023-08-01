@@ -58,7 +58,6 @@
 #include <netlink/handlers.h>
 #include <netlink/cache.h>
 #include <netlink/route/tc.h>
-#include <netlink-private/types.h>
 
 #include "nl-priv-dynamic-core/cache-api.h"
 #include "nl-aux-core/nl-core.h"
@@ -133,16 +132,6 @@ extern int __str2flags(const char *, const struct trans_tbl *, size_t);
 extern void dump_from_ops(struct nl_object *, struct nl_dump_params *);
 extern struct rtnl_link *link_lookup(struct nl_cache *cache, int ifindex);
 
-static inline int nl_cb_call(struct nl_cb *cb, enum nl_cb_type type, struct nl_msg *msg)
-{
-	int ret;
-
-	cb->cb_active = type;
-	ret = cb->cb_set[type](msg, cb->cb_args[type]);
-	cb->cb_active = __NL_CB_TYPE_MAX;
-	return ret;
-}
-
 #define ARRAY_SIZE(X) (sizeof(X) / sizeof((X)[0]))
 
 /* This is also defined in stddef.h */
@@ -154,44 +143,11 @@ extern int nl_cache_parse(struct nl_cache_ops *, struct sockaddr_nl *,
 			  struct nlmsghdr *, struct nl_parser_param *);
 
 
-static inline void rtnl_copy_ratespec(struct rtnl_ratespec *dst,
-				      struct tc_ratespec *src)
-{
-	dst->rs_cell_log = src->cell_log;
-	dst->rs_overhead = src->overhead;
-	dst->rs_cell_align = src->cell_align;
-	dst->rs_mpu = src->mpu;
-	dst->rs_rate64 = src->rate;
-}
-
-static inline void rtnl_rcopy_ratespec(struct tc_ratespec *dst,
-				       struct rtnl_ratespec *src)
-{
-	dst->cell_log = src->rs_cell_log;
-	dst->overhead = src->rs_overhead;
-	dst->cell_align = src->rs_cell_align;
-	dst->mpu = src->rs_mpu;
-	dst->rate = src->rs_rate64 > 0xFFFFFFFFull ? 0xFFFFFFFFull : (uint32_t) src->rs_rate64;
-}
-
-static inline const char *nl_cache_name(struct nl_cache *cache)
-{
-	return cache->c_ops ? cache->c_ops->co_name : "unknown";
-}
-
 #define GENL_FAMILY(id, name) \
 	{ \
 		{ id, NL_ACT_UNSPEC, name }, \
 		END_OF_MSGTYPES_LIST, \
 	}
-
-static inline int wait_for_ack(struct nl_sock *sk)
-{
-	if (sk->s_flags & NL_NO_AUTO_ACK)
-		return 0;
-	else
-		return nl_wait_for_ack(sk);
-}
 
 static inline int build_sysconf_path(char **strp, const char *filename)
 {

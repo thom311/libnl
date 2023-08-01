@@ -1,7 +1,11 @@
 include/nl-priv-static-route
 ============================
 
-This contains headers that extend the libnl-route-3 API with internal helpers.
-It is only usable to components that statically link with the libnl-route-3
-source. That means libnl-route-3 sources itself (lib/libnl-route-3.la)
-and the unit tests.
+This exposes private API from libnl-route-3. The only purpose is for tests to
+be able to access the internals.  This is usable to lib/route itself, and to
+tests that statically link with libnl-route-3.
+
+The difference between nl-priv-static-route and nl-priv-dynamic-route, is that
+the former uses internal ABI, so it is only usable when the test statically
+links with lib/route.  On the other hand, nl-priv-dynamic-route also works with
+only the public API (that is, dynamically linking with libnl-route-3).

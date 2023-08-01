@@ -21,6 +21,11 @@
 #include "tc-api.h"
 
 /** @cond SKIP */
+struct rtnl_cgroup {
+	struct rtnl_ematch_tree *cg_ematch;
+	int cg_mask;
+};
+
 #define CGROUP_ATTR_EMATCH      0x001
 /** @endcond */
 

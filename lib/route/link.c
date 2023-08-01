@@ -23,7 +23,9 @@
 #include <netlink/route/link.h>
 
 #include "nl-aux-route/nl-route.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
+#include "nl-route.h"
 #include "link-sriov.h"
 #include "link/link-api.h"
 

@@ -16,7 +16,12 @@
 #include <netlink/route/classifier.h>
 #include <netlink/utils.h>
 
+#include "nl-route.h"
 #include "tc-api.h"
+
+struct rtnl_class {
+	NL_TC_GENERIC(c);
+};
 
 static struct nl_cache_ops rtnl_class_ops;
 static struct nl_object_ops class_obj_ops;

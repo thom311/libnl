@@ -5,10 +5,15 @@
  * Copyright (c) 2007 Secure Computing Corporation
  */
 
-#include <netlink-private/netlink.h>
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/netfilter.h>
 #include <netlink/netfilter/log_msg.h>
+#include <netlink/netfilter/ct.h>
+
+#include <netlink-private/netlink.h>
+
+#include "nl-priv-dynamic-core/object-api.h"
+#include "nl-netfilter.h"
 
 /** @cond SKIP */
 #define LOG_MSG_ATTR_FAMILY		(1UL << 0)

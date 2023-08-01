@@ -26,7 +26,9 @@
 
 #include <linux/if_macsec.h>
 
+#include "nl-route.h"
 #include "link-api.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /** @cond SKIP */
 #define MACSEC_ATTR_SCI			(1 << 0)

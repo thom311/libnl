@@ -27,10 +27,29 @@
 #include <linux/if_link.h>
 #include <netlink/route/link/sriov.h>
 
+#include "nl-route.h"
 #include "link-sriov.h"
 #include "link-api.h"
 
 /** @cond SKIP */
+struct rtnl_link_vf {
+	struct nl_list_head vf_list;
+	int ce_refcnt;
+	uint32_t ce_mask;
+	uint32_t vf_index;
+	uint64_t vf_guid_node;
+	uint64_t vf_guid_port;
+	uint32_t vf_linkstate;
+	struct nl_addr *vf_lladdr;
+	uint32_t vf_max_tx_rate;
+	uint32_t vf_min_tx_rate;
+	uint32_t vf_rate;
+	uint32_t vf_rss_query_en;
+	uint32_t vf_spoofchk;
+	uint64_t vf_stats[RTNL_LINK_VF_STATS_MAX + 1];
+	uint32_t vf_trust;
+	struct nl_vf_vlans *vf_vlans;
+};
 
 #define SRIOVON "on"
 #define SRIOVOFF "off"

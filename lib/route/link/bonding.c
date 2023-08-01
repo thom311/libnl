@@ -18,6 +18,7 @@
 #include <netlink/netlink.h>
 #include <netlink/route/link/bonding.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 #define BOND_HAS_MODE		(1 << 0)

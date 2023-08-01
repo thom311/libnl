@@ -26,6 +26,7 @@
 
 #include <linux/can/netlink.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 /** @cond SKIP */

@@ -28,6 +28,8 @@
 #include <netlink/attr.h>
 #include <linux/socket.h>
 
+#include "nl-priv-dynamic-core/nl-core.h"
+
 static size_t default_msg_size;
 
 static void _nl_init init_msg_size(void)

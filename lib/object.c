@@ -21,11 +21,15 @@
  * ~~~~
  */
 
-#include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/object.h>
 #include <netlink/utils.h>
+
+#include <netlink-private/netlink.h>
+
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/object-api.h"
 
 static inline struct nl_object_ops *obj_ops(struct nl_object *obj)
 {

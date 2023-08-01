@@ -28,6 +28,7 @@
 #include <linux/if_link.h>
 #include <linux-private/linux/rtnetlink.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 #define VRF_TABLE_ID_MAX  RT_TABLE_MAX

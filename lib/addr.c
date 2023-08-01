@@ -28,6 +28,7 @@
 #include <linux/socket.h>
 
 #include "mpls.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /* All this DECnet stuff is stolen from iproute2, thanks to whoever wrote
  * this, probably Alexey. */

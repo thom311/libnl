@@ -20,6 +20,9 @@
 #include <netlink/netfilter/queue_msg.h>
 #include "base/nl-base-utils.h"
 
+#include "nl-netfilter.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+
 static struct nl_cache_ops nfnl_queue_msg_ops;
 
 static struct nla_policy queue_policy[NFQA_MAX+1] = {

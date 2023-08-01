@@ -39,18 +39,93 @@
  * @brief
  */
 
-#include <netlink-private/netlink.h>
+#include <time.h>
+
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/object.h>
 #include <netlink/xfrm/sa.h>
 #include <netlink/xfrm/selector.h>
 #include <netlink/xfrm/lifetime.h>
-#include <time.h>
+
+#include <netlink-private/netlink.h>
 
 #include "base/nl-base-utils.h"
+#include "nl-xfrm.h"
+#include "nl-priv-dynamic-core/object-api.h"
 
 /** @cond SKIP */
+
+struct xfrmnl_stats {
+	uint32_t        replay_window;
+	uint32_t        replay;
+	uint32_t        integrity_failed;
+};
+
+struct xfrmnl_algo_aead {
+	char            alg_name[64];
+	uint32_t        alg_key_len;    /* in bits */
+	uint32_t        alg_icv_len;    /* in bits */
+	char            alg_key[0];
+};
+
+struct xfrmnl_algo_auth {
+	char            alg_name[64];
+	uint32_t        alg_key_len;    /* in bits */
+	uint32_t        alg_trunc_len;  /* in bits */
+	char            alg_key[0];
+};
+
+struct xfrmnl_algo {
+	char            alg_name[64];
+	uint32_t        alg_key_len;    /* in bits */
+	char            alg_key[0];
+};
+
+struct xfrmnl_encap_tmpl {
+	uint16_t        encap_type;
+	uint16_t        encap_sport;
+	uint16_t        encap_dport;
+	struct nl_addr* encap_oa;
+};
+
+struct xfrmnl_user_offload {
+	int             ifindex;
+	uint8_t         flags;
+};
+
+struct xfrmnl_sa {
+	NLHDR_COMMON
+
+	struct xfrmnl_sel*              sel;
+	struct xfrmnl_id                id;
+	struct nl_addr*                 saddr;
+	struct xfrmnl_ltime_cfg*        lft;
+	struct xfrmnl_lifetime_cur      curlft;
+	struct xfrmnl_stats             stats;
+	uint32_t                        seq;
+	uint32_t                        reqid;
+	uint16_t                        family;
+	uint8_t                         mode;        /* XFRM_MODE_xxx */
+	uint8_t                         replay_window;
+	uint8_t                         flags;
+	struct xfrmnl_algo_aead*        aead;
+	struct xfrmnl_algo_auth*        auth;
+	struct xfrmnl_algo*             crypt;
+	struct xfrmnl_algo*             comp;
+	struct xfrmnl_encap_tmpl*       encap;
+	uint32_t                        tfcpad;
+	struct nl_addr*                 coaddr;
+	struct xfrmnl_mark              mark;
+	struct xfrmnl_user_sec_ctx*     sec_ctx;
+	uint32_t                        replay_maxage;
+	uint32_t                        replay_maxdiff;
+	struct xfrmnl_replay_state      replay_state;
+	struct xfrmnl_replay_state_esn* replay_state_esn;
+	uint8_t                         hard;
+	struct xfrmnl_user_offload*     user_offload;
+};
+
 #define XFRM_SA_ATTR_SEL            0x01
 #define XFRM_SA_ATTR_DADDR          0x02
 #define XFRM_SA_ATTR_SPI            0x04

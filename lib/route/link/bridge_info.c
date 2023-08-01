@@ -14,6 +14,7 @@
 #include <netlink-private/netlink.h>
 #include <netlink/route/link/bridge_info.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 #define BRIDGE_ATTR_VLAN_FILTERING (1 << 0)

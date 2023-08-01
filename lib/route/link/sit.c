@@ -25,6 +25,7 @@
 #include <netlink/route/link/sit.h>
 #include <linux/if_tunnel.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 #define SIT_ATTR_LINK          (1 << 0)

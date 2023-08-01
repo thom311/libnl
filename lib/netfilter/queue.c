@@ -18,6 +18,8 @@
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/queue.h>
 
+#include "nl-priv-dynamic-core/nl-core.h"
+
 struct nl_sock *nfnl_queue_socket_alloc(void)
 {
 	struct nl_sock *nlsk;

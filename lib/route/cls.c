@@ -15,9 +15,16 @@
 #include <netlink/route/classifier.h>
 #include <netlink/route/link.h>
 
+#include "nl-route.h"
 #include "tc-api.h"
 
 /** @cond SKIP */
+struct rtnl_cls {
+	NL_TC_GENERIC(c);
+	uint16_t c_prio;
+	uint16_t c_protocol;
+};
+
 #define CLS_ATTR_PRIO		(TCA_ATTR_MAX << 1)
 #define CLS_ATTR_PROTOCOL	(TCA_ATTR_MAX << 2)
 /** @endcond */

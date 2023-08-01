@@ -1,10 +1,11 @@
 include/nl-priv-dynamic-route
 =============================
 
-libnl-route-3 wrongly exposes some symbols that are not part of public headers.
-They are used by other internal code.
+This exposes private API from libnl-route-3. The only purpose is for tests to
+be able to access the internals.  This is usable to lib/route itself, and tests
+that either statically or dynamically link with libnl-route-3.
 
-These are the symbols.
-
-This header can be used by internal code, that dynamically links with libnl-route-3.
-But best we reduce the use of such hidden API, so avoid it.
+The difference between nl-priv-static-route and nl-priv-dynamic-route, is that
+the former uses internal ABI, so it is only usable when the test statically
+links with lib/route.  On the other hand, nl-priv-dynamic-route also works with
+only the public API (that is, dynamically linking with libnl-route-3).

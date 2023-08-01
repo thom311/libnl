@@ -21,6 +21,17 @@
 #include "tc-api.h"
 
 /** @cond SKIP */
+struct rtnl_tbf {
+	uint32_t qt_limit;
+	struct rtnl_ratespec qt_rate;
+	uint32_t qt_rate_bucket;
+	uint32_t qt_rate_txtime;
+	struct rtnl_ratespec qt_peakrate;
+	uint32_t qt_peakrate_bucket;
+	uint32_t qt_peakrate_txtime;
+	uint32_t qt_mask;
+};
+
 #define TBF_ATTR_LIMIT			0x01
 #define TBF_ATTR_RATE			0x02
 #define TBF_ATTR_PEAKRATE		0x10

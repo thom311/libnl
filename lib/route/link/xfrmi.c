@@ -26,6 +26,7 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/xfrmi.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 #define XFRMI_ATTR_LINK  (1 << 0)

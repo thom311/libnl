@@ -16,7 +16,16 @@
 #include <netlink/utils.h>
 #include <netlink/route/act/skbedit.h>
 
+#include "nl-route.h"
 #include "tc-api.h"
+
+struct rtnl_skbedit {
+	struct tc_skbedit s_parm;
+	uint32_t s_flags;
+	uint32_t s_mark;
+	uint32_t s_prio;
+	uint16_t s_queue_mapping;
+};
 
 static struct nla_policy skbedit_policy[TCA_SKBEDIT_MAX + 1] = {
 	[TCA_SKBEDIT_PARMS]             = { .minlen = sizeof(struct tc_skbedit) },

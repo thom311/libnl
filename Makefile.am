@@ -272,13 +272,13 @@ noinst_HEADERS = \
 	include/linux-private/linux/veth.h \
 	include/linux-private/linux/xfrm.h \
 	include/netlink-private/netlink.h \
-	include/netlink-private/types.h \
 	include/nl-aux-core/nl-core.h \
 	include/nl-aux-route/nl-route.h \
+	include/nl-priv-dynamic-core/cache-api.h \
+	include/nl-priv-dynamic-core/nl-core.h \
+	include/nl-priv-dynamic-core/object-api.h \
 	include/nl-priv-dynamic-route/nl-priv-dynamic-route.h \
 	include/nl-priv-static-route/nl-priv-static-route.h \
-	include/nl-priv-dynamic-core/cache-api.h \
-	include/nl-priv-dynamic-core/object-api.h \
 	$(NULL)
 
 ###############################################################################
@@ -440,6 +440,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/nexthop_encap.c \
 	lib/route/nh.c \
 	lib/route/nh_encap_mpls.c \
+	lib/route/nl-route.h \
 	lib/route/pktloc.c \
 	lib/route/qdisc.c \
 	lib/route/qdisc/blackhole.c \
@@ -491,6 +492,7 @@ lib_libnl_idiag_3_la_SOURCES = \
 	lib/idiag/idiag_msg_obj.c \
 	lib/idiag/idiag_req_obj.c \
 	lib/idiag/idiag_vegasinfo_obj.c \
+	lib/idiag/nl-idiag.h \
 	$(NULL)
 EXTRA_lib_libnl_idiag_3_la_DEPENDENCIES = \
 	libnl-idiag-3.sym
@@ -534,6 +536,7 @@ lib_libnl_nf_3_la_SOURCES = \
 	lib/netfilter/log_obj.c \
 	lib/netfilter/netfilter.c \
 	lib/netfilter/nfnl.c \
+	lib/netfilter/nl-netfilter.h \
 	lib/netfilter/queue.c \
 	lib/netfilter/queue_msg.c \
 	lib/netfilter/queue_msg_obj.c \
@@ -555,6 +558,7 @@ lib_LTLIBRARIES += lib/libnl-xfrm-3.la
 lib_libnl_xfrm_3_la_SOURCES = \
 	lib/xfrm/ae.c \
 	lib/xfrm/lifetime.c \
+	lib/xfrm/nl-xfrm.h \
 	lib/xfrm/sa.c \
 	lib/xfrm/selector.c \
 	lib/xfrm/sp.c \

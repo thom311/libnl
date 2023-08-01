@@ -29,6 +29,7 @@
 #include <linux/socket.h>
 
 #include "nl-core.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /**
  * @defgroup core_types Data Types

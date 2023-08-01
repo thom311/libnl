@@ -10,7 +10,9 @@
 #include <netlink/msg.h>
 #include <netlink/route/tc.h>
 
+#include "nl-route.h"
 #include "nl-priv-dynamic-route/nl-priv-dynamic-route.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /*****************************************************************************/
 

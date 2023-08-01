@@ -10,16 +10,31 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/fib_lookup/request.h>
 
+#include <netlink-private/netlink.h>
+
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/object-api.h"
+
 static struct nl_object_ops request_obj_ops;
 
 /** @cond SKIP */
+struct flnl_request
+{
+	NLHDR_COMMON
+
+	struct nl_addr *	lr_addr;
+	uint32_t		lr_fwmark;
+	uint8_t			lr_tos;
+	uint8_t			lr_scope;
+	uint8_t			lr_table;
+};
+
 #define REQUEST_ATTR_ADDR	0x01
 #define REQUEST_ATTR_FWMARK	0x02
 #define REQUEST_ATTR_TOS	0x04

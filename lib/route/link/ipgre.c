@@ -25,6 +25,7 @@
 #include <netlink/route/link/ipgre.h>
 #include <linux/if_tunnel.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 #define IPGRE_ATTR_LINK          (1 << 0)

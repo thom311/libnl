@@ -11,13 +11,18 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include <linux/netconf.h>
+#include <linux/socket.h>
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/netconf.h>
-#include <linux/netconf.h>
-#include <linux/socket.h>
 #include <netlink/hashtable.h>
+
+#include <netlink-private/netlink.h>
+
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/object-api.h"
 
 /** @cond SKIP */
 #define NETCONF_ATTR_FAMILY		0x0001

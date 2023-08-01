@@ -26,6 +26,8 @@
 #include <netlink/utils.h>
 #include <linux/socket.h>
 
+#include "nl-priv-dynamic-core/nl-core.h"
+
 /**
  * @name General
  * @{

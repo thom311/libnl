@@ -27,6 +27,7 @@
 #include <linux/if_link.h>
 #include <linux/veth.h>
 
+#include "nl-route.h"
 #include "link-api.h"
 
 static struct nla_policy veth_policy[VETH_INFO_MAX+1] = {

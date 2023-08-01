@@ -18,15 +18,18 @@
  * ~~~~
  */
 
-#include <netlink-private/netlink.h>
-#include "base/nl-base-utils.h"
+#include <stdlib.h>
+#include <locale.h>
+
+#include <linux/socket.h>
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
-#include <linux/socket.h>
-#include <stdlib.h> /* exit() */
-#ifdef HAVE_STRERROR_L
-#include <locale.h>
-#endif
+
+#include <netlink-private/netlink.h>
+
+#include "base/nl-base-utils.h"
+#include "nl-priv-dynamic-core/object-api.h"
 
 /**
  * Global variable indicating the desired level of debugging output.

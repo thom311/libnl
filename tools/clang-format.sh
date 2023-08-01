@@ -15,7 +15,6 @@ EXCLUDE_PATHS_TOPLEVEL=(
 # Exclude them too.
 EXCLUDE_PATHS_TOPLEVEL+=(
     "include/netlink-private/netlink.h"
-    "include/netlink-private/object-api.h"
     "include/netlink-private/types.h"
     "include/netlink/addr.h"
     "include/netlink/attr.h"
@@ -137,6 +136,7 @@ EXCLUDE_PATHS_TOPLEVEL+=(
     "include/netlink/xfrm/sp.h"
     "include/netlink/xfrm/template.h"
     "include/nl-shared-core/cache-api.h"
+    "include/nl-shared-core/object-api.h"
     "lib/addr.c"
     "lib/attr.c"
     "lib/cache.c"

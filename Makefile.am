@@ -272,13 +272,13 @@ noinst_HEADERS = \
 	include/linux-private/linux/veth.h \
 	include/linux-private/linux/xfrm.h \
 	include/netlink-private/netlink.h \
-	include/netlink-private/object-api.h \
 	include/netlink-private/types.h \
 	include/nl-aux-core/nl-core.h \
 	include/nl-aux-route/nl-route.h \
 	include/nl-hidden-route/nl-hidden-route.h \
 	include/nl-intern-route/nl-intern-route.h \
 	include/nl-shared-core/cache-api.h \
+	include/nl-shared-core/object-api.h \
 	$(NULL)
 
 ###############################################################################

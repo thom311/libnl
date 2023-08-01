@@ -58,7 +58,6 @@
 #include <netlink/handlers.h>
 #include <netlink/cache.h>
 #include <netlink/route/tc.h>
-#include <netlink-private/object-api.h>
 #include <netlink-private/types.h>
 
 #include "nl-shared-core/cache-api.h"

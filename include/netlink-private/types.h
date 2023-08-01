@@ -14,7 +14,6 @@
 #include <netlink/route/route.h>
 #include <netlink/idiag/idiagnl.h>
 #include <netlink/netfilter/ct.h>
-#include <netlink-private/object-api.h>
 #include <netlink/route/link/sriov.h>
 #include <netlink/route/nh.h>
 #include <linux/netlink.h>
@@ -29,6 +28,8 @@
 #include <linux/if_ether.h>
 
 #include <netinet/in.h>
+
+#include "nl-shared-core/object-api.h"
 
 #define NL_SOCK_PASSCRED	(1<<1)
 #define NL_OWN_PORT		(1<<2)

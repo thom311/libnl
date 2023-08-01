@@ -16,10 +16,10 @@
 #include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/qdisc/netem.h>
 
+#include "tc-api.h"
 #include "base/nl-base-utils.h"
 
 /** @cond SKIP */

@@ -15,10 +15,11 @@
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/classifier.h>
 #include <netlink/route/cls/cgroup.h>
 #include <netlink/route/cls/ematch.h>
+
+#include "tc-api.h"
 
 /** @cond SKIP */
 #define CGROUP_ATTR_EMATCH      0x001

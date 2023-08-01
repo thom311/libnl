@@ -7,12 +7,13 @@
 #include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/class.h>
 #include <netlink/route/link.h>
 #include <netlink/route/qdisc/cbq.h>
 #include <netlink/route/cls/police.h>
+
+#include "tc-api.h"
 
 /**
  * @ingroup qdisc

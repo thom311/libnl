@@ -11,7 +11,8 @@
 
 #include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
-#include <netlink-private/route/tc-api.h>
+
+#include "tc-api.h"
 
 static struct rtnl_tc_ops blackhole_ops = {
 	.to_kind		= "blackhole",

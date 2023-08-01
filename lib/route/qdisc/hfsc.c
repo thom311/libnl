@@ -15,11 +15,12 @@
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/class.h>
 #include <netlink/route/link.h>
 #include <netlink/route/qdisc/hfsc.h>
+
+#include "tc-api.h"
 
 /** @cond SKIP */
 #define SCH_HFSC_CLS_HAS_RSC		0x001

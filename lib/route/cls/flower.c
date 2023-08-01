@@ -8,11 +8,11 @@
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/classifier.h>
 #include <netlink/route/action.h>
 #include <netlink/route/cls/flower.h>
 
+#include "tc-api.h"
 
 /** @cond SKIP */
 #define FLOWER_ATTR_FLAGS         (1 << 0)

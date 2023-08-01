@@ -15,7 +15,6 @@
 #include <netlink/idiag/idiagnl.h>
 #include <netlink/netfilter/ct.h>
 #include <netlink-private/object-api.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink-private/route/link/sriov.h>
 #include <netlink/route/nh.h>
 #include <netlink-private/route/nexthop-encap.h>

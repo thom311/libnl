@@ -15,9 +15,10 @@
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/act/nat.h>
 #include <netlink/route/tc.h>
+
+#include "tc-api.h"
 
 static struct nla_policy nat_policy[TCA_NAT_MAX + 1] = {
 	[TCA_NAT_PARMS] = { .minlen = sizeof(struct tc_nat) },

@@ -15,8 +15,9 @@
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/act/gact.h>
+
+#include "tc-api.h"
 
 static struct nla_policy gact_policy[TCA_GACT_MAX + 1] = {
 	[TCA_GACT_PARMS]             = { .minlen = sizeof(struct tc_gact) },

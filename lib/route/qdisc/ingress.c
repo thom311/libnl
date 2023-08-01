@@ -13,9 +13,10 @@
 #include <netlink-private/netlink.h>
 #include <netlink-private/tc.h>
 #include <netlink/netlink.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/utils.h>
+
+#include "tc-api.h"
 
 struct dumb {
 	uint32_t foo;

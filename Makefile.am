@@ -276,13 +276,13 @@ noinst_HEADERS = \
 	include/netlink-private/object-api.h \
 	include/netlink-private/route/link/sriov.h \
 	include/netlink-private/route/nexthop-encap.h \
-	include/netlink-private/route/tc-api.h \
 	include/netlink-private/socket.h \
 	include/netlink-private/tc.h \
 	include/netlink-private/types.h \
 	include/nl-aux-core/nl-core.h \
 	include/nl-aux-route/nl-route.h \
 	include/nl-hidden-route/nl-hidden-route.h \
+	include/nl-intern-route/nl-intern-route.h \
 	$(NULL)
 
 ###############################################################################
@@ -378,7 +378,6 @@ lib_libnl_3_la_LDFLAGS = \
 lib_LTLIBRARIES += lib/libnl-route-3.la
 
 lib_libnl_route_3_la_SOURCES = \
-	include/nl-intern-route/nl-intern-route.h \
 	lib/fib_lookup/lookup.c \
 	lib/fib_lookup/request.c \
 	lib/route/act.c \
@@ -464,6 +463,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/route_utils.c \
 	lib/route/rtnl.c \
 	lib/route/rule.c \
+	lib/route/tc-api.h \
 	lib/route/tc.c \
 	$(NULL)
 nodist_lib_libnl_route_3_la_SOURCES = \

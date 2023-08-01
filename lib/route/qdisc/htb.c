@@ -17,11 +17,12 @@
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/class.h>
 #include <netlink/route/link.h>
 #include <netlink/route/qdisc/htb.h>
+
+#include "tc-api.h"
 
 /** @cond SKIP */
 #define SCH_HTB_HAS_RATE2QUANTUM	0x01

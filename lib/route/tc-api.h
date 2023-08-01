@@ -12,10 +12,6 @@
 
 #include "nl-hidden-route/nl-hidden-route.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 struct rtnl_tc_type_ops
 {
 	enum rtnl_tc_type tt_type;
@@ -29,6 +25,12 @@ struct rtnl_tc_type_ops
 				        struct nl_dump_params *);
 };
 
+void *rtnl_tc_data_peek(struct rtnl_tc *tc);
+
+/*****************************************************************************/
+
+/* WARNING: the following symbols are wrongly exported in libnl-route-3
+ * library. They are private API, but leaked. */
 extern int			rtnl_tc_msg_parse(struct nlmsghdr *,
 						  struct rtnl_tc *);
 extern int			rtnl_tc_msg_build(struct rtnl_tc *, int,
@@ -47,7 +49,6 @@ extern uint64_t			rtnl_tc_compare(struct nl_object *,
 						struct nl_object *,
 						uint64_t, int);
 
-void *                          rtnl_tc_data_peek(struct rtnl_tc *tc);
 extern void *			rtnl_tc_data(struct rtnl_tc *);
 extern void *			rtnl_tc_data_check(struct rtnl_tc *,
 						   struct rtnl_tc_ops *, int *);
@@ -58,8 +59,6 @@ extern void 			rtnl_tc_unregister(struct rtnl_tc_ops *);
 extern void			rtnl_tc_type_register(struct rtnl_tc_type_ops *);
 extern void			rtnl_tc_type_unregister(struct rtnl_tc_type_ops *);
 
-#ifdef __cplusplus
-}
-#endif
+/*****************************************************************************/
 
 #endif

@@ -342,8 +342,7 @@ lib_cppflags = \
 	-I$(srcdir)/include/linux-private \
 	-I$(srcdir)/include \
 	-I$(builddir)/include \
-	-I$(builddir)/lib/route \
-	-I$(builddir)/lib/route/cls
+	$(NULL)
 
 lib_LTLIBRARIES += lib/libnl-3.la
 
@@ -471,7 +470,11 @@ nodist_lib_libnl_route_3_la_SOURCES = \
 EXTRA_lib_libnl_route_3_la_DEPENDENCIES = \
 	libnl-route-3.sym
 lib_libnl_route_3_la_CPPFLAGS = \
-	$(lib_cppflags)
+	$(lib_cppflags) \
+	-I$(srcdir)/lib/route \
+	-I$(builddir)/lib/route \
+	-I$(builddir)/lib/route/cls \
+	$(NULL)
 lib_libnl_route_3_la_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
 	-Wl,--version-script=$(srcdir)/libnl-route-3.sym

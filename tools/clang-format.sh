@@ -14,7 +14,6 @@ EXCLUDE_PATHS_TOPLEVEL=(
 # The following files are currently not formatted with clang.
 # Exclude them too.
 EXCLUDE_PATHS_TOPLEVEL+=(
-    "include/netlink-private/cache-api.h"
     "include/netlink-private/netlink.h"
     "include/netlink-private/object-api.h"
     "include/netlink-private/types.h"
@@ -137,6 +136,7 @@ EXCLUDE_PATHS_TOPLEVEL+=(
     "include/netlink/xfrm/selector.h"
     "include/netlink/xfrm/sp.h"
     "include/netlink/xfrm/template.h"
+    "include/nl-shared-core/cache-api.h"
     "lib/addr.c"
     "lib/attr.c"
     "lib/cache.c"

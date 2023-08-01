@@ -271,7 +271,6 @@ noinst_HEADERS = \
 	include/linux-private/linux/tc_ematch/tc_em_meta.h \
 	include/linux-private/linux/veth.h \
 	include/linux-private/linux/xfrm.h \
-	include/netlink-private/cache-api.h \
 	include/netlink-private/netlink.h \
 	include/netlink-private/object-api.h \
 	include/netlink-private/types.h \
@@ -279,6 +278,7 @@ noinst_HEADERS = \
 	include/nl-aux-route/nl-route.h \
 	include/nl-hidden-route/nl-hidden-route.h \
 	include/nl-intern-route/nl-intern-route.h \
+	include/nl-shared-core/cache-api.h \
 	$(NULL)
 
 ###############################################################################

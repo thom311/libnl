@@ -21,12 +21,12 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/qdisc/prio.h>
+
+#include "tc-api.h"
 
 /** @cond SKIP */
 #define SCH_PRIO_ATTR_BANDS	1

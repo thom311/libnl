@@ -10,14 +10,14 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/link.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/class.h>
 #include <netlink/route/classifier.h>
+
+#include "tc-api.h"
 
 static struct nl_cache_ops rtnl_qdisc_ops;
 static struct nl_object_ops qdisc_obj_ops;

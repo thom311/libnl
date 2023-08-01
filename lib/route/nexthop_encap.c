@@ -2,8 +2,9 @@
 
 #include <netlink-private/netlink.h>
 #include <netlink-private/types.h>
-#include <netlink-private/route/nexthop-encap.h>
 #include <linux/lwtunnel.h>
+
+#include "nexthop-encap.h"
 
 static struct lwtunnel_encap_type {
 	const char *name;

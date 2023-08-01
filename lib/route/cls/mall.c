@@ -11,15 +11,14 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/classifier.h>
 #include <netlink/route/cls/matchall.h>
 #include <netlink/route/action.h>
 
+#include "tc-api.h"
 
 #define MALL_ATTR_CLASSID 0x01
 #define MALL_ATTR_FLAGS   0x02

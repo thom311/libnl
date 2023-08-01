@@ -11,7 +11,6 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/route/classifier.h>
 #include <netlink/route/cls/ematch.h>

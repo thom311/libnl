@@ -13,15 +13,14 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/classifier.h>
 #include <netlink/route/cls/u32.h>
 #include <netlink/route/action.h>
 
+#include "tc-api.h"
 #include "nl-aux-route/nl-route.h"
 
 /** @cond SKIP */

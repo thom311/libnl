@@ -10,12 +10,12 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/classifier.h>
 #include <netlink/route/link.h>
+
+#include "tc-api.h"
 
 /** @cond SKIP */
 #define CLS_ATTR_PRIO		(TCA_ATTR_MAX << 1)

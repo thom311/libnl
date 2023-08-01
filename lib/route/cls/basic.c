@@ -17,13 +17,13 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/classifier.h>
 #include <netlink/route/action.h>
 #include <netlink/route/cls/basic.h>
 #include <netlink/route/cls/ematch.h>
+
+#include "tc-api.h"
 
 struct rtnl_basic
 {

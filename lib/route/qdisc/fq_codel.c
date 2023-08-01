@@ -12,12 +12,12 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/qdisc/fq_codel.h>
 #include <netlink/utils.h>
+
+#include "tc-api.h"
 
 /** @cond SKIP */
 #define SCH_FQ_CODEL_ATTR_TARGET	0x1

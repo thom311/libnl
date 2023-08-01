@@ -18,12 +18,12 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/qdisc/sfq.h>
+
+#include "tc-api.h"
 
 /** @cond SKIP */
 #define SCH_SFQ_ATTR_QUANTUM	0x01

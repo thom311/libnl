@@ -11,12 +11,12 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/qdisc/red.h>
+
+#include "tc-api.h"
 
 /** @cond SKIP */
 #define RED_ATTR_LIMIT		0x01

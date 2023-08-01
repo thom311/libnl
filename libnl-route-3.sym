@@ -19,6 +19,10 @@ global:
 	rtnl_link_info_ops_put;
 	rtnl_link_register_info;
 	rtnl_link_unregister_info;
+
+	# these functions are in private header files and should have never
+	# been exported.
+	# declared in "lib/route/tc-api.h".
 	rtnl_tc_build_rate_table;
 	rtnl_tc_clone;
 	rtnl_tc_compare;
@@ -36,7 +40,8 @@ global:
 	rtnl_tc_unregister;
 
 	# these functions are in private header files and should have never
-	# been exported. They are used by libnl internals
+	# been exported. They are used by libnl internals.
+	# declared in "include/nl-hidden-route/nl-hidden-route.h".
 	rtnl_tc_get_ops;
 	rtnl_tc_lookup_ops;
 

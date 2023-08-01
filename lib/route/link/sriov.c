@@ -25,9 +25,9 @@
 
 #include <linux/if_ether.h>
 #include <linux/if_link.h>
-#include <netlink-private/route/link/sriov.h>
 #include <netlink/route/link/sriov.h>
 
+#include "link-sriov.h"
 #include "link-api.h"
 
 /** @cond SKIP */

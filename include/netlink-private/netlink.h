@@ -58,10 +58,9 @@
 #include <netlink/handlers.h>
 #include <netlink/cache.h>
 #include <netlink/route/tc.h>
-#include <netlink-private/object-api.h>
-#include <netlink-private/cache-api.h>
 #include <netlink-private/types.h>
 
+#include "nl-shared-core/cache-api.h"
 #include "nl-aux-core/nl-core.h"
 
 #define NSEC_PER_SEC	1000000000L

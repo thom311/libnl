@@ -27,7 +27,6 @@
 #include <linux/in_route.h>
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/route/nexthop-encap.h>
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/utils.h>
@@ -39,6 +38,7 @@
 #include <netlink/route/nexthop.h>
 
 #include "nl-aux-route/nl-route.h"
+#include "nexthop-encap.h"
 
 /** @cond SKIP */
 #define ROUTE_ATTR_FAMILY    0x000001

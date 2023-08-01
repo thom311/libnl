@@ -271,17 +271,14 @@ noinst_HEADERS = \
 	include/linux-private/linux/tc_ematch/tc_em_meta.h \
 	include/linux-private/linux/veth.h \
 	include/linux-private/linux/xfrm.h \
-	include/netlink-private/cache-api.h \
 	include/netlink-private/netlink.h \
-	include/netlink-private/object-api.h \
-	include/netlink-private/route/link/sriov.h \
-	include/netlink-private/route/nexthop-encap.h \
-	include/netlink-private/route/tc-api.h \
-	include/netlink-private/socket.h \
-	include/netlink-private/tc.h \
 	include/netlink-private/types.h \
 	include/nl-aux-core/nl-core.h \
 	include/nl-aux-route/nl-route.h \
+	include/nl-hidden-route/nl-hidden-route.h \
+	include/nl-intern-route/nl-intern-route.h \
+	include/nl-shared-core/cache-api.h \
+	include/nl-shared-core/object-api.h \
 	$(NULL)
 
 ###############################################################################
@@ -342,8 +339,7 @@ lib_cppflags = \
 	-I$(srcdir)/include/linux-private \
 	-I$(srcdir)/include \
 	-I$(builddir)/include \
-	-I$(builddir)/lib/route \
-	-I$(builddir)/lib/route/cls
+	$(NULL)
 
 lib_LTLIBRARIES += lib/libnl-3.la
 
@@ -361,6 +357,7 @@ lib_libnl_3_la_SOURCES = \
 	lib/mpls.c \
 	lib/mpls.h \
 	lib/msg.c \
+	lib/nl-core.h \
 	lib/nl.c \
 	lib/object.c \
 	lib/socket.c \
@@ -378,7 +375,6 @@ lib_libnl_3_la_LDFLAGS = \
 lib_LTLIBRARIES += lib/libnl-route-3.la
 
 lib_libnl_route_3_la_SOURCES = \
-	include/nl-intern-route/nl-intern-route.h \
 	lib/fib_lookup/lookup.c \
 	lib/fib_lookup/request.c \
 	lib/route/act.c \
@@ -404,6 +400,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/cls/mall.c \
 	lib/route/cls/police.c \
 	lib/route/cls/u32.c \
+	lib/route/link-sriov.h \
 	lib/route/link.c \
 	lib/route/link/api.c \
 	lib/route/link/bonding.c \
@@ -438,6 +435,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/neigh.c \
 	lib/route/neightbl.c \
 	lib/route/netconf.c \
+	lib/route/nexthop-encap.h \
 	lib/route/nexthop.c \
 	lib/route/nexthop_encap.c \
 	lib/route/nh.c \
@@ -464,6 +462,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/route_utils.c \
 	lib/route/rtnl.c \
 	lib/route/rule.c \
+	lib/route/tc-api.h \
 	lib/route/tc.c \
 	$(NULL)
 nodist_lib_libnl_route_3_la_SOURCES = \
@@ -471,7 +470,11 @@ nodist_lib_libnl_route_3_la_SOURCES = \
 EXTRA_lib_libnl_route_3_la_DEPENDENCIES = \
 	libnl-route-3.sym
 lib_libnl_route_3_la_CPPFLAGS = \
-	$(lib_cppflags)
+	$(lib_cppflags) \
+	-I$(srcdir)/lib/route \
+	-I$(builddir)/lib/route \
+	-I$(builddir)/lib/route/cls \
+	$(NULL)
 lib_libnl_route_3_la_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
 	-Wl,--version-script=$(srcdir)/libnl-route-3.sym

@@ -10,7 +10,6 @@
 #include "netlink/attr.h"
 #include "netlink/msg.h"
 #include "netlink/route/cls/u32.h"
-#include "netlink-private/route/tc-api.h"
 
 #include "nl-aux-route/nl-route.h"
 

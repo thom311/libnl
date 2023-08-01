@@ -9,9 +9,9 @@
 #include <netlink/cli/class.h>
 #include <netlink/cli/link.h>
 
-#include <netlink-private/route/tc-api.h>
-
 #include <linux/netlink.h>
+
+#include "nl-hidden-route/nl-hidden-route.h"
 
 static int quiet = 0;
 

@@ -21,10 +21,10 @@
 #include <netlink/data.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link.h>
-#include <netlink-private/route/link/sriov.h>
 
 #include "nl-aux-route/nl-route.h"
 
+#include "link-sriov.h"
 #include "link/link-api.h"
 
 /** @cond SKIP */

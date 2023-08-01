@@ -2,10 +2,11 @@
 
 #include <netlink-private/netlink.h>
 #include <netlink-private/types.h>
-#include <netlink-private/route/nexthop-encap.h>
 #include <netlink/route/nexthop.h>
 #include <linux/mpls_iptunnel.h>
 #include <linux/lwtunnel.h>
+
+#include "nexthop-encap.h"
 
 struct mpls_iptunnel_encap {
 	struct nl_addr *dst;

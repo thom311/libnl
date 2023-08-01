@@ -10,11 +10,12 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/route/nexthop-encap.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/route.h>
+
+#include "nexthop-encap.h"
 
 /** @cond SKIP */
 #define NH_ATTR_FLAGS   0x000001

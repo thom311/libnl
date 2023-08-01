@@ -13,11 +13,11 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/classifier.h>
 #include <netlink/route/cls/fw.h>
+
+#include "tc-api.h"
 
 /** @cond SKIP */
 #define FW_ATTR_CLASSID      0x001

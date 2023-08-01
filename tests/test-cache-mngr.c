@@ -6,8 +6,6 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include <netlink-private/cache-api.h>
-
 #include <linux/netlink.h>
 
 static int quit = 0;

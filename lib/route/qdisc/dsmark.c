@@ -11,13 +11,13 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/qdisc.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/class.h>
 #include <netlink/route/qdisc/dsmark.h>
+
+#include "tc-api.h"
 
 /** @cond SKIP */
 #define SCH_DSMARK_ATTR_INDICES		0x1

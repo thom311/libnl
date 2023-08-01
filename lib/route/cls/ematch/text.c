@@ -12,7 +12,6 @@
 
 #include <netlink-private/netlink.h>
 #include "base/nl-base-utils.h"
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/route/cls/ematch.h>
 #include <netlink/route/cls/ematch/text.h>

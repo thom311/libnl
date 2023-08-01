@@ -11,13 +11,12 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
-#include <netlink-private/route/tc-api.h>
 #include <netlink/route/act/vlan.h>
 
+#include "tc-api.h"
 
 #define VLAN_F_VID   (1 << 0)
 #define VLAN_F_PROTO (1 << 1)

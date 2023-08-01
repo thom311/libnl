@@ -20,7 +20,6 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/socket.h>
 #include "base/nl-base-utils.h"
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
@@ -28,6 +27,8 @@
 #include <netlink/msg.h>
 #include <netlink/attr.h>
 #include <linux/socket.h>
+
+#include "nl-core.h"
 
 /**
  * @defgroup core_types Data Types

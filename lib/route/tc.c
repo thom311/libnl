@@ -10,14 +10,13 @@
  */
 
 #include <netlink-private/netlink.h>
-#include <netlink-private/tc.h>
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link.h>
 #include <netlink/route/tc.h>
-#include <netlink-private/route/tc-api.h>
 
+#include "tc-api.h"
 #include "base/nl-base-utils.h"
 
 /** @cond SKIP */

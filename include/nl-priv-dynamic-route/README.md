@@ -1,5 +1,5 @@
-include/nl-hidden-route
-=======================
+include/nl-priv-dynamic-route
+=============================
 
 libnl-route-3 wrongly exposes some symbols that are not part of public headers.
 They are used by other internal code.

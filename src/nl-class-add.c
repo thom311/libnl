@@ -11,7 +11,7 @@
 
 #include <linux/netlink.h>
 
-#include "nl-hidden-route/nl-hidden-route.h"
+#include "nl-priv-dynamic-route/nl-priv-dynamic-route.h"
 
 static int quiet = 0;
 

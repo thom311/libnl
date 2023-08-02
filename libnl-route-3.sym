@@ -41,7 +41,7 @@ global:
 
 	# these functions are in private header files and should have never
 	# been exported. They are used by libnl internals.
-	# declared in "include/nl-hidden-route/nl-hidden-route.h".
+	# declared in "include/nl-priv-dynamic-route/nl-priv-dynamic-route.h".
 	rtnl_tc_get_ops;
 	rtnl_tc_lookup_ops;
 

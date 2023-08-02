@@ -10,7 +10,7 @@
 #include <netlink/msg.h>
 #include <netlink/route/tc.h>
 
-#include "nl-hidden-route/nl-hidden-route.h"
+#include "nl-priv-dynamic-route/nl-priv-dynamic-route.h"
 
 /*****************************************************************************/
 

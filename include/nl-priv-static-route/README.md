@@ -1,5 +1,5 @@
-include/nl-intern-route
-=======================
+include/nl-priv-static-route
+============================
 
 This contains headers that extend the libnl-route-3 API with internal helpers.
 It is only usable to components that statically link with the libnl-route-3

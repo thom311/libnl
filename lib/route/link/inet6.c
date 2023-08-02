@@ -12,7 +12,7 @@
 #include "link-api.h"
 
 #include "base/nl-base-utils.h"
-#include "nl-intern-route/nl-intern-route.h"
+#include "nl-priv-static-route/nl-priv-static-route.h"
 
 #define I6_ADDR_GEN_MODE_UNKNOWN	UINT8_MAX
 

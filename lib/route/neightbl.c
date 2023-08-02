@@ -10,13 +10,15 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
-#include "base/nl-base-utils.h"
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/neightbl.h>
 #include <netlink/route/link.h>
+
+#include <netlink-private/netlink.h>
 
 #include "nl-route.h"
 #include "nl-priv-dynamic-core/nl-core.h"

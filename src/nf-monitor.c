@@ -5,11 +5,13 @@
  * Copyright (c) 2007 Secure Computing Corporation
  */
 
-#include <netlink/cli/utils.h>
-#include <netlink/netfilter/nfnl.h>
+#include "nl-default.h"
 
 #include <linux/netlink.h>
 #include <linux/netfilter/nfnetlink.h>
+
+#include <netlink/cli/utils.h>
+#include <netlink/netfilter/nfnl.h>
 
 static void obj_input(struct nl_object *obj, void *arg)
 {

@@ -3,11 +3,11 @@
  * Copyright (c) 2012 Shriram Rajagopalan <rshriram@cs.ubc.ca>
  */
 
+#include "nl-default.h"
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/tc.h>
 #include <netlink/route/qdisc/plug.h>
-
-#include "base/nl-base-utils.h"
 
 static void print_usage(void)
 {

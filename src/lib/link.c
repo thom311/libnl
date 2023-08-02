@@ -10,9 +10,12 @@
  * @{
  */
 
+#include "nl-default.h"
+
+#include <linux/if.h>
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>
-#include <linux/if.h>
 
 struct rtnl_link *nl_cli_link_alloc(void)
 {

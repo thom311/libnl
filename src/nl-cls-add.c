@@ -3,12 +3,14 @@
  * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
+#include "nl-default.h"
+
+#include <linux/netlink.h>
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/tc.h>
 #include <netlink/cli/cls.h>
 #include <netlink/cli/link.h>
-
-#include <linux/netlink.h>
 
 #include "nl-priv-dynamic-route/nl-priv-dynamic-route.h"
 

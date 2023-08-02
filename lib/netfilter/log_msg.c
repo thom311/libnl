@@ -13,16 +13,19 @@
  * @{
  */
 
+#include "nl-default.h"
+
 #include <sys/types.h>
+
 #include <linux/netfilter/nfnetlink_log.h>
 
-#include <netlink-private/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/log_msg.h>
 
+#include <netlink-private/netlink.h>
+
 #include "nl-netfilter.h"
-#include "base/nl-base-utils.h"
 
 static struct nla_policy log_msg_policy[NFULA_MAX+1] = {
 	[NFULA_PACKET_HDR]		= {

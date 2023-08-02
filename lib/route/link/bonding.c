@@ -14,9 +14,12 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/route/link/bonding.h>
+
+#include <netlink-private/netlink.h>
 
 #include "nl-route.h"
 #include "link-api.h"

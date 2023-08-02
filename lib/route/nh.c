@@ -3,12 +3,15 @@
  * Copyright (c) 2022 Stanislav Zaikin <zstaseg@gmail.com>
  */
 
+#include "nl-default.h"
+
 #include <linux-private/linux/nexthop.h>
 
-#include <netlink-private/netlink.h>
 #include <netlink/route/nh.h>
 #include <netlink/hashtable.h>
 #include <netlink/route/nexthop.h>
+
+#include <netlink-private/netlink.h>
 
 #include "nl-aux-route/nl-route.h"
 #include "nl-route.h"

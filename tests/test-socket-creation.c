@@ -1,5 +1,10 @@
-#include <netlink/netlink.h>
+/* SPDX-License-Identifier: LGPL-2.1-only */
+
+#include "nl-default.h"
+
 #include <errno.h>
+
+#include <netlink/netlink.h>
 
 int main(int argc, char *argv[])
 {

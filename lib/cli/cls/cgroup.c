@@ -3,12 +3,12 @@
  * Copyright (c) 2010-2011 Thomas Graf <tgraf@suug.ch>
  */
 
+#include "nl-default.h"
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/tc.h>
 #include <netlink/cli/cls.h>
 #include <netlink/route/cls/cgroup.h>
-
-#include "base/nl-base-utils.h"
 
 static void print_usage(void)
 {

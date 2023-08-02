@@ -3,6 +3,8 @@
  * Copyright (c) 2013 Sassano Systems LLC <joe@sassanosystems.com>
  */
 
+#include "nl-default.h"
+
 #include <linux/inet_diag.h>
 
 #include <netlink/idiag/req.h>

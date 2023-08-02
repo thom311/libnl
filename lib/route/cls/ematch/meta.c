@@ -10,11 +10,15 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <linux/tc_ematch/tc_em_meta.h>
+
 #include <netlink/netlink.h>
 #include <netlink/route/cls/ematch.h>
 #include <netlink/route/cls/ematch/meta.h>
-#include <linux/tc_ematch/tc_em_meta.h>
+
+#include <netlink-private/netlink.h>
 
 struct rtnl_meta_value
 {

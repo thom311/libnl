@@ -120,12 +120,14 @@
  * @{
  */
 
-#include <linux/xfrm.h>
+#include "nl-default.h"
 
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/object.h>
 #include <netlink/xfrm/ae.h>
+
+#include <linux/xfrm.h>
 
 #include <netlink-private/netlink.h>
 

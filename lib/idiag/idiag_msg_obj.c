@@ -3,14 +3,17 @@
  * Copyright (c) 2013 Sassano Systems LLC <joe@sassanosystems.com>
  */
 
+#include "nl-default.h"
+
 #include <linux/inet_diag.h>
 
-#include <netlink-private/netlink.h>
 #include <netlink/hashtable.h>
 #include <netlink/idiag/msg.h>
 #include <netlink/idiag/meminfo.h>
 #include <netlink/idiag/vegasinfo.h>
 #include <netlink/idiag/idiagnl.h>
+
+#include <netlink-private/netlink.h>
 
 #include "nl-idiag.h"
 #include "nl-priv-dynamic-core/nl-core.h"

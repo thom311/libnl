@@ -18,6 +18,8 @@
  * ~~~~
  */
 
+#include "nl-default.h"
+
 #include <stdlib.h>
 #include <locale.h>
 
@@ -28,7 +30,6 @@
 
 #include <netlink-private/netlink.h>
 
-#include "base/nl-base-utils.h"
 #include "nl-priv-dynamic-core/object-api.h"
 
 /**

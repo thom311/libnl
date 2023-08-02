@@ -39,6 +39,8 @@
  * @brief
  */
 
+#include "nl-default.h"
+
 #include <time.h>
 
 #include <netlink/netlink.h>
@@ -50,7 +52,6 @@
 
 #include <netlink-private/netlink.h>
 
-#include "base/nl-base-utils.h"
 #include "nl-xfrm.h"
 #include "nl-priv-dynamic-core/object-api.h"
 

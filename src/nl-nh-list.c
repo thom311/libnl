@@ -3,12 +3,13 @@
  * Copyright (c) 2022 Stanislav Zaikin <zstaseg@gmail.com>
  */
 
-#include <netlink/cli/utils.h>
-#include <netlink/cli/nh.h>
-
-#include <netlink/route/nh.h>
+#include "nl-default.h"
 
 #include <linux/netlink.h>
+
+#include <netlink/cli/utils.h>
+#include <netlink/cli/nh.h>
+#include <netlink/route/nh.h>
 
 static void print_usage(void)
 {

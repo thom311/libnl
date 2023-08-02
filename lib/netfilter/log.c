@@ -12,13 +12,16 @@
  * @{
  */
 
+#include "nl-default.h"
+
 #include <sys/types.h>
 #include <linux/netfilter/nfnetlink_log.h>
 
-#include <netlink-private/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/log.h>
+
+#include <netlink-private/netlink.h>
 
 #include "nl-priv-dynamic-core/nl-core.h"
 

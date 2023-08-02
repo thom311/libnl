@@ -1,7 +1,11 @@
-#include <netlink/cli/utils.h>
+/* SPDX-License-Identifier: LGPL-2.1-only */
+
+#include "nl-default.h"
 
 #include <linux/taskstats.h>
 #include <linux/genetlink.h>
+
+#include <netlink/cli/utils.h>
 
 static struct nla_policy attr_policy[TASKSTATS_TYPE_MAX+1] = {
 	[TASKSTATS_TYPE_PID]	= { .type = NLA_U32 },

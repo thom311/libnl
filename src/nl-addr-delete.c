@@ -3,11 +3,13 @@
  * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
+#include "nl-default.h"
+
+#include <linux/netlink.h>
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/addr.h>
 #include <netlink/cli/link.h>
-
-#include <linux/netlink.h>
 
 static struct nl_sock *sock;
 static int interactive = 0, default_yes = 0, quiet = 0;

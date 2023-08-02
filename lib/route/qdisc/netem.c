@@ -12,14 +12,16 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/qdisc/netem.h>
 
+#include <netlink-private/netlink.h>
+
 #include "tc-api.h"
-#include "base/nl-base-utils.h"
 #include "nl-priv-dynamic-core/nl-core.h"
 
 /** @cond SKIP */

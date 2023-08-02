@@ -24,9 +24,10 @@
  * @{
  */
 
+#include "nl-default.h"
+
 #include <linux/in_route.h>
 
-#include <netlink-private/netlink.h>
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/utils.h>
@@ -36,6 +37,8 @@
 #include <netlink/route/route.h>
 #include <netlink/route/link.h>
 #include <netlink/route/nexthop.h>
+
+#include <netlink-private/netlink.h>
 
 #include "nl-route.h"
 #include "nl-aux-route/nl-route.h"

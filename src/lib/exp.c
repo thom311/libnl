@@ -11,6 +11,8 @@
  * @{
  */
 
+#include "nl-default.h"
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/exp.h>
 

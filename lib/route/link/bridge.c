@@ -11,12 +11,16 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <linux/if_bridge.h>
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/bridge.h>
-#include <linux/if_bridge.h>
+
+#include <netlink-private/netlink.h>
 
 #include "nl-route.h"
 #include "link-api.h"

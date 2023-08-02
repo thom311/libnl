@@ -6,6 +6,8 @@
  * Copyright (c) 2012 Rich Fought <rich.fought@watchguard.com>
  */
 
+#include "nl-default.h"
+
 #include <sys/types.h>
 #include <netinet/in.h>
 

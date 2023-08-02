@@ -6,6 +6,8 @@
  * Copyright (c) 2008 Patrick McHardy <kaber@trash.net>
  */
 
+#include "nl-default.h"
+
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/log.h>
 

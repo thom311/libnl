@@ -3,6 +3,8 @@
  * lib/route/mdb.c		Multicast Database
  */
 
+#include "nl-default.h"
+
 #include <linux/if_bridge.h>
 
 #include <netlink/netlink.h>

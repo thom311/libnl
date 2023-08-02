@@ -4,16 +4,19 @@
  * Copyright (c) 2010  Karl Hiramoto <karl@hiramoto.org>
  */
 
-#include <netlink/cli/utils.h>
-#include <netlink/cli/link.h>
+#include "nl-default.h"
+
 #include <netinet/in.h>
+
 #include <linux/netfilter.h>
 #include <linux/netfilter/nfnetlink_queue.h>
+#include <linux/netlink.h>
+
+#include <netlink/cli/utils.h>
+#include <netlink/cli/link.h>
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/queue.h>
 #include <netlink/netfilter/queue_msg.h>
-
-#include <linux/netlink.h>
 
 static struct nl_sock *nf_sock;
 

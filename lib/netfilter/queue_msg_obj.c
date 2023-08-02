@@ -3,11 +3,15 @@
  * Copyright (c) 2007, 2008 Patrick McHardy <kaber@trash.net>
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <linux/netfilter.h>
+
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/netfilter.h>
 #include <netlink/netfilter/queue_msg.h>
-#include <linux/netfilter.h>
+
+#include <netlink-private/netlink.h>
 
 #include "nl-netfilter.h"
 

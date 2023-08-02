@@ -3,7 +3,8 @@
  * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/qdisc.h>
@@ -11,6 +12,8 @@
 #include <netlink/route/link.h>
 #include <netlink/route/qdisc/cbq.h>
 #include <netlink/route/cls/police.h>
+
+#include <netlink-private/netlink.h>
 
 #include "tc-api.h"
 

@@ -10,6 +10,8 @@
  * @{
  */
 
+#include "nl-default.h"
+
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/queue.h>
 

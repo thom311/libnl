@@ -5,6 +5,8 @@
  * Copyright (c) 2007 Secure Computing Corporation
  */
 
+#include "nl-default.h"
+
 #include <sys/types.h>
 
 #include <linux/netfilter/nfnetlink_conntrack.h>

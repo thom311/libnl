@@ -18,6 +18,8 @@
  * @{
  */
 
+#include "nl-default.h"
+
 #include <netlink/version.h>
 
 const int      nl_ver_num = LIBNL_VER_NUM;

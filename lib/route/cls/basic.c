@@ -16,12 +16,15 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/route/classifier.h>
 #include <netlink/route/action.h>
 #include <netlink/route/cls/basic.h>
 #include <netlink/route/cls/ematch.h>
+
+#include <netlink-private/netlink.h>
 
 #include "tc-api.h"
 

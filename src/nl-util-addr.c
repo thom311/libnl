@@ -3,6 +3,8 @@
  * Copyright (c) 2003-2009 Thomas Graf <tgraf@suug.ch>
  */
 
+#include "nl-default.h"
+
 #include <netlink/cli/utils.h>
 
 int main(int argc, char *argv[])

@@ -20,11 +20,14 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/qdisc.h>
 #include <netlink/route/qdisc/prio.h>
+
+#include <netlink-private/netlink.h>
 
 #include "tc-api.h"
 

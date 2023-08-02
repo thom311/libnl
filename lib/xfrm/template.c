@@ -47,7 +47,10 @@
  * ~~~~
  */
 
+#include "nl-default.h"
+
 #include <netlink/xfrm/template.h>
+
 #include <netlink-private/netlink.h>
 
 #include "nl-xfrm.h"

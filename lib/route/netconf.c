@@ -11,6 +11,8 @@
  * @{
  */
 
+#include "nl-default.h"
+
 #include <linux/netconf.h>
 #include <linux/socket.h>
 

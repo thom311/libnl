@@ -19,13 +19,16 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
-#include <netlink/netlink.h>
-#include <netlink/route/link.h>
+#include "nl-default.h"
 
 #include <linux/if_ether.h>
 #include <linux/if_link.h>
+
+#include <netlink/netlink.h>
+#include <netlink/route/link.h>
 #include <netlink/route/link/sriov.h>
+
+#include <netlink-private/netlink.h>
 
 #include "nl-route.h"
 #include "link-sriov.h"

@@ -18,13 +18,16 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
 #include <netlink/object.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/xfrmi.h>
+
+#include <netlink-private/netlink.h>
 
 #include "nl-route.h"
 #include "link-api.h"

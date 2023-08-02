@@ -3,9 +3,12 @@
  * Copyright (c) 2008-2013 Thomas Graf <tgraf@suug.ch>
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/route/cls/ematch.h>
+
+#include <netlink-private/netlink.h>
 
 #include "nl-route.h"
 

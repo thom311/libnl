@@ -10,10 +10,13 @@
  * @{
  */
 
+#include "nl-default.h"
+
+#include <linux/if.h>
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/nh.h>
 #include <netlink/route/nh.h>
-#include <linux/if.h>
 
 struct rtnl_nh *nl_cli_nh_alloc(void)
 {

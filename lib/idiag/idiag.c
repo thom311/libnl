@@ -9,11 +9,15 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <linux/inet_diag.h>
+
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/idiag/idiagnl.h>
-#include <linux/inet_diag.h>
+
+#include <netlink-private/netlink.h>
 
 /**
  * @name Socket Creation

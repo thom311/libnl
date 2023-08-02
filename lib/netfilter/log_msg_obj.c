@@ -5,6 +5,8 @@
  * Copyright (c) 2007 Secure Computing Corporation
  */
 
+#include "nl-default.h"
+
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/netfilter.h>
 #include <netlink/netfilter/log_msg.h>

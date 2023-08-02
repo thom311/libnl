@@ -12,10 +12,13 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/route/classifier.h>
 #include <netlink/route/cls/fw.h>
+
+#include <netlink-private/netlink.h>
 
 #include "tc-api.h"
 

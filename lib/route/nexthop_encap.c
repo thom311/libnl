@@ -1,7 +1,10 @@
 /* SPDX-License-Identifier: LGPL-2.1-only */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <linux/lwtunnel.h>
+
+#include <netlink-private/netlink.h>
 
 #include "nl-route.h"
 #include "nexthop-encap.h"

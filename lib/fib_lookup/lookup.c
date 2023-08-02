@@ -10,6 +10,8 @@
  * @{
  */
 
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
@@ -21,7 +23,6 @@
 
 #include <netlink-private/netlink.h>
 
-#include "base/nl-base-utils.h"
 #include "nl-priv-dynamic-core/object-api.h"
 
 /** @cond SKIP */

@@ -10,6 +10,8 @@
  * @{
  */
 
+#include "nl-default.h"
+
 #include <linux/tc_act/tc_vlan.h>
 
 #include <netlink/netlink.h>

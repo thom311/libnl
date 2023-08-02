@@ -3,11 +3,11 @@
  * Copyright (c) 2010-2011 Thomas Graf <tgraf@suug.ch>
  */
 
+#include "nl-default.h"
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/tc.h>
 #include <netlink/route/qdisc/htb.h>
-
-#include "base/nl-base-utils.h"
 
 static void print_qdisc_usage(void)
 {

@@ -3,12 +3,13 @@
  * Copyright (c) 2014 Cong Wang <xiyou.wangcong@gmail.com>
  */
 
+#include "nl-default.h"
+
+#include <linux/pkt_sched.h>
+
 #include <netlink/cli/utils.h>
 #include <netlink/cli/tc.h>
 #include <netlink/route/qdisc/hfsc.h>
-#include <linux/pkt_sched.h>
-
-#include "base/nl-base-utils.h"
 
 static void print_qdisc_usage(void)
 {

@@ -10,12 +10,15 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
 #include <netlink/route/act/nat.h>
 #include <netlink/route/tc.h>
+
+#include <netlink-private/netlink.h>
 
 #include "tc-api.h"
 

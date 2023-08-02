@@ -3,10 +3,13 @@
  * Copyright (c) 2013 Sassano Systems LLC <joe@sassanosystems.com>
  */
 
+#include "nl-default.h"
+
+#include <linux/netlink.h>
+
 #include <netlink/cli/utils.h>
 #include <netlink/idiag/idiagnl.h>
 #include <netlink/idiag/msg.h>
-#include <linux/netlink.h>
 
 static void print_usage(void)
 {

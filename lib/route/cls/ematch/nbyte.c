@@ -10,11 +10,15 @@
  * @{
  */
 
-#include <netlink-private/netlink.h>
+#include "nl-default.h"
+
+#include <linux/tc_ematch/tc_em_nbyte.h>
+
 #include <netlink/netlink.h>
 #include <netlink/route/cls/ematch.h>
 #include <netlink/route/cls/ematch/nbyte.h>
-#include <linux/tc_ematch/tc_em_nbyte.h>
+
+#include <netlink-private/netlink.h>
 
 struct nbyte_data
 {

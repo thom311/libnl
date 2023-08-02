@@ -6,10 +6,12 @@
  * Copyright (c) 2012 Rich Fought <rich.fought@watchguard.com>
  */
 
-#include <netlink/cli/utils.h>
-#include <netlink/cli/exp.h>
+#include "nl-default.h"
 
 #include <linux/rtnetlink.h>
+
+#include <netlink/cli/utils.h>
+#include <netlink/cli/exp.h>
 
 static int quiet = 0;
 

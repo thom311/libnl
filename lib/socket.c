@@ -25,13 +25,13 @@
 
 #include "sys/socket.h"
 
-#include <netlink-private/netlink.h>
-#include "base/nl-base-utils.h"
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/handlers.h>
 #include <netlink/msg.h>
 #include <netlink/attr.h>
+
+#include <netlink-private/netlink.h>
 
 #include "nl-core.h"
 #include "nl-priv-dynamic-core/nl-core.h"

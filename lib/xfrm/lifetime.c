@@ -47,10 +47,13 @@
  * ~~~~
  */
 
+#include "nl-default.h"
+
 #include <netlink/xfrm/lifetime.h>
+
 #include <netlink-private/netlink.h>
 
-#include "lib/xfrm/nl-xfrm.h"
+#include "nl-xfrm.h"
 
 static void ltime_cfg_destroy(struct xfrmnl_ltime_cfg* ltime)
 {

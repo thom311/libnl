@@ -104,11 +104,11 @@ int rtnl_tc_msg_parse(struct nlmsghdr *n, struct rtnl_tc *tc)
 			return err;
 
 		if (tbs[TCA_STATS_BASIC]) {
-			struct gnet_stats_basic *bs;
+			struct gnet_stats_basic bs;
 			
-			bs = nla_data(tbs[TCA_STATS_BASIC]);
-			tc->tc_stats[RTNL_TC_BYTES]	= bs->bytes;
-			tc->tc_stats[RTNL_TC_PACKETS]	= bs->packets;
+			memcpy(&bs, nla_data(tbs[TCA_STATS_BASIC]), sizeof(bs));
+			tc->tc_stats[RTNL_TC_BYTES]	= bs.bytes;
+			tc->tc_stats[RTNL_TC_PACKETS]	= bs.packets;
 		}
 
 		if (tbs[TCA_STATS_RATE_EST]) {
@@ -141,16 +141,17 @@ int rtnl_tc_msg_parse(struct nlmsghdr *n, struct rtnl_tc *tc)
 			goto compat_xstats;
 	} else {
 		if (tb[TCA_STATS]) {
-			struct tc_stats *st = nla_data(tb[TCA_STATS]);
+			struct tc_stats st;
 
-			tc->tc_stats[RTNL_TC_BYTES]	= st->bytes;
-			tc->tc_stats[RTNL_TC_PACKETS]	= st->packets;
-			tc->tc_stats[RTNL_TC_RATE_BPS]	= st->bps;
-			tc->tc_stats[RTNL_TC_RATE_PPS]	= st->pps;
-			tc->tc_stats[RTNL_TC_QLEN]	= st->qlen;
-			tc->tc_stats[RTNL_TC_BACKLOG]	= st->backlog;
-			tc->tc_stats[RTNL_TC_DROPS]	= st->drops;
-			tc->tc_stats[RTNL_TC_OVERLIMITS]= st->overlimits;
+			memcpy(&st, nla_data(tb[TCA_STATS]), sizeof(st));
+			tc->tc_stats[RTNL_TC_BYTES]	= st.bytes;
+			tc->tc_stats[RTNL_TC_PACKETS]	= st.packets;
+			tc->tc_stats[RTNL_TC_RATE_BPS]	= st.bps;
+			tc->tc_stats[RTNL_TC_RATE_PPS]	= st.pps;
+			tc->tc_stats[RTNL_TC_QLEN]	= st.qlen;
+			tc->tc_stats[RTNL_TC_BACKLOG]	= st.backlog;
+			tc->tc_stats[RTNL_TC_DROPS]	= st.drops;
+			tc->tc_stats[RTNL_TC_OVERLIMITS]= st.overlimits;
 
 			tc->ce_mask |= TCA_ATTR_STATS;
 		}

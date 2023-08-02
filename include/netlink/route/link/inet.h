@@ -7,6 +7,7 @@
 #define NETLINK_LINK_INET_H_
 
 #include <netlink/netlink.h>
+#include <netlink/route/link.h>
 
 #ifdef __cplusplus
 extern "C" {

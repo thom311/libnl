@@ -15,7 +15,7 @@
  * @{
  */
 
-#include "nl-priv-genl.h"
+#include "nl-genl.h"
 #include <netlink/netlink.h>
 #include <netlink/genl/genl.h>
 #include <netlink/genl/family.h>

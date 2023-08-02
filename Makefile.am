@@ -509,7 +509,7 @@ lib_libnl_genl_3_la_SOURCES = \
 	lib/genl/family.c \
 	lib/genl/genl.c \
 	lib/genl/mngt.c \
-	lib/genl/nl-priv-genl.h \
+	lib/genl/nl-genl.h \
 	$(NULL)
 EXTRA_lib_libnl_genl_3_la_DEPENDENCIES = \
 	libnl-genl-3.sym

@@ -160,7 +160,7 @@ EXCLUDE_PATHS_TOPLEVEL+=(
     "lib/genl/family.c"
     "lib/genl/genl.c"
     "lib/genl/mngt.c"
-    "lib/genl/nl-priv-genl.h"
+    "lib/genl/nl-genl.h"
     "lib/handlers.c"
     "lib/hash.c"
     "lib/hashtable.c"

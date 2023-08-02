@@ -23,9 +23,8 @@
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/log_msg.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-netfilter.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 static struct nla_policy log_msg_policy[NFULA_MAX+1] = {
 	[NFULA_PACKET_HDR]		= {

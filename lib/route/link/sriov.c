@@ -28,8 +28,6 @@
 #include <netlink/route/link.h>
 #include <netlink/route/link/sriov.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-route.h"
 #include "link-sriov.h"
 #include "link-api.h"

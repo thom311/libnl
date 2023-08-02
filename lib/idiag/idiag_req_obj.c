@@ -9,8 +9,9 @@
 
 #include <netlink/idiag/req.h>
 #include <netlink/idiag/idiagnl.h>
-
-#include <netlink-private/netlink.h>
+#include <netlink/data.h>
+#include <netlink/addr.h>
+#include <netlink/msg.h>
 
 #include "nl-priv-dynamic-core/object-api.h"
 

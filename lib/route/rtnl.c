@@ -14,7 +14,7 @@
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
 
-#include <netlink-private/netlink.h>
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /**
  * @name Sending

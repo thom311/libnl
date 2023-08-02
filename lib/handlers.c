@@ -26,9 +26,8 @@
 #include <netlink/msg.h>
 #include <netlink/handlers.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-core.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 static void print_header_content(FILE *ofd, struct nlmsghdr *n)
 {

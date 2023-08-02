@@ -11,7 +11,7 @@
 #include <netlink/hash.h>
 #include <netlink/hashtable.h>
 
-#include <netlink-private/netlink.h>
+#include "nl-aux-core/nl-core.h"
 
 /**
  * @ingroup core_types

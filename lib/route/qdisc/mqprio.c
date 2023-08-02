@@ -10,8 +10,6 @@
 #include <netlink/route/qdisc.h>
 #include <netlink/route/qdisc/mqprio.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 /** @cond SKIP */

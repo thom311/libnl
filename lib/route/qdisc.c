@@ -18,8 +18,6 @@
 #include <netlink/route/class.h>
 #include <netlink/route/classifier.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 static struct nl_cache_ops rtnl_qdisc_ops;

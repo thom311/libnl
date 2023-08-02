@@ -17,8 +17,6 @@
 #include <netlink/route/qdisc.h>
 #include <netlink/route/qdisc/red.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 /** @cond SKIP */

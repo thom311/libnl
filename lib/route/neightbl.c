@@ -18,10 +18,9 @@
 #include <netlink/route/neightbl.h>
 #include <netlink/route/link.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-route.h"
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 struct rtnl_neightbl_parms {
 	/**

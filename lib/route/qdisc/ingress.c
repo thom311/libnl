@@ -16,8 +16,6 @@
 #include <netlink/route/qdisc.h>
 #include <netlink/utils.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 struct dumb {

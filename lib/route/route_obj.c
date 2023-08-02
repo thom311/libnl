@@ -38,8 +38,6 @@
 #include <netlink/route/link.h>
 #include <netlink/route/nexthop.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-route.h"
 #include "nl-aux-route/nl-route.h"
 #include "nl-priv-dynamic-core/nl-core.h"

@@ -7,9 +7,8 @@
 
 #include <netlink/cli/utils.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 static void print_usage(void)
 {

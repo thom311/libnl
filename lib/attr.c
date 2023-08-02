@@ -13,9 +13,8 @@
 #include <netlink/attr.h>
 #include <netlink/msg.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-aux-core/nl-core.h"
 
 /**
  * @ingroup msg

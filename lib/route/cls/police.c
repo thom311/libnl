@@ -10,7 +10,7 @@
 #include <netlink/route/classifier.h>
 #include <netlink/route/cls/police.h>
 
-#include <netlink-private/netlink.h>
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /**
  * @name Policer Type

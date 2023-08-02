@@ -13,10 +13,10 @@
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
 
-#include <netlink-private/netlink.h>
-
+#include "nl-route.h"
 #include "nl-aux-route/nl-route.h"
 #include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 /** @cond SKIP */
 #define MDB_ATTR_IFINDEX         0x000001

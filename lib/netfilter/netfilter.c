@@ -9,7 +9,7 @@
 
 #include <netlink/netfilter/netfilter.h>
 
-#include <netlink-private/netlink.h>
+#include "nl-priv-dynamic-core/nl-core.h"
 
 static const struct trans_tbl nfnl_verdicts[] = {
 	__ADD(NF_DROP,		NF_DROP),

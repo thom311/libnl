@@ -27,8 +27,6 @@
 #include <netlink/route/qdisc.h>
 #include <netlink/route/qdisc/prio.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 /** @cond SKIP */

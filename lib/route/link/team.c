@@ -19,8 +19,6 @@
 #include <netlink/netlink.h>
 #include <netlink/route/link/team.h>
 
-#include <netlink-private/netlink.h>
-
 #include "link-api.h"
 
 /**

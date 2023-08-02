@@ -5,12 +5,13 @@
 
 #include "nl-default.h"
 
+#include <linux/ipv6.h>
+#include <linux/snmp.h>
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/inet6.h>
-
-#include <netlink-private/netlink.h>
 
 #include "nl-route.h"
 #include "link-api.h"

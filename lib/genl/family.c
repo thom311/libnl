@@ -21,6 +21,7 @@
 
 #include "nl-genl.h"
 #include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /** @cond SKIP */
 struct genl_family_op

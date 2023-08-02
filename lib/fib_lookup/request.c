@@ -18,8 +18,6 @@
 #include <netlink/object.h>
 #include <netlink/fib_lookup/request.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-priv-dynamic-core/nl-core.h"
 #include "nl-priv-dynamic-core/object-api.h"
 

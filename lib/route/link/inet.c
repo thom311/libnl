@@ -53,12 +53,12 @@
 
 #include "nl-default.h"
 
+#include <linux/ip.h>
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/inet.h>
-
-#include <netlink-private/netlink.h>
 
 #include "link-api.h"
 

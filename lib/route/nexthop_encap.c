@@ -4,8 +4,6 @@
 
 #include <linux/lwtunnel.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-route.h"
 #include "nexthop-encap.h"
 

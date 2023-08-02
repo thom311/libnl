@@ -11,11 +11,10 @@
 #include <netlink/hashtable.h>
 #include <netlink/route/nexthop.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-aux-route/nl-route.h"
 #include "nl-route.h"
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 /** @cond SKIP */
 struct rtnl_nh {

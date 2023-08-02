@@ -18,8 +18,6 @@
 #include <netlink/route/cls/ematch.h>
 #include <netlink/route/cls/ematch/nbyte.h>
 
-#include <netlink-private/netlink.h>
-
 struct nbyte_data
 {
 	struct tcf_em_nbyte	cfg;

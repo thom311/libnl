@@ -26,9 +26,9 @@
 #include <linux/socket.h>
 
 #include <netlink/netlink.h>
+#include <netlink/data.h>
+#include <netlink/attr.h>
 #include <netlink/utils.h>
-
-#include <netlink-private/netlink.h>
 
 #include "nl-priv-dynamic-core/nl-core.h"
 

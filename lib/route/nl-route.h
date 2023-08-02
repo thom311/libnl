@@ -7,8 +7,11 @@
 #ifndef __LIB_ROUTE_NL_ROUTE_H__
 #define __LIB_ROUTE_NL_ROUTE_H__
 
+#include <netlink/route/tc.h>
+
 #include "nl-priv-dynamic-core/object-api.h"
 #include "nl-priv-dynamic-route/nl-priv-dynamic-route.h"
+#include "nl-aux-core/nl-core.h"
 
 /*****************************************************************************/
 
@@ -157,6 +160,32 @@ static inline void rtnl_rcopy_ratespec(struct tc_ratespec *dst,
 	dst->mpu = src->rs_mpu;
 	dst->rate = src->rs_rate64 > 0xFFFFFFFFull ? 0xFFFFFFFFull :
 						     (uint32_t)src->rs_rate64;
+}
+
+/*****************************************************************************/
+
+static inline int build_sysconf_path(char **strp, const char *filename)
+{
+	char *sysconfdir;
+
+	sysconfdir = getenv("NLSYSCONFDIR");
+
+	if (!sysconfdir)
+		sysconfdir = SYSCONFDIR;
+
+	return asprintf(strp, "%s/%s", sysconfdir, filename);
+}
+
+/*****************************************************************************/
+
+static inline int rtnl_tc_calc_txtime64(int bufsize, uint64_t rate)
+{
+	return ((double)bufsize / (double)rate) * 1000000.0;
+}
+
+static inline int rtnl_tc_calc_bufsize64(int txtime, uint64_t rate)
+{
+	return ((double)txtime * (double)rate) / 1000000.0;
 }
 
 #endif /* __LIB_ROUTE_NL_ROUTE_H__ */

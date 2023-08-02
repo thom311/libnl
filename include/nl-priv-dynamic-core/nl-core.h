@@ -32,29 +32,6 @@ static inline int wait_for_ack(struct nl_sock *sk)
 		return nl_wait_for_ack(sk);
 }
 
-struct nl_cache {
-	struct nl_list_head c_items;
-	int c_nitems;
-	int c_iarg1;
-	int c_iarg2;
-	int c_refcnt;
-	unsigned int c_flags;
-	struct nl_hash_table *hashtable;
-	struct nl_cache_ops *c_ops;
-};
-
-static inline const char *nl_cache_name(struct nl_cache *cache)
-{
-	return cache->c_ops ? cache->c_ops->co_name : "unknown";
-}
-
-struct nl_cache_assoc {
-	struct nl_cache *ca_cache;
-	change_func_t ca_change;
-	change_func_v2_t ca_change_v2;
-	void *ca_change_data;
-};
-
 #define LOOSE_COMPARISON 1
 #define ID_COMPARISON 2
 
@@ -86,5 +63,24 @@ struct nl_msg {
 	size_t nm_size;
 	int nm_refcnt;
 };
+
+/*****************************************************************************/
+
+extern const char *nl_strerror_l(int err);
+
+extern int __nl_read_num_str_file(const char *path,
+				  int (*cb)(long, const char *));
+
+extern int __trans_list_add(int, const char *, struct nl_list_head *);
+extern void __trans_list_clear(struct nl_list_head *);
+
+extern char *__type2str(int, char *, size_t, const struct trans_tbl *, size_t);
+extern int __str2type(const char *, const struct trans_tbl *, size_t);
+
+extern char *__list_type2str(int, char *, size_t, struct nl_list_head *);
+extern int __list_str2type(const char *, struct nl_list_head *);
+
+extern char *__flags2str(int, char *, size_t, const struct trans_tbl *, size_t);
+extern int __str2flags(const char *, const struct trans_tbl *, size_t);
 
 #endif /* __NL_SHARED_CORE_NL_CORE_H__ */

@@ -4,8 +4,6 @@
 
 #include <netlink/route/link/ipgre.h>
 
-#include <netlink-private/netlink.h>
-
 int main(int argc, char *argv[])
 {
 	struct nl_cache *link_cache;

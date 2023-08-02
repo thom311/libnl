@@ -25,10 +25,10 @@
 #include <netlink/cache.h>
 #include <netlink/utils.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-priv-dynamic-core/nl-core.h"
 #include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/cache-api.h"
+#include "nl-aux-core/nl-core.h"
 
 static struct nl_cache_ops *cache_ops;
 static NL_RW_LOCK(cache_ops_lock);

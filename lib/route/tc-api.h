@@ -13,6 +13,7 @@
 #include "nl-route.h"
 #include "nl-priv-dynamic-route/nl-priv-dynamic-route.h"
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 /*****************************************************************************/
 

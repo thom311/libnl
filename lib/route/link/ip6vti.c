@@ -24,8 +24,6 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/ip6vti.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-route.h"
 #include "link-api.h"
 

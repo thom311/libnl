@@ -11,16 +11,17 @@
 
 #include "nl-default.h"
 
+#include <linux/gen_stats.h>
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/link.h>
 #include <netlink/route/action.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-route.h"
 #include "tc-api.h"
 #include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 static struct nl_object_ops act_obj_ops;
 static struct nl_cache_ops rtnl_act_ops;

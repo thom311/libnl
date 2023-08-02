@@ -8,9 +8,8 @@
 
 #include <netlink/netlink.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 #define GENL_HDRSIZE(hdrlen) (GENL_HDRLEN + (hdrlen))
 

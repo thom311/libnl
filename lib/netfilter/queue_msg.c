@@ -21,10 +21,9 @@
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/queue_msg.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-netfilter.h"
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 static struct nl_cache_ops nfnl_queue_msg_ops;
 

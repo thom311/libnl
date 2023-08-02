@@ -38,7 +38,7 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/route.h>
 
-#include <netlink-private/netlink.h>
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /**
  * @name Routing Table Identifier Translations

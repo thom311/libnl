@@ -28,8 +28,7 @@
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/addr.h>
-
-#include <netlink-private/netlink.h>
+#include <netlink/attr.h>
 
 #include "mpls.h"
 #include "nl-priv-dynamic-core/nl-core.h"

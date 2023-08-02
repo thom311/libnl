@@ -51,8 +51,6 @@
 
 #include <netlink/xfrm/selector.h>
 
-#include <netlink-private/netlink.h>
-
 /* Selector, used as selector both on policy rules (SPD) and SAs. */
 struct xfrmnl_sel {
 	uint32_t        refcnt;

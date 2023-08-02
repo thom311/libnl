@@ -30,8 +30,6 @@
 #include <netlink/route/qdisc/fifo.h>
 #include <netlink/utils.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 /** @cond SKIP */

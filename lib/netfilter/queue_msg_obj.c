@@ -10,10 +10,10 @@
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/netfilter.h>
 #include <netlink/netfilter/queue_msg.h>
-
-#include <netlink-private/netlink.h>
+#include <netlink/route/link.h>
 
 #include "nl-netfilter.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /** @cond SKIP */
 #define QUEUE_MSG_ATTR_GROUP		(1UL << 0)

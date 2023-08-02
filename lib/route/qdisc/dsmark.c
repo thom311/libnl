@@ -18,8 +18,6 @@
 #include <netlink/route/class.h>
 #include <netlink/route/qdisc/dsmark.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 /** @cond SKIP */

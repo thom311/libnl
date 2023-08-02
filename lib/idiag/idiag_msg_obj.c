@@ -13,10 +13,10 @@
 #include <netlink/idiag/vegasinfo.h>
 #include <netlink/idiag/idiagnl.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-idiag.h"
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-aux-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 /** @cond SKIP */
 struct idiagnl_msg {

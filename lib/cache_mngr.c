@@ -32,9 +32,10 @@
 #include <netlink/cache.h>
 #include <netlink/utils.h>
 
-#include <netlink-private/netlink.h>
-
+#include "nl-core.h"
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
+#include "nl-aux-core/nl-core.h"
 
 /** @cond SKIP */
 struct nl_cache_mngr

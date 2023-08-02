@@ -271,7 +271,6 @@ noinst_HEADERS = \
 	include/linux-private/linux/tc_ematch/tc_em_meta.h \
 	include/linux-private/linux/veth.h \
 	include/linux-private/linux/xfrm.h \
-	include/netlink-private/netlink.h \
 	include/nl-aux-core/nl-core.h \
 	include/nl-aux-route/nl-route.h \
 	include/nl-default.h \

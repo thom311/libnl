@@ -18,7 +18,7 @@
 #include <netlink/route/cls/ematch.h>
 #include <netlink/route/cls/ematch/meta.h>
 
-#include <netlink-private/netlink.h>
+#include "nl-priv-dynamic-core/nl-core.h"
 
 struct rtnl_meta_value
 {

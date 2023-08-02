@@ -61,8 +61,10 @@
 
 #include <netlink/netlink.h>
 #include <netlink/netfilter/nfnl.h>
+#include <netlink/data.h>
+#include <netlink/msg.h>
 
-#include <netlink-private/netlink.h>
+#include "nl-aux-core/nl-core.h"
 
 /**
  * @name Socket Creating

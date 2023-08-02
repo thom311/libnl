@@ -7,8 +7,6 @@
 
 #include <netlink/netlink.h>
 
-#include <netlink-private/netlink.h>
-
 static const char *errmsg[NLE_MAX+1] = {
 [NLE_SUCCESS]		= "Success",
 [NLE_FAILURE]		= "Unspecific failure",

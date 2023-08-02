@@ -22,8 +22,6 @@
 #include <netlink/route/link.h>
 #include <netlink/route/qdisc/htb.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 /** @cond SKIP */

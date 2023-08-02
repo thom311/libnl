@@ -129,10 +129,10 @@
 
 #include <linux/xfrm.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-xfrm.h"
 #include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 /** @cond SKIP */
 

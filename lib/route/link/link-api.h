@@ -7,6 +7,7 @@
 #define NETLINK_LINK_API_H_
 
 #include <netlink/netlink.h>
+#include <netlink/route/link.h>
 
 #include "nl-priv-dynamic-core/nl-core.h"
 
@@ -192,5 +193,7 @@ extern int			rtnl_link_info_data_compare(struct rtnl_link *a,
 #ifdef __cplusplus
 }
 #endif
+
+extern struct rtnl_link *link_lookup(struct nl_cache *cache, int ifindex);
 
 #endif

@@ -7,8 +7,6 @@
 
 #include <netlink/idiag/vegasinfo.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-idiag.h"
 
 /**

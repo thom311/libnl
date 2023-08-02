@@ -7,8 +7,6 @@
 
 #include <netlink/idiag/meminfo.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-idiag.h"
 
 /**

@@ -13,8 +13,6 @@
 #include <netlink/route/qdisc/cbq.h>
 #include <netlink/route/cls/police.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 struct rtnl_cbq {

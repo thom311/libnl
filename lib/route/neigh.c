@@ -153,10 +153,9 @@
 #include <netlink/route/link.h>
 #include <netlink/hashtable.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-route.h"
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 /** @cond SKIP */
 struct rtnl_ncacheinfo {

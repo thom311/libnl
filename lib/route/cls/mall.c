@@ -19,8 +19,6 @@
 #include <netlink/route/cls/matchall.h>
 #include <netlink/route/action.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 struct rtnl_mall {

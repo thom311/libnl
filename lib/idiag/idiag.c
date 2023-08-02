@@ -17,7 +17,7 @@
 #include <netlink/cache.h>
 #include <netlink/idiag/idiagnl.h>
 
-#include <netlink-private/netlink.h>
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /**
  * @name Socket Creation

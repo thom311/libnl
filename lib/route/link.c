@@ -14,6 +14,8 @@
 
 #include "nl-default.h"
 
+#include <linux/if_arp.h>
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
@@ -23,10 +25,9 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-aux-route/nl-route.h"
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 #include "nl-route.h"
 #include "link-sriov.h"
 #include "link/link-api.h"

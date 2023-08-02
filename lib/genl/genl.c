@@ -16,6 +16,7 @@
 #include <netlink/utils.h>
 
 #include "nl-genl.h"
+#include "nl-aux-core/nl-core.h"
 
 /**
  * @name Generic Netlink Socket

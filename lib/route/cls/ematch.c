@@ -19,9 +19,8 @@
 #include <netlink/route/cls/ematch.h>
 #include <netlink/route/cls/ematch/cmp.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-route.h"
+#include "nl-aux-core/nl-core.h"
 
 #include "ematch_syntax.h"
 #include "ematch_grammar.h"

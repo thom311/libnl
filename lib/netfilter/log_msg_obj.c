@@ -11,8 +11,7 @@
 #include <netlink/netfilter/netfilter.h>
 #include <netlink/netfilter/log_msg.h>
 #include <netlink/netfilter/ct.h>
-
-#include <netlink-private/netlink.h>
+#include <netlink/route/link.h>
 
 #include "nl-priv-dynamic-core/object-api.h"
 #include "nl-netfilter.h"

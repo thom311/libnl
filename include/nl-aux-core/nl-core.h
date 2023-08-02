@@ -5,6 +5,22 @@
 
 #include "base/nl-base-utils.h"
 
+#ifdef NL_DEBUG
+#define NL_DBG(LVL, FMT, ARG...)                                               \
+	do {                                                                   \
+		if (LVL <= nl_debug) {                                         \
+			int _errsv = errno;                                    \
+			fprintf(stderr, "DBG<" #LVL ">%20s:%-4u %s: " FMT,     \
+				__FILE__, __LINE__, __func__, ##ARG);          \
+			errno = _errsv;                                        \
+		}                                                              \
+	} while (0)
+#else /* NL_DEBUG */
+#define NL_DBG(LVL, FMT, ARG...)                                               \
+	do {                                                                   \
+	} while (0)
+#endif /* NL_DEBUG */
+
 struct nl_addr;
 void nl_addr_put(struct nl_addr *);
 #define _nl_auto_nl_addr _nl_auto(_nl_auto_nl_addr_fcn)

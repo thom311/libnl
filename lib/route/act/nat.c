@@ -18,8 +18,6 @@
 #include <netlink/route/act/nat.h>
 #include <netlink/route/tc.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 static struct nla_policy nat_policy[TCA_NAT_MAX + 1] = {

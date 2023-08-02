@@ -25,10 +25,9 @@
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/exp.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-netfilter.h"
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 static struct nl_cache_ops nfnl_exp_ops;
 

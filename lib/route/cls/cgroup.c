@@ -19,8 +19,6 @@
 #include <netlink/route/cls/cgroup.h>
 #include <netlink/route/cls/ematch.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 /** @cond SKIP */

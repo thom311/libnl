@@ -21,10 +21,9 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/rule.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-route.h"
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 /** @cond SKIP */
 struct rtnl_rule {

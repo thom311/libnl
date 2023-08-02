@@ -66,8 +66,6 @@ static struct genl_cmd cmds[] = {
 	},
 };
 
-#define ARRAY_SIZE(X) (sizeof(X) / sizeof((X)[0]))
-
 static struct genl_ops ops = {
 	.o_name = TASKSTATS_GENL_NAME,
 	.o_cmds = cmds,

@@ -21,9 +21,9 @@
 #include <netlink/fib_lookup/request.h>
 #include <netlink/fib_lookup/lookup.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/cache-api.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /** @cond SKIP */
 struct flnl_result

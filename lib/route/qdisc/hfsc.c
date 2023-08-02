@@ -20,8 +20,6 @@
 #include <netlink/route/link.h>
 #include <netlink/route/qdisc/hfsc.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 /** @cond SKIP */

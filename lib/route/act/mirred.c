@@ -17,8 +17,6 @@
 #include <netlink/utils.h>
 #include <netlink/route/act/mirred.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 struct rtnl_mirred {

@@ -17,8 +17,6 @@
 #include <netlink/route/classifier.h>
 #include <netlink/utils.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-route.h"
 #include "tc-api.h"
 

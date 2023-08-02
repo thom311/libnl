@@ -24,8 +24,6 @@
 #include <netlink/route/cls/basic.h>
 #include <netlink/route/cls/ematch.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 struct rtnl_basic

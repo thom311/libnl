@@ -258,6 +258,29 @@ struct nl_cache_ops
 
 /** @} */
 
+struct nl_cache {
+	struct nl_list_head c_items;
+	int c_nitems;
+	int c_iarg1;
+	int c_iarg2;
+	int c_refcnt;
+	unsigned int c_flags;
+	struct nl_hash_table *hashtable;
+	struct nl_cache_ops *c_ops;
+};
+
+static inline const char *nl_cache_name(struct nl_cache *cache)
+{
+	return cache->c_ops ? cache->c_ops->co_name : "unknown";
+}
+
+struct nl_cache_assoc {
+	struct nl_cache *ca_cache;
+	change_func_t ca_change;
+	change_func_v2_t ca_change_v2;
+	void *ca_change_data;
+};
+
 #ifdef __cplusplus
 }
 #endif

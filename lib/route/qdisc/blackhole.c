@@ -13,8 +13,6 @@
 
 #include <netlink/netlink.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 static struct rtnl_tc_ops blackhole_ops = {

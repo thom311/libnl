@@ -27,8 +27,6 @@
 #include <netlink/route/rtnl.h>
 #include <netlink/route/link/macsec.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-route.h"
 #include "link-api.h"
 #include "nl-priv-dynamic-core/nl-core.h"

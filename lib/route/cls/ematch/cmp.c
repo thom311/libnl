@@ -18,8 +18,6 @@
 #include <netlink/route/cls/ematch.h>
 #include <netlink/route/cls/ematch/cmp.h>
 
-#include <netlink-private/netlink.h>
-
 void rtnl_ematch_cmp_set(struct rtnl_ematch *e, struct tcf_em_cmp *cfg)
 {
 	memcpy(rtnl_ematch_data(e), cfg, sizeof(*cfg));

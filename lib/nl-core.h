@@ -6,8 +6,6 @@
 #ifndef __LIB_NL_CORE_H__
 #define __LIB_NL_CORE_H__
 
-#include <netlink-private/netlink.h>
-
 struct nl_cb
 {
 	nl_recvmsg_msg_cb_t	cb_set[NL_CB_TYPE_MAX+1];
@@ -53,5 +51,10 @@ uint32_t _nl_socket_set_local_port_no_release(struct nl_sock *sk, int generate_o
 
 void _nl_socket_used_ports_release_all(const uint32_t *used_ports);
 void _nl_socket_used_ports_set(uint32_t *used_ports, uint32_t port);
+
+extern int nl_cache_parse(struct nl_cache_ops *, struct sockaddr_nl *,
+			  struct nlmsghdr *, struct nl_parser_param *);
+
+extern void dump_from_ops(struct nl_object *, struct nl_dump_params *);
 
 #endif /* __LIB_NL_CORE_H__ */

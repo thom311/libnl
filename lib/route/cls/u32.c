@@ -21,8 +21,6 @@
 #include <netlink/route/cls/u32.h>
 #include <netlink/route/action.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 #include "nl-aux-route/nl-route.h"
 

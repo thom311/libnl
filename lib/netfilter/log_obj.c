@@ -11,9 +11,9 @@
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/log.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/cache-api.h"
+#include "nl-priv-dynamic-core/nl-core.h"
 
 /** @cond SKIP */
 struct nfnl_log {

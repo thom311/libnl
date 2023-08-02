@@ -39,8 +39,6 @@
 #include <netlink/utils.h>
 #include <netlink/route/link.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-route.h"
 #include "link-api.h"
 

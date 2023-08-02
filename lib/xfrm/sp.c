@@ -49,10 +49,10 @@
 #include <netlink/xfrm/template.h>
 #include <netlink/xfrm/sp.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-xfrm.h"
 #include "nl-priv-dynamic-core/object-api.h"
+#include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 struct xfrmnl_userpolicy_type {
 	uint8_t                         type;

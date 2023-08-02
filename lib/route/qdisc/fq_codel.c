@@ -18,8 +18,6 @@
 #include <netlink/route/qdisc/fq_codel.h>
 #include <netlink/utils.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 /** @cond SKIP */

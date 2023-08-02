@@ -18,8 +18,6 @@
 #include <netlink/route/cls/ematch.h>
 #include <netlink/route/cls/ematch/text.h>
 
-#include <netlink-private/netlink.h>
-
 struct text_data
 {
 	struct tcf_em_text	cfg;

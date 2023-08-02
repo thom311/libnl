@@ -17,8 +17,6 @@
 
 #include <netlink/netlink.h>
 
-#include <netlink-private/netlink.h>
-
 #include "link-api.h"
 
 static struct rtnl_link_info_ops dummy_info_ops = {

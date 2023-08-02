@@ -60,8 +60,6 @@
 #include <netlink/utils.h>
 #include <netlink/route/qdisc/plug.h>
 
-#include <netlink-private/netlink.h>
-
 #include "tc-api.h"
 
 struct rtnl_plug {

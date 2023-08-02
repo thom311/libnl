@@ -15,8 +15,6 @@
 
 #include <netlink/route/link/bridge_info.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-route.h"
 #include "link-api.h"
 

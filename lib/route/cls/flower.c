@@ -5,14 +5,14 @@
 
 #include "nl-default.h"
 
+#include <linux/ethtool.h>
+
 #include <netlink/netlink.h>
 #include <netlink/attr.h>
 #include <netlink/utils.h>
 #include <netlink/route/classifier.h>
 #include <netlink/route/action.h>
 #include <netlink/route/cls/flower.h>
-
-#include <netlink-private/netlink.h>
 
 #include "tc-api.h"
 

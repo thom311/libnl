@@ -21,9 +21,8 @@
 #include <netlink/netfilter/nfnl.h>
 #include <netlink/netfilter/log.h>
 
-#include <netlink-private/netlink.h>
-
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-dynamic-core/cache-api.h"
 
 /**
  * @name Log Commands

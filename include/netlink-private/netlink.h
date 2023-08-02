@@ -6,6 +6,8 @@
 #ifndef NETLINK_LOCAL_H_
 #define NETLINK_LOCAL_H_
 
+#include "nl-default.h"
+
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -25,8 +27,6 @@
 
 #include <arpa/inet.h>
 #include <netdb.h>
-
-#include <config.h>
 
 #ifndef SOL_NETLINK
 #define SOL_NETLINK 270

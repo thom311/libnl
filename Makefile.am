@@ -274,6 +274,7 @@ noinst_HEADERS = \
 	include/netlink-private/netlink.h \
 	include/nl-aux-core/nl-core.h \
 	include/nl-aux-route/nl-route.h \
+	include/nl-default.h \
 	include/nl-priv-dynamic-core/cache-api.h \
 	include/nl-priv-dynamic-core/nl-core.h \
 	include/nl-priv-dynamic-core/object-api.h \

@@ -21,7 +21,7 @@
  * ~~~~
  */
 
-#include <config.h>
+#include "nl-default.h"
 
 #include "sys/socket.h"
 

@@ -277,8 +277,8 @@ noinst_HEADERS = \
 	include/nl-aux-route/nl-route.h \
 	include/nl-priv-dynamic-route/nl-priv-dynamic-route.h \
 	include/nl-priv-static-route/nl-priv-static-route.h \
-	include/nl-shared-core/cache-api.h \
-	include/nl-shared-core/object-api.h \
+	include/nl-priv-dynamic-core/cache-api.h \
+	include/nl-priv-dynamic-core/object-api.h \
 	$(NULL)
 
 ###############################################################################

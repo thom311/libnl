@@ -29,7 +29,7 @@
 
 #include <netinet/in.h>
 
-#include "nl-shared-core/object-api.h"
+#include "nl-priv-dynamic-core/object-api.h"
 
 #define NL_SOCK_PASSCRED	(1<<1)
 #define NL_OWN_PORT		(1<<2)

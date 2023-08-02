@@ -21,7 +21,7 @@
  * ~~~~
  */
 
-#include "defs.h"
+#include <config.h>
 
 #include "sys/socket.h"
 

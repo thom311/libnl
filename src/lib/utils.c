@@ -15,10 +15,10 @@
  * accordingly via nl_cli_fatal().
  */
 
+#include <config.h>
+
 #include <netlink/cli/utils.h>
 #include <locale.h>
-
-#include "lib/defs.h"
 
 #ifdef HAVE_DLFCN_H
 #include <dlfcn.h>

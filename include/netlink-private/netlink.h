@@ -26,7 +26,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#include <defs.h>
+#include <config.h>
 
 #ifndef SOL_NETLINK
 #define SOL_NETLINK 270

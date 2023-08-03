@@ -20,7 +20,6 @@
 
 #include "nl-default.h"
 
-#include <stdlib.h>
 #include <locale.h>
 
 #include <linux-private/linux/socket.h>

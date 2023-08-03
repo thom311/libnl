@@ -5,14 +5,9 @@
 #include "nl-test-util.h"
 
 #include <fcntl.h>
-#include <inttypes.h>
-#include <limits.h>
 #include <sched.h>
-#include <stdbool.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <sys/mount.h>
-#include <unistd.h>
 
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>

@@ -8,7 +8,6 @@
 #include "nl-default.h"
 
 #include <stdio.h>
-#include <string.h>
 
 #include <linux-private/linux/if_ether.h>
 #include <linux-private/linux/tc_act/tc_mirred.h>

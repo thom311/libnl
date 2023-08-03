@@ -6,9 +6,6 @@
 
 #include "nl-default.h"
 
-#include <stdlib.h>
-#include <stdbool.h>
-
 #include <linux-private/linux/netlink.h>
 
 #include <netlink/route/link.h>

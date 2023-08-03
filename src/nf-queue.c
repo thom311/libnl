@@ -6,8 +6,6 @@
 
 #include "nl-default.h"
 
-#include <netinet/in.h>
-
 #include <linux-private/linux/netfilter.h>
 #include <linux-private/linux/netfilter/nfnetlink_queue.h>
 #include <linux-private/linux/netlink.h>

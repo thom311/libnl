@@ -5,8 +5,6 @@
 
 #include "nl-default.h"
 
-#include <string.h>
-
 #include <netlink/object.h>
 #include <netlink/hash.h>
 #include <netlink/hashtable.h>

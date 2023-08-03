@@ -15,7 +15,6 @@
 
 #include "nl-default.h"
 
-#include <byteswap.h>
 #include <sys/types.h>
 
 #include <linux-private/linux/netfilter/nfnetlink_conntrack.h>

@@ -12,8 +12,6 @@
 
 #include "nl-default.h"
 
-#include <inttypes.h>
-
 #include <linux-private/linux/fib_rules.h>
 
 #include <netlink/netlink.h>

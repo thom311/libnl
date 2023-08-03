@@ -2,8 +2,6 @@
 
 #include "nl-default.h"
 
-#include <errno.h>
-
 #include <netlink/netlink.h>
 
 int main(int argc, char *argv[])

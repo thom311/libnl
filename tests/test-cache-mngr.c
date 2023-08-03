@@ -3,7 +3,6 @@
 #include "nl-default.h"
 
 #include <signal.h>
-#include <stdbool.h>
 #include <sys/time.h>
 #include <time.h>
 

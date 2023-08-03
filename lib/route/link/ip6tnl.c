@@ -18,8 +18,6 @@
 
 #include "nl-default.h"
 
-#include <netinet/in.h>
-
 #include <linux-private/linux/if_tunnel.h>
 
 #include <netlink/netlink.h>

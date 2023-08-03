@@ -73,6 +73,9 @@ jobs:
           export CFLAGS="-DNL_MORE_ASSERTS=1000 -O2 -Werror -Wall -Wdeclaration-after-statement -Wvla -std=gnu11"
           if [ "$CC" = "clang" ]; then
                   CFLAGS="$CFLAGS -Wno-error=unused-command-line-argument -Wno-error=unused-function"
+                  export LDFLAGS="-Wl,--no-undefined-version,--fatal-warnings"
+          else
+                  export LDFLAGS="-Wl,--no-undefined-version"
           fi
 
           ./autogen.sh
@@ -137,5 +140,15 @@ jobs:
           make -j 5 check-progs
           export NLTST_SEED_RAND=
           make -j 5 check
+
+      - name: Link with mold
+        run: |
+          sudo apt-get -y --no-install-recommends install \
+            mold
+          git clean -fdx
+          export LDFLAGS="-fuse-ld=mold -Wl,--fatal-warnings"
+          ./autogen.sh
+          ./configure
+          make -j 5 V=1
 
       - run: echo "🍏 This job's status is ${{ job.status }}."

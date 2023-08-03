@@ -82,6 +82,7 @@ jobs:
           ./configure
           make -j 5
         shell: bash
+
       - name: Build Unit Tests
         run: make -j 5 check-progs
 
@@ -90,8 +91,8 @@ jobs:
           set -x
           export NLTST_SEED_RAND=
           for i in `seq 1 5`; do
-            tests/check-all
             tests/check-direct
+            tests/check-all
             make -j check
           done
 
@@ -99,8 +100,8 @@ jobs:
         run: |
           set -x
           export NLTST_SEED_RAND=
-          CK_FORK=no libtool --mode=execute valgrind --error-exitcode=66 --leak-check=full -s --show-leak-kinds=all ./tests/check-all
           CK_FORK=no libtool --mode=execute valgrind --error-exitcode=66 --leak-check=full -s --show-leak-kinds=all ./tests/check-direct
+          CK_FORK=no libtool --mode=execute valgrind --error-exitcode=66 --leak-check=full -s --show-leak-kinds=all ./tests/check-all
         shell: bash
 
       - name: Install packages for Release
@@ -152,3 +153,62 @@ jobs:
           make -j 5 V=1
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
+
+  ci-alpine:
+    runs-on: ubuntu-latest
+    container:
+      image: alpine:latest
+    steps:
+      - name: Install packages
+        run: |
+          apk add \
+            autoconf \
+            automake \
+            bash \
+            bison \
+            check-dev \
+            flex \
+            gcc \
+            git \
+            libtool \
+            linux-headers \
+            make \
+            musl-dev \
+            pkgconfig
+
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Setup git
+        run: |
+          git config --global --add safe.directory "$PWD"
+
+      - name: Build
+        run: |
+          set -x
+
+          export CC="${{ matrix.cc }}"
+          export CFLAGS="-DNL_MORE_ASSERTS=1000 -O2 -Werror -Wall -Wdeclaration-after-statement -Wvla -std=gnu11"
+          if [ "$CC" = "clang" ]; then
+                  CFLAGS="$CFLAGS -Wno-error=unused-command-line-argument -Wno-error=unused-function"
+                  export LDFLAGS="-Wl,--no-undefined-version,--fatal-warnings"
+          else
+                  export LDFLAGS="-Wl,--no-undefined-version"
+          fi
+
+          ./autogen.sh
+          ./configure
+          make -j 5
+          make -j 5 check-progs
+
+      - name: Run Unit Tests
+        run: |
+          set -x
+          export NLTST_SEED_RAND=
+          for i in `seq 1 5`; do
+            tests/check-direct
+            # unshare() does not work (EPERM). This test currently cannot pass
+            # (odd).
+            # tests/check-all
+            # make -j check
+          done

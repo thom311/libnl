@@ -11,7 +11,7 @@
 
 #include "nl-default.h"
 
-#include <linux/inet_diag.h>
+#include <linux-private/linux/inet_diag.h>
 
 #include <netlink/netlink.h>
 #include <netlink/cache.h>

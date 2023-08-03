@@ -2,8 +2,8 @@
 
 #include "nl-default.h"
 
-#include <linux/netlink.h>
-#include <linux/if_link.h>
+#include <linux-private/linux/netlink.h>
+#include <linux-private/linux/if_link.h>
 
 #include <netlink/route/link/macsec.h>
 #include <netlink/netlink.h>

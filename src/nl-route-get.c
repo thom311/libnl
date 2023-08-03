@@ -5,7 +5,7 @@
 
 #include "nl-default.h"
 
-#include <linux/rtnetlink.h>
+#include <linux-private/linux/rtnetlink.h>
 
 #include <netlink/cli/utils.h>
 #include <netlink/cli/route.h>

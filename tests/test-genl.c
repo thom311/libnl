@@ -2,8 +2,9 @@
 
 #include "nl-default.h"
 
+#include <linux-private/linux/genetlink.h>
+
 #include <linux/taskstats.h>
-#include <linux/genetlink.h>
 
 #include <netlink/cli/utils.h>
 

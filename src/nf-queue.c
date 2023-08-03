@@ -8,9 +8,9 @@
 
 #include <netinet/in.h>
 
-#include <linux/netfilter.h>
-#include <linux/netfilter/nfnetlink_queue.h>
-#include <linux/netlink.h>
+#include <linux-private/linux/netfilter.h>
+#include <linux-private/linux/netfilter/nfnetlink_queue.h>
+#include <linux-private/linux/netlink.h>
 
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>

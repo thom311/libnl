@@ -1,10 +1,8 @@
 /* SPDX-License-Identifier: LGPL-2.1-only */
 
-#include <linux/netlink.h>
-
 #include "nl-default.h"
 
-#include <linux/netlink.h>
+#include <linux-private/linux/netlink.h>
 
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>

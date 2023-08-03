@@ -2,7 +2,7 @@
 
 #include "nl-default.h"
 
-#include <linux/lwtunnel.h>
+#include <linux-private/linux/lwtunnel.h>
 
 #include "nl-route.h"
 #include "nexthop-encap.h"

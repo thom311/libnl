@@ -6,14 +6,13 @@
 #include <time.h>
 #include <check.h>
 
-#include <linux/netlink.h>
+#include <linux-private/linux/netlink.h>
 
 #include <netlink/route/cls/ematch.h>
 
+#include "cksuite-all.h"
 #include "nl-aux-route/nl-route.h"
 #include "nl-priv-dynamic-route/nl-priv-dynamic-route.h"
-
-#include "cksuite-all.h"
 
 #define MAX_DEPTH 6
 #define MAX_CHILDREN 5

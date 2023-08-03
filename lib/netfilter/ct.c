@@ -18,7 +18,7 @@
 #include <byteswap.h>
 #include <sys/types.h>
 
-#include <linux/netfilter/nfnetlink_conntrack.h>
+#include <linux-private/linux/netfilter/nfnetlink_conntrack.h>
 
 #include <netlink/attr.h>
 #include <netlink/netfilter/nfnl.h>

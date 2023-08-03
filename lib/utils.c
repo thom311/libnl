@@ -23,8 +23,8 @@
 #include <stdlib.h>
 #include <locale.h>
 
-#include <linux/socket.h>
-#include <linux/if_arp.h>
+#include <linux-private/linux/socket.h>
+#include <linux-private/linux/if_arp.h>
 
 #include <netlink/netlink.h>
 #include <netlink/utils.h>

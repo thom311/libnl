@@ -4,7 +4,7 @@
 
 #include <check.h>
 
-#include <linux/snmp.h>
+#include <linux-private/linux/snmp.h>
 
 #include <netlink/route/link.h>
 

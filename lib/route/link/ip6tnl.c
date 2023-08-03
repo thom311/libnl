@@ -20,7 +20,7 @@
 
 #include <netinet/in.h>
 
-#include <linux/if_tunnel.h>
+#include <linux-private/linux/if_tunnel.h>
 
 #include <netlink/netlink.h>
 #include <netlink/attr.h>

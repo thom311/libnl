@@ -5,8 +5,8 @@
 
 #include "nl-default.h"
 
-#include <linux/ipv6.h>
-#include <linux/snmp.h>
+#include <linux-private/linux/ipv6.h>
+#include <linux-private/linux/snmp.h>
 
 #include <netlink/netlink.h>
 #include <netlink/attr.h>

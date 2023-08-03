@@ -1042,6 +1042,10 @@ dist_man8_MANS = \
 
 ###############################################################################
 
+python-build:
+	cd "$(srcdir)/python"; \
+	python setup.py build
+
 EXTRA_DIST += \
 	python/README \
 	\

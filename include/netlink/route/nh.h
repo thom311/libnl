@@ -29,14 +29,9 @@ typedef struct nl_nh_group {
 extern int rtnl_nh_alloc_cache(struct nl_sock *sk, int family,
 			       struct nl_cache **result);
 extern struct rtnl_nh *rtnl_nh_alloc(void);
-extern struct rtnl_nh *rtnl_nh_clone(struct rtnl_nh *);
 extern void rtnl_nh_put(struct rtnl_nh *);
 
 extern struct rtnl_nh *rtnl_nh_get(struct nl_cache *cache, int nhid);
-
-extern int rtnl_nh_compare(struct rtnl_nh *, struct rtnl_nh *, uint32_t, int);
-
-extern void rtnl_nh_dump(struct rtnl_nh *, struct nl_dump_params *);
 
 extern int rtnl_nh_set_gateway(struct rtnl_nh *, struct nl_addr *);
 extern struct nl_addr *rtnl_nh_get_gateway(struct rtnl_nh *);

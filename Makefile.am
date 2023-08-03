@@ -1056,7 +1056,6 @@ EXTRA_DIST += \
 	python/examples/wiphy.py \
 	\
 	python/netlink/capi.i \
-	python/netlink/fixes.h \
 	python/netlink/__init__.py \
 	python/netlink/core.py \
 	python/netlink/util.py \

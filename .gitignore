@@ -63,9 +63,8 @@ test-suite.log
 /libtool
 /m4/libtool.m4
 /m4/lt*.m4
-/python/build
-/python/capi.py
-/python/capi_wrap.c
+/python/**/capi*
+/python/build/
 /python/setup.py
 /src/genl-ctrl-list
 /src/idiag-socket-details

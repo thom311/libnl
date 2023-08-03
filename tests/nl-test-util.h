@@ -8,11 +8,10 @@
 #include <string.h>
 #include <stdbool.h>
 #include <arpa/inet.h>
-
 #include <check.h>
 
-#include "netlink/object.h"
-#include "netlink/cache.h"
+#include <netlink/object.h>
+#include <netlink/cache.h>
 
 #include "base/nl-base-utils.h"
 #include "nl-aux-core/nl-core.h"

@@ -12,9 +12,7 @@
 
 #include "nl-default.h"
 
-#include <inttypes.h>
-
-#include <linux/fib_rules.h>
+#include <linux-private/linux/fib_rules.h>
 
 #include <netlink/netlink.h>
 #include <netlink/utils.h>

@@ -122,12 +122,12 @@
 
 #include "nl-default.h"
 
+#include <linux-private/linux/xfrm.h>
+
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/object.h>
 #include <netlink/xfrm/ae.h>
-
-#include <linux/xfrm.h>
 
 #include "nl-xfrm.h"
 #include "nl-priv-dynamic-core/object-api.h"

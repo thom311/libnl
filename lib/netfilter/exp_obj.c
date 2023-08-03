@@ -9,10 +9,10 @@
 #include "nl-default.h"
 
 #include <sys/types.h>
-#include <netinet/in.h>
 
-#include <linux/netfilter/nfnetlink_conntrack.h>
-#include <linux/netfilter/nf_conntrack_common.h>
+#include <linux-private/linux/netfilter/nfnetlink_conntrack.h>
+#include <linux-private/linux/netfilter/nf_conntrack_common.h>
+
 #include <linux/netfilter/nf_conntrack_tcp.h>
 
 #include <netlink/netfilter/nfnl.h>

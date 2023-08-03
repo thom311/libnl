@@ -53,7 +53,7 @@
 
 #include "nl-default.h"
 
-#include <linux/ip.h>
+#include <linux-private/linux/ip.h>
 
 #include <netlink/netlink.h>
 #include <netlink/attr.h>

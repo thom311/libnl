@@ -18,8 +18,8 @@
 
 #include "nl-default.h"
 
-#include <linux/if_link.h>
-#include <linux/veth.h>
+#include <linux-private/linux/if_link.h>
+#include <linux-private/linux/veth.h>
 
 #include <netlink/netlink.h>
 #include <netlink/attr.h>

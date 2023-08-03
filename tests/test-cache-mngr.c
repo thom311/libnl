@@ -3,11 +3,10 @@
 #include "nl-default.h"
 
 #include <signal.h>
-#include <stdbool.h>
 #include <sys/time.h>
 #include <time.h>
 
-#include <linux/netlink.h>
+#include <linux-private/linux/netlink.h>
 
 #include <netlink/netlink.h>
 #include <netlink/cache.h>

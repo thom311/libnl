@@ -21,7 +21,7 @@
 
 #include "nl-default.h"
 
-#include <linux/socket.h>
+#include <linux-private/linux/socket.h>
 
 #include <netlink/netlink.h>
 #include <netlink/utils.h>

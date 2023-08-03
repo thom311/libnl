@@ -6,10 +6,7 @@
 
 #include "nl-default.h"
 
-#include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <netinet/in.h>
 
 #include <linux-private/linux/mpls.h>
 

@@ -332,13 +332,17 @@ EXTRA_DIST += \
 
 ###############################################################################
 
+default_includes = \
+	-I$(srcdir)/include/linux-private \
+	-I$(srcdir)/include \
+	-I$(builddir)/include \
+	$(NULL)
+
 lib_cppflags = \
 	$(warn_cppflags) \
 	-D_GNU_SOURCE \
 	-DSYSCONFDIR=\"$(sysconfdir)/libnl\" \
-	-I$(srcdir)/include/linux-private \
-	-I$(srcdir)/include \
-	-I$(builddir)/include \
+	$(default_includes) \
 	$(NULL)
 
 lib_LTLIBRARIES += lib/libnl-3.la
@@ -657,9 +661,8 @@ src_lib_libnl_cli_3_la_CPPFLAGS = \
 	-D_GNU_SOURCE \
 	-DPKGLIBDIR=\"$(pkglibdir)\" \
 	-DSYSCONFDIR=\"$(sysconfdir)\" \
-	-I$(srcdir)/include/linux-private \
-	-I$(srcdir)/include \
-	-I$(builddir)/include
+	$(default_includes) \
+	$(NULL)
 src_lib_libnl_cli_3_la_LDFLAGS = \
 	$(src_lib_ldflags) \
 	-Wl,--version-script=$(srcdir)/libnl-cli-3.sym
@@ -677,9 +680,8 @@ src_cppflags = \
 	$(warn_cppflags) \
 	-D_GNU_SOURCE \
 	-DSYSCONFDIR=\"$(sysconfdir)/libnl\" \
-	-I$(srcdir)/include/linux-private \
-	-I$(srcdir)/include \
-	-I$(builddir)/include
+	$(default_includes) \
+	$(NULL)
 
 src_ldadd = \
 	src/lib/libnl-cli-3.la \
@@ -858,9 +860,8 @@ tests_cppflags = \
 	$(warn_cppflags) \
 	-D_GNU_SOURCE \
 	-DSYSCONFDIR=\"$(sysconfdir)/libnl\" \
-	-I$(srcdir)/include/linux-private \
-	-I$(srcdir)/include \
-	-I$(builddir)/include
+	$(default_includes) \
+	$(NULL)
 
 tests_ldadd = \
 	lib/libnl-3.la \
@@ -1042,6 +1043,10 @@ dist_man8_MANS = \
 
 ###############################################################################
 
+python-build:
+	cd "$(srcdir)/python"; \
+	python setup.py build
+
 EXTRA_DIST += \
 	python/README \
 	\
@@ -1056,7 +1061,6 @@ EXTRA_DIST += \
 	python/examples/wiphy.py \
 	\
 	python/netlink/capi.i \
-	python/netlink/fixes.h \
 	python/netlink/__init__.py \
 	python/netlink/core.py \
 	python/netlink/util.py \

@@ -5,15 +5,14 @@
 
 #include "nl-default.h"
 
-#include <linux/netlink.h>
-#include <linux/if_ether.h>
+#include <linux-private/linux/netlink.h>
+#include <linux-private/linux/if_ether.h>
 
 #include <netlink/attr.h>
 #include <netlink/msg.h>
 #include <netlink/route/cls/u32.h>
 
 #include "cksuite-all.h"
-
 #include "nl-aux-route/nl-route.h"
 
 START_TEST(attr_size)

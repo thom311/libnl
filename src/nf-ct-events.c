@@ -5,9 +5,9 @@
 
 #include "nl-default.h"
 
-#include <linux/netlink.h>
-#include <linux/netfilter/nfnetlink.h>
-#include <linux/netfilter/nfnetlink_conntrack.h>
+#include <linux-private/linux/netlink.h>
+#include <linux-private/linux/netfilter/nfnetlink.h>
+#include <linux-private/linux/netfilter/nfnetlink_conntrack.h>
 
 #include <netlink/cli/utils.h>
 #include <netlink/cli/ct.h>

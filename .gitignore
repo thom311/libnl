@@ -24,12 +24,15 @@ test-suite.log
 /doc/Doxyfile
 /doc/aclocal.m4
 /doc/api/*.css
+/doc/api/*.dot
 /doc/api/*.html
 /doc/api/*.js
 /doc/api/*.map
 /doc/api/*.md5
 /doc/api/*.png
 /doc/api/*.tag
+/doc/api/_formula*
+/doc/api/doxygen.svg
 /doc/api/formula.repository
 /doc/api/jquery.js
 /doc/asciidoc.tmp
@@ -60,9 +63,8 @@ test-suite.log
 /libtool
 /m4/libtool.m4
 /m4/lt*.m4
-/python/build
-/python/capi.py
-/python/capi_wrap.c
+/python/**/capi*
+/python/build/
 /python/setup.py
 /src/genl-ctrl-list
 /src/idiag-socket-details

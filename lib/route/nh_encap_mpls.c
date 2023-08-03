@@ -2,8 +2,8 @@
 
 #include "nl-default.h"
 
-#include <linux/mpls_iptunnel.h>
-#include <linux/lwtunnel.h>
+#include <linux-private/linux/mpls_iptunnel.h>
+#include <linux-private/linux/lwtunnel.h>
 
 #include <netlink/route/nexthop.h>
 

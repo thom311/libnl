@@ -17,7 +17,7 @@
 
 #include <sys/types.h>
 
-#include <linux/netfilter/nfnetlink_log.h>
+#include <linux-private/linux/netfilter/nfnetlink_log.h>
 
 #include <netlink/attr.h>
 #include <netlink/netfilter/nfnl.h>

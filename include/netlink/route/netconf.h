@@ -10,6 +10,8 @@
 extern "C" {
 #endif
 
+struct nl_sock;
+struct nl_cache;
 struct rtnl_netconf;
 
 int rtnl_netconf_alloc_cache(struct nl_sock *sk, struct nl_cache **result);

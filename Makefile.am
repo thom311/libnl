@@ -8,6 +8,7 @@ check_LTLIBRARIES =
 
 check_PROGRAMS =
 check_programs =
+check_local =
 
 bin_PROGRAMS =
 sbin_PROGRAMS =
@@ -1084,6 +1085,8 @@ EXTRA_DIST += \
 	python/tests/test-create-bridge.py
 
 ###############################################################################
+
+check-local: $(check_local)
 
 check_PROGRAMS += $(check_programs)
 TESTS += $(check_programs)

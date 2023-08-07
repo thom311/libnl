@@ -9,7 +9,15 @@
 #include <netlink/netlink.h>
 #include <netlink/route/qdisc.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern  void rtnl_red_set_limit(struct rtnl_qdisc *qdisc, int limit);
 extern int rtnl_red_get_limit(struct rtnl_qdisc *qdisc);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

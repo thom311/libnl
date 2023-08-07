@@ -6,6 +6,10 @@
 #ifndef NETLINK_COMPAT_H_
 #define NETLINK_COMPAT_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if !defined _LINUX_SOCKET_H && !defined _BITS_SOCKADDR_H
 typedef unsigned short  sa_family_t;
 #endif
@@ -43,6 +47,10 @@ typedef unsigned short  sa_family_t;
 
 #ifndef AF_MPLS
 #define AF_MPLS		28
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

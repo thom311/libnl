@@ -8,6 +8,10 @@
 
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @ingroup utils
  * Enumeration of dumping variations (dp_type)
@@ -100,5 +104,9 @@ struct nl_dump_params
 
 	unsigned int		dp_line;
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -8,6 +8,10 @@
 
 /* Compile Time Versioning Information */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define LIBNL_STRING "@PACKAGE_STRING@"
 #define LIBNL_VERSION "@PACKAGE_VERSION@"
 
@@ -27,5 +31,9 @@ extern const int        nl_ver_num;
 extern const int        nl_ver_maj;
 extern const int        nl_ver_min;
 extern const int        nl_ver_mic;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

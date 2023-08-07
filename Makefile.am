@@ -223,6 +223,22 @@ libnlinclude_netlink_cli_HEADERS = \
 	$(NULL)
 endif
 
+public_headers = \
+	$(libnlinclude_netlink_HEADERS) \
+	$(libnlinclude_netlink_fib_lookup_HEADERS) \
+	$(libnlinclude_netlink_genl_HEADERS) \
+	$(libnlinclude_netlink_idiag_HEADERS) \
+	$(libnlinclude_netlink_netfilter_HEADERS) \
+	$(libnlinclude_netlink_route_HEADERS) \
+	$(libnlinclude_netlink_route_act_HEADERS) \
+	$(libnlinclude_netlink_route_cls_HEADERS) \
+	$(libnlinclude_netlink_route_cls_ematch_HEADERS) \
+	$(libnlinclude_netlink_route_link_HEADERS) \
+	$(libnlinclude_netlink_route_qdisc_HEADERS) \
+	$(libnlinclude_netlink_xfrm_HEADERS) \
+	$(libnlinclude_netlink_cli_HEADERS) \
+	$(NULL)
+
 noinst_HEADERS = \
 	include/base/nl-base-utils.h \
 	include/linux-private/linux/can/netlink.h \
@@ -1083,6 +1099,25 @@ EXTRA_DIST += \
 	python/netlink/route/qdisc/htb.py \
 	\
 	python/tests/test-create-bridge.py
+
+###############################################################################
+
+%.build-headers-test.c: %
+	mkdir -p "$(dir $@)"
+	echo -e "#include <$$(echo "$<" | sed 's|.*\<include/netlink/|netlink/|')>\nint main(int argc, char **argv) { return 0; }" > $@
+
+%.build-headers-test.o: %.build-headers-test.c
+	$(COMPILE) -Wall -Werror -Wno-error=cpp -I$(srcdir)/include -I$(builddir)/include -c -o $@ $<
+
+BUILD_HEADERS_OBJS = $(patsubst %,%.build-headers-test.o,$(public_headers))
+
+# Test whether the public headers are all self-contained and can be build.
+# This test is not hooked up as `make check`.
+check-local-build-headers: $(BUILD_HEADERS_OBJS)
+
+CLEANFILES += $(BUILD_HEADERS_OBJS)
+
+check_local += check-local-build-headers
 
 ###############################################################################
 

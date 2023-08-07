@@ -10,10 +10,6 @@
 #include <netlink/utils.h>
 #include <netlink/object.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * @ingroup object
  * @defgroup object_api Object API
@@ -364,9 +360,5 @@ struct nl_object_ops
 };
 
 /** @} */
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

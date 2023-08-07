@@ -11,10 +11,6 @@
 
 #include "nl-priv-dynamic-core/nl-core.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * @ingroup link_api
  *
@@ -189,10 +185,6 @@ extern int			rtnl_link_af_data_compare(struct rtnl_link *a,
 extern int			rtnl_link_info_data_compare(struct rtnl_link *a,
 							    struct rtnl_link *b,
 							    int flags);
-
-#ifdef __cplusplus
-}
-#endif
 
 extern struct rtnl_link *link_lookup(struct nl_cache *cache, int ifindex);
 

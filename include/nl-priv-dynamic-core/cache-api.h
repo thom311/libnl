@@ -9,10 +9,6 @@
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * @ingroup cache
  * @defgroup cache_api Cache Implementation
@@ -280,9 +276,5 @@ struct nl_cache_assoc {
 	change_func_v2_t ca_change_v2;
 	void *ca_change_data;
 };
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

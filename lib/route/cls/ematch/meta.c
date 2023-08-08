@@ -12,7 +12,7 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/tc_ematch/tc_em_meta.h>
+#include <linux/tc_ematch/tc_em_meta.h>
 
 #include <netlink/netlink.h>
 #include <netlink/route/cls/ematch.h>

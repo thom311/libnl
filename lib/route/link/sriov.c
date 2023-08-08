@@ -21,8 +21,8 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/if_ether.h>
-#include <linux-private/linux/if_link.h>
+#include <linux/if_ether.h>
+#include <linux/if_link.h>
 
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>

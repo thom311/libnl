@@ -5,7 +5,7 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/inet_diag.h>
+#include <linux/inet_diag.h>
 
 #include <netlink/idiag/req.h>
 #include <netlink/idiag/idiagnl.h>

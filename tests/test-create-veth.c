@@ -2,7 +2,7 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/netlink.h>
+#include <linux/netlink.h>
 
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>

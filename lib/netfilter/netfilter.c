@@ -5,7 +5,7 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/netfilter.h>
+#include <linux/netfilter.h>
 
 #include <netlink/netfilter/netfilter.h>
 

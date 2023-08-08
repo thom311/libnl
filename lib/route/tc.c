@@ -11,8 +11,8 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/if_arp.h>
-#include <linux-private/linux/gen_stats.h>
+#include <linux/if_arp.h>
+#include <linux/gen_stats.h>
 
 #include <linux/atm.h>
 

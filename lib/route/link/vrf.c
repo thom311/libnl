@@ -19,8 +19,8 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/if_link.h>
-#include <linux-private/linux/rtnetlink.h>
+#include <linux/if_link.h>
+#include <linux/rtnetlink.h>
 
 #include <netlink/netlink.h>
 #include <netlink/attr.h>

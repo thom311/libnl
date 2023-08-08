@@ -18,7 +18,7 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/can/netlink.h>
+#include <linux/can/netlink.h>
 
 #include <netlink/netlink.h>
 #include <netlink/attr.h>

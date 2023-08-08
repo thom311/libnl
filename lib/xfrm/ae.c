@@ -122,7 +122,7 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/xfrm.h>
+#include <linux/xfrm.h>
 
 #include <netlink/netlink.h>
 #include <netlink/cache.h>

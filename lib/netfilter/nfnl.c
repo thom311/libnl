@@ -57,7 +57,7 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/netfilter/nfnetlink.h>
+#include <linux/netfilter/nfnetlink.h>
 
 #include <netlink/netlink.h>
 #include <netlink/netfilter/nfnl.h>

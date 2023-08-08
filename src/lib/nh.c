@@ -12,7 +12,7 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/if.h>
+#include <linux/if.h>
 
 #include <netlink/cli/utils.h>
 #include <netlink/cli/nh.h>

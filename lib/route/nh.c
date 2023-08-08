@@ -5,7 +5,7 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/nexthop.h>
+#include <linux/nexthop.h>
 
 #include <netlink/route/nh.h>
 #include <netlink/hashtable.h>

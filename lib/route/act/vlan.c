@@ -12,7 +12,7 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/tc_act/tc_vlan.h>
+#include <linux/tc_act/tc_vlan.h>
 
 #include <netlink/netlink.h>
 #include <netlink/attr.h>

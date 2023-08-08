@@ -6,7 +6,7 @@
 #include <time.h>
 #include <check.h>
 
-#include <linux-private/linux/netlink.h>
+#include <linux/netlink.h>
 
 #include <netlink/route/cls/ematch.h>
 

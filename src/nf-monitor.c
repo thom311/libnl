@@ -7,8 +7,8 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/netlink.h>
-#include <linux-private/linux/netfilter/nfnetlink.h>
+#include <linux/netlink.h>
+#include <linux/netfilter/nfnetlink.h>
 
 #include <netlink/cli/utils.h>
 #include <netlink/netfilter/nfnl.h>

@@ -5,8 +5,8 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/if.h>
-#include <linux-private/linux/netlink.h>
+#include <linux/if.h>
+#include <linux/netlink.h>
 
 #include <netlink/cli/utils.h>
 #include <netlink/cli/link.h>

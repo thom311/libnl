@@ -5,8 +5,8 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/netlink.h>
-#include <linux-private/linux/if_ether.h>
+#include <linux/netlink.h>
+#include <linux/if_ether.h>
 
 #include <netlink/attr.h>
 #include <netlink/msg.h>

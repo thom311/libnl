@@ -11,7 +11,7 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/gen_stats.h>
+#include <linux/gen_stats.h>
 
 #include <netlink/netlink.h>
 #include <netlink/utils.h>

@@ -14,7 +14,7 @@
 
 #include <sys/types.h>
 
-#include <linux-private/linux/netfilter/nfnetlink_queue.h>
+#include <linux/netfilter/nfnetlink_queue.h>
 
 #include <netlink/attr.h>
 #include <netlink/netfilter/nfnl.h>

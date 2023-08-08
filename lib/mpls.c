@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-#include <linux-private/linux/mpls.h>
+#include <linux/mpls.h>
 
 #include <netlink/netlink-compat.h>
 

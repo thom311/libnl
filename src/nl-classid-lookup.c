@@ -5,7 +5,7 @@
 
 #include "nl-default.h"
 
-#include <linux-private/linux/pkt_sched.h>
+#include <linux/pkt_sched.h>
 
 #include <netlink/cli/utils.h>
 

@@ -214,12 +214,13 @@ static int inet6_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 	}
 
 	if (tb[IFLA_INET6_ICMP6STATS]) {
+#define _NL_ICMP6_MIB_MAX 6
 		unsigned char *cnt = nla_data(tb[IFLA_INET6_ICMP6STATS]);
 		uint64_t stat;
 		int i;
-		int len = _NL_MIN(__ICMP6_MIB_MAX, nla_len(tb[IFLA_INET6_ICMP6STATS]) / 8);
+		int len = _NL_MIN(_NL_ICMP6_MIB_MAX, nla_len(tb[IFLA_INET6_ICMP6STATS]) / 8);
 
-		_NL_STATIC_ASSERT (__ICMP6_MIB_MAX == 6);
+		_NL_STATIC_ASSERT (__ICMP6_MIB_MAX >= _NL_ICMP6_MIB_MAX);
 		_NL_STATIC_ASSERT (RTNL_LINK_ICMP6_CSUMERRORS - RTNL_LINK_ICMP6_INMSGS + 1 == 5);
 
 		for (i = 1; i < len; i++) {

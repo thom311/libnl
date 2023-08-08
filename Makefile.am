@@ -241,10 +241,20 @@ public_headers = \
 
 noinst_HEADERS = \
 	include/base/nl-base-utils.h \
+	include/linux-private/linux/atm.h \
+	include/linux-private/linux/atmapi.h \
+	include/linux-private/linux/atmioc.h \
+	include/linux-private/linux/atmsap.h \
+	include/linux-private/linux/byteorder/little_endian.h \
 	include/linux-private/linux/can/netlink.h \
+	include/linux-private/linux/const.h \
+	include/linux-private/linux/errno.h \
+	include/linux-private/linux/ethtool.h \
+	include/linux-private/linux/falloc.h \
 	include/linux-private/linux/fib_rules.h \
 	include/linux-private/linux/gen_stats.h \
 	include/linux-private/linux/genetlink.h \
+	include/linux-private/linux/hdlc/ioctl.h \
 	include/linux-private/linux/if.h \
 	include/linux-private/linux/if_addr.h \
 	include/linux-private/linux/if_arp.h \
@@ -252,21 +262,27 @@ noinst_HEADERS = \
 	include/linux-private/linux/if_ether.h \
 	include/linux-private/linux/if_link.h \
 	include/linux-private/linux/if_macsec.h \
+	include/linux-private/linux/if_packet.h \
 	include/linux-private/linux/if_tunnel.h \
 	include/linux-private/linux/if_vlan.h \
 	include/linux-private/linux/in.h \
 	include/linux-private/linux/in6.h \
+	include/linux-private/linux/in_route.h \
 	include/linux-private/linux/inet_diag.h \
+	include/linux-private/linux/ioctl.h \
 	include/linux-private/linux/ip.h \
 	include/linux-private/linux/ipv6.h \
 	include/linux-private/linux/libc-compat.h \
+	include/linux-private/linux/limits.h \
 	include/linux-private/linux/lwtunnel.h \
 	include/linux-private/linux/mpls.h \
 	include/linux-private/linux/mpls_iptunnel.h \
 	include/linux-private/linux/neighbour.h \
 	include/linux-private/linux/netconf.h \
+	include/linux-private/linux/netdevice.h \
 	include/linux-private/linux/netfilter.h \
 	include/linux-private/linux/netfilter/nf_conntrack_common.h \
+	include/linux-private/linux/netfilter/nf_conntrack_tcp.h \
 	include/linux-private/linux/netfilter/nfnetlink.h \
 	include/linux-private/linux/netfilter/nfnetlink_compat.h \
 	include/linux-private/linux/netfilter/nfnetlink_conntrack.h \
@@ -276,16 +292,25 @@ noinst_HEADERS = \
 	include/linux-private/linux/nexthop.h \
 	include/linux-private/linux/pkt_cls.h \
 	include/linux-private/linux/pkt_sched.h \
+	include/linux-private/linux/posix_types.h \
 	include/linux-private/linux/rtnetlink.h \
 	include/linux-private/linux/snmp.h \
 	include/linux-private/linux/sock_diag.h \
 	include/linux-private/linux/socket.h \
+	include/linux-private/linux/stddef.h \
+	include/linux-private/linux/swab.h \
+	include/linux-private/linux/taskstats.h \
 	include/linux-private/linux/tc_act/tc_gact.h \
 	include/linux-private/linux/tc_act/tc_mirred.h \
 	include/linux-private/linux/tc_act/tc_nat.h \
 	include/linux-private/linux/tc_act/tc_skbedit.h \
 	include/linux-private/linux/tc_act/tc_vlan.h \
+	include/linux-private/linux/tc_ematch/tc_em_cmp.h \
 	include/linux-private/linux/tc_ematch/tc_em_meta.h \
+	include/linux-private/linux/tc_ematch/tc_em_nbyte.h \
+	include/linux-private/linux/tc_ematch/tc_em_text.h \
+	include/linux-private/linux/types.h \
+	include/linux-private/linux/version.h \
 	include/linux-private/linux/veth.h \
 	include/linux-private/linux/xfrm.h \
 	include/nl-aux-core/nl-core.h \

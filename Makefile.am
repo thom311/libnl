@@ -294,6 +294,10 @@ noinst_HEADERS = \
 	include/linux-private/linux/pkt_sched.h \
 	include/linux-private/linux/posix_types.h \
 	include/linux-private/linux/rtnetlink.h \
+	include/linux-private/linux/seg6.h \
+	include/linux-private/linux/seg6_hmac.h \
+	include/linux-private/linux/seg6_iptunnel.h \
+	include/linux-private/linux/seg6_local.h \
 	include/linux-private/linux/snmp.h \
 	include/linux-private/linux/sock_diag.h \
 	include/linux-private/linux/socket.h \

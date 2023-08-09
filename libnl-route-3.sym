@@ -1305,4 +1305,11 @@ global:
 	rtnl_nh_put;
 	rtnl_nh_set_fdb;
 	rtnl_nh_set_gateway;
+	rtnl_route_nh_get_encap_type;
+	rtnl_route_nh_get_encap_seg6_mode;
+	rtnl_route_nh_get_encap_seg6_srh;
+	rtnl_route_nh_get_encap_seg6_local_action;
+	rtnl_route_nh_has_encap_seg6_local_attr;
+	rtnl_route_nh_get_encap_seg6_local_table;
+	rtnl_route_nh_get_encap_seg6_local_vrftable;
 } libnl_3_7;

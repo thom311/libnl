@@ -294,6 +294,10 @@ noinst_HEADERS = \
 	include/linux-private/linux/pkt_sched.h \
 	include/linux-private/linux/posix_types.h \
 	include/linux-private/linux/rtnetlink.h \
+	include/linux-private/linux/seg6.h \
+	include/linux-private/linux/seg6_hmac.h \
+	include/linux-private/linux/seg6_iptunnel.h \
+	include/linux-private/linux/seg6_local.h \
 	include/linux-private/linux/snmp.h \
 	include/linux-private/linux/sock_diag.h \
 	include/linux-private/linux/socket.h \
@@ -486,8 +490,11 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/nexthop_encap.c \
 	lib/route/nh.c \
 	lib/route/nh_encap_mpls.c \
+	lib/route/nh_encap_seg6.c \
+	lib/route/nh_encap_seg6_local.c \
 	lib/route/nl-route.h \
 	lib/route/pktloc.c \
+	lib/route/seg6.c \
 	lib/route/qdisc.c \
 	lib/route/qdisc/blackhole.c \
 	lib/route/qdisc/cbq.c \

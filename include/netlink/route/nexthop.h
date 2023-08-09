@@ -61,11 +61,23 @@ extern int		rtnl_route_nh_str2flags(const char *);
 /*
  * nexthop encapsulations
  */
+extern int		rtnl_route_nh_get_encap_type(struct rtnl_nexthop *nh);
+
 extern int		rtnl_route_nh_encap_mpls(struct rtnl_nexthop *nh,
 						 struct nl_addr *addr,
 						 uint8_t ttl);
 extern struct nl_addr *	rtnl_route_nh_get_encap_mpls_dst(struct rtnl_nexthop *);
 extern uint8_t		rtnl_route_nh_get_encap_mpls_ttl(struct rtnl_nexthop *);
+
+
+extern int		rtnl_route_nh_get_encap_seg6_mode(struct rtnl_nexthop * );
+extern int		rtnl_route_nh_get_encap_seg6_srh(struct rtnl_nexthop *, void **);
+
+extern int		rtnl_route_nh_get_encap_seg6_local_action(struct rtnl_nexthop *);
+extern int		rtnl_route_nh_has_encap_seg6_local_attr(struct rtnl_nexthop *, int);
+extern int		rtnl_route_nh_get_encap_seg6_local_table(struct rtnl_nexthop *);
+extern int		rtnl_route_nh_get_encap_seg6_local_vrftable(struct rtnl_nexthop *);
+
 #ifdef __cplusplus
 }
 #endif

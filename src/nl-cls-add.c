@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+/* SPDX-License-Identifier: LGPL-2.1-only */
 /*
  * Copyright (c) 2003-2011 Thomas Graf <tgraf@suug.ch>
  */

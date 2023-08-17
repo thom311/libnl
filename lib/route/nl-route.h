@@ -105,25 +105,25 @@ struct rtnl_ratespec {
 
 #define TCKINDSIZ 32
 
-#define NL_TC_GENERIC(pre)                                                     \
-	NLHDR_COMMON                                                           \
-	uint32_t pre##_family;                                                 \
-	uint32_t pre##_ifindex;                                                \
-	uint32_t pre##_handle;                                                 \
-	uint32_t pre##_parent;                                                 \
-	uint32_t pre##_info;                                                   \
-	uint32_t pre##_mtu;                                                    \
-	uint32_t pre##_mpu;                                                    \
-	uint32_t pre##_overhead;                                               \
-	uint32_t pre##_linktype;                                               \
-	char pre##_kind[TCKINDSIZ];                                            \
-	struct nl_data *pre##_opts;                                            \
-	uint64_t pre##_stats[RTNL_TC_STATS_MAX + 1];                           \
-	struct nl_data *pre##_xstats;                                          \
-	struct nl_data *pre##_subdata;                                         \
-	struct rtnl_link *pre##_link;                                          \
-	struct rtnl_tc_ops *pre##_ops;                                         \
-	enum rtnl_tc_type pre##_type;                                          \
+#define NL_TC_GENERIC(pre)                           \
+	NLHDR_COMMON                                 \
+	uint32_t pre##_family;                       \
+	uint32_t pre##_ifindex;                      \
+	uint32_t pre##_handle;                       \
+	uint32_t pre##_parent;                       \
+	uint32_t pre##_info;                         \
+	uint32_t pre##_mtu;                          \
+	uint32_t pre##_mpu;                          \
+	uint32_t pre##_overhead;                     \
+	uint32_t pre##_linktype;                     \
+	char pre##_kind[TCKINDSIZ];                  \
+	struct nl_data *pre##_opts;                  \
+	uint64_t pre##_stats[RTNL_TC_STATS_MAX + 1]; \
+	struct nl_data *pre##_xstats;                \
+	struct nl_data *pre##_subdata;               \
+	struct rtnl_link *pre##_link;                \
+	struct rtnl_tc_ops *pre##_ops;               \
+	enum rtnl_tc_type pre##_type;                \
 	uint32_t pre##_chain
 
 struct rtnl_tc {

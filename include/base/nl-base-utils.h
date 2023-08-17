@@ -41,10 +41,10 @@
 /*****************************************************************************/
 
 #if defined(__GNUC__)
-#define _NL_PRAGMA_WARNING_DO(warning)                                         \
+#define _NL_PRAGMA_WARNING_DO(warning) \
 	_NL_STRINGIFY(GCC diagnostic ignored warning)
 #elif defined(__clang__)
-#define _NL_PRAGMA_WARNING_DO(warning)                                         \
+#define _NL_PRAGMA_WARNING_DO(warning) \
 	_NL_STRINGIFY(clang diagnostic ignored warning)
 #endif
 
@@ -54,22 +54,22 @@
  * It's not that bad however, because gcc and clang often have the
  * same name for the same warning. */
 
-#if defined(__GNUC__) &&                                                       \
+#if defined(__GNUC__) && \
 	(__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#define _NL_PRAGMA_WARNING_DISABLE(warning)                                    \
-	_Pragma("GCC diagnostic push")                                         \
-		_Pragma(_NL_PRAGMA_WARNING_DO("-Wpragmas"))                    \
+#define _NL_PRAGMA_WARNING_DISABLE(warning)                 \
+	_Pragma("GCC diagnostic push")                      \
+		_Pragma(_NL_PRAGMA_WARNING_DO("-Wpragmas")) \
 			_Pragma(_NL_PRAGMA_WARNING_DO(warning))
 #elif defined(__clang__)
-#define _NL_PRAGMA_WARNING_DISABLE(warning)                                    \
-	_Pragma("clang diagnostic push")                                       \
-		_Pragma(_NL_PRAGMA_WARNING_DO("-Wunknown-warning-option"))     \
+#define _NL_PRAGMA_WARNING_DISABLE(warning)                                \
+	_Pragma("clang diagnostic push")                                   \
+		_Pragma(_NL_PRAGMA_WARNING_DO("-Wunknown-warning-option")) \
 			_Pragma(_NL_PRAGMA_WARNING_DO(warning))
 #else
 #define _NL_PRAGMA_WARNING_DISABLE(warning)
 #endif
 
-#if defined(__GNUC__) &&                                                       \
+#if defined(__GNUC__) && \
 	(__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #define _NL_PRAGMA_WARNING_REENABLE _Pragma("GCC diagnostic pop")
 #elif defined(__clang__)
@@ -106,9 +106,9 @@
  * Don't break on glibc < 2.16 that doesn't define __STDC_NO_THREADS__
  * see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=53769
  */
-#elif __STDC_VERSION__ >= 201112L &&                                           \
-	!(defined(__STDC_NO_THREADS__) ||                                      \
-	  (defined(__GNU_LIBRARY__) && __GLIBC__ == 2 &&                       \
+#elif __STDC_VERSION__ >= 201112L &&                     \
+	!(defined(__STDC_NO_THREADS__) ||                \
+	  (defined(__GNU_LIBRARY__) && __GLIBC__ == 2 && \
 	   __GLIBC_MINOR__ < 16))
 #define _nl_thread_local _Thread_local
 #else
@@ -124,11 +124,11 @@
 #if defined(NL_MORE_ASSERTS) && NL_MORE_ASSERTS > 0
 #define _nl_assert(cond) assert(cond)
 #else
-#define _nl_assert(cond)                                                       \
-	do {                                                                   \
-		if (0) {                                                       \
-			assert(cond);                                          \
-		}                                                              \
+#define _nl_assert(cond)              \
+	do {                          \
+		if (0) {              \
+			assert(cond); \
+		}                     \
 	} while (0)
 #endif
 
@@ -141,7 +141,7 @@
 /*****************************************************************************/
 
 #define _NL_PASTE_ARGS(identifier1, identifier2) identifier1##identifier2
-#define _NL_PASTE(identifier1, identifier2)                                    \
+#define _NL_PASTE(identifier1, identifier2) \
 	_NL_PASTE_ARGS(identifier1, identifier2)
 
 /* Taken from systemd's UNIQ_T and UNIQ macros. */
@@ -151,36 +151,36 @@
 
 /*****************************************************************************/
 
-#define _nl_assert_addr_family_or_unspec(addr_family)                          \
-	do {                                                                   \
-		typeof(addr_family) _addr_family = (addr_family);              \
-                                                                               \
-		_nl_assert(_addr_family == AF_UNSPEC ||                        \
-			   _addr_family == AF_INET ||                          \
-			   _addr_family == AF_INET6);                          \
+#define _nl_assert_addr_family_or_unspec(addr_family)             \
+	do {                                                      \
+		typeof(addr_family) _addr_family = (addr_family); \
+                                                                  \
+		_nl_assert(_addr_family == AF_UNSPEC ||           \
+			   _addr_family == AF_INET ||             \
+			   _addr_family == AF_INET6);             \
 	} while (0)
 
-#define _nl_assert_addr_family(addr_family)                                    \
-	do {                                                                   \
-		typeof(addr_family) _addr_family = (addr_family);              \
-                                                                               \
-		_nl_assert(_addr_family == AF_INET ||                          \
-			   _addr_family == AF_INET6);                          \
+#define _nl_assert_addr_family(addr_family)                       \
+	do {                                                      \
+		typeof(addr_family) _addr_family = (addr_family); \
+                                                                  \
+		_nl_assert(_addr_family == AF_INET ||             \
+			   _addr_family == AF_INET6);             \
 	} while (0)
 
 /*****************************************************************************/
 
-#define _NL_SWAP(pa, pb)                                                       \
-	do {                                                                   \
-		typeof(*(pa)) *_pa = (pa);                                     \
-		typeof(*(pb)) *_pb = (pb);                                     \
-		typeof(*_pa) _tmp;                                             \
-                                                                               \
-		_nl_assert(_pa);                                               \
-		_nl_assert(_pb);                                               \
-		_tmp = *_pa;                                                   \
-		*_pa = *_pb;                                                   \
-		*_pb = _tmp;                                                   \
+#define _NL_SWAP(pa, pb)                   \
+	do {                               \
+		typeof(*(pa)) *_pa = (pa); \
+		typeof(*(pb)) *_pb = (pb); \
+		typeof(*_pa) _tmp;         \
+                                           \
+		_nl_assert(_pa);           \
+		_nl_assert(_pb);           \
+		_tmp = *_pa;               \
+		*_pa = *_pb;               \
+		*_pb = _tmp;               \
 	} while (0)
 
 /*****************************************************************************/
@@ -273,7 +273,7 @@ static inline void *_nl_memcpy(void *restrict dest, const void *restrict src,
 
 #define _NL_INT_IS_SIGNED(arg) (!(((typeof(arg))-1) > 0))
 
-#define _NL_INT_SAME_SIGNEDNESS(arg1, arg2)                                    \
+#define _NL_INT_SAME_SIGNEDNESS(arg1, arg2) \
 	(_NL_INT_IS_SIGNED(arg1) == _NL_INT_IS_SIGNED(arg2))
 
 /*****************************************************************************/
@@ -309,86 +309,86 @@ static inline void *_nl_memcpy(void *restrict dest, const void *restrict src,
 							   _NL_UNIQ_T(B, bq)); \
 	})
 
-#define _NL_CLAMP(x, low, high)                                                \
+#define _NL_CLAMP(x, low, high) \
 	__NL_CLAMP(_NL_UNIQ, x, _NL_UNIQ, low, _NL_UNIQ, high)
-#define __NL_CLAMP(xq, x, lowq, low, highq, high)                              \
-	({                                                                     \
-		typeof(x) _NL_UNIQ_T(X, xq) = (x);                             \
-		typeof(low) _NL_UNIQ_T(LOW, lowq) = (low);                     \
-		typeof(high) _NL_UNIQ_T(HIGH, highq) = (high);                 \
-                                                                               \
-		_NL_STATIC_ASSERT(_NL_INT_SAME_SIGNEDNESS(                     \
-			_NL_UNIQ_T(X, xq), _NL_UNIQ_T(LOW, lowq)));            \
-		_NL_STATIC_ASSERT(_NL_INT_SAME_SIGNEDNESS(                     \
-			_NL_UNIQ_T(X, xq), _NL_UNIQ_T(HIGH, highq)));          \
-                                                                               \
-		((_NL_UNIQ_T(X, xq) > _NL_UNIQ_T(HIGH, highq)) ?               \
-			 _NL_UNIQ_T(HIGH, highq) :                             \
-		 (_NL_UNIQ_T(X, xq) < _NL_UNIQ_T(LOW, lowq)) ?                 \
-			 _NL_UNIQ_T(LOW, lowq) :                               \
-			 _NL_UNIQ_T(X, xq));                                   \
+#define __NL_CLAMP(xq, x, lowq, low, highq, high)                     \
+	({                                                            \
+		typeof(x) _NL_UNIQ_T(X, xq) = (x);                    \
+		typeof(low) _NL_UNIQ_T(LOW, lowq) = (low);            \
+		typeof(high) _NL_UNIQ_T(HIGH, highq) = (high);        \
+                                                                      \
+		_NL_STATIC_ASSERT(_NL_INT_SAME_SIGNEDNESS(            \
+			_NL_UNIQ_T(X, xq), _NL_UNIQ_T(LOW, lowq)));   \
+		_NL_STATIC_ASSERT(_NL_INT_SAME_SIGNEDNESS(            \
+			_NL_UNIQ_T(X, xq), _NL_UNIQ_T(HIGH, highq))); \
+                                                                      \
+		((_NL_UNIQ_T(X, xq) > _NL_UNIQ_T(HIGH, highq)) ?      \
+			 _NL_UNIQ_T(HIGH, highq) :                    \
+		 (_NL_UNIQ_T(X, xq) < _NL_UNIQ_T(LOW, lowq)) ?        \
+			 _NL_UNIQ_T(LOW, lowq) :                      \
+			 _NL_UNIQ_T(X, xq));                          \
 	})
 
-#define _NL_MAX_WITH_CMP(cmp, a, b)                                            \
-	({                                                                     \
-		typeof(a) _a = (a);                                            \
-		typeof(b) _b = (b);                                            \
-                                                                               \
-		(((cmp(_a, _b)) >= 0) ? _a : _b);                              \
+#define _NL_MAX_WITH_CMP(cmp, a, b)               \
+	({                                        \
+		typeof(a) _a = (a);               \
+		typeof(b) _b = (b);               \
+                                                  \
+		(((cmp(_a, _b)) >= 0) ? _a : _b); \
 	})
 
 /* evaluates to (void) if _A or _B are not constant or of different types */
-#define _NL_CONST_MAX(_A, _B)                                                  \
-	(__builtin_choose_expr(                                                \
-		(__builtin_constant_p(_A) && __builtin_constant_p(_B) &&       \
-		 __builtin_types_compatible_p(typeof(_A), typeof(_B))),        \
+#define _NL_CONST_MAX(_A, _B)                                            \
+	(__builtin_choose_expr(                                          \
+		(__builtin_constant_p(_A) && __builtin_constant_p(_B) && \
+		 __builtin_types_compatible_p(typeof(_A), typeof(_B))),  \
 		((_A) > (_B)) ? (_A) : (_B), ((void)0)))
 
 /*****************************************************************************/
 
-#define _NL_CMP_RETURN(c)                                                      \
-	do {                                                                   \
-		const int _cc = (c);                                           \
-                                                                               \
-		if (_cc)                                                       \
-			return _cc < 0 ? -1 : 1;                               \
+#define _NL_CMP_RETURN(c)                        \
+	do {                                     \
+		const int _cc = (c);             \
+                                                 \
+		if (_cc)                         \
+			return _cc < 0 ? -1 : 1; \
 	} while (0)
 
-#define _NL_CMP_RETURN_DIRECT(c)                                               \
+#define _NL_CMP_RETURN_DIRECT(c)                                  \
 	/* Usually we want that our CMP functions return strictly
 	 * -1, 0, or 1. _NL_CMP_RETURN_DIRECT() is like _NL_CMP_RETURN(),
-	 *  except, it does not clamp the integer value. */              \
-	do {                                                                   \
-		const int _cc = (c);                                           \
-                                                                               \
-		if (_cc)                                                       \
-			return _cc;                                            \
+	 *  except, it does not clamp the integer value. */ \
+	do {                                                      \
+		const int _cc = (c);                              \
+                                                                  \
+		if (_cc)                                          \
+			return _cc;                               \
 	} while (0)
 
-#define _NL_CMP_SELF(a, b)                                                     \
-	do {                                                                   \
-		typeof(a) _a = (a);                                            \
-		typeof(b) _b = (b);                                            \
-                                                                               \
-		if (_a == _b)                                                  \
-			return 0;                                              \
-		if (!_a)                                                       \
-			return -1;                                             \
-		if (!_b)                                                       \
-			return 1;                                              \
+#define _NL_CMP_SELF(a, b)          \
+	do {                        \
+		typeof(a) _a = (a); \
+		typeof(b) _b = (b); \
+                                    \
+		if (_a == _b)       \
+			return 0;   \
+		if (!_a)            \
+			return -1;  \
+		if (!_b)            \
+			return 1;   \
 	} while (0)
 
 /*****************************************************************************/
 
-#define _NL_CMP_DIRECT(a, b)                                                   \
-	do {                                                                   \
-		typeof(a) _a = (a);                                            \
-		typeof(b) _b = (b);                                            \
-                                                                               \
-		_NL_STATIC_ASSERT(_NL_INT_SAME_SIGNEDNESS(_a, _b));            \
-                                                                               \
-		if (_a != _b)                                                  \
-			return (_a < _b) ? -1 : 1;                             \
+#define _NL_CMP_DIRECT(a, b)                                        \
+	do {                                                        \
+		typeof(a) _a = (a);                                 \
+		typeof(b) _b = (b);                                 \
+                                                                    \
+		_NL_STATIC_ASSERT(_NL_INT_SAME_SIGNEDNESS(_a, _b)); \
+                                                                    \
+		if (_a != _b)                                       \
+			return (_a < _b) ? -1 : 1;                  \
 	} while (0)
 
 #define _NL_CMP_DIRECT_UNSAFE(a, b)                                                     \
@@ -404,17 +404,17 @@ static inline void *_nl_memcpy(void *restrict dest, const void *restrict src,
  * Avoid that by casting pointers to void* and then to uintptr_t. This comparison
  * is not really meaningful, except that it provides some kind of stable sort order
  * between pointers (that can otherwise not be compared). */
-#define _NL_CMP_DIRECT_PTR(a, b)                                               \
+#define _NL_CMP_DIRECT_PTR(a, b) \
 	_NL_CMP_DIRECT(_nl_ptr_to_uintptr(a), _nl_ptr_to_uintptr(b))
 
 #define _NL_CMP_DIRECT_BOOL(a, b) _NL_CMP_DIRECT(!!(a), !!(b))
 
-#define _NL_CMP_DIRECT_MEMCMP(a, b, size)                                      \
+#define _NL_CMP_DIRECT_MEMCMP(a, b, size) \
 	_NL_CMP_RETURN(_nl_memcmp((a), (b), (size)))
 
 #define _NL_CMP_DIRECT_STRCMP(a, b) _NL_CMP_RETURN_DIRECT(strcmp((a), (b)))
 
-#define _NL_CMP_DIRECT_STRCMP0(a, b)                                           \
+#define _NL_CMP_DIRECT_STRCMP0(a, b) \
 	_NL_CMP_RETURN_DIRECT(_nl_strcmp0((a), (b)))
 
 #define _NL_CMP_DIRECT_STR_INTERNED(a, b)                                                    \
@@ -428,12 +428,12 @@ static inline void *_nl_memcpy(void *restrict dest, const void *restrict src,
 			_NL_CMP_RETURN_DIRECT(_nl_strcmp0(_a, _b));                          \
 	} while (0)
 
-#define _NL_CMP_DIRECT_IN6ADDR(a, b)                                           \
-	do {                                                                   \
-		const struct in6_addr *const _a = (a);                         \
-		const struct in6_addr *const _b = (b);                         \
-                                                                               \
-		_NL_CMP_RETURN(memcmp(_a, _b, sizeof(struct in6_addr)));       \
+#define _NL_CMP_DIRECT_IN6ADDR(a, b)                                     \
+	do {                                                             \
+		const struct in6_addr *const _a = (a);                   \
+		const struct in6_addr *const _b = (b);                   \
+                                                                         \
+		_NL_CMP_RETURN(memcmp(_a, _b, sizeof(struct in6_addr))); \
 	} while (0)
 
 /*****************************************************************************/
@@ -446,26 +446,26 @@ static inline void *_nl_memcpy(void *restrict dest, const void *restrict src,
 	 * Don't use otherwise. */ \
 	_NL_CMP_DIRECT_UNSAFE(((a)->field), ((b)->field))
 
-#define _NL_CMP_FIELD_BOOL(a, b, field)                                        \
+#define _NL_CMP_FIELD_BOOL(a, b, field) \
 	_NL_CMP_DIRECT_BOOL(((a)->field), ((b)->field))
 
-#define _NL_CMP_FIELD_STR(a, b, field)                                         \
+#define _NL_CMP_FIELD_STR(a, b, field) \
 	_NL_CMP_DIRECT_STRCMP(((a)->field), ((b)->field))
 
-#define _NL_CMP_FIELD_STR0(a, b, field)                                        \
+#define _NL_CMP_FIELD_STR0(a, b, field) \
 	_NL_CMP_DIRECT_STRCMP0(((a)->field), ((b)->field))
 
-#define _NL_CMP_FIELD_STR_INTERNED(a, b, field)                                \
+#define _NL_CMP_FIELD_STR_INTERNED(a, b, field) \
 	_NL_CMP_DIRECT_STR_INTERNED(((a)->field), ((b)->field))
 
-#define _NL_CMP_FIELD_MEMCMP_LEN(a, b, field, len)                             \
-	_NL_CMP_DIRECT_MEMCMP(&((a)->field), &((b)->field),                    \
+#define _NL_CMP_FIELD_MEMCMP_LEN(a, b, field, len)          \
+	_NL_CMP_DIRECT_MEMCMP(&((a)->field), &((b)->field), \
 			      _NL_MIN(len, sizeof((a)->field)))
 
-#define _NL_CMP_FIELD_MEMCMP(a, b, field)                                      \
+#define _NL_CMP_FIELD_MEMCMP(a, b, field) \
 	_NL_CMP_DIRECT_MEMCMP(&((a)->field), &((b)->field), sizeof((a)->field))
 
-#define _NL_CMP_FIELD_IN6ADDR(a, b, field)                                     \
+#define _NL_CMP_FIELD_IN6ADDR(a, b, field) \
 	_NL_CMP_DIRECT_IN6ADDR(&((a)->field), &((b)->field))
 
 /*****************************************************************************/
@@ -473,7 +473,7 @@ static inline void *_nl_memcpy(void *restrict dest, const void *restrict src,
 /* internal macro to calculate the size of a struct @type up to (and including) @field.
  * this will be used for .minlen policy fields, so that we require only a field of up
  * to the given size. */
-#define _nl_offsetofend(type, field)                                           \
+#define _nl_offsetofend(type, field) \
 	(offsetof(type, field) + sizeof(((type *)NULL)->field))
 
 /*****************************************************************************/
@@ -498,37 +498,37 @@ static inline void *_nl_memcpy(void *restrict dest, const void *restrict src,
 
 #define _nl_clear_free(pp) _nl_clear_pointer(pp, free)
 
-#define _nl_steal_pointer(pp)                                                  \
-	({                                                                     \
-		__typeof__(*(pp)) *const _pp = (pp);                           \
-		__typeof__(*_pp) _p = NULL;                                    \
-                                                                               \
-		if (_pp && (_p = *_pp)) {                                      \
-			*_pp = NULL;                                           \
-		}                                                              \
-                                                                               \
-		_p;                                                            \
+#define _nl_steal_pointer(pp)                        \
+	({                                           \
+		__typeof__(*(pp)) *const _pp = (pp); \
+		__typeof__(*_pp) _p = NULL;          \
+                                                     \
+		if (_pp && (_p = *_pp)) {            \
+			*_pp = NULL;                 \
+		}                                    \
+                                                     \
+		_p;                                  \
 	})
 
 /*****************************************************************************/
 
-#define _nl_malloc_maybe_a(alloca_maxlen, bytes, to_free)                      \
-	({                                                                     \
-		const size_t _bytes = (bytes);                                 \
-		__typeof__(to_free) _to_free = (to_free);                      \
-		__typeof__(*_to_free) _ptr;                                    \
-                                                                               \
-		_NL_STATIC_ASSERT((alloca_maxlen) <= 500);                     \
-		_nl_assert(_to_free && !*_to_free);                            \
-                                                                               \
-		if (_bytes <= (alloca_maxlen)) {                               \
-			_ptr = alloca(_bytes);                                 \
-		} else {                                                       \
-			_ptr = malloc(_bytes);                                 \
-			*_to_free = _ptr;                                      \
-		};                                                             \
-                                                                               \
-		_ptr;                                                          \
+#define _nl_malloc_maybe_a(alloca_maxlen, bytes, to_free)  \
+	({                                                 \
+		const size_t _bytes = (bytes);             \
+		__typeof__(to_free) _to_free = (to_free);  \
+		__typeof__(*_to_free) _ptr;                \
+                                                           \
+		_NL_STATIC_ASSERT((alloca_maxlen) <= 500); \
+		_nl_assert(_to_free && !*_to_free);        \
+                                                           \
+		if (_bytes <= (alloca_maxlen)) {           \
+			_ptr = alloca(_bytes);             \
+		} else {                                   \
+			_ptr = malloc(_bytes);             \
+			*_to_free = _ptr;                  \
+		};                                         \
+                                                           \
+		_ptr;                                      \
 	})
 
 /*****************************************************************************/
@@ -590,24 +590,24 @@ static inline char *_nl_strncpy_assert(char *dst, const char *src, size_t len)
 	return dst;
 }
 
-#define _NL_RETURN_ON_ERR(cmd)                                                 \
-	do {                                                                   \
-		int _err;                                                      \
-                                                                               \
-		_err = (cmd);                                                  \
-		if (_err < 0)                                                  \
-			return _err;                                           \
+#define _NL_RETURN_ON_ERR(cmd)       \
+	do {                         \
+		int _err;            \
+                                     \
+		_err = (cmd);        \
+		if (_err < 0)        \
+			return _err; \
 	} while (0)
 
-#define _NL_RETURN_E_ON_ERR(e, cmd)                                            \
-	do {                                                                   \
-		int _err;                                                      \
-                                                                               \
-		_err = (cmd);                                                  \
-		if (_err < 0) {                                                \
-			_NL_STATIC_ASSERT((e) > 0);                            \
-			return -(e);                                           \
-		}                                                              \
+#define _NL_RETURN_E_ON_ERR(e, cmd)                 \
+	do {                                        \
+		int _err;                           \
+                                                    \
+		_err = (cmd);                       \
+		if (_err < 0) {                     \
+			_NL_STATIC_ASSERT((e) > 0); \
+			return -(e);                \
+		}                                   \
 	} while (0)
 
 /* _NL_RETURN_ON_PUT_ERR() shall only be used with a put command (nla_put or nlmsg_append).
@@ -700,28 +700,28 @@ static inline char *_nl_inet_ntop_dup(int addr_family, const void *addr)
 
 /*****************************************************************************/
 
-#define _NL_AUTO_DEFINE_FCN_VOID0(CastType, name, func)                        \
-	static inline void name(void *v)                                       \
-	{                                                                      \
-		if (*((CastType *)v))                                          \
-			func(*((CastType *)v));                                \
-	}                                                                      \
+#define _NL_AUTO_DEFINE_FCN_VOID0(CastType, name, func) \
+	static inline void name(void *v)                \
+	{                                               \
+		if (*((CastType *)v))                   \
+			func(*((CastType *)v));         \
+	}                                               \
 	struct _nl_dummy_for_tailing_semicolon
 
-#define _NL_AUTO_DEFINE_FCN_STRUCT(CastType, name, func)                       \
-	static inline void name(CastType *v)                                   \
-	{                                                                      \
-		if (v)                                                         \
-			func(v);                                               \
-	}                                                                      \
+#define _NL_AUTO_DEFINE_FCN_STRUCT(CastType, name, func) \
+	static inline void name(CastType *v)             \
+	{                                                \
+		if (v)                                   \
+			func(v);                         \
+	}                                                \
 	struct _nl_dummy_for_tailing_semicolon
 
-#define _NL_AUTO_DEFINE_FCN_TYPED0(CastType, name, func)                       \
-	static inline void name(CastType *v)                                   \
-	{                                                                      \
-		if (*v)                                                        \
-			func(*v);                                              \
-	}                                                                      \
+#define _NL_AUTO_DEFINE_FCN_TYPED0(CastType, name, func) \
+	static inline void name(CastType *v)             \
+	{                                                \
+		if (*v)                                  \
+			func(*v);                        \
+	}                                                \
 	struct _nl_dummy_for_tailing_semicolon
 
 #define _nl_auto_free _nl_auto(_nl_auto_free_fcn)
@@ -736,29 +736,29 @@ struct trans_tbl {
 	const char *a;
 };
 
-#define __ADD(id, name)                                                        \
-	{                                                                      \
-		.i = id, .a = #name                                            \
+#define __ADD(id, name)             \
+	{                           \
+		.i = id, .a = #name \
 	}
 
-#define BUG()                                                                  \
-	do {                                                                   \
-		fprintf(stderr, "BUG at file position %s:%d:%s\n", __FILE__,   \
-			__LINE__, __func__);                                   \
-		assert(0);                                                     \
+#define BUG()                                                                \
+	do {                                                                 \
+		fprintf(stderr, "BUG at file position %s:%d:%s\n", __FILE__, \
+			__LINE__, __func__);                                 \
+		assert(0);                                                   \
 	} while (0)
 
-#define BUG_ON(condition)                                                      \
-	do {                                                                   \
-		if (condition)                                                 \
-			BUG();                                                 \
+#define BUG_ON(condition)      \
+	do {                   \
+		if (condition) \
+			BUG(); \
 	} while (0)
 
-#define APPBUG(msg)                                                            \
-	do {                                                                   \
-		fprintf(stderr, "APPLICATION BUG: %s:%d:%s: %s\n", __FILE__,   \
-			__LINE__, __func__, msg);                              \
-		assert(0);                                                     \
+#define APPBUG(msg)                                                          \
+	do {                                                                 \
+		fprintf(stderr, "APPLICATION BUG: %s:%d:%s: %s\n", __FILE__, \
+			__LINE__, __func__, msg);                            \
+		assert(0);                                                   \
 	} while (0)
 
 /*****************************************************************************/
@@ -801,23 +801,23 @@ static inline void nl_write_unlock(pthread_rwlock_t *lock)
 #define NL_LOCK(NAME) int __unused_lock_##NAME __attribute__((unused))
 #define NL_RW_LOCK(NAME) int __unused_lock_##NAME __attribute__((unused))
 
-#define nl_lock(LOCK)                                                          \
-	do {                                                                   \
+#define nl_lock(LOCK) \
+	do {          \
 	} while (0)
-#define nl_unlock(LOCK)                                                        \
-	do {                                                                   \
+#define nl_unlock(LOCK) \
+	do {            \
 	} while (0)
-#define nl_read_lock(LOCK)                                                     \
-	do {                                                                   \
+#define nl_read_lock(LOCK) \
+	do {               \
 	} while (0)
-#define nl_read_unlock(LOCK)                                                   \
-	do {                                                                   \
+#define nl_read_unlock(LOCK) \
+	do {                 \
 	} while (0)
-#define nl_write_lock(LOCK)                                                    \
-	do {                                                                   \
+#define nl_write_lock(LOCK) \
+	do {                \
 	} while (0)
-#define nl_write_unlock(LOCK)                                                  \
-	do {                                                                   \
+#define nl_write_unlock(LOCK) \
+	do {                  \
 	} while (0)
 #endif
 

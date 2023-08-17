@@ -67,7 +67,7 @@ START_TEST(msg_construct)
 
 	nlh = nlmsg_hdr(msg);
 	i = 1;
-	nlmsg_for_each_attr (a, nlh, 0, rem) {
+	nlmsg_for_each_attr(a, nlh, 0, rem) {
 		ck_assert_msg(nla_type(a) == i, "Expected attribute %d", i);
 		i++;
 		ck_assert_msg(nla_get_u32(a) == i,

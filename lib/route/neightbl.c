@@ -300,10 +300,10 @@ static int neightbl_msg_parser(struct nl_cache_ops *ops,
 		if (err < 0)
 			goto errout;
 
-#define COPY_ENTRY(name, var)                                                  \
-	if (tbp[NDTPA_##name]) {                                               \
-		p->ntp_##var = nla_get_u32(tbp[NDTPA_##name]);                 \
-		p->ntp_mask |= NEIGHTBLPARM_ATTR_##name;                       \
+#define COPY_ENTRY(name, var)                                  \
+	if (tbp[NDTPA_##name]) {                               \
+		p->ntp_##var = nla_get_u32(tbp[NDTPA_##name]); \
+		p->ntp_mask |= NEIGHTBLPARM_ATTR_##name;       \
 	}
 
 		COPY_ENTRY(IFINDEX, ifindex);
@@ -532,7 +532,7 @@ struct rtnl_neightbl *rtnl_neightbl_get(struct nl_cache *cache,
 	if (cache->c_ops != &rtnl_neightbl_ops)
 		return NULL;
 
-	nl_list_for_each_entry (nt, &cache->c_items, ce_list) {
+	nl_list_for_each_entry(nt, &cache->c_items, ce_list) {
 		if (!strcasecmp(nt->nt_name, name) &&
 		    ((!ifindex && !nt->nt_parms.ntp_ifindex) ||
 		     (ifindex && ifindex == nt->nt_parms.ntp_ifindex))) {

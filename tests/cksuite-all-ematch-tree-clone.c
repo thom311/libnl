@@ -82,7 +82,7 @@ static void dump_ematch_list(struct nl_list_head *head, int *result, int *index)
 {
 	struct rtnl_ematch *pos = NULL;
 
-	nl_list_for_each_entry (pos, head, e_list) {
+	nl_list_for_each_entry(pos, head, e_list) {
 		if (!nl_list_empty(&pos->e_childs))
 			dump_ematch_list(&pos->e_childs, result, index);
 		result[*index] = pos->e_id;

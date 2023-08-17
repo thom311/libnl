@@ -16,8 +16,8 @@ extern "C" {
 struct rtnl_nh;
 
 typedef struct nl_nh_group_info {
-	uint32_t nh_id; /*!< VLAN number */
-	uint8_t weight; /*!< VLAN QOS value */
+	uint32_t nh_id; /*!< nexthop id */
+	uint8_t weight; /*!< weight in nexthop group */
 } nl_nh_group_info_t;
 
 typedef struct nl_nh_group {

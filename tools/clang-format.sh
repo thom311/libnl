@@ -390,16 +390,16 @@ usage() {
     printf "Reformat source files using clang-format.\n\n"
     printf "If no file is given the script runs on the whole codebase.\n"
     printf "OPTIONS:\n"
-    printf "    -h                 Print this help message.\n"
-    printf "    -i                 Reformat files (the default).\n"
-    printf "    -n|--dry-run       Only check the files (contrary to \"-i\").\n"
-    printf "    -a|--all           Check all files (the default).\n"
-    printf "    -u|--upstream COMMIT Check only files from \`git diff --name-only COMMIT\` (contrary to \"-a\").\n"
-    printf "                       This also affects directories given in the [FILE] list, but not files.\n"
-    printf "                       If this is the last parameter and COMMIT is unspecified/empty, it defaults to \"main\".\n"
-    printf "    -F|--fast          Same as \`-u HEAD^\`.\n"
-    printf "    --show-filenames   Only print the filenames that would be checked/formatted\n"
-    printf "    --                 Separate options from filenames/directories\n"
+    printf "    -h                    Print this help message.\n"
+    printf "    -i                    Reformat files (the default).\n"
+    printf "    -n|--dry-run          Only check the files (contrary to \"-i\").\n"
+    printf "    -a|--all              Check all files (the default).\n"
+    printf "    -u|--upstream COMMIT  Check only files from \`git diff --name-only COMMIT\` (contrary to \"-a\").\n"
+    printf "                          This also affects directories given in the [FILE] list, but not files.\n"
+    printf "                          If this is the last parameter and COMMIT is unspecified/empty, it defaults to \"main\".\n"
+    printf "    -F|--fast             Same as \`-u HEAD^\`.\n"
+    printf "    -l|--show-filenames   Only print the filenames that would be checked/formatted\n"
+    printf "    --                    Separate options from filenames/directories\n"
 }
 
 ls_files_exist() {
@@ -450,7 +450,7 @@ while (( $# )); do
                 usage
                 exit 0
                 ;;
-            --show-filenames)
+            -l|--show-filenames)
                 SHOW_FILENAMES=1
                 shift
                 continue

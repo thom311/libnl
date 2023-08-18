@@ -891,7 +891,7 @@ int nl_str2ip_proto(const char *name)
 		return p->p_proto;
 
 	l = strtoul(name, &end, 0);
-	if (l == ULONG_MAX || *end != '\0')
+	if (name == end || *end != '\0' || l > (unsigned long)INT_MAX)
 		return -NLE_OBJ_NOTFOUND;
 
 	return (int) l;

@@ -357,6 +357,7 @@ static void xfrm_sp_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	char                dst[INET6_ADDRSTRLEN+5], src[INET6_ADDRSTRLEN+5];
 	time_t              add_time, use_time;
 	struct tm           *add_time_tm, *use_time_tm;
+	struct tm           tm_buf;
 
 	nl_addr2str(xfrmnl_sel_get_saddr (sp->sel), src, sizeof(src));
 	nl_addr2str (xfrmnl_sel_get_daddr (sp->sel), dst, sizeof (dst));
@@ -417,7 +418,7 @@ static void xfrm_sp_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	if (sp->curlft.add_time != 0)
 	{
 		add_time = sp->curlft.add_time;
-		add_time_tm = gmtime (&add_time);
+		add_time_tm = gmtime_r (&add_time, &tm_buf);
 		strftime (dst, INET6_ADDRSTRLEN+5, "%Y-%m-%d %H-%M-%S", add_time_tm);
 	}
 	else
@@ -428,7 +429,7 @@ static void xfrm_sp_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	if (sp->curlft.use_time != 0)
 	{
 		use_time = sp->curlft.use_time;
-		use_time_tm = gmtime (&use_time);
+		use_time_tm = gmtime_r (&use_time, &tm_buf);
 		strftime (src, INET6_ADDRSTRLEN+5, "%Y-%m-%d %H-%M-%S", use_time_tm);
 	}
 	else

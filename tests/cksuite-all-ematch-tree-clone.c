@@ -38,12 +38,6 @@ static long long my_pow(long long x, long long y)
 	return ret;
 }
 
-static long int generate_random(long int max)
-{
-	srandom(time(NULL) + id);
-	return (random() % max);
-}
-
 static int build_children(struct nl_list_head *parent)
 {
 	int i, num = 0;
@@ -57,7 +51,7 @@ static int build_children(struct nl_list_head *parent)
 		return 0;
 	}
 
-	num = generate_random(MAX_CHILDREN + 1);
+	num = _nltst_rand_u32() % ((unsigned)(MAX_CHILDREN + 1));
 	for (i = 0; i < num; ++i) {
 		child = rtnl_ematch_alloc();
 		if (!child) {

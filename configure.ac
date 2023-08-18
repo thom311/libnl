@@ -120,6 +120,10 @@ AC_CONFIG_SUBDIRS([doc])
 
 AC_CHECK_FUNCS([strerror_l])
 
+AC_CHECK_DECLS([getprotobyname_r, getprotobynumber_r], [], [], [[
+    #include <netdb.h>
+]])
+
 AC_CONFIG_FILES([
 Makefile
 libnl-3.0.pc

@@ -66,6 +66,10 @@ struct nl_msg {
 
 /*****************************************************************************/
 
+int nl_getprotobyname(const char *name);
+
+bool nl_getprotobynumber(int proto, char *out_name, size_t name_len);
+
 extern const char *nl_strerror_l(int err);
 
 extern int __nl_read_num_str_file(const char *path,

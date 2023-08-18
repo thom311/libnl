@@ -26,9 +26,10 @@ static void print_timestamp(FILE *fp)
 	struct timeval tv;
 	char tshort[40];
 	struct tm *tm;
+	struct tm tm_buf;
 
 	gettimeofday(&tv, NULL);
-	tm = localtime(&tv.tv_sec);
+	tm = localtime_r(&tv.tv_sec, &tm_buf);
 
 	strftime(tshort, sizeof(tshort), "%Y-%m-%dT%H:%M:%S", tm);
 	fprintf(fp, "[%s.%06ld] ", tshort, tv.tv_usec);

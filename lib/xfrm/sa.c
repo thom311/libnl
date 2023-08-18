@@ -502,6 +502,7 @@ static void xfrm_sa_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	char                flags[128], mode[128];
 	time_t              add_time, use_time;
 	struct tm           *add_time_tm, *use_time_tm;
+	struct tm           tm_buf;
 
 	nl_dump_line(p, "src %s dst %s family: %s\n", nl_addr2str(sa->saddr, src, sizeof(src)),
 	             nl_addr2str(sa->id.daddr, dst, sizeof(dst)),
@@ -554,7 +555,7 @@ static void xfrm_sa_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	if (sa->curlft.add_time != 0)
 	{
 		add_time = sa->curlft.add_time;
-		add_time_tm = gmtime (&add_time);
+		add_time_tm = gmtime_r (&add_time, &tm_buf);
 		strftime (flags, 128, "%Y-%m-%d %H-%M-%S", add_time_tm);
 	}
 	else
@@ -565,7 +566,7 @@ static void xfrm_sa_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	if (sa->curlft.use_time != 0)
 	{
 		use_time = sa->curlft.use_time;
-		use_time_tm = gmtime (&use_time);
+		use_time_tm = gmtime_r (&use_time, &tm_buf);
 		strftime (mode, 128, "%Y-%m-%d %H-%M-%S", use_time_tm);
 	}
 	else

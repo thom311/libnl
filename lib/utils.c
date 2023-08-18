@@ -128,6 +128,57 @@ struct trans_list {
 	struct nl_list_head list;
 };
 
+int nl_getprotobyname(const char *name)
+{
+	const struct protoent *result;
+
+#if HAVE_DECL_GETPROTOBYNAME_R
+	struct protoent result_buf;
+	char buf[2048];
+	int r;
+
+	r = getprotobyname_r(name, &result_buf, buf, sizeof(buf),
+			     (struct protoent **)&result);
+	if (r != 0 || result != &result_buf)
+		result = NULL;
+#else
+	result = getprotobyname(name);
+#endif
+
+	if (!result)
+		return -1;
+
+	if (result->p_proto < 0 || result->p_proto > UINT8_MAX)
+		return -1;
+	return (uint8_t)result->p_proto;
+}
+
+bool nl_getprotobynumber(int proto, char *out_name, size_t name_len)
+{
+	const struct protoent *result;
+
+#if HAVE_DECL_GETPROTOBYNUMBER_R
+	struct protoent result_buf;
+	char buf[2048];
+	int r;
+
+	r = getprotobynumber_r(proto, &result_buf, buf, sizeof(buf),
+			       (struct protoent **)&result);
+	if (r != 0 || result != &result_buf)
+		result = NULL;
+#else
+	result = getprotobynumber(proto);
+#endif
+
+	if (!result)
+		return false;
+
+	if (strlen(result->p_name) >= name_len)
+		return false;
+	strcpy(out_name, result->p_name);
+	return true;
+}
+
 const char *nl_strerror_l(int err)
 {
 	const char *buf;
@@ -870,12 +921,8 @@ int nl_str2ether_proto(const char *name)
 
 char *nl_ip_proto2str(int proto, char *buf, size_t len)
 {
-	struct protoent *p = getprotobynumber(proto);
-
-	if (p) {
-		snprintf(buf, len, "%s", p->p_name);
+	if (nl_getprotobynumber(proto, buf, len))
 		return buf;
-	}
 
 	snprintf(buf, len, "0x%x", proto);
 	return buf;
@@ -883,12 +930,16 @@ char *nl_ip_proto2str(int proto, char *buf, size_t len)
 
 int nl_str2ip_proto(const char *name)
 {
-	struct protoent *p = getprotobyname(name);
 	unsigned long l;
 	char *end;
+	int p;
 
-	if (p)
-		return p->p_proto;
+	if (!name)
+		return -NLE_INVAL;
+
+	p = nl_getprotobyname(name);
+	if (p >= 0)
+		return p;
 
 	l = strtoul(name, &end, 0);
 	if (name == end || *end != '\0' || l > (unsigned long)INT_MAX)

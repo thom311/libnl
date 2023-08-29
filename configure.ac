@@ -152,26 +152,13 @@ fi
 
 AC_OUTPUT
 
-echo "-------------------------------------------------------------------------------"
-echo "                                  NOTE"
-echo ""
-echo " There have been some changes starting with 3.2 regarding where and how libnl"
-echo " is being installed on the system in order to allow multiple libnl versions"
-echo " to be installed in parallel:"
-echo ""
-echo "    - Headers will be installed in ${includedir}/libnl${MAJ_VERSION}, therefore"
-echo "      you will need to add \"-I/usr/include/libnl${MAJ_VERSION}\" to CFLAGS"
-echo ""
-echo "    - The library basename was renamed to libnl-${MAJ_VERSION}, i.e. the SO names become"
-echo "      libnl-${MAJ_VERSION}.so., libnl-route-${MAJ_VERSION}.so, etc."
-echo ""
-echo "    - libtool versioning was assumed, to ease detection of compatible library"
-echo "      versions."
-echo ""
-echo " If you are using pkg-config for detecting and linking against the library "
-echo " things will continue magically as if nothing every happened. If you are "
-echo " linking manually you need to adapt your Makefiles or switch to using "
-echo " pkg-config files."
-echo ""
-echo "-------------------------------------------------------------------------------"
-
+echo
+echo "libnl $LIBNL_VERSION configuration${LIBNL_GIT_SHA:+ (git:$LIBNL_GIT_SHA)}:"
+echo "    --enable-pthreads=$enable_pthreads"
+echo "    --enable-static=$enable_static"
+echo
+echo "    --enable-debug=$enable_debug"
+echo "    --enable-cli=$enable_cli"
+echo
+echo "    check: $has_check"
+echo

@@ -40,7 +40,7 @@ AC_INIT(libnl, [libnl_version], [], [], [http://www.infradead.org/~tgr/libnl/])
 AC_CONFIG_HEADERS([include/config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([-Wall foreign subdir-objects])
+AM_INIT_AUTOMAKE([-Wall -Wno-portability foreign subdir-objects])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES(yes)], [])
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 

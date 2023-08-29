@@ -36,7 +36,7 @@ m4_define([libnl_lt_age],        [26])
 m4_define([libnl_version],
 	  [libnl_major_version.libnl_minor_version.libnl_micro_version])
 
-AC_INIT(libnl, [libnl_version], [], [], [http://www.infradead.org/~tgr/libnl/])
+AC_INIT([libnl],[libnl_version],[],[],[http://www.infradead.org/~tgr/libnl/])
 AC_CONFIG_HEADERS([include/config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
@@ -64,7 +64,7 @@ AC_SUBST(LT_AGE)
 AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_INSTALL
-AM_PROG_LIBTOOL
+LT_INIT
 AC_PROG_MKDIR_P
 AC_CHECK_PROGS(FLEX, 'flex')
 AC_CHECK_PROGS(YACC, 'bison -y')

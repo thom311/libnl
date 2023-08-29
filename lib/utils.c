@@ -1283,7 +1283,7 @@ int nl_has_capability (int capability)
 			NL_CAPABILITY_VERSION_3_6_0),
 		_NL_SET (4,
 			NL_CAPABILITY_VERSION_3_7_0,
-			0,
+			NL_CAPABILITY_VERSION_3_8_0,
 			0,
 			0,
 			0,

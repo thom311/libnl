@@ -28,7 +28,7 @@ class HTBQdisc(object):
         capi.rtnl_htb_set_defcls(self._qdisc._rtnl_qdisc, int(value))
 
     @property
-    @netlink.nlattr("r2q", type=int)
+    @netlink.nlattr(type=int)
     def r2q(self):
         return capi.rtnl_htb_get_rate2quantum(self._qdisc._rtnl_qdisc)
 

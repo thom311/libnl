@@ -1089,6 +1089,8 @@ python-build:
 	cd "$(srcdir)/python"; \
 	python setup.py build
 
+.PHONY: python-build
+
 EXTRA_DIST += \
 	python/README \
 	\
@@ -1148,6 +1150,8 @@ check_local += check-local-build-headers
 
 check-local: $(check_local)
 
+.PHONY: $(check_local)
+
 check_PROGRAMS += $(check_programs)
 TESTS += $(check_programs)
 
@@ -1175,6 +1179,6 @@ EXTRA_DIST += \
 
 check-progs: all $(check_PROGRAMS) $(check_LTLIBRARIES)
 
-###############################################################################
+.PHONY: check-progs
 
-.PHONY = check-progs
+###############################################################################

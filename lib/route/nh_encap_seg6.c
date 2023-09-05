@@ -2,10 +2,6 @@
 
 #include "nl-default.h"
 
-#include "nl-route.h"
-#include "nexthop-encap.h"
-#include "seg6.h"
-
 #include <linux/lwtunnel.h>
 #include <linux/seg6_iptunnel.h>
 
@@ -13,19 +9,23 @@
 #include <netlink/route/nexthop.h>
 
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-route.h"
+#include "nexthop-encap.h"
+#include "seg6.h"
 
 static int seg6_encap_build_msg(struct nl_msg *msg, void *priv)
 {
 	struct seg6_iptunnel_encap *slwt;
 
 	slwt = priv;
-	return nla_put(msg, SEG6_IPTUNNEL_SRH, SEG6_IPTUN_ENCAP_SIZE(slwt), slwt);
+	return nla_put(msg, SEG6_IPTUNNEL_SRH, SEG6_IPTUN_ENCAP_SIZE(slwt),
+		       slwt);
 }
 
 static struct nla_policy seg6_encap_policy[SEG6_IPTUNNEL_MAX + 1] = {
 	[SEG6_IPTUNNEL_SRH] = { .minlen = sizeof(struct seg6_iptunnel_encap) +
-	                                  sizeof(struct ipv6_sr_hdr) +
-	                                  sizeof(struct in6_addr) },
+					  sizeof(struct ipv6_sr_hdr) +
+					  sizeof(struct in6_addr) },
 };
 
 /**
@@ -66,7 +66,7 @@ static int seg6_encap_parse_msg(struct nlattr *nla, struct rtnl_nexthop *nh)
 	}
 
 	/* verify that SRH is consistent */
-	if (!seg6_validate_srh(tuninfo->srh, tuninfo_len - sizeof(*tuninfo), false))
+	if (!seg6_validate_srh(tuninfo->srh, tuninfo_len - sizeof(*tuninfo)))
 		return -NLE_INVAL;
 
 	slwt = malloc(tuninfo_len);
@@ -102,13 +102,13 @@ static int seg6_encap_compare(void *a, void *b)
 	return memcmp(slwt_a, slwt_b, len);
 }
 
-static const char *seg6_mode_types[] = {
-	[SEG6_IPTUN_MODE_INLINE]        = "inline",
-	[SEG6_IPTUN_MODE_ENCAP]         = "encap",
-	[SEG6_IPTUN_MODE_L2ENCAP]       = "l2encap",
-	[SEG6_IPTUN_MODE_ENCAP_RED]     = "encap.red",
-	[SEG6_IPTUN_MODE_L2ENCAP_RED]   = "l2encap.red"
-};
+static const char *seg6_mode_types[] = { [SEG6_IPTUN_MODE_INLINE] = "inline",
+					 [SEG6_IPTUN_MODE_ENCAP] = "encap",
+					 [SEG6_IPTUN_MODE_L2ENCAP] = "l2encap",
+					 [SEG6_IPTUN_MODE_ENCAP_RED] =
+						 "encap.red",
+					 [SEG6_IPTUN_MODE_L2ENCAP_RED] =
+						 "l2encap.red" };
 
 static void seg6_encap_dump(void *priv, struct nl_dump_params *dp)
 {
@@ -126,23 +126,23 @@ static void seg6_encap_dump(void *priv, struct nl_dump_params *dp)
 }
 
 struct nh_encap_ops seg6_encap_ops = {
-	.encap_type	= LWTUNNEL_ENCAP_SEG6,
-	.build_msg	= seg6_encap_build_msg,
-	.parse_msg	= seg6_encap_parse_msg,
-	.compare	= seg6_encap_compare,
-	.dump		= seg6_encap_dump,
+	.encap_type = LWTUNNEL_ENCAP_SEG6,
+	.build_msg = seg6_encap_build_msg,
+	.parse_msg = seg6_encap_parse_msg,
+	.compare = seg6_encap_compare,
+	.dump = seg6_encap_dump,
 };
 
-static 	struct seg6_iptunnel_encap *
-get_seg6_slwt(struct rtnl_nexthop *nh)
+static struct seg6_iptunnel_encap *get_seg6_slwt(struct rtnl_nexthop *nh)
 {
-	if (!nh->rtnh_encap || nh->rtnh_encap->ops->encap_type != LWTUNNEL_ENCAP_SEG6)
+	if (!nh->rtnh_encap ||
+	    nh->rtnh_encap->ops->encap_type != LWTUNNEL_ENCAP_SEG6)
 		return NULL;
 
 	return (struct seg6_iptunnel_encap *)nh->rtnh_encap->priv;
 }
 
-int rtnl_route_nh_get_encap_seg6_mode(struct rtnl_nexthop * nh)
+int rtnl_route_nh_get_encap_seg6_mode(struct rtnl_nexthop *nh)
 {
 	struct seg6_iptunnel_encap *slwt;
 
@@ -153,7 +153,7 @@ int rtnl_route_nh_get_encap_seg6_mode(struct rtnl_nexthop * nh)
 	return slwt->mode;
 }
 
-int rtnl_route_nh_get_encap_seg6_srh(struct rtnl_nexthop * nh, void **psrh)
+int rtnl_route_nh_get_encap_seg6_srh(struct rtnl_nexthop *nh, const struct ipv6_sr_hdr **psrh)
 {
 	struct seg6_iptunnel_encap *slwt;
 
@@ -162,5 +162,5 @@ int rtnl_route_nh_get_encap_seg6_srh(struct rtnl_nexthop * nh, void **psrh)
 		return -1;
 
 	*psrh = slwt->srh;
-	return 0;
+	return IPV6_EXTHDR_LEN(slwt->srh->hdrlen);
 }

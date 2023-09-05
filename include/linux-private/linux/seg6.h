@@ -12,8 +12,8 @@
  *      2 of the License, or (at your option) any later version.
  */
 
-#ifndef _UAPI_LINUX_SEG6_H
-#define _UAPI_LINUX_SEG6_H
+#ifndef _LINUX_SEG6_H
+#define _LINUX_SEG6_H
 
 #include <linux/types.h>
 #include <linux/in6.h>		/* For struct in6_addr. */

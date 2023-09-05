@@ -494,7 +494,6 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/nh_encap_seg6_local.c \
 	lib/route/nl-route.h \
 	lib/route/pktloc.c \
-	lib/route/seg6.c \
 	lib/route/qdisc.c \
 	lib/route/qdisc/blackhole.c \
 	lib/route/qdisc/cbq.c \
@@ -516,6 +515,8 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/route_utils.c \
 	lib/route/rtnl.c \
 	lib/route/rule.c \
+	lib/route/seg6.c \
+	lib/route/seg6.h \
 	lib/route/tc-api.h \
 	lib/route/tc.c \
 	$(NULL)

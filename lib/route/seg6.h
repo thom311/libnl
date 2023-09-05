@@ -17,7 +17,7 @@ struct nl_dump_params;
  */
 #define IPV6_EXTHDR_LEN(exthdr_len_field) (((exthdr_len_field) + 1) << 3)
 
-bool seg6_validate_srh(struct ipv6_sr_hdr *srh, int len, bool reduced);
+bool seg6_validate_srh(struct ipv6_sr_hdr *srh, int len);
 extern void seg6_dump_srh(struct nl_dump_params *dp, struct ipv6_sr_hdr *srh);
 
 #endif

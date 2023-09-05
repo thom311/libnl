@@ -71,7 +71,10 @@ extern uint8_t		rtnl_route_nh_get_encap_mpls_ttl(struct rtnl_nexthop *);
 
 
 extern int		rtnl_route_nh_get_encap_seg6_mode(struct rtnl_nexthop * );
-extern int		rtnl_route_nh_get_encap_seg6_srh(struct rtnl_nexthop *, void **);
+
+struct ipv6_sr_hdr;
+extern int		rtnl_route_nh_get_encap_seg6_srh(struct rtnl_nexthop *,
+							 const struct ipv6_sr_hdr **);
 
 extern int		rtnl_route_nh_get_encap_seg6_local_action(struct rtnl_nexthop *);
 extern int		rtnl_route_nh_has_encap_seg6_local_attr(struct rtnl_nexthop *, int);

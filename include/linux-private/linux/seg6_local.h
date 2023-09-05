@@ -11,8 +11,8 @@
  *      2 of the License, or (at your option) any later version.
  */
 
-#ifndef _UAPI_LINUX_SEG6_LOCAL_H
-#define _UAPI_LINUX_SEG6_LOCAL_H
+#ifndef _LINUX_SEG6_LOCAL_H
+#define _LINUX_SEG6_LOCAL_H
 
 #include <linux/seg6.h>
 

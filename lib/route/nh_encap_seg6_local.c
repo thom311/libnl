@@ -13,15 +13,10 @@
 #include "nl-route.h"
 #include "nexthop-encap.h"
 #include "seg6.h"
-
 #include "nl-aux-core/nl-core.h"
 
-#ifndef BIT
-#define BIT(nr) (1ul << (nr))
-#endif /* BIT */
-
-#define SEG6_F_ATTR(i)          BIT(i)
-#define SEG6_F_LOCAL_COUNTERS   SEG6_F_ATTR(SEG6_LOCAL_COUNTERS)
+#define SEG6_F_ATTR(i) _NL_BIT(i)
+#define SEG6_F_LOCAL_COUNTERS SEG6_F_ATTR(SEG6_LOCAL_COUNTERS)
 
 struct nh_encap_ops seg6_local_encap_ops;
 
@@ -33,85 +28,86 @@ struct seg6_action_desc {
 };
 
 static struct nla_policy seg6_local_encap_policy[SEG6_LOCAL_MAX + 1] = {
-	[SEG6_LOCAL_ACTION]     = { .type = NLA_U32 },
-	[SEG6_LOCAL_SRH]        = { .minlen = sizeof(struct ipv6_sr_hdr) + sizeof(struct in6_addr) },
-	[SEG6_LOCAL_TABLE]      = { .type = NLA_U32 },
-	[SEG6_LOCAL_NH4]        = { .minlen = sizeof(struct in_addr),
-	                            .maxlen = sizeof(struct in_addr) },
-	[SEG6_LOCAL_NH6]        = { .minlen = sizeof(struct in6_addr),
-	                            .maxlen = sizeof(struct in6_addr) },
-	[SEG6_LOCAL_IIF]        = { .type = NLA_U32 },
-	[SEG6_LOCAL_OIF]        = { .type = NLA_U32 },
-	[SEG6_LOCAL_BPF]        = { .type = NLA_NESTED },
-	[SEG6_LOCAL_VRFTABLE]   = { .type = NLA_U32 },
-	[SEG6_LOCAL_COUNTERS]   = { .type = NLA_NESTED },
-	[SEG6_LOCAL_FLAVORS]    = { .type = NLA_NESTED },
+	[SEG6_LOCAL_ACTION] = { .type = NLA_U32 },
+	[SEG6_LOCAL_SRH] = { .minlen = sizeof(struct ipv6_sr_hdr) +
+				       sizeof(struct in6_addr) },
+	[SEG6_LOCAL_TABLE] = { .type = NLA_U32 },
+	[SEG6_LOCAL_NH4] = { .minlen = sizeof(struct in_addr),
+			     .maxlen = sizeof(struct in_addr) },
+	[SEG6_LOCAL_NH6] = { .minlen = sizeof(struct in6_addr),
+			     .maxlen = sizeof(struct in6_addr) },
+	[SEG6_LOCAL_IIF] = { .type = NLA_U32 },
+	[SEG6_LOCAL_OIF] = { .type = NLA_U32 },
+	[SEG6_LOCAL_BPF] = { .type = NLA_NESTED },
+	[SEG6_LOCAL_VRFTABLE] = { .type = NLA_U32 },
+	[SEG6_LOCAL_COUNTERS] = { .type = NLA_NESTED },
+	[SEG6_LOCAL_FLAVORS] = { .type = NLA_NESTED },
 };
 
 static struct seg6_action_desc seg6_action_table[] = {
 	{
-		.action		= SEG6_LOCAL_ACTION_END,
-		.attrs		= 0,
-		.optattrs	= SEG6_F_LOCAL_COUNTERS |
-				  SEG6_F_ATTR(SEG6_LOCAL_FLAVORS),
+		.action = SEG6_LOCAL_ACTION_END,
+		.attrs = 0,
+		.optattrs =
+			SEG6_F_LOCAL_COUNTERS | SEG6_F_ATTR(SEG6_LOCAL_FLAVORS),
 	},
 	{
-		.action		= SEG6_LOCAL_ACTION_END_X,
-		.attrs		= SEG6_F_ATTR(SEG6_LOCAL_NH6),
-		.optattrs	= SEG6_F_LOCAL_COUNTERS,
+		.action = SEG6_LOCAL_ACTION_END_X,
+		.attrs = SEG6_F_ATTR(SEG6_LOCAL_NH6),
+		.optattrs = SEG6_F_LOCAL_COUNTERS,
 	},
 	{
-		.action		= SEG6_LOCAL_ACTION_END_T,
-		.attrs		= SEG6_F_ATTR(SEG6_LOCAL_TABLE),
-		.optattrs	= SEG6_F_LOCAL_COUNTERS,
+		.action = SEG6_LOCAL_ACTION_END_T,
+		.attrs = SEG6_F_ATTR(SEG6_LOCAL_TABLE),
+		.optattrs = SEG6_F_LOCAL_COUNTERS,
 	},
 	{
-		.action		= SEG6_LOCAL_ACTION_END_DX2,
-		.attrs		= SEG6_F_ATTR(SEG6_LOCAL_OIF),
-		.optattrs	= SEG6_F_LOCAL_COUNTERS,
+		.action = SEG6_LOCAL_ACTION_END_DX2,
+		.attrs = SEG6_F_ATTR(SEG6_LOCAL_OIF),
+		.optattrs = SEG6_F_LOCAL_COUNTERS,
 	},
 	{
-		.action		= SEG6_LOCAL_ACTION_END_DX6,
-		.attrs		= SEG6_F_ATTR(SEG6_LOCAL_NH6),
-		.optattrs	= SEG6_F_LOCAL_COUNTERS,
+		.action = SEG6_LOCAL_ACTION_END_DX6,
+		.attrs = SEG6_F_ATTR(SEG6_LOCAL_NH6),
+		.optattrs = SEG6_F_LOCAL_COUNTERS,
 	},
 	{
-		.action		= SEG6_LOCAL_ACTION_END_DX4,
-		.attrs		= SEG6_F_ATTR(SEG6_LOCAL_NH4),
-		.optattrs	= SEG6_F_LOCAL_COUNTERS,
+		.action = SEG6_LOCAL_ACTION_END_DX4,
+		.attrs = SEG6_F_ATTR(SEG6_LOCAL_NH4),
+		.optattrs = SEG6_F_LOCAL_COUNTERS,
 	},
 	{
-		.action		= SEG6_LOCAL_ACTION_END_DT4,
-		.attrs		= SEG6_F_ATTR(SEG6_LOCAL_VRFTABLE),
-		.optattrs	= SEG6_F_LOCAL_COUNTERS,
+		.action = SEG6_LOCAL_ACTION_END_DT4,
+		.attrs = SEG6_F_ATTR(SEG6_LOCAL_VRFTABLE),
+		.optattrs = SEG6_F_LOCAL_COUNTERS,
 	},
 	{
-		.action		= SEG6_LOCAL_ACTION_END_DT6,
-		.attrs		= 0,
-		.optattrs	= SEG6_F_LOCAL_COUNTERS		|
-				  SEG6_F_ATTR(SEG6_LOCAL_TABLE) |
-				  SEG6_F_ATTR(SEG6_LOCAL_VRFTABLE),
+		.action = SEG6_LOCAL_ACTION_END_DT6,
+		.attrs = 0,
+		.optattrs = SEG6_F_LOCAL_COUNTERS |
+			    SEG6_F_ATTR(SEG6_LOCAL_TABLE) |
+			    SEG6_F_ATTR(SEG6_LOCAL_VRFTABLE),
 	},
 	{
-		.action		= SEG6_LOCAL_ACTION_END_DT46,
-		.attrs		= SEG6_F_ATTR(SEG6_LOCAL_VRFTABLE),
-		.optattrs	= SEG6_F_LOCAL_COUNTERS,
+		.action = SEG6_LOCAL_ACTION_END_DT46,
+		.attrs = SEG6_F_ATTR(SEG6_LOCAL_VRFTABLE),
+		.optattrs = SEG6_F_LOCAL_COUNTERS,
 	},
 	{
-		.action		= SEG6_LOCAL_ACTION_END_B6,
-		.attrs		= SEG6_F_ATTR(SEG6_LOCAL_SRH),
-		.optattrs	= SEG6_F_LOCAL_COUNTERS,
+		.action = SEG6_LOCAL_ACTION_END_B6,
+		.attrs = SEG6_F_ATTR(SEG6_LOCAL_SRH),
+		.optattrs = SEG6_F_LOCAL_COUNTERS,
 	},
 	{
-		.action		= SEG6_LOCAL_ACTION_END_B6_ENCAP,
-		.attrs		= SEG6_F_ATTR(SEG6_LOCAL_SRH),
-		.optattrs	= SEG6_F_LOCAL_COUNTERS,
-		.static_headroom	= sizeof(struct ipv6hdr),
+		.action = SEG6_LOCAL_ACTION_END_B6_ENCAP,
+		.attrs = SEG6_F_ATTR(SEG6_LOCAL_SRH),
+		.optattrs = SEG6_F_LOCAL_COUNTERS,
+		.static_headroom = sizeof(struct ipv6hdr),
 	},
 	{
-		.action		= SEG6_LOCAL_ACTION_END_BPF,
-		.attrs		= SEG6_F_ATTR(SEG6_LOCAL_BPF),
-		.optattrs	= SEG6_F_LOCAL_COUNTERS,
+		.action = SEG6_LOCAL_ACTION_END_BPF,
+		.attrs = SEG6_F_ATTR(SEG6_LOCAL_BPF),
+		.optattrs = SEG6_F_LOCAL_COUNTERS,
 	},
 };
 
@@ -165,27 +161,25 @@ struct seg6_local_counters {
  * check the value of these parameters to see if they meet conditions (i), (ii)
  * and (iii).
  */
-#define SEG6_LOCAL_LCBLOCK_DBITS	32
-#define SEG6_LOCAL_LCNODE_FN_DBITS	16
+#define SEG6_LOCAL_LCBLOCK_DBITS 32
+#define SEG6_LOCAL_LCNODE_FN_DBITS 16
 
 /* The following next_csid_chk_{cntr,lcblock,lcblock_fn}_bits macros can be
  * used directly to check whether the lengths (in bits) of Locator-Block and
  * Locator-Node Function are valid according to (i), (ii), (iii).
  */
-#define next_csid_chk_cntr_bits(blen, flen)		\
-	((blen) + (flen) > 128)
+#define next_csid_chk_cntr_bits(blen, flen) ((blen) + (flen) > 128)
 
-#define next_csid_chk_lcblock_bits(blen)		\
-({							\
-	typeof(blen) __tmp = blen;			\
-	(!__tmp || __tmp > 120 || (__tmp & 0x07));	\
-})
+#define next_csid_chk_lcblock_bits(blen)                                       \
+	({                                                                     \
+		typeof(blen) __tmp = blen;                                     \
+		(!__tmp || __tmp > 120 || (__tmp & 0x07));                     \
+	})
 
-#define next_csid_chk_lcnode_fn_bits(flen)		\
-	next_csid_chk_lcblock_bits(flen)
+#define next_csid_chk_lcnode_fn_bits(flen) next_csid_chk_lcblock_bits(flen)
 
 /* Supported Flavor operations are reported in this bitmask */
-#define SEG6_LOCAL_FLV_SUPP_OPS	(BIT(SEG6_LOCAL_FLV_OP_NEXT_CSID))
+#define SEG6_LOCAL_FLV_SUPP_OPS (_NL_BIT(SEG6_LOCAL_FLV_OP_NEXT_CSID))
 
 struct seg6_flavors_info {
 	/* Flavor operations */
@@ -236,7 +230,7 @@ static int parse_nla_srh(struct nlattr **attrs, struct seg6_local_lwt *slwt)
 	if (len < sizeof(*srh) + sizeof(struct in6_addr))
 		return -NLE_INVAL;
 
-	if (!seg6_validate_srh(srh, len, false))
+	if (!seg6_validate_srh(srh, len))
 		return -NLE_INVAL;
 
 	slwt->srh = _nl_memdup(srh, len);
@@ -280,8 +274,7 @@ static int cmp_nla_srh(struct seg6_local_lwt *a, struct seg6_local_lwt *b)
 	return memcmp(a->srh, b->srh, len);
 }
 
-static void
-dump_nla_srh(struct seg6_local_lwt *slwt, struct nl_dump_params *dp)
+static void dump_nla_srh(struct seg6_local_lwt *slwt, struct nl_dump_params *dp)
 {
 	seg6_dump_srh(dp, slwt->srh);
 }
@@ -316,15 +309,16 @@ static int cmp_nla_table(struct seg6_local_lwt *a, struct seg6_local_lwt *b)
 	return 0;
 }
 
-static void
-dump_nla_table(struct seg6_local_lwt *slwt, struct nl_dump_params *dp)
+static void dump_nla_table(struct seg6_local_lwt *slwt,
+			   struct nl_dump_params *dp)
 {
 	nl_dump(dp, "table %d ", slwt->table);
 }
 
 static int parse_nla_nh4(struct nlattr **attrs, struct seg6_local_lwt *slwt)
 {
-	memcpy(&slwt->nh4, nla_data(attrs[SEG6_LOCAL_NH4]), sizeof(struct in_addr));
+	memcpy(&slwt->nh4, nla_data(attrs[SEG6_LOCAL_NH4]),
+	       sizeof(struct in_addr));
 
 	return 0;
 }
@@ -349,7 +343,8 @@ static int cmp_nla_nh4(struct seg6_local_lwt *a, struct seg6_local_lwt *b)
 
 static int parse_nla_nh6(struct nlattr **attrs, struct seg6_local_lwt *slwt)
 {
-	memcpy(&slwt->nh6, nla_data(attrs[SEG6_LOCAL_NH6]), sizeof(struct in6_addr));
+	memcpy(&slwt->nh6, nla_data(attrs[SEG6_LOCAL_NH6]),
+	       sizeof(struct in6_addr));
 
 	return 0;
 }
@@ -438,7 +433,8 @@ static int parse_nla_bpf(struct nlattr **attrs, struct seg6_local_lwt *slwt)
 	struct nlattr *tb[SEG6_LOCAL_BPF_PROG_MAX + 1];
 	int ret;
 
-	ret = nla_parse_nested(tb, SEG6_LOCAL_BPF_PROG_MAX, attrs[SEG6_LOCAL_BPF], bpf_prog_policy);
+	ret = nla_parse_nested(tb, SEG6_LOCAL_BPF_PROG_MAX,
+			       attrs[SEG6_LOCAL_BPF], bpf_prog_policy);
 	if (ret < 0)
 		return ret;
 
@@ -496,7 +492,8 @@ static void destroy_attr_bpf(struct seg6_local_lwt *slwt)
 	free(slwt->bpf.name);
 }
 
-static int parse_nla_vrftable(struct nlattr **attrs, struct seg6_local_lwt *slwt)
+static int parse_nla_vrftable(struct nlattr **attrs,
+			      struct seg6_local_lwt *slwt)
 {
 	slwt->dt_info.vrf_table = nla_get_u32(attrs[SEG6_LOCAL_VRFTABLE]);
 
@@ -521,23 +518,25 @@ static int cmp_nla_vrftable(struct seg6_local_lwt *a, struct seg6_local_lwt *b)
 	return 0;
 }
 
-static const struct
-nla_policy seg6_local_counters_policy[SEG6_LOCAL_CNT_MAX + 1] = {
-	[SEG6_LOCAL_CNT_PACKETS]	= { .type = NLA_U64 },
-	[SEG6_LOCAL_CNT_BYTES]		= { .type = NLA_U64 },
-	[SEG6_LOCAL_CNT_ERRORS]		= { .type = NLA_U64 },
-};
+static const struct nla_policy
+	seg6_local_counters_policy[SEG6_LOCAL_CNT_MAX + 1] = {
+		[SEG6_LOCAL_CNT_PACKETS] = { .type = NLA_U64 },
+		[SEG6_LOCAL_CNT_BYTES] = { .type = NLA_U64 },
+		[SEG6_LOCAL_CNT_ERRORS] = { .type = NLA_U64 },
+	};
 
 /**
  * Copied from Linux 6.4: parse_nla_counters:net/ipv6/seg6_local.c
  * Author: Andrea Mayer <andrea.mayer@uniroma2.it>
  */
-static int parse_nla_counters(struct nlattr **attrs, struct seg6_local_lwt *slwt)
+static int parse_nla_counters(struct nlattr **attrs,
+			      struct seg6_local_lwt *slwt)
 {
 	struct nlattr *tb[SEG6_LOCAL_CNT_MAX + 1];
 	int ret;
 
-	ret = nla_parse_nested(tb, SEG6_LOCAL_CNT_MAX, attrs[SEG6_LOCAL_COUNTERS],
+	ret = nla_parse_nested(tb, SEG6_LOCAL_CNT_MAX,
+			       attrs[SEG6_LOCAL_COUNTERS],
 			       seg6_local_counters_policy);
 	if (ret < 0)
 		return ret;
@@ -549,9 +548,8 @@ static int parse_nla_counters(struct nlattr **attrs, struct seg6_local_lwt *slwt
 	    !tb[SEG6_LOCAL_CNT_ERRORS])
 		return -NLE_INVAL;
 
-
 	slwt->counters.packets = nla_get_u64(tb[SEG6_LOCAL_CNT_PACKETS]);
-	
+
 	slwt->counters_present = 1;
 
 	return 0;
@@ -607,16 +605,16 @@ static int cmp_nla_counters(struct seg6_local_lwt *a, struct seg6_local_lwt *b)
 	return a->counters_present ^ b->counters_present;
 }
 
-static const
-struct nla_policy seg6_local_flavors_policy[SEG6_LOCAL_FLV_MAX + 1] = {
-	[SEG6_LOCAL_FLV_OPERATION]	= { .type = NLA_U32 },
-	[SEG6_LOCAL_FLV_LCBLOCK_BITS]	= { .type = NLA_U8 },
-	[SEG6_LOCAL_FLV_LCNODE_FN_BITS]	= { .type = NLA_U8 },
-};
+static const struct nla_policy
+	seg6_local_flavors_policy[SEG6_LOCAL_FLV_MAX + 1] = {
+		[SEG6_LOCAL_FLV_OPERATION] = { .type = NLA_U32 },
+		[SEG6_LOCAL_FLV_LCBLOCK_BITS] = { .type = NLA_U8 },
+		[SEG6_LOCAL_FLV_LCNODE_FN_BITS] = { .type = NLA_U8 },
+	};
 
 static bool seg6_next_csid_enabled(uint32_t fops)
 {
-	return fops & BIT(SEG6_LOCAL_FLV_OP_NEXT_CSID);
+	return fops & _NL_BIT(SEG6_LOCAL_FLV_OP_NEXT_CSID);
 }
 
 /**
@@ -804,56 +802,56 @@ struct seg6_action_param {
 	void (*destroy)(struct seg6_local_lwt *slwt);
 };
 
-static struct seg6_action_param seg6_action_params[SEG6_LOCAL_MAX + 1] = {
-	[SEG6_LOCAL_SRH]	= { .parse = parse_nla_srh,
-				    .put = put_nla_srh,
-				    .cmp = cmp_nla_srh,
-				    .dump = dump_nla_srh,
-				    .destroy = destroy_attr_srh },
+static const struct seg6_action_param seg6_action_params[SEG6_LOCAL_MAX + 1] = {
+	[SEG6_LOCAL_SRH] = { .parse = parse_nla_srh,
+			     .put = put_nla_srh,
+			     .cmp = cmp_nla_srh,
+			     .dump = dump_nla_srh,
+			     .destroy = destroy_attr_srh },
 
-	[SEG6_LOCAL_TABLE]	= { .parse = parse_nla_table,
-				    .put = put_nla_table,
-				    .cmp = cmp_nla_table,
-				    .dump = dump_nla_table },
+	[SEG6_LOCAL_TABLE] = { .parse = parse_nla_table,
+			       .put = put_nla_table,
+			       .cmp = cmp_nla_table,
+			       .dump = dump_nla_table },
 
-	[SEG6_LOCAL_NH4]	= { .parse = parse_nla_nh4,
-				    .put = put_nla_nh4,
-				    .cmp = cmp_nla_nh4 },
+	[SEG6_LOCAL_NH4] = { .parse = parse_nla_nh4,
+			     .put = put_nla_nh4,
+			     .cmp = cmp_nla_nh4 },
 
-	[SEG6_LOCAL_NH6]	= { .parse = parse_nla_nh6,
-				    .put = put_nla_nh6,
-				    .cmp = cmp_nla_nh6 },
+	[SEG6_LOCAL_NH6] = { .parse = parse_nla_nh6,
+			     .put = put_nla_nh6,
+			     .cmp = cmp_nla_nh6 },
 
-	[SEG6_LOCAL_IIF]	= { .parse = parse_nla_iif,
-				    .put = put_nla_iif,
-				    .cmp = cmp_nla_iif },
+	[SEG6_LOCAL_IIF] = { .parse = parse_nla_iif,
+			     .put = put_nla_iif,
+			     .cmp = cmp_nla_iif },
 
-	[SEG6_LOCAL_OIF]	= { .parse = parse_nla_oif,
-				    .put = put_nla_oif,
-				    .cmp = cmp_nla_oif },
+	[SEG6_LOCAL_OIF] = { .parse = parse_nla_oif,
+			     .put = put_nla_oif,
+			     .cmp = cmp_nla_oif },
 
-	[SEG6_LOCAL_BPF]	= { .parse = parse_nla_bpf,
-				    .put = put_nla_bpf,
-				    .cmp = cmp_nla_bpf,
-				    .destroy = destroy_attr_bpf },
+	[SEG6_LOCAL_BPF] = { .parse = parse_nla_bpf,
+			     .put = put_nla_bpf,
+			     .cmp = cmp_nla_bpf,
+			     .destroy = destroy_attr_bpf },
 
-	[SEG6_LOCAL_VRFTABLE]	= { .parse = parse_nla_vrftable,
-				    .put = put_nla_vrftable,
-				    .cmp = cmp_nla_vrftable },
+	[SEG6_LOCAL_VRFTABLE] = { .parse = parse_nla_vrftable,
+				  .put = put_nla_vrftable,
+				  .cmp = cmp_nla_vrftable },
 
-	[SEG6_LOCAL_COUNTERS]	= { .parse = parse_nla_counters,
-				    .put = put_nla_counters,
-				    .cmp = cmp_nla_counters },
+	[SEG6_LOCAL_COUNTERS] = { .parse = parse_nla_counters,
+				  .put = put_nla_counters,
+				  .cmp = cmp_nla_counters },
 
-	[SEG6_LOCAL_FLAVORS]	= { .parse = parse_nla_flavors,
-				    .put = put_nla_flavors,
-				    .cmp = cmp_nla_flavors },
+	[SEG6_LOCAL_FLAVORS] = { .parse = parse_nla_flavors,
+				 .put = put_nla_flavors,
+				 .cmp = cmp_nla_flavors },
 };
 
 static void destroy_attrs(unsigned long parsed_attrs, int max_parsed,
 			  struct seg6_local_lwt *slwt)
 {
-	struct seg6_action_param *param;
+	const struct seg6_action_param *param;
 	int i;
 
 	for (i = SEG6_LOCAL_SRH; i < max_parsed; ++i) {
@@ -871,11 +869,12 @@ static void destroy_attrs(unsigned long parsed_attrs, int max_parsed,
  * Copied from Linux 6.4: parse_nla_optional_attrs:net/ipv6/seg6_local.c
  * Author: Andrea Mayer <andrea.mayer@uniroma2.it>
  */
-static int parse_nla_optional_attrs(struct nlattr **attrs, struct seg6_local_lwt *slwt)
+static int parse_nla_optional_attrs(struct nlattr **attrs,
+				    struct seg6_local_lwt *slwt)
 {
 	struct seg6_action_desc *desc = slwt->desc;
 	unsigned long parsed_optattrs = 0;
-	struct seg6_action_param *param;
+	const struct seg6_action_param *param;
 	int err, i;
 
 	for (i = SEG6_LOCAL_SRH; i < SEG6_LOCAL_MAX + 1; ++i) {
@@ -914,7 +913,7 @@ parse_optattrs_err:
  */
 static int parse_nla_action(struct nlattr **attrs, struct seg6_local_lwt *slwt)
 {
-	struct seg6_action_param *param;
+	const struct seg6_action_param *param;
 	struct seg6_action_desc *desc;
 	unsigned long invalid_attrs;
 	int i, err;
@@ -986,14 +985,16 @@ static void seg6_local_encap_destructor(void *priv)
  * Copied from Linux 6.4: seg6_local_build_state:net/ipv6/seg6_local.c
  * Author: David Lebrun <david.lebrun@uclouvain.be>
  */
-static int seg6_local_encap_parse_msg(struct nlattr *nla, struct rtnl_nexthop *nh)
+static int seg6_local_encap_parse_msg(struct nlattr *nla,
+				      struct rtnl_nexthop *nh)
 {
 	struct nlattr *tb[SEG6_LOCAL_MAX + 1];
-	struct rtnl_nh_encap *	rtnh_encap;
+	struct rtnl_nh_encap *rtnh_encap;
 	struct seg6_local_lwt *slwt;
 	int err;
 
-	err = nla_parse_nested(tb, SEG6_LOCAL_MAX, nla, seg6_local_encap_policy);
+	err = nla_parse_nested(tb, SEG6_LOCAL_MAX, nla,
+			       seg6_local_encap_policy);
 	if (err < 0)
 		return err;
 
@@ -1032,7 +1033,7 @@ err:
 static int seg6_local_encap_build_msg(struct nl_msg *msg, void *priv)
 {
 	struct seg6_local_lwt *slwt = priv;
-	struct seg6_action_param *param;
+	const struct seg6_action_param *param;
 	unsigned long attrs;
 	int i, err;
 
@@ -1058,7 +1059,7 @@ nla_put_failure:
 static int seg6_local_encap_compare(void *a, void *b)
 {
 	struct seg6_local_lwt *slwt_a, *slwt_b;
-	struct seg6_action_param *param;
+	const struct seg6_action_param *param;
 	unsigned long attrs_a, attrs_b;
 	int i;
 
@@ -1086,22 +1087,22 @@ static int seg6_local_encap_compare(void *a, void *b)
 }
 
 static const char *seg6_action_names[SEG6_LOCAL_ACTION_MAX + 1] = {
-	[SEG6_LOCAL_ACTION_END]			= "End",
-	[SEG6_LOCAL_ACTION_END_X]		= "End.X",
-	[SEG6_LOCAL_ACTION_END_T]		= "End.T",
-	[SEG6_LOCAL_ACTION_END_DX2]		= "End.DX2",
-	[SEG6_LOCAL_ACTION_END_DX6]		= "End.DX6",
-	[SEG6_LOCAL_ACTION_END_DX4]		= "End.DX4",
-	[SEG6_LOCAL_ACTION_END_DT6]		= "End.DT6",
-	[SEG6_LOCAL_ACTION_END_DT4]		= "End.DT4",
-	[SEG6_LOCAL_ACTION_END_B6]		= "End.B6",
-	[SEG6_LOCAL_ACTION_END_B6_ENCAP]	= "End.B6.Encaps",
-	[SEG6_LOCAL_ACTION_END_BM]		= "End.BM",
-	[SEG6_LOCAL_ACTION_END_S]		= "End.S",
-	[SEG6_LOCAL_ACTION_END_AS]		= "End.AS",
-	[SEG6_LOCAL_ACTION_END_AM]		= "End.AM",
-	[SEG6_LOCAL_ACTION_END_BPF]		= "End.BPF",
-	[SEG6_LOCAL_ACTION_END_DT46]		= "End.DT46",
+	[SEG6_LOCAL_ACTION_END] = "End",
+	[SEG6_LOCAL_ACTION_END_X] = "End.X",
+	[SEG6_LOCAL_ACTION_END_T] = "End.T",
+	[SEG6_LOCAL_ACTION_END_DX2] = "End.DX2",
+	[SEG6_LOCAL_ACTION_END_DX6] = "End.DX6",
+	[SEG6_LOCAL_ACTION_END_DX4] = "End.DX4",
+	[SEG6_LOCAL_ACTION_END_DT6] = "End.DT6",
+	[SEG6_LOCAL_ACTION_END_DT4] = "End.DT4",
+	[SEG6_LOCAL_ACTION_END_B6] = "End.B6",
+	[SEG6_LOCAL_ACTION_END_B6_ENCAP] = "End.B6.Encaps",
+	[SEG6_LOCAL_ACTION_END_BM] = "End.BM",
+	[SEG6_LOCAL_ACTION_END_S] = "End.S",
+	[SEG6_LOCAL_ACTION_END_AS] = "End.AS",
+	[SEG6_LOCAL_ACTION_END_AM] = "End.AM",
+	[SEG6_LOCAL_ACTION_END_BPF] = "End.BPF",
+	[SEG6_LOCAL_ACTION_END_DT46] = "End.DT46",
 };
 
 static const char *format_action_type(int action)
@@ -1115,7 +1116,7 @@ static const char *format_action_type(int action)
 static void seg6_local_encap_dump(void *priv, struct nl_dump_params *dp)
 {
 	struct seg6_local_lwt *slwt;
-	struct seg6_action_param *param;
+	const struct seg6_action_param *param;
 	unsigned long attrs;
 	int i;
 
@@ -1134,18 +1135,18 @@ static void seg6_local_encap_dump(void *priv, struct nl_dump_params *dp)
 }
 
 struct nh_encap_ops seg6_local_encap_ops = {
-	.encap_type	= LWTUNNEL_ENCAP_SEG6_LOCAL,
-	.build_msg	= seg6_local_encap_build_msg,
-	.parse_msg	= seg6_local_encap_parse_msg,
-	.compare	= seg6_local_encap_compare,
-	.dump		= seg6_local_encap_dump,
-	.destructor	= seg6_local_encap_destructor,
+	.encap_type = LWTUNNEL_ENCAP_SEG6_LOCAL,
+	.build_msg = seg6_local_encap_build_msg,
+	.parse_msg = seg6_local_encap_parse_msg,
+	.compare = seg6_local_encap_compare,
+	.dump = seg6_local_encap_dump,
+	.destructor = seg6_local_encap_destructor,
 };
 
-static struct seg6_local_lwt *
-get_seg6_local_slwt(struct rtnl_nexthop *nh)
+static struct seg6_local_lwt *get_seg6_local_slwt(struct rtnl_nexthop *nh)
 {
-	if (!nh->rtnh_encap || nh->rtnh_encap->ops->encap_type != LWTUNNEL_ENCAP_SEG6_LOCAL)
+	if (!nh->rtnh_encap ||
+	    nh->rtnh_encap->ops->encap_type != LWTUNNEL_ENCAP_SEG6_LOCAL)
 		return NULL;
 
 	return (struct seg6_local_lwt *)nh->rtnh_encap->priv;
@@ -1162,7 +1163,7 @@ int rtnl_route_nh_get_encap_seg6_local_action(struct rtnl_nexthop *nh)
 	return slwt->action;
 }
 
-int rtnl_route_nh_has_encap_seg6_local_attr(struct rtnl_nexthop * nh, int attr)
+int rtnl_route_nh_has_encap_seg6_local_attr(struct rtnl_nexthop *nh, int attr)
 {
 	unsigned long attrs;
 	struct seg6_local_lwt *slwt;
@@ -1172,7 +1173,7 @@ int rtnl_route_nh_has_encap_seg6_local_attr(struct rtnl_nexthop * nh, int attr)
 		return -NLE_NOATTR;
 
 	attrs = slwt->desc->attrs | slwt->parsed_optattrs;
-	
+
 	if (attr < 0 || attr >= CHAR_BIT * sizeof(attrs))
 		return -NLE_INVAL;
 

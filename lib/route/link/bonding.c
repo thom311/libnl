@@ -24,11 +24,17 @@
 
 #define BOND_HAS_MODE		(1 << 0)
 #define BOND_HAS_ACTIVE_SLAVE	(1 << 1)
+#define BOND_HAS_HASHING_TYPE	(1 << 2)
+#define BOND_HAS_MIIMON		(1 << 3)
+#define BOND_HAS_MIN_LINKS	(1 << 4)
 
 struct bond_info {
 	uint8_t bn_mode;
+	uint8_t hashing_type;
 	uint32_t ifindex;
 	uint32_t bn_mask;
+	uint32_t miimon;
+	uint32_t min_links;
 };
 
 static int bond_info_alloc(struct rtnl_link *link)
@@ -66,6 +72,15 @@ static int bond_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 
 	if (bn->bn_mask & BOND_HAS_ACTIVE_SLAVE)
 		NLA_PUT_U32(msg, IFLA_BOND_ACTIVE_SLAVE, bn->ifindex);
+
+	if (bn->bn_mask & BOND_HAS_HASHING_TYPE)
+		NLA_PUT_U8(msg, IFLA_BOND_XMIT_HASH_POLICY, bn->hashing_type);
+
+	if (bn->bn_mask & BOND_HAS_MIIMON)
+		NLA_PUT_U32(msg, IFLA_BOND_MIIMON, bn->miimon);
+
+	if (bn->bn_mask & BOND_HAS_MIN_LINKS)
+		NLA_PUT_U32(msg, IFLA_BOND_MIN_LINKS, bn->min_links);
 
 	nla_nest_end(msg, data);
 	return 0;
@@ -123,6 +138,61 @@ void rtnl_link_bond_set_mode(struct rtnl_link *link, uint8_t mode)
 	bn->bn_mode = mode;
 
 	bn->bn_mask |= BOND_HAS_MODE;
+}
+
+/**
+ * Set hashing type
+ * @arg link            Link object of type bond
+ * @arg type            bond hashing type to set
+ *
+ * @return void
+ */
+void rtnl_link_bond_set_hashing_type (struct rtnl_link *link, uint8_t type)
+{
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	bn->hashing_type = type;
+
+	bn->bn_mask |= BOND_HAS_HASHING_TYPE;
+}
+
+/**
+ * Set MII monitoring interval
+ * @arg link            Link object of type bond
+ * @arg miimon          interval in milliseconds
+ *
+ * @return void
+ */
+void rtnl_link_bond_set_miimon (struct rtnl_link *link, uint32_t miimon)
+{
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	bn->miimon = miimon;
+
+	bn->bn_mask |= BOND_HAS_MIIMON;
+}
+
+/**
+ * Set the minimum number of member ports that must be up before
+ * marking the bond device as up
+ * @arg link            Link object of type bond
+ * @arg min_links       Number of links
+ *
+ * @return void
+ */
+void rtnl_link_bond_set_min_links (struct rtnl_link *link, uint32_t min_links)
+{
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	bn->min_links = links;
+
+	bn->bn_mask |= BOND_HAS_MIN_LINKS;
 }
 
 /**

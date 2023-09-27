@@ -1306,3 +1306,10 @@ global:
 	rtnl_nh_set_fdb;
 	rtnl_nh_set_gateway;
 } libnl_3_7;
+
+libnl_3_9 {
+global:
+	rtnl_link_bond_set_hashing_type;
+	rtnl_link_bond_set_miimon;
+	rtnl_link_bond_set_min_links;
+} libnl_3_8;

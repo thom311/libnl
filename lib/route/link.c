@@ -307,6 +307,7 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 	dst->l_phys_port_id = NULL;
 	dst->l_phys_switch_id = NULL;
 	dst->l_vf_list = NULL;
+	dst->perm_addr = NULL;
 
 	if (src->l_addr)
 		if (!(dst->l_addr = nl_addr_clone(src->l_addr)))
@@ -357,6 +358,10 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 	if (src->ce_mask & LINK_ATTR_VF_LIST)
 		if ((err = rtnl_link_sriov_clone(dst, src)) < 0)
 			return err;
+
+	if (src->perm_addr)
+		if (!(dst->perm_addr = nl_data_clone(src->perm_addr)))
+			return -NLE_NOMEM;
 
 	return 0;
 }

@@ -73,6 +73,7 @@ struct rtnl_link {
 	int l_ns_fd;
 	pid_t l_ns_pid;
 	struct rtnl_link_vf *l_vf_list;
+	struct nl_data * perm_addr;
 };
 
 struct rtnl_nh_encap {

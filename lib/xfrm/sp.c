@@ -1358,6 +1358,8 @@ void xfrmnl_sp_remove_usertemplate(struct xfrmnl_sp *sp, struct xfrmnl_user_tmpl
 	if (sp->ce_mask & XFRM_SP_ATTR_TMPL) {
 		sp->nr_user_tmpl--;
 		nl_list_del(&utmpl->utmpl_list);
+		if (sp->nr_user_tmpl == 0)
+			sp->ce_mask &= ~XFRM_SP_ATTR_TMPL;
 	}
 }
 

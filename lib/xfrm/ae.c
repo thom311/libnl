@@ -583,7 +583,7 @@ int xfrmnl_ae_parse(struct nlmsghdr *n, struct xfrmnl_ae **result)
 		uint32_t len = sizeof (struct xfrmnl_replay_state_esn) +  (sizeof (uint32_t) * esn->bmp_len);
 
 		if ((ae->replay_state_esn = calloc (1, len)) == NULL) {
-			err = -ENOMEM;
+			err = -NLE_ENOMEM;
 			goto errout;
 		}
 		ae->replay_state_esn->oseq       =  esn->oseq;

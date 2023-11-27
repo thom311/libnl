@@ -541,11 +541,18 @@ int xfrmnl_ae_parse(struct nlmsghdr *n, struct xfrmnl_ae **result)
 	if (err < 0)
 		goto errout;
 
-	ae->sa_id.daddr = _nl_addr_build(ae_id->sa_id.family, &ae_id->sa_id.daddr);
+	if (!(ae->sa_id.daddr = _nl_addr_build(ae_id->sa_id.family,
+					       &ae_id->sa_id.daddr))) {
+		err = -NLE_NOMEM;
+		goto errout;
+	}
 	ae->sa_id.family= ae_id->sa_id.family;
 	ae->sa_id.spi   = ntohl(ae_id->sa_id.spi);
 	ae->sa_id.proto = ae_id->sa_id.proto;
-	ae->saddr       = _nl_addr_build(ae_id->sa_id.family, &ae_id->saddr);
+	if (!(ae->saddr = _nl_addr_build(ae_id->sa_id.family, &ae_id->saddr))) {
+		err = -NLE_NOMEM;
+		goto errout;
+	}
 	ae->reqid       = ae_id->reqid;
 	ae->flags       = ae_id->flags;
 	ae->ce_mask |= (XFRM_AE_ATTR_DADDR | XFRM_AE_ATTR_FAMILY | XFRM_AE_ATTR_SPI |

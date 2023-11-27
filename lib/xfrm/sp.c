@@ -592,12 +592,18 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 		goto errout;
 	}
 
-	addr1 = _nl_addr_build(sp_info->sel.family, &sp_info->sel.daddr);
+	if (!(addr1 = _nl_addr_build(sp_info->sel.family, &sp_info->sel.daddr))) {
+		err = -NLE_NOMEM;
+		goto errout;
+	}
 	nl_addr_set_prefixlen (addr1, sp_info->sel.prefixlen_d);
 	xfrmnl_sel_set_daddr (sp->sel, addr1);
 	xfrmnl_sel_set_prefixlen_d (sp->sel, sp_info->sel.prefixlen_d);
 
-	addr2 = _nl_addr_build(sp_info->sel.family, &sp_info->sel.saddr);
+	if (!(addr2 = _nl_addr_build(sp_info->sel.family, &sp_info->sel.saddr))) {
+		err = -NLE_NOMEM;
+		goto errout;
+	}
 	nl_addr_set_prefixlen (addr2, sp_info->sel.prefixlen_s);
 	xfrmnl_sel_set_saddr (sp->sel, addr2);
 	xfrmnl_sel_set_prefixlen_s (sp->sel, sp_info->sel.prefixlen_s);
@@ -673,13 +679,19 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 				goto errout;
 			}
 
-			addr1 = _nl_addr_build(tmpl->family, &tmpl->id.daddr);
+			if (!(addr1 = _nl_addr_build(tmpl->family, &tmpl->id.daddr))) {
+				err = -NLE_NOMEM;
+				goto errout;
+			}
 			xfrmnl_user_tmpl_set_daddr (sputmpl, addr1);
 			xfrmnl_user_tmpl_set_spi (sputmpl, ntohl(tmpl->id.spi));
 			xfrmnl_user_tmpl_set_proto (sputmpl, tmpl->id.proto);
 			xfrmnl_user_tmpl_set_family (sputmpl, tmpl->family);
 
-			addr2 = _nl_addr_build(tmpl->family, &tmpl->saddr);
+			if (!(addr2 = _nl_addr_build(tmpl->family, &tmpl->saddr))) {
+				err = -NLE_NOMEM;
+				goto errout;
+			}
 			xfrmnl_user_tmpl_set_saddr (sputmpl, addr2);
 
 			xfrmnl_user_tmpl_set_reqid (sputmpl, tmpl->reqid);

@@ -55,6 +55,7 @@
 #include "nl-priv-dynamic-core/nl-core.h"
 #include "nl-priv-dynamic-core/cache-api.h"
 #include "nl-aux-core/nl-core.h"
+#include "nl-aux-xfrm/nl-xfrm.h"
 
 /** @cond SKIP */
 
@@ -773,17 +774,15 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 {
 	_nl_auto_nl_addr struct nl_addr *addr1 = NULL;
 	_nl_auto_nl_addr struct nl_addr *addr2 = NULL;
-	struct xfrmnl_sa*           sa;
+	_nl_auto_xfrmnl_sa struct xfrmnl_sa *sa = NULL;
 	struct nlattr               *tb[XFRMA_MAX + 1];
 	struct xfrm_usersa_info*    sa_info;
 	struct xfrm_user_expire*    ue;
 	int                         len, err;
 
 	sa = xfrmnl_sa_alloc();
-	if (!sa) {
-		err = -NLE_NOMEM;
-		goto errout;
-	}
+	if (!sa)
+		return -NLE_NOMEM;
 
 	sa->ce_msgtype = n->nlmsg_type;
 	if (n->nlmsg_type == XFRM_MSG_EXPIRE)
@@ -804,20 +803,16 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 
 	err = nlmsg_parse(n, sizeof(struct xfrm_usersa_info), tb, XFRMA_MAX, xfrm_sa_policy);
 	if (err < 0)
-		goto errout;
+		return err;
 
-	if (!(addr1 = _nl_addr_build(sa_info->sel.family, &sa_info->sel.daddr))) {
-		err = -NLE_NOMEM;
-		goto errout;
-	}
+	if (!(addr1 = _nl_addr_build(sa_info->sel.family, &sa_info->sel.daddr)))
+		return -NLE_NOMEM;
 	nl_addr_set_prefixlen (addr1, sa_info->sel.prefixlen_d);
 	xfrmnl_sel_set_daddr (sa->sel, addr1);
 	xfrmnl_sel_set_prefixlen_d (sa->sel, sa_info->sel.prefixlen_d);
 
-	if (!(addr2 = _nl_addr_build(sa_info->sel.family, &sa_info->sel.saddr))) {
-		err = -NLE_NOMEM;
-		goto errout;
-	}
+	if (!(addr2 = _nl_addr_build(sa_info->sel.family, &sa_info->sel.saddr)))
+		return -NLE_NOMEM;
 	nl_addr_set_prefixlen (addr2, sa_info->sel.prefixlen_s);
 	xfrmnl_sel_set_saddr (sa->sel, addr2);
 	xfrmnl_sel_set_prefixlen_s (sa->sel, sa_info->sel.prefixlen_s);
@@ -832,18 +827,14 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 	xfrmnl_sel_set_userid (sa->sel, sa_info->sel.user);
 	sa->ce_mask             |= XFRM_SA_ATTR_SEL;
 
-	if (!(sa->id.daddr = _nl_addr_build(sa_info->family, &sa_info->id.daddr))) {
-		err = -NLE_NOMEM;
-		goto errout;
-	}
+	if (!(sa->id.daddr = _nl_addr_build(sa_info->family, &sa_info->id.daddr)))
+		return -NLE_NOMEM;
 	sa->id.spi              = ntohl(sa_info->id.spi);
 	sa->id.proto            = sa_info->id.proto;
 	sa->ce_mask             |= (XFRM_SA_ATTR_DADDR | XFRM_SA_ATTR_SPI | XFRM_SA_ATTR_PROTO);
 
-	if (!(sa->saddr = _nl_addr_build(sa_info->family, &sa_info->saddr))) {
-		err = -NLE_NOMEM;
-		goto errout;
-	}
+	if (!(sa->saddr = _nl_addr_build(sa_info->family, &sa_info->saddr)))
+		return -NLE_NOMEM;
 	sa->ce_mask             |= XFRM_SA_ATTR_SADDR;
 
 	sa->lft->soft_byte_limit    =   sa_info->lft.soft_byte_limit;
@@ -879,36 +870,30 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 
 	if (tb[XFRMA_ALG_AEAD]) {
 		struct xfrm_algo_aead* aead = nla_data(tb[XFRMA_ALG_AEAD]);
+
 		len = sizeof (struct xfrmnl_algo_aead) + ((aead->alg_key_len + 7) / 8);
 		if ((sa->aead = calloc (1, len)) == NULL)
-		{
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+			return -NLE_NOMEM;
 		memcpy ((void *)sa->aead, (void *)aead, len);
 		sa->ce_mask     |= XFRM_SA_ATTR_ALG_AEAD;
 	}
 
 	if (tb[XFRMA_ALG_AUTH_TRUNC]) {
 		struct xfrm_algo_auth* auth = nla_data(tb[XFRMA_ALG_AUTH_TRUNC]);
+
 		len = sizeof (struct xfrmnl_algo_auth) + ((auth->alg_key_len + 7) / 8);
 		if ((sa->auth = calloc (1, len)) == NULL)
-		{
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+			return -NLE_NOMEM;
 		memcpy ((void *)sa->auth, (void *)auth, len);
 		sa->ce_mask     |= XFRM_SA_ATTR_ALG_AUTH;
 	}
 
 	if (tb[XFRMA_ALG_AUTH] && !sa->auth) {
 		struct xfrm_algo* auth = nla_data(tb[XFRMA_ALG_AUTH]);
+
 		len = sizeof (struct xfrmnl_algo_auth) + ((auth->alg_key_len + 7) / 8);
 		if ((sa->auth = calloc (1, len)) == NULL)
-		{
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+			return -NLE_NOMEM;
 		strcpy(sa->auth->alg_name, auth->alg_name);
 		memcpy(sa->auth->alg_key, auth->alg_key, (auth->alg_key_len + 7) / 8);
 		sa->auth->alg_key_len = auth->alg_key_len;
@@ -917,44 +902,36 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 
 	if (tb[XFRMA_ALG_CRYPT]) {
 		struct xfrm_algo* crypt = nla_data(tb[XFRMA_ALG_CRYPT]);
+
 		len = sizeof (struct xfrmnl_algo) + ((crypt->alg_key_len + 7) / 8);
 		if ((sa->crypt = calloc (1, len)) == NULL)
-		{
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+			return -NLE_NOMEM;
 		memcpy ((void *)sa->crypt, (void *)crypt, len);
 		sa->ce_mask     |= XFRM_SA_ATTR_ALG_CRYPT;
 	}
 
 	if (tb[XFRMA_ALG_COMP]) {
 		struct xfrm_algo* comp = nla_data(tb[XFRMA_ALG_COMP]);
+
 		len = sizeof (struct xfrmnl_algo) + ((comp->alg_key_len + 7) / 8);
 		if ((sa->comp = calloc (1, len)) == NULL)
-		{
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+			return -NLE_NOMEM;
 		memcpy ((void *)sa->comp, (void *)comp, len);
 		sa->ce_mask     |= XFRM_SA_ATTR_ALG_COMP;
 	}
 
 	if (tb[XFRMA_ENCAP]) {
 		struct xfrm_encap_tmpl* encap = nla_data(tb[XFRMA_ENCAP]);
+
 		len = sizeof (struct xfrmnl_encap_tmpl);
 		if ((sa->encap = calloc (1, len)) == NULL)
-		{
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+			return -NLE_NOMEM;
 		sa->encap->encap_type   =   encap->encap_type;
 		sa->encap->encap_sport  =   ntohs(encap->encap_sport);
 		sa->encap->encap_dport  =   ntohs(encap->encap_dport);
 		if (!(sa->encap->encap_oa = _nl_addr_build(sa_info->family,
-							   &encap->encap_oa))) {
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+							   &encap->encap_oa)))
+			return -NLE_NOMEM;
 		sa->ce_mask     |= XFRM_SA_ATTR_ENCAP;
 	}
 
@@ -965,15 +942,14 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 
 	if (tb[XFRMA_COADDR]) {
 		if (!(sa->coaddr = _nl_addr_build(
-			      sa_info->family, nla_data(tb[XFRMA_COADDR])))) {
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+			      sa_info->family, nla_data(tb[XFRMA_COADDR]))))
+			return -NLE_NOMEM;
 		sa->ce_mask         |= XFRM_SA_ATTR_COADDR;
 	}
 
 	if (tb[XFRMA_MARK]) {
 		struct xfrm_mark* m =   nla_data(tb[XFRMA_MARK]);
+
 		sa->mark.m  =   m->m;
 		sa->mark.v  =   m->v;
 		sa->ce_mask |= XFRM_SA_ATTR_MARK;
@@ -981,12 +957,10 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 
 	if (tb[XFRMA_SEC_CTX]) {
 		struct xfrm_user_sec_ctx* sec_ctx = nla_data(tb[XFRMA_SEC_CTX]);
+
 		len = sizeof (struct xfrmnl_user_sec_ctx) + sec_ctx->ctx_len;
 		if ((sa->sec_ctx = calloc (1, len)) == NULL)
-		{
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+			return -NLE_NOMEM;
 		memcpy (sa->sec_ctx, sec_ctx, len);
 		sa->ce_mask     |= XFRM_SA_ATTR_SECCTX;
 	}
@@ -1003,12 +977,10 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 
 	if (tb[XFRMA_REPLAY_ESN_VAL]) {
 		struct xfrm_replay_state_esn* esn = nla_data (tb[XFRMA_REPLAY_ESN_VAL]);
+
 		len =   sizeof (struct xfrmnl_replay_state_esn) + (sizeof (uint32_t) * esn->bmp_len);
 		if ((sa->replay_state_esn = calloc (1, len)) == NULL)
-		{
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+			return -NLE_NOMEM;
 		memcpy ((void *)sa->replay_state_esn, (void *)esn, len);
 		sa->ce_mask |= XFRM_SA_ATTR_REPLAY_STATE;
 	}
@@ -1026,24 +998,16 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 		struct xfrm_user_offload *offload;
 
 		len = sizeof(struct xfrmnl_user_offload);
-
-		if ((sa->user_offload = calloc(1, len)) == NULL) {
-			err = -NLE_NOMEM;
-			goto errout;
-		}
-
+		if ((sa->user_offload = calloc(1, len)) == NULL)
+			return -NLE_NOMEM;
 		offload = nla_data(tb[XFRMA_OFFLOAD_DEV]);
 		sa->user_offload->ifindex = offload->ifindex;
 		sa->user_offload->flags = offload->flags;
 		sa->ce_mask |= XFRM_SA_ATTR_OFFLOAD_DEV;
 	}
 
-	*result = sa;
+	*result = _nl_steal_pointer(&sa);
 	return 0;
-
-errout:
-	xfrmnl_sa_put(sa);
-	return err;
 }
 
 static int xfrm_sa_update_cache (struct nl_cache *cache, struct nl_object *obj,

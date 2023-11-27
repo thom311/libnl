@@ -592,18 +592,12 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 		goto errout;
 	}
 
-	if (sp_info->sel.family == AF_INET)
-		addr1 = nl_addr_build (sp_info->sel.family, &sp_info->sel.daddr.a4, sizeof (sp_info->sel.daddr.a4));
-	else
-		addr1 = nl_addr_build (sp_info->sel.family, &sp_info->sel.daddr.a6, sizeof (sp_info->sel.daddr.a6));
+	addr1 = _nl_addr_build(sp_info->sel.family, &sp_info->sel.daddr);
 	nl_addr_set_prefixlen (addr1, sp_info->sel.prefixlen_d);
 	xfrmnl_sel_set_daddr (sp->sel, addr1);
 	xfrmnl_sel_set_prefixlen_d (sp->sel, sp_info->sel.prefixlen_d);
 
-	if (sp_info->sel.family == AF_INET)
-		addr2 = nl_addr_build (sp_info->sel.family, &sp_info->sel.saddr.a4, sizeof (sp_info->sel.saddr.a4));
-	else
-		addr2 = nl_addr_build (sp_info->sel.family, &sp_info->sel.saddr.a6, sizeof (sp_info->sel.saddr.a6));
+	addr2 = _nl_addr_build(sp_info->sel.family, &sp_info->sel.saddr);
 	nl_addr_set_prefixlen (addr2, sp_info->sel.prefixlen_s);
 	xfrmnl_sel_set_saddr (sp->sel, addr2);
 	xfrmnl_sel_set_prefixlen_s (sp->sel, sp_info->sel.prefixlen_s);
@@ -679,19 +673,13 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 				goto errout;
 			}
 
-			if (tmpl->family == AF_INET)
-				addr1 = nl_addr_build(tmpl->family, &tmpl->id.daddr.a4, sizeof (tmpl->id.daddr.a4));
-			else
-				addr1 = nl_addr_build(tmpl->family, &tmpl->id.daddr.a6, sizeof (tmpl->id.daddr.a6));
+			addr1 = _nl_addr_build(tmpl->family, &tmpl->id.daddr);
 			xfrmnl_user_tmpl_set_daddr (sputmpl, addr1);
 			xfrmnl_user_tmpl_set_spi (sputmpl, ntohl(tmpl->id.spi));
 			xfrmnl_user_tmpl_set_proto (sputmpl, tmpl->id.proto);
 			xfrmnl_user_tmpl_set_family (sputmpl, tmpl->family);
 
-			if (tmpl->family == AF_INET)
-				addr2 = nl_addr_build(tmpl->family, &tmpl->saddr.a4, sizeof (tmpl->saddr.a4));
-			else
-				addr2 = nl_addr_build(tmpl->family, &tmpl->saddr.a6, sizeof (tmpl->saddr.a6));
+			addr2 = _nl_addr_build(tmpl->family, &tmpl->saddr);
 			xfrmnl_user_tmpl_set_saddr (sputmpl, addr2);
 
 			xfrmnl_user_tmpl_set_reqid (sputmpl, tmpl->reqid);

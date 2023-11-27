@@ -806,18 +806,12 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 	if (err < 0)
 		goto errout;
 
-	if (sa_info->sel.family == AF_INET)
-		addr1 = nl_addr_build (sa_info->sel.family, &sa_info->sel.daddr.a4, sizeof (sa_info->sel.daddr.a4));
-	else
-		addr1 = nl_addr_build (sa_info->sel.family, &sa_info->sel.daddr.a6, sizeof (sa_info->sel.daddr.a6));
+	addr1 = _nl_addr_build(sa_info->sel.family, &sa_info->sel.daddr);
 	nl_addr_set_prefixlen (addr1, sa_info->sel.prefixlen_d);
 	xfrmnl_sel_set_daddr (sa->sel, addr1);
 	xfrmnl_sel_set_prefixlen_d (sa->sel, sa_info->sel.prefixlen_d);
 
-	if (sa_info->sel.family == AF_INET)
-		addr2 = nl_addr_build (sa_info->sel.family, &sa_info->sel.saddr.a4, sizeof (sa_info->sel.saddr.a4));
-	else
-		addr2 = nl_addr_build (sa_info->sel.family, &sa_info->sel.saddr.a6, sizeof (sa_info->sel.saddr.a6));
+	addr2 = _nl_addr_build(sa_info->sel.family, &sa_info->sel.saddr);
 	nl_addr_set_prefixlen (addr2, sa_info->sel.prefixlen_s);
 	xfrmnl_sel_set_saddr (sa->sel, addr2);
 	xfrmnl_sel_set_prefixlen_s (sa->sel, sa_info->sel.prefixlen_s);
@@ -832,18 +826,12 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 	xfrmnl_sel_set_userid (sa->sel, sa_info->sel.user);
 	sa->ce_mask             |= XFRM_SA_ATTR_SEL;
 
-	if (sa_info->family == AF_INET)
-		sa->id.daddr        = nl_addr_build (sa_info->family, &sa_info->id.daddr.a4, sizeof (sa_info->id.daddr.a4));
-	else
-		sa->id.daddr        = nl_addr_build (sa_info->family, &sa_info->id.daddr.a6, sizeof (sa_info->id.daddr.a6));
+	sa->id.daddr = _nl_addr_build(sa_info->family, &sa_info->id.daddr);
 	sa->id.spi              = ntohl(sa_info->id.spi);
 	sa->id.proto            = sa_info->id.proto;
 	sa->ce_mask             |= (XFRM_SA_ATTR_DADDR | XFRM_SA_ATTR_SPI | XFRM_SA_ATTR_PROTO);
 
-	if (sa_info->family == AF_INET)
-		sa->saddr           = nl_addr_build (sa_info->family, &sa_info->saddr.a4, sizeof (sa_info->saddr.a4));
-	else
-		sa->saddr           = nl_addr_build (sa_info->family, &sa_info->saddr.a6, sizeof (sa_info->saddr.a6));
+	sa->saddr = _nl_addr_build(sa_info->family, &sa_info->saddr);
 	sa->ce_mask             |= XFRM_SA_ATTR_SADDR;
 
 	sa->lft->soft_byte_limit    =   sa_info->lft.soft_byte_limit;
@@ -950,10 +938,8 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 		sa->encap->encap_type   =   encap->encap_type;
 		sa->encap->encap_sport  =   ntohs(encap->encap_sport);
 		sa->encap->encap_dport  =   ntohs(encap->encap_dport);
-		if (sa_info->family == AF_INET)
-			sa->encap->encap_oa =   nl_addr_build (sa_info->family, &encap->encap_oa.a4, sizeof (encap->encap_oa.a4));
-		else
-			sa->encap->encap_oa =   nl_addr_build (sa_info->family, &encap->encap_oa.a6, sizeof (encap->encap_oa.a6));
+		sa->encap->encap_oa =
+			_nl_addr_build(sa_info->family, &encap->encap_oa);
 		sa->ce_mask     |= XFRM_SA_ATTR_ENCAP;
 	}
 
@@ -963,16 +949,8 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 	}
 
 	if (tb[XFRMA_COADDR]) {
-		if (sa_info->family == AF_INET)
-		{
-			sa->coaddr  = nl_addr_build(sa_info->family, nla_data(tb[XFRMA_COADDR]),
-			                            sizeof (uint32_t));
-		}
-		else
-		{
-			sa->coaddr  = nl_addr_build(sa_info->family, nla_data(tb[XFRMA_COADDR]),
-			                            sizeof (uint32_t) * 4);
-		}
+		sa->coaddr = _nl_addr_build(sa_info->family,
+					    nla_data(tb[XFRMA_COADDR]));
 		sa->ce_mask         |= XFRM_SA_ATTR_COADDR;
 	}
 

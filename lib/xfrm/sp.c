@@ -53,6 +53,7 @@
 #include "nl-priv-dynamic-core/object-api.h"
 #include "nl-priv-dynamic-core/nl-core.h"
 #include "nl-priv-dynamic-core/cache-api.h"
+#include "nl-aux-core/nl-core.h"
 
 struct xfrmnl_userpolicy_type {
 	uint8_t                         type;
@@ -561,11 +562,12 @@ static int xfrm_sp_request_update(struct nl_cache *c, struct nl_sock *h)
 
 int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 {
+	_nl_auto_nl_addr struct nl_addr *addr1 = NULL;
+	_nl_auto_nl_addr struct nl_addr *addr2 = NULL;
 	struct xfrmnl_sp                *sp;
 	struct nlattr                   *tb[XFRMA_MAX + 1];
 	struct xfrm_userpolicy_info     *sp_info;
 	int                             len, err;
-	struct nl_addr*                 addr;
 
 	sp = xfrmnl_sp_alloc();
 	if (!sp) {
@@ -591,23 +593,19 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 	}
 
 	if (sp_info->sel.family == AF_INET)
-		addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.daddr.a4, sizeof (sp_info->sel.daddr.a4));
+		addr1 = nl_addr_build (sp_info->sel.family, &sp_info->sel.daddr.a4, sizeof (sp_info->sel.daddr.a4));
 	else
-		addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.daddr.a6, sizeof (sp_info->sel.daddr.a6));
-	nl_addr_set_prefixlen (addr, sp_info->sel.prefixlen_d);
-	xfrmnl_sel_set_daddr (sp->sel, addr);
-	/* Drop the reference count from the above set operation */
-	nl_addr_put(addr);
+		addr1 = nl_addr_build (sp_info->sel.family, &sp_info->sel.daddr.a6, sizeof (sp_info->sel.daddr.a6));
+	nl_addr_set_prefixlen (addr1, sp_info->sel.prefixlen_d);
+	xfrmnl_sel_set_daddr (sp->sel, addr1);
 	xfrmnl_sel_set_prefixlen_d (sp->sel, sp_info->sel.prefixlen_d);
 
 	if (sp_info->sel.family == AF_INET)
-		addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.saddr.a4, sizeof (sp_info->sel.saddr.a4));
+		addr2 = nl_addr_build (sp_info->sel.family, &sp_info->sel.saddr.a4, sizeof (sp_info->sel.saddr.a4));
 	else
-		addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.saddr.a6, sizeof (sp_info->sel.saddr.a6));
-	nl_addr_set_prefixlen (addr, sp_info->sel.prefixlen_s);
-	xfrmnl_sel_set_saddr (sp->sel, addr);
-	/* Drop the reference count from the above set operation */
-	nl_addr_put(addr);
+		addr2 = nl_addr_build (sp_info->sel.family, &sp_info->sel.saddr.a6, sizeof (sp_info->sel.saddr.a6));
+	nl_addr_set_prefixlen (addr2, sp_info->sel.prefixlen_s);
+	xfrmnl_sel_set_saddr (sp->sel, addr2);
 	xfrmnl_sel_set_prefixlen_s (sp->sel, sp_info->sel.prefixlen_s);
 
 	xfrmnl_sel_set_dport (sp->sel, ntohs (sp_info->sel.dport));
@@ -669,10 +667,12 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 		struct xfrmnl_user_tmpl*    sputmpl;
 		uint32_t                    i;
 		uint32_t                    num_tmpls = nla_len(tb[XFRMA_TMPL]) / sizeof (*tmpl);
-		struct  nl_addr*            addr;
 
 		for (i = 0; (i < num_tmpls) && (tmpl); i ++, tmpl++)
 		{
+			_nl_auto_nl_addr struct nl_addr *addr1 = NULL;
+			_nl_auto_nl_addr struct nl_addr *addr2 = NULL;
+
 			if ((sputmpl = xfrmnl_user_tmpl_alloc ()) == NULL)
 			{
 				err = -NLE_NOMEM;
@@ -680,23 +680,19 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 			}
 
 			if (tmpl->family == AF_INET)
-				addr = nl_addr_build(tmpl->family, &tmpl->id.daddr.a4, sizeof (tmpl->id.daddr.a4));
+				addr1 = nl_addr_build(tmpl->family, &tmpl->id.daddr.a4, sizeof (tmpl->id.daddr.a4));
 			else
-				addr = nl_addr_build(tmpl->family, &tmpl->id.daddr.a6, sizeof (tmpl->id.daddr.a6));
-			xfrmnl_user_tmpl_set_daddr (sputmpl, addr);
-			/* Drop the reference count from the above set operation */
-			nl_addr_put(addr);
+				addr1 = nl_addr_build(tmpl->family, &tmpl->id.daddr.a6, sizeof (tmpl->id.daddr.a6));
+			xfrmnl_user_tmpl_set_daddr (sputmpl, addr1);
 			xfrmnl_user_tmpl_set_spi (sputmpl, ntohl(tmpl->id.spi));
 			xfrmnl_user_tmpl_set_proto (sputmpl, tmpl->id.proto);
 			xfrmnl_user_tmpl_set_family (sputmpl, tmpl->family);
 
 			if (tmpl->family == AF_INET)
-				addr = nl_addr_build(tmpl->family, &tmpl->saddr.a4, sizeof (tmpl->saddr.a4));
+				addr2 = nl_addr_build(tmpl->family, &tmpl->saddr.a4, sizeof (tmpl->saddr.a4));
 			else
-				addr = nl_addr_build(tmpl->family, &tmpl->saddr.a6, sizeof (tmpl->saddr.a6));
-			xfrmnl_user_tmpl_set_saddr (sputmpl, addr);
-			/* Drop the reference count from the above set operation */
-			nl_addr_put(addr);
+				addr2 = nl_addr_build(tmpl->family, &tmpl->saddr.a6, sizeof (tmpl->saddr.a6));
+			xfrmnl_user_tmpl_set_saddr (sputmpl, addr2);
 
 			xfrmnl_user_tmpl_set_reqid (sputmpl, tmpl->reqid);
 			xfrmnl_user_tmpl_set_mode (sputmpl, tmpl->mode);

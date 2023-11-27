@@ -54,6 +54,7 @@
 #include "nl-priv-dynamic-core/object-api.h"
 #include "nl-priv-dynamic-core/nl-core.h"
 #include "nl-priv-dynamic-core/cache-api.h"
+#include "nl-aux-core/nl-core.h"
 
 /** @cond SKIP */
 
@@ -770,12 +771,13 @@ static int xfrm_sa_request_update(struct nl_cache *c, struct nl_sock *h)
 
 int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 {
+	_nl_auto_nl_addr struct nl_addr *addr1 = NULL;
+	_nl_auto_nl_addr struct nl_addr *addr2 = NULL;
 	struct xfrmnl_sa*           sa;
 	struct nlattr               *tb[XFRMA_MAX + 1];
 	struct xfrm_usersa_info*    sa_info;
 	struct xfrm_user_expire*    ue;
 	int                         len, err;
-	struct nl_addr*             addr;
 
 	sa = xfrmnl_sa_alloc();
 	if (!sa) {
@@ -805,23 +807,19 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 		goto errout;
 
 	if (sa_info->sel.family == AF_INET)
-		addr    = nl_addr_build (sa_info->sel.family, &sa_info->sel.daddr.a4, sizeof (sa_info->sel.daddr.a4));
+		addr1 = nl_addr_build (sa_info->sel.family, &sa_info->sel.daddr.a4, sizeof (sa_info->sel.daddr.a4));
 	else
-		addr    = nl_addr_build (sa_info->sel.family, &sa_info->sel.daddr.a6, sizeof (sa_info->sel.daddr.a6));
-	nl_addr_set_prefixlen (addr, sa_info->sel.prefixlen_d);
-	xfrmnl_sel_set_daddr (sa->sel, addr);
-	/* Drop the reference count from the above set operation */
-	nl_addr_put(addr);
+		addr1 = nl_addr_build (sa_info->sel.family, &sa_info->sel.daddr.a6, sizeof (sa_info->sel.daddr.a6));
+	nl_addr_set_prefixlen (addr1, sa_info->sel.prefixlen_d);
+	xfrmnl_sel_set_daddr (sa->sel, addr1);
 	xfrmnl_sel_set_prefixlen_d (sa->sel, sa_info->sel.prefixlen_d);
 
 	if (sa_info->sel.family == AF_INET)
-		addr    = nl_addr_build (sa_info->sel.family, &sa_info->sel.saddr.a4, sizeof (sa_info->sel.saddr.a4));
+		addr2 = nl_addr_build (sa_info->sel.family, &sa_info->sel.saddr.a4, sizeof (sa_info->sel.saddr.a4));
 	else
-		addr    = nl_addr_build (sa_info->sel.family, &sa_info->sel.saddr.a6, sizeof (sa_info->sel.saddr.a6));
-	nl_addr_set_prefixlen (addr, sa_info->sel.prefixlen_s);
-	xfrmnl_sel_set_saddr (sa->sel, addr);
-	/* Drop the reference count from the above set operation */
-	nl_addr_put(addr);
+		addr2 = nl_addr_build (sa_info->sel.family, &sa_info->sel.saddr.a6, sizeof (sa_info->sel.saddr.a6));
+	nl_addr_set_prefixlen (addr2, sa_info->sel.prefixlen_s);
+	xfrmnl_sel_set_saddr (sa->sel, addr2);
 	xfrmnl_sel_set_prefixlen_s (sa->sel, sa_info->sel.prefixlen_s);
 
 	xfrmnl_sel_set_dport (sa->sel, ntohs(sa_info->sel.dport));

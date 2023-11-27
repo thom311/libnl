@@ -663,6 +663,17 @@ static inline void *_nl_memdup(const void *ptr, size_t len)
 
 /*****************************************************************************/
 
+static inline size_t _nl_addr_family_to_size(int addr_family)
+{
+	if (addr_family == AF_INET)
+		return sizeof(in_addr_t);
+	if (addr_family == AF_INET6)
+		return sizeof(struct in6_addr);
+	return 0;
+}
+
+/*****************************************************************************/
+
 typedef union {
 	in_addr_t addr4;
 	struct in_addr a4;

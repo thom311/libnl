@@ -596,6 +596,8 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 		addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.daddr.a6, sizeof (sp_info->sel.daddr.a6));
 	nl_addr_set_prefixlen (addr, sp_info->sel.prefixlen_d);
 	xfrmnl_sel_set_daddr (sp->sel, addr);
+	/* Drop the reference count from the above set operation */
+	nl_addr_put(addr);
 	xfrmnl_sel_set_prefixlen_d (sp->sel, sp_info->sel.prefixlen_d);
 
 	if (sp_info->sel.family == AF_INET)
@@ -604,6 +606,8 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 		addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.saddr.a6, sizeof (sp_info->sel.saddr.a6));
 	nl_addr_set_prefixlen (addr, sp_info->sel.prefixlen_s);
 	xfrmnl_sel_set_saddr (sp->sel, addr);
+	/* Drop the reference count from the above set operation */
+	nl_addr_put(addr);
 	xfrmnl_sel_set_prefixlen_s (sp->sel, sp_info->sel.prefixlen_s);
 
 	xfrmnl_sel_set_dport (sp->sel, ntohs (sp_info->sel.dport));
@@ -680,6 +684,8 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 			else
 				addr = nl_addr_build(tmpl->family, &tmpl->id.daddr.a6, sizeof (tmpl->id.daddr.a6));
 			xfrmnl_user_tmpl_set_daddr (sputmpl, addr);
+			/* Drop the reference count from the above set operation */
+			nl_addr_put(addr);
 			xfrmnl_user_tmpl_set_spi (sputmpl, ntohl(tmpl->id.spi));
 			xfrmnl_user_tmpl_set_proto (sputmpl, tmpl->id.proto);
 			xfrmnl_user_tmpl_set_family (sputmpl, tmpl->family);
@@ -689,6 +695,8 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 			else
 				addr = nl_addr_build(tmpl->family, &tmpl->saddr.a6, sizeof (tmpl->saddr.a6));
 			xfrmnl_user_tmpl_set_saddr (sputmpl, addr);
+			/* Drop the reference count from the above set operation */
+			nl_addr_put(addr);
 
 			xfrmnl_user_tmpl_set_reqid (sputmpl, tmpl->reqid);
 			xfrmnl_user_tmpl_set_mode (sputmpl, tmpl->mode);
@@ -1350,6 +1358,8 @@ void xfrmnl_sp_remove_usertemplate(struct xfrmnl_sp *sp, struct xfrmnl_user_tmpl
 	if (sp->ce_mask & XFRM_SP_ATTR_TMPL) {
 		sp->nr_user_tmpl--;
 		nl_list_del(&utmpl->utmpl_list);
+		if (sp->nr_user_tmpl == 0)
+			sp->ce_mask &= ~XFRM_SP_ATTR_TMPL;
 	}
 }
 

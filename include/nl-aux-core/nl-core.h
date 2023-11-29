@@ -49,4 +49,11 @@ void nl_socket_free(struct nl_sock *);
 _NL_AUTO_DEFINE_FCN_TYPED0(struct nl_sock *, _nl_auto_nl_socket_fcn,
 			   nl_socket_free);
 
+struct nl_addr *nl_addr_build(int, const void *, size_t);
+
+static inline struct nl_addr *_nl_addr_build(int family, const void *buf)
+{
+	return nl_addr_build(family, buf, _nl_addr_family_to_size(family));
+}
+
 #endif /* NETLINK_NL_AUTO_H_ */

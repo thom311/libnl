@@ -133,6 +133,8 @@
 #include "nl-priv-dynamic-core/object-api.h"
 #include "nl-priv-dynamic-core/nl-core.h"
 #include "nl-priv-dynamic-core/cache-api.h"
+#include "nl-aux-core/nl-core.h"
+#include "nl-aux-xfrm/nl-xfrm.h"
 
 /** @cond SKIP */
 
@@ -522,29 +524,30 @@ static struct nla_policy xfrm_ae_policy[XFRMA_MAX+1] = {
 
 int xfrmnl_ae_parse(struct nlmsghdr *n, struct xfrmnl_ae **result)
 {
-	struct xfrmnl_ae*    ae;
+	_nl_auto_xfrmnl_ae struct xfrmnl_ae *ae = NULL;
 	struct nlattr           *tb[XFRMA_MAX + 1];
 	struct xfrm_aevent_id*  ae_id;
 	int err;
 
 	ae = xfrmnl_ae_alloc();
-	if (!ae) {
-		err = -NLE_NOMEM;
-		goto errout;
-	}
+	if (!ae)
+		return -NLE_NOMEM;
 
 	ae->ce_msgtype = n->nlmsg_type;
 	ae_id = nlmsg_data(n);
 
 	err = nlmsg_parse(n, sizeof(struct xfrm_aevent_id), tb, XFRMA_MAX, xfrm_ae_policy);
 	if (err < 0)
-		goto errout;
+		return err;
 
-	ae->sa_id.daddr = nl_addr_build(ae_id->sa_id.family, &ae_id->sa_id.daddr, sizeof (ae_id->sa_id.daddr));
+	if (!(ae->sa_id.daddr =
+		      _nl_addr_build(ae_id->sa_id.family, &ae_id->sa_id.daddr)))
+		return -NLE_NOMEM;
 	ae->sa_id.family= ae_id->sa_id.family;
 	ae->sa_id.spi   = ntohl(ae_id->sa_id.spi);
 	ae->sa_id.proto = ae_id->sa_id.proto;
-	ae->saddr       = nl_addr_build(ae_id->sa_id.family, &ae_id->saddr, sizeof (ae_id->saddr));
+	if (!(ae->saddr = _nl_addr_build(ae_id->sa_id.family, &ae_id->saddr)))
+		return -NLE_NOMEM;
 	ae->reqid       = ae_id->reqid;
 	ae->flags       = ae_id->flags;
 	ae->ce_mask |= (XFRM_AE_ATTR_DADDR | XFRM_AE_ATTR_FAMILY | XFRM_AE_ATTR_SPI |
@@ -560,6 +563,7 @@ int xfrmnl_ae_parse(struct nlmsghdr *n, struct xfrmnl_ae **result)
 
 	if (tb[XFRMA_LTIME_VAL]) {
 		struct xfrm_lifetime_cur* cur =   nla_data(tb[XFRMA_LTIME_VAL]);
+
 		ae->lifetime_cur.bytes      =   cur->bytes;
 		ae->lifetime_cur.packets    =   cur->packets;
 		ae->lifetime_cur.add_time   =   cur->add_time;
@@ -581,10 +585,8 @@ int xfrmnl_ae_parse(struct nlmsghdr *n, struct xfrmnl_ae **result)
 		struct xfrm_replay_state_esn* esn =  nla_data (tb[XFRMA_REPLAY_ESN_VAL]);
 		uint32_t len = sizeof (struct xfrmnl_replay_state_esn) +  (sizeof (uint32_t) * esn->bmp_len);
 
-		if ((ae->replay_state_esn = calloc (1, len)) == NULL) {
-			err = -ENOMEM;
-			goto errout;
-		}
+		if ((ae->replay_state_esn = calloc (1, len)) == NULL)
+			return -NLE_NOMEM;
 		ae->replay_state_esn->oseq       =  esn->oseq;
 		ae->replay_state_esn->seq        =  esn->seq;
 		ae->replay_state_esn->oseq_hi    =  esn->oseq_hi;
@@ -605,12 +607,8 @@ int xfrmnl_ae_parse(struct nlmsghdr *n, struct xfrmnl_ae **result)
 		ae->replay_state_esn = NULL;
 	}
 
-	*result = ae;
+	*result = _nl_steal_pointer(&ae);
 	return 0;
-
-errout:
-	xfrmnl_ae_put(ae);
-	return err;
 }
 
 static int xfrm_ae_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,

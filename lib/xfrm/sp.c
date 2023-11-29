@@ -53,6 +53,8 @@
 #include "nl-priv-dynamic-core/object-api.h"
 #include "nl-priv-dynamic-core/nl-core.h"
 #include "nl-priv-dynamic-core/cache-api.h"
+#include "nl-aux-core/nl-core.h"
+#include "nl-aux-xfrm/nl-xfrm.h"
 
 struct xfrmnl_userpolicy_type {
 	uint8_t                         type;
@@ -561,53 +563,37 @@ static int xfrm_sp_request_update(struct nl_cache *c, struct nl_sock *h)
 
 int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 {
-	struct xfrmnl_sp                *sp;
+	_nl_auto_nl_addr struct nl_addr *addr1 = NULL;
+	_nl_auto_nl_addr struct nl_addr *addr2 = NULL;
+	_nl_auto_xfrmnl_sp struct xfrmnl_sp *sp = NULL;
 	struct nlattr                   *tb[XFRMA_MAX + 1];
 	struct xfrm_userpolicy_info     *sp_info;
 	int                             len, err;
-	struct nl_addr*                 addr;
 
 	sp = xfrmnl_sp_alloc();
-	if (!sp) {
-		err = -NLE_NOMEM;
-		goto errout;
-	}
+	if (!sp)
+		return -NLE_NOMEM;
 
 	sp->ce_msgtype = n->nlmsg_type;
 	if (n->nlmsg_type == XFRM_MSG_DELPOLICY)
-	{
 		sp_info = (struct xfrm_userpolicy_info*)((char *)nlmsg_data(n) + sizeof (struct xfrm_userpolicy_id) + NLA_HDRLEN);
-	}
 	else
-	{
 		sp_info = nlmsg_data(n);
-	}
 
 	err = nlmsg_parse(n, sizeof(struct xfrm_userpolicy_info), tb, XFRMA_MAX, xfrm_sp_policy);
 	if (err < 0)
-	{
-		printf ("parse error: %d \n", err);
-		goto errout;
-	}
+		return err;
 
-	if (sp_info->sel.family == AF_INET)
-		addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.daddr.a4, sizeof (sp_info->sel.daddr.a4));
-	else
-		addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.daddr.a6, sizeof (sp_info->sel.daddr.a6));
-	nl_addr_set_prefixlen (addr, sp_info->sel.prefixlen_d);
-	xfrmnl_sel_set_daddr (sp->sel, addr);
-	/* Drop the reference count from the above set operation */
-	nl_addr_put(addr);
+	if (!(addr1 = _nl_addr_build(sp_info->sel.family, &sp_info->sel.daddr)))
+		return -NLE_NOMEM;
+	nl_addr_set_prefixlen (addr1, sp_info->sel.prefixlen_d);
+	xfrmnl_sel_set_daddr (sp->sel, addr1);
 	xfrmnl_sel_set_prefixlen_d (sp->sel, sp_info->sel.prefixlen_d);
 
-	if (sp_info->sel.family == AF_INET)
-		addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.saddr.a4, sizeof (sp_info->sel.saddr.a4));
-	else
-		addr    = nl_addr_build (sp_info->sel.family, &sp_info->sel.saddr.a6, sizeof (sp_info->sel.saddr.a6));
-	nl_addr_set_prefixlen (addr, sp_info->sel.prefixlen_s);
-	xfrmnl_sel_set_saddr (sp->sel, addr);
-	/* Drop the reference count from the above set operation */
-	nl_addr_put(addr);
+	if (!(addr2 = _nl_addr_build(sp_info->sel.family, &sp_info->sel.saddr)))
+		return -NLE_NOMEM;
+	nl_addr_set_prefixlen (addr2, sp_info->sel.prefixlen_s);
+	xfrmnl_sel_set_saddr (sp->sel, addr2);
 	xfrmnl_sel_set_prefixlen_s (sp->sel, sp_info->sel.prefixlen_s);
 
 	xfrmnl_sel_set_dport (sp->sel, ntohs (sp_info->sel.dport));
@@ -648,18 +634,17 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 
 	if (tb[XFRMA_SEC_CTX]) {
 		struct xfrm_user_sec_ctx* ctx = nla_data(tb[XFRMA_SEC_CTX]);
+
 		len = sizeof (struct xfrmnl_user_sec_ctx) + ctx->ctx_len;
 		if ((sp->sec_ctx = calloc (1, len)) == NULL)
-		{
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+			return -NLE_NOMEM;
 		memcpy ((void *)sp->sec_ctx, (void *)ctx, len);
 		sp->ce_mask     |= XFRM_SP_ATTR_SECCTX;
 	}
 
 	if (tb[XFRMA_POLICY_TYPE]) {
 		struct xfrm_userpolicy_type* up = nla_data(tb[XFRMA_POLICY_TYPE]);
+
 		memcpy ((void *)&sp->uptype, (void *)up, sizeof (struct xfrm_userpolicy_type));
 		sp->ce_mask     |= XFRM_SP_ATTR_POLTYPE;
 	}
@@ -669,34 +654,25 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 		struct xfrmnl_user_tmpl*    sputmpl;
 		uint32_t                    i;
 		uint32_t                    num_tmpls = nla_len(tb[XFRMA_TMPL]) / sizeof (*tmpl);
-		struct  nl_addr*            addr;
 
 		for (i = 0; (i < num_tmpls) && (tmpl); i ++, tmpl++)
 		{
-			if ((sputmpl = xfrmnl_user_tmpl_alloc ()) == NULL)
-			{
-				err = -NLE_NOMEM;
-				goto errout;
-			}
+			_nl_auto_nl_addr struct nl_addr *addr1 = NULL;
+			_nl_auto_nl_addr struct nl_addr *addr2 = NULL;
 
-			if (tmpl->family == AF_INET)
-				addr = nl_addr_build(tmpl->family, &tmpl->id.daddr.a4, sizeof (tmpl->id.daddr.a4));
-			else
-				addr = nl_addr_build(tmpl->family, &tmpl->id.daddr.a6, sizeof (tmpl->id.daddr.a6));
-			xfrmnl_user_tmpl_set_daddr (sputmpl, addr);
-			/* Drop the reference count from the above set operation */
-			nl_addr_put(addr);
+			if ((sputmpl = xfrmnl_user_tmpl_alloc ()) == NULL)
+				return -NLE_NOMEM;
+
+			if (!(addr1 = _nl_addr_build(tmpl->family, &tmpl->id.daddr)))
+				return -NLE_NOMEM;
+			xfrmnl_user_tmpl_set_daddr (sputmpl, addr1);
 			xfrmnl_user_tmpl_set_spi (sputmpl, ntohl(tmpl->id.spi));
 			xfrmnl_user_tmpl_set_proto (sputmpl, tmpl->id.proto);
 			xfrmnl_user_tmpl_set_family (sputmpl, tmpl->family);
 
-			if (tmpl->family == AF_INET)
-				addr = nl_addr_build(tmpl->family, &tmpl->saddr.a4, sizeof (tmpl->saddr.a4));
-			else
-				addr = nl_addr_build(tmpl->family, &tmpl->saddr.a6, sizeof (tmpl->saddr.a6));
-			xfrmnl_user_tmpl_set_saddr (sputmpl, addr);
-			/* Drop the reference count from the above set operation */
-			nl_addr_put(addr);
+			if (!(addr2 = _nl_addr_build(tmpl->family, &tmpl->saddr)))
+				return -NLE_NOMEM;
+			xfrmnl_user_tmpl_set_saddr (sputmpl, addr2);
 
 			xfrmnl_user_tmpl_set_reqid (sputmpl, tmpl->reqid);
 			xfrmnl_user_tmpl_set_mode (sputmpl, tmpl->mode);
@@ -718,12 +694,8 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 		sp->ce_mask |= XFRM_SP_ATTR_MARK;
 	}
 
-	*result = sp;
+	*result = _nl_steal_pointer(&sp);
 	return 0;
-
-errout:
-	xfrmnl_sp_put(sp);
-	return err;
 }
 
 static int xfrm_sp_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,

@@ -41,6 +41,7 @@
 #define CAN_HAS_BERR_COUNTER		(1<<7)
 #define CAN_HAS_DATA_BITTIMING		(1<<8)
 #define CAN_HAS_DATA_BITTIMING_CONST	(1<<9)
+#define CAN_HAS_DEVICE_STATS		(1<<10)
 
 struct can_info {
 	uint32_t			ci_state;
@@ -54,6 +55,7 @@ struct can_info {
 	uint32_t			ci_mask;
 	struct can_bittiming		ci_data_bittiming;
 	struct can_bittiming_const	ci_data_bittiming_const;
+	struct can_device_stats		ci_device_stats;
 };
 
 /** @endcond */
@@ -166,6 +168,11 @@ static int can_parse(struct rtnl_link *link, struct nlattr *data,
 		ci->ci_mask |= CAN_HAS_DATA_BITTIMING_CONST;
 	}
 
+	if (xstats && nla_len(xstats) >= sizeof(ci->ci_device_stats)) {
+		nla_memcpy(&ci->ci_device_stats, xstats, sizeof(ci->ci_device_stats));
+		ci->ci_mask |= CAN_HAS_DEVICE_STATS;
+	}
+
 	err = 0;
 errout:
 	return err;
@@ -223,11 +230,8 @@ static void can_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 static void can_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct can_info *ci = link->l_info;
-	char buf [64];
 
-	rtnl_link_can_ctrlmode2str(ci->ci_ctrlmode.flags, buf, sizeof(buf));
-	nl_dump(p, "    bitrate %d %s <%s>",
-		ci->ci_bittiming.bitrate, print_can_state(ci->ci_state), buf);
+	can_dump_line(link, p);
 
 	if (ci->ci_mask & CAN_HAS_RESTART) {
 		if (ci->ci_restart)
@@ -286,8 +290,28 @@ static void can_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 		nl_dump_line(p,"    bus error TX %d\n",
 			     ci->ci_berr_counter.txerr);
 	}
+}
 
-	return;
+static void can_dump_stats(struct rtnl_link *link, struct nl_dump_params *p)
+{
+	struct can_info *ci = link->l_info;
+
+	can_dump_details(link, p);
+
+	if (ci->ci_mask & CAN_HAS_DEVICE_STATS) {
+		nl_dump_line(p,"    bus errors %d\n",
+			     ci->ci_device_stats.bus_error);
+		nl_dump_line(p,"    error warning state changes %d\n",
+			     ci->ci_device_stats.error_warning);
+		nl_dump_line(p,"    error passive state changes %d\n",
+			     ci->ci_device_stats.error_passive);
+		nl_dump_line(p,"    bus off state changes %d\n",
+			     ci->ci_device_stats.bus_off);
+		nl_dump_line(p,"    arbitration lost errors %d\n",
+			     ci->ci_device_stats.arbitration_lost);
+		nl_dump_line(p,"    restarts %d\n",
+			     ci->ci_device_stats.restarts);
+	}
 }
 
 static int can_clone(struct rtnl_link *dst, struct rtnl_link *src)
@@ -364,6 +388,7 @@ static struct rtnl_link_info_ops can_info_ops = {
 	.io_dump = {
 	    [NL_DUMP_LINE]	= can_dump_line,
 	    [NL_DUMP_DETAILS]	= can_dump_details,
+	    [NL_DUMP_STATS]     = can_dump_stats,
 	},
 	.io_clone		= can_clone,
 	.io_put_attrs		= can_put_attrs,
@@ -860,6 +885,30 @@ int rtnl_link_can_set_data_bittiming(struct rtnl_link *link,
 
 	ci->ci_data_bittiming = *data_bit_timing;
 	ci->ci_mask |= CAN_HAS_DATA_BITTIMING;
+
+	return 0;
+}
+
+/**
+ * Get CAN device stats
+ * @arg link            Link object
+ * @arg device_stats	CAN device stats
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_can_get_device_stats(struct rtnl_link* link,
+				   struct can_device_stats *device_stats)
+{
+	struct can_info *ci = link->l_info;
+
+	IS_CAN_LINK_ASSERT(link);
+	if (!device_stats)
+		return -NLE_INVAL;
+
+	if (ci->ci_mask & CAN_HAS_DEVICE_STATS)
+		*device_stats = ci->ci_device_stats;
+	else
+		return -NLE_MISSING_ATTR;
 
 	return 0;
 }

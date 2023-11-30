@@ -60,6 +60,9 @@ extern int rtnl_link_can_get_data_bittiming(struct rtnl_link *,
 extern int rtnl_link_can_set_data_bittiming(struct rtnl_link *,
                                             const struct can_bittiming *);
 
+extern int rtnl_link_can_get_device_stats(struct rtnl_link *,
+				          struct can_device_stats *);
+
 #ifdef __cplusplus
 }
 #endif

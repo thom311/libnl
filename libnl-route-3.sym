@@ -1312,4 +1312,5 @@ global:
 	rtnl_link_bond_set_hashing_type;
 	rtnl_link_bond_set_miimon;
 	rtnl_link_bond_set_min_links;
+	rtnl_link_can_get_device_stats;
 } libnl_3_8;

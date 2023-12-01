@@ -399,7 +399,7 @@ uint32_t nl_object_diff(struct nl_object *a, struct nl_object *b)
 	diff = nl_object_diff64(a, b);
 
 	return (diff & ~((uint64_t) 0xFFFFFFFF))
-		? (uint32_t) diff | (1 << 31)
+		? (uint32_t) diff | (((uint32_t ) 1u) << 31)
 		: (uint32_t) diff;
 }
 

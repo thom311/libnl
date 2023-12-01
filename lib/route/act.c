@@ -22,6 +22,7 @@
 #include "tc-api.h"
 #include "nl-priv-dynamic-core/object-api.h"
 #include "nl-priv-dynamic-core/cache-api.h"
+#include "nl-aux-route/nl-route.h"
 
 static struct nl_object_ops act_obj_ops;
 static struct nl_cache_ops rtnl_act_ops;
@@ -400,7 +401,7 @@ static struct nla_policy tc_act_stats_policy[TCA_STATS_MAX+1] = {
 
 int rtnl_act_parse(struct rtnl_act **head, struct nlattr *tb)
 {
-	struct rtnl_act *act;
+	_nl_auto_rtnl_act_all struct rtnl_act *tmp_head = NULL;
 	struct rtnl_tc_ops *ops;
 	struct nlattr *tb2[TCA_ACT_MAX + 1];
 	struct nlattr *nla[TCA_ACT_MAX_PRIO + 1];
@@ -413,36 +414,32 @@ int rtnl_act_parse(struct rtnl_act **head, struct nlattr *tb)
 		return err;
 
 	for (i = 0; i < TCA_ACT_MAX_PRIO; i++) {
+		_nl_auto_rtnl_act struct rtnl_act *act = NULL;
 		struct rtnl_tc *tc;
 
 		if (nla[i] == NULL)
 			continue;
 
 		act = rtnl_act_alloc();
-		if (!act) {
-			err = -NLE_NOMEM;
-			goto err_free;
-		}
+		if (!act)
+			return -NLE_NOMEM;
+
 		tc = TC_CAST(act);
 		err = nla_parse(tb2, TCA_ACT_MAX, nla_data(nla[i]),
 				nla_len(nla[i]), NULL);
 		if (err < 0)
-			goto err_free;
+			return err;
 
-		if (tb2[TCA_ACT_KIND] == NULL) {
-			err = -NLE_MISSING_ATTR;
-			goto err_free;
-		}
+		if (tb2[TCA_ACT_KIND] == NULL)
+			return -NLE_MISSING_ATTR;
 
 		nla_strlcpy(kind, tb2[TCA_ACT_KIND], sizeof(kind));
 		rtnl_tc_set_kind(tc, kind);
 
 		if (tb2[TCA_ACT_OPTIONS]) {
 			tc->tc_opts = nl_data_alloc_attr(tb2[TCA_ACT_OPTIONS]);
-			if (!tc->tc_opts) {
-				err = -NLE_NOMEM;
-				goto err_free;
-			}
+			if (!tc->tc_opts)
+				return -NLE_NOMEM;
 			tc->ce_mask |= TCA_ATTR_OPTS;
 		}
 
@@ -452,7 +449,7 @@ int rtnl_act_parse(struct rtnl_act **head, struct nlattr *tb)
 			err = nla_parse_nested(tb3, TCA_STATS_MAX, tb2[TCA_ACT_STATS],
 					       tc_act_stats_policy);
 			if (err < 0)
-				goto err_free;
+				return err;
 
 			if (tb3[TCA_STATS_BASIC]) {
 				struct gnet_stats_basic bs;
@@ -489,26 +486,20 @@ int rtnl_act_parse(struct rtnl_act **head, struct nlattr *tb)
 		if (ops && ops->to_msg_parser) {
 			void *data = rtnl_tc_data(tc);
 
-			if (!data) {
-				err = -NLE_NOMEM;
-				goto err_free;
-			}
+			if (!data)
+				return -NLE_NOMEM;
 
 			err = ops->to_msg_parser(tc, data);
 			if (err < 0)
-				goto err_free;
+				return err;
 		}
-		err = rtnl_act_append(head, act);
+		err = rtnl_act_append(&tmp_head, act);
 		if (err < 0)
-			goto err_free;
+			return err;
 	}
+
+	*head = _nl_steal_pointer(&tmp_head);
 	return 0;
-
-err_free:
-	rtnl_act_put (act);
-	rtnl_act_put_all(head);
-
-	return err;
 }
 
 static int rtnl_act_msg_parse(struct nlmsghdr *n, struct rtnl_act **act)

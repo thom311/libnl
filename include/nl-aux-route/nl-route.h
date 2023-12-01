@@ -46,6 +46,11 @@ void rtnl_act_put(struct rtnl_act *);
 _NL_AUTO_DEFINE_FCN_TYPED0(struct rtnl_act *, _nl_auto_rtnl_act_fcn,
 			   rtnl_act_put);
 
+void rtnl_act_put_all(struct rtnl_act **head);
+#define _nl_auto_rtnl_act_all _nl_auto(_nl_auto_rtnl_act_fcn_all)
+_NL_AUTO_DEFINE_FCN_INDIRECT0(struct rtnl_act *, _nl_auto_rtnl_act_fcn_all,
+			      rtnl_act_put_all);
+
 struct rtnl_ematch_tree;
 void rtnl_ematch_tree_free(struct rtnl_ematch_tree *);
 #define _nl_auto_rtnl_ematch_tree _nl_auto(_nl_auto_rtnl_ematch_tree_fcn)

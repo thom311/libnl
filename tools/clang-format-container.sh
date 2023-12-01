@@ -16,36 +16,31 @@ FEDORA_VERSION="$(sed -n 's/^      image: fedora:\([0-9]\+\)$/\1/p' .github/work
 
 test -n "$FEDORA_VERSION" || die "Could not detect the Fedora version in .github/workflows/ci.yml"
 
-PODNAME="libnl-code-format-f$FEDORA_VERSION"
+IMAGENAME="libnl-code-format-f$FEDORA_VERSION"
 
-RENEW=0
-for a; do
-    case "$a" in
-        -f)
-            RENEW=1
-            ;;
-        *)
-            die "invalid argument \"$a\""
-            ;;
-    esac
-done
+ARGS=( "$@" )
 
-set -x
-
-if [ "$RENEW" == 1 ]; then
-    if podman container exists "$PODNAME" ; then
-        podman rm "$PODNAME"
-    fi
+if ! podman image exists "$IMAGENAME" ; then
+    echo "Building image \"$IMAGENAME\"..."
+    podman build \
+        --squash-all \
+        --tag "$IMAGENAME" \
+        -f <(cat <<EOF
+FROM fedora:$FEDORA_VERSION
+RUN dnf upgrade -y
+RUN dnf install -y git /usr/bin/clang-format
+EOF
+)
 fi
 
-if ! podman container exists "$PODNAME" ; then
-    podman run \
-        --name="$PODNAME" \
-        -v "$DIR:/tmp/libnl3:Z" \
-        -w /tmp/libnl3 \
-        "fedora:$FEDORA_VERSION" \
-        /bin/bash -c 'dnf upgrade -y && dnf install -y git /usr/bin/clang-format && tools/clang-format.sh -i'
-    exit 0
-fi
+CMD=( ./tools/clang-format.sh "${ARGS[@]}" )
 
-podman start -a "$PODNAME"
+podman run \
+    --rm \
+    --name "libnm-code-format-f$FEDORA_VERSION" \
+    -v "$DIR:/tmp/NetworkManager:Z" \
+    -w /tmp/NetworkManager \
+    -e "_LIBNL_CODE_FORMAT_CONTAINER=$IMAGENAME" \
+    -ti \
+    "$IMAGENAME" \
+    "${CMD[@]}"

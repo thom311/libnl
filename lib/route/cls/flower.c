@@ -809,6 +809,7 @@ int rtnl_flower_get_ipv4_dst(struct rtnl_cls *cls, in_addr_t *out_addr,
 int rtnl_flower_append_action(struct rtnl_cls *cls, struct rtnl_act *act)
 {
 	struct rtnl_flower *f;
+	int err;
 
 	if (!act)
 		return 0;
@@ -818,8 +819,11 @@ int rtnl_flower_append_action(struct rtnl_cls *cls, struct rtnl_act *act)
 
 	f->cf_mask |= FLOWER_ATTR_ACTION;
 
+	if ((err = rtnl_act_append(&f->cf_act, act)) < 0)
+		return err;
+
 	rtnl_act_get(act);
-	return rtnl_act_append(&f->cf_act, act);
+	return 0;
 }
 
 /**

@@ -15,6 +15,7 @@
 #include <netlink/route/cls/flower.h>
 
 #include "tc-api.h"
+#include "nl-aux-route/nl-route.h"
 
 /** @cond SKIP */
 struct rtnl_flower {
@@ -817,12 +818,10 @@ int rtnl_flower_append_action(struct rtnl_cls *cls, struct rtnl_act *act)
 	if (!(f = rtnl_tc_data(TC_CAST(cls))))
 		return -NLE_NOMEM;
 
-	f->cf_mask |= FLOWER_ATTR_ACTION;
-
-	if ((err = rtnl_act_append(&f->cf_act, act)) < 0)
+	if ((err = _rtnl_act_append_get(&f->cf_act, act)) < 0)
 		return err;
 
-	rtnl_act_get(act);
+	f->cf_mask |= FLOWER_ATTR_ACTION;
 	return 0;
 }
 

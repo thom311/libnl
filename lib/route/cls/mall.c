@@ -20,6 +20,7 @@
 #include <netlink/route/action.h>
 
 #include "tc-api.h"
+#include "nl-aux-route/nl-route.h"
 
 struct rtnl_mall {
 	uint32_t m_classid;
@@ -107,12 +108,10 @@ int rtnl_mall_append_action(struct rtnl_cls *cls, struct rtnl_act *act)
 	if (!(mall = rtnl_tc_data(TC_CAST(cls))))
 		return -NLE_NOMEM;
 
-	mall->m_mask |= MALL_ATTR_ACTION;
-	err = rtnl_act_append(&mall->m_act, act);
-	if (err < 0)
-	        return err;
+	if ((err = _rtnl_act_append_get(&mall->m_act, act)) < 0)
+		return err;
 
-	rtnl_act_get(act);
+	mall->m_mask |= MALL_ATTR_ACTION;
 	return 0;
 }
 
@@ -245,7 +244,7 @@ static int mall_clone(void *_dst, void *_src)
 			if (!new)
 				return -NLE_NOMEM;
 
-			err = rtnl_act_append(&dst->m_act, new);
+			err = _rtnl_act_append_take(&dst->m_act, new);
 			if (err < 0)
 				return err;
 

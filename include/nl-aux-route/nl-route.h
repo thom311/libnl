@@ -5,6 +5,8 @@
 
 #include "base/nl-base-utils.h"
 
+#include <netlink/route/action.h>
+
 struct rtnl_link;
 void rtnl_link_put(struct rtnl_link *);
 #define _nl_auto_rtnl_link _nl_auto(_nl_auto_rtnl_link_fcn)
@@ -40,13 +42,10 @@ void rtnl_link_af_ops_put(struct rtnl_link_af_ops *);
 _NL_AUTO_DEFINE_FCN_TYPED0(struct rtnl_link_af_ops *,
 			   _nl_auto_rtnl_link_af_ops_fcn, rtnl_link_af_ops_put);
 
-struct rtnl_act;
-void rtnl_act_put(struct rtnl_act *);
 #define _nl_auto_rtnl_act _nl_auto(_nl_auto_rtnl_act_fcn)
 _NL_AUTO_DEFINE_FCN_TYPED0(struct rtnl_act *, _nl_auto_rtnl_act_fcn,
 			   rtnl_act_put);
 
-void rtnl_act_put_all(struct rtnl_act **head);
 #define _nl_auto_rtnl_act_all _nl_auto(_nl_auto_rtnl_act_fcn_all)
 _NL_AUTO_DEFINE_FCN_INDIRECT0(struct rtnl_act *, _nl_auto_rtnl_act_fcn_all,
 			      rtnl_act_put_all);
@@ -63,5 +62,29 @@ void rtnl_cls_put(struct rtnl_cls *);
 #define _nl_auto_rtnl_cls _nl_auto(_nl_auto_rtnl_cls_fcn)
 _NL_AUTO_DEFINE_FCN_TYPED0(struct rtnl_cls *, _nl_auto_rtnl_cls_fcn,
 			   rtnl_cls_put);
+
+/*****************************************************************************/
+
+static inline int _rtnl_act_append_get(struct rtnl_act **head,
+				       struct rtnl_act *new)
+{
+	int r;
+
+	r = rtnl_act_append(head, new);
+	if (r >= 0)
+		rtnl_act_get(new);
+	return r;
+}
+
+static inline int _rtnl_act_append_take(struct rtnl_act **head,
+					struct rtnl_act *new)
+{
+	int r;
+
+	r = rtnl_act_append(head, new);
+	if (r < 0)
+		rtnl_act_put(new);
+	return r;
+}
 
 #endif /* __NETLINK_NL_AUX_ROUTE_NL_ROUTE_H__ */

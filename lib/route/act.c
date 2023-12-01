@@ -493,11 +493,9 @@ int rtnl_act_parse(struct rtnl_act **head, struct nlattr *tb)
 			if (err < 0)
 				return err;
 		}
-		err = rtnl_act_append(&tmp_head, act);
+		err = _rtnl_act_append_take(&tmp_head, _nl_steal_pointer(&act));
 		if (err < 0)
 			return err;
-
-		_nl_steal_pointer(&act);
 	}
 
 	*head = _nl_steal_pointer(&tmp_head);

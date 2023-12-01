@@ -612,12 +612,10 @@ int rtnl_u32_add_action(struct rtnl_cls *cls, struct rtnl_act *act)
 	if (!(u = rtnl_tc_data(TC_CAST(cls))))
 		return -NLE_NOMEM;
 
-	u->cu_mask |= U32_ATTR_ACTION;
-	if ((err = rtnl_act_append(&u->cu_act, act)))
+	if ((err = _rtnl_act_append_get(&u->cu_act, act)) < 0)
 		return err;
 
-	/* In case user frees it */
-	rtnl_act_get(act);
+	u->cu_mask |= U32_ATTR_ACTION;
 	return 0;
 }
 

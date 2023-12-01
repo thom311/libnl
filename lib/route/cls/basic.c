@@ -25,6 +25,7 @@
 #include <netlink/route/cls/ematch.h>
 
 #include "tc-api.h"
+#include "nl-aux-route/nl-route.h"
 
 struct rtnl_basic
 {
@@ -223,12 +224,10 @@ int rtnl_basic_add_action(struct rtnl_cls *cls, struct rtnl_act *act)
 	if (!(b = rtnl_tc_data(TC_CAST(cls))))
 		return -NLE_NOMEM;
 
-	b->b_mask |= BASIC_ATTR_ACTION;
-	if ((err = rtnl_act_append(&b->b_act, act)))
+	if ((err = _rtnl_act_append_get(&b->b_act, act)) < 0)
 		return err;
 
-	/* In case user frees it */
-	rtnl_act_get(act);
+	b->b_mask |= BASIC_ATTR_ACTION;
 	return 0;
 }
 

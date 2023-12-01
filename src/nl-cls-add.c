@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
 		case 'v': nl_cli_print_version(); break;
 		case 'd': nl_cli_tc_parse_dev(tc, link_cache, optarg); break;
 		case 'p': nl_cli_tc_parse_parent(tc, optarg); break;
-		case 'i': id = strdup(optarg); break;
+		case 'i': free(id); id = strdup(optarg); break;
 		case ARG_UPDATE: flags = NLM_F_CREATE; break;
 		case ARG_UPDATE_ONLY: flags = 0; break;
 		case ARG_MTU: nl_cli_tc_parse_mtu(tc, optarg); break;

@@ -734,6 +734,14 @@ static inline char *_nl_inet_ntop_dup(int addr_family, const void *addr)
 	}                                                \
 	struct _nl_dummy_for_tailing_semicolon
 
+#define _NL_AUTO_DEFINE_FCN_INDIRECT0(CastType, name, func) \
+	static inline void name(CastType *v)                \
+	{                                                   \
+		if (*v)                                     \
+			func(v);                            \
+	}                                                   \
+	struct _nl_dummy_for_tailing_semicolon
+
 #define _nl_auto_free _nl_auto(_nl_auto_free_fcn)
 _NL_AUTO_DEFINE_FCN_VOID0(void *, _nl_auto_free_fcn, free);
 

@@ -73,7 +73,7 @@ static uint32_t generate_local_port(void)
 	nl_write_lock(&port_map_lock);
 
 	if (idx_state == 0) {
-		uint32_t t = time(NULL);
+		uint32_t t = (uint32_t) time(NULL);
 
 		/* from time to time (on average each 2^15 calls), the idx_state will
 		 * be zero again. No problem, just "seed" anew with time(). */
@@ -190,7 +190,8 @@ static struct nl_sock *__alloc_socket(struct nl_cb *cb)
 	sk->s_cb = nl_cb_get(cb);
 	sk->s_local.nl_family = AF_NETLINK;
 	sk->s_peer.nl_family = AF_NETLINK;
-	sk->s_seq_expect = sk->s_seq_next = time(NULL);
+	sk->s_seq_next = (unsigned int) time(NULL);
+	sk->s_seq_expect = sk->s_seq_next;
 
 	/* the port is 0 (unspecified), meaning NL_OWN_PORT */
 	sk->s_flags = NL_OWN_PORT;

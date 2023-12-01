@@ -452,7 +452,7 @@ int rtnl_act_parse(struct rtnl_act **head, struct nlattr *tb)
 			err = nla_parse_nested(tb3, TCA_STATS_MAX, tb2[TCA_ACT_STATS],
 					       tc_act_stats_policy);
 			if (err < 0)
-				return err;
+				goto err_free;
 
 			if (tb3[TCA_STATS_BASIC]) {
 				struct gnet_stats_basic bs;

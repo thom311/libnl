@@ -651,12 +651,12 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 
 	if (tb[XFRMA_TMPL]) {
 		struct xfrm_user_tmpl*      tmpl = nla_data(tb[XFRMA_TMPL]);
-		struct xfrmnl_user_tmpl*    sputmpl;
 		uint32_t                    i;
 		uint32_t                    num_tmpls = nla_len(tb[XFRMA_TMPL]) / sizeof (*tmpl);
 
 		for (i = 0; (i < num_tmpls) && (tmpl); i ++, tmpl++)
 		{
+			_nl_auto_xfrmnl_user_tmpl struct xfrmnl_user_tmpl *sputmpl = NULL;
 			_nl_auto_nl_addr struct nl_addr *addr1 = NULL;
 			_nl_auto_nl_addr struct nl_addr *addr2 = NULL;
 
@@ -681,7 +681,7 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 			xfrmnl_user_tmpl_set_aalgos (sputmpl, tmpl->aalgos);
 			xfrmnl_user_tmpl_set_ealgos (sputmpl, tmpl->ealgos);
 			xfrmnl_user_tmpl_set_calgos (sputmpl, tmpl->calgos);
-			xfrmnl_sp_add_usertemplate (sp, sputmpl);
+			xfrmnl_sp_add_usertemplate (sp, _nl_steal_pointer(&sputmpl));
 
 			sp->ce_mask     |=  XFRM_SP_ATTR_TMPL;
 		}

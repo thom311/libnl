@@ -23,4 +23,11 @@ void xfrmnl_ae_put(struct xfrmnl_ae *ae);
 _NL_AUTO_DEFINE_FCN_TYPED0(struct xfrmnl_ae *, _nl_auto_xfrmnl_ae_fcn,
 			   xfrmnl_ae_put);
 
+struct xfrmnl_user_tmpl;
+void xfrmnl_user_tmpl_free(struct xfrmnl_user_tmpl *utmpl);
+#define _nl_auto_xfrmnl_user_tmpl _nl_auto(_nl_auto_xfrmnl_user_tmpl_fcn)
+_NL_AUTO_DEFINE_FCN_TYPED0(struct xfrmnl_user_tmpl *,
+			   _nl_auto_xfrmnl_user_tmpl_fcn,
+			   xfrmnl_user_tmpl_free);
+
 #endif /* __NETLINK_NL_AUX_XFRM_NL_XFRM_H__ */

@@ -60,6 +60,24 @@ static void _nl_init init_default_cb(void)
 	}
 }
 
+static uint32_t _badrandom_from_time(void)
+{
+	uint32_t result;
+	uint64_t v64;
+	time_t t;
+
+	t = time(NULL);
+	v64 = (uint64_t)t;
+	result = (uint32_t)v64;
+
+	/* XOR with the upper bits. Otherwise, coverity warns about only
+	 * considering 32 bit from time_t.  Use the inverse, so that for the
+	 * most part the bits don't change.  */
+	result ^= (~(v64 >> 32));
+
+	return result;
+}
+
 static uint32_t used_ports_map[32];
 static NL_RW_LOCK(port_map_lock);
 
@@ -73,7 +91,7 @@ static uint32_t generate_local_port(void)
 	nl_write_lock(&port_map_lock);
 
 	if (idx_state == 0) {
-		uint32_t t = (uint32_t) time(NULL);
+		uint32_t t = _badrandom_from_time();
 
 		/* from time to time (on average each 2^15 calls), the idx_state will
 		 * be zero again. No problem, just "seed" anew with time(). */
@@ -190,7 +208,7 @@ static struct nl_sock *__alloc_socket(struct nl_cb *cb)
 	sk->s_cb = nl_cb_get(cb);
 	sk->s_local.nl_family = AF_NETLINK;
 	sk->s_peer.nl_family = AF_NETLINK;
-	sk->s_seq_next = (unsigned int) time(NULL);
+	sk->s_seq_next = _badrandom_from_time();
 	sk->s_seq_expect = sk->s_seq_next;
 
 	/* the port is 0 (unspecified), meaning NL_OWN_PORT */

@@ -671,14 +671,14 @@ int rtnl_tc_calc_bufsize(int txtime, int rate)
 /**
  * Calculate the binary logarithm for a specific cell size
  * @arg cell_size	Size of cell, must be a power of two.
- * @return Binary logirhtm of cell size or a negative error code.
+ * @return Binary logarithm of cell size or a negative error code.
  */
 int rtnl_tc_calc_cell_log(int cell_size)
 {
 	int i;
 
 	for (i = 0; i < 32; i++)
-		if ((1 << i) == cell_size)
+		if ((((uint32_t)1u) << i) == cell_size)
 			return i;
 
 	return -NLE_INVAL;

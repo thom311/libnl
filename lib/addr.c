@@ -321,8 +321,6 @@ int nl_addr_parse(const char *addrstr, int hint, struct nl_addr **result)
 	    !strcasecmp(str, "all") ||
 	    !strcasecmp(str, "any")) {
 
-		len = 0;
-
 		switch (hint) {
 			case AF_INET:
 			case AF_UNSPEC:

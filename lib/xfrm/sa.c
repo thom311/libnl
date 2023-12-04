@@ -1826,20 +1826,17 @@ int xfrmnl_sa_set_aead_params (struct xfrmnl_sa* sa, const char* alg_name, unsig
  */
 int xfrmnl_sa_get_auth_params (struct xfrmnl_sa* sa, char* alg_name, unsigned int* key_len, unsigned int* trunc_len, char* key)
 {
-	if (sa->ce_mask & XFRM_SA_ATTR_ALG_AUTH)
-	{
-		if (alg_name)
-			strcpy (alg_name, sa->auth->alg_name);
-		if (key_len)
-			*key_len = sa->auth->alg_key_len;
-		if (trunc_len)
-			*trunc_len = sa->auth->alg_trunc_len;
-		if (key)
-			memcpy (key, sa->auth->alg_key, (sa->auth->alg_key_len + 7)/8);
-	}
-	else
-		return -1;
+	if (!(sa->ce_mask & XFRM_SA_ATTR_ALG_AUTH))
+		return -NLE_MISSING_ATTR;
 
+	if (alg_name)
+		strcpy(alg_name, sa->auth->alg_name);
+	if (key_len)
+		*key_len = sa->auth->alg_key_len;
+	if (trunc_len)
+		*trunc_len = sa->auth->alg_trunc_len;
+	if (key)
+		memcpy(key, sa->auth->alg_key, (sa->auth->alg_key_len + 7) / 8);
 	return 0;
 }
 

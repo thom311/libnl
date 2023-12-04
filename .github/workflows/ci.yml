@@ -8,7 +8,7 @@ jobs:
   clang-format:
     runs-on: ubuntu-latest
     container:
-      image: fedora:38
+      image: fedora:39
     steps:
       - name: Install packages
         run: |

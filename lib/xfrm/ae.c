@@ -122,6 +122,7 @@
 
 #include "nl-default.h"
 
+#include <time.h>
 #include <linux/xfrm.h>
 
 #include <netlink/netlink.h>

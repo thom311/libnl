@@ -41,6 +41,7 @@
 
 #include "nl-default.h"
 
+#include <time.h>
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 #include <netlink/object.h>

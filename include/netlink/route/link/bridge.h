@@ -61,6 +61,7 @@ extern int	rtnl_link_bridge_set_flags(struct rtnl_link *, unsigned int);
 extern int	rtnl_link_bridge_get_flags(struct rtnl_link *);
 
 extern int	rtnl_link_bridge_set_self(struct rtnl_link *);
+extern int	rtnl_link_bridge_set_master(struct rtnl_link *);
 
 extern int	rtnl_link_bridge_get_hwmode(struct rtnl_link *, uint16_t *);
 extern int	rtnl_link_bridge_set_hwmode(struct rtnl_link *, uint16_t);
@@ -76,6 +77,10 @@ extern uint16_t rtnl_link_bridge_str2hwmode(const char *);
 
 extern int	rtnl_link_bridge_add(struct nl_sock *sk, const char *name);
 
+extern int	rtnl_link_bridge_enable_vlan(struct rtnl_link *link);
+extern int	rtnl_link_bridge_set_port_vlan_map_range (struct rtnl_link *link, uint16_t start, uint16_t end, int untagged);
+extern int	rtnl_link_bridge_unset_port_vlan_map_range (struct rtnl_link *link, uint16_t start, uint16_t end);
+extern int	rtnl_link_bridge_set_port_vlan_pvid (struct rtnl_link *link, uint16_t pvid);
 extern int	rtnl_link_bridge_pvid(struct rtnl_link *link);
 extern int	rtnl_link_bridge_has_vlan(struct rtnl_link *link);
 

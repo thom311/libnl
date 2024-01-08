@@ -13,6 +13,11 @@
 extern "C" {
 #endif
 
+extern void rtnl_link_bridge_set_ageing_time(struct rtnl_link *link,
+					     uint32_t ageing_time);
+extern int rtnl_link_bridge_get_ageing_time(struct rtnl_link *link,
+					    uint32_t *ageing_time);
+
 extern void rtnl_link_bridge_set_vlan_filtering(struct rtnl_link *link,
 						uint8_t vlan_filtering);
 extern int rtnl_link_bridge_get_vlan_filtering(struct rtnl_link *link,

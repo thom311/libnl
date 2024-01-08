@@ -1314,3 +1314,9 @@ global:
 	rtnl_link_bond_set_min_links;
 	rtnl_link_can_get_device_stats;
 } libnl_3_8;
+
+libnl_3_10 {
+global:
+	rtnl_link_bridge_set_ageing_time;
+	rtnl_link_bridge_get_ageing_time;
+} libnl_3_9;

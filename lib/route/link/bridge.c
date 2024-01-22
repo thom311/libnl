@@ -23,6 +23,7 @@
 #include "nl-route.h"
 #include "link-api.h"
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-static-route/nl-priv-static-route.h"
 
 #define VLAN_VID_MASK           0x0fff /* VLAN Identifier */
 
@@ -257,7 +258,7 @@ static int bridge_parse_af_full(struct rtnl_link *link, struct nlattr *attr_full
 	return 0;
 }
 
-static int bridge_fill_vlan_info(struct nl_msg *msg, struct rtnl_link_bridge_vlan * vlan_info) 
+int _nl_bridge_fill_vlan_info(struct nl_msg *msg, struct rtnl_link_bridge_vlan * vlan_info)
 {
 	struct bridge_vlan_info vinfo;
 	int i = -1, j, k;
@@ -395,9 +396,8 @@ static int bridge_fill_af(struct rtnl_link *link, struct nl_msg *msg,
 	if (bd->ce_mask & BRIDGE_ATTR_CONFIG_MODE)
 		NLA_PUT_U16(msg, IFLA_BRIDGE_FLAGS, bd->b_config_mode);
 
-	if (bd->ce_mask & BRIDGE_ATTR_PORT_VLAN)
-	{
-		if(bridge_fill_vlan_info(msg,&bd->vlan_info)){
+	if (bd->ce_mask & BRIDGE_ATTR_PORT_VLAN) {
+		if (_nl_bridge_fill_vlan_info(msg, &bd->vlan_info)) {
 			goto nla_put_failure;
 		}
 	}

@@ -176,6 +176,14 @@ START_TEST(addr_parse6)
 		!strcmp(nl_addr2str(addr6, buf, sizeof(buf)), addr_str),
 		"Address translated back to string does not match original");
 
+	_nl_clear_pointer(&addr6, nl_addr_put);
+
+	ck_assert(nl_addr_parse("default", AF_INET6, &addr6) == 0);
+	ck_assert_int_eq(nl_addr_get_len(addr6), 16);
+	ck_assert_int_eq(nl_addr_get_prefixlen(addr6), 0);
+	ck_assert_mem_eq(nl_addr_get_binary_addr(addr6), ((uint8_t[16]){ 0 }),
+			 16);
+
 	nl_addr_put(addr6);
 	nl_addr_put(clone);
 }

@@ -63,6 +63,7 @@ struct rtnl_route {
 	uint32_t rt_metrics[RTAX_MAX];
 	uint32_t rt_metrics_mask;
 	uint32_t rt_nr_nh;
+	uint32_t rt_nhid;
 	struct nl_addr *rt_pref_src;
 	struct nl_list_head rt_nexthops;
 	struct rtnl_rtcacheinfo rt_cacheinfo;
@@ -88,6 +89,7 @@ struct rtnl_route {
 #define ROUTE_ATTR_REALMS    0x010000
 #define ROUTE_ATTR_CACHEINFO 0x020000
 #define ROUTE_ATTR_TTL_PROPAGATE 0x040000
+#define ROUTE_ATTR_NHID      0x080000
 /** @endcond */
 
 static void route_constructor(struct nl_object *c)
@@ -192,6 +194,9 @@ static void route_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	if (r->ce_mask & ROUTE_ATTR_TOS && r->rt_tos != 0)
 		nl_dump(p, "tos %#x ", r->rt_tos);
 
+	if (r->ce_mask & ROUTE_ATTR_NHID)
+		nl_dump(p, "nhid %u ", r->rt_nhid);
+
 	if (r->ce_mask & ROUTE_ATTR_MULTIPATH) {
 		struct rtnl_nexthop *nh;
 
@@ -281,6 +286,9 @@ static void route_dump_details(struct nl_object *a, struct nl_dump_params *p)
 		nl_dump(p, " ttl-propagate %s",
 			r->rt_ttl_propagate ? "enabled" : "disabled");
 	}
+
+	if (r->ce_mask & ROUTE_ATTR_NHID)
+		nl_dump(p, "nhid %u ", r->rt_nhid);
 
 	nl_dump(p, "\n");
 
@@ -412,6 +420,7 @@ static uint64_t route_compare(struct nl_object *_a, struct nl_object *_b,
 		      nl_addr_cmp(a->rt_pref_src, b->rt_pref_src));
 	diff |= _DIFF(ROUTE_ATTR_TTL_PROPAGATE,
 		      a->rt_ttl_propagate != b->rt_ttl_propagate);
+	diff |= _DIFF(ROUTE_ATTR_NHID, a->rt_nhid != b->rt_nhid);
 
 	if (flags & LOOSE_COMPARISON) {
 		nl_list_for_each_entry(nh_b, &b->rt_nexthops, rtnh_list) {
@@ -617,6 +626,7 @@ static const struct trans_tbl route_attrs[] = {
 	__ADD(ROUTE_ATTR_REALMS, realms),
 	__ADD(ROUTE_ATTR_CACHEINFO, cacheinfo),
 	__ADD(ROUTE_ATTR_TTL_PROPAGATE, ttl_propagate),
+	__ADD(ROUTE_ATTR_NHID, nhid),
 };
 
 static char *route_attrs2str(int attrs, char *buf, size_t len)
@@ -964,6 +974,21 @@ int rtnl_route_get_ttl_propagate(struct rtnl_route *route)
 	return route->rt_ttl_propagate;
 }
 
+void rtnl_route_set_nhid(struct rtnl_route *route, uint32_t nhid)
+{
+	route->rt_nhid = nhid;
+
+	if (nhid > 0)
+		route->ce_mask |= ROUTE_ATTR_NHID;
+	else
+		route->ce_mask &= ~ROUTE_ATTR_NHID;
+}
+
+uint32_t rtnl_route_get_nhid(struct rtnl_route *route)
+{
+	return route->rt_nhid;
+}
+
 /** @} */
 
 /**
@@ -1046,6 +1071,7 @@ static struct nla_policy route_policy[RTA_MAX+1] = {
 	[RTA_TTL_PROPAGATE] = { .type = NLA_U8 },
 	[RTA_ENCAP]	= { .type = NLA_NESTED },
 	[RTA_ENCAP_TYPE] = { .type = NLA_U16 },
+	[RTA_NH_ID]	= { .type = NLA_U32 },
 };
 
 static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
@@ -1337,6 +1363,10 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 			return err;
 	}
 
+	if (tb[RTA_NH_ID]) {
+		rtnl_route_set_nhid(route, nla_get_u32(tb[RTA_NH_ID]));
+	}
+
 	if (old_nh) {
 		rtnl_route_nh_set_flags(old_nh, rtm->rtm_flags & 0xff);
 		if (route->rt_nr_nh == 0) {
@@ -1439,7 +1469,10 @@ int rtnl_route_build_msg(struct nl_msg *msg, struct rtnl_route *route)
 		nla_nest_end(msg, metrics);
 	}
 
-	if (rtnl_route_get_nnexthops(route) == 1) {
+	/* Nexthop specification and nexthop id are mutually exclusive */
+	if (route->ce_mask & ROUTE_ATTR_NHID) {
+		NLA_PUT_U32(msg, RTA_NH_ID, route->rt_nhid);
+	} else if (rtnl_route_get_nnexthops(route) == 1) {
 		struct rtnl_nexthop *nh;
 
 		nh = rtnl_route_nexthop_n(route, 0);

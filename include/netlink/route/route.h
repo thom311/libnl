@@ -94,6 +94,8 @@ extern int	rtnl_route_get_src_len(struct rtnl_route *);
 extern void	rtnl_route_set_ttl_propagate(struct rtnl_route *route,
 					     uint8_t ttl_prop);
 extern int	rtnl_route_get_ttl_propagate(struct rtnl_route *route);
+extern void	rtnl_route_set_nhid(struct rtnl_route *, uint32_t);
+extern uint32_t	rtnl_route_get_nhid(struct rtnl_route *);
 
 extern void	rtnl_route_add_nexthop(struct rtnl_route *,
 				       struct rtnl_nexthop *);

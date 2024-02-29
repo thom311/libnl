@@ -1314,3 +1314,15 @@ global:
 	rtnl_link_bond_set_min_links;
 	rtnl_link_can_get_device_stats;
 } libnl_3_8;
+
+libnl_3_10 {
+global:
+	rtnl_link_bridge_enable_vlan;
+	rtnl_link_bridge_get_ageing_time;
+	rtnl_link_bridge_get_vlan_default_pvid;
+	rtnl_link_bridge_set_ageing_time;
+	rtnl_link_bridge_set_master;
+	rtnl_link_bridge_set_port_vlan_map_range;
+	rtnl_link_bridge_set_port_vlan_pvid;
+	rtnl_link_bridge_unset_port_vlan_map_range;
+} libnl_3_9;

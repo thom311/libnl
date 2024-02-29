@@ -23,6 +23,7 @@
 #include "nl-route.h"
 #include "link-api.h"
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-priv-static-route/nl-priv-static-route.h"
 
 #define VLAN_VID_MASK           0x0fff /* VLAN Identifier */
 
@@ -33,7 +34,7 @@
 #define BRIDGE_ATTR_FLAGS		(1 << 3)
 #define BRIDGE_ATTR_PORT_VLAN           (1 << 4)
 #define BRIDGE_ATTR_HWMODE		(1 << 5)
-#define BRIDGE_ATTR_SELF		(1 << 6)
+#define BRIDGE_ATTR_CONFIG_MODE		(1 << 6)
 
 #define PRIV_FLAG_NEW_ATTRS		(1 << 0)
 
@@ -43,7 +44,7 @@ struct bridge_data
 	uint8_t			b_priv_flags; /* internal flags */
 	uint16_t		b_hwmode;
 	uint16_t		b_priority;
-	uint16_t		b_self; /* here for comparison reasons */
+	uint16_t		b_config_mode;
 	uint32_t		b_cost;
 	uint32_t		b_flags;
 	uint32_t		b_flags_mask;
@@ -55,6 +56,24 @@ static void set_bit(unsigned nr, uint32_t *addr)
 {
 	if (nr < RTNL_LINK_BRIDGE_VLAN_BITMAP_MAX)
 		addr[nr / 32] |= (((uint32_t) 1) << (nr % 32));
+}
+
+static void unset_bit(unsigned nr, uint32_t *addr)
+{
+	if (nr < RTNL_LINK_BRIDGE_VLAN_BITMAP_MAX)
+		addr[nr / 32] &= ~(((uint32_t) 1) << (nr % 32));
+}
+
+static bool vlan_id_untagged(struct rtnl_link_bridge_vlan *vlan_info, uint16_t vid)
+{
+	uint32_t mask, bit;
+
+	_nl_assert(vid / 32u < ARRAY_SIZE(vlan_info->untagged_bitmap));
+
+	mask = vlan_info->untagged_bitmap[vid / 32];
+	bit = (((uint32_t) 1) << vid % 32);
+
+	return mask & bit;
 }
 
 static int find_next_bit(int i, uint32_t x)
@@ -239,16 +258,149 @@ static int bridge_parse_af_full(struct rtnl_link *link, struct nlattr *attr_full
 	return 0;
 }
 
+int _nl_bridge_fill_vlan_info(struct nl_msg *msg, struct rtnl_link_bridge_vlan * vlan_info)
+{
+	struct bridge_vlan_info vinfo;
+	int i = -1, j, k;
+	int start = -1, prev = -1;
+	int done;
+	bool untagged = false;
+
+	for (k = 0; k < RTNL_LINK_BRIDGE_VLAN_BITMAP_LEN; k++)
+	{
+		int base_bit;
+		uint32_t a = vlan_info->vlan_bitmap[k];
+
+		base_bit = k * 32;
+		i = -1;
+		done = 0;
+		while (!done)
+		{
+			j = find_next_bit(i, a);
+			if (j > 0)
+			{
+				/* Skip if id equal to pvid */
+				if (vlan_info->pvid != 0 && j - 1 + base_bit == vlan_info->pvid)
+					goto nxt;
+				/* first hit of any bit */
+				if (start < 0 && prev < 0)
+				{
+					start = prev = j - 1 + base_bit;
+					/* Start range attribute */
+					untagged = vlan_id_untagged(vlan_info,start);
+					vinfo.flags = BRIDGE_VLAN_INFO_RANGE_BEGIN;
+					vinfo.flags |= untagged ? BRIDGE_VLAN_INFO_UNTAGGED : 0;
+					vinfo.vid = start;
+					goto nxt;
+				}
+				/* this bit is a continuation of prior bits */
+				if (j - 2 + base_bit == prev)
+				{
+					prev++;
+					/* Hit end of untagged/tagged range */
+					if (untagged != vlan_id_untagged(vlan_info,prev))
+					{
+						/* put vlan into attributes */
+						if (start == prev-1)
+						{
+							/* only 1 vid in range */
+							vinfo.flags &= ~BRIDGE_VLAN_INFO_RANGE_BEGIN;
+							NLA_PUT(msg,IFLA_BRIDGE_VLAN_INFO,sizeof(vinfo),&vinfo);
+						}
+						else
+						{
+							/* end of untagged/tagged range */
+							NLA_PUT(msg,IFLA_BRIDGE_VLAN_INFO,sizeof(vinfo),&vinfo);
+
+							vinfo.flags = BRIDGE_VLAN_INFO_RANGE_END;
+							vinfo.flags |= untagged ? BRIDGE_VLAN_INFO_UNTAGGED : 0;
+							vinfo.vid = prev-1;
+							NLA_PUT(msg,IFLA_BRIDGE_VLAN_INFO,sizeof(vinfo),&vinfo);
+						}
+						/* start of new range */
+						untagged = !untagged;
+						vinfo.flags = BRIDGE_VLAN_INFO_RANGE_BEGIN;
+						vinfo.flags |= untagged ? BRIDGE_VLAN_INFO_UNTAGGED : 0;
+						vinfo.vid = prev;
+					}
+					goto nxt;
+				}
+			}
+			else
+				done = 1;
+
+			if (start >= 0)
+			{
+				if (done && k < RTNL_LINK_BRIDGE_VLAN_BITMAP_LEN - 1)
+					break;
+
+				if (vinfo.flags & BRIDGE_VLAN_INFO_RANGE_BEGIN && start != prev)
+				{
+					NLA_PUT(msg,IFLA_BRIDGE_VLAN_INFO,sizeof(vinfo),&vinfo);
+
+					vinfo.flags = BRIDGE_VLAN_INFO_RANGE_END;
+					vinfo.flags |= untagged ? BRIDGE_VLAN_INFO_UNTAGGED : 0;
+					vinfo.vid = prev;
+					NLA_PUT(msg,IFLA_BRIDGE_VLAN_INFO,sizeof(vinfo),&vinfo);
+				}
+				else if (start == prev)
+				{
+					vinfo.flags = untagged ? BRIDGE_VLAN_INFO_UNTAGGED : 0;
+					vinfo.vid = start;
+					NLA_PUT(msg,IFLA_BRIDGE_VLAN_INFO,sizeof(vinfo),&vinfo);
+				}
+
+				if (done)
+					break;
+			}
+			if (j > 0)
+			{
+				start = prev = j - 1 + base_bit;
+				untagged = vlan_id_untagged(vlan_info,start);
+				vinfo.flags = BRIDGE_VLAN_INFO_RANGE_BEGIN;
+				vinfo.flags |= untagged ? BRIDGE_VLAN_INFO_UNTAGGED : 0;
+				vinfo.vid = start;
+			}
+nxt:
+			i = j;
+		}
+	}
+
+	if (vlan_info->pvid != 0)
+	{
+		untagged = vlan_id_untagged(vlan_info,vlan_info->pvid);
+		vinfo.flags = BRIDGE_VLAN_INFO_PVID;
+		vinfo.flags |= untagged ? BRIDGE_VLAN_INFO_UNTAGGED : 0;
+		vinfo.vid = vlan_info->pvid;
+		NLA_PUT(msg,IFLA_BRIDGE_VLAN_INFO,sizeof(vinfo),&vinfo);
+	}
+
+	return 0;
+
+nla_put_failure:
+	return -NLE_MSGSIZE;
+}
+
 static int bridge_fill_af(struct rtnl_link *link, struct nl_msg *msg,
 		   void *data)
 {
 	struct bridge_data *bd = data;
 
-	if ((bd->ce_mask & BRIDGE_ATTR_SELF)||(bd->ce_mask & BRIDGE_ATTR_HWMODE))
-		NLA_PUT_U16(msg, IFLA_BRIDGE_FLAGS, BRIDGE_FLAGS_SELF);
-
 	if (bd->ce_mask & BRIDGE_ATTR_HWMODE)
+	{
 		NLA_PUT_U16(msg, IFLA_BRIDGE_MODE, bd->b_hwmode);
+		bd->b_config_mode = BRIDGE_FLAGS_SELF;
+		bd->ce_mask |= BRIDGE_ATTR_CONFIG_MODE;
+	}
+
+	if (bd->ce_mask & BRIDGE_ATTR_CONFIG_MODE)
+		NLA_PUT_U16(msg, IFLA_BRIDGE_FLAGS, bd->b_config_mode);
+
+	if (bd->ce_mask & BRIDGE_ATTR_PORT_VLAN) {
+		if (_nl_bridge_fill_vlan_info(msg, &bd->vlan_info)) {
+			goto nla_put_failure;
+		}
+	}
 
 	return 0;
 
@@ -445,7 +597,7 @@ static int bridge_compare(struct rtnl_link *_a, struct rtnl_link *_b,
 		      memcmp(&a->vlan_info, &b->vlan_info,
 			     sizeof(struct rtnl_link_bridge_vlan)));
 	diff |= _DIFF(BRIDGE_ATTR_HWMODE, a->b_hwmode != b->b_hwmode);
-	diff |= _DIFF(BRIDGE_ATTR_SELF, a->b_self != b->b_self);
+	diff |= _DIFF(BRIDGE_ATTR_CONFIG_MODE, a->b_config_mode != b->b_config_mode);
 
 	if (flags & LOOSE_COMPARISON)
 		diff |= _DIFF(BRIDGE_ATTR_FLAGS,
@@ -773,8 +925,31 @@ int rtnl_link_bridge_set_self(struct rtnl_link *link)
 
 	IS_BRIDGE_LINK_ASSERT(link);
 
-	bd->b_self |= 1;
-	bd->ce_mask |= BRIDGE_ATTR_SELF;
+	bd->b_config_mode = BRIDGE_FLAGS_SELF;
+	bd->ce_mask |= BRIDGE_ATTR_CONFIG_MODE;
+
+	return 0;
+}
+
+/**
+ * Set link change type to master
+ * @arg link		Link Object of type bridge
+ *
+ * This will set the bridge change flag to master, meaning that changes to
+ * be applied with this link object will be applied directly to the virtual
+ * device in a bridge instead of the physical device.
+ *
+ * @return 0 on success or negative error code
+ * @return -NLE_OPNOTSUP Link is not a bridge
+ */
+int rtnl_link_bridge_set_master(struct rtnl_link *link)
+{
+	struct bridge_data *bd = bridge_data(link);
+
+	IS_BRIDGE_LINK_ASSERT(link);
+
+	bd->b_config_mode = BRIDGE_FLAGS_MASTER;
+	bd->ce_mask |= BRIDGE_ATTR_CONFIG_MODE;
 
 	return 0;
 }
@@ -911,6 +1086,146 @@ char *rtnl_link_bridge_hwmode2str(uint16_t st, char *buf, size_t len) {
 uint16_t rtnl_link_bridge_str2hwmode(const char *name)
 {
 	return __str2type(name, hw_modes, ARRAY_SIZE(hw_modes));
+}
+
+/** @} */
+
+/**
+ * Enable the ability to set vlan info
+ * @arg link		Link object of type bridge
+ *
+ * @return 0 on success or negative error code
+ * @return -NLE_OPNOTSUP 	Link is not a bridge
+ */
+int rtnl_link_bridge_enable_vlan(struct rtnl_link *link)
+{
+	struct bridge_data *bd = bridge_data(link);
+
+	IS_BRIDGE_LINK_ASSERT(link);
+
+	bd->ce_mask |= BRIDGE_ATTR_PORT_VLAN;
+
+	return 0;
+}
+
+/**
+ * @name Quality of Service
+ * @{
+ */
+
+/**
+ * Set port vlan membership range
+ * @arg link		Link object of type bridge
+ * @arg start		Start of membership range.
+ * @arg end			End of membership range.
+ * @arg untagged	Set membership range to be untagged.
+ *
+ * This will set the vlan membership range for a bridge port.
+ * This will unset the untagged membership if untagged is false.
+ * Supported range is 1-4094
+ *
+ * @return 0 on success or negative error code
+ * @return -NLE_NOATTR		if port vlan attribute not present
+ * @return -NLE_OPNOTSUP 	Link is not a bridge
+ * @return -NLE_INVAL 		range is not in supported range.
+ */
+int rtnl_link_bridge_set_port_vlan_map_range (struct rtnl_link *link, uint16_t start, uint16_t end, int untagged)
+{
+	struct rtnl_link_bridge_vlan * vinfo;
+
+	IS_BRIDGE_LINK_ASSERT(link);
+
+	vinfo = rtnl_link_bridge_get_port_vlan(link);
+
+	if (!vinfo)
+		return -NLE_NOATTR;
+
+	if (start == 0 || start > end || end >= VLAN_VID_MASK)
+		return -NLE_INVAL;
+
+	for (uint16_t i = start; i <= end; i++)
+	{
+		set_bit(i,vinfo->vlan_bitmap);
+		if (untagged) {
+			set_bit(i,vinfo->untagged_bitmap);
+		} else {
+			unset_bit(i,vinfo->untagged_bitmap);
+		}
+	}
+	return 0;
+}
+
+/**
+ * Unset port vlan membership range
+ * @arg link		Link object of type bridge
+ * @arg start		Start of membership range.
+ * @arg end			End of membership range.
+ *
+ * This will unset the vlan membership range for a bridge port
+ * for both tagged and untagged membership.
+ * Supported range is 1-4094
+ *
+ * @return 0 on success or negative error code
+ * @return -NLE_NOATTR		if port vlan attribute not present
+ * @return -NLE_OPNOTSUP 	Link is not a bridge
+ * @return -NLE_INVAL 		range is not in supported range.
+ */
+int rtnl_link_bridge_unset_port_vlan_map_range (struct rtnl_link *link, uint16_t start, uint16_t end)
+{
+	struct rtnl_link_bridge_vlan * vinfo;
+
+	IS_BRIDGE_LINK_ASSERT(link);
+
+	vinfo = rtnl_link_bridge_get_port_vlan(link);
+
+	if (!vinfo)
+		return -NLE_NOATTR;
+
+	if (start == 0 || start > end || end >= VLAN_VID_MASK)
+		return -NLE_INVAL;
+
+	for (uint16_t i = start; i <= end; i++)
+	{
+		unset_bit(i,vinfo->vlan_bitmap);
+		unset_bit(i,vinfo->untagged_bitmap);
+	}
+	return 0;
+}
+
+/**
+ * Set port primary vlan id
+ * @arg link		Link object of type bridge
+ * @arg pvid		PVID to set.
+ * @arg untagged	Set vlan id to be untagged.
+ *
+ * This will set the primary vlan id for a bridge port.
+ * Supported range is 0-4094, Setting pvid to 0 will unset it.
+ * You will most likely want to set/unset pvid in the vlan map.
+ * @see rtnl_link_bridge_set_port_vlan_map_range()
+ * @see rtnl_link_bridge_unset_port_vlan_map_range()
+ *
+ * @return 0 on success or negative error code
+ * @return -NLE_NOATTR		if port vlan attribute not present
+ * @return -NLE_OPNOTSUP 	Link is not a bridge
+ * @return -NLE_INVAL 		PVID is above supported range.
+ */
+int rtnl_link_bridge_set_port_vlan_pvid (struct rtnl_link *link, uint16_t pvid)
+{
+	struct rtnl_link_bridge_vlan * vinfo;
+
+	IS_BRIDGE_LINK_ASSERT(link);
+
+	vinfo = rtnl_link_bridge_get_port_vlan(link);
+
+	if (!vinfo)
+		return -NLE_NOATTR;
+
+	if (pvid >= VLAN_VID_MASK)
+		return -NLE_INVAL;
+
+	vinfo->pvid = pvid;
+
+	return 0;
 }
 
 /** @} */

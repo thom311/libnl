@@ -245,6 +245,8 @@ extern int      rtnl_link_get_ns_fd(struct rtnl_link *);
 extern void     rtnl_link_set_ns_pid(struct rtnl_link *, pid_t);
 extern pid_t    rtnl_link_get_ns_pid(struct rtnl_link *);
 
+extern struct nl_data * rtnl_link_get_perm_addr(struct rtnl_link *);
+
 extern int      rtnl_link_enslave_ifindex(struct nl_sock *, int, int);
 extern int      rtnl_link_enslave(struct nl_sock *, struct rtnl_link *,
                                   struct rtnl_link *);

@@ -73,6 +73,7 @@
 #define LINK_ATTR_GSO_MAX_SEGS		((uint64_t) 1 << 37)
 #define LINK_ATTR_GSO_MAX_SIZE		((uint64_t) 1 << 38)
 #define LINK_ATTR_LINKINFO_SLAVE_KIND	((uint64_t) 1 << 39)
+#define LINK_ATTR_PERM_ADDR		((uint64_t) 1 << 40)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -280,6 +281,8 @@ static void link_free_data(struct nl_object *c)
 
 		nl_data_free(link->l_phys_port_id);
 		nl_data_free(link->l_phys_switch_id);
+		nl_data_free(link->perm_addr);
+
 
 		if (link->ce_mask & LINK_ATTR_VF_LIST)
 			rtnl_link_sriov_free_data(link);
@@ -304,6 +307,7 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 	dst->l_phys_port_id = NULL;
 	dst->l_phys_switch_id = NULL;
 	dst->l_vf_list = NULL;
+	dst->perm_addr = NULL;
 
 	if (src->l_addr)
 		if (!(dst->l_addr = nl_addr_clone(src->l_addr)))
@@ -355,6 +359,10 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 		if ((err = rtnl_link_sriov_clone(dst, src)) < 0)
 			return err;
 
+	if (src->perm_addr)
+		if (!(dst->perm_addr = nl_data_clone(src->perm_addr)))
+			return -NLE_NOMEM;
+
 	return 0;
 }
 
@@ -391,6 +399,7 @@ struct nla_policy rtln_link_policy[IFLA_MAX+1] = {
 	[IFLA_PHYS_SWITCH_ID]	= { .type = NLA_UNSPEC },
 	[IFLA_NET_NS_PID]	= { .type = NLA_U32 },
 	[IFLA_NET_NS_FD]	= { .type = NLA_U32 },
+	[IFLA_PERM_ADDRESS]	= { .type = NLA_BINARY },
 };
 
 static struct nla_policy link_info_policy[IFLA_INFO_MAX+1] = {
@@ -590,6 +599,11 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 	if (tb[IFLA_NET_NS_PID]) {
 		link->l_ns_pid = nla_get_u32(tb[IFLA_NET_NS_PID]);
 		link->ce_mask |= LINK_ATTR_NS_PID;
+	}
+
+	if (tb[IFLA_PERM_ADDRESS]) {
+		link->perm_addr = nl_data_alloc_attr(tb[IFLA_PERM_ADDRESS]);
+		link->ce_mask |= LINK_ATTR_PERM_ADDR;
 	}
 
 	return 0;
@@ -944,6 +958,12 @@ static void link_dump_details(struct nl_object *obj, struct nl_dump_params *p)
 	if (link->ce_mask & LINK_ATTR_BRD)
 		nl_dump(p, "brd %s ", nl_addr2str(link->l_bcast, buf,
 						   sizeof(buf)));
+
+	if (link->ce_mask & LINK_ATTR_PERM_ADDR) {
+		uint8_t *addr = nl_data_get(link->perm_addr);
+		nl_dump(p, "hw %x:%x:%x:%x:%x:%x ", addr[0], addr[1], addr[2],
+			addr[3], addr[4], addr[5]);
+	}
 
 	if ((link->ce_mask & LINK_ATTR_OPERSTATE) &&
 	    link->l_operstate != IF_OPER_UNKNOWN) {
@@ -2821,6 +2841,17 @@ void rtnl_link_set_ns_pid(struct rtnl_link *link, pid_t pid)
 pid_t rtnl_link_get_ns_pid(struct rtnl_link *link)
 {
 	return link->l_ns_pid;
+}
+
+/**
+ * Return permanent hardware address of link object
+ * @arg link		Link object
+ *
+ * @return Permanent hardware address or NULL if not set.
+ */
+struct nl_data *rtnl_link_get_perm_addr(struct rtnl_link *link)
+{
+	return link->perm_addr;
 }
 
 /** @} */

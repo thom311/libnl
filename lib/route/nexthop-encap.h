@@ -32,4 +32,14 @@ int nh_encap_compare(struct rtnl_nh_encap *a, struct rtnl_nh_encap *b);
  * MPLS encap
  */
 extern struct nh_encap_ops mpls_encap_ops;
+
+/*
+ * SEG6_encap
+ */
+extern struct nh_encap_ops seg6_encap_ops;
+
+/*
+ * SEG6_LOCAL encap
+ */
+extern struct nh_encap_ops seg6_local_encap_ops;
 #endif

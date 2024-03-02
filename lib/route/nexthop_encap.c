@@ -16,7 +16,10 @@ static struct lwtunnel_encap_type {
 	[LWTUNNEL_ENCAP_IP]   = { .name = "ip" },
 	[LWTUNNEL_ENCAP_IP6]  = { .name = "ip6" },
 	[LWTUNNEL_ENCAP_ILA]  = { .name = "ila" },
+	[LWTUNNEL_ENCAP_SEG6] = { .name = "seg6", .ops = &seg6_encap_ops },
 	[LWTUNNEL_ENCAP_BPF]  = { .name = "bpf" },
+	[LWTUNNEL_ENCAP_SEG6_LOCAL] = { .name = "seg6_local", .ops = &seg6_local_encap_ops },
+
 };
 
 static const char *nh_encap_type2str(unsigned int type)

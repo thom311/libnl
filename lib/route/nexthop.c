@@ -11,6 +11,8 @@
 
 #include "nl-default.h"
 
+#include <linux/lwtunnel.h>
+
 #include <netlink/netlink.h>
 #include <netlink/utils.h>
 #include <netlink/route/rtnl.h>
@@ -411,5 +413,13 @@ int rtnl_route_nh_str2flags(const char *name)
 }
 
 /** @} */
+
+int rtnl_route_nh_get_encap_type(struct rtnl_nexthop *nh)
+{
+	if (nh->rtnh_encap == NULL || nh->rtnh_encap->ops == NULL)
+		return LWTUNNEL_ENCAP_NONE;
+
+	return nh->rtnh_encap->ops->encap_type;
+}
 
 /** @} */

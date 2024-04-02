@@ -23,6 +23,9 @@
 #define BRIDGE_ATTR_VLAN_STATS_ENABLED (1 << 2)
 #define BRIDGE_ATTR_AGEING_TIME (1 << 3)
 #define BRIDGE_ATTR_VLAN_DEFAULT_PVID (1 << 4)
+#define BRIDGE_ATTR_NF_CALL_IPTABLES (1 << 5)
+#define BRIDGE_ATTR_NF_CALL_IP6TABLES (1 << 6)
+#define BRIDGE_ATTR_NF_CALL_ARPTABLES (1 << 7)
 
 struct bridge_info {
 	uint32_t ce_mask; /* to support attr macros */
@@ -31,6 +34,9 @@ struct bridge_info {
 	uint16_t b_vlan_default_pvid;
 	uint8_t b_vlan_filtering;
 	uint8_t b_vlan_stats_enabled;
+	uint8_t b_nf_call_iptables;
+	uint8_t b_nf_call_ip6tables;
+	uint8_t b_nf_call_arptables;
 };
 
 static const struct nla_policy bi_attrs_policy[IFLA_BR_MAX + 1] = {
@@ -39,6 +45,9 @@ static const struct nla_policy bi_attrs_policy[IFLA_BR_MAX + 1] = {
 	[IFLA_BR_VLAN_FILTERING] = { .type = NLA_U8 },
 	[IFLA_BR_VLAN_PROTOCOL] = { .type = NLA_U16 },
 	[IFLA_BR_VLAN_STATS_ENABLED] = { .type = NLA_U8 },
+	[IFLA_BR_NF_CALL_IPTABLES] = { .type = NLA_U8 },
+	[IFLA_BR_NF_CALL_IP6TABLES] = { .type = NLA_U8 },
+	[IFLA_BR_NF_CALL_ARPTABLES] = { .type = NLA_U8 },
 };
 
 static inline struct bridge_info *bridge_info(struct rtnl_link *link)
@@ -109,6 +118,24 @@ static int bridge_info_parse(struct rtnl_link *link, struct nlattr *data,
 		bi->ce_mask |= BRIDGE_ATTR_VLAN_STATS_ENABLED;
 	}
 
+	if (tb[IFLA_BR_NF_CALL_IPTABLES]) {
+		bi->b_nf_call_iptables =
+			nla_get_u8(tb[IFLA_BR_NF_CALL_IPTABLES]);
+		bi->ce_mask |= BRIDGE_ATTR_NF_CALL_IPTABLES;
+	}
+
+	if (tb[IFLA_BR_NF_CALL_IP6TABLES]) {
+		bi->b_nf_call_ip6tables =
+			nla_get_u8(tb[IFLA_BR_NF_CALL_IP6TABLES]);
+		bi->ce_mask |= BRIDGE_ATTR_NF_CALL_IP6TABLES;
+	}
+
+	if (tb[IFLA_BR_NF_CALL_ARPTABLES]) {
+		bi->b_nf_call_arptables =
+			nla_get_u8(tb[IFLA_BR_NF_CALL_ARPTABLES]);
+		bi->ce_mask |= BRIDGE_ATTR_NF_CALL_ARPTABLES;
+	}
+
 	return 0;
 }
 
@@ -138,6 +165,18 @@ static int bridge_info_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (bi->ce_mask & BRIDGE_ATTR_VLAN_STATS_ENABLED)
 		NLA_PUT_U8(msg, IFLA_BR_VLAN_STATS_ENABLED,
 			   bi->b_vlan_stats_enabled);
+
+	if (bi->ce_mask & BRIDGE_ATTR_NF_CALL_IPTABLES)
+		NLA_PUT_U8(msg, IFLA_BR_NF_CALL_IPTABLES,
+			   bi->b_nf_call_iptables);
+
+	if (bi->ce_mask & BRIDGE_ATTR_NF_CALL_IP6TABLES)
+		NLA_PUT_U8(msg, IFLA_BR_NF_CALL_IP6TABLES,
+			   bi->b_nf_call_ip6tables);
+
+	if (bi->ce_mask & BRIDGE_ATTR_NF_CALL_ARPTABLES)
+		NLA_PUT_U8(msg, IFLA_BR_NF_CALL_ARPTABLES,
+			   bi->b_nf_call_arptables);
 
 	nla_nest_end(msg, data);
 	return 0;
@@ -412,6 +451,63 @@ int rtnl_link_bridge_get_vlan_stats_enabled(struct rtnl_link *link,
 	*vlan_stats_enabled = bi->b_vlan_stats_enabled;
 
 	return 0;
+}
+
+/**
+ * Set call enabled flag for passing IPv4 traffic to iptables
+ * @arg link		Link object of type bridge
+ * @arg call_enabled	call enabled boolean flag to set.
+ *
+ * @return void
+ */
+void rtnl_link_bridge_set_nf_call_iptables(struct rtnl_link *link,
+					   uint8_t call_enabled)
+{
+	struct bridge_info *bi = bridge_info(link);
+
+	IS_BRIDGE_INFO_ASSERT(link);
+
+	bi->b_nf_call_iptables = call_enabled;
+
+	bi->ce_mask |= BRIDGE_ATTR_NF_CALL_IPTABLES;
+}
+
+/**
+ * Set call enabled flag for passing IPv6 traffic to ip6tables
+ * @arg link		Link object of type bridge
+ * @arg call_enabled	call enabled boolean flag to set.
+ *
+ * @return void
+ */
+void rtnl_link_bridge_set_nf_call_ip6tables(struct rtnl_link *link,
+					    uint8_t call_enabled)
+{
+	struct bridge_info *bi = bridge_info(link);
+
+	IS_BRIDGE_INFO_ASSERT(link);
+
+	bi->b_nf_call_ip6tables = call_enabled;
+
+	bi->ce_mask |= BRIDGE_ATTR_NF_CALL_IP6TABLES;
+}
+
+/**
+ * Set call enabled flag for passing ARP traffic to arptables
+ * @arg link		Link object of type bridge
+ * @arg call_enabled	call enabled boolean flag to set.
+ *
+ * @return void
+ */
+void rtnl_link_bridge_set_nf_call_arptables(struct rtnl_link *link,
+					    uint8_t call_enabled)
+{
+	struct bridge_info *bi = bridge_info(link);
+
+	IS_BRIDGE_INFO_ASSERT(link);
+
+	bi->b_nf_call_arptables = call_enabled;
+
+	bi->ce_mask |= BRIDGE_ATTR_NF_CALL_ARPTABLES;
 }
 
 static void _nl_init bridge_info_init(void)

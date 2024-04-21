@@ -421,7 +421,8 @@ lib_libnl_3_la_CPPFLAGS = \
 	$(lib_cppflags)
 lib_libnl_3_la_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
-	-Wl,--version-script=$(srcdir)/libnl-3.sym
+	-Wl,--version-script=$(srcdir)/libnl-3.sym \
+	-Wl,--undefined-version
 
 lib_LTLIBRARIES += lib/libnl-route-3.la
 

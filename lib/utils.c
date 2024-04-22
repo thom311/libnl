@@ -52,7 +52,7 @@
 int nl_debug = 0;
 
 /** @cond SKIP */
-#ifdef NL_DEBUG
+#if NL_DEBUG
 struct nl_dump_params nl_debug_dp = {
 	.dp_type = NL_DUMP_DETAILS,
 };

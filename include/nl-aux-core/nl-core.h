@@ -5,7 +5,7 @@
 
 #include "base/nl-base-utils.h"
 
-#ifdef NL_DEBUG
+#if NL_DEBUG
 #define NL_DBG(LVL, FMT, ARG...)                                           \
 	do {                                                               \
 		if (LVL <= nl_debug) {                                     \

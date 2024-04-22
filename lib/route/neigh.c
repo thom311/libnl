@@ -242,7 +242,7 @@ static void neigh_keygen(struct nl_object *obj, uint32_t *hashkey,
 		uint16_t	n_vlan;
 		char		n_addr[0];
 	} _nl_packed *nkey;
-#ifdef NL_DEBUG
+#if NL_DEBUG
 	char buf[INET6_ADDRSTRLEN+5];
 #endif
 

@@ -2372,12 +2372,12 @@ static struct nl_cache_ops xfrmnl_sa_ops = {
  * @{
  */
 
-static void __attribute__ ((constructor)) xfrm_sa_init(void)
+static void _nl_init xfrm_sa_init(void)
 {
 	nl_cache_mngt_register(&xfrmnl_sa_ops);
 }
 
-static void __attribute__ ((destructor)) xfrm_sa_exit(void)
+static void _nl_exit xfrm_sa_exit(void)
 {
 	nl_cache_mngt_unregister(&xfrmnl_sa_ops);
 }

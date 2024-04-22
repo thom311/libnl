@@ -176,7 +176,7 @@ static void nexthop_keygen(struct nl_object *obj, uint32_t *hashkey,
 	unsigned int lkey_sz;
 	struct nexthop_hash_key {
 		uint32_t nh_id;
-	} __attribute__((packed)) lkey;
+	} _nl_packed lkey;
 
 	lkey_sz = sizeof(lkey);
 	lkey.nh_id = nexthop->nh_id;

@@ -1281,7 +1281,7 @@ int xfrmnl_sp_get_sec_ctx (struct xfrmnl_sp* sp, unsigned int* len, unsigned int
  *
  * @return     0 if sucessfull, else -1
  */
-int xfrmnl_sp_set_sec_ctx (struct xfrmnl_sp* sp, unsigned int len __attribute__((unused)), unsigned int exttype, unsigned int alg, unsigned int doi, unsigned int ctx_len, char* ctx_str)
+int xfrmnl_sp_set_sec_ctx (struct xfrmnl_sp* sp, unsigned int len, unsigned int exttype, unsigned int alg, unsigned int doi, unsigned int ctx_len, char* ctx_str)
 {
 	/* Free up the old context string and allocate new one */
 	if (sp->sec_ctx)
@@ -1450,12 +1450,12 @@ static struct nl_cache_ops xfrmnl_sp_ops = {
  * @{
  */
 
-static void __attribute__ ((constructor)) xfrm_sp_init(void)
+static void _nl_init xfrm_sp_init(void)
 {
 	nl_cache_mngt_register(&xfrmnl_sp_ops);
 }
 
-static void __attribute__ ((destructor)) xfrm_sp_exit(void)
+static void _nl_exit xfrm_sp_exit(void)
 {
 	nl_cache_mngt_unregister(&xfrmnl_sp_ops);
 }

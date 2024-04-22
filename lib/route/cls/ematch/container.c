@@ -10,7 +10,7 @@
 
 #include "nl-route.h"
 
-static int container_parse(struct rtnl_ematch *e, void *data, size_t len __attribute__((unused)))
+static int container_parse(struct rtnl_ematch *e, void *data, size_t len)
 {
 	/*
 	The kernel may provide more than 4 bytes of data in the future and we want

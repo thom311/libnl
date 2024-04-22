@@ -84,7 +84,7 @@ static NL_RW_LOCK(port_map_lock);
 static uint32_t generate_local_port(void)
 {
 	int i, j, m;
-	uint16_t n;
+	uint32_t n;
 	static uint16_t idx_state = 0;
 	uint32_t pid = getpid() & 0x3FFFFF;
 

@@ -52,7 +52,6 @@
 int nl_debug = 0;
 
 /** @cond SKIP */
-#if NL_DEBUG
 struct nl_dump_params nl_debug_dp = {
 	.dp_type = NL_DUMP_DETAILS,
 };
@@ -61,7 +60,7 @@ static void _nl_init nl_debug_init(void)
 {
 	char *nldbg, *end;
 
-	if ((nldbg = getenv("NLDBG"))) {
+	if (NL_DEBUG && (nldbg = getenv("NLDBG"))) {
 		long level = strtol(nldbg, &end, 0);
 		if (nldbg != end)
 			nl_debug = level;
@@ -69,7 +68,6 @@ static void _nl_init nl_debug_init(void)
 
 	nl_debug_dp.dp_fd = stderr;
 }
-#endif
 
 int __nl_read_num_str_file(const char *path, int (*cb)(long, const char *))
 {

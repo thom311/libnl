@@ -58,10 +58,9 @@ static int include_cb(struct nl_object *obj, struct nl_parser_param *p)
 	struct nl_cache_ops *ops = ca->ca_cache->c_ops;
 
 	NL_DBG(2, "Including object %p into cache %p\n", obj, ca->ca_cache);
-#if NL_DEBUG
-	if (nl_debug >= 4)
+
+	if (NL_DEBUG && nl_debug >= 4)
 		nl_object_dump(obj, &nl_debug_dp);
-#endif
 
 	if (ops->co_event_filter)
 		if (ops->co_event_filter(ca->ca_cache, obj) != NL_OK)
@@ -93,10 +92,9 @@ static int event_input(struct nl_msg *msg, void *arg)
 
 	NL_DBG(2, "Cache manager %p, handling new message %p as event\n",
 	       mngr, msg);
-#if NL_DEBUG
-	if (nl_debug >= 4)
+
+	if (NL_DEBUG && nl_debug >= 4)
 		nl_msg_dump(msg, stderr);
-#endif
 
 	if (mngr->cm_protocol != protocol)
 		BUG();

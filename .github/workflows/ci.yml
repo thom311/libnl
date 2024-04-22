@@ -71,15 +71,17 @@ jobs:
 
           export CC="${{ matrix.cc }}"
           export CFLAGS="-DNL_MORE_ASSERTS=1000 -O2 -Werror -Wall -Wdeclaration-after-statement -Wvla -std=gnu11 -fexceptions"
+          CONFIGURE_ARGS=
           if [ "$CC" = "clang" ]; then
                   CFLAGS="$CFLAGS -Wno-error=unused-command-line-argument -Wno-error=unused-function"
                   export LDFLAGS="-Wl,--no-undefined-version,--fatal-warnings"
+                  CONFIGURE_ARGS="--enable-debug=no"
           else
                   export LDFLAGS="-Wl,--no-undefined-version"
           fi
 
           ./autogen.sh
-          ./configure
+          ./configure $CONFIGURE_ARGS
           make -j 5
         shell: bash
 

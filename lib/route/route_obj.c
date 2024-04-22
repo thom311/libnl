@@ -345,9 +345,7 @@ static void route_keygen(struct nl_object *obj, uint32_t *hashkey,
 		uint32_t	rt_prio;
 		char 		rt_addr[0];
 	} _nl_packed *rkey = NULL;
-#ifdef NL_DEBUG
 	char buf[INET6_ADDRSTRLEN+5];
-#endif
 
 	if (route->rt_dst)
 		addr = route->rt_dst;
@@ -502,9 +500,7 @@ static int route_update(struct nl_object *old_obj, struct nl_object *new_obj)
 	struct rtnl_route *old_route = (struct rtnl_route *) old_obj;
 	struct rtnl_nexthop *new_nh;
 	int action = new_obj->ce_msgtype;
-#ifdef NL_DEBUG
 	char buf[INET6_ADDRSTRLEN+5];
-#endif
 
 	/*
 	 * ipv6 ECMP route notifications from the kernel come as

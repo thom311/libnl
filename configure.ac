@@ -110,10 +110,13 @@ fi
 AM_CONDITIONAL([ENABLE_STATIC], [test "$enable_static" != "no"])
 
 AC_ARG_ENABLE([debug],
-	AS_HELP_STRING([--disable-debug], [Do not include debugging statements]),
-	[enable_debug="$enableval"], [enable_debug="yes"])
-if test "x$enable_debug" = "xyes"; then
+        AS_HELP_STRING([--disable-debug], [Do not include debugging statements]),
+        [enable_debug="$enableval"], [enable_debug="yes"])
+if test "$enable_debug" = "yes"; then
     AC_DEFINE([NL_DEBUG], [1], [Define to 1 to enable debugging])
+else
+    enable_debug=no
+    AC_DEFINE([NL_DEBUG], [0], [Define to 1 to enable debugging])
 fi
 
 AC_CONFIG_SUBDIRS([doc])

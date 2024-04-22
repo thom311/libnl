@@ -4,8 +4,9 @@
  */
 
 %{
-#include <linux/tc_ematch/tc_em_meta.h>
+#include "nl-default.h"
 
+#include <linux/tc_ematch/tc_em_meta.h>
 #include <linux/tc_ematch/tc_em_cmp.h>
 
 #include <netlink/netlink.h>

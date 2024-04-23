@@ -149,16 +149,45 @@ found:
 int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 			struct nl_cache_mngr **result)
 {
+	return nl_cache_mngr_alloc_ex(sk, NULL, protocol, flags, result);
+}
+
+/**
+ * Allocate new cache manager, with custom callback on refill socket
+ * @arg sk		Netlink socket or NULL to auto allocate
+ * @arg sync_sk		Blocking Netlink socket for cache refills
+ * @arg protocol	Netlink protocol this manager is used for
+ * @arg flags		Flags (\c NL_AUTO_PROVIDE)
+ * @arg result		Result pointer
+ *
+ * Same as \f nl_cache_mngr_alloc, but sets custom refill socket
+ * Note: ownership of the sync_sk passes to the cache manager
+ */
+int nl_cache_mngr_alloc_ex(struct nl_sock *sk, struct nl_sock *sync_sk, int protocol, int flags,
+			struct nl_cache_mngr **result)
+{
 	struct nl_cache_mngr *mngr;
 	int err = -NLE_NOMEM;
 
 	/* Catch abuse of flags */
-	if (flags & NL_ALLOCATED_SOCK)
+	if (flags & (NL_ALLOCATED_SOCK|NL_ALLOCATED_SYNC_SOCK))
 		BUG();
 
 	mngr = calloc(1, sizeof(*mngr));
-	if (!mngr)
+	if (!mngr) {
 		return -NLE_NOMEM;
+	}
+
+	if(!sync_sk) {
+		if (!(sync_sk = nl_socket_alloc()))
+			goto errout;
+
+		flags |= NL_ALLOCATED_SOCK;
+	}
+	/* have to assign before calling nl_connect, so that it gets freed in case
+	 * of an nl_socket_allock error for sk
+	 */
+	mngr->cm_sync_sock = sync_sk;
 
 	if (!sk) {
 		if (!(sk = nl_socket_alloc()))
@@ -176,6 +205,10 @@ int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 	if (!mngr->cm_assocs)
 		goto errout;
 
+	if ((err = nl_connect(sync_sk, protocol)) < 0) {
+		goto errout;
+	}
+
 	/* Required to receive async event notifications */
 	nl_socket_disable_seq_check(mngr->cm_sock);
 
@@ -185,14 +218,6 @@ int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 	if ((err = nl_socket_set_nonblocking(mngr->cm_sock)) < 0)
 		goto errout;
 
-	/* Create and allocate socket for sync cache fills */
-	mngr->cm_sync_sock = nl_socket_alloc();
-	if (!mngr->cm_sync_sock) {
-		err = -NLE_NOMEM;
-		goto errout;
-	}
-	if ((err = nl_connect(mngr->cm_sync_sock, protocol)) < 0)
-		goto errout_free_sync_sock;
 
 	NL_DBG(1, "Allocated cache manager %p, protocol %d, %d caches\n",
 	       mngr, protocol, mngr->cm_nassocs);
@@ -200,8 +225,6 @@ int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 	*result = mngr;
 	return 0;
 
-errout_free_sync_sock:
-	nl_socket_free(mngr->cm_sync_sock);
 errout:
 	nl_cache_mngr_free(mngr);
 	return err;
@@ -624,8 +647,10 @@ void nl_cache_mngr_free(struct nl_cache_mngr *mngr)
 
 	if (mngr->cm_sync_sock) {
 		nl_close(mngr->cm_sync_sock);
-		nl_socket_free(mngr->cm_sync_sock);
 	}
+
+	if (mngr->cm_flags & NL_ALLOCATED_SYNC_SOCK)
+		nl_socket_free(mngr->cm_sync_sock);
 
 	if (mngr->cm_flags & NL_ALLOCATED_SOCK)
 		nl_socket_free(mngr->cm_sock);

@@ -372,3 +372,8 @@ global:
 
 libnl_3_6 {
 } libnl_3_5;
+
+libnl_3_10 {
+global:
+	nl_cache_mngr_alloc_ex;
+} libnl_3_6;

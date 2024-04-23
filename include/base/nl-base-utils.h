@@ -258,8 +258,7 @@ static inline bool _nl_memeq(const void *s1, const void *s2, size_t len)
 	return _nl_memcmp(s1, s2, len) == 0;
 }
 
-static inline void *_nl_memcpy(void *restrict dest, const void *restrict src,
-			       size_t n)
+static inline void *_nl_memcpy(void *dest, const void *src, size_t n)
 {
 	/* Workaround undefined behavior in memcpy() with NULL pointers. */
 	if (n == 0)
@@ -703,9 +702,9 @@ static inline char *_nl_inet_ntop(int addr_family, const void *addr, char *buf)
 static inline char *_nl_inet_ntop_dup(int addr_family, const void *addr)
 {
 	return (char *)_nl_inet_ntop(addr_family, addr,
-				     malloc((addr_family == AF_INET) ?
-						    INET_ADDRSTRLEN :
-						    INET6_ADDRSTRLEN));
+				     (char *)malloc((addr_family == AF_INET) ?
+							    INET_ADDRSTRLEN :
+							    INET6_ADDRSTRLEN));
 }
 
 /*****************************************************************************/

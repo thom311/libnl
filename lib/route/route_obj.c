@@ -574,7 +574,15 @@ static int route_update(struct nl_object *old_obj, struct nl_object *new_obj)
 		 */
 		nl_list_for_each_entry(old_nh, &old_route->rt_nexthops,
 			rtnh_list) {
-			if (!rtnl_route_nh_compare(old_nh, new_nh, ~0, 0)) {
+			/*
+			 * Since the new route has only one nexthop, it's not
+			 * an ECMP route and the nexthop won't have a weight.
+			 * Similarily, the nexthop might have been marked as
+			 * DEAD in its flags if it was deleted.
+			 * Therefore ignore NH_ATTR_FLAGS (= 0x1) and
+			 * NH_ATTR_WEIGHT (= 0x2) while comparing nexthops.
+			 */
+			if (!rtnl_route_nh_compare(old_nh, new_nh, ~0x3, 0)) {
 
 				rtnl_route_remove_nexthop(old_route, old_nh);
 

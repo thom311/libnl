@@ -168,7 +168,7 @@ int nl_cache_mngr_alloc(struct nl_sock *sk, int protocol, int flags,
 int nl_cache_mngr_alloc_ex(struct nl_sock *sk, struct nl_sock *sync_sk, int protocol, int flags,
 			struct nl_cache_mngr **result)
 {
-	struct nl_cache_mngr *mngr;
+	_nl_auto_nl_cache_mngr struct nl_cache_mngr *mngr = NULL;
 	int err;
 
 	/* Catch abuse of flags */
@@ -183,19 +183,15 @@ int nl_cache_mngr_alloc_ex(struct nl_sock *sk, struct nl_sock *sync_sk, int prot
 	mngr->cm_flags = flags;
 
 	if (!sk) {
-		if (!(sk = nl_socket_alloc())) {
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+		if (!(sk = nl_socket_alloc()))
+			return -NLE_NOMEM;
 		mngr->cm_flags |= NL_ALLOCATED_SOCK;
 	}
 	mngr->cm_sock = sk;
 
 	if(!sync_sk) {
-		if (!(sync_sk = nl_socket_alloc())) {
-			err = -NLE_NOMEM;
-			goto errout;
-		}
+		if (!(sync_sk = nl_socket_alloc()))
+			return -NLE_NOMEM;
 		mngr->cm_flags |= NL_ALLOCATED_SYNC_SOCK;
 	}
 	mngr->cm_sync_sock = sync_sk;
@@ -204,32 +200,26 @@ int nl_cache_mngr_alloc_ex(struct nl_sock *sk, struct nl_sock *sync_sk, int prot
 	mngr->cm_protocol = protocol;
 	mngr->cm_assocs = calloc(mngr->cm_nassocs,
 				 sizeof(struct nl_cache_assoc));
-	if (!mngr->cm_assocs) {
-		err = -NLE_NOMEM;
-		goto errout;
-	}
+	if (!mngr->cm_assocs)
+		return -NLE_NOMEM;
 
 	/* Required to receive async event notifications */
 	nl_socket_disable_seq_check(mngr->cm_sock);
 
 	if ((err = nl_connect(mngr->cm_sock, protocol)) < 0)
-		goto errout;
+		return err;
 
 	if ((err = nl_socket_set_nonblocking(mngr->cm_sock)) < 0)
-		goto errout;
+		return err;
 
 	if ((err = nl_connect(mngr->cm_sync_sock, protocol)) < 0)
-		goto errout;
+		return err;
 
 	NL_DBG(1, "Allocated cache manager %p, protocol %d, %d caches\n",
 	       mngr, protocol, mngr->cm_nassocs);
 
-	*result = mngr;
+	*result = _nl_steal_pointer(&mngr);
 	return 0;
-
-errout:
-	nl_cache_mngr_free(mngr);
-	return err;
 }
 
 /**

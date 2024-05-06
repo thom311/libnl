@@ -1139,7 +1139,7 @@ EXTRA_DIST += \
 	printf "#include <$$(echo "$<" | sed 's|.*\<include/netlink/|netlink/|')>\nint main(void) { return 0; }" > $@
 
 %.build-headers-test.o: %.build-headers-test.c
-	$(COMPILE) -Wall -Werror -D_NL_NO_WARN_DEPRECATED_HEADER -I$(srcdir)/include -I$(builddir)/include -c -o $@ $<
+	$(CC) -Wall -Werror -D_NL_NO_WARN_DEPRECATED_HEADER -I$(srcdir)/include -I$(builddir)/include -c -o $@ $<
 
 BUILD_HEADERS_OBJS = $(patsubst %,%.build-headers-test.o,$(public_headers))
 

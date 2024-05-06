@@ -37,6 +37,8 @@
 #include "nl-priv-dynamic-core/cache-api.h"
 #include "nl-aux-core/nl-core.h"
 
+#define NL_ALLOCATED_SYNC_SOCK 4
+
 /** @cond SKIP */
 struct nl_cache_mngr
 {
@@ -167,45 +169,43 @@ int nl_cache_mngr_alloc_ex(struct nl_sock *sk, struct nl_sock *sync_sk, int prot
 			struct nl_cache_mngr **result)
 {
 	struct nl_cache_mngr *mngr;
-	int err = -NLE_NOMEM;
+	int err;
 
 	/* Catch abuse of flags */
-	if (flags & (NL_ALLOCATED_SOCK|NL_ALLOCATED_SYNC_SOCK))
+	if (flags & NL_ALLOCATED_SOCK)
 		BUG();
+	flags = flags & NL_AUTO_PROVIDE;
 
 	mngr = calloc(1, sizeof(*mngr));
-	if (!mngr) {
+	if (!mngr)
 		return -NLE_NOMEM;
-	}
 
-	if(!sync_sk) {
-		if (!(sync_sk = nl_socket_alloc()))
-			goto errout;
-
-		flags |= NL_ALLOCATED_SOCK;
-	}
-	/* have to assign before calling nl_connect, so that it gets freed in case
-	 * of an nl_socket_allock error for sk
-	 */
-	mngr->cm_sync_sock = sync_sk;
+	mngr->cm_flags = flags;
 
 	if (!sk) {
-		if (!(sk = nl_socket_alloc()))
+		if (!(sk = nl_socket_alloc())) {
+			err = -NLE_NOMEM;
 			goto errout;
-
-		flags |= NL_ALLOCATED_SOCK;
+		}
+		mngr->cm_flags |= NL_ALLOCATED_SOCK;
 	}
-
 	mngr->cm_sock = sk;
+
+	if(!sync_sk) {
+		if (!(sync_sk = nl_socket_alloc())) {
+			err = -NLE_NOMEM;
+			goto errout;
+		}
+		mngr->cm_flags |= NL_ALLOCATED_SYNC_SOCK;
+	}
+	mngr->cm_sync_sock = sync_sk;
+
 	mngr->cm_nassocs = NASSOC_INIT;
 	mngr->cm_protocol = protocol;
-	mngr->cm_flags = flags;
 	mngr->cm_assocs = calloc(mngr->cm_nassocs,
 				 sizeof(struct nl_cache_assoc));
-	if (!mngr->cm_assocs)
-		goto errout;
-
-	if ((err = nl_connect(sync_sk, protocol)) < 0) {
+	if (!mngr->cm_assocs) {
+		err = -NLE_NOMEM;
 		goto errout;
 	}
 
@@ -218,6 +218,8 @@ int nl_cache_mngr_alloc_ex(struct nl_sock *sk, struct nl_sock *sync_sk, int prot
 	if ((err = nl_socket_set_nonblocking(mngr->cm_sock)) < 0)
 		goto errout;
 
+	if ((err = nl_connect(mngr->cm_sync_sock, protocol)) < 0)
+		goto errout;
 
 	NL_DBG(1, "Allocated cache manager %p, protocol %d, %d caches\n",
 	       mngr, protocol, mngr->cm_nassocs);
@@ -645,15 +647,14 @@ void nl_cache_mngr_free(struct nl_cache_mngr *mngr)
 	if (mngr->cm_sock)
 		nl_close(mngr->cm_sock);
 
-	if (mngr->cm_sync_sock) {
+	if (mngr->cm_sync_sock)
 		nl_close(mngr->cm_sync_sock);
-	}
-
-	if (mngr->cm_flags & NL_ALLOCATED_SYNC_SOCK)
-		nl_socket_free(mngr->cm_sync_sock);
 
 	if (mngr->cm_flags & NL_ALLOCATED_SOCK)
 		nl_socket_free(mngr->cm_sock);
+
+	if (mngr->cm_flags & NL_ALLOCATED_SYNC_SOCK)
+		nl_socket_free(mngr->cm_sync_sock);
 
 	for (i = 0; i < mngr->cm_nassocs; i++) {
 		if (mngr->cm_assocs[i].ca_cache) {

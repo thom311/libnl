@@ -142,15 +142,14 @@ struct nl_cache_mngr;
 
 #define NL_AUTO_PROVIDE		    1
 #define NL_ALLOCATED_SOCK	    2  /* For internal use only, do not use */
-#define NL_ALLOCATED_SYNC_SOCK	4  /* For internal use only, do not use */
 
 extern int			nl_cache_mngr_alloc(struct nl_sock *,
 						    int, int,
 						    struct nl_cache_mngr **);
 extern int			nl_cache_mngr_alloc_ex(struct nl_sock *,
-							struct nl_sock *,
-						    int, int,
-						    struct nl_cache_mngr **);
+						       struct nl_sock *,
+						       int, int,
+						       struct nl_cache_mngr **);
 extern int			nl_cache_mngr_add(struct nl_cache_mngr *,
 						  const char *,
 						  change_func_t,

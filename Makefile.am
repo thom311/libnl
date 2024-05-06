@@ -1136,7 +1136,7 @@ EXTRA_DIST += \
 
 %.build-headers-test.c: %
 	mkdir -p "$(dir $@)"
-	printf "#include <$$(echo "$<" | sed 's|.*\<include/netlink/|netlink/|')>\nint main(int argc, char **argv) { return 0; }" > $@
+	printf "#include <$$(echo "$<" | sed 's|.*\<include/netlink/|netlink/|')>\nint main(void) { return 0; }" > $@
 
 %.build-headers-test.o: %.build-headers-test.c
 	$(COMPILE) -Wall -Werror -Wno-error=cpp -I$(srcdir)/include -I$(builddir)/include -c -o $@ $<

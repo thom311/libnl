@@ -9,6 +9,8 @@
 #include <netlink/netlink.h>
 #include <netlink/cache.h>
 
+#ifndef _NL_NO_WARN_DEPRECATED_HEADER
 #warning "You are including a deprecated header file, include <netlink/cache.h>."
+#endif
 
 #endif

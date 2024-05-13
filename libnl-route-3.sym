@@ -1328,4 +1328,5 @@ global:
 	rtnl_link_bridge_set_port_vlan_map_range;
 	rtnl_link_bridge_set_port_vlan_pvid;
 	rtnl_link_bridge_unset_port_vlan_map_range;
+	rtnl_route_nh_identical;
 } libnl_3_9;

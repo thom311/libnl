@@ -30,6 +30,9 @@ extern int		rtnl_route_nh_compare(struct rtnl_nexthop *,
 					      struct rtnl_nexthop *,
 					      uint32_t, int);
 
+extern int		rtnl_route_nh_identical(struct rtnl_nexthop *,
+						struct rtnl_nexthop *);
+
 extern void		rtnl_route_nh_dump(struct rtnl_nexthop *,
 					   struct nl_dump_params *);
 

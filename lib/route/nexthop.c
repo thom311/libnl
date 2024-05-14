@@ -136,6 +136,23 @@ int rtnl_route_nh_compare(struct rtnl_nexthop *a, struct rtnl_nexthop *b,
 	return diff;
 }
 
+/**
+ * Check if the fixed attributes of two nexthops are identical, and may
+ * only differ in flags or weight.
+ *
+ * @arg a		a nexthop
+ * @arg b		another nexthop
+ *
+ * @return true if both nexthop have equal attributes, otherwise false.
+ */
+int rtnl_route_nh_identical(struct rtnl_nexthop *a, struct rtnl_nexthop *b)
+{
+	return !rtnl_route_nh_compare(a, b,
+				      NH_ATTR_IFINDEX | NH_ATTR_REALMS |
+				      NH_ATTR_GATEWAY | NH_ATTR_NEWDST |
+				      NH_ATTR_VIA | NH_ATTR_ENCAP, 0);
+}
+
 static void nh_dump_line(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 {
 	struct nl_cache *link_cache;

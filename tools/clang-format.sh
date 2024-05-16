@@ -334,7 +334,6 @@ EXCLUDE_PATHS_TOPLEVEL+=(
     "src/nl-rule-list.c"
     "src/nl-tctree-list.c"
     "src/nl-util-addr.c"
-    "tests/nl-test-util.h"
     "tests/test-cache-mngr.c"
     "tests/test-complex-HTB-with-hash-filters.c"
     "tests/test-create-bridge.c"

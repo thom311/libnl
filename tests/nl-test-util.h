@@ -36,12 +36,12 @@ _NL_AUTO_DEFINE_FCN_TYPED0(char **, _nltst_auto_strfreev_fcn, _nltst_strfreev);
 #endif
 
 #ifndef ck_assert_pstr_ne
-#define ck_assert_pstr_ne(a, b)                                                \
-	do {                                                                   \
-		const char *_a = (a);                                          \
-		const char *_b = (b);                                          \
-                                                                               \
-		ck_assert(!(_a == _b || (_a && _b && strcmp(_a, _b) == 0)));   \
+#define ck_assert_pstr_ne(a, b)                                              \
+	do {                                                                 \
+		const char *_a = (a);                                        \
+		const char *_b = (b);                                        \
+                                                                             \
+		ck_assert(!(_a == _b || (_a && _b && strcmp(_a, _b) == 0))); \
 	} while (0)
 #endif
 
@@ -78,34 +78,34 @@ static inline bool _nltst_rand_bool(void)
 	return _nltst_rand_u32() % 2 == 0;
 }
 
-#define _nltst_rand_select(a, ...)                                             \
-	({                                                                     \
-		const typeof(a) _lst[] = { (a), ##__VA_ARGS__ };               \
-                                                                               \
-		_lst[_nltst_rand_u32_range(_NL_N_ELEMENTS(_lst))];             \
+#define _nltst_rand_select(a, ...)                                 \
+	({                                                         \
+		const typeof(a) _lst[] = { (a), ##__VA_ARGS__ };   \
+                                                                   \
+		_lst[_nltst_rand_u32_range(_NL_N_ELEMENTS(_lst))]; \
 	})
 
 /*****************************************************************************/
 
-#define _nltst_assert(expr)                                                    \
-	({                                                                     \
-		typeof(expr) _expr = (expr);                                   \
-                                                                               \
-		if (!_expr) {                                                  \
-			ck_assert_msg(0, "assert(%s) failed", #expr);          \
-		}                                                              \
-		_expr;                                                         \
+#define _nltst_assert(expr)                                           \
+	({                                                            \
+		typeof(expr) _expr = (expr);                          \
+                                                                      \
+		if (!_expr) {                                         \
+			ck_assert_msg(0, "assert(%s) failed", #expr); \
+		}                                                     \
+		_expr;                                                \
 	})
 
-#define _nltst_assert_errno(expr)                                              \
-	do {                                                                   \
-		if (expr) {                                                    \
-		} else {                                                       \
-			const int _errno = (errno);                            \
-                                                                               \
-			ck_assert_msg(0, "assert(%s) failed (errno=%d, %s)",   \
-				      #expr, _errno, strerror(_errno));        \
-		}                                                              \
+#define _nltst_assert_errno(expr)                                            \
+	do {                                                                 \
+		if (expr) {                                                  \
+		} else {                                                     \
+			const int _errno = (errno);                          \
+                                                                             \
+			ck_assert_msg(0, "assert(%s) failed (errno=%d, %s)", \
+				      #expr, _errno, strerror(_errno));      \
+		}                                                            \
 	} while (0)
 
 #define _nltst_assert_retcode(expr)                                                   \
@@ -125,28 +125,28 @@ static inline bool _nltst_rand_bool(void)
 		}                                                                     \
 	} while (0)
 
-#define _nltst_close(fd)                                                       \
-	do {                                                                   \
-		int _r;                                                        \
-                                                                               \
-		_r = _nl_close((fd));                                          \
-		_nltst_assert_errno(_r == 0);                                  \
+#define _nltst_close(fd)                      \
+	do {                                  \
+		int _r;                       \
+                                              \
+		_r = _nl_close((fd));         \
+		_nltst_assert_errno(_r == 0); \
 	} while (0)
 
-#define _nltst_fclose(f)                                                       \
-	do {                                                                   \
-		int _r;                                                        \
-                                                                               \
-		_r = fclose((f));                                              \
-		_nltst_assert_errno(_r == 0);                                  \
+#define _nltst_fclose(f)                      \
+	do {                                  \
+		int _r;                       \
+                                              \
+		_r = fclose((f));             \
+		_nltst_assert_errno(_r == 0); \
 	} while (0)
 
 void _nltst_assert_link_exists_full(const char *ifname, bool exists);
 
-#define _nltst_assert_link_exists(ifname)                                      \
+#define _nltst_assert_link_exists(ifname) \
 	_nltst_assert_link_exists_full((ifname), true)
 
-#define _nltst_assert_link_not_exists(ifname)                                  \
+#define _nltst_assert_link_not_exists(ifname) \
 	_nltst_assert_link_exists_full((ifname), false)
 
 /*****************************************************************************/
@@ -167,11 +167,11 @@ static inline char *_nltst_inet_ntop(int addr_family, const void *addr,
 
 	r = (char *)inet_ntop(addr_family, addr, buf,
 			      (addr_family == AF_INET) ? INET_ADDRSTRLEN :
-							       INET6_ADDRSTRLEN);
+							 INET6_ADDRSTRLEN);
 	ck_assert_ptr_eq(r, buf);
 	ck_assert_int_lt(strlen(r), (addr_family == AF_INET) ?
 					    INET_ADDRSTRLEN :
-						  INET6_ADDRSTRLEN);
+					    INET6_ADDRSTRLEN);
 	return r;
 }
 
@@ -180,7 +180,7 @@ static inline char *_nltst_inet_ntop_dup(int addr_family, const void *addr)
 	return (char *)_nltst_inet_ntop(addr_family, addr,
 					malloc((addr_family == AF_INET) ?
 						       INET_ADDRSTRLEN :
-							     INET6_ADDRSTRLEN));
+						       INET6_ADDRSTRLEN));
 }
 
 static inline bool _nltst_inet_pton(int addr_family, const char *str,
@@ -209,7 +209,7 @@ static inline bool _nltst_inet_pton(int addr_family, const char *str,
 	if (out_addr) {
 		memcpy(out_addr, &a,
 		       addr_family == AF_INET ? sizeof(in_addr_t) :
-						      sizeof(struct in6_addr));
+						sizeof(struct in6_addr));
 	}
 	if (out_addr_family)
 		*out_addr_family = addr_family;
@@ -270,24 +270,24 @@ char *_nltst_strtok(const char **p_str);
 
 char **_nltst_strtokv(const char *str);
 
-#define _nltst_assert_strv_equal(strv1, strv2)                                 \
-	do {                                                                   \
-		typeof(strv1) _strv1 = (strv1);                                \
-		typeof(strv2) _strv2 = (strv2);                                \
-		_nl_unused const void *_strv1_typecheck1 = _strv1;             \
-		_nl_unused const void *_strv2_typecheck1 = _strv2;             \
-		_nl_unused const char *_strv1_typecheck2 =                     \
-			_strv1 ? _strv1[0] : NULL;                             \
-		_nl_unused const char *_strv2_typecheck2 =                     \
-			_strv2 ? _strv2[0] : NULL;                             \
-		size_t _i;                                                     \
-                                                                               \
-		ck_assert_int_eq(!!_strv1, !!_strv2);                          \
-		if (_strv1) {                                                  \
-			for (_i = 0; _strv1[_i] || _strv2[_i]; _i++) {         \
-				ck_assert_str_eq(_strv1[_i], _strv2[_i]);      \
-			}                                                      \
-		}                                                              \
+#define _nltst_assert_strv_equal(strv1, strv2)                            \
+	do {                                                              \
+		typeof(strv1) _strv1 = (strv1);                           \
+		typeof(strv2) _strv2 = (strv2);                           \
+		_nl_unused const void *_strv1_typecheck1 = _strv1;        \
+		_nl_unused const void *_strv2_typecheck1 = _strv2;        \
+		_nl_unused const char *_strv1_typecheck2 =                \
+			_strv1 ? _strv1[0] : NULL;                        \
+		_nl_unused const char *_strv2_typecheck2 =                \
+			_strv2 ? _strv2[0] : NULL;                        \
+		size_t _i;                                                \
+                                                                          \
+		ck_assert_int_eq(!!_strv1, !!_strv2);                     \
+		if (_strv1) {                                             \
+			for (_i = 0; _strv1[_i] || _strv2[_i]; _i++) {    \
+				ck_assert_str_eq(_strv1[_i], _strv2[_i]); \
+			}                                                 \
+		}                                                         \
 	} while (0)
 
 #define _NLTST_CHARSET_SPACE " \n\r\t"
@@ -296,64 +296,64 @@ char **_nltst_strtokv(const char *str);
 
 #define _nltst_char_is_space(ch) _nltst_char_is(ch, _NLTST_CHARSET_SPACE)
 
-#define _nltst_str_skip_predicate(s, ch, predicate)                            \
-	({                                                                     \
-		typeof(s) _s1 = (s);                                           \
-		_nl_unused const char *_s1_typecheck = (_s1);                  \
-                                                                               \
-		if (_s1) {                                                     \
-			while (({                                              \
-				const char ch = _s1[0];                        \
-                                                                               \
-				(ch != '\0') && (predicate);                   \
-			}))                                                    \
-				_s1++;                                         \
-		}                                                              \
-		_s1;                                                           \
+#define _nltst_str_skip_predicate(s, ch, predicate)           \
+	({                                                    \
+		typeof(s) _s1 = (s);                          \
+		_nl_unused const char *_s1_typecheck = (_s1); \
+                                                              \
+		if (_s1) {                                    \
+			while (({                             \
+				const char ch = _s1[0];       \
+                                                              \
+				(ch != '\0') && (predicate);  \
+			}))                                   \
+				_s1++;                        \
+		}                                             \
+		_s1;                                          \
 	})
 
-#define _nltst_str_skip_charset(s, charset)                                    \
+#define _nltst_str_skip_charset(s, charset) \
 	_nltst_str_skip_predicate(s, _ch, _nltst_char_is(_ch, "" charset ""))
 
-#define _nltst_str_skip_space(s)                                               \
+#define _nltst_str_skip_space(s) \
 	_nltst_str_skip_charset(s, _NLTST_CHARSET_SPACE)
 
-#define _nltst_str_has_prefix_and_space(s, prefix)                             \
-	({                                                                     \
-		typeof(s) _s2 = (s);                                           \
-		_nl_unused const char *_s2_typecheck = (_s2);                  \
-		const size_t _l = strlen("" prefix "");                        \
-                                                                               \
-		if (_s2) {                                                     \
-			if ((strncmp(_s2, "" prefix "", _l)) == 0 &&           \
-			    _nltst_char_is_space(_s2[_l]))                     \
-				_s2 = _nltst_str_skip_space(&_s2[_l + 1]);     \
-			else                                                   \
-				_s2 = NULL;                                    \
-		}                                                              \
-		_s2;                                                           \
+#define _nltst_str_has_prefix_and_space(s, prefix)                         \
+	({                                                                 \
+		typeof(s) _s2 = (s);                                       \
+		_nl_unused const char *_s2_typecheck = (_s2);              \
+		const size_t _l = strlen("" prefix "");                    \
+                                                                           \
+		if (_s2) {                                                 \
+			if ((strncmp(_s2, "" prefix "", _l)) == 0 &&       \
+			    _nltst_char_is_space(_s2[_l]))                 \
+				_s2 = _nltst_str_skip_space(&_s2[_l + 1]); \
+			else                                               \
+				_s2 = NULL;                                \
+		}                                                          \
+		_s2;                                                       \
 	})
 
-#define _nltst_str_find_first_not_from_charset(s, charset)                     \
-	({                                                                     \
-		typeof(s) _s3 = (s);                                           \
-		_nl_unused const char *_s3_typecheck = (_s3);                  \
-		size_t _l3;                                                    \
-                                                                               \
-		_l3 = strspn(_s3, "" charset "");                              \
-                                                                               \
-		&_s3[_l3];                                                     \
+#define _nltst_str_find_first_not_from_charset(s, charset)    \
+	({                                                    \
+		typeof(s) _s3 = (s);                          \
+		_nl_unused const char *_s3_typecheck = (_s3); \
+		size_t _l3;                                   \
+                                                              \
+		_l3 = strspn(_s3, "" charset "");             \
+                                                              \
+		&_s3[_l3];                                    \
 	})
 
-#define _nltst_str_find_first_from_charset(s, charset)                         \
-	({                                                                     \
-		typeof(s) _s3 = (s);                                           \
-		_nl_unused const char *_s3_typecheck = (_s3);                  \
-		size_t _l3;                                                    \
-                                                                               \
-		_l3 = strcspn(_s3, "" charset "");                             \
-                                                                               \
-		&_s3[_l3];                                                     \
+#define _nltst_str_find_first_from_charset(s, charset)        \
+	({                                                    \
+		typeof(s) _s3 = (s);                          \
+		_nl_unused const char *_s3_typecheck = (_s3); \
+		size_t _l3;                                   \
+                                                              \
+		_l3 = strcspn(_s3, "" charset "");            \
+                                                              \
+		&_s3[_l3];                                    \
 	})
 
 /*****************************************************************************/

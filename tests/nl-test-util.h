@@ -51,6 +51,46 @@ _NL_AUTO_DEFINE_FCN_TYPED0(char **, _nltst_auto_strfreev_fcn, _nltst_strfreev);
 
 /*****************************************************************************/
 
+#define __nltst_assert_nonnull(uniq, x)                      \
+	({                                                   \
+		typeof(x) _NL_UNIQ_T(_x, uniq) = (x);        \
+                                                             \
+		ck_assert_ptr_nonnull(_NL_UNIQ_T(_x, uniq)); \
+                                                             \
+		_NL_UNIQ_T(_x, uniq);                        \
+	})
+
+#define _nltst_assert_nonnull(x) __nltst_assert_nonnull(_NL_UNIQ, x)
+
+static inline char *_nltst_strdup(const char *str)
+{
+	return str ? _nltst_assert_nonnull(strdup(str)) : NULL;
+}
+
+/*****************************************************************************/
+
+#define __nltst_sprintf_arr(uniq, arr, fmt, ...)                      \
+	({                                                            \
+		char *const _NL_UNIQ_T(arr, uniq) = (arr);            \
+		int _NL_UNIQ_T(c, uniq);                              \
+                                                                      \
+		_NL_STATIC_ASSERT(sizeof(arr) >                       \
+				  sizeof(_NL_UNIQ_T(arr, uniq)));     \
+                                                                      \
+		_NL_UNIQ_T(c, uniq) = snprintf(_NL_UNIQ_T(arr, uniq), \
+					       sizeof(arr), fmt,      \
+					       ##__VA_ARGS__);        \
+                                                                      \
+		ck_assert_int_lt(_NL_UNIQ_T(c, uniq), sizeof(arr));   \
+                                                                      \
+		_NL_UNIQ_T(arr, uniq);                                \
+	})
+
+#define _nltst_sprintf_arr(arr, fmt, ...) \
+	__nltst_sprintf_arr(_NL_UNIQ, arr, fmt, ##__VA_ARGS__)
+
+/*****************************************************************************/
+
 void _nltst_get_urandom(void *ptr, size_t len);
 
 uint32_t _nltst_rand_u32(void);
@@ -365,6 +405,10 @@ struct nltst_netns;
 
 struct nltst_netns *nltst_netns_enter(void);
 void nltst_netns_leave(struct nltst_netns *nsdata);
+
+/*****************************************************************************/
+
+#define _nltst_system(command) _nltst_assert_retcode(system(command))
 
 /*****************************************************************************/
 

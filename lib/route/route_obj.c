@@ -48,8 +48,6 @@ struct rtnl_route {
 	NLHDR_COMMON
 
 	uint8_t rt_family;
-	uint8_t rt_dst_len;
-	uint8_t rt_src_len;
 	uint8_t rt_tos;
 	uint8_t rt_protocol;
 	uint8_t rt_scope;

@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+env:
+  NLTST_IN_CI: 1
+
 jobs:
   clang-format:
     runs-on: ubuntu-latest

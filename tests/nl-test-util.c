@@ -678,6 +678,13 @@ void _nltst_assert_link_exists_full(const char *ifname, bool exists)
 
 /*****************************************************************************/
 
+bool _nltst_in_ci(void)
+{
+	return _nl_streq0(getenv("NLTST_IN_CI"), "1");
+}
+
+/*****************************************************************************/
+
 bool _nltst_has_iproute2(void)
 {
 	static int has = -1;
@@ -692,6 +699,10 @@ bool _nltst_skip_no_iproute2(const char *msg)
 {
 	if (_nltst_has_iproute2())
 		return false;
+
+	ck_assert_msg(
+		!_nltst_in_ci(),
+		"We seem to not have iproute2, but we are in NLTST_IN_CI=1. This is fatal.");
 
 	printf("skip test due to missing iproute2%s%s%s\n", msg ? " (" : "",
 	       msg ?: "", msg ? ")" : "");

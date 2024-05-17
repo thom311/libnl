@@ -410,6 +410,8 @@ void nltst_netns_leave(struct nltst_netns *nsdata);
 
 #define _nltst_system(command) _nltst_assert_retcode(system(command))
 
+bool _nltst_in_ci(void);
+
 bool _nltst_has_iproute2(void);
 bool _nltst_skip_no_iproute2(const char *msg);
 

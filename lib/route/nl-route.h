@@ -80,21 +80,6 @@ struct rtnl_nh_encap {
 	void *priv; /* private data for encap type */
 };
 
-struct rtnl_nexthop {
-	uint8_t rtnh_flags;
-	uint8_t rtnh_flag_mask;
-	uint8_t rtnh_weight;
-	/* 1 byte spare */
-	uint32_t rtnh_ifindex;
-	struct nl_addr *rtnh_gateway;
-	uint32_t ce_mask; /* HACK to support attr macros */
-	struct nl_list_head rtnh_list;
-	uint32_t rtnh_realms;
-	struct nl_addr *rtnh_newdst;
-	struct nl_addr *rtnh_via;
-	struct rtnl_nh_encap *rtnh_encap;
-};
-
 struct rtnl_ratespec {
 	uint64_t rs_rate64;
 	uint16_t rs_overhead;

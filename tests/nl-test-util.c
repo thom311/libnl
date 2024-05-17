@@ -675,3 +675,25 @@ void _nltst_assert_link_exists_full(const char *ifname, bool exists)
 	/* FIXME: we would expect that the cloned object is identical. It is not. */
 	/* _nltst_object_identical(link, link_clone); */
 }
+
+/*****************************************************************************/
+
+bool _nltst_has_iproute2(void)
+{
+	static int has = -1;
+
+	if (has == -1)
+		has = (system("ip link &>/dev/null") == 0);
+
+	return has;
+}
+
+bool _nltst_skip_no_iproute2(const char *msg)
+{
+	if (_nltst_has_iproute2())
+		return false;
+
+	printf("skip test due to missing iproute2%s%s%s\n", msg ? " (" : "",
+	       msg ?: "", msg ? ")" : "");
+	return true;
+}

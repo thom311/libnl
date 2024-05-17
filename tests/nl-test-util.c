@@ -217,11 +217,13 @@ void _nltst_object_identical(const void *a, const void *b)
 
 /*****************************************************************************/
 
-char *_nltst_object_to_string(struct nl_object *obj)
+char *_nltst_object_to_string(const struct nl_object *obj)
 {
 	size_t L = 1024;
 	size_t l;
 	char *s;
+	struct nl_dump_params dp;
+	char canary;
 
 	if (!obj)
 		return strdup("(null)");
@@ -229,11 +231,31 @@ char *_nltst_object_to_string(struct nl_object *obj)
 	s = malloc(L);
 	ck_assert_ptr_nonnull(s);
 
-	nl_object_dump_buf(obj, s, L);
+	canary = _nltst_rand_u32();
+	s[L - 1u] = canary;
+
+	dp = (struct nl_dump_params){
+		.dp_type = NL_DUMP_LINE,
+		.dp_buf = s,
+		.dp_buflen = L - 1u,
+	};
+
+	nl_object_dump((struct nl_object *)obj, &dp);
+
 	l = strlen(s);
+	ck_assert_int_ge(l, 2);
 	ck_assert_int_lt(l, L);
+	ck_assert(canary == s[L - 1u]);
 	s = realloc(s, l + 1);
 	ck_assert_ptr_nonnull(s);
+
+	ck_assert_msg(s[l - 1u] == '\n',
+		      "expects newline after dump. Got \"%s\"", s);
+	s[l - 1u] = '\0';
+
+	ck_assert_msg(!strchr(s, '\n'),
+		      "no further newline expected. Got \"%s\"", s);
+
 	return s;
 }
 

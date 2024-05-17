@@ -370,7 +370,7 @@ void nltst_netns_leave(struct nltst_netns *nsdata);
 
 void _nltst_object_identical(const void *a, const void *b);
 
-char *_nltst_object_to_string(struct nl_object *obj);
+char *_nltst_object_to_string(const struct nl_object *obj);
 
 struct nl_object **_nltst_cache_get_all(struct nl_cache *cache,
 					size_t *out_len);

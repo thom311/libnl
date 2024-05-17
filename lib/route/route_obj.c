@@ -375,10 +375,11 @@ static void route_keygen(struct nl_object *obj, uint32_t *hashkey,
 
 	*hashkey = nl_hash(rkey, rkey_sz, 0) % table_sz;
 
-	NL_DBG(5, "route %p key (fam %d tos %d table %d addr %s) keysz %d "
-		"hash 0x%x\n", route, rkey->rt_family, rkey->rt_tos,
-		rkey->rt_table, nl_addr2str(addr, buf, sizeof(buf)),
-		rkey_sz, *hashkey);
+	NL_DBG(5,
+	       "route %p key (fam %d tos %d table %d prio %d addr %s) keysz %d hash 0x%x\n",
+	       route, rkey->rt_family, rkey->rt_tos, rkey->rt_table,
+	       rkey->rt_prio, nl_addr2str(addr, buf, sizeof(buf)), rkey_sz,
+	       *hashkey);
 
 	return;
 }

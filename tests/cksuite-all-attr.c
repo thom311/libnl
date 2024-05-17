@@ -144,6 +144,60 @@ END_TEST
 
 /*****************************************************************************/
 
+START_TEST(test_nltst_select_route)
+{
+	/* This is a unit test for testing the unit-test helper function
+	 * _nltst_select_route_parse(). */
+
+#define _check(str, exp_addr_family, exp_addr_pattern, exp_plen)               \
+	do {                                                                   \
+		const char *_str = (str);                                      \
+		const int _exp_addr_family = (exp_addr_family);                \
+		const char *const _exp_addr_pattern = (exp_addr_pattern);      \
+		const int _exp_plen = (exp_plen);                              \
+		_nltst_auto_clear_select_route NLTstSelectRoute                \
+			_select_route = { 0 };                                 \
+		_nltst_auto_clear_select_route NLTstSelectRoute                \
+			_select_route2 = { 0 };                                \
+		_nl_auto_free char *_str2 = NULL;                              \
+                                                                               \
+		_nltst_select_route_parse(_str, &_select_route);               \
+		ck_assert_int_eq(_exp_addr_family, _select_route.addr_family); \
+		if (_nltst_inet_valid(AF_UNSPEC, _exp_addr_pattern)) {         \
+			ck_assert_str_eq(_exp_addr_pattern,                    \
+					 _select_route.addr);                  \
+			ck_assert_ptr_null(_select_route.addr_pattern);        \
+		} else {                                                       \
+			ck_assert_str_eq(_exp_addr_pattern,                    \
+					 _select_route.addr_pattern);          \
+			ck_assert_ptr_null(_select_route.addr);                \
+		}                                                              \
+		ck_assert_int_eq(_exp_plen, _select_route.plen);               \
+                                                                               \
+		_nltst_assert_select_route(&_select_route);                    \
+                                                                               \
+		_str2 = _nltst_select_route_to_string(&_select_route);         \
+		ck_assert_ptr_nonnull(_str2);                                  \
+                                                                               \
+		_nltst_select_route_parse(_str2, &_select_route2);             \
+                                                                               \
+		ck_assert(_nltst_select_route_equal(&_select_route,            \
+						    &_select_route2));         \
+	} while (0)
+
+	_check("0.0.0.0", AF_INET, "0.0.0.0", -1);
+	_check("4 0.0.0.0/0", AF_INET, "0.0.0.0", 0);
+	_check(" 6\n 0:0::/0", AF_INET6, "::", 0);
+	_check(" \n 0:0::/100", AF_INET6, "::", 100);
+	_check("6 0:0::*/0   ", AF_INET6, "0:0::*", 0);
+	_check("6 0:0::*/128   ", AF_INET6, "0:0::*", 128);
+	_check("6 0:0::*   ", AF_INET6, "0:0::*", -1);
+
+#undef _check
+}
+
+/*****************************************************************************/
+
 Suite *make_nl_attr_suite(void)
 {
 	Suite *suite = suite_create("Netlink attributes");
@@ -153,6 +207,7 @@ Suite *make_nl_attr_suite(void)
 	tcase_add_test(tc, msg_construct);
 	tcase_add_test(tc, clone_cls_u32);
 	tcase_add_test(tc, test_nltst_strtok);
+	tcase_add_test(tc, test_nltst_select_route);
 	suite_add_tcase(suite, tc);
 
 	return suite;

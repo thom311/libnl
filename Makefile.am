@@ -1204,8 +1204,8 @@ EXTRA_DIST += \
 
 check-build: all $(check_PROGRAMS) $(check_LTLIBRARIES) $(check_build)
 
-check-progs: $(check_build)
+check-progs: check-build
 
-.PHONY: check-progs
+.PHONY: check-progs check-build
 
 ###############################################################################

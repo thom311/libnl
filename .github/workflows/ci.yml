@@ -86,7 +86,8 @@ jobs:
         shell: bash
 
       - name: Build Unit Tests
-        run: make -j 5 check-progs
+        run: |
+          make -j 5 check-build
 
       - name: Run Unit Tests
         run: |
@@ -140,7 +141,7 @@ jobs:
           cd build
           ../configure --disable-static
           make -j 5
-          make -j 5 check-progs
+          make -j 5 check-build
           export NLTST_SEED_RAND=
           make -j 5 check
 
@@ -201,7 +202,10 @@ jobs:
           ./autogen.sh
           ./configure
           make -j 5
-          make -j 5 check-progs
+
+      - name: Build Unit Tests
+        run: |
+          make -j 5 check-build
 
       - name: Run Unit Tests
         run: |

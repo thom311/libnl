@@ -9,6 +9,7 @@ check_LTLIBRARIES =
 check_PROGRAMS =
 check_programs =
 check_local =
+check_build =
 
 bin_PROGRAMS =
 sbin_PROGRAMS =
@@ -1145,34 +1146,34 @@ BUILD_HEADERS_OBJS = $(patsubst %,%.build-headers-test.o,$(public_headers))
 
 # Test whether the public headers are all self-contained and can be build.
 # This test is not hooked up as `make check`.
-check-local-build-headers: $(BUILD_HEADERS_OBJS)
+check-build-headers: $(BUILD_HEADERS_OBJS)
 
 CLEANFILES += $(BUILD_HEADERS_OBJS)
 
-check_local += check-local-build-headers
+check_build += check-build-headers
 
 ###############################################################################
 
 if HAS_CXX
-%.build-headers-test-cxx.c: %
+%.build-headers-test-cxx.cpp: %
 	mkdir -p "$(dir $@)"
 	printf "#include <cstdio>\n#include <$$(echo "$<" | sed 's|.*\<include/netlink/|netlink/|')>\nint main(void) { return 0; }" > $@
 
-%.build-headers-test-cxx.o: %.build-headers-test-cxx.c %.build-headers-test.o
+%.build-headers-test-cxx.o: %.build-headers-test-cxx.cpp %.build-headers-test.o
 	$(CXX) -Wall -Werror -D_NL_NO_WARN_DEPRECATED_HEADER -I$(srcdir)/include -I$(builddir)/include -c -o $@ $<
 
 BUILD_HEADERS_OBJS_CXX = $(patsubst %,%.build-headers-test-cxx.o,$(public_headers))
 
 CLEANFILES += $(BUILD_HEADERS_OBJS_CXX)
 
-check-local-build-headers-cxx: $(BUILD_HEADERS_OBJS_CXX)
+check-build-headers-cxx: $(BUILD_HEADERS_OBJS_CXX)
 
-check_local += check-local-build-headers-cxx
+check_build += check-build-headers-cxx
 endif
 
 ###############################################################################
 
-check-local: $(check_local)
+check-local: $(check_build) $(check_local)
 
 .PHONY: $(check_local)
 
@@ -1201,7 +1202,9 @@ EXTRA_DIST += \
 
 ###############################################################################
 
-check-progs: all $(check_PROGRAMS) $(check_LTLIBRARIES)
+check-build: all $(check_PROGRAMS) $(check_LTLIBRARIES) $(check_build)
+
+check-progs: $(check_build)
 
 .PHONY: check-progs
 

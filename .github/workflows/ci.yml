@@ -82,12 +82,12 @@ jobs:
 
           ./autogen.sh
           ./configure $CONFIGURE_ARGS
-          make -j 5
+          make -j 15
         shell: bash
 
       - name: Build Unit Tests
         run: |
-          make -j 5 check-build
+          make -j 15 check-build
 
       - name: Run Unit Tests
         run: |
@@ -96,7 +96,7 @@ jobs:
           for i in `seq 1 5`; do
             tests/check-direct
             tests/check-all
-            make -j check
+            make -j 15 check || (cat ./test-suite.log; false)
           done
 
       - name: Run Unit Tests w/Valgrind
@@ -140,10 +140,10 @@ jobs:
           mkdir build
           cd build
           ../configure --disable-static
-          make -j 5
-          make -j 5 check-build
+          make -j 15
+          make -j 15 check-build
           export NLTST_SEED_RAND=
-          make -j 5 check
+          make -j 15 check || (cat ./test-suite.log; false)
 
       - name: Link with mold
         run: |
@@ -153,7 +153,7 @@ jobs:
           export LDFLAGS="-fuse-ld=mold -Wl,--fatal-warnings"
           ./autogen.sh
           ./configure
-          make -j 5 V=1
+          make -j 15 V=1
 
       - run: echo "🍏 This job's status is ${{ job.status }}."
 
@@ -201,11 +201,11 @@ jobs:
 
           ./autogen.sh
           ./configure
-          make -j 5
+          make -j 15
 
       - name: Build Unit Tests
         run: |
-          make -j 5 check-build
+          make -j 15 check-build
 
       - name: Run Unit Tests
         run: |
@@ -216,5 +216,5 @@ jobs:
             # unshare() does not work (EPERM). This test currently cannot pass
             # (odd).
             # tests/check-all
-            # make -j check
+            # make -j 15 check || (cat ./test-suite.log; false)
           done

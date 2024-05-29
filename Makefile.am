@@ -47,6 +47,7 @@ warn_cppflags = \
 
 defines_cppflags = \
 	-D_NL_SYSCONFDIR_LIBNL=\"$(sysconfdir)/libnl\" \
+	-D_NL_PKGLIBDIR=\"$(pkglibdir)\" \
 	$(NULL)
 
 ###############################################################################
@@ -715,7 +716,6 @@ src_lib_libnl_cli_3_la_CPPFLAGS = \
 	$(warn_cppflags) \
 	$(defines_cppflags) \
 	-D_GNU_SOURCE \
-	-DPKGLIBDIR=\"$(pkglibdir)\" \
 	$(default_includes) \
 	$(NULL)
 src_lib_libnl_cli_3_la_LDFLAGS = \

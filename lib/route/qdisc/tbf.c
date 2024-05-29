@@ -139,9 +139,9 @@ static int tbf_msg_fill(struct rtnl_tc *tc, void *data, struct nl_msg *msg)
 	uint32_t rtab[RTNL_TC_RTABLE_SIZE], ptab[RTNL_TC_RTABLE_SIZE];
 	struct tc_tbf_qopt opts;
 	struct rtnl_tbf *tbf = data;
-	int required = TBF_ATTR_RATE | TBF_ATTR_LIMIT;
+	const uint32_t REQUIRED = TBF_ATTR_RATE | TBF_ATTR_LIMIT;
 
-	if ((tbf->qt_mask & required) != required)
+	if ((tbf->qt_mask & REQUIRED) != REQUIRED)
 		return -NLE_MISSING_ATTR;
 
 	memset(&opts, 0, sizeof(opts));

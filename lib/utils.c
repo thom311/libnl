@@ -1069,14 +1069,15 @@ char *__type2str(int type, char *buf, size_t len,
 		 const struct trans_tbl *tbl, size_t tbl_len)
 {
 	size_t i;
+
 	for (i = 0; i < tbl_len; i++) {
-		if (tbl[i].i == type) {
+		if (tbl[i].i == ((uint64_t)type)) {
 			snprintf(buf, len, "%s", tbl[i].a);
 			return buf;
 		}
 	}
 
-	snprintf(buf, len, "0x%x", type);
+	snprintf(buf, len, "0x%x", (unsigned)type);
 	return buf;
 }
 
@@ -1169,7 +1170,7 @@ int __str2flags(const char *buf, const struct trans_tbl *tbl, size_t tbl_len)
 			p++;
 
 		t = strchr(p, ',');
-		len = t ? t - p : strlen(p);
+		len = t ? ((size_t)(t - p)) : strlen(p);
 		for (i = 0; i < tbl_len; i++)
 			if (len == strlen(tbl[i].a) &&
 			    !strncasecmp(tbl[i].a, p, len))

@@ -168,7 +168,7 @@ static int can_parse(struct rtnl_link *link, struct nlattr *data,
 		ci->ci_mask |= CAN_HAS_DATA_BITTIMING_CONST;
 	}
 
-	if (xstats && nla_len(xstats) >= sizeof(ci->ci_device_stats)) {
+	if (xstats && _nla_len(xstats) >= sizeof(ci->ci_device_stats)) {
 		nla_memcpy(&ci->ci_device_stats, xstats, sizeof(ci->ci_device_stats));
 		ci->ci_mask |= CAN_HAS_DEVICE_STATS;
 	}

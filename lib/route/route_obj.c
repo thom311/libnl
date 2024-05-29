@@ -948,9 +948,11 @@ void rtnl_route_foreach_nexthop(struct rtnl_route *r,
 struct rtnl_nexthop *rtnl_route_nexthop_n(struct rtnl_route *r, int n)
 {
 	struct rtnl_nexthop *nh;
-	uint32_t i;
 
-	if (r->ce_mask & ROUTE_ATTR_MULTIPATH && r->rt_nr_nh > n) {
+	if (r->ce_mask & ROUTE_ATTR_MULTIPATH && n >= 0 &&
+	    ((unsigned)n) < r->rt_nr_nh) {
+		int i;
+
 		i = 0;
 		nl_list_for_each_entry(nh, &r->rt_nexthops, rtnh_list) {
 			if (i == n) return nh;
@@ -1270,7 +1272,7 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 			return err;
 
 		for (i = 1; i <= RTAX_MAX; i++) {
-			if (mtb[i] && nla_len(mtb[i]) >= sizeof(uint32_t)) {
+			if (mtb[i] && _nla_len(mtb[i]) >= sizeof(uint32_t)) {
 				uint32_t m = nla_get_u32(mtb[i]);
 
 				err = rtnl_route_set_metric(route, i, m);

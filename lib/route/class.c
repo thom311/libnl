@@ -359,7 +359,8 @@ struct rtnl_class *rtnl_class_get(struct nl_cache *cache, int ifindex,
 		return NULL;
 
 	nl_list_for_each_entry(class, &cache->c_items, ce_list) {
-		if (class->c_handle == handle && class->c_ifindex == ifindex) {
+		if (class->c_handle == handle &&
+		    class->c_ifindex == ((unsigned)ifindex)) {
 			nl_object_get((struct nl_object *) class);
 			return class;
 		}
@@ -390,7 +391,8 @@ struct rtnl_class *rtnl_class_get_by_parent(struct nl_cache *cache, int ifindex,
 		return NULL;
 
 	nl_list_for_each_entry(class, &cache->c_items, ce_list) {
-		if (class->c_parent == parent && class->c_ifindex == ifindex) {
+		if (class->c_parent == parent &&
+		    class->c_ifindex == ((unsigned)ifindex)) {
 			nl_object_get((struct nl_object *) class);
 			return class;
 		}

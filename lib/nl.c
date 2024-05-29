@@ -659,7 +659,7 @@ int nl_recv(struct nl_sock *sk, struct sockaddr_nl *nla,
 {
 	ssize_t n;
 	int flags = 0;
-	static int page_size = 0;
+	static int page_size = 0; /* GLOBAL! */
 	struct iovec iov;
 	struct msghdr msg = {
 		.msg_name = (void *) nla,
@@ -680,7 +680,7 @@ int nl_recv(struct nl_sock *sk, struct sockaddr_nl *nla,
 	if (page_size == 0)
 		page_size = getpagesize() * 4;
 
-	iov.iov_len = sk->s_bufsize ? sk->s_bufsize : page_size;
+	iov.iov_len = sk->s_bufsize ? sk->s_bufsize : ((size_t)page_size);
 	iov.iov_base = malloc(iov.iov_len);
 
 	if (!iov.iov_base) {
@@ -734,7 +734,7 @@ retry:
 		goto retry;
 	}
 
-	if (iov.iov_len < n || (msg.msg_flags & MSG_TRUNC)) {
+	if (iov.iov_len < ((size_t)n) || (msg.msg_flags & MSG_TRUNC)) {
 		void *tmp;
 
 		/* respond with error to an incomplete message */
@@ -964,7 +964,8 @@ continue_reading:
 		else if (hdr->nlmsg_type == NLMSG_ERROR) {
 			struct nlmsgerr *e = nlmsg_data(hdr);
 
-			if (hdr->nlmsg_len < nlmsg_size(sizeof(*e))) {
+			if (hdr->nlmsg_len <
+			    ((unsigned)nlmsg_size(sizeof(*e)))) {
 				/* Truncated error message, the default action
 				 * is to stop parsing. The user may overrule
 				 * this action by returning NL_SKIP or

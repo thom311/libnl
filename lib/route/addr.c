@@ -642,7 +642,7 @@ struct rtnl_addr *rtnl_addr_get(struct nl_cache *cache, int ifindex,
 		return NULL;
 
 	nl_list_for_each_entry(a, &cache->c_items, ce_list) {
-		if (ifindex && a->a_ifindex != ifindex)
+		if (ifindex != 0 && a->a_ifindex != ((unsigned)ifindex))
 			continue;
 
 		if (a->ce_mask & ADDR_ATTR_LOCAL &&

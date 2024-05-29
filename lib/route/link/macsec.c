@@ -369,7 +369,8 @@ static int macsec_compare(struct rtnl_link *link_a, struct rtnl_link *link_b,
 	struct macsec_info *a = link_a->l_info;
 	struct macsec_info *b = link_b->l_info;
 	int diff = 0;
-	uint32_t attrs = flags & LOOSE_COMPARISON ? b->ce_mask : ~0;
+	uint32_t attrs = flags & LOOSE_COMPARISON ? b->ce_mask :
+						    ~((uint32_t)0u);
 
 #define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
 	if (a->ce_mask & MACSEC_ATTR_SCI && b->ce_mask & MACSEC_ATTR_SCI)

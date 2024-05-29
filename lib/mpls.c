@@ -26,7 +26,7 @@ static const char *mpls_ntop1(const struct mpls_label *addr,
 		uint32_t label = (entry & MPLS_LS_LABEL_MASK) >> MPLS_LS_LABEL_SHIFT;
 		int len = snprintf(dest, destlen, "%u", label);
 
-		if (len >= destlen)
+		if (len < 0 || (unsigned)len >= destlen)
 			break;
 
 		/* Is this the end? */

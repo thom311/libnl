@@ -440,7 +440,7 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 		/* beware: @st might not be the full struct, only fields up to
 		 * tx_compressed are present. See _nl_offsetofend() above. */
 
-		if (nla_len(tb[IFLA_STATS]) >= _nl_offsetofend (struct rtnl_link_stats, rx_nohandler))
+		if (_nla_len(tb[IFLA_STATS]) >= _nl_offsetofend (struct rtnl_link_stats, rx_nohandler))
 			link->l_stats[RTNL_LINK_RX_NOHANDLER] = st->rx_nohandler;
 		else
 			link->l_stats[RTNL_LINK_RX_NOHANDLER] = 0;
@@ -1320,7 +1320,7 @@ struct rtnl_link *rtnl_link_get(struct nl_cache *cache, int ifindex)
 		return NULL;
 
 	nl_list_for_each_entry(link, &cache->c_items, ce_list) {
-		if (link->l_index == ifindex) {
+		if (link->l_index == ((unsigned)ifindex)) {
 			nl_object_get((struct nl_object *) link);
 			return link;
 		}

@@ -678,7 +678,7 @@ int rtnl_tc_calc_cell_log(int cell_size)
 	int i;
 
 	for (i = 0; i < 32; i++)
-		if ((((uint32_t)1u) << i) == cell_size)
+		if ((((uint32_t)1u) << i) == ((uint32_t)cell_size))
 			return i;
 
 	return -NLE_INVAL;

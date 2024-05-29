@@ -633,7 +633,7 @@ int rtnl_link_sriov_parse_vflist(struct rtnl_link *link, struct nlattr **tb) {
 		if (t[IFLA_VF_SPOOFCHK]) {
 			vf_spoofchk = nla_data(t[IFLA_VF_SPOOFCHK]);
 
-			if (vf_spoofchk->setting != -1) {
+			if (vf_spoofchk->setting != ((uint32_t)-1)) {
 				vf_data->vf_spoofchk = vf_spoofchk->setting ? 1 : 0;
 				vf_data->ce_mask |= SRIOV_ATTR_SPOOFCHK;
 			}
@@ -662,7 +662,7 @@ int rtnl_link_sriov_parse_vflist(struct rtnl_link *link, struct nlattr **tb) {
 		if (t[IFLA_VF_RSS_QUERY_EN]) {
 			vf_rss_query = nla_data(t[IFLA_VF_RSS_QUERY_EN]);
 
-			if (vf_rss_query->setting != -1) {
+			if (vf_rss_query->setting != ((uint32_t)-1)) {
 				vf_data->vf_rss_query_en = vf_rss_query->setting ? 1 : 0;
 				vf_data->ce_mask |= SRIOV_ATTR_RSS_QUERY_EN;
 			}
@@ -702,7 +702,7 @@ int rtnl_link_sriov_parse_vflist(struct rtnl_link *link, struct nlattr **tb) {
 		if (t[IFLA_VF_TRUST]) {
 			vf_trust = nla_data(t[IFLA_VF_TRUST]);
 
-			if (vf_trust->setting != -1) {
+			if (vf_trust->setting != ((uint32_t)-1)) {
 				vf_data->vf_trust = vf_trust->setting ? 1 : 0;
 				vf_data->ce_mask |= SRIOV_ATTR_TRUST;
 			}

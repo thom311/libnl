@@ -454,7 +454,7 @@ struct rtnl_nh *rtnl_nh_get(struct nl_cache *cache, int nhid)
 		return NULL;
 
 	nl_list_for_each_entry(nh, &cache->c_items, ce_list) {
-		if (nh->nh_id == nhid) {
+		if (nh->nh_id == ((unsigned)nhid)) {
 			nl_object_get((struct nl_object *)nh);
 			return nh;
 		}

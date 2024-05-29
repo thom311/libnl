@@ -248,7 +248,7 @@ int genl_register(struct nl_cache_ops *ops)
 		goto errout;
 	}
 
-	if (ops->co_hdrsize < GENL_HDRSIZE(0)) {
+	if (ops->co_hdrsize < (int)GENL_HDRSIZE(0)) {
 		err = -NLE_INVAL;
 		goto errout;
 	}

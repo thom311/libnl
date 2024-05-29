@@ -617,7 +617,8 @@ static int vxlan_compare(struct rtnl_link *link_a, struct rtnl_link *link_b,
 	struct vxlan_info *a = link_a->l_info;
 	struct vxlan_info *b = link_b->l_info;
 	int diff = 0;
-	uint32_t attrs = flags & LOOSE_COMPARISON ? b->ce_mask : ~0;
+	uint32_t attrs = flags & LOOSE_COMPARISON ? b->ce_mask :
+						    ~((uint32_t)0u);
 
 #define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
 	diff |= _DIFF(VXLAN_ATTR_ID, a->vxi_id != b->vxi_id);

@@ -41,7 +41,6 @@ warn_cppflags = \
 	-Wpointer-arith \
 	-Wvla \
 	\
-	-Wno-sign-compare \
 	-Wno-unused-parameter \
 	$(NULL)
 

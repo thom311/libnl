@@ -206,7 +206,7 @@ static int validate_nla(const struct nlattr *nla, int maxtype,
 	else if (pt->type != NLA_UNSPEC)
 		minlen = nla_attr_minlen[pt->type];
 
-	if (nla_len(nla) < minlen)
+	if (_nla_len(nla) < minlen)
 		return -NLE_RANGE;
 
 	if (pt->maxlen && nla_len(nla) > pt->maxlen)
@@ -459,14 +459,14 @@ int nla_strcmp(const struct nlattr *nla, const char *str)
 struct nlattr *nla_reserve(struct nl_msg *msg, int attrtype, int attrlen)
 {
 	struct nlattr *nla;
-	int tlen;
+	size_t tlen;
 
 	if (attrlen < 0)
 		return NULL;
 
 	tlen = NLMSG_ALIGN(msg->nm_nlh->nlmsg_len) + nla_total_size(attrlen);
 
-	if (tlen > msg->nm_size)
+	if (tlen > msg->nm_size || tlen > UINT32_MAX)
 		return NULL;
 
 	nla = (struct nlattr *) nlmsg_tail(msg->nm_nlh);
@@ -738,7 +738,7 @@ int64_t nla_get_s64(const struct nlattr *nla)
 {
 	int64_t tmp = 0;
 
-	if (nla && nla_len(nla) >= sizeof(tmp))
+	if (nla && _nla_len(nla) >= sizeof(tmp))
 		memcpy(&tmp, nla_data(nla), sizeof(tmp));
 
 	return tmp;
@@ -768,7 +768,7 @@ uint64_t nla_get_u64(const struct nlattr *nla)
 {
 	uint64_t tmp = 0;
 
-	if (nla && nla_len(nla) >= sizeof(tmp))
+	if (nla && _nla_len(nla) >= sizeof(tmp))
 		memcpy(&tmp, nla_data(nla), sizeof(tmp));
 
 	return tmp;

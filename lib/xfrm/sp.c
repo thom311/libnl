@@ -1368,12 +1368,15 @@ void xfrmnl_sp_foreach_usertemplate(struct xfrmnl_sp *r,
 struct xfrmnl_user_tmpl *xfrmnl_sp_usertemplate_n(struct xfrmnl_sp *r, int n)
 {
 	struct xfrmnl_user_tmpl *utmpl;
-	uint32_t i;
 
-	if (r->ce_mask & XFRM_SP_ATTR_TMPL && r->nr_user_tmpl > n) {
+	if (r->ce_mask & XFRM_SP_ATTR_TMPL && n >= 0 &&
+	    ((unsigned)n) < r->nr_user_tmpl) {
+		uint32_t i;
+
 		i = 0;
 		nl_list_for_each_entry(utmpl, &r->usertmpl_list, utmpl_list) {
-			if (i == n) return utmpl;
+			if (i == ((unsigned)n))
+				return utmpl;
 			i++;
 		}
 	}

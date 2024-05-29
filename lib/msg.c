@@ -36,7 +36,7 @@
 #include "nl-priv-dynamic-core/cache-api.h"
 #include "nl-aux-core/nl-core.h"
 
-static size_t default_msg_size;
+static size_t default_msg_size; /* GLOBAL! */
 
 static void _nl_init init_msg_size(void)
 {
@@ -168,7 +168,10 @@ int nlmsg_attrlen(const struct nlmsghdr *nlh, int hdrlen)
 
 int nlmsg_valid_hdr(const struct nlmsghdr *nlh, int hdrlen)
 {
-	if (nlh->nlmsg_len < nlmsg_msg_size(hdrlen))
+	int s;
+
+	s = nlmsg_msg_size(hdrlen);
+	if (s < 0 || nlh->nlmsg_len < ((unsigned)s))
 		return 0;
 
 	return 1;
@@ -183,7 +186,7 @@ int nlmsg_ok(const struct nlmsghdr *nlh, int remaining)
 {
 	return (remaining >= (int)sizeof(struct nlmsghdr) &&
 		nlh->nlmsg_len >= sizeof(struct nlmsghdr) &&
-		nlh->nlmsg_len <= remaining);
+		nlh->nlmsg_len <= ((unsigned)remaining));
 }
 
 /**
@@ -369,8 +372,11 @@ struct nl_msg *nlmsg_alloc_simple(int nlmsgtype, int flags)
  */
 void nlmsg_set_default_size(size_t max)
 {
-	if (max < nlmsg_total_size(0))
-		max = nlmsg_total_size(0);
+	size_t s;
+
+	s = nlmsg_total_size(0);
+	if (max < s)
+		max = s;
 
 	default_msg_size = max;
 }
@@ -841,7 +847,7 @@ static void *print_genl_msg(struct nl_msg *msg, FILE *ofd, struct nlmsghdr *hdr,
 {
 	char *data = nlmsg_data(hdr);
 
-	if (*payloadlen < GENL_HDRLEN)
+	if (*payloadlen < (int)GENL_HDRLEN)
 		return data;
 
 	print_genl_hdr(ofd, data);
@@ -917,10 +923,12 @@ static void dump_error_msg(struct nl_msg *msg, FILE *ofd)
 {
 	struct nlmsghdr *hdr = nlmsg_hdr(msg);
 	struct nlmsgerr *err = nlmsg_data(hdr);
+	int l;
 
 	fprintf(ofd, "  [ERRORMSG] %zu octets\n", sizeof(*err));
 
-	if (nlmsg_len(hdr) >= sizeof(*err)) {
+	l = nlmsg_len(hdr);
+	if (l >= 0 && ((unsigned)l) >= sizeof(*err)) {
 		struct nl_msg *errmsg;
 
 		fprintf(ofd, "    .error = %d \"%s\"\n", err->error,

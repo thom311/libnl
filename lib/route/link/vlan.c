@@ -123,7 +123,7 @@ static int vlan_parse(struct rtnl_link *link, struct nlattr *data,
 		memset(vi->vi_ingress_qos, 0, sizeof(vi->vi_ingress_qos));
 
 		nla_for_each_nested(nla, tb[IFLA_VLAN_INGRESS_QOS], remaining) {
-			if (nla_len(nla) < sizeof(*map))
+			if (_nla_len(nla) < sizeof(*map))
 				return -NLE_INVAL;
 
 			map = nla_data(nla);
@@ -154,7 +154,7 @@ static int vlan_parse(struct rtnl_link *link, struct nlattr *data,
 		int remaining, i = 0;
 
 		nla_for_each_nested(nla, tb[IFLA_VLAN_EGRESS_QOS], remaining) {
-			if (nla_len(nla) < sizeof(*map))
+			if (_nla_len(nla) < sizeof(*map))
 				return -NLE_INVAL;
 			i++;
 		}

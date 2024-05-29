@@ -388,7 +388,8 @@ struct rtnl_qdisc *rtnl_qdisc_get_by_parent(struct nl_cache *cache,
 		return NULL;
 
 	nl_list_for_each_entry(q, &cache->c_items, ce_list) {
-		if (q->q_parent == parent && q->q_ifindex == ifindex) {
+		if (q->q_parent == parent &&
+		    q->q_ifindex == ((unsigned)ifindex)) {
 			nl_object_get((struct nl_object *) q);
 			return q;
 		}
@@ -420,7 +421,8 @@ struct rtnl_qdisc *rtnl_qdisc_get_by_kind(struct nl_cache *cache,
 		return NULL;
 
 	nl_list_for_each_entry(q, &cache->c_items, ce_list) {
-		if ((q->q_ifindex == ifindex) && (!strcmp(q->q_kind, kind))) {
+		if ((q->q_ifindex == ((unsigned)ifindex)) &&
+		    (!strcmp(q->q_kind, kind))) {
 			nl_object_get((struct nl_object *) q);
 			return q;
 		}
@@ -452,7 +454,8 @@ struct rtnl_qdisc *rtnl_qdisc_get(struct nl_cache *cache, int ifindex,
 		return NULL;
 
 	nl_list_for_each_entry(q, &cache->c_items, ce_list) {
-		if (q->q_handle == handle && q->q_ifindex == ifindex) {
+		if (q->q_handle == handle &&
+		    q->q_ifindex == ((unsigned)ifindex)) {
 			nl_object_get((struct nl_object *) q);
 			return q;
 		}

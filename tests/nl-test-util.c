@@ -33,7 +33,7 @@ void _nltst_get_urandom(void *ptr, size_t len)
 	_nltst_assert_errno(fd >= 0);
 
 	nread = read(fd, ptr, len);
-	_nltst_assert_errno(nread == len);
+	_nltst_assert_errno(nread >= 0 && ((size_t)nread) == len);
 
 	_nltst_close(fd);
 }
@@ -961,7 +961,8 @@ bool _nltst_select_route_match(struct nl_object *route,
 
 	if (select_route->plen != -1) {
 		_check(addr, "missing address");
-		_check(nl_addr_get_prefixlen(addr) == select_route->plen,
+		_check(nl_addr_get_prefixlen(addr) ==
+			       (unsigned)select_route->plen,
 		       "unexpected prefix length");
 	}
 	if (select_route->addr || select_route->addr_pattern) {

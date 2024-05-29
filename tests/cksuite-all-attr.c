@@ -70,7 +70,7 @@ START_TEST(msg_construct)
 	nlmsg_for_each_attr(a, nlh, 0, rem) {
 		ck_assert_msg(nla_type(a) == i, "Expected attribute %d", i);
 		i++;
-		ck_assert_msg(nla_get_u32(a) == i,
+		ck_assert_msg(nla_get_u32(a) == (unsigned)i,
 			      "Expected attribute value %d", i);
 	}
 

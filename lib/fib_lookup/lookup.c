@@ -236,7 +236,7 @@ int flnl_lookup_build_request(struct flnl_request *req, int flags,
 	fr.fl_fwmark = fwmark != UINT_LEAST64_MAX ? fwmark : 0;
 	fr.fl_tos = tos >= 0 ? tos : 0;
 	fr.fl_scope = scope >= 0 ? scope : RT_SCOPE_UNIVERSE;
-	fr.tb_id_in = table >= 0 ? table : RT_TABLE_UNSPEC;
+	fr.tb_id_in = table >= 0 ? (unsigned)table : (unsigned)RT_TABLE_UNSPEC;
 
 	addr = flnl_request_get_addr(req);
 	if (!addr)

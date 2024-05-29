@@ -393,7 +393,7 @@ struct rtnl_cls *rtnl_cls_find_by_handle(struct nl_cache *cache, int ifindex, ui
 
 	nl_list_for_each_entry(cls, &cache->c_items, ce_list) {
 		if ((cls->c_parent == parent) &&
-		    (cls->c_ifindex == ifindex)&&
+		    cls->c_ifindex == ((unsigned)ifindex) &&
 		    (cls->c_handle == handle)) {
 			nl_object_get((struct nl_object *) cls);
 			return cls;
@@ -429,9 +429,9 @@ struct rtnl_cls *rtnl_cls_find_by_prio(struct nl_cache *cache, int ifindex,
 
 	nl_list_for_each_entry(cls, &cache->c_items, ce_list) {
 		if ((cls->c_parent == parent) &&
-		    (cls->c_ifindex == ifindex) &&
+		    cls->c_ifindex == ((unsigned)ifindex) &&
 		    (cls->c_prio == prio)) {
-			nl_object_get((struct nl_object *) cls);
+			nl_object_get((struct nl_object *)cls);
 			return cls;
 		}
 	}

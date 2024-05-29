@@ -154,7 +154,7 @@ static int u32_msg_parser(struct rtnl_tc *tc, void *data)
 		sel = u->cu_selector->d_data;
 		pcnt_size = sizeof(struct tc_u32_pcnt) +
 				(sel->nkeys * sizeof(uint64_t));
-		if (nla_len(tb[TCA_U32_PCNT]) < pcnt_size) {
+		if (_nla_len(tb[TCA_U32_PCNT]) < pcnt_size) {
 			err = -NLE_INVAL;
 			goto errout;
 		}

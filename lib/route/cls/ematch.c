@@ -451,7 +451,7 @@ int rtnl_ematch_parse_attr(struct nlattr *attr, struct rtnl_ematch_tree **result
 		NL_DBG(3, "parsing ematch attribute %d, len=%u\n",
 			  nmatches+1, nla_len(a));
 
-		if (nla_len(a) < sizeof(*hdr)) {
+		if (_nla_len(a) < sizeof(*hdr)) {
 			err = -NLE_INVAL;
 			goto errout;
 		}

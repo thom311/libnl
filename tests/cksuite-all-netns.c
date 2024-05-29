@@ -70,7 +70,7 @@ START_TEST(cache_and_clone)
 			.add = false,
 		},
 	};
-	int i;
+	size_t i;
 	int r;
 
 	for (i = 0; i < _NL_N_ELEMENTS(links); i++) {

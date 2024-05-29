@@ -378,9 +378,10 @@ uint32_t nfnl_queue_msg_get_physoutdev(const struct nfnl_queue_msg *msg)
 void nfnl_queue_msg_set_hwaddr(struct nfnl_queue_msg *msg, uint8_t *hwaddr,
 			       int len)
 {
-	if (len > sizeof(msg->queue_msg_hwaddr))
+	if (len < 0)
+		len = 0;
+	else if (((unsigned)len) > sizeof(msg->queue_msg_hwaddr))
 		len = sizeof(msg->queue_msg_hwaddr);
-
 	msg->queue_msg_hwaddr_len = len;
 	memcpy(msg->queue_msg_hwaddr, hwaddr, len);
 	msg->ce_mask |= QUEUE_MSG_ATTR_HWADDR;

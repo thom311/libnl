@@ -534,8 +534,7 @@ struct rtnl_neightbl *rtnl_neightbl_get(struct nl_cache *cache,
 
 	nl_list_for_each_entry(nt, &cache->c_items, ce_list) {
 		if (!strcasecmp(nt->nt_name, name) &&
-		    ((!ifindex && !nt->nt_parms.ntp_ifindex) ||
-		     (ifindex && ifindex == nt->nt_parms.ntp_ifindex))) {
+		    ((unsigned)ifindex) == nt->nt_parms.ntp_ifindex) {
 			nl_object_get((struct nl_object *)nt);
 			return nt;
 		}

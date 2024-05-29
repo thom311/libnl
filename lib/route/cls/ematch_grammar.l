@@ -3,9 +3,10 @@
  * Copyright (c) 2010-2013 Thomas Graf <tgraf@suug.ch>
  */
 
-%{
+%top{
  #include "nl-default.h"
-
+}
+%{
  #include <linux/tc_ematch/tc_em_cmp.h>
 
  #include <netlink/netlink.h>

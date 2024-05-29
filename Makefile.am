@@ -397,7 +397,6 @@ default_includes = \
 lib_cppflags = \
 	$(warn_cppflags) \
 	$(defines_cppflags) \
-	-D_GNU_SOURCE \
 	$(default_includes) \
 	$(NULL)
 
@@ -715,7 +714,6 @@ EXTRA_src_lib_libnl_cli_3_la_DEPENDENCIES = \
 src_lib_libnl_cli_3_la_CPPFLAGS = \
 	$(warn_cppflags) \
 	$(defines_cppflags) \
-	-D_GNU_SOURCE \
 	$(default_includes) \
 	$(NULL)
 src_lib_libnl_cli_3_la_LDFLAGS = \
@@ -734,7 +732,6 @@ src_lib_libnl_cli_3_la_LIBADD = \
 src_cppflags = \
 	$(warn_cppflags) \
 	$(defines_cppflags) \
-	-D_GNU_SOURCE \
 	$(default_includes) \
 	$(NULL)
 
@@ -914,7 +911,6 @@ src_nl_util_addr_LDADD =            $(src_ldadd)
 tests_cppflags = \
 	$(warn_cppflags) \
 	$(defines_cppflags) \
-	-D_GNU_SOURCE \
 	$(default_includes) \
 	$(NULL)
 

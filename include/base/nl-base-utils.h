@@ -754,10 +754,7 @@ struct trans_tbl {
 	const char *a;
 };
 
-#define __ADD(id, name)             \
-	{                           \
-		.i = id, .a = #name \
-	}
+#define __ADD(id, name) { .i = id, .a = #name }
 
 #define BUG()                                                                \
 	do {                                                                 \

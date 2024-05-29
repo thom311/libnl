@@ -1026,7 +1026,7 @@ int rtnl_route_guess_scope(struct rtnl_route *route)
 		 * is not directly connected
 		 */
 		nl_list_for_each_entry(nh, &route->rt_nexthops, rtnh_list) {
-			if (nh->rtnh_gateway)
+			if (nh->rtnh_gateway || nh->rtnh_via)
 				return RT_SCOPE_UNIVERSE;
 		}
 	}

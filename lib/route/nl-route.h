@@ -156,7 +156,7 @@ static inline int build_sysconf_path(char **strp, const char *filename)
 	sysconfdir = getenv("NLSYSCONFDIR");
 
 	if (!sysconfdir)
-		sysconfdir = SYSCONFDIR;
+		sysconfdir = _NL_SYSCONFDIR_LIBNL;
 
 	return asprintf(strp, "%s/%s", sysconfdir, filename);
 }

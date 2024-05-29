@@ -35,11 +35,15 @@ pkgconfig_DATA = \
 warn_cppflags = \
 	-Wall \
 	-Wextra \
+	\
+	-Wdeclaration-after-statement \
 	-Wmissing-prototypes \
-	-Wno-unused-parameter \
-	-Wno-sign-compare \
-	-Wno-missing-field-initializers \
 	-Wpointer-arith \
+	-Wvla \
+	\
+	-Wno-missing-field-initializers \
+	-Wno-sign-compare \
+	-Wno-unused-parameter \
 	$(NULL)
 
 ###############################################################################

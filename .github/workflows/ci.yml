@@ -73,7 +73,7 @@ jobs:
           set -x
 
           export CC="${{ matrix.cc }}"
-          export CFLAGS="-DNL_MORE_ASSERTS=1000 -O2 -Werror -Wall -Wdeclaration-after-statement -Wvla -std=gnu11 -fexceptions"
+          export CFLAGS="-DNL_MORE_ASSERTS=1000 -O2 -Werror -std=gnu11 -fexceptions"
           CONFIGURE_ARGS=
           if [ "$CC" = "clang" ]; then
                   CFLAGS="$CFLAGS -Wno-error=unused-command-line-argument -Wno-error=unused-function"
@@ -134,7 +134,7 @@ jobs:
           set -x
           git clean -fdx
           export CC="${{ matrix.cc }}"
-          export CFLAGS="-Werror -Wall -Wdeclaration-after-statement -Wvla -std=gnu11 -fexceptions"
+          export CFLAGS="-Werror -std=gnu11 -fexceptions"
           if [ "$CC" = "clang" ]; then
                   CFLAGS="$CFLAGS -Wno-error=unused-command-line-argument -Wno-error=unused-function"
           fi
@@ -194,7 +194,7 @@ jobs:
           set -x
 
           export CC="${{ matrix.cc }}"
-          export CFLAGS="-DNL_MORE_ASSERTS=1000 -O2 -Werror -Wall -Wdeclaration-after-statement -Wvla -std=gnu11 -fexceptions"
+          export CFLAGS="-DNL_MORE_ASSERTS=1000 -O2 -Werror -std=gnu11 -fexceptions"
           if [ "$CC" = "clang" ]; then
                   CFLAGS="$CFLAGS -Wno-error=unused-command-line-argument -Wno-error=unused-function"
                   export LDFLAGS="-Wl,--no-undefined-version,--fatal-warnings"

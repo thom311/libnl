@@ -336,7 +336,7 @@ static int nexthop_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		unsigned len;
 
 		data = nla_data(tb[NHA_GROUP]);
-		len = nla_len(tb[NHA_GROUP]);
+		len = _nla_len(tb[NHA_GROUP]);
 		size = len / sizeof(struct nexthop_grp);
 
 		err = rtnl_nh_grp_info(size, (const struct nexthop_grp *)data,

@@ -57,4 +57,12 @@ static inline struct nl_addr *_nl_addr_build(int family, const void *buf)
 	return nl_addr_build(family, buf, _nl_addr_family_to_size(family));
 }
 
+static inline uint16_t _nla_len(const struct nlattr *nla)
+{
+	_nl_assert(nla);
+	_nl_assert(nla->nla_len >= (uint16_t)NLA_HDRLEN);
+
+	return nla->nla_len - (uint16_t)NLA_HDRLEN;
+}
+
 #endif /* NETLINK_NL_AUTO_H_ */

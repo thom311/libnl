@@ -129,7 +129,7 @@ void *nla_data(const struct nlattr *nla)
  */
 int nla_len(const struct nlattr *nla)
 {
-	return nla->nla_len - NLA_HDRLEN;
+	return _nla_len(nla);
 }
 
 /**
@@ -146,6 +146,8 @@ int nla_len(const struct nlattr *nla)
  */
 int nla_ok(const struct nlattr *nla, int remaining)
 {
+	_NL_STATIC_ASSERT(sizeof(*nla) == NLA_HDRLEN);
+
 	return remaining >= (int) sizeof(*nla) &&
 	       nla->nla_len >= sizeof(*nla) &&
 	       nla->nla_len <= remaining;

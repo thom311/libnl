@@ -29,10 +29,10 @@
 #define BOND_HAS_MIN_LINKS	(1 << 4)
 
 struct bond_info {
+	uint32_t ce_mask; /* to support attr macros */
 	uint8_t bn_mode;
 	uint8_t hashing_type;
 	uint32_t ifindex;
-	uint32_t bn_mask;
 	uint32_t miimon;
 	uint32_t min_links;
 };
@@ -67,19 +67,19 @@ static int bond_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	data = nla_nest_start(msg, IFLA_INFO_DATA);
 	if (!data)
 		return -NLE_MSGSIZE;
-	if (bn->bn_mask & BOND_HAS_MODE)
+	if (bn->ce_mask & BOND_HAS_MODE)
 		NLA_PUT_U8(msg, IFLA_BOND_MODE, bn->bn_mode);
 
-	if (bn->bn_mask & BOND_HAS_ACTIVE_SLAVE)
+	if (bn->ce_mask & BOND_HAS_ACTIVE_SLAVE)
 		NLA_PUT_U32(msg, IFLA_BOND_ACTIVE_SLAVE, bn->ifindex);
 
-	if (bn->bn_mask & BOND_HAS_HASHING_TYPE)
+	if (bn->ce_mask & BOND_HAS_HASHING_TYPE)
 		NLA_PUT_U8(msg, IFLA_BOND_XMIT_HASH_POLICY, bn->hashing_type);
 
-	if (bn->bn_mask & BOND_HAS_MIIMON)
+	if (bn->ce_mask & BOND_HAS_MIIMON)
 		NLA_PUT_U32(msg, IFLA_BOND_MIIMON, bn->miimon);
 
-	if (bn->bn_mask & BOND_HAS_MIN_LINKS)
+	if (bn->ce_mask & BOND_HAS_MIN_LINKS)
 		NLA_PUT_U32(msg, IFLA_BOND_MIN_LINKS, bn->min_links);
 
 	nla_nest_end(msg, data);
@@ -119,7 +119,7 @@ void rtnl_link_bond_set_activeslave(struct rtnl_link *link, int active_slave)
 
 	bn->ifindex = active_slave;
 
-	bn->bn_mask |= BOND_HAS_ACTIVE_SLAVE;
+	bn->ce_mask |= BOND_HAS_ACTIVE_SLAVE;
 }
 
 /**
@@ -137,7 +137,7 @@ void rtnl_link_bond_set_mode(struct rtnl_link *link, uint8_t mode)
 
 	bn->bn_mode = mode;
 
-	bn->bn_mask |= BOND_HAS_MODE;
+	bn->ce_mask |= BOND_HAS_MODE;
 }
 
 /**
@@ -155,7 +155,7 @@ void rtnl_link_bond_set_hashing_type (struct rtnl_link *link, uint8_t type)
 
 	bn->hashing_type = type;
 
-	bn->bn_mask |= BOND_HAS_HASHING_TYPE;
+	bn->ce_mask |= BOND_HAS_HASHING_TYPE;
 }
 
 /**
@@ -173,7 +173,7 @@ void rtnl_link_bond_set_miimon (struct rtnl_link *link, uint32_t miimon)
 
 	bn->miimon = miimon;
 
-	bn->bn_mask |= BOND_HAS_MIIMON;
+	bn->ce_mask |= BOND_HAS_MIIMON;
 }
 
 /**
@@ -192,7 +192,7 @@ void rtnl_link_bond_set_min_links (struct rtnl_link *link, uint32_t min_links)
 
 	bn->min_links = min_links;
 
-	bn->bn_mask |= BOND_HAS_MIN_LINKS;
+	bn->ce_mask |= BOND_HAS_MIN_LINKS;
 }
 
 /**

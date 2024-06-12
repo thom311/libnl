@@ -54,6 +54,59 @@ static int bond_info_alloc(struct rtnl_link *link)
 	return 0;
 }
 
+static struct nla_policy bonding_nl_policy[IFLA_BOND_MAX + 1] = {
+	[IFLA_BOND_MODE]             = { .type = NLA_U8 },
+	[IFLA_BOND_ACTIVE_SLAVE]     = { .type = NLA_U32 },
+	[IFLA_BOND_MIIMON]	     = { .type = NLA_U32 },
+	[IFLA_BOND_XMIT_HASH_POLICY] = { .type = NLA_U8 },
+	[IFLA_BOND_MIN_LINKS]	     = { .type = NLA_U32 },
+};
+
+static int bond_info_parse(struct rtnl_link *link, struct nlattr *data,
+			   struct nlattr *xstats)
+{
+	struct nlattr *tb[IFLA_BOND_MAX + 1];
+	struct bond_info *bn;
+	int err;
+
+	err = nla_parse_nested(tb, IFLA_BOND_MAX, data, bonding_nl_policy);
+	if (err < 0)
+		return err;
+
+	err = bond_info_alloc(link);
+	if (err < 0)
+		return err;
+
+	bn = link->l_info;
+
+	if (tb[IFLA_BOND_MODE]) {
+		bn->bn_mode = nla_get_u8(tb[IFLA_BOND_MODE]);
+		bn->ce_mask |= BOND_HAS_MODE;
+	}
+
+	if (tb[IFLA_BOND_ACTIVE_SLAVE]) {
+		bn->ifindex = nla_get_u32(tb[IFLA_BOND_ACTIVE_SLAVE]);
+		bn->ce_mask |= BOND_HAS_ACTIVE_SLAVE;
+	}
+
+	if (tb[IFLA_BOND_MIIMON]) {
+		bn->hashing_type = nla_get_u32(tb[IFLA_BOND_MIIMON]);
+		bn->ce_mask |= BOND_HAS_MIIMON;
+	}
+
+	if (tb[IFLA_BOND_XMIT_HASH_POLICY]) {
+		bn->hashing_type = nla_get_u8(tb[IFLA_BOND_XMIT_HASH_POLICY]);
+		bn->ce_mask |= BOND_HAS_HASHING_TYPE;
+	}
+
+	if (tb[IFLA_BOND_MIN_LINKS]) {
+		bn->hashing_type = nla_get_u32(tb[IFLA_BOND_MIN_LINKS]);
+		bn->ce_mask |= BOND_HAS_MIN_LINKS;
+	}
+
+	return 0;
+}
+
 static void bond_info_free(struct rtnl_link *link)
 {
 	_nl_clear_free(&link->l_info);
@@ -133,6 +186,7 @@ static int bond_info_compare(struct rtnl_link *link_a, struct rtnl_link *link_b,
 static struct rtnl_link_info_ops bonding_info_ops = {
 	.io_name		= "bond",
 	.io_alloc		= bond_info_alloc,
+	.io_parse		= bond_info_parse,
 	.io_clone		= bond_info_clone,
 	.io_put_attrs		= bond_put_attrs,
 	.io_free		= bond_info_free,

@@ -110,12 +110,33 @@ nla_put_failure:
 	return -NLE_MSGSIZE;
 }
 
+static int bond_info_compare(struct rtnl_link *link_a, struct rtnl_link *link_b,
+			     int flags)
+{
+	struct bond_info *a = link_a->l_info;
+	struct bond_info *b = link_b->l_info;
+	uint32_t attrs = flags & LOOSE_COMPARISON ? b->ce_mask : ~0u;
+	int diff = 0;
+
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(BOND_HAS_MODE, a->bn_mode != b->bn_mode);
+	diff |= _DIFF(BOND_HAS_ACTIVE_SLAVE, a->ifindex != b->ifindex);
+	diff |= _DIFF(BOND_HAS_HASHING_TYPE,
+		      a->hashing_type != b->hashing_type);
+	diff |= _DIFF(BOND_HAS_MIIMON, a->miimon != b->miimon);
+	diff |= _DIFF(BOND_HAS_MIN_LINKS, a->min_links != b->min_links);
+#undef _DIFF
+
+	return diff;
+}
+
 static struct rtnl_link_info_ops bonding_info_ops = {
 	.io_name		= "bond",
 	.io_alloc		= bond_info_alloc,
 	.io_clone		= bond_info_clone,
 	.io_put_attrs		= bond_put_attrs,
 	.io_free		= bond_info_free,
+	.io_compare		= bond_info_compare,
 };
 
 #define IS_BOND_INFO_ASSERT(link)                                                    \

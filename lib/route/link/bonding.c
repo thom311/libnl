@@ -59,6 +59,26 @@ static void bond_info_free(struct rtnl_link *link)
 	_nl_clear_free(&link->l_info);
 }
 
+static int bond_info_clone(struct rtnl_link *dst, struct rtnl_link *src)
+{
+	struct bond_info *bond_dst, *bond_src = src->l_info;
+	int err;
+
+	_nl_assert(bond_src);
+
+	err = bond_info_alloc(dst);
+	if (err)
+		return err;
+
+	bond_dst = dst->l_info;
+
+	_nl_assert(bond_dst);
+
+	*bond_dst = *bond_src;
+
+	return 0;
+}
+
 static int bond_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 {
 	struct bond_info *bn = link->l_info;
@@ -93,6 +113,7 @@ nla_put_failure:
 static struct rtnl_link_info_ops bonding_info_ops = {
 	.io_name		= "bond",
 	.io_alloc		= bond_info_alloc,
+	.io_clone		= bond_info_clone,
 	.io_put_attrs		= bond_put_attrs,
 	.io_free		= bond_info_free,
 };

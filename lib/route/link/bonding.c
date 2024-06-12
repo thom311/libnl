@@ -123,6 +123,32 @@ void rtnl_link_bond_set_activeslave(struct rtnl_link *link, int active_slave)
 }
 
 /**
+ * Get active slave for bond
+ * @arg link		Link object of type bond
+ * @arg active_slave	Output argument
+ *
+ * @return Zero on success, otherwise a negative error code.
+ * @retval -NLE_NOATTR
+ * @retval -NLE_INVAL
+ */
+int rtnl_link_bond_get_activeslave(struct rtnl_link *link, int *active_slave)
+{
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	if (!(bn->ce_mask & BOND_HAS_ACTIVE_SLAVE))
+		return -NLE_NOATTR;
+
+	if (!active_slave)
+		return -NLE_INVAL;
+
+	*active_slave = bn->ifindex;
+
+	return 0;
+}
+
+/**
  * Set bond mode
  * @arg link            Link object of type bond
  * @arg mode            bond mode to set
@@ -141,13 +167,39 @@ void rtnl_link_bond_set_mode(struct rtnl_link *link, uint8_t mode)
 }
 
 /**
+ * Get bond mode
+ * @arg link		Link object of type bond
+ * @arg mode		Output argument
+ *
+ * @return Zero on success, otherwise a negative error code.
+ * @retval -NLE_NOATTR
+ * @retval -NLE_INVAL
+ */
+int rtnl_link_bond_get_mode(struct rtnl_link *link, uint8_t *mode)
+{
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	if (!(bn->ce_mask & BOND_HAS_MODE))
+		return -NLE_NOATTR;
+
+	if (!mode)
+		return -NLE_INVAL;
+
+	*mode = bn->bn_mode;
+
+	return 0;
+}
+
+/**
  * Set hashing type
  * @arg link            Link object of type bond
  * @arg type            bond hashing type to set
  *
  * @return void
  */
-void rtnl_link_bond_set_hashing_type (struct rtnl_link *link, uint8_t type)
+void rtnl_link_bond_set_hashing_type(struct rtnl_link *link, uint8_t type)
 {
 	struct bond_info *bn = link->l_info;
 
@@ -159,13 +211,39 @@ void rtnl_link_bond_set_hashing_type (struct rtnl_link *link, uint8_t type)
 }
 
 /**
+ * Get hashing type
+ * @arg link		Link object of type bond
+ * @arg type		Output argument
+ *
+ * @return Zero on success, otherwise a negative error code.
+ * @retval -NLE_NOATTR
+ * @retval -NLE_INVAL
+ */
+int rtnl_link_bond_get_hashing_type(struct rtnl_link *link, uint8_t *type)
+{
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	if (!(bn->ce_mask & BOND_HAS_HASHING_TYPE))
+		return -NLE_NOATTR;
+
+	if (!type)
+		return -NLE_INVAL;
+
+	*type = bn->hashing_type;
+
+	return 0;
+}
+
+/**
  * Set MII monitoring interval
  * @arg link            Link object of type bond
  * @arg miimon          interval in milliseconds
  *
  * @return void
  */
-void rtnl_link_bond_set_miimon (struct rtnl_link *link, uint32_t miimon)
+void rtnl_link_bond_set_miimon(struct rtnl_link *link, uint32_t miimon)
 {
 	struct bond_info *bn = link->l_info;
 
@@ -177,6 +255,32 @@ void rtnl_link_bond_set_miimon (struct rtnl_link *link, uint32_t miimon)
 }
 
 /**
+ * Get MII monitoring interval
+ * @arg link            Link object of type bond
+ * @arg miimon		Output argument
+ *
+ * @return Zero on success, otherwise a negative error code.
+ * @retval -NLE_NOATTR
+ * @retval -NLE_INVAL
+ */
+int rtnl_link_bond_get_miimon(struct rtnl_link *link, uint32_t *miimon)
+{
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	if (!(bn->ce_mask & BOND_HAS_MIIMON))
+		return -NLE_NOATTR;
+
+	if (!miimon)
+		return -NLE_INVAL;
+
+	*miimon = bn->miimon;
+
+	return 0;
+}
+
+/**
  * Set the minimum number of member ports that must be up before
  * marking the bond device as up
  * @arg link            Link object of type bond
@@ -184,7 +288,7 @@ void rtnl_link_bond_set_miimon (struct rtnl_link *link, uint32_t miimon)
  *
  * @return void
  */
-void rtnl_link_bond_set_min_links (struct rtnl_link *link, uint32_t min_links)
+void rtnl_link_bond_set_min_links(struct rtnl_link *link, uint32_t min_links)
 {
 	struct bond_info *bn = link->l_info;
 
@@ -193,6 +297,32 @@ void rtnl_link_bond_set_min_links (struct rtnl_link *link, uint32_t min_links)
 	bn->min_links = min_links;
 
 	bn->ce_mask |= BOND_HAS_MIN_LINKS;
+}
+/**
+ * Get the minimum number of member ports that must be up before
+ * marking the bond device as up
+ * @arg link		Link object of type bond
+ * @arg min_links	Output argument.
+ *
+ * @return Zero on success, otherwise a negative error code.
+ * @retval -NLE_NOATTR
+ * @retval -NLE_INVAL
+ */
+int rtnl_link_bond_get_min_links(struct rtnl_link *link, uint32_t *min_links)
+{
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	if (!(bn->ce_mask & BOND_HAS_MIN_LINKS))
+		return -NLE_NOATTR;
+
+	if (!min_links)
+		return -NLE_INVAL;
+
+	*min_links = bn->min_links;
+
+	return 0;
 }
 
 /**

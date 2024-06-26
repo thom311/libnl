@@ -27,10 +27,12 @@
 #define BOND_HAS_HASHING_TYPE	(1 << 2)
 #define BOND_HAS_MIIMON		(1 << 3)
 #define BOND_HAS_MIN_LINKS	(1 << 4)
+#define BOND_HAS_LACP_RATE	(1 << 5)
 
 struct bond_info {
 	uint8_t bn_mode;
 	uint8_t hashing_type;
+	uint8_t lacp_rate;
 	uint32_t ifindex;
 	uint32_t bn_mask;
 	uint32_t miimon;
@@ -40,6 +42,7 @@ struct bond_info {
 static const struct nla_policy bond_attrs_policy[IFLA_BOND_MAX + 1] = {
 	[IFLA_BOND_MODE] = { .type = NLA_U8 },
 	[IFLA_BOND_XMIT_HASH_POLICY] = { .type = NLA_U8 },
+	[IFLA_BOND_AD_LACP_RATE] = { .type = NLA_U8 },
 	[IFLA_BOND_ACTIVE_SLAVE] = { .type = NLA_U32 },
 	[IFLA_BOND_MIIMON] = { .type = NLA_U32 },
 	[IFLA_BOND_MIN_LINKS] = { .type = NLA_U32 },
@@ -90,6 +93,9 @@ static int bond_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (bn->bn_mask & BOND_HAS_MIN_LINKS)
 		NLA_PUT_U32(msg, IFLA_BOND_MIN_LINKS, bn->min_links);
 
+	if (bn->bn_mask & BOND_HAS_LACP_RATE)
+		NLA_PUT_U8(msg, IFLA_BOND_AD_LACP_RATE, bn->lacp_rate);
+
 	nla_nest_end(msg, data);
 	return 0;
 
@@ -121,6 +127,11 @@ static int bond_info_parse(struct rtnl_link *link, struct nlattr *data,
 	if (tb[IFLA_BOND_XMIT_HASH_POLICY]) {
 		bn->hashing_type = nla_get_u8(tb[IFLA_BOND_XMIT_HASH_POLICY]);
 		bn->bn_mask |= BOND_HAS_HASHING_TYPE;
+	}
+
+	if (tb[IFLA_BOND_AD_LACP_RATE]) {
+		bn->lacp_rate = nla_get_u8(tb[IFLA_BOND_AD_LACP_RATE]);
+		bn->bn_mask |= BOND_HAS_LACP_RATE;
 	}
 
 	if (tb[IFLA_BOND_ACTIVE_SLAVE]) {
@@ -321,6 +332,37 @@ uint32_t rtnl_link_bond_get_min_links (struct rtnl_link *link)
 	IS_BOND_INFO_ASSERT(link);
 
 	return bn->min_links;
+}
+
+/**
+ * Set the lacp heartbeat request time
+ * @arg link            Link object of type bond
+ * @arg lacp_rate       heartbeat request time
+ *
+ * @return void
+ */
+void rtnl_link_bond_set_lacp_rate(struct rtnl_link *link, uint8_t lacp_rate) {
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	bn->lacp_rate = lacp_rate;
+
+	bn->bn_mask |= BOND_HAS_LACP_RATE;
+}
+
+/**
+ * Get the lacp heartbeat request time
+ * @arg link            Link object of type bond
+ *
+ * @return heartbeat request time
+ */
+uint8_t rtnl_link_bond_get_lacp_rate(struct rtnl_link *link) {
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	return bn->lacp_rate;
 }
 
 /**

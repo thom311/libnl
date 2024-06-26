@@ -40,6 +40,9 @@ extern uint32_t	rtnl_link_bond_get_miimon (struct rtnl_link *link);
 extern void	rtnl_link_bond_set_min_links (struct rtnl_link *link, uint32_t min_links);
 extern uint32_t	rtnl_link_bond_get_min_links (struct rtnl_link *link);
 
+extern void	rtnl_link_bond_set_lacp_rate(struct rtnl_link *link, uint8_t lacp_rate);
+extern uint8_t	rtnl_link_bond_get_lacp_rate(struct rtnl_link *link);
+
 #ifdef __cplusplus
 }
 #endif

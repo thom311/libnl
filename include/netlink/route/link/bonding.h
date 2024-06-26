@@ -26,10 +26,22 @@ extern int	rtnl_link_bond_release_ifindex(struct nl_sock *, int);
 extern int	rtnl_link_bond_release(struct nl_sock *, struct rtnl_link *);
 
 extern void	rtnl_link_bond_set_mode(struct rtnl_link *link, uint8_t mode);
+extern uint8_t	rtnl_link_bond_get_mode(struct rtnl_link *link);
+
 extern void	rtnl_link_bond_set_activeslave(struct rtnl_link *link, int active_slave);
+extern int	rtnl_link_bond_get_activeslave(struct rtnl_link *link);
+
 extern void	rtnl_link_bond_set_hashing_type (struct rtnl_link *link, uint8_t type);
+extern uint8_t	rtnl_link_bond_get_hashing_type (struct rtnl_link *link);
+
 extern void	rtnl_link_bond_set_miimon (struct rtnl_link *link, uint32_t miimon);
+extern uint32_t	rtnl_link_bond_get_miimon (struct rtnl_link *link);
+
 extern void	rtnl_link_bond_set_min_links (struct rtnl_link *link, uint32_t min_links);
+extern uint32_t	rtnl_link_bond_get_min_links (struct rtnl_link *link);
+
+extern void	rtnl_link_bond_set_lacp_rate(struct rtnl_link *link, uint8_t lacp_rate);
+extern uint8_t	rtnl_link_bond_get_lacp_rate(struct rtnl_link *link);
 
 #ifdef __cplusplus
 }

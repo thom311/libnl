@@ -67,6 +67,10 @@ static uint32_t _badrandom_from_time(void)
 	time_t t;
 
 	t = time(NULL);
+	/* If a device returns a small time value, increase it to avoid
+	 * returning a value close to the maximum uint32_t value.  */
+	if (t < 1000000000LL)
+		t += 1000000000LL;
 	v64 = (uint64_t)t;
 	result = (uint32_t)v64;
 

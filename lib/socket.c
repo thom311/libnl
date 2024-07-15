@@ -24,6 +24,7 @@
 #include "nl-default.h"
 
 #include <fcntl.h>
+#include <limits.h>
 #include <sys/socket.h>
 
 #include <netlink/netlink.h>
@@ -316,6 +317,10 @@ void nl_socket_disable_seq_check(struct nl_sock *sk)
  */
 unsigned int nl_socket_use_seq(struct nl_sock *sk)
 {
+	if (sk->s_seq_next == UINT_MAX) {
+		sk->s_seq_next = 0;
+		return UINT_MAX;
+	}
 	return sk->s_seq_next++;
 }
 

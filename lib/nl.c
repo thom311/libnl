@@ -486,7 +486,7 @@ void nl_complete_msg(struct nl_sock *sk, struct nl_msg *msg)
 		nlh->nlmsg_pid = nl_socket_get_local_port(sk);
 
 	if (nlh->nlmsg_seq == NL_AUTO_SEQ)
-		nlh->nlmsg_seq = sk->s_seq_next++;
+		nlh->nlmsg_seq = nl_socket_use_seq(sk);
 
 	if (msg->nm_protocol == -1)
 		msg->nm_protocol = sk->s_proto;

@@ -103,7 +103,7 @@ class MyFormatter(Formatter):
         if not isinstance(value, property):
             raise ValueError("Invalid formatting string {0}".format(key))
 
-        d = getattr(value.fget, "formatinfo", dict())
+        d = getattr(value.fget, "formatinfo", {})
 
         # value = value.fget() is exactly the same
         value = getattr(self._obj, key)

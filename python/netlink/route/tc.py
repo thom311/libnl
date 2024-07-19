@@ -596,7 +596,7 @@ _cls_cache = {}
 
 def get_cls(ifindex, parent, handle=None):
 
-    chain = _cls_cache.get(ifindex, dict())
+    chain = _cls_cache.get(ifindex, {})
 
     try:
         cache = chain[parent]
@@ -607,6 +607,6 @@ def get_cls(ifindex, parent, handle=None):
     cache.refill()
 
     if handle is None:
-        return [cls for cls in cache]
+        return list(cache)
 
     return [cls for cls in cache if cls.handle == handle]

@@ -121,6 +121,10 @@ extern int64_t          nla_get_s64(const struct nlattr *);
 extern int              nla_put_s64(struct nl_msg *, int, int64_t);
 extern uint64_t		nla_get_u64(const struct nlattr *);
 extern int		nla_put_u64(struct nl_msg *, int, uint64_t);
+extern int64_t		nla_get_sint(const struct nlattr *);
+extern int              nla_put_sint(struct nl_msg *, int, int64_t);
+extern uint64_t		nla_get_uint(const struct nlattr *);
+extern int              nla_put_uint(struct nl_msg *, int, uint64_t);
 
 /* String attribute */
 extern char *		nla_get_string(const struct nlattr *);

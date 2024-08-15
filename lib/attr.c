@@ -776,6 +776,70 @@ uint64_t nla_get_u64(const struct nlattr *nla)
 	return tmp;
 }
 
+/**
+ * Add variable-length signed integer attribute to netlink message.
+ * @arg msg             Netlink message.
+ * @arg attrtype        Attribute type.
+ * @arg value           Numeric value to store as payload.
+ *
+ * @see nla_put
+ * @return 0 on success or a negative error code.
+ */
+int nla_put_sint(struct nl_msg *msg, int attrtype, int64_t value)
+{
+	int64_t tmp64 = value;
+	int32_t tmp32 = value;
+
+	if (tmp64 == tmp32)
+		return nla_put_s32(msg, attrtype, tmp32);
+	return nla_put(msg, attrtype, sizeof(int64_t), &value);
+}
+
+/**
+ * Return payload of variable-length signed integer attribute
+ * @arg nla		variable-length signed integer attribute
+ *
+ * @return Payload as 64 bit integer.
+ */
+int64_t nla_get_sint(const struct nlattr *nla)
+{
+	if (nla && _nla_len(nla) == sizeof(int32_t))
+		return nla_get_s32(nla);
+	return nla_get_s64(nla);
+}
+
+/**
+ * Add variable-length unsigned integer attribute to netlink message.
+ * @arg msg             Netlink message.
+ * @arg attrtype        Attribute type.
+ * @arg value           Numeric value to store as payload.
+ *
+ * @see nla_put
+ * @return 0 on success or a negative error code.
+ */
+int nla_put_uint(struct nl_msg *msg, int attrtype, uint64_t value)
+{
+	uint64_t tmp64 = value;
+	uint32_t tmp32 = value;
+
+	if (tmp64 == tmp32)
+		return nla_put_u32(msg, attrtype, tmp32);
+	return nla_put(msg, attrtype, sizeof(uint64_t), &value);
+}
+
+/**
+ * Return payload of variable-length unsigned integer attribute
+ * @arg nla		variable-length unsigned integer attribute
+ *
+ * @return Payload as 64 bit integer.
+ */
+uint64_t nla_get_uint(const struct nlattr *nla)
+{
+	if (nla && _nla_len(nla) == sizeof(uint32_t))
+		return nla_get_u32(nla);
+	return nla_get_u64(nla);
+}
+
 /** @} */
 
 /**

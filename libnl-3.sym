@@ -377,3 +377,11 @@ libnl_3_10 {
 global:
 	nl_cache_mngr_alloc_ex;
 } libnl_3_6;
+
+libnl_3_11 {
+global:
+	nla_get_sint;
+	nla_put_sint;
+	nla_get_uint;
+	nla_put_uint;
+} libnl_3_10;

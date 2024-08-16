@@ -184,6 +184,8 @@ static uint16_t nla_attr_minlen[NLA_TYPE_MAX+1] = {
 	[NLA_U64]	= sizeof(uint64_t),
 	[NLA_STRING]	= 1,
 	[NLA_FLAG]	= 0,
+	[NLA_SINT]	= sizeof(uint32_t),
+	[NLA_UINT]	= sizeof(uint32_t),
 };
 
 static int validate_nla(const struct nlattr *nla, int maxtype,

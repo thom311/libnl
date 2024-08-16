@@ -47,6 +47,9 @@ enum {
 	NLA_S16,
 	NLA_S32,
 	NLA_S64,
+	/* Skip unimplemented attr types  */
+	NLA_SINT = 20,
+	NLA_UINT,
 	__NLA_TYPE_MAX,
 };
 

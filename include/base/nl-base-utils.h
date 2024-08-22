@@ -710,6 +710,28 @@ static inline char *_nl_inet_ntop_dup(int addr_family, const void *addr)
 
 /*****************************************************************************/
 
+static inline size_t _nl_ptrarray_len_(const void *const *ptr, ssize_t len)
+{
+	size_t l = 0;
+
+	if (len >= 0)
+		return len;
+	if (ptr) {
+		while (ptr[l])
+			l++;
+	}
+	return l;
+}
+
+#define _nl_ptrarray_len(ptr, len)                                   \
+	({                                                           \
+		typeof(*(ptr)) *const _ptr = (ptr);                  \
+                                                                     \
+		_nl_ptrarray_len_((const void *const *)_ptr, (len)); \
+	})
+
+/*****************************************************************************/
+
 #define _NL_AUTO_DEFINE_FCN_VOID0(CastType, name, func) \
 	static inline void name(void *v)                \
 	{                                               \

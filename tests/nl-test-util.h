@@ -51,6 +51,46 @@ _NL_AUTO_DEFINE_FCN_TYPED0(char **, _nltst_auto_strfreev_fcn, _nltst_strfreev);
 
 /*****************************************************************************/
 
+#define _nltst_assert(expr)                                           \
+	({                                                            \
+		typeof(expr) _expr = (expr);                          \
+                                                                      \
+		if (!_expr) {                                         \
+			ck_assert_msg(0, "assert(%s) failed", #expr); \
+		}                                                     \
+		_expr;                                                \
+	})
+
+#define _nltst_assert_errno(expr)                                            \
+	do {                                                                 \
+		if (expr) {                                                  \
+		} else {                                                     \
+			const int _errno = (errno);                          \
+                                                                             \
+			ck_assert_msg(0, "assert(%s) failed (errno=%d, %s)", \
+				      #expr, _errno, strerror(_errno));      \
+		}                                                            \
+	} while (0)
+
+#define _nltst_assert_retcode(expr)                                                   \
+	do {                                                                          \
+		const int _r = (expr);                                                \
+                                                                                      \
+		if (_r < 0) {                                                         \
+			ck_assert_msg(                                                \
+				0, "command(%s) failed with return code %d",          \
+				#expr, _r);                                           \
+		}                                                                     \
+		if (_r > 0) {                                                         \
+			ck_assert_msg(                                                \
+				0,                                                    \
+				"command(%s) has unexpected positive return code %d", \
+				#expr, _r);                                           \
+		}                                                                     \
+	} while (0)
+
+/*****************************************************************************/
+
 #define __nltst_assert_nonnull(uniq, x)                      \
 	({                                                   \
 		typeof(x) _NL_UNIQ_T(_x, uniq) = (x);        \
@@ -62,10 +102,37 @@ _NL_AUTO_DEFINE_FCN_TYPED0(char **, _nltst_auto_strfreev_fcn, _nltst_strfreev);
 
 #define _nltst_assert_nonnull(x) __nltst_assert_nonnull(_NL_UNIQ, x)
 
+/*****************************************************************************/
+
 static inline char *_nltst_strdup(const char *str)
 {
 	return str ? _nltst_assert_nonnull(strdup(str)) : NULL;
 }
+
+#define _nltst_malloc0(size) _nltst_assert_nonnull(calloc((size), 1u))
+
+/*****************************************************************************/
+
+#define _nltst_sprintf(buf, p_start, p_extra_len, ...)           \
+	do {                                                     \
+		char *_buf = (buf);                              \
+		size_t *_p_start = (p_start);                    \
+		size_t *_p_extra_len = (p_extra_len);            \
+		int _r;                                          \
+                                                                 \
+		_nltst_assert_nonnull(_buf);                     \
+		_nltst_assert_nonnull(_p_start);                 \
+		_nltst_assert_nonnull(_p_extra_len);             \
+                                                                 \
+		_buf = &_buf[*_p_start];                         \
+		_r = snprintf(_buf, *_p_extra_len, __VA_ARGS__); \
+		_nltst_assert(_r >= 0);                          \
+		_nltst_assert((size_t)_r < *_p_extra_len);       \
+		_nltst_assert((size_t)_r == strlen(_buf));       \
+                                                                 \
+		*_p_start += (size_t)_r;                         \
+		*_p_extra_len -= (size_t)_r;                     \
+	} while (0)
 
 /*****************************************************************************/
 
@@ -126,44 +193,6 @@ static inline bool _nltst_rand_bool(void)
 	})
 
 /*****************************************************************************/
-
-#define _nltst_assert(expr)                                           \
-	({                                                            \
-		typeof(expr) _expr = (expr);                          \
-                                                                      \
-		if (!_expr) {                                         \
-			ck_assert_msg(0, "assert(%s) failed", #expr); \
-		}                                                     \
-		_expr;                                                \
-	})
-
-#define _nltst_assert_errno(expr)                                            \
-	do {                                                                 \
-		if (expr) {                                                  \
-		} else {                                                     \
-			const int _errno = (errno);                          \
-                                                                             \
-			ck_assert_msg(0, "assert(%s) failed (errno=%d, %s)", \
-				      #expr, _errno, strerror(_errno));      \
-		}                                                            \
-	} while (0)
-
-#define _nltst_assert_retcode(expr)                                                   \
-	do {                                                                          \
-		const int _r = (expr);                                                \
-                                                                                      \
-		if (_r < 0) {                                                         \
-			ck_assert_msg(                                                \
-				0, "command(%s) failed with return code %d",          \
-				#expr, _r);                                           \
-		}                                                                     \
-		if (_r > 0) {                                                         \
-			ck_assert_msg(                                                \
-				0,                                                    \
-				"command(%s) has unexpected positive return code %d", \
-				#expr, _r);                                           \
-		}                                                                     \
-	} while (0)
 
 #define _nltst_close(fd)                      \
 	do {                                  \
@@ -471,6 +500,9 @@ _nltst_select_route_equal(const NLTstSelectRoute *select_route1,
 }
 
 char *_nltst_select_route_to_string(const NLTstSelectRoute *select_route);
+
+char *_nltst_objects_to_string(const char *description,
+			       struct nl_object *const *objs, ssize_t len);
 
 void _nltst_select_route_parse(const char *str,
 			       NLTstSelectRoute *out_select_route);

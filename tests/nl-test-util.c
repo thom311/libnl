@@ -262,6 +262,50 @@ char *_nltst_object_to_string(const struct nl_object *obj)
 	return s;
 }
 
+char *_nltst_objects_to_string(const char *description,
+			       struct nl_object *const *objs, ssize_t len)
+{
+	_nl_auto_free char *result = NULL;
+	size_t extra_len;
+	size_t start_idx;
+	size_t l;
+	size_t i;
+
+	l = _nl_ptrarray_len(objs, len);
+
+	start_idx = 0;
+	extra_len = 300 + (description ? strlen(description) : 0u);
+
+	result = _nltst_malloc0(extra_len);
+
+	_nltst_sprintf(result, &start_idx, &extra_len, ">>> [%zu] objects", l);
+	if (description) {
+		_nltst_sprintf(result, &start_idx, &extra_len, " (%s)",
+			       description);
+	}
+	_nltst_sprintf(result, &start_idx, &extra_len, "\n");
+
+	for (i = 0; i < l; i++) {
+		_nl_auto_free char *s = NULL;
+		size_t slen;
+		size_t extra_len;
+
+		s = _nltst_object_to_string(objs[i]);
+		slen = strlen(s);
+
+		/* Don't bother to calculate the exact extra space. Just always
+		 * reallocate enough. */
+		extra_len = slen + 100;
+		result = _nltst_assert_nonnull(
+			realloc(result, start_idx + extra_len));
+
+		_nltst_sprintf(result, &start_idx, &extra_len, ">>> [%zu] %s\n",
+			       i, s);
+	}
+
+	return _nl_steal_pointer(&result);
+}
+
 struct cache_get_all_data {
 	struct nl_object **arr;
 	size_t len;
@@ -892,9 +936,7 @@ bool _nltst_select_route_match(struct nl_object *route,
 
 	ck_assert_ptr_nonnull(route);
 	ck_assert_str_eq(nl_object_get_type(route), "route/route");
-
-	if (!select_route)
-		return true;
+	ck_assert_ptr_nonnull(select_route);
 
 	route_ = (struct rtnl_route *)route;
 
@@ -989,7 +1031,7 @@ bool _nltst_select_route_match(struct nl_object *route,
 
 #undef _check
 
-	return false;
+	return true;
 }
 
 /*****************************************************************************/
@@ -1000,14 +1042,7 @@ void _nltst_assert_route_list(struct nl_object *const *objs, ssize_t len,
 	size_t l;
 	size_t i;
 
-	if (len < 0) {
-		l = 0;
-		if (objs) {
-			while (objs[l])
-				l++;
-		}
-	} else
-		l = len;
+	l = _nl_ptrarray_len(objs, len);
 
 	for (i = 0; i < l; i++) {
 		struct nl_object *route = objs[i];
@@ -1015,16 +1050,44 @@ void _nltst_assert_route_list(struct nl_object *const *objs, ssize_t len,
 			0
 		};
 		_nl_auto_free char *s = _nltst_object_to_string(route);
+		bool good;
+
+		if (!expected_routes[i]) {
+			good = false;
+		} else {
+			_nltst_select_route_parse(expected_routes[i],
+						  &select_route);
+			good = _nltst_select_route_match(route, &select_route,
+							 false);
+		}
+
+		if (!good) {
+			_nl_auto_free char *s2 =
+				_nltst_objects_to_string("route-list", objs, l);
+			size_t l_expected =
+				_nl_ptrarray_len(expected_routes, -1);
+			size_t j;
+
+			printf("route content: %s", s2);
+			printf("expected routes: %zu\n", l_expected);
+			for (j = 0; j < l_expected; j++) {
+				printf("expected route: [%zu] %s %s\n", j,
+				       i == j ? "-->" : "   ",
+				       expected_routes[j]);
+			}
+			printf("ip-route:>>>\n");
+			_nltst_system("ip -d -4 addr show");
+			_nltst_system("ip -d -6 addr show");
+			printf("<<<\n");
+		}
 
 		if (!expected_routes[i]) {
 			ck_abort_msg(
 				"No more expected route, but have route %zu (of %zu) as %s",
 				i + 1, l, s);
+		} else {
+			_nltst_select_route_match(route, &select_route, true);
 		}
-
-		_nltst_select_route_parse(expected_routes[i], &select_route);
-
-		_nltst_select_route_match(route, &select_route, true);
 	}
 }
 

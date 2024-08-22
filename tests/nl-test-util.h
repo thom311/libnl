@@ -501,6 +501,9 @@ _nltst_select_route_equal(const NLTstSelectRoute *select_route1,
 
 char *_nltst_select_route_to_string(const NLTstSelectRoute *select_route);
 
+char *_nltst_objects_to_string(const char *description,
+			       struct nl_object *const *objs, ssize_t len);
+
 void _nltst_select_route_parse(const char *str,
 			       NLTstSelectRoute *out_select_route);
 

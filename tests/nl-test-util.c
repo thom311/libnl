@@ -262,6 +262,50 @@ char *_nltst_object_to_string(const struct nl_object *obj)
 	return s;
 }
 
+char *_nltst_objects_to_string(const char *description,
+			       struct nl_object *const *objs, ssize_t len)
+{
+	_nl_auto_free char *result = NULL;
+	size_t extra_len;
+	size_t start_idx;
+	size_t l;
+	size_t i;
+
+	l = _nl_ptrarray_len(objs, len);
+
+	start_idx = 0;
+	extra_len = 300 + (description ? strlen(description) : 0u);
+
+	result = _nltst_malloc0(extra_len);
+
+	_nltst_sprintf(result, &start_idx, &extra_len, ">>> [%zu] objects", l);
+	if (description) {
+		_nltst_sprintf(result, &start_idx, &extra_len, " (%s)",
+			       description);
+	}
+	_nltst_sprintf(result, &start_idx, &extra_len, "\n");
+
+	for (i = 0; i < l; i++) {
+		_nl_auto_free char *s = NULL;
+		size_t slen;
+		size_t extra_len;
+
+		s = _nltst_object_to_string(objs[i]);
+		slen = strlen(s);
+
+		/* Don't bother to calculate the exact extra space. Just always
+		 * reallocate enough. */
+		extra_len = slen + 100;
+		result = _nltst_assert_nonnull(
+			realloc(result, start_idx + extra_len));
+
+		_nltst_sprintf(result, &start_idx, &extra_len, ">>> [%zu] %s\n",
+			       i, s);
+	}
+
+	return _nl_steal_pointer(&result);
+}
+
 struct cache_get_all_data {
 	struct nl_object **arr;
 	size_t len;

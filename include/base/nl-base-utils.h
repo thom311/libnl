@@ -769,6 +769,19 @@ _NL_AUTO_DEFINE_FCN_VOID0(void *, _nl_auto_free_fcn, free);
 
 /*****************************************************************************/
 
+#define _nl_swap(p_a, p_b)                          \
+	do {                                        \
+		typeof(*(p_a)) *const _p_a = (p_a); \
+		typeof(*(p_a)) *const _p_b = (p_b); \
+		typeof(*(p_a)) _tmp;                \
+                                                    \
+		_tmp = *_p_a;                       \
+		*_p_a = *_p_b;                      \
+		*_p_b = _tmp;                       \
+	} while (0)
+
+/*****************************************************************************/
+
 #define NSEC_PER_SEC 1000000000L
 
 struct trans_tbl {

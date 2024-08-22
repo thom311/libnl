@@ -102,10 +102,37 @@ _NL_AUTO_DEFINE_FCN_TYPED0(char **, _nltst_auto_strfreev_fcn, _nltst_strfreev);
 
 #define _nltst_assert_nonnull(x) __nltst_assert_nonnull(_NL_UNIQ, x)
 
+/*****************************************************************************/
+
 static inline char *_nltst_strdup(const char *str)
 {
 	return str ? _nltst_assert_nonnull(strdup(str)) : NULL;
 }
+
+#define _nltst_malloc0(size) _nltst_assert_nonnull(calloc((size), 1u))
+
+/*****************************************************************************/
+
+#define _nltst_sprintf(buf, p_start, p_extra_len, ...)           \
+	do {                                                     \
+		char *_buf = (buf);                              \
+		size_t *_p_start = (p_start);                    \
+		size_t *_p_extra_len = (p_extra_len);            \
+		int _r;                                          \
+                                                                 \
+		_nltst_assert_nonnull(_buf);                     \
+		_nltst_assert_nonnull(_p_start);                 \
+		_nltst_assert_nonnull(_p_extra_len);             \
+                                                                 \
+		_buf = &_buf[*_p_start];                         \
+		_r = snprintf(_buf, *_p_extra_len, __VA_ARGS__); \
+		_nltst_assert(_r >= 0);                          \
+		_nltst_assert((size_t)_r < *_p_extra_len);       \
+		_nltst_assert((size_t)_r == strlen(_buf));       \
+                                                                 \
+		*_p_start += (size_t)_r;                         \
+		*_p_extra_len -= (size_t)_r;                     \
+	} while (0)
 
 /*****************************************************************************/
 

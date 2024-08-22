@@ -936,9 +936,7 @@ bool _nltst_select_route_match(struct nl_object *route,
 
 	ck_assert_ptr_nonnull(route);
 	ck_assert_str_eq(nl_object_get_type(route), "route/route");
-
-	if (!select_route)
-		return true;
+	ck_assert_ptr_nonnull(select_route);
 
 	route_ = (struct rtnl_route *)route;
 
@@ -1033,7 +1031,7 @@ bool _nltst_select_route_match(struct nl_object *route,
 
 #undef _check
 
-	return false;
+	return true;
 }
 
 /*****************************************************************************/
@@ -1052,16 +1050,44 @@ void _nltst_assert_route_list(struct nl_object *const *objs, ssize_t len,
 			0
 		};
 		_nl_auto_free char *s = _nltst_object_to_string(route);
+		bool good;
+
+		if (!expected_routes[i]) {
+			good = false;
+		} else {
+			_nltst_select_route_parse(expected_routes[i],
+						  &select_route);
+			good = _nltst_select_route_match(route, &select_route,
+							 false);
+		}
+
+		if (!good) {
+			_nl_auto_free char *s2 =
+				_nltst_objects_to_string("route-list", objs, l);
+			size_t l_expected =
+				_nl_ptrarray_len(expected_routes, -1);
+			size_t j;
+
+			printf("route content: %s", s2);
+			printf("expected routes: %zu\n", l_expected);
+			for (j = 0; j < l_expected; j++) {
+				printf("expected route: [%zu] %s %s\n", j,
+				       i == j ? "-->" : "   ",
+				       expected_routes[j]);
+			}
+			printf("ip-route:>>>\n");
+			_nltst_system("ip -d -4 addr show");
+			_nltst_system("ip -d -6 addr show");
+			printf("<<<\n");
+		}
 
 		if (!expected_routes[i]) {
 			ck_abort_msg(
 				"No more expected route, but have route %zu (of %zu) as %s",
 				i + 1, l, s);
+		} else {
+			_nltst_select_route_match(route, &select_route, true);
 		}
-
-		_nltst_select_route_parse(expected_routes[i], &select_route);
-
-		_nltst_select_route_match(route, &select_route, true);
 	}
 }
 

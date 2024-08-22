@@ -1085,12 +1085,16 @@ _nltst_assert_route_list_permutate(const NltstAssertRouteListPermData *data,
 {
 	size_t i;
 
-	if (idx + 1 == num) {
-		return _nltst_assert_route_list_equal(
-			objs, data->expected_route_selects, num);
-	}
+	if (idx + 1 == num)
+		return true;
 
 	for (i = idx; i < num; i++) {
+		if (!_nltst_select_route_match(
+			    objs[i], &data->expected_route_selects[idx],
+			    false)) {
+			/* This entry does not match. We can shortcut this permutation. */
+			continue;
+		}
 		_nl_swap(&objs[idx], &objs[i]);
 		if (_nltst_assert_route_list_permutate(data, objs, idx + 1,
 						       num)) {
@@ -1136,6 +1140,14 @@ void _nltst_assert_route_list(struct nl_object *const *objs, ssize_t len,
 		    }),
 		    objs2, 0, l_objs))
 		goto out_fail;
+
+	if (!_nltst_assert_route_list_equal(objs2, expected_route_selects,
+					    len)) {
+		_nltst_assert_route_list_print(objs, l_objs, expected_routes,
+					       l_expected);
+		ck_abort_msg(
+			"there is a in _nltst_assert_route_list_permutate(), the permutation should now match");
+	}
 
 	goto out_free;
 

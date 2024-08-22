@@ -1000,14 +1000,7 @@ void _nltst_assert_route_list(struct nl_object *const *objs, ssize_t len,
 	size_t l;
 	size_t i;
 
-	if (len < 0) {
-		l = 0;
-		if (objs) {
-			while (objs[l])
-				l++;
-		}
-	} else
-		l = len;
+	l = _nl_ptrarray_len(objs, len);
 
 	for (i = 0; i < l; i++) {
 		struct nl_object *route = objs[i];

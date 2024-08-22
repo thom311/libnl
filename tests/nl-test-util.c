@@ -1039,33 +1039,36 @@ bool _nltst_select_route_match(struct nl_object *route,
 void _nltst_assert_route_list(struct nl_object *const *objs, ssize_t len,
 			      const char *const *expected_routes)
 {
-	size_t l;
+	const size_t l_expected = _nl_ptrarray_len(expected_routes, -1);
+	const size_t l_objs = _nl_ptrarray_len(objs, len);
 	size_t i;
 
-	l = _nl_ptrarray_len(objs, len);
-
-	for (i = 0; i < l; i++) {
-		struct nl_object *route = objs[i];
+	for (i = 0; true; i++) {
 		_nltst_auto_clear_select_route NLTstSelectRoute select_route = {
 			0
 		};
-		_nl_auto_free char *s = _nltst_object_to_string(route);
+		struct nl_object *route = i < l_objs ? objs[i] : NULL;
+		const char *expected_route =
+			i < l_expected ? expected_routes[i] : NULL;
 		bool good;
 
-		if (!expected_routes[i]) {
+		if (!expected_route && !route)
+			break;
+
+		if (!route) {
+			good = false;
+		} else if (!expected_route) {
 			good = false;
 		} else {
-			_nltst_select_route_parse(expected_routes[i],
+			_nltst_select_route_parse(expected_route,
 						  &select_route);
 			good = _nltst_select_route_match(route, &select_route,
 							 false);
 		}
 
 		if (!good) {
-			_nl_auto_free char *s2 =
-				_nltst_objects_to_string("route-list", objs, l);
-			size_t l_expected =
-				_nl_ptrarray_len(expected_routes, -1);
+			_nl_auto_free char *s2 = _nltst_objects_to_string(
+				"route-list", objs, l_objs);
 			size_t j;
 
 			printf("route content: %s", s2);
@@ -1081,10 +1084,17 @@ void _nltst_assert_route_list(struct nl_object *const *objs, ssize_t len,
 			printf("<<<\n");
 		}
 
-		if (!expected_routes[i]) {
+		if (!route) {
+			ck_abort_msg(
+				"No more route, but have expected route %zu (of %zu) as %s",
+				i + 1, l_expected, expected_route);
+		} else if (!expected_route) {
+			_nl_auto_free char *route_str =
+				_nltst_object_to_string(route);
+
 			ck_abort_msg(
 				"No more expected route, but have route %zu (of %zu) as %s",
-				i + 1, l, s);
+				i + 1, l_objs, route_str);
 		} else {
 			_nltst_select_route_match(route, &select_route, true);
 		}

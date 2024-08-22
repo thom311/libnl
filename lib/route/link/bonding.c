@@ -27,14 +27,25 @@
 #define BOND_HAS_HASHING_TYPE	(1 << 2)
 #define BOND_HAS_MIIMON		(1 << 3)
 #define BOND_HAS_MIN_LINKS	(1 << 4)
+#define BOND_HAS_LACP_RATE	(1 << 5)
 
 struct bond_info {
 	uint8_t bn_mode;
 	uint8_t hashing_type;
+	uint8_t lacp_rate;
 	uint32_t ifindex;
 	uint32_t bn_mask;
 	uint32_t miimon;
 	uint32_t min_links;
+};
+
+static const struct nla_policy bond_attrs_policy[IFLA_BOND_MAX + 1] = {
+	[IFLA_BOND_MODE] = { .type = NLA_U8 },
+	[IFLA_BOND_XMIT_HASH_POLICY] = { .type = NLA_U8 },
+	[IFLA_BOND_AD_LACP_RATE] = { .type = NLA_U8 },
+	[IFLA_BOND_ACTIVE_SLAVE] = { .type = NLA_U32 },
+	[IFLA_BOND_MIIMON] = { .type = NLA_U32 },
+	[IFLA_BOND_MIN_LINKS] = { .type = NLA_U32 },
 };
 
 static int bond_info_alloc(struct rtnl_link *link)
@@ -82,6 +93,9 @@ static int bond_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (bn->bn_mask & BOND_HAS_MIN_LINKS)
 		NLA_PUT_U32(msg, IFLA_BOND_MIN_LINKS, bn->min_links);
 
+	if (bn->bn_mask & BOND_HAS_LACP_RATE)
+		NLA_PUT_U8(msg, IFLA_BOND_AD_LACP_RATE, bn->lacp_rate);
+
 	nla_nest_end(msg, data);
 	return 0;
 
@@ -90,9 +104,58 @@ nla_put_failure:
 	return -NLE_MSGSIZE;
 }
 
+static int bond_info_parse(struct rtnl_link *link, struct nlattr *data,
+			   struct nlattr *xstats)
+{
+	struct nlattr *tb[IFLA_BOND_MAX + 1];
+	struct bond_info *bn;
+	int err;
+
+	if ((err = nla_parse_nested(tb, IFLA_BOND_MAX, data, bond_attrs_policy)) < 0)
+		return err;
+
+	if ((err = bond_info_alloc(link)) < 0)
+		return err;
+
+	bn = link->l_info;
+
+	if (tb[IFLA_BOND_MODE]) {
+		bn->bn_mode = nla_get_u8(tb[IFLA_BOND_MODE]);
+		bn->bn_mask |= BOND_HAS_MODE;
+	}
+
+	if (tb[IFLA_BOND_XMIT_HASH_POLICY]) {
+		bn->hashing_type = nla_get_u8(tb[IFLA_BOND_XMIT_HASH_POLICY]);
+		bn->bn_mask |= BOND_HAS_HASHING_TYPE;
+	}
+
+	if (tb[IFLA_BOND_AD_LACP_RATE]) {
+		bn->lacp_rate = nla_get_u8(tb[IFLA_BOND_AD_LACP_RATE]);
+		bn->bn_mask |= BOND_HAS_LACP_RATE;
+	}
+
+	if (tb[IFLA_BOND_ACTIVE_SLAVE]) {
+		bn->ifindex = nla_get_u32(tb[IFLA_BOND_ACTIVE_SLAVE]);
+		bn->bn_mask |= BOND_HAS_ACTIVE_SLAVE;
+	}
+
+	if (tb[IFLA_BOND_MIIMON]) {
+		bn->miimon = nla_get_u32(tb[IFLA_BOND_MIIMON]);
+		bn->bn_mask |= BOND_HAS_MIIMON;
+	}
+
+	if (tb[IFLA_BOND_MIN_LINKS]) {
+		bn->min_links = nla_get_u32(tb[IFLA_BOND_MIN_LINKS]);
+		bn->bn_mask |= BOND_HAS_MIN_LINKS;
+	}
+
+	return 0;
+}
+
 static struct rtnl_link_info_ops bonding_info_ops = {
 	.io_name		= "bond",
 	.io_alloc		= bond_info_alloc,
+	.io_parse		= bond_info_parse,
 	.io_put_attrs		= bond_put_attrs,
 	.io_free		= bond_info_free,
 };
@@ -123,6 +186,21 @@ void rtnl_link_bond_set_activeslave(struct rtnl_link *link, int active_slave)
 }
 
 /**
+ * Get active slave for bond
+ * @arg link            Link object of type bond
+ *
+ * @return ifindex of active slave
+ */
+int rtnl_link_bond_get_activeslave(struct rtnl_link *link)
+{
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	return bn->ifindex;
+}
+
+/**
  * Set bond mode
  * @arg link            Link object of type bond
  * @arg mode            bond mode to set
@@ -138,6 +216,21 @@ void rtnl_link_bond_set_mode(struct rtnl_link *link, uint8_t mode)
 	bn->bn_mode = mode;
 
 	bn->bn_mask |= BOND_HAS_MODE;
+}
+
+/**
+ * Get bond mode
+ * @arg link            Link object of type bond
+ *
+ * @return bond mode
+ */
+uint8_t rtnl_link_bond_get_mode(struct rtnl_link *link)
+{
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	return bn->bn_mode;
 }
 
 /**
@@ -159,6 +252,21 @@ void rtnl_link_bond_set_hashing_type (struct rtnl_link *link, uint8_t type)
 }
 
 /**
+ * Get hashing type
+ * @arg link            Link object of type bond
+ *
+ * @return bond hashing type
+ */
+uint8_t rtnl_link_bond_get_hashing_type (struct rtnl_link *link)
+{
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	return bn->hashing_type;
+}
+
+/**
  * Set MII monitoring interval
  * @arg link            Link object of type bond
  * @arg miimon          interval in milliseconds
@@ -174,6 +282,21 @@ void rtnl_link_bond_set_miimon (struct rtnl_link *link, uint32_t miimon)
 	bn->miimon = miimon;
 
 	bn->bn_mask |= BOND_HAS_MIIMON;
+}
+
+/**
+ * Get MII monitoring interval
+ * @arg link            Link object of type bond
+ *
+ * @return interval in milliseconds
+ */
+uint32_t rtnl_link_bond_get_miimon (struct rtnl_link *link)
+{
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	return bn->miimon;
 }
 
 /**
@@ -193,6 +316,53 @@ void rtnl_link_bond_set_min_links (struct rtnl_link *link, uint32_t min_links)
 	bn->min_links = min_links;
 
 	bn->bn_mask |= BOND_HAS_MIN_LINKS;
+}
+
+/**
+ * Get the minimum number of member ports that must be up before
+ * marking the bond device as up
+ * @arg link            Link object of type bond
+ *
+ * @return Number of links
+ */
+uint32_t rtnl_link_bond_get_min_links (struct rtnl_link *link)
+{
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	return bn->min_links;
+}
+
+/**
+ * Set the lacp heartbeat request time
+ * @arg link            Link object of type bond
+ * @arg lacp_rate       heartbeat request time
+ *
+ * @return void
+ */
+void rtnl_link_bond_set_lacp_rate(struct rtnl_link *link, uint8_t lacp_rate) {
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	bn->lacp_rate = lacp_rate;
+
+	bn->bn_mask |= BOND_HAS_LACP_RATE;
+}
+
+/**
+ * Get the lacp heartbeat request time
+ * @arg link            Link object of type bond
+ *
+ * @return heartbeat request time
+ */
+uint8_t rtnl_link_bond_get_lacp_rate(struct rtnl_link *link) {
+	struct bond_info *bn = link->l_info;
+
+	IS_BOND_INFO_ASSERT(link);
+
+	return bn->lacp_rate;
 }
 
 /**

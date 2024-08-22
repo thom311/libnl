@@ -325,7 +325,7 @@ START_TEST(route_1)
 
 	_route_init(AF_INET6, &sk, &cache);
 
-	_nltst_assert_route_cache(cache, "fe80::/64", "6 fe80::*/128",
+	_nltst_assert_route_cache(cache, "6 fe80::*/128", "fe80::/64",
 				  "ff00::/8");
 }
 END_TEST

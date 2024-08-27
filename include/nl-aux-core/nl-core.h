@@ -50,6 +50,12 @@ void nl_cache_mngr_free(struct nl_cache_mngr *mngr);
 _NL_AUTO_DEFINE_FCN_TYPED0(struct nl_cache_mngr *, _nl_auto_nl_cache_mngr_fcn,
 			   nl_cache_mngr_free);
 
+struct nl_object;
+void nl_object_put(struct nl_object *);
+#define _nl_auto_nl_object _nl_auto(_nl_auto_nl_object_fcn)
+_NL_AUTO_DEFINE_FCN_TYPED0(struct nl_object *, _nl_auto_nl_object_fcn,
+			   nl_object_put);
+
 struct nl_addr *nl_addr_build(int, const void *, size_t);
 
 static inline struct nl_addr *_nl_addr_build(int family, const void *buf)

@@ -714,17 +714,14 @@ static int __cache_pickup(struct nl_sock *sk, struct nl_cache *cache,
 static int pickup_checkdup_cb(struct nl_object *c, struct nl_parser_param *p)
 {
 	struct nl_cache *cache = (struct nl_cache *)p->pp_arg;
-	struct nl_object *old;
+	_nl_auto_nl_object struct nl_object *old = NULL;
 
 	old = nl_cache_search(cache, c);
 	if (old) {
-		if (nl_object_update(old, c) == 0) {
-			nl_object_put(old);
+		if (nl_object_update(old, c) == 0)
 			return 0;
-		}
 
 		nl_cache_remove(old);
-		nl_object_put(old);
 	}
 
 	return nl_cache_add(cache, c);
@@ -788,8 +785,8 @@ static int cache_include(struct nl_cache *cache, struct nl_object *obj,
 			 struct nl_msgtype *type, change_func_t cb,
 			 change_func_v2_t cb_v2, void *data)
 {
-	struct nl_object *old;
-	struct nl_object *clone = NULL;
+	_nl_auto_nl_object struct nl_object *old = NULL;
+	_nl_auto_nl_object struct nl_object *clone = NULL;
 	uint64_t diff = 0;
 
 	switch (type->mt_act) {
@@ -813,11 +810,8 @@ static int cache_include(struct nl_cache *cache, struct nl_object *obj,
 					nl_object_put(clone);
 				} else if (cb)
 					cb(cache, old, NL_ACT_CHANGE, data);
-				nl_object_put(old);
 				return 0;
 			}
-			nl_object_put(clone);
-
 			nl_cache_remove(old);
 			if (type->mt_act == NL_ACT_DEL) {
 				if (cb_v2)
@@ -825,7 +819,6 @@ static int cache_include(struct nl_cache *cache, struct nl_object *obj,
 					      data);
 				else if (cb)
 					cb(cache, old, NL_ACT_DEL, data);
-				nl_object_put(old);
 			}
 		}
 
@@ -847,7 +840,6 @@ static int cache_include(struct nl_cache *cache, struct nl_object *obj,
 				} else if (diff && cb)
 					cb(cache, obj, NL_ACT_CHANGE, data);
 
-				nl_object_put(old);
 			}
 		}
 		break;

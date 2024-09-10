@@ -43,6 +43,7 @@ struct rtnl_link {
 	uint32_t l_master;
 	struct nl_addr *l_addr;
 	struct nl_addr *l_bcast;
+	struct nl_addr *l_paddr;
 	char l_qdisc[IFQDISCSIZ];
 	struct rtnl_link_map l_map;
 	uint64_t l_stats[RTNL_LINK_STATS_MAX + 1];

@@ -1341,4 +1341,9 @@ global:
 	rtnl_link_bond_get_min_links;
 	rtnl_link_bond_get_mode;
 	rtnl_link_get_perm_addr;
+	rtnl_neigh_extflags2str;
+	rtnl_neigh_get_ext_flags;
+	rtnl_neigh_set_ext_flags;
+	rtnl_neigh_str2extflag;
+	rtnl_neigh_unset_ext_flags;
 } libnl_3_10;

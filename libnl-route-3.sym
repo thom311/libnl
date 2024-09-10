@@ -1340,4 +1340,5 @@ global:
 	rtnl_link_bond_get_miimon;
 	rtnl_link_bond_get_min_links;
 	rtnl_link_bond_get_mode;
+	rtnl_link_get_perm_addr;
 } libnl_3_10;

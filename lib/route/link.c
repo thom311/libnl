@@ -73,6 +73,7 @@
 #define LINK_ATTR_GSO_MAX_SEGS		((uint64_t) 1 << 37)
 #define LINK_ATTR_GSO_MAX_SIZE		((uint64_t) 1 << 38)
 #define LINK_ATTR_LINKINFO_SLAVE_KIND	((uint64_t) 1 << 39)
+#define LINK_ATTR_PERMANENT_ADDR	((uint64_t) 1 << 40)
 
 static struct nl_cache_ops rtnl_link_ops;
 static struct nl_object_ops link_obj_ops;
@@ -271,6 +272,7 @@ static void link_free_data(struct nl_object *c)
 
 		nl_addr_put(link->l_addr);
 		nl_addr_put(link->l_bcast);
+		nl_addr_put(link->l_paddr);
 
 		free(link->l_ifalias);
 		free(link->l_info_kind);
@@ -294,6 +296,7 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	dst->l_addr = NULL;
 	dst->l_bcast = NULL;
+	dst->l_paddr = NULL;
 	dst->l_info_kind = NULL;
 	dst->l_info_slave_kind = NULL;
 	dst->l_info_ops = NULL;
@@ -311,6 +314,10 @@ static int link_clone(struct nl_object *_dst, struct nl_object *_src)
 
 	if (src->l_bcast)
 		if (!(dst->l_bcast = nl_addr_clone(src->l_bcast)))
+			return -NLE_NOMEM;
+
+	if (src->l_paddr)
+		if (!(dst->l_paddr = nl_addr_clone(src->l_paddr)))
 			return -NLE_NOMEM;
 
 	if (src->l_ifalias)
@@ -512,6 +519,15 @@ int rtnl_link_info_parse(struct rtnl_link *link, struct nlattr **tb)
 		nl_addr_set_family(link->l_addr,
 				   nl_addr_guess_family(link->l_addr));
 		link->ce_mask |= LINK_ATTR_ADDR;
+	}
+
+	if (tb[IFLA_PERM_ADDRESS]) {
+		link->l_paddr = nl_addr_alloc_attr(tb[IFLA_PERM_ADDRESS], AF_UNSPEC);
+		if (link->l_paddr == NULL)
+			return -NLE_NOMEM;
+		nl_addr_set_family(link->l_paddr,
+				   nl_addr_guess_family(link->l_paddr));
+		link->ce_mask |= LINK_ATTR_PERMANENT_ADDR;
 	}
 
 	if (tb[IFLA_BROADCAST]) {
@@ -863,6 +879,9 @@ static void link_dump_line(struct nl_object *obj, struct nl_dump_params *p)
 	if (link->l_addr && !nl_addr_iszero(link->l_addr))
 		nl_dump(p, "%s ", nl_addr2str(link->l_addr, buf, sizeof(buf)));
 
+	if (link->l_paddr && !nl_addr_iszero(link->l_paddr))
+		nl_dump(p, "permanent address %s ", nl_addr2str(link->l_paddr, buf, sizeof(buf)));
+
 	if (link->ce_mask & LINK_ATTR_MASTER) {
 		if (cache) {
 			_nl_auto_rtnl_link struct rtnl_link *master = rtnl_link_get(cache, link->l_master);
@@ -1130,6 +1149,7 @@ static uint64_t link_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= _DIFF(LINK_ATTR_IFNAME, strcmp(a->l_name, b->l_name));
 	diff |= _DIFF(LINK_ATTR_ADDR, nl_addr_cmp(a->l_addr, b->l_addr));
 	diff |= _DIFF(LINK_ATTR_BRD, nl_addr_cmp(a->l_bcast, b->l_bcast));
+	diff |= _DIFF(LINK_ATTR_PERMANENT_ADDR, nl_addr_cmp(a->l_paddr, b->l_paddr));
 	diff |= _DIFF(LINK_ATTR_IFALIAS, strcmp(a->l_ifalias, b->l_ifalias));
 	diff |= _DIFF(LINK_ATTR_NUM_VF, a->l_num_vf != b->l_num_vf);
 	diff |= _DIFF(LINK_ATTR_PROMISCUITY,
@@ -2022,6 +2042,19 @@ void rtnl_link_set_addr(struct rtnl_link *link, struct nl_addr *addr)
 struct nl_addr *rtnl_link_get_addr(struct rtnl_link *link)
 {
 	return link->ce_mask & LINK_ATTR_ADDR ? link->l_addr : NULL;
+}
+
+/**
+ * Return permanent link layer adress of link object
+ * @arg link		Link object
+ *
+ * @copydoc pointer_lifetime_warning
+ * @route_doc{link_attr_permaddr, Permanent Link Layer Address}
+ * @return Permanent link layer address or NULL if not set.
+ */
+struct nl_addr *rtnl_link_get_perm_addr(struct rtnl_link *link)
+{
+	return link->ce_mask & LINK_ATTR_PERMANENT_ADDR ? link->l_paddr : NULL;
 }
 
 /**

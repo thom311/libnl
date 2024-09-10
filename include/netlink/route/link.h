@@ -183,6 +183,8 @@ extern unsigned int rtnl_link_get_arptype(struct rtnl_link *);
 extern void     rtnl_link_set_addr(struct rtnl_link *, struct nl_addr *);
 extern struct nl_addr *rtnl_link_get_addr(struct rtnl_link *);
 
+extern struct nl_addr *rtnl_link_get_perm_addr(struct rtnl_link *);
+
 extern void     rtnl_link_set_broadcast(struct rtnl_link *, struct nl_addr *);
 extern struct nl_addr *rtnl_link_get_broadcast(struct rtnl_link *);
 

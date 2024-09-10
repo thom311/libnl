@@ -126,16 +126,27 @@ static void bridge_free(struct rtnl_link *link, void *data)
 }
 
 static struct nla_policy br_attrs_policy[IFLA_BRPORT_MAX+1] = {
-	[IFLA_BRPORT_STATE]		= { .type = NLA_U8 },
-	[IFLA_BRPORT_PRIORITY]		= { .type = NLA_U16 },
-	[IFLA_BRPORT_COST]		= { .type = NLA_U32 },
-	[IFLA_BRPORT_MODE]		= { .type = NLA_U8 },
-	[IFLA_BRPORT_GUARD]		= { .type = NLA_U8 },
-	[IFLA_BRPORT_PROTECT]		= { .type = NLA_U8 },
-	[IFLA_BRPORT_FAST_LEAVE]	= { .type = NLA_U8 },
-	[IFLA_BRPORT_LEARNING]		= { .type = NLA_U8 },
-	[IFLA_BRPORT_LEARNING_SYNC]	= { .type = NLA_U8 },
-	[IFLA_BRPORT_UNICAST_FLOOD]	= { .type = NLA_U8 },
+	[IFLA_BRPORT_STATE]			= { .type = NLA_U8 },
+	[IFLA_BRPORT_PRIORITY]			= { .type = NLA_U16 },
+	[IFLA_BRPORT_COST]			= { .type = NLA_U32 },
+	[IFLA_BRPORT_MODE]			= { .type = NLA_U8 },
+	[IFLA_BRPORT_GUARD]			= { .type = NLA_U8 },
+	[IFLA_BRPORT_PROTECT]			= { .type = NLA_U8 },
+	[IFLA_BRPORT_FAST_LEAVE]		= { .type = NLA_U8 },
+	[IFLA_BRPORT_LEARNING]			= { .type = NLA_U8 },
+	[IFLA_BRPORT_LEARNING_SYNC]		= { .type = NLA_U8 },
+	[IFLA_BRPORT_UNICAST_FLOOD]		= { .type = NLA_U8 },
+	[IFLA_BRPORT_PROXYARP]			= { .type = NLA_U8 },
+	[IFLA_BRPORT_PROXYARP_WIFI]		= { .type = NLA_U8 },
+	[IFLA_BRPORT_MCAST_FLOOD]		= { .type = NLA_U8 },
+	[IFLA_BRPORT_MCAST_TO_UCAST]		= { .type = NLA_U8 },
+	[IFLA_BRPORT_VLAN_TUNNEL]		= { .type = NLA_U8 },
+	[IFLA_BRPORT_BCAST_FLOOD]		= { .type = NLA_U8 },
+	[IFLA_BRPORT_NEIGH_SUPPRESS]		= { .type = NLA_U8 },
+	[IFLA_BRPORT_ISOLATED]			= { .type = NLA_U8 },
+	[IFLA_BRPORT_LOCKED]			= { .type = NLA_U8 },
+	[IFLA_BRPORT_MAB]			= { .type = NLA_U8 },
+	[IFLA_BRPORT_NEIGH_VLAN_SUPPRESS]	= { .type = NLA_U8 },
 };
 
 static void check_flag(struct rtnl_link *link, struct nlattr *attrs[],
@@ -193,6 +204,24 @@ static int bridge_parse_protinfo(struct rtnl_link *link, struct nlattr *attr,
 	check_flag(link, br_attrs, IFLA_BRPORT_LEARNING, RTNL_BRIDGE_LEARNING);
 	check_flag(link, br_attrs, IFLA_BRPORT_LEARNING_SYNC,
 	           RTNL_BRIDGE_LEARNING_SYNC);
+	check_flag(link, br_attrs, IFLA_BRPORT_PROXYARP, RTNL_BRIDGE_PROXYARP);
+	check_flag(link, br_attrs, IFLA_BRPORT_PROXYARP_WIFI,
+		   RTNL_BRIDGE_PROXYARP_WIFI);
+	check_flag(link, br_attrs, IFLA_BRPORT_MCAST_FLOOD,
+		   RTNL_BRIDGE_MCAST_FLOOD);
+	check_flag(link, br_attrs, IFLA_BRPORT_MCAST_TO_UCAST,
+		   RTNL_BRIDGE_MCAST_TO_UCAST);
+	check_flag(link, br_attrs, IFLA_BRPORT_VLAN_TUNNEL,
+		   RTNL_BRIDGE_VLAN_TUNNEL);
+	check_flag(link, br_attrs, IFLA_BRPORT_BCAST_FLOOD,
+		   RTNL_BRIDGE_BCAST_FLOOD);
+	check_flag(link, br_attrs, IFLA_BRPORT_NEIGH_SUPPRESS,
+		   RTNL_BRIDGE_NEIGH_SUPPRESS);
+	check_flag(link, br_attrs, IFLA_BRPORT_ISOLATED, RTNL_BRIDGE_ISOLATED);
+	check_flag(link, br_attrs, IFLA_BRPORT_LOCKED, RTNL_BRIDGE_LOCKED);
+	check_flag(link, br_attrs, IFLA_BRPORT_MAB, RTNL_BRIDGE_MAB);
+	check_flag(link, br_attrs, IFLA_BRPORT_NEIGH_VLAN_SUPPRESS,
+		   RTNL_BRIDGE_NEIGH_VLAN_SUPPRESS);
 
 	return 0;
 }
@@ -416,31 +445,78 @@ static int bridge_fill_pi(struct rtnl_link *link, struct nl_msg *msg,
 	if (bd->ce_mask & BRIDGE_ATTR_FLAGS) {
 		if (bd->b_flags_mask & RTNL_BRIDGE_BPDU_GUARD) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_GUARD,
-						bd->b_flags & RTNL_BRIDGE_BPDU_GUARD);
+				   !!(bd->b_flags & RTNL_BRIDGE_BPDU_GUARD));
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_HAIRPIN_MODE) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_MODE,
-			           bd->b_flags & RTNL_BRIDGE_HAIRPIN_MODE);
+				   !!(bd->b_flags & RTNL_BRIDGE_HAIRPIN_MODE));
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_FAST_LEAVE) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_FAST_LEAVE,
-			           bd->b_flags & RTNL_BRIDGE_FAST_LEAVE);
+				   !!(bd->b_flags & RTNL_BRIDGE_FAST_LEAVE));
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_ROOT_BLOCK) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_PROTECT,
-			           bd->b_flags & RTNL_BRIDGE_ROOT_BLOCK);
+				   !!(bd->b_flags & RTNL_BRIDGE_ROOT_BLOCK));
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_UNICAST_FLOOD) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_UNICAST_FLOOD,
-			           bd->b_flags & RTNL_BRIDGE_UNICAST_FLOOD);
+				   !!(bd->b_flags & RTNL_BRIDGE_UNICAST_FLOOD));
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_LEARNING) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_LEARNING,
-			           bd->b_flags & RTNL_BRIDGE_LEARNING);
+				   !!(bd->b_flags & RTNL_BRIDGE_LEARNING));
 		}
 		if (bd->b_flags_mask & RTNL_BRIDGE_LEARNING_SYNC) {
 			NLA_PUT_U8(msg, IFLA_BRPORT_LEARNING_SYNC,
-			           bd->b_flags & RTNL_BRIDGE_LEARNING_SYNC);
+				   !!(bd->b_flags & RTNL_BRIDGE_LEARNING_SYNC));
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_PROXYARP) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_PROXYARP,
+				   !!(bd->b_flags & RTNL_BRIDGE_PROXYARP));
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_PROXYARP_WIFI) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_PROXYARP_WIFI,
+				   !!(bd->b_flags & RTNL_BRIDGE_PROXYARP_WIFI));
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_MCAST_FLOOD) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_MCAST_FLOOD,
+				   !!(bd->b_flags & RTNL_BRIDGE_MCAST_FLOOD));
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_MCAST_TO_UCAST) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_MCAST_TO_UCAST,
+				   !!(bd->b_flags &
+				      RTNL_BRIDGE_MCAST_TO_UCAST));
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_VLAN_TUNNEL) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_VLAN_TUNNEL,
+				   !!(bd->b_flags & RTNL_BRIDGE_VLAN_TUNNEL));
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_BCAST_FLOOD) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_BCAST_FLOOD,
+				   !!(bd->b_flags & RTNL_BRIDGE_BCAST_FLOOD));
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_NEIGH_SUPPRESS) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_NEIGH_SUPPRESS,
+				   !!(bd->b_flags &
+				      RTNL_BRIDGE_NEIGH_SUPPRESS));
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_ISOLATED) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_ISOLATED,
+				   !!(bd->b_flags & RTNL_BRIDGE_ISOLATED));
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_LOCKED) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_LOCKED,
+				   !!(bd->b_flags & RTNL_BRIDGE_LOCKED));
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_MAB) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_MAB,
+				   !!(bd->b_flags & RTNL_BRIDGE_MAB));
+		}
+		if (bd->b_flags_mask & RTNL_BRIDGE_NEIGH_VLAN_SUPPRESS) {
+			NLA_PUT_U8(msg, IFLA_BRPORT_NEIGH_VLAN_SUPPRESS,
+				   !!(bd->b_flags &
+				      RTNL_BRIDGE_NEIGH_VLAN_SUPPRESS));
 		}
 	}
 
@@ -869,6 +945,17 @@ int rtnl_link_bridge_unset_flags(struct rtnl_link *link, unsigned int flags)
  *   - RTNL_BRIDGE_UNICAST_FLOOD
  *   - RTNL_BRIDGE_LEARNING
  *   - RTNL_BRIDGE_LEARNING_SYNC
+ *   - RTNL_BRIDGE_PROXYARP
+ *   - RTNL_BRIDGE_PROXYARP_WIFI
+ *   - RTNL_BRIDGE_MCAST_FLOOD
+ *   - RTNL_BRIDGE_MCAST_TO_UCAST
+ *   - RTNL_BRIDGE_VLAN_TUNNEL
+ *   - RTNL_BRIDGE_BCAST_FLOOD
+ *   - RTNL_BRIDGE_NEIGH_SUPPRESS
+ *   - RTNL_BRIDGE_ISOLATED
+ *   - RTNL_BRIDGE_LOCKED
+ *   - RTNL_BRIDGE_MAB
+ *   - RTNL_BRIDGE_NEIGH_VLAN_SUPPRESS
  *
  * @see rtnl_link_bridge_unset_flags()
  * @see rtnl_link_bridge_get_flags()
@@ -1017,13 +1104,24 @@ int rtnl_link_bridge_set_hwmode(struct rtnl_link *link, uint16_t hwmode)
 
 
 static const struct trans_tbl bridge_flags[] = {
-	__ADD(RTNL_BRIDGE_HAIRPIN_MODE, hairpin_mode),
-	__ADD(RTNL_BRIDGE_BPDU_GUARD, 	bpdu_guard),
-	__ADD(RTNL_BRIDGE_ROOT_BLOCK,	root_block),
-	__ADD(RTNL_BRIDGE_FAST_LEAVE,	fast_leave),
+	__ADD(RTNL_BRIDGE_HAIRPIN_MODE,		hairpin_mode),
+	__ADD(RTNL_BRIDGE_BPDU_GUARD, 		bpdu_guard),
+	__ADD(RTNL_BRIDGE_ROOT_BLOCK,		root_block),
+	__ADD(RTNL_BRIDGE_FAST_LEAVE,		fast_leave),
 	__ADD(RTNL_BRIDGE_UNICAST_FLOOD,	flood),
-	__ADD(RTNL_BRIDGE_LEARNING,			learning),
+	__ADD(RTNL_BRIDGE_LEARNING,		learning),
 	__ADD(RTNL_BRIDGE_LEARNING_SYNC,	learning_sync),
+	__ADD(RTNL_BRIDGE_PROXYARP,		proxy_arp),
+	__ADD(RTNL_BRIDGE_PROXYARP_WIFI,	proxy_arp_wifi),
+	__ADD(RTNL_BRIDGE_MCAST_FLOOD,		mcast_flood),
+	__ADD(RTNL_BRIDGE_MCAST_TO_UCAST,	mcast_to_unicast),
+	__ADD(RTNL_BRIDGE_VLAN_TUNNEL,		vlan_tunnel),
+	__ADD(RTNL_BRIDGE_BCAST_FLOOD,		bcast_flood),
+	__ADD(RTNL_BRIDGE_NEIGH_SUPPRESS,	neigh_suppress),
+	__ADD(RTNL_BRIDGE_ISOLATED,		isolated),
+	__ADD(RTNL_BRIDGE_LOCKED,		locked),
+	__ADD(RTNL_BRIDGE_MAB,			mab),
+	__ADD(RTNL_BRIDGE_NEIGH_VLAN_SUPPRESS,	neigh_vlan_suppress),
 };
 
 /**

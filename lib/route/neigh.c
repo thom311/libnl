@@ -171,6 +171,7 @@ struct rtnl_neigh {
 	uint32_t n_ifindex;
 	uint16_t n_state;
 	uint8_t n_flags;
+	uint32_t n_ext_flags;
 	uint8_t n_type;
 	struct nl_addr *n_lladdr;
 	struct nl_addr *n_dst;
@@ -179,6 +180,7 @@ struct rtnl_neigh {
 	struct rtnl_ncacheinfo n_cacheinfo;
 	uint32_t n_state_mask;
 	uint32_t n_flag_mask;
+	uint32_t n_ext_flag_mask;
 	uint32_t n_master;
 	uint16_t n_vlan;
 };
@@ -191,10 +193,11 @@ struct rtnl_neigh {
 #define NEIGH_ATTR_IFINDEX      0x20
 #define NEIGH_ATTR_FAMILY       0x40
 #define NEIGH_ATTR_TYPE         0x80
-#define NEIGH_ATTR_PROBES       0x100
-#define NEIGH_ATTR_MASTER       0x200
-#define NEIGH_ATTR_VLAN         0x400
-#define NEIGH_ATTR_NHID         0x800
+#define NEIGH_ATTR_PROBES       0x0100
+#define NEIGH_ATTR_MASTER       0x0200
+#define NEIGH_ATTR_VLAN         0x0400
+#define NEIGH_ATTR_NHID         0x0800
+#define NEIGH_ATTR_EXT_FLAGS    0x1000
 
 static struct nl_cache_ops rtnl_neigh_ops;
 static struct nl_object_ops neigh_obj_ops;
@@ -309,9 +312,12 @@ static uint64_t neigh_compare(struct nl_object *_a, struct nl_object *_b,
 			      (a->n_state ^ b->n_state) & b->n_state_mask);
 		diff |= _DIFF(NEIGH_ATTR_FLAGS,
 			      (a->n_flags ^ b->n_flags) & b->n_flag_mask);
+		diff |= _DIFF(NEIGH_ATTR_EXT_FLAGS,
+			      (a->n_ext_flags ^ b->n_ext_flags) & b->n_ext_flag_mask);
 	} else {
 		diff |= _DIFF(NEIGH_ATTR_STATE, a->n_state != b->n_state);
 		diff |= _DIFF(NEIGH_ATTR_FLAGS, a->n_flags != b->n_flags);
+		diff |= _DIFF(NEIGH_ATTR_EXT_FLAGS, a->n_ext_flags != b->n_ext_flags);
 	}
 #undef _DIFF
 
@@ -331,6 +337,7 @@ static const struct trans_tbl neigh_attrs[] = {
 	__ADD(NEIGH_ATTR_MASTER, master),
 	__ADD(NEIGH_ATTR_VLAN, vlan),
 	__ADD(NEIGH_ATTR_NHID, nhid),
+	__ADD(NEIGH_ATTR_EXT_FLAGS, ext_flags),
 };
 
 static char *neigh_attrs2str(int attrs, char *buf, size_t len)
@@ -454,6 +461,11 @@ int rtnl_neigh_parse(struct nlmsghdr *n, struct rtnl_neigh **result)
 		neigh->ce_mask |= NEIGH_ATTR_NHID;
 	}
 
+	if (tb[NDA_FLAGS_EXT]) {
+		neigh->n_ext_flags = nla_get_u32(tb[NDA_FLAGS_EXT]);
+		neigh->ce_mask |= NEIGH_ATTR_EXT_FLAGS;
+	}
+
 	/*
 	 * Get the bridge index for AF_BRIDGE family entries
 	 */
@@ -521,7 +533,7 @@ static void neigh_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	char dst[INET6_ADDRSTRLEN+5], lladdr[INET6_ADDRSTRLEN+5];
 	struct rtnl_neigh *n = (struct rtnl_neigh *) a;
 	struct nl_cache *link_cache;
-	char state[128], flags[64];
+	char state[128], flags[64], ext_flags[64];
 	char buf[128];
 
 	link_cache = nl_cache_mngt_require_safe("route/link");
@@ -559,12 +571,15 @@ static void neigh_dump_line(struct nl_object *a, struct nl_dump_params *p)
 
 	rtnl_neigh_state2str(n->n_state, state, sizeof(state));
 	rtnl_neigh_flags2str(n->n_flags, flags, sizeof(flags));
+	rtnl_neigh_extflags2str(n->n_ext_flags, ext_flags, sizeof(ext_flags));
 
 	if (state[0])
 		nl_dump(p, "<%s", state);
 	if (flags[0])
 		nl_dump(p, "%s%s", state[0] ? "," : "<", flags);
-	if (state[0] || flags[0])
+	if (ext_flags[0])
+		nl_dump(p, "%s%s", state[0] || flags[0] ? "," : "<", ext_flags);
+	if (state[0] || flags[0] || ext_flags[0])
 		nl_dump(p, ">");
 	nl_dump(p, "\n");
 
@@ -762,6 +777,16 @@ static int build_neigh_msg(struct rtnl_neigh *tmpl, int cmd, int flags,
 	if (tmpl->ce_mask & NEIGH_ATTR_NHID)
 		NLA_PUT_U32(msg, NDA_NH_ID, tmpl->n_nhid);
 
+	if (tmpl->ce_mask & NEIGH_ATTR_EXT_FLAGS) {
+		/* The kernel does not allow setting the locked flag from
+		 * userspace, so unset it in the request. */
+		uint32_t ext_flags = tmpl->n_ext_flags &
+				     ~(uint32_t)NTF_EXT_LOCKED;
+
+		if (ext_flags)
+			NLA_PUT_U32(msg, NDA_FLAGS_EXT, ext_flags);
+	}
+
 	*result = msg;
 	return 0;
 
@@ -937,6 +962,11 @@ static const struct trans_tbl neigh_flags[] = {
 	__ADD(NTF_OFFLOADED, offloaded),
 };
 
+static const struct trans_tbl neigh_ext_flags[] = {
+	__ADD(NTF_EXT_MANAGED, managed),
+	__ADD(NTF_EXT_LOCKED, locked),
+};
+
 char * rtnl_neigh_flags2str(int flags, char *buf, size_t len)
 {
 	return __flags2str(flags, buf, len, neigh_flags,
@@ -946,6 +976,17 @@ char * rtnl_neigh_flags2str(int flags, char *buf, size_t len)
 int rtnl_neigh_str2flag(const char *name)
 {
 	return __str2type(name, neigh_flags, ARRAY_SIZE(neigh_flags));
+}
+
+char * rtnl_neigh_extflags2str(uint32_t flags, char *buf, size_t len)
+{
+	return __flags2str(flags, buf, len, neigh_ext_flags,
+	    ARRAY_SIZE(neigh_ext_flags));
+}
+
+uint32_t rtnl_neigh_str2extflag(const char *name)
+{
+	return __str2type(name, neigh_ext_flags, ARRAY_SIZE(neigh_ext_flags));
 }
 
 /** @} */
@@ -994,6 +1035,29 @@ void rtnl_neigh_unset_flags(struct rtnl_neigh *neigh, unsigned int flags)
 	neigh->n_flag_mask |= flags;
 	neigh->n_flags &= ~flags;
 	neigh->ce_mask |= NEIGH_ATTR_FLAGS;
+}
+
+void rtnl_neigh_set_ext_flags(struct rtnl_neigh *neigh, uint32_t ext_flags)
+{
+	neigh->n_ext_flag_mask |= ext_flags;
+	neigh->n_ext_flags |= ext_flags;
+	neigh->ce_mask |= NEIGH_ATTR_EXT_FLAGS;
+}
+
+int rtnl_neigh_get_ext_flags(struct rtnl_neigh *neigh, uint32_t *out_val)
+{
+	if (!(neigh->ce_mask & NEIGH_ATTR_EXT_FLAGS))
+		return -NLE_NOATTR;
+
+	*out_val = neigh->n_ext_flags;
+	return NLE_SUCCESS;
+}
+
+void rtnl_neigh_unset_ext_flags(struct rtnl_neigh *neigh, uint32_t ext_flags)
+{
+	neigh->n_ext_flag_mask |= ext_flags;
+	neigh->n_ext_flags &= ~ext_flags;
+	neigh->ce_mask |= NEIGH_ATTR_EXT_FLAGS;
 }
 
 void rtnl_neigh_set_ifindex(struct rtnl_neigh *neigh, int ifindex)

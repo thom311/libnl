@@ -36,6 +36,9 @@ extern int	rtnl_neigh_str2state(const char *);
 extern char *	rtnl_neigh_flags2str(int, char *, size_t);
 extern int	rtnl_neigh_str2flag(const char *);
 
+extern char *	rtnl_neigh_extflags2str(uint32_t, char *, size_t);
+extern uint32_t	rtnl_neigh_str2extflag(const char *);
+
 extern int	rtnl_neigh_add(struct nl_sock *, struct rtnl_neigh *, int);
 extern int	rtnl_neigh_build_add_request(struct rtnl_neigh *, int,
 					     struct nl_msg **);
@@ -54,6 +57,13 @@ extern void			rtnl_neigh_set_flags(struct rtnl_neigh *,
 extern void			rtnl_neigh_unset_flags(struct rtnl_neigh *,
 						       unsigned int);
 extern unsigned int		rtnl_neigh_get_flags(struct rtnl_neigh *);
+
+extern void			rtnl_neigh_set_ext_flags(struct rtnl_neigh *,
+							 uint32_t);
+extern void			rtnl_neigh_unset_ext_flags(struct rtnl_neigh *,
+							   uint32_t);
+extern int			rtnl_neigh_get_ext_flags(struct rtnl_neigh *,
+							 uint32_t *);
 
 extern void			rtnl_neigh_set_ifindex(struct rtnl_neigh *,
 						       int);

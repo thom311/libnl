@@ -211,6 +211,8 @@ static struct rtnl_link_info_ops bridge_info_ops = {
  * @arg link		Link object of type bridge
  * @arg ageing_time	Interval to set.
  *
+ * @see rtnl_link_bridge_get_ageing_time()
+ *
  * @return void
  */
 void rtnl_link_bridge_set_ageing_time(struct rtnl_link *link,
@@ -458,6 +460,8 @@ int rtnl_link_bridge_get_vlan_stats_enabled(struct rtnl_link *link,
  * @arg link		Link object of type bridge
  * @arg call_enabled	call enabled boolean flag to set.
  *
+ * @see rtnl_link_bridge_get_nf_call_iptables()
+ *
  * @return void
  */
 void rtnl_link_bridge_set_nf_call_iptables(struct rtnl_link *link,
@@ -473,9 +477,40 @@ void rtnl_link_bridge_set_nf_call_iptables(struct rtnl_link *link,
 }
 
 /**
+ * Get call enabled flag for passing IPv4 traffic to iptables
+ * @arg link		Link object of type bridge
+ * @arg call_enabled	Output argument.
+ *
+ * @see rtnl_link_bridge_set_nf_call_iptables()
+ *
+ * @return Zero on success, otherwise a negative error code.
+ * @retval -NLE_NOATTR
+ * @retval -NLE_INVAL
+ */
+int rtnl_link_bridge_get_nf_call_iptables(struct rtnl_link *link,
+					  uint8_t *call_enabled)
+{
+	struct bridge_info *bi = bridge_info(link);
+
+	IS_BRIDGE_INFO_ASSERT(link);
+
+	if (!(bi->ce_mask & BRIDGE_ATTR_NF_CALL_IPTABLES))
+		return -NLE_NOATTR;
+
+	if (!call_enabled)
+		return -NLE_INVAL;
+
+	*call_enabled = bi->b_nf_call_iptables;
+
+	return 0;
+}
+
+/**
  * Set call enabled flag for passing IPv6 traffic to ip6tables
  * @arg link		Link object of type bridge
  * @arg call_enabled	call enabled boolean flag to set.
+ *
+ * @see rtnl_link_bridge_get_nf_call_ip6tables()
  *
  * @return void
  */
@@ -492,9 +527,40 @@ void rtnl_link_bridge_set_nf_call_ip6tables(struct rtnl_link *link,
 }
 
 /**
+ * Get call enabled flag for passing IPv6 traffic to iptables
+ * @arg link		Link object of type bridge
+ * @arg call_enabled	Output argument.
+ *
+ * @see rtnl_link_bridge_set_nf_call_ip6tables()
+ *
+ * @return Zero on success, otherwise a negative error code.
+ * @retval -NLE_NOATTR
+ * @retval -NLE_INVAL
+ */
+int rtnl_link_bridge_get_nf_call_ip6tables(struct rtnl_link *link,
+					   uint8_t *call_enabled)
+{
+	struct bridge_info *bi = bridge_info(link);
+
+	IS_BRIDGE_INFO_ASSERT(link);
+
+	if (!(bi->ce_mask & BRIDGE_ATTR_NF_CALL_IP6TABLES))
+		return -NLE_NOATTR;
+
+	if (!call_enabled)
+		return -NLE_INVAL;
+
+	*call_enabled = bi->b_nf_call_ip6tables;
+
+	return 0;
+}
+
+/**
  * Set call enabled flag for passing ARP traffic to arptables
  * @arg link		Link object of type bridge
  * @arg call_enabled	call enabled boolean flag to set.
+ *
+ * @see rtnl_link_bridge_get_nf_call_arptables()
  *
  * @return void
  */
@@ -508,6 +574,35 @@ void rtnl_link_bridge_set_nf_call_arptables(struct rtnl_link *link,
 	bi->b_nf_call_arptables = call_enabled;
 
 	bi->ce_mask |= BRIDGE_ATTR_NF_CALL_ARPTABLES;
+}
+
+/**
+ * Get call enabled flag for passing ARP traffic to arptables
+ * @arg link		Link object of type bridge
+ * @arg call_enabled	Output argument.
+ *
+ * @see rtnl_link_bridge_set_nf_call_arptables()
+ *
+ * @return Zero on success, otherwise a negative error code.
+ * @retval -NLE_NOATTR
+ * @retval -NLE_INVAL
+ */
+int rtnl_link_bridge_get_nf_call_arptables(struct rtnl_link *link,
+					   uint8_t *call_enabled)
+{
+	struct bridge_info *bi = bridge_info(link);
+
+	IS_BRIDGE_INFO_ASSERT(link);
+
+	if (!(bi->ce_mask & BRIDGE_ATTR_NF_CALL_ARPTABLES))
+		return -NLE_NOATTR;
+
+	if (!call_enabled)
+		return -NLE_INVAL;
+
+	*call_enabled = bi->b_nf_call_arptables;
+
+	return 0;
 }
 
 static void _nl_init bridge_info_init(void)

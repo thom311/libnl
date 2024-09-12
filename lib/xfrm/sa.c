@@ -1050,7 +1050,7 @@ static int xfrm_sa_update_cache (struct nl_cache *cache, struct nl_object *obj,
 				else if (change_cb)
 					change_cb(cache, obj, NL_ACT_NEW, data);
 			}
-			else if (old_sa)
+			else
 			{
 				uint64_t diff = 0;
 				if (change_cb || change_cb_v2)

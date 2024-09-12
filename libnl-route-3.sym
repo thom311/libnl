@@ -1332,3 +1332,12 @@ global:
 	rtnl_route_nh_identical;
 	rtnl_route_set_nhid;
 } libnl_3_9;
+
+libnl_3_11 {
+global:
+	rtnl_link_bond_get_activeslave;
+	rtnl_link_bond_get_hashing_type;
+	rtnl_link_bond_get_miimon;
+	rtnl_link_bond_get_min_links;
+	rtnl_link_bond_get_mode;
+} libnl_3_10;

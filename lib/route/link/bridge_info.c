@@ -26,6 +26,9 @@
 #define BRIDGE_ATTR_NF_CALL_IPTABLES (1 << 5)
 #define BRIDGE_ATTR_NF_CALL_IP6TABLES (1 << 6)
 #define BRIDGE_ATTR_NF_CALL_ARPTABLES (1 << 7)
+#define BRIDGE_ATTR_STP_STATE (1 << 8)
+#define BRIDGE_ATTR_MCAST_ROUTER (1 << 9)
+#define BRIDGE_ATTR_MCAST_SNOOPING (1 << 10)
 
 struct bridge_info {
 	uint32_t ce_mask; /* to support attr macros */
@@ -37,6 +40,9 @@ struct bridge_info {
 	uint8_t b_nf_call_iptables;
 	uint8_t b_nf_call_ip6tables;
 	uint8_t b_nf_call_arptables;
+	uint32_t b_stp_state;
+	uint8_t b_mcast_router;
+	uint8_t b_mcast_snooping;
 };
 
 static const struct nla_policy bi_attrs_policy[IFLA_BR_MAX + 1] = {
@@ -48,6 +54,9 @@ static const struct nla_policy bi_attrs_policy[IFLA_BR_MAX + 1] = {
 	[IFLA_BR_NF_CALL_IPTABLES] = { .type = NLA_U8 },
 	[IFLA_BR_NF_CALL_IP6TABLES] = { .type = NLA_U8 },
 	[IFLA_BR_NF_CALL_ARPTABLES] = { .type = NLA_U8 },
+	[IFLA_BR_STP_STATE] = { .type = NLA_U32 },
+	[IFLA_BR_MCAST_ROUTER] = { .type = NLA_U8 },
+	[IFLA_BR_MCAST_SNOOPING] = { .type = NLA_U8 },
 };
 
 static inline struct bridge_info *bridge_info(struct rtnl_link *link)
@@ -136,6 +145,21 @@ static int bridge_info_parse(struct rtnl_link *link, struct nlattr *data,
 		bi->ce_mask |= BRIDGE_ATTR_NF_CALL_ARPTABLES;
 	}
 
+	if (tb[IFLA_BR_STP_STATE]) {
+		bi->b_stp_state = nla_get_u32(tb[IFLA_BR_STP_STATE]);
+		bi->ce_mask |= BRIDGE_ATTR_STP_STATE;
+	}
+
+	if (tb[IFLA_BR_MCAST_ROUTER]) {
+		bi->b_mcast_router = nla_get_u8(tb[IFLA_BR_MCAST_ROUTER]);
+		bi->ce_mask |= BRIDGE_ATTR_MCAST_ROUTER;
+	}
+
+	if (tb[IFLA_BR_MCAST_SNOOPING]) {
+		bi->b_mcast_snooping = nla_get_u8(tb[IFLA_BR_MCAST_SNOOPING]);
+		bi->ce_mask |= BRIDGE_ATTR_MCAST_SNOOPING;
+	}
+
 	return 0;
 }
 
@@ -177,6 +201,15 @@ static int bridge_info_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (bi->ce_mask & BRIDGE_ATTR_NF_CALL_ARPTABLES)
 		NLA_PUT_U8(msg, IFLA_BR_NF_CALL_ARPTABLES,
 			   bi->b_nf_call_arptables);
+
+	if (bi->ce_mask & BRIDGE_ATTR_STP_STATE)
+		NLA_PUT_U32(msg, IFLA_BR_STP_STATE, bi->b_stp_state);
+
+	if (bi->ce_mask & BRIDGE_ATTR_MCAST_ROUTER)
+		NLA_PUT_U8(msg, IFLA_BR_MCAST_ROUTER, bi->b_mcast_router);
+
+	if (bi->ce_mask & BRIDGE_ATTR_MCAST_SNOOPING)
+		NLA_PUT_U8(msg, IFLA_BR_MCAST_SNOOPING, bi->b_mcast_snooping);
 
 	nla_nest_end(msg, data);
 	return 0;
@@ -602,6 +635,147 @@ int rtnl_link_bridge_get_nf_call_arptables(struct rtnl_link *link,
 
 	*call_enabled = bi->b_nf_call_arptables;
 
+	return 0;
+}
+
+/**
+ * Set STP state
+ * @arg link		Link object of type bridge
+ * @arg stp_state	STP state to set. Typically 0 or 1.
+ *
+ * @see rtnl_link_bridge_get_stp_state()
+ *
+ * @return void
+ */
+void rtnl_link_bridge_set_stp_state(struct rtnl_link *link, uint32_t stp_state)
+{
+	struct bridge_info *bi = bridge_info(link);
+
+	IS_BRIDGE_INFO_ASSERT(link);
+
+	bi->b_stp_state = stp_state;
+
+	bi->ce_mask |= BRIDGE_ATTR_STP_STATE;
+}
+
+/**
+ * Get STP state
+ * @arg link		Link object of type bridge
+ * @arg stp_state	Output argument.
+ *
+ * @see rtnl_link_bridge_set_stp_state()
+ *
+ * @return Zero on success, otherwise a negative error code.
+ * @retval -NLE_NOATTR
+ * @retval -NLE_INVAL
+ */
+int rtnl_link_bridge_get_stp_state(struct rtnl_link *link, uint32_t *stp_state)
+{
+	struct bridge_info *bi = bridge_info(link);
+
+	IS_BRIDGE_INFO_ASSERT(link);
+
+	if (!(bi->ce_mask & BRIDGE_ATTR_STP_STATE))
+		return -NLE_NOATTR;
+
+	if (!stp_state)
+		return -NLE_INVAL;
+
+	*stp_state = bi->b_stp_state;
+	return 0;
+}
+
+/**
+ * Set multicast router type
+ * @arg link	Link object of type bridge
+ * @arg type	Multicast router type (MDB_RTR_TYPE_*)
+ *
+ * @see rtnl_link_bridge_get_mcast_router()
+ *
+ * @return void
+ */
+void rtnl_link_bridge_set_mcast_router(struct rtnl_link *link, uint8_t type)
+{
+	struct bridge_info *bi = bridge_info(link);
+
+	IS_BRIDGE_INFO_ASSERT(link);
+
+	bi->b_mcast_router = type;
+
+	bi->ce_mask |= BRIDGE_ATTR_MCAST_ROUTER;
+}
+
+/**
+ * Get multicast router type
+ * @arg link	Link object of type bridge
+ * @arg type	Output argument.
+ *
+ * @see rtnl_link_bridge_set_mcast_router()
+ *
+ * @return Zero on success, otherwise a negative error code.
+ * @retval -NLE_NOATTR
+ * @retval -NLE_INVAL
+ */
+int rtnl_link_bridge_get_mcast_router(struct rtnl_link *link, uint8_t *type)
+{
+	struct bridge_info *bi = bridge_info(link);
+
+	IS_BRIDGE_INFO_ASSERT(link);
+
+	if (!(bi->ce_mask & BRIDGE_ATTR_MCAST_ROUTER))
+		return -NLE_NOATTR;
+
+	if (!type)
+		return -NLE_INVAL;
+
+	*type = bi->b_mcast_router;
+	return 0;
+}
+
+/**
+ * Set multicast snooping
+ * @arg link	Link object of type bridge
+ * @arg value	Value to set. Typically 0 or 1.
+ *
+ * @see rtnl_link_bridge_get_mcast_snooping()
+ *
+ * @return void
+ */
+void rtnl_link_bridge_set_mcast_snooping(struct rtnl_link *link, uint8_t value)
+{
+	struct bridge_info *bi = bridge_info(link);
+
+	IS_BRIDGE_INFO_ASSERT(link);
+
+	bi->b_mcast_snooping = value;
+
+	bi->ce_mask |= BRIDGE_ATTR_MCAST_SNOOPING;
+}
+
+/**
+ * Get multicast snooping value
+ * @arg link	Link object of type bridge
+ * @arg value	Output argument.
+ *
+ * @see rtnl_link_bridge_set_mcast_snooping()
+ *
+ * @return Zero on success, otherwise a negative error code.
+ * @retval -NLE_NOATTR
+ * @retval -NLE_INVAL
+ */
+int rtnl_link_bridge_get_mcast_snooping(struct rtnl_link *link, uint8_t *value)
+{
+	struct bridge_info *bi = bridge_info(link);
+
+	IS_BRIDGE_INFO_ASSERT(link);
+
+	if (!(bi->ce_mask & BRIDGE_ATTR_MCAST_SNOOPING))
+		return -NLE_NOATTR;
+
+	if (!value)
+		return -NLE_INVAL;
+
+	*value = bi->b_mcast_snooping;
 	return 0;
 }
 

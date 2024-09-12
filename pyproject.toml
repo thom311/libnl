@@ -1,5 +1,5 @@
 [tool.black]
-target-versions = ["py37", "py38", "py39", "py310"]
+target-version = ["py37", "py38", "py39", "py310"]
 include = '''
     (
         \.py$

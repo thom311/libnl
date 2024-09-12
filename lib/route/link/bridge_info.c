@@ -13,6 +13,8 @@
 
 #include "nl-default.h"
 
+#include <linux/if_bridge.h>
+
 #include <netlink/route/link/bridge_info.h>
 
 #include "nl-route.h"
@@ -29,6 +31,7 @@
 #define BRIDGE_ATTR_STP_STATE (1 << 8)
 #define BRIDGE_ATTR_MCAST_ROUTER (1 << 9)
 #define BRIDGE_ATTR_MCAST_SNOOPING (1 << 10)
+#define BRIDGE_ATTR_BOOLOPT (1 << 11)
 
 struct bridge_info {
 	uint32_t ce_mask; /* to support attr macros */
@@ -43,6 +46,7 @@ struct bridge_info {
 	uint32_t b_stp_state;
 	uint8_t b_mcast_router;
 	uint8_t b_mcast_snooping;
+	struct br_boolopt_multi b_boolopts;
 };
 
 static const struct nla_policy bi_attrs_policy[IFLA_BR_MAX + 1] = {
@@ -57,6 +61,9 @@ static const struct nla_policy bi_attrs_policy[IFLA_BR_MAX + 1] = {
 	[IFLA_BR_STP_STATE] = { .type = NLA_U32 },
 	[IFLA_BR_MCAST_ROUTER] = { .type = NLA_U8 },
 	[IFLA_BR_MCAST_SNOOPING] = { .type = NLA_U8 },
+	[IFLA_BR_MULTI_BOOLOPT] = { .type = NLA_BINARY,
+				    .minlen = sizeof(struct br_boolopt_multi),
+				    .maxlen = sizeof(struct br_boolopt_multi) },
 };
 
 static inline struct bridge_info *bridge_info(struct rtnl_link *link)
@@ -160,6 +167,12 @@ static int bridge_info_parse(struct rtnl_link *link, struct nlattr *data,
 		bi->ce_mask |= BRIDGE_ATTR_MCAST_SNOOPING;
 	}
 
+	if (tb[IFLA_BR_MULTI_BOOLOPT]) {
+		nla_memcpy(&bi->b_boolopts, tb[IFLA_BR_MULTI_BOOLOPT],
+			   sizeof(bi->b_boolopts));
+		bi->ce_mask |= BRIDGE_ATTR_BOOLOPT;
+	}
+
 	return 0;
 }
 
@@ -210,6 +223,10 @@ static int bridge_info_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 
 	if (bi->ce_mask & BRIDGE_ATTR_MCAST_SNOOPING)
 		NLA_PUT_U8(msg, IFLA_BR_MCAST_SNOOPING, bi->b_mcast_snooping);
+
+	if (bi->ce_mask & BRIDGE_ATTR_BOOLOPT)
+		NLA_PUT(msg, IFLA_BR_MULTI_BOOLOPT, sizeof(bi->b_boolopts),
+			&bi->b_boolopts);
 
 	nla_nest_end(msg, data);
 	return 0;
@@ -777,6 +794,70 @@ int rtnl_link_bridge_get_mcast_snooping(struct rtnl_link *link, uint8_t *value)
 
 	*value = bi->b_mcast_snooping;
 	return 0;
+}
+
+/**
+ * Set a the value of a boolopt
+ * @arg link	Link object of type bridge
+ * @arg opt	Option to modify (BR_BOOLOPT_*)
+ * @arg value	Value to set the option to. 0 or 1.
+ *
+ * @see rtnl_link_bridge_get_boolopt()
+ *
+ * @return Zero on success, otherwise a negative error code.
+ * @retval -NLE_INVAL
+ */
+int rtnl_link_bridge_set_boolopt(struct rtnl_link *link, int opt, int value)
+{
+	struct bridge_info *bi = bridge_info(link);
+	uint32_t mask;
+
+	IS_BRIDGE_INFO_ASSERT(link);
+
+	if (opt < 0 || opt >= 32 || !(value == 0 || value == 1))
+		return -NLE_INVAL;
+
+	mask = 1ul << opt;
+
+	if (value)
+		bi->b_boolopts.optval |= mask;
+	else
+		bi->b_boolopts.optval &= ~mask;
+
+	bi->b_boolopts.optmask |= mask;
+	bi->ce_mask |= BRIDGE_ATTR_BOOLOPT;
+
+	return 0;
+}
+
+/**
+ * Get the value of a boolopt
+ * @arg link	Link object of type bridge
+ * @arg opt	Option to get (BR_BOOLOPT_*).
+ *
+ * @see rtnl_link_bridge_set_boolopt()
+ *
+ * @return The value of the boolopt (0 or 1), otherwise a negative error code.
+ * @retval -NLE_NOATTR
+ * @retval -NLE_INVAL
+ */
+int rtnl_link_bridge_get_boolopt(struct rtnl_link *link, int opt)
+{
+	struct bridge_info *bi = bridge_info(link);
+	uint32_t mask;
+
+	IS_BRIDGE_INFO_ASSERT(link);
+
+	if (opt < 0 || opt >= 32)
+		return -NLE_INVAL;
+
+	mask = 1ul << opt;
+
+	if (!(bi->ce_mask & BRIDGE_ATTR_BOOLOPT) ||
+	    !(bi->b_boolopts.optmask & mask))
+		return -NLE_NOATTR;
+
+	return !!(bi->b_boolopts.optval & mask);
 }
 
 static void _nl_init bridge_info_init(void)

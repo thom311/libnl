@@ -68,6 +68,11 @@ extern void rtnl_link_bridge_set_mcast_snooping(struct rtnl_link *link,
 extern int rtnl_link_bridge_get_mcast_snooping(struct rtnl_link *link,
 					       uint8_t *value);
 
+extern int rtnl_link_bridge_set_boolopt(struct rtnl_link *link, int opt,
+					int value);
+
+extern int rtnl_link_bridge_get_boolopt(struct rtnl_link *link, int opt);
+
 #ifdef __cplusplus
 }
 #endif

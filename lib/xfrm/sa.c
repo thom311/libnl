@@ -1014,7 +1014,7 @@ static int xfrm_sa_update_cache (struct nl_cache *cache, struct nl_object *obj,
                                  change_func_t change_cb, change_func_v2_t change_cb_v2,
 				 void *data)
 {
-	struct nl_object*       old_sa;
+	_nl_auto_nl_object struct nl_object* old_sa = NULL;
 	struct xfrmnl_sa*       sa = (struct xfrmnl_sa*)obj;
 
 	if (nl_object_get_msgtype (obj) == XFRM_MSG_EXPIRE)
@@ -1064,7 +1064,6 @@ static int xfrm_sa_update_cache (struct nl_cache *cache, struct nl_object *obj,
 					} else if (change_cb)
 						change_cb(cache, obj, NL_ACT_CHANGE, data);
 				}
-				nl_object_put (old_sa);
 			}
 		}
 		else
@@ -1075,7 +1074,6 @@ static int xfrm_sa_update_cache (struct nl_cache *cache, struct nl_object *obj,
 				change_cb_v2(cache, obj, NULL, 0, NL_ACT_DEL, data);
 			else if (change_cb)
 				change_cb (cache, obj, NL_ACT_DEL, data);
-			nl_object_put (old_sa);
 		}
 
 		/* Done handling expire message */

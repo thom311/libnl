@@ -37,12 +37,41 @@ extern void rtnl_link_bridge_set_vlan_stats_enabled(struct rtnl_link *link,
 						    uint8_t vlan_stats_enabled);
 extern int rtnl_link_bridge_get_vlan_stats_enabled(struct rtnl_link *link,
 						   uint8_t *vlan_stats_enabled);
+
 extern void rtnl_link_bridge_set_nf_call_iptables(struct rtnl_link *link,
 						  uint8_t call_enabled);
+extern int rtnl_link_bridge_get_nf_call_iptables(struct rtnl_link *link,
+						 uint8_t *call_enabled);
+
 extern void rtnl_link_bridge_set_nf_call_ip6tables(struct rtnl_link *link,
 						   uint8_t call_enabled);
+extern int rtnl_link_bridge_get_nf_call_ip6tables(struct rtnl_link *link,
+						  uint8_t *call_enabled);
+
 extern void rtnl_link_bridge_set_nf_call_arptables(struct rtnl_link *link,
 						   uint8_t call_enabled);
+extern int rtnl_link_bridge_get_nf_call_arptables(struct rtnl_link *link,
+						  uint8_t *call_enabled);
+
+extern void rtnl_link_bridge_set_stp_state(struct rtnl_link *link,
+					   uint32_t stp_state);
+extern int rtnl_link_bridge_get_stp_state(struct rtnl_link *link,
+					  uint32_t *stp_state);
+
+extern void rtnl_link_bridge_set_mcast_router(struct rtnl_link *link,
+					      uint8_t type);
+extern int rtnl_link_bridge_get_mcast_router(struct rtnl_link *link,
+					     uint8_t *type);
+
+extern void rtnl_link_bridge_set_mcast_snooping(struct rtnl_link *link,
+						uint8_t value);
+extern int rtnl_link_bridge_get_mcast_snooping(struct rtnl_link *link,
+					       uint8_t *value);
+
+extern int rtnl_link_bridge_set_boolopt(struct rtnl_link *link, int opt,
+					int value);
+
+extern int rtnl_link_bridge_get_boolopt(struct rtnl_link *link, int opt);
 
 #ifdef __cplusplus
 }

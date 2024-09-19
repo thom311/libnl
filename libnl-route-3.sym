@@ -1323,8 +1323,8 @@ global:
 	rtnl_link_bridge_set_ageing_time;
 	rtnl_link_bridge_set_master;
 	rtnl_link_bridge_set_nf_call_arptables;
-	rtnl_link_bridge_set_nf_call_iptables;
 	rtnl_link_bridge_set_nf_call_ip6tables;
+	rtnl_link_bridge_set_nf_call_iptables;
 	rtnl_link_bridge_set_port_vlan_map_range;
 	rtnl_link_bridge_set_port_vlan_pvid;
 	rtnl_link_bridge_unset_port_vlan_map_range;
@@ -1340,6 +1340,18 @@ global:
 	rtnl_link_bond_get_miimon;
 	rtnl_link_bond_get_min_links;
 	rtnl_link_bond_get_mode;
+	rtnl_link_bridge_get_boolopt;
+	rtnl_link_bridge_get_mcast_router;
+	rtnl_link_bridge_get_mcast_snooping;
+	rtnl_link_bridge_get_nf_call_arptables;
+	rtnl_link_bridge_get_nf_call_ip6tables;
+	rtnl_link_bridge_get_nf_call_iptables;
+	rtnl_link_bridge_get_stp_state;
+	rtnl_link_bridge_set_boolopt;
+	rtnl_link_bridge_set_mcast_router;
+	rtnl_link_bridge_set_mcast_snooping;
+	rtnl_link_bridge_set_stp_state;
+	rtnl_link_bridge_set_vlan_default_pvid;
 	rtnl_link_get_perm_addr;
 	rtnl_neigh_extflags2str;
 	rtnl_neigh_get_ext_flags;

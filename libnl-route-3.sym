@@ -1335,6 +1335,26 @@ global:
 
 libnl_3_11 {
 global:
+	rtnl_br_vlan_global_opts_alloc;
+	rtnl_br_vlan_global_opts_build_change_request;
+	rtnl_br_vlan_global_opts_change;
+	rtnl_br_vlan_global_opts_put;
+	rtnl_br_vlan_global_opts_set_id;
+	rtnl_br_vlan_global_opts_set_ifindex;
+	rtnl_br_vlan_global_opts_set_mcast_igmp_version;
+	rtnl_br_vlan_global_opts_set_mcast_last_member_cnt;
+	rtnl_br_vlan_global_opts_set_mcast_last_member_intvl;
+	rtnl_br_vlan_global_opts_set_mcast_membership_intvl;
+	rtnl_br_vlan_global_opts_set_mcast_mld_version;
+	rtnl_br_vlan_global_opts_set_mcast_querier;
+	rtnl_br_vlan_global_opts_set_mcast_querier_intvl;
+	rtnl_br_vlan_global_opts_set_mcast_query_intvl;
+	rtnl_br_vlan_global_opts_set_mcast_query_response_intvl;
+	rtnl_br_vlan_global_opts_set_mcast_snooping;
+	rtnl_br_vlan_global_opts_set_mcast_startup_query_cnt;
+	rtnl_br_vlan_global_opts_set_mcast_startup_query_intvl;
+	rtnl_br_vlan_global_opts_set_msti;
+	rtnl_br_vlan_global_opts_set_range;
 	rtnl_link_bond_get_activeslave;
 	rtnl_link_bond_get_hashing_type;
 	rtnl_link_bond_get_miimon;

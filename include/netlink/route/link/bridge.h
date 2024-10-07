@@ -96,6 +96,13 @@ extern int	rtnl_link_bridge_pvid(struct rtnl_link *link);
 extern int	rtnl_link_bridge_has_vlan(struct rtnl_link *link);
 
 extern struct rtnl_link_bridge_vlan *rtnl_link_bridge_get_port_vlan(struct rtnl_link *link);
+
+extern int	rtnl_link_bridge_set_mst_port_state(struct rtnl_link *link, uint16_t instance, uint8_t state);
+extern int	rtnl_link_bridge_get_mst_port_state(struct rtnl_link *link, uint16_t instance);
+extern int	rtnl_link_bridge_del_mst_port_state(struct rtnl_link *link, uint16_t instance);
+extern int	rtnl_link_bridge_clear_mst_port_state_info(struct rtnl_link *link);
+extern int	rtnl_link_bridge_foreach_mst_entry(struct rtnl_link *link, void (*cb)(uint16_t instance, uint8_t state, void *arg), void *arg);
+
 #ifdef __cplusplus
 }
 #endif

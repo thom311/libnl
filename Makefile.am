@@ -111,6 +111,7 @@ libnlinclude_netlink_routedir = $(libnlincludedir)/netlink/route
 libnlinclude_netlink_route_HEADERS = \
 	include/netlink/route/action.h \
 	include/netlink/route/addr.h \
+	include/netlink/route/br_vlan.h \
 	include/netlink/route/class.h \
 	include/netlink/route/classifier.h \
 	include/netlink/route/link.h \
@@ -442,6 +443,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/act/skbedit.c \
 	lib/route/act/vlan.c \
 	lib/route/addr.c \
+	lib/route/br_vlan.c \
 	lib/route/class.c \
 	lib/route/classid.c \
 	lib/route/cls.c \

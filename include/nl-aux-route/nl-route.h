@@ -63,6 +63,21 @@ void rtnl_cls_put(struct rtnl_cls *);
 _NL_AUTO_DEFINE_FCN_TYPED0(struct rtnl_cls *, _nl_auto_rtnl_cls_fcn,
 			   rtnl_cls_put);
 
+struct rtnl_br_vlan_gopts;
+void rtnl_br_vlan_gopts_put(struct rtnl_br_vlan_gopts *);
+#define _nl_auto_rtnl_br_vlan_gopts _nl_auto(_nl_auto_rtnl_br_vlan_gopts_fcn)
+_NL_AUTO_DEFINE_FCN_TYPED0(struct rtnl_br_vlan_gopts *,
+			   _nl_auto_rtnl_br_vlan_gopts_fcn,
+			   rtnl_br_vlan_gopts_put);
+
+struct rtnl_br_vlan_gopts_entry;
+void rtnl_br_vlan_gopts_entry_free(struct rtnl_br_vlan_gopts_entry *);
+#define _nl_auto_rtnl_br_vlan_gopts_entry \
+	_nl_auto(_nl_auto_rtnl_br_vlan_gopts_entry_fcn)
+_NL_AUTO_DEFINE_FCN_TYPED0(struct rtnl_br_vlan_gopts_entry *,
+			   _nl_auto_rtnl_br_vlan_gopts_entry_fcn,
+			   rtnl_br_vlan_gopts_entry_free);
+
 /*****************************************************************************/
 
 static inline int _rtnl_act_append_get(struct rtnl_act **head,

@@ -77,16 +77,19 @@ extern int			nl_recvmsgs_default(struct nl_sock *);
 extern int			nl_wait_for_ack(struct nl_sock *);
 
 extern int			nl_pickup(struct nl_sock *,
-					  int (*parser)(struct nl_cache_ops *,
-						struct sockaddr_nl *,
-						struct nlmsghdr *,
-						struct nl_parser_param *),
+					  int (*)(struct nl_cache_ops *,
+						  struct sockaddr_nl *,
+						  struct nlmsghdr *,
+						  struct nl_parser_param *),
 					  struct nl_object **);
-extern int                      nl_pickup_keep_syserr(struct nl_sock *sk,
-                                                      int (*parser)(struct nl_cache_ops *, struct sockaddr_nl *,
-                                                                    struct nlmsghdr *, struct nl_parser_param *),
-                                                      struct nl_object **result,
-                                                      int *syserror);
+extern int			nl_pickup_keep_syserr(struct nl_sock *,
+						      int (*)(struct nl_cache_ops *,
+							      struct sockaddr_nl *,
+							      struct nlmsghdr *,
+							      struct nl_parser_param *),
+						      struct nl_object **,
+						      int *);
+
 /* Netlink Family Translations */
 extern char *			nl_nlfamily2str(int, char *, size_t);
 extern int			nl_str2nlfamily(const char *);

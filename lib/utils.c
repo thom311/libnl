@@ -1285,10 +1285,10 @@ int nl_has_capability (int capability)
 			NL_CAPABILITY_VERSION_3_8_0,
 			NL_CAPABILITY_VERSION_3_9_0,
 			NL_CAPABILITY_VERSION_3_10_0,
-			0, /* NL_CAPABILITY_VERSION_3_11_0 */
+			NL_CAPABILITY_VERSION_3_11_0,
 			0, /* NL_CAPABILITY_VERSION_3_12_0 */
 			0, /* NL_CAPABILITY_VERSION_3_13_0 */
-			0),
+			0), /* NL_CAPABILITY_VERSION_3_14_0 */
 		/* IMPORTANT: these capability numbers are intended to be universal and stable
 		 * for libnl3. Don't allocate new numbers on your own that differ from upstream
 		 * libnl3.

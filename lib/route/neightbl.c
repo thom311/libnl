@@ -189,7 +189,7 @@ static uint64_t neightbl_compare(struct nl_object *_a, struct nl_object *_b,
 	    !(b->ce_mask & NEIGHTBL_ATTR_PARMS))
 		return diff;
 
-		/* XXX: FIXME: Compare parameter table */
+	/* XXX: FIXME: Compare parameter table */
 
 #if 0
 #define REQ(F) (fp->ntp_mask & NEIGHTBLPARM_ATTR_##F)

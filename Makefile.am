@@ -393,10 +393,16 @@ default_includes = \
 	-I$(builddir)/include \
 	$(NULL)
 
-lib_cppflags = \
+default_cppflags = \
 	$(warn_cppflags) \
 	$(defines_cppflags) \
 	$(default_includes) \
+	$(NULL)
+
+###############################################################################
+
+lib_cppflags = \
+	$(default_cppflags) \
 	$(NULL)
 
 lib_LTLIBRARIES += lib/libnl-3.la
@@ -711,9 +717,7 @@ src_lib_libnl_cli_3_la_SOURCES = \
 EXTRA_src_lib_libnl_cli_3_la_DEPENDENCIES = \
 	libnl-cli-3.sym
 src_lib_libnl_cli_3_la_CPPFLAGS = \
-	$(warn_cppflags) \
-	$(defines_cppflags) \
-	$(default_includes) \
+	$(default_cppflags) \
 	$(NULL)
 src_lib_libnl_cli_3_la_LDFLAGS = \
 	$(src_lib_ldflags) \
@@ -729,9 +733,7 @@ src_lib_libnl_cli_3_la_LIBADD = \
 ###############################################################################
 
 src_cppflags = \
-	$(warn_cppflags) \
-	$(defines_cppflags) \
-	$(default_includes) \
+	$(default_cppflags) \
 	$(NULL)
 
 src_ldadd = \
@@ -908,9 +910,7 @@ src_nl_util_addr_LDADD =            $(src_ldadd)
 ###############################################################################
 
 tests_cppflags = \
-	$(warn_cppflags) \
-	$(defines_cppflags) \
-	$(default_includes) \
+	$(default_cppflags) \
 	$(NULL)
 
 tests_ldadd = \

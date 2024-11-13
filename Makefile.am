@@ -32,6 +32,10 @@ pkgconfig_DATA = \
 	libnl-xfrm-3.0.pc \
 	$(NULL)
 
+extra_cppflags = \
+	-std=gnu11 \
+	$(NULL)
+
 warn_cppflags = \
 	-Wall \
 	-Wextra \
@@ -394,6 +398,7 @@ default_includes = \
 	$(NULL)
 
 default_cppflags = \
+	$(extra_cppflags) \
 	$(warn_cppflags) \
 	$(defines_cppflags) \
 	$(default_includes) \

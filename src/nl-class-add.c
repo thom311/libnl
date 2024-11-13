@@ -59,7 +59,8 @@ int main(int argc, char *argv[])
 	struct nl_cli_tc_module *tm;
 	struct rtnl_tc_ops *ops;
 	int err, flags = NLM_F_CREATE | NLM_F_EXCL;
-	char *kind, *id = NULL;
+	const char *kind;
+	_nl_auto_free char *id = NULL;
 
 	sock = nl_cli_alloc_socket();
 	nl_cli_connect(sock, NETLINK_ROUTE);
@@ -106,7 +107,7 @@ int main(int argc, char *argv[])
 		case 'v': nl_cli_print_version(); break;
 		case 'd': nl_cli_tc_parse_dev(tc, link_cache, optarg); break;
 		case 'p': nl_cli_tc_parse_parent(tc, optarg); break;
-		case 'i': id = strdup(optarg); break;
+		case 'i': _nl_clear_free(&id); id = strdup(optarg); break;
 		case ARG_UPDATE: flags = NLM_F_CREATE; break;
 		case ARG_UPDATE_ONLY: flags = 0; break;
 		case ARG_MTU: nl_cli_tc_parse_mtu(tc, optarg); break;
@@ -127,7 +128,6 @@ int main(int argc, char *argv[])
 
 	if (id) {
 		nl_cli_tc_parse_handle(tc, id, 1);
-		free(id);
 	}
 
 	kind = argv[optind++];

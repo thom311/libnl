@@ -10,6 +10,8 @@
 #include <netlink/route/link.h>
 #include <netlink/route/link/bridge.h>
 
+#include "c-list.h"
+
 #include "nl-priv-static-route/nl-priv-static-route.h"
 #include "nl-aux-core/nl-core.h"
 

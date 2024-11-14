@@ -6,6 +6,9 @@
 #ifndef NETLINK_LIST_H_
 #define NETLINK_LIST_H_
 
+/* For internal uses consider using "third_party/c-list/src/c-list.h" instead.
+ */
+
 #include <stddef.h>
 
 #ifdef __cplusplus

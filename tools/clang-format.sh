@@ -9,6 +9,7 @@ die() {
 
 EXCLUDE_PATHS_TOPLEVEL=(
     "include/linux-private"
+    "third_party"
 )
 
 # The following files are currently not formatted with clang.

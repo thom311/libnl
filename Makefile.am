@@ -338,6 +338,9 @@ noinst_HEADERS = \
 	include/nl-priv-dynamic-core/object-api.h \
 	include/nl-priv-dynamic-route/nl-priv-dynamic-route.h \
 	include/nl-priv-static-route/nl-priv-static-route.h \
+	\
+	third_party/c-list/src/c-list.h \
+	\
 	$(NULL)
 
 ###############################################################################
@@ -395,6 +398,7 @@ default_includes = \
 	-I$(srcdir)/include/linux-private \
 	-I$(srcdir)/include \
 	-I$(builddir)/include \
+	-I$(srcdir)/third_party/c-list/src \
 	$(NULL)
 
 default_cppflags = \

@@ -45,8 +45,9 @@ jobs:
           sudo apt-get update
           sudo apt-get -y --no-install-recommends install \
             check \
-            valgrind \
-            libtool-bin
+            libtool-bin \
+            meson \
+            valgrind
 
       - name: Check out repository code
         uses: actions/checkout@v3
@@ -179,6 +180,7 @@ jobs:
             libtool \
             linux-headers \
             make \
+            meson \
             musl-dev \
             pkgconfig
 
@@ -193,7 +195,6 @@ jobs:
         run: |
           set -x
 
-          export CC="${{ matrix.cc }}"
           export CFLAGS="-DNL_MORE_ASSERTS=1000 -O2 -Werror -std=gnu11 -fexceptions"
           if [ "$CC" = "clang" ]; then
                   CFLAGS="$CFLAGS -Wno-error=unused-command-line-argument -Wno-error=unused-function"
@@ -220,4 +221,5 @@ jobs:
             # (odd).
             # tests/check-all
             # make -j 15 check || (cat ./test-suite.log; false)
+            make check-local-c-list
           done

@@ -6,6 +6,7 @@ lib_LTLIBRARIES =
 noinst_LTLIBRARIES =
 check_LTLIBRARIES =
 
+clean_local =
 check_PROGRAMS =
 check_programs =
 check_local =
@@ -1183,6 +1184,36 @@ check_build += check-build-headers-cxx
 endif
 
 ###############################################################################
+
+EXTRA_DIST += \
+	third_party/c-list/AUTHORS \
+	third_party/c-list/.editorconfig \
+	third_party/c-list/.github/workflows/ci.yml \
+	third_party/c-list/meson.build \
+	third_party/c-list/NEWS.md \
+	third_party/c-list/README.md \
+	third_party/c-list/src/c-list.h \
+	third_party/c-list/src/meson.build \
+	third_party/c-list/src/test-api.c \
+	third_party/c-list/src/test-basic.c \
+	third_party/c-list/src/test-embed.c \
+	$(NULL)
+
+check-local-c-list:
+	"$(srcdir)/tools/check-c-list.sh"
+
+check_local += check-local-c-list
+
+clean-local-c-list:
+	rm -rf ./build-c-list/
+
+clean_local += clean-local-c-list
+
+EXTRA_DIST += tools/check-c-list.sh
+
+###############################################################################
+
+clean-local: $(clean_local)
 
 check-local: $(check_build) $(check_local)
 

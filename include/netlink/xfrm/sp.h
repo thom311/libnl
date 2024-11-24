@@ -117,6 +117,9 @@ extern struct xfrmnl_user_tmpl* xfrmnl_sp_usertemplate_n(struct xfrmnl_sp*, int)
 extern int                      xfrmnl_sp_get_mark (struct xfrmnl_sp*, unsigned int*, unsigned int*);
 extern int                      xfrmnl_sp_set_mark (struct xfrmnl_sp*, unsigned int, unsigned int);
 
+extern int                      xfrmnl_sp_get_if_id (struct xfrmnl_sp*, uint32_t*);
+extern int                      xfrmnl_sp_set_if_id (struct xfrmnl_sp*, uint32_t);
+
 extern char*                    xfrmnl_sp_action2str(int, char *, size_t);
 extern int                      xfrmnl_sp_str2action(const char *);
 

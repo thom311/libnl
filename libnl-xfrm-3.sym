@@ -255,3 +255,10 @@ libnl_3_6 {
 	xfrmnl_sa_get_user_offload;
 	xfrmnl_sa_set_user_offload;
 } libnl_3;
+
+libnl_3_12 {
+	xfrmnl_sa_get_if_id;
+	xfrmnl_sa_set_if_id;
+	xfrmnl_sp_get_if_id;
+	xfrmnl_sp_set_if_id;
+} libnl_3_6;

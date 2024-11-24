@@ -80,6 +80,7 @@ struct xfrmnl_sp {
 	uint32_t                        nr_user_tmpl;
 	struct nl_list_head             usertmpl_list;
 	struct xfrmnl_mark              mark;
+	uint32_t                        if_id;
 };
 
 /** @cond SKIP */
@@ -96,6 +97,7 @@ struct xfrmnl_sp {
 #define XFRM_SP_ATTR_SECCTX         0x400
 #define XFRM_SP_ATTR_TMPL           0x800
 #define XFRM_SP_ATTR_MARK           0x1000
+#define XFRM_SP_ATTR_IF_ID          0x2000
 
 static struct nl_cache_ops  xfrmnl_sp_ops;
 static struct nl_object_ops xfrm_sp_obj_ops;
@@ -206,6 +208,7 @@ static uint64_t xfrm_sp_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= _DIFF(XFRM_SP_ATTR_TMPL, (a->nr_user_tmpl != b->nr_user_tmpl));
 	diff |= _DIFF(XFRM_SP_ATTR_MARK,
 		      (a->mark.m != b->mark.m) || (a->mark.v != b->mark.v));
+	diff |= _DIFF(XFRM_SP_ATTR_IF_ID, a->if_id != b->if_id);
 
 	/* Compare the templates */
 	nl_list_for_each_entry(tmpl_b, &b->usertmpl_list, utmpl_list)
@@ -234,6 +237,7 @@ static const struct trans_tbl sp_attrs[] = {
 	__ADD(XFRM_SP_ATTR_SECCTX, security_context),
 	__ADD(XFRM_SP_ATTR_TMPL, user_template),
 	__ADD(XFRM_SP_ATTR_MARK, mark),
+	__ADD(XFRM_SP_ATTR_IF_ID, if_id),
 };
 
 static char* xfrm_sp_attrs2str(int attrs, char *buf, size_t len)
@@ -467,6 +471,10 @@ static void xfrm_sp_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	if (sp->ce_mask & XFRM_SP_ATTR_MARK)
 		nl_dump_line(p, "\tMark mask: 0x%x Mark value: 0x%x\n", sp->mark.m, sp->mark.v);
 
+
+	if (sp->ce_mask & XFRM_SP_ATTR_IF_ID)
+		nl_dump_line(p, "\tXFRM interface ID: 0x%x\n", sp->if_id);
+
 	nl_dump(p, "\n");
 }
 
@@ -555,6 +563,7 @@ static struct nla_policy xfrm_sp_policy[XFRMA_MAX+1] = {
 	[XFRMA_TMPL]            = { .minlen = sizeof(struct xfrm_user_tmpl) },
 	[XFRMA_POLICY_TYPE]     = { .minlen = sizeof(struct xfrm_userpolicy_type)},
 	[XFRMA_MARK]            = { .minlen = sizeof(struct xfrm_mark) },
+	[XFRMA_IF_ID]           = { .type = NLA_U32 },
 };
 
 static int xfrm_sp_request_update(struct nl_cache *c, struct nl_sock *h)
@@ -693,6 +702,11 @@ int xfrmnl_sp_parse(struct nlmsghdr *n, struct xfrmnl_sp **result)
 		sp->mark.m  =   m->m;
 		sp->mark.v  =   m->v;
 		sp->ce_mask |= XFRM_SP_ATTR_MARK;
+	}
+
+	if (tb[XFRMA_IF_ID]) {
+		sp->if_id = nla_get_u32(tb[XFRMA_IF_ID]);
+		sp->ce_mask |= XFRM_SP_ATTR_IF_ID;
 	}
 
 	*result = _nl_steal_pointer(&sp);
@@ -902,6 +916,10 @@ static int build_xfrm_sp_message(struct xfrmnl_sp *tmpl, int cmd, int flags, str
 		NLA_PUT (msg, XFRMA_MARK, sizeof (struct xfrm_mark), &tmpl->mark);
 	}
 
+	if (tmpl->ce_mask & XFRM_SP_ATTR_IF_ID) {
+		NLA_PUT_U32 (msg, XFRMA_IF_ID, tmpl->if_id);
+	}
+
 	*result = msg;
 	return 0;
 
@@ -1027,6 +1045,10 @@ static int build_xfrm_sp_delete_message(struct xfrmnl_sp *tmpl, int cmd, int fla
 	if (tmpl->ce_mask & XFRM_SP_ATTR_MARK) {
 		len = sizeof (struct xfrm_mark);
 		NLA_PUT (msg, XFRMA_MARK, len, &tmpl->mark);
+	}
+
+	if (tmpl->ce_mask & XFRM_SP_ATTR_IF_ID) {
+		NLA_PUT_U32 (msg, XFRMA_IF_ID, tmpl->if_id);
 	}
 
 	*result = msg;
@@ -1404,6 +1426,27 @@ int xfrmnl_sp_set_mark (struct xfrmnl_sp* sp, unsigned int value, unsigned int m
 	sp->mark.v  = value;
 	sp->mark.m  = mask;
 	sp->ce_mask |= XFRM_SP_ATTR_MARK;
+
+	return 0;
+}
+
+int xfrmnl_sp_get_if_id (struct xfrmnl_sp* sp, uint32_t* if_id)
+{
+	if (if_id == NULL)
+		return -NLE_INVAL;
+
+	if (!(sp->ce_mask & XFRM_SP_ATTR_IF_ID))
+		return -NLE_NOATTR;
+
+	*if_id = sp->if_id;
+
+	return 0;
+}
+
+int xfrmnl_sp_set_if_id (struct xfrmnl_sp* sp, uint32_t if_id)
+{
+	sp->if_id = if_id;
+	sp->ce_mask |= XFRM_SP_ATTR_IF_ID;
 
 	return 0;
 }

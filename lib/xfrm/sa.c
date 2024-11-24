@@ -109,6 +109,7 @@ struct xfrmnl_sa {
 	uint32_t                        seq;
 	uint32_t                        reqid;
 	uint16_t                        family;
+	uint32_t                        if_id;
 	uint8_t                         mode;        /* XFRM_MODE_xxx */
 	uint8_t                         replay_window;
 	uint8_t                         flags;
@@ -157,6 +158,7 @@ struct xfrmnl_sa {
 #define XFRM_SA_ATTR_REPLAY_STATE   0x2000000
 #define XFRM_SA_ATTR_EXPIRE         0x4000000
 #define XFRM_SA_ATTR_OFFLOAD_DEV    0x8000000
+#define XFRM_SA_ATTR_IF_ID          0x10000000
 
 static struct nl_cache_ops  xfrmnl_sa_ops;
 static struct nl_object_ops xfrm_sa_obj_ops;
@@ -360,6 +362,7 @@ static uint64_t xfrm_sa_compare(struct nl_object *_a, struct nl_object *_b,
 	diff |= _DIFF(XFRM_SA_ATTR_COADDR, nl_addr_cmp(a->coaddr, b->coaddr));
 	diff |= _DIFF(XFRM_SA_ATTR_MARK,
 		      (a->mark.m != b->mark.m) || (a->mark.v != b->mark.v));
+	diff |= _DIFF(XFRM_SA_ATTR_IF_ID, a->if_id != b->if_id);
 	diff |= _DIFF(XFRM_SA_ATTR_SECCTX,
 		      ((a->sec_ctx->ctx_doi != b->sec_ctx->ctx_doi) ||
 		       (a->sec_ctx->ctx_alg != b->sec_ctx->ctx_alg) ||
@@ -439,6 +442,7 @@ static const struct trans_tbl sa_attrs[] = {
 	__ADD(XFRM_SA_ATTR_REPLAY_STATE, replay_state),
 	__ADD(XFRM_SA_ATTR_EXPIRE, expire),
 	__ADD(XFRM_SA_ATTR_OFFLOAD_DEV, user_offload),
+	__ADD(XFRM_SA_ATTR_IF_ID, if_id),
 };
 
 static char* xfrm_sa_attrs2str(int attrs, char *buf, size_t len)
@@ -622,6 +626,9 @@ static void xfrm_sa_dump_line(struct nl_object *a, struct nl_dump_params *p)
 	if (sa->ce_mask & XFRM_SA_ATTR_MARK)
 		nl_dump_line(p, "\tMark mask: 0x%x Mark value: 0x%x\n", sa->mark.m, sa->mark.v);
 
+	if (sa->ce_mask & XFRM_SA_ATTR_IF_ID)
+		nl_dump_line(p, "\tXFRM interface ID: 0x%x\n", sa->if_id);
+
 	if (sa->ce_mask & XFRM_SA_ATTR_SECCTX)
 		nl_dump_line(p, "\tDOI: %d Algo: %d Len: %u ctx: %s\n", sa->sec_ctx->ctx_doi,
 		             sa->sec_ctx->ctx_alg, sa->sec_ctx->ctx_len, sa->sec_ctx->ctx);
@@ -763,6 +770,7 @@ static struct nla_policy xfrm_sa_policy[XFRMA_MAX+1] = {
 	[XFRMA_MARK]            = { .minlen = sizeof(struct xfrm_mark) },
 	[XFRMA_TFCPAD]          = { .type = NLA_U32 },
 	[XFRMA_REPLAY_ESN_VAL]  = { .minlen = sizeof(struct xfrm_replay_state_esn) },
+	[XFRMA_IF_ID]           = { .type = NLA_U32 },
 };
 
 static int xfrm_sa_request_update(struct nl_cache *c, struct nl_sock *h)
@@ -1004,6 +1012,11 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 		sa->user_offload->ifindex = offload->ifindex;
 		sa->user_offload->flags = offload->flags;
 		sa->ce_mask |= XFRM_SA_ATTR_OFFLOAD_DEV;
+	}
+
+	if (tb[XFRMA_IF_ID]) {
+		sa->if_id = nla_get_u32(tb[XFRMA_IF_ID]);
+		sa->ce_mask |= XFRM_SA_ATTR_IF_ID;
 	}
 
 	*result = _nl_steal_pointer(&sa);
@@ -1365,6 +1378,10 @@ static int build_xfrm_sa_message(struct xfrmnl_sa *tmpl, int cmd, int flags, str
 		offload->flags = tmpl->user_offload->flags;
 	}
 
+	if (tmpl->ce_mask & XFRM_SA_ATTR_IF_ID) {
+		NLA_PUT_U32 (msg, XFRMA_IF_ID, tmpl->if_id);
+	}
+
 	*result = msg;
 	return 0;
 
@@ -1696,6 +1713,27 @@ int xfrmnl_sa_set_family (struct xfrmnl_sa* sa, unsigned int family)
 {
 	sa->family = family;
 	sa->ce_mask |= XFRM_SA_ATTR_FAMILY;
+
+	return 0;
+}
+
+int xfrmnl_sa_get_if_id (struct xfrmnl_sa* sa, uint32_t* if_id)
+{
+	if (if_id == NULL)
+		return -NLE_INVAL;
+
+	if (!(sa->ce_mask & XFRM_SA_ATTR_IF_ID))
+		return -NLE_NOATTR;
+
+	*if_id = sa->if_id;
+
+	return 0;
+}
+
+int xfrmnl_sa_set_if_id (struct xfrmnl_sa* sa, uint32_t if_id)
+{
+	sa->if_id = if_id;
+	sa->ce_mask |= XFRM_SA_ATTR_IF_ID;
 
 	return 0;
 }

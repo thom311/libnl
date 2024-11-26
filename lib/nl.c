@@ -1137,12 +1137,21 @@ struct pickup_param
 static int __store_answer(struct nl_object *obj, struct nl_parser_param *p)
 {
 	struct pickup_param *pp = p->pp_arg;
-	/*
-	 * the parser will put() the object at the end, expecting the cache
-	 * to take the reference.
-	 */
-	nl_object_get(obj);
-	pp->result =  obj;
+
+	if (pp->result == NULL) {
+		/* The parser will put() the object at the end, expecting the
+		 * cache to take the reference. This line ensures the object
+		 * won't get deleted when that happens.
+		 */
+		nl_object_get(obj);
+
+		pp->result = obj;
+
+		return 0;
+	}
+
+	if (nl_object_update(pp->result, obj) < 0)
+		return -NLE_MERGE_FAILURE;
 
 	return 0;
 }
@@ -1168,10 +1177,14 @@ static int __pickup_answer_syserr(struct sockaddr_nl *nla, struct nlmsgerr *nler
 /** @endcond */
 
 /**
- * Pickup netlink answer, parse is and return object
+ * Pickup netlink answer, parse it and return an object
  * @arg sk              Netlink socket
  * @arg parser          Parser function to parse answer
  * @arg result          Result pointer to return parsed object
+ *
+ * @note If this function returns success, result may be NULL, so the caller
+ *       should check that before accessing the result. This can happen if the
+ *       kernel doesn't return any object data and reports success.
  *
  * @return 0 on success or a negative error code.
  */
@@ -1184,11 +1197,17 @@ int nl_pickup(struct nl_sock *sk,
 }
 
 /**
- * Pickup netlink answer, parse is and return object with preserving system error
+ * Pickup netlink answer, parse it and return the object while preserving the
+ * system error
  * @arg sk              Netlink socket
  * @arg parser          Parser function to parse answer
  * @arg result          Result pointer to return parsed object
- * @arg syserr          Result pointer for the system error in case of failure
+ * @arg syserror        Result pointer for the system error in case of failure
+ *                      (optional)
+ *
+ * @note If this function returns success, result may be NULL, so the caller
+ *       should check that before accessing the result. This can happen if the
+ *       kernel doesn't return any object data and reports success.
  *
  * @return 0 on success or a negative error code.
  */
@@ -1216,8 +1235,10 @@ int nl_pickup_keep_syserr(struct nl_sock *sk,
 	}
 
 	err = nl_recvmsgs(sk, cb);
-	if (err < 0)
+	if (err < 0) {
+		nl_object_put(pp.result);
 		goto errout;
+	}
 
 	*result = pp.result;
 errout:

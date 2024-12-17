@@ -807,7 +807,6 @@ static int cache_include(struct nl_cache *cache, struct nl_object *obj,
 				if (cb_v2) {
 					cb_v2(cache, clone, old, diff,
 					      NL_ACT_CHANGE, data);
-					nl_object_put(clone);
 				} else if (cb)
 					cb(cache, old, NL_ACT_CHANGE, data);
 				return 0;

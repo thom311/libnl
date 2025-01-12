@@ -411,6 +411,7 @@ nodist_lib_route_libnl_grammar_la_SOURCES = \
 lib_route_libnl_grammar_la_CPPFLAGS = \
 	$(lib_cppflags) \
 	-I$(srcdir)/lib/route \
+	-Wno-unused-but-set-variable \
 	$(NULL)
 
 $(lib_route_libnl_grammar_la_OBJECTS): $(grammar_files_headers)

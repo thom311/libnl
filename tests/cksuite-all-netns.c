@@ -73,6 +73,9 @@ START_TEST(cache_and_clone)
 	size_t i;
 	int r;
 
+	if (_nltst_skip_no_netns())
+		return;
+
 	for (i = 0; i < _NL_N_ELEMENTS(links); i++) {
 		if (links[i].add)
 			_nltst_add_link(NULL, links[i].ifname, links[i].kind,
@@ -132,10 +135,15 @@ START_TEST(test_create_iface)
 	_nl_auto_rtnl_link struct rtnl_link *link2 = NULL;
 	_nl_auto_rtnl_link struct rtnl_link *peer = NULL;
 	_nltst_auto_delete_link const char *IFNAME_DUMMY = NULL;
-	_nltst_auto_delete_link const char *IFNAME = "ifname";
+	_nltst_auto_delete_link const char *IFNAME = NULL;
 	int ifindex_dummy;
 	uint32_t u32;
 	int r;
+
+	if (_nltst_skip_no_netns())
+		return;
+
+	IFNAME = "ifname";
 
 	switch (TEST_IDX) {
 	case 0:
@@ -316,6 +324,9 @@ START_TEST(route_1)
 {
 	_nl_auto_nl_socket struct nl_sock *sk = NULL;
 	_nl_auto_nl_cache struct nl_cache *cache = NULL;
+
+	if (_nltst_skip_no_netns())
+		return;
 
 	if (_nltst_skip_no_iproute2("route_1"))
 		return;

@@ -84,6 +84,7 @@ uint32_t _nltst_rand_u32(void)
 
 struct nltst_netns {
 	int canary;
+	bool is_unshared;
 };
 
 /*****************************************************************************/
@@ -114,6 +115,23 @@ void nltst_netns_fixture_teardown(void)
 	_nl_clear_pointer(&_netns_fixture_global.nsdata, nltst_netns_leave);
 }
 
+bool nltst_netns_fixture_is_unshared(void)
+{
+	_assert_nltst_netns(_netns_fixture_global.nsdata);
+	return _netns_fixture_global.nsdata->is_unshared;
+}
+
+/*****************************************************************************/
+
+bool _nltst_skip_no_netns(void)
+{
+	if (nltst_netns_fixture_is_unshared())
+		return false;
+
+	printf("skip test due to having no private netns\n");
+	return true;
+}
+
 /*****************************************************************************/
 
 static void unshare_user(void)
@@ -125,6 +143,10 @@ static void unshare_user(void)
 
 	/* Become a root in new user NS. */
 	r = unshare(CLONE_NEWUSER);
+	if (r != 0 && errno == EPERM) {
+		/* No permissions? Ignore. Will be handled later. */
+		return;
+	}
 	_nltst_assert_errno(r == 0);
 
 	/* Since Linux 3.19 we have to disable setgroups() in order to map users.
@@ -149,14 +171,28 @@ static void unshare_user(void)
 	}
 	r = fprintf(f, "0 %d 1", uid);
 	_nltst_assert_errno(r > 0);
-	_nltst_fclose(f);
+	r = fclose(f);
+	if (r != 0 && errno == EPERM) {
+		/* Oddly, it seems close() can fail at this point. Ignore it,
+		 * but we probably will be unable to unshare (which we handle
+		 * later).
+		 */
+	} else
+		_nltst_assert_errno(r == 0);
 
 	/* Map current GID to root in NS to be created. */
 	f = fopen("/proc/self/gid_map", "we");
 	_nltst_assert_errno(f);
 	r = fprintf(f, "0 %d 1", gid);
 	_nltst_assert_errno(r > 0);
-	_nltst_fclose(f);
+	r = fclose(f);
+	if (r != 0 && errno == EPERM) {
+		/* Oddly, it seems close() can fail at this point. Ignore it, but
+		 * we probably will be unable to unshare (which we handle
+		 * later).
+		 */
+	} else
+		_nltst_assert_errno(r == 0);
 }
 
 struct nltst_netns *nltst_netns_enter(void)
@@ -172,6 +208,15 @@ struct nltst_netns *nltst_netns_enter(void)
 	unshare_user();
 
 	r = unshare(CLONE_NEWNET | CLONE_NEWNS);
+	if (r != 0 && errno == EPERM) {
+		/* The system is probably sandboxed somehow and we are unable
+		 * to create a private netns. That seems questionable, because
+		 * a point of a private netns is to sandbox an application.
+		 * Not having permissions to sandbox sounds bad.
+		 *
+		 * Anyway. We accept this and will later skip some tests. */
+		return nsdata;
+	}
 	_nltst_assert_errno(r == 0);
 
 	/* We need a read-only /sys so that the platform knows there's no udev. */
@@ -179,6 +224,7 @@ struct nltst_netns *nltst_netns_enter(void)
 	r = mount("sys", "/sys", "sysfs", MS_RDONLY, NULL);
 	_nltst_assert_errno(r == 0);
 
+	nsdata->is_unshared = true;
 	return nsdata;
 }
 

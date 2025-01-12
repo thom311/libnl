@@ -429,6 +429,9 @@ char **_nltst_strtokv(const char *str);
 
 void nltst_netns_fixture_setup(void);
 void nltst_netns_fixture_teardown(void);
+bool nltst_netns_fixture_is_unshared(void);
+
+bool _nltst_skip_no_netns(void);
 
 struct nltst_netns;
 

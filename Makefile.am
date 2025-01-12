@@ -346,6 +346,28 @@ noinst_HEADERS = \
 
 ###############################################################################
 
+default_includes = \
+	-I$(srcdir)/include/linux-private \
+	-I$(srcdir)/include \
+	-I$(builddir)/include \
+	-I$(srcdir)/third_party/c-list/src \
+	$(NULL)
+
+default_cppflags = \
+	$(extra_cppflags) \
+	$(warn_cppflags) \
+	$(defines_cppflags) \
+	$(default_includes) \
+	$(NULL)
+
+###############################################################################
+
+lib_cppflags = \
+	$(default_cppflags) \
+	$(NULL)
+
+###############################################################################
+
 # Hack to avoid using ylwrap. It does not function correctly in combination
 # with --header-file=
 
@@ -394,26 +416,6 @@ EXTRA_DIST += \
 	$(NULL)
 
 ###############################################################################
-
-default_includes = \
-	-I$(srcdir)/include/linux-private \
-	-I$(srcdir)/include \
-	-I$(builddir)/include \
-	-I$(srcdir)/third_party/c-list/src \
-	$(NULL)
-
-default_cppflags = \
-	$(extra_cppflags) \
-	$(warn_cppflags) \
-	$(defines_cppflags) \
-	$(default_includes) \
-	$(NULL)
-
-###############################################################################
-
-lib_cppflags = \
-	$(default_cppflags) \
-	$(NULL)
 
 lib_LTLIBRARIES += lib/libnl-3.la
 

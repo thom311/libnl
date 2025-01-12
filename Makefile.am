@@ -404,6 +404,17 @@ grammar_files_sources = \
 
 grammar_files_headers = $(grammar_files_sources:%.c=%.h)
 
+noinst_LTLIBRARIES += lib/route/libnl-grammar.la
+
+nodist_lib_route_libnl_grammar_la_SOURCES = \
+	$(grammar_files_sources)
+lib_route_libnl_grammar_la_CPPFLAGS = \
+	$(lib_cppflags) \
+	-I$(srcdir)/lib/route \
+	$(NULL)
+
+$(lib_route_libnl_grammar_la_OBJECTS): $(grammar_files_headers)
+
 CLEANFILES += \
 	$(grammar_files_sources) \
 	$(grammar_files_headers)
@@ -542,8 +553,6 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/tc-api.h \
 	lib/route/tc.c \
 	$(NULL)
-nodist_lib_libnl_route_3_la_SOURCES = \
-	$(grammar_files_sources)
 EXTRA_lib_libnl_route_3_la_DEPENDENCIES = \
 	libnl-route-3.sym
 lib_libnl_route_3_la_CPPFLAGS = \
@@ -556,7 +565,9 @@ lib_libnl_route_3_la_LDFLAGS = \
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
 	-Wl,--version-script=$(srcdir)/libnl-route-3.sym
 lib_libnl_route_3_la_LIBADD = \
-	lib/libnl-3.la
+	lib/libnl-3.la \
+	lib/route/libnl-grammar.la \
+	$(NULL)
 
 $(lib_libnl_route_3_la_OBJECTS): $(grammar_files_headers)
 

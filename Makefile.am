@@ -141,6 +141,10 @@ libnlinclude_netlink_route_act_HEADERS = \
 	include/netlink/route/act/skbedit.h \
 	include/netlink/route/act/vlan.h \
 	$(NULL)
+libnlinclude_netlink_route_br_vlandir = $(libnlincludedir)/netlink/route/br_vlan
+libnlinclude_netlink_route_br_vlan_HEADERS = \
+	include/netlink/route/br_vlan/global_opts.h \
+	$(NULL)
 libnlinclude_netlink_route_clsdir = $(libnlincludedir)/netlink/route/cls
 libnlinclude_netlink_route_cls_HEADERS = \
 	include/netlink/route/cls/basic.h \
@@ -244,6 +248,7 @@ public_headers = \
 	$(libnlinclude_netlink_netfilter_HEADERS) \
 	$(libnlinclude_netlink_route_HEADERS) \
 	$(libnlinclude_netlink_route_act_HEADERS) \
+	$(libnlinclude_netlink_route_br_vlan_HEADERS) \
 	$(libnlinclude_netlink_route_cls_HEADERS) \
 	$(libnlinclude_netlink_route_cls_ematch_HEADERS) \
 	$(libnlinclude_netlink_route_link_HEADERS) \
@@ -472,6 +477,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/act/skbedit.c \
 	lib/route/act/vlan.c \
 	lib/route/addr.c \
+	lib/route/br_vlan/global_opts.c \
 	lib/route/class.c \
 	lib/route/classid.c \
 	lib/route/cls.c \

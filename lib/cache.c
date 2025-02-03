@@ -902,14 +902,16 @@ static int resync_cb(struct nl_object *c, struct nl_parser_param *p)
 					ca->ca_change_data);
 }
 
-int nl_cache_resync(struct nl_sock *sk, struct nl_cache *cache,
-		    change_func_t change_cb, void *data)
+static int cache_resync(struct nl_sock *sk, struct nl_cache *cache,
+			change_func_t change_cb, change_func_v2_t change_cb_v2,
+			void *data)
 {
 	struct nl_object *obj, *next;
 	struct nl_af_group *grp;
 	struct nl_cache_assoc ca = {
 		.ca_cache = cache,
 		.ca_change = change_cb,
+		.ca_change_v2 = change_cb_v2,
 		.ca_change_data = data,
 	};
 	struct nl_parser_param p = {
@@ -954,6 +956,9 @@ restart:
 			nl_cache_remove(obj);
 			if (change_cb)
 				change_cb(cache, obj, NL_ACT_DEL, data);
+			else if (change_cb_v2)
+				change_cb_v2(cache, obj, NULL, 0, NL_ACT_DEL,
+					     data);
 			nl_object_put(obj);
 		}
 	}
@@ -963,6 +968,18 @@ restart:
 	err = 0;
 errout:
 	return err;
+}
+
+int nl_cache_resync(struct nl_sock *sk, struct nl_cache *cache,
+		    change_func_t change_cb, void *data)
+{
+	return cache_resync(sk, cache, change_cb, NULL, data);
+}
+
+int nl_cache_resync_v2(struct nl_sock *sk, struct nl_cache *cache,
+		    change_func_v2_t change_cb_v2, void *data)
+{
+	return cache_resync(sk, cache, NULL, change_cb_v2, data);
 }
 
 /** @} */

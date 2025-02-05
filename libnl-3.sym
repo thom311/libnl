@@ -385,3 +385,8 @@ global:
 	nla_get_uint;
 	nla_put_uint;
 } libnl_3_10;
+
+libnl_3_12 {
+global:
+	nl_cache_resync_v2;
+} libnl_3_11;

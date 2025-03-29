@@ -23,6 +23,7 @@
 
 #include "nl-default.h"
 
+#include <time.h>
 #include <fcntl.h>
 #include <limits.h>
 #include <sys/socket.h>

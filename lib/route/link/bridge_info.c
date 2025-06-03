@@ -261,6 +261,53 @@ static void bridge_info_free(struct rtnl_link *link)
 	_nl_clear_free(&link->l_info);
 }
 
+static int bridge_info_compare(struct rtnl_link *link_a,
+			       struct rtnl_link *link_b, int flags)
+{
+	struct bridge_info *a = link_a->l_info;
+	struct bridge_info *b = link_b->l_info;
+	uint32_t attrs = flags & LOOSE_COMPARISON ? b->ce_mask : ~0u;
+	int diff = 0;
+
+#define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(BRIDGE_ATTR_VLAN_FILTERING,
+		      a->b_vlan_filtering != b->b_vlan_filtering);
+	diff |= _DIFF(BRIDGE_ATTR_VLAN_PROTOCOL,
+		      a->b_vlan_protocol != b->b_vlan_protocol);
+	diff |= _DIFF(BRIDGE_ATTR_VLAN_STATS_ENABLED,
+		      a->b_vlan_stats_enabled != b->b_vlan_stats_enabled);
+	diff |= _DIFF(BRIDGE_ATTR_AGEING_TIME,
+		      a->b_ageing_time != b->b_ageing_time);
+	diff |= _DIFF(BRIDGE_ATTR_VLAN_DEFAULT_PVID,
+		      a->b_vlan_default_pvid != b->b_vlan_default_pvid);
+	diff |= _DIFF(BRIDGE_ATTR_NF_CALL_IPTABLES,
+		      a->b_nf_call_iptables != b->b_nf_call_iptables);
+	diff |= _DIFF(BRIDGE_ATTR_NF_CALL_IP6TABLES,
+		      a->b_nf_call_ip6tables != b->b_nf_call_ip6tables);
+	diff |= _DIFF(BRIDGE_ATTR_NF_CALL_ARPTABLES,
+		      a->b_nf_call_arptables != b->b_nf_call_arptables);
+	diff |= _DIFF(BRIDGE_ATTR_STP_STATE, a->b_stp_state != b->b_stp_state);
+	diff |= _DIFF(BRIDGE_ATTR_MCAST_ROUTER,
+		      a->b_mcast_router != b->b_mcast_router);
+	diff |= _DIFF(BRIDGE_ATTR_MCAST_SNOOPING,
+		      a->b_mcast_snooping != b->b_mcast_snooping);
+
+	if (flags & LOOSE_COMPARISON)
+		diff |= _DIFF(
+			BRIDGE_ATTR_BOOLOPT,
+			(b->b_boolopts.optmask & ~a->b_boolopts.optmask) ||
+				((a->b_boolopts.optval ^ b->b_boolopts.optval) &
+				 b->b_boolopts.optmask));
+	else
+		diff |= _DIFF(
+			BRIDGE_ATTR_BOOLOPT,
+			(a->b_boolopts.optmask != b->b_boolopts.optmask) ||
+				(a->b_boolopts.optval != b->b_boolopts.optval));
+#undef _DIFF
+
+	return diff;
+}
+
 static struct rtnl_link_info_ops bridge_info_ops = {
 	.io_name = "bridge",
 	.io_alloc = bridge_info_alloc,
@@ -268,6 +315,7 @@ static struct rtnl_link_info_ops bridge_info_ops = {
 	.io_parse = bridge_info_parse,
 	.io_put_attrs = bridge_info_put_attrs,
 	.io_free = bridge_info_free,
+	.io_compare = bridge_info_compare,
 };
 
 #define IS_BRIDGE_INFO_ASSERT(link)                                                      \

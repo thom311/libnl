@@ -488,6 +488,17 @@ int rtnl_link_bond_add(struct nl_sock *sock, const char *name,
 }
 
 /**
+ * Check if a link is a bond
+ * @arg link		Link object
+ *
+ * @return 1 if the link is a bond, 0 otherwise.
+ */
+int rtnl_link_is_bond(struct rtnl_link *link)
+{
+	return link->l_info_ops == &bonding_info_ops;
+}
+
+/**
  * Add a link to a bond (enslave)
  * @arg sock		netlink socket
  * @arg master		ifindex of bonding master

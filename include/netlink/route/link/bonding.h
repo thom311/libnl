@@ -15,6 +15,8 @@ extern "C" {
 
 extern struct rtnl_link *rtnl_link_bond_alloc(void);
 
+extern int	rtnl_link_is_bond(struct rtnl_link *);
+
 extern int	rtnl_link_bond_add(struct nl_sock *, const char *,
 				   struct rtnl_link *);
 

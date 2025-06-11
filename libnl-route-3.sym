@@ -1367,5 +1367,6 @@ global:
 
 libnl_3_12 {
 global:
+	rtnl_link_is_bond;
 	rtnl_nh_get_oif;
 } libnl_3_11;

@@ -43,6 +43,7 @@ static const char *errmsg[NLE_MAX+1] = {
 [NLE_IMMUTABLE]		= "Immutable attribute",
 [NLE_DUMP_INTR]		= "Dump inconsistency detected, interrupted",
 [NLE_ATTRSIZE]		= "Attribute max length exceeded",
+[NLE_HOSTUNREACH]	= "Host is unreachable",
 };
 
 /**
@@ -104,9 +105,9 @@ int nl_syserr2nlerr(int error)
 	case EBUSY:		return NLE_BUSY;
 	case ERANGE:		return NLE_RANGE;
 	case ENODEV:		return NLE_NODEV;
+	case EHOSTUNREACH:	return NLE_HOSTUNREACH;
 	default:		return NLE_FAILURE;
 	}
 }
 
 /** @} */
-

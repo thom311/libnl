@@ -48,6 +48,9 @@ extern "C" {
 	extern int rtnl_link_ip6_tnl_set_fwmark(struct rtnl_link *link, uint32_t fwmark);
 	extern int rtnl_link_ip6_tnl_get_fwmark(struct rtnl_link *link, uint32_t *fwmark);
 
+	extern int rtnl_link_ip6_tnl_set_collect_metadata(struct rtnl_link *link, int enable);
+	extern int rtnl_link_ip6_tnl_get_collect_metadata(struct rtnl_link *link, int *enable);
+
 #ifdef __cplusplus
 }
 #endif

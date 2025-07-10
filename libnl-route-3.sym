@@ -1367,6 +1367,8 @@ global:
 
 libnl_3_12 {
 global:
+	rtnl_link_ip6_tnl_get_collect_metadata;
+	rtnl_link_ip6_tnl_set_collect_metadata;
 	rtnl_link_is_bond;
 	rtnl_nh_get_oif;
 } libnl_3_11;

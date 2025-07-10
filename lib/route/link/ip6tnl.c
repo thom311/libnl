@@ -40,6 +40,7 @@
 #define IP6_TNL_ATTR_PROTO         (1 << 7)
 #define IP6_TNL_ATTR_FLOWINFO      (1 << 8)
 #define IP6_TNL_ATTR_FWMARK        (1 << 9)
+#define IP6_TNL_ATTR_CMTD          (1 << 10)
 
 struct ip6_tnl_info
 {
@@ -67,6 +68,7 @@ static struct nla_policy ip6_tnl_policy[IFLA_IPTUN_MAX + 1] = {
 	[IFLA_IPTUN_FLAGS]        = { .type = NLA_U32 },
 	[IFLA_IPTUN_PROTO]        = { .type = NLA_U8 },
 	[IFLA_IPTUN_FWMARK]       = { .type = NLA_U32 },
+	[IFLA_IPTUN_COLLECT_METADATA] = { .type = NLA_FLAG },
 };
 
 static int ip6_tnl_alloc(struct rtnl_link *link)
@@ -155,6 +157,9 @@ static int ip6_tnl_parse(struct rtnl_link *link, struct nlattr *data,
 		ip6_tnl->ip6_tnl_mask |= IP6_TNL_ATTR_FWMARK;
 	}
 
+	if (tb[IFLA_IPTUN_COLLECT_METADATA])
+		ip6_tnl->ip6_tnl_mask |= IP6_TNL_ATTR_CMTD;
+
 	err = 0;
 
 errout:
@@ -202,6 +207,9 @@ static int ip6_tnl_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 
 	if (ip6_tnl->ip6_tnl_mask & IP6_TNL_ATTR_FWMARK)
 		NLA_PUT_U32(msg, IFLA_IPTUN_FWMARK, ip6_tnl->fwmark);
+
+	if (ip6_tnl->ip6_tnl_mask & IP6_TNL_ATTR_CMTD)
+		NLA_PUT_FLAG(msg, IFLA_IPTUN_COLLECT_METADATA);
 
 	nla_nest_end(msg, data);
 
@@ -287,6 +295,10 @@ static void ip6_tnl_dump_details(struct rtnl_link *link, struct nl_dump_params *
 	if (ip6_tnl->ip6_tnl_mask & IP6_TNL_ATTR_FWMARK) {
 		nl_dump(p, "      fwmark ");
 		nl_dump_line(p, "%x\n", ip6_tnl->fwmark);
+	}
+
+	if (ip6_tnl->ip6_tnl_mask & IP6_TNL_ATTR_CMTD) {
+		nl_dump(p, "      collect-metadata\n");
 	}
 }
 
@@ -659,6 +671,51 @@ uint32_t rtnl_link_ip6_tnl_get_flags(struct rtnl_link *link)
 	IS_IP6_TNL_LINK_ASSERT(link);
 
 	return ip6_tnl->flags;
+}
+
+/**
+ * Set IP6_TNL collect-metadata flag
+ * @arg link            Link object
+ * @arg enable          0 to disable, non-zero to enable
+ *
+ * Enable or disable the collect-metadata mode on the ip6tnl link.
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_ip6_tnl_set_collect_metadata(struct rtnl_link *link, int enable)
+{
+	struct ip6_tnl_info *ip6_tnl = link->l_info;
+
+	IS_IP6_TNL_LINK_ASSERT(link);
+
+	if (enable)
+		ip6_tnl->ip6_tnl_mask |= IP6_TNL_ATTR_CMTD;
+	else
+		ip6_tnl->ip6_tnl_mask &= ~IP6_TNL_ATTR_CMTD;
+
+	return 0;
+}
+
+/**
+ * Get IP6_TNL collect-metadata flag
+ * @arg link            Link object
+ * @arg enable          Pointer to int which will be set to the current state
+ *                      (0 if disabled, non-zero if enabled)
+ *
+ * @return 0 on success or a negative error code
+ */
+int rtnl_link_ip6_tnl_get_collect_metadata(struct rtnl_link *link, int *enable)
+{
+	struct ip6_tnl_info *ip6_tnl = link->l_info;
+
+	IS_IP6_TNL_LINK_ASSERT(link);
+
+	if (!enable)
+		return -NLE_INVAL;
+
+	*enable = !!(ip6_tnl->ip6_tnl_mask & IP6_TNL_ATTR_CMTD);
+
+	return 0;
 }
 
 /**

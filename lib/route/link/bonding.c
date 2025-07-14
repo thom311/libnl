@@ -90,7 +90,7 @@ static int bond_info_parse(struct rtnl_link *link, struct nlattr *data,
 	}
 
 	if (tb[IFLA_BOND_MIIMON]) {
-		bn->hashing_type = nla_get_u32(tb[IFLA_BOND_MIIMON]);
+		bn->miimon = nla_get_u32(tb[IFLA_BOND_MIIMON]);
 		bn->ce_mask |= BOND_HAS_MIIMON;
 	}
 
@@ -100,7 +100,7 @@ static int bond_info_parse(struct rtnl_link *link, struct nlattr *data,
 	}
 
 	if (tb[IFLA_BOND_MIN_LINKS]) {
-		bn->hashing_type = nla_get_u32(tb[IFLA_BOND_MIN_LINKS]);
+		bn->min_links = nla_get_u32(tb[IFLA_BOND_MIN_LINKS]);
 		bn->ce_mask |= BOND_HAS_MIN_LINKS;
 	}
 

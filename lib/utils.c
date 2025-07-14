@@ -1289,6 +1289,15 @@ int nl_has_capability (int capability)
 			0, /* NL_CAPABILITY_VERSION_3_12_0 */
 			0, /* NL_CAPABILITY_VERSION_3_13_0 */
 			0), /* NL_CAPABILITY_VERSION_3_14_0 */
+		_NL_SET (5,
+			NL_CAPABILITY_ROUTE_FIX_PARSE_BONDING,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0),
 		/* IMPORTANT: these capability numbers are intended to be universal and stable
 		 * for libnl3. Don't allocate new numbers on your own that differ from upstream
 		 * libnl3.

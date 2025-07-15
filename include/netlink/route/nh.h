@@ -29,6 +29,7 @@ typedef struct nl_nh_group {
 extern int rtnl_nh_alloc_cache(struct nl_sock *sk, int family,
 			       struct nl_cache **result);
 extern struct rtnl_nh *rtnl_nh_alloc(void);
+extern int rtnl_nh_add(struct nl_sock *sk, struct rtnl_nh *nh, int flags);
 extern void rtnl_nh_put(struct rtnl_nh *);
 
 extern struct rtnl_nh *rtnl_nh_get(struct nl_cache *cache, int nhid);

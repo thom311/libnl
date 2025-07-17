@@ -221,6 +221,21 @@ int rtnl_nh_get_oif(struct rtnl_nh *nexthop)
 	return 0;
 }
 
+int rtnl_nh_set_oif(struct rtnl_nh *nexthop, uint32_t ifindex)
+{
+	if (!nexthop)
+		return -NLE_INVAL;
+
+	nexthop->nh_oif = (uint32_t)ifindex;
+
+	if (nexthop->nh_oif)
+		nexthop->ce_mask |= NH_ATTR_OIF;
+	else
+		nexthop->ce_mask &= ~NH_ATTR_OIF;
+
+	return 0;
+}
+
 int rtnl_nh_get_fdb(struct rtnl_nh *nexthop)
 {
 	return nexthop->ce_mask & NH_ATTR_FLAG_FDB;
@@ -271,6 +286,21 @@ int rtnl_nh_get_id(struct rtnl_nh *nh)
 		return nh->nh_id;
 
 	return -NLE_INVAL;
+}
+
+int rtnl_nh_set_id(struct rtnl_nh *nh, uint32_t id)
+{
+	if (!nh)
+		return -NLE_INVAL;
+
+	nh->nh_id = id;
+
+	if (nh->nh_id)
+		nh->ce_mask |= NH_ATTR_ID;
+	else
+		nh->ce_mask &= ~NH_ATTR_ID;
+
+	return 0;
 }
 
 static int nexthop_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,

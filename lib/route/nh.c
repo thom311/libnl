@@ -13,6 +13,7 @@
 
 #include "nl-aux-route/nl-route.h"
 #include "nl-route.h"
+#include "nexthop-encap.h"
 #include "nl-priv-dynamic-core/nl-core.h"
 #include "nl-priv-dynamic-core/cache-api.h"
 
@@ -651,6 +652,33 @@ int rtnl_nh_add(struct nl_sock *sk, struct rtnl_nh *nh, int flags)
 	return wait_for_ack(sk);
 }
 
+struct rtnl_nh_encap *rtnl_nh_encap_alloc(void)
+{
+	return calloc(1, sizeof(struct rtnl_nh_encap));
+}
+
+void rtnl_nh_encap_free(struct rtnl_nh_encap *nh_encap)
+{
+	if (!nh_encap)
+		return;
+
+	if (nh_encap->ops && nh_encap->ops->destructor)
+		nh_encap->ops->destructor(nh_encap->priv);
+
+	free(nh_encap->priv);
+	free(nh_encap);
+}
+
+/*
+ * Retrieve the encapsulation associated with a nexthop if any.
+ */
+struct rtnl_nh_encap *rtnl_route_nh_get_encap(struct rtnl_nexthop *nh)
+{
+	if (!nh)
+		return NULL;
+
+	return nh->rtnh_encap;
+}
 static struct nla_policy nh_res_group_policy[NHA_RES_GROUP_MAX + 1] = {
 	[NHA_RES_GROUP_UNSPEC] = { .type = NLA_UNSPEC },
 	[NHA_RES_GROUP_BUCKETS] = { .type = NLA_U16 },

@@ -18,8 +18,6 @@ struct rtnl_nh_encap;
 /*
  * generic nexthop encap
  */
-void nh_set_encap(struct rtnl_nexthop *nh, struct rtnl_nh_encap *rtnh_encap);
-
 int nh_encap_parse_msg(struct nlattr *encap, struct nlattr *encap_type,
 		       struct rtnl_nexthop *rtnh);
 int nh_encap_build_msg(struct nl_msg *msg, struct rtnl_nh_encap *rtnh_encap);

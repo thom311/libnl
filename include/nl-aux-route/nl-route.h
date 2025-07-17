@@ -6,6 +6,7 @@
 #include "base/nl-base-utils.h"
 
 #include <netlink/route/action.h>
+#include <netlink/route/nexthop.h>
 
 struct rtnl_link;
 void rtnl_link_put(struct rtnl_link *);
@@ -41,6 +42,10 @@ struct rtnl_nh;
 void rtnl_nh_put(struct rtnl_nh *);
 #define _nl_auto_rtnl_nh _nl_auto(_nl_auto_rtnl_nh_fcn)
 _NL_AUTO_DEFINE_FCN_TYPED0(struct rtnl_nh *, _nl_auto_rtnl_nh_fcn, rtnl_nh_put);
+
+#define _nl_auto_rtnl_nh_encap _nl_auto(_nl_auto_rtnl_nh_encap_fcn)
+_NL_AUTO_DEFINE_FCN_TYPED0(struct rtnl_nh_encap *, _nl_auto_rtnl_nh_encap_fcn,
+			   rtnl_nh_encap_free);
 
 struct rtnl_link_af_ops;
 void rtnl_link_af_ops_put(struct rtnl_link_af_ops *);

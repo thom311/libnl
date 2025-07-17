@@ -99,12 +99,7 @@ void rtnl_route_nh_free(struct rtnl_nexthop *nh)
 	nl_addr_put(nh->rtnh_gateway);
 	nl_addr_put(nh->rtnh_newdst);
 	nl_addr_put(nh->rtnh_via);
-	if (nh->rtnh_encap) {
-		if (nh->rtnh_encap->ops && nh->rtnh_encap->ops->destructor)
-			nh->rtnh_encap->ops->destructor(nh->rtnh_encap->priv);
-		free(nh->rtnh_encap->priv);
-		free(nh->rtnh_encap);
-	}
+	rtnl_nh_encap_free(nh->rtnh_encap);
 	free(nh);
 }
 
@@ -261,24 +256,6 @@ void rtnl_route_nh_dump(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 	}
 }
 
-void nh_set_encap(struct rtnl_nexthop *nh, struct rtnl_nh_encap *rtnh_encap)
-{
-	if (nh->rtnh_encap) {
-		if (nh->rtnh_encap->ops && nh->rtnh_encap->ops->destructor)
-			nh->rtnh_encap->ops->destructor(nh->rtnh_encap->priv);
-		free(nh->rtnh_encap->priv);
-		free(nh->rtnh_encap);
-	}
-
-	if (rtnh_encap) {
-		nh->rtnh_encap = rtnh_encap;
-		nh->ce_mask |= NH_ATTR_ENCAP;
-	} else {
-		nh->rtnh_encap = NULL;
-		nh->ce_mask &= ~NH_ATTR_ENCAP;
-	}
-}
-
 /**
  * @name Attributes
  * @{
@@ -402,6 +379,45 @@ int rtnl_route_nh_set_via(struct rtnl_nexthop *nh, struct nl_addr *addr)
 struct nl_addr *rtnl_route_nh_get_via(struct rtnl_nexthop *nh)
 {
 	return nh->rtnh_via;
+}
+
+/**
+ * Set nexthop encapsulation
+ * @arg nh		Route nexthop object
+ * @arg nh_encap	Encapsulation descriptor
+ *
+ * Assigns ownership of the encapsulation object to the route's nexthop.
+ * Any previously configured encapsulation is released. Passing a NULL
+ * encapsulation clears the encapsulation on the nexthop.
+ *
+ * On failure, the function consumes and frees \p nh_encap.
+ *
+ * @return 0 on success, or the appropriate error-code on failure.
+ */
+int rtnl_route_nh_set_encap(struct rtnl_nexthop *nh,
+			    struct rtnl_nh_encap *nh_encap)
+{
+	if (!nh) {
+		rtnl_nh_encap_free(nh_encap);
+		return -NLE_INVAL;
+	}
+
+	if (nh_encap && !nh_encap->ops) {
+		rtnl_nh_encap_free(nh_encap);
+		return -NLE_INVAL;
+	}
+
+	rtnl_nh_encap_free(nh->rtnh_encap);
+
+	if (nh_encap) {
+		nh->rtnh_encap = nh_encap;
+		nh->ce_mask |= NH_ATTR_ENCAP;
+	} else {
+		nh->rtnh_encap = NULL;
+		nh->ce_mask &= ~NH_ATTR_ENCAP;
+	}
+
+	return 0;
 }
 
 /** @} */

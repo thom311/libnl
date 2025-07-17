@@ -1371,6 +1371,11 @@ global:
 	rtnl_link_ip6_tnl_set_collect_metadata;
 	rtnl_link_is_bond;
 	rtnl_nh_add;
+	rtnl_nh_encap_alloc;
+	rtnl_nh_encap_free;
+	rtnl_nh_encap_mpls;
+	rtnl_nh_get_encap_mpls_dst;
+	rtnl_nh_get_encap_mpls_ttl;
 	rtnl_nh_get_family;
 	rtnl_nh_get_group_type;
 	rtnl_nh_get_oif;
@@ -1385,4 +1390,6 @@ global:
 	rtnl_nh_set_res_group_bucket_size;
 	rtnl_nh_set_res_group_idle_timer;
 	rtnl_nh_set_res_group_unbalanced_timer;
+	rtnl_route_nh_get_encap;
+	rtnl_route_nh_set_encap;
 } libnl_3_11;

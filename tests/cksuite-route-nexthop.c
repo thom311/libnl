@@ -36,6 +36,8 @@ START_TEST(test_route_nexthop_api_set_get_all)
 	_nl_auto_nl_addr struct nl_addr *via6 = NULL;
 	_nl_auto_nl_addr struct nl_addr *mpls = NULL;
 	_nl_auto_rtnl_nexthop struct rtnl_nexthop *clone = NULL;
+	struct rtnl_nh_encap *encap = NULL;
+	struct rtnl_nh_encap *got = NULL;
 	uint32_t realms = 0xAABBCCDDu;
 	char flags_buf[64];
 	int flags_parsed;
@@ -116,12 +118,32 @@ START_TEST(test_route_nexthop_api_set_get_all)
 	ck_assert_int_ne(rtnl_route_nh_compare(nh, clone, 0xFFFFFFFFu, 0), 0);
 	ck_assert_int_ne(rtnl_route_nh_identical(nh, clone), 0);
 
-	/* MPLS encap */
-	ck_assert_int_eq(rtnl_route_nh_encap_mpls(nh, NULL, 0), -NLE_INVAL);
+	/* MPLS encapsulation */
+	encap = rtnl_nh_encap_alloc();
+	ck_assert_ptr_nonnull(encap);
+
+	ck_assert_int_eq(rtnl_nh_get_encap_mpls_ttl(NULL), -NLE_INVAL);
+	ck_assert_int_eq(rtnl_nh_get_encap_mpls_ttl(encap), -NLE_INVAL);
+
+	/* Invalid: missing destination labels */
+	ck_assert_int_eq(rtnl_nh_encap_mpls(encap, NULL, 0), -NLE_INVAL);
+
+	/* Valid MPLS encap: push label 100 with TTL 64 */
 	ck_assert_int_eq(nl_addr_parse("100", AF_MPLS, &mpls), 0);
-	ck_assert_int_eq(rtnl_route_nh_encap_mpls(nh, mpls, 64), 0);
-	ck_assert_ptr_nonnull(rtnl_route_nh_get_encap_mpls_dst(nh));
-	ck_assert_uint_eq(rtnl_route_nh_get_encap_mpls_ttl(nh), 64);
+	ck_assert_int_eq(rtnl_nh_encap_mpls(encap, mpls, 64), 0);
+
+	/* Attach encap to nexthop and retrieve it back */
+	ck_assert_int_eq(rtnl_route_nh_set_encap(nh, encap), 0);
+	got = rtnl_route_nh_get_encap(nh);
+	ck_assert_ptr_eq(got, encap);
+
+	/* Access MPLS encap details through the new getters */
+	ck_assert_ptr_nonnull(rtnl_nh_get_encap_mpls_dst(got));
+	ck_assert_int_eq(rtnl_nh_get_encap_mpls_ttl(got), 64);
+
+	/* Clear encap and verify it is removed */
+	ck_assert_int_eq(rtnl_route_nh_set_encap(nh, NULL), 0);
+	ck_assert_ptr_eq(rtnl_route_nh_get_encap(nh), NULL);
 }
 END_TEST
 
@@ -227,8 +249,8 @@ START_TEST(test_kernel_route_roundtrip_single_v4)
 	ck_assert_uint_eq(rtnl_route_nh_get_realms(knh), 0xdeadbeef);
 	ck_assert_ptr_eq(rtnl_route_nh_get_newdst(knh), NULL);
 	ck_assert_ptr_eq(rtnl_route_nh_get_via(knh), NULL);
-	ck_assert_ptr_eq(rtnl_route_nh_get_encap_mpls_dst(knh), NULL);
-	ck_assert_uint_eq(rtnl_route_nh_get_encap_mpls_ttl(knh), 0);
+	/* No encap present */
+	ck_assert_ptr_eq(rtnl_route_nh_get_encap(knh), NULL);
 }
 END_TEST
 
@@ -262,8 +284,8 @@ static void nltst_assert_multipath_v4(struct rtnl_route *route,
 		ck_assert_uint_eq(rtnl_route_nh_get_realms(knh), realms);
 		ck_assert_ptr_eq(rtnl_route_nh_get_newdst(knh), NULL);
 		ck_assert_ptr_eq(rtnl_route_nh_get_via(knh), NULL);
-		ck_assert_ptr_eq(rtnl_route_nh_get_encap_mpls_dst(knh), NULL);
-		ck_assert_uint_eq(rtnl_route_nh_get_encap_mpls_ttl(knh), 0);
+		/* No encap present */
+		ck_assert_ptr_eq(rtnl_route_nh_get_encap(knh), NULL);
 
 		cnt++;
 	}
@@ -342,17 +364,21 @@ static void nltst_assert_single_v4_mpls(struct rtnl_route *route,
 {
 	struct rtnl_nexthop *knh = rtnl_route_nexthop_n(route, 0);
 	struct nl_addr *kgw = rtnl_route_nh_get_gateway(knh);
-	struct nl_addr *klabels = rtnl_route_nh_get_encap_mpls_dst(knh);
+	struct rtnl_nh_encap *encap = rtnl_route_nh_get_encap(knh);
+	struct nl_addr *klabels;
 
+	ck_assert_ptr_nonnull(encap);
 	ck_assert_int_eq(rtnl_route_nh_get_ifindex(knh), ifindex_dummy);
 	ck_assert_ptr_nonnull(kgw);
 	ck_assert_int_eq(nl_addr_get_family(kgw), AF_INET);
 	ck_assert_int_eq(nl_addr_cmp(kgw, gw), 0);
 
+	klabels = rtnl_nh_get_encap_mpls_dst(encap);
 	ck_assert_ptr_nonnull(klabels);
 	ck_assert_int_eq(nl_addr_get_family(klabels), AF_MPLS);
 	ck_assert_int_eq(nl_addr_cmp(klabels, labels), 0);
-	ck_assert_uint_eq(rtnl_route_nh_get_encap_mpls_ttl(knh), ttl);
+
+	ck_assert_int_eq(rtnl_nh_get_encap_mpls_ttl(encap), ttl);
 }
 
 START_TEST(test_kernel_route_roundtrip_nh_mpls_encap_v4)
@@ -365,6 +391,7 @@ START_TEST(test_kernel_route_roundtrip_nh_mpls_encap_v4)
 	_nl_auto_nl_addr struct nl_addr *dst = NULL;
 	_nl_auto_nl_addr struct nl_addr *gw = NULL;
 	_nl_auto_nl_addr struct nl_addr *labels = NULL;
+	struct rtnl_nh_encap *encap2;
 	struct rtnl_nexthop *nh = NULL;
 	int ifindex_dummy;
 
@@ -390,9 +417,13 @@ START_TEST(test_kernel_route_roundtrip_nh_mpls_encap_v4)
 	rtnl_route_nh_set_ifindex(nh, ifindex_dummy);
 	ck_assert_int_eq(nl_addr_parse("192.0.2.1", AF_INET, &gw), 0);
 	rtnl_route_nh_set_gateway(nh, gw);
+
 	/* Push label 100 with TTL 64 */
+	encap2 = rtnl_nh_encap_alloc();
+	ck_assert_ptr_nonnull(encap2);
 	ck_assert_int_eq(nl_addr_parse("100", AF_MPLS, &labels), 0);
-	ck_assert_int_eq(rtnl_route_nh_encap_mpls(nh, labels, 64), 0);
+	ck_assert_int_eq(rtnl_nh_encap_mpls(encap2, labels, 64), 0);
+	ck_assert_int_eq(rtnl_route_nh_set_encap(nh, encap2), 0);
 	rtnl_route_add_nexthop(route, nh);
 
 	ck_assert_int_eq(rtnl_route_add(sk, route, NLM_F_CREATE), 0);

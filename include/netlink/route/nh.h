@@ -47,6 +47,9 @@ extern int rtnl_nh_get_id(struct rtnl_nh *);
 extern int rtnl_nh_set_oif(struct rtnl_nh *, uint32_t ifindex);
 extern int rtnl_nh_get_oif(struct rtnl_nh *);
 
+extern int rtnl_nh_set_family(struct rtnl_nh *, uint8_t family);
+extern int rtnl_nh_get_family(struct rtnl_nh *);
+
 #ifdef __cplusplus
 }
 #endif

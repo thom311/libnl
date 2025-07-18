@@ -241,6 +241,24 @@ int rtnl_nh_get_fdb(struct rtnl_nh *nexthop)
 	return nexthop->ce_mask & NH_ATTR_FLAG_FDB;
 }
 
+int rtnl_nh_set_family(struct rtnl_nh *nexthop, uint8_t family)
+{
+	if (!nexthop)
+		return -NLE_INVAL;
+
+	nexthop->nh_family = family;
+
+	return 0;
+}
+
+int rtnl_nh_get_family(struct rtnl_nh *nexthop)
+{
+	if (!nexthop)
+		return -NLE_INVAL;
+
+	return nexthop->nh_family;
+}
+
 int rtnl_nh_get_group_entry(struct rtnl_nh *nexthop, int n)
 {
 	if (!(nexthop->ce_mask & NH_ATTR_GROUP) || !nexthop->nh_group)

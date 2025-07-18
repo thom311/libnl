@@ -1370,7 +1370,9 @@ global:
 	rtnl_link_ip6_tnl_get_collect_metadata;
 	rtnl_link_ip6_tnl_set_collect_metadata;
 	rtnl_link_is_bond;
+	rtnl_nh_get_family;
 	rtnl_nh_get_oif;
+	rtnl_nh_set_family;
 	rtnl_nh_set_id;
 	rtnl_nh_set_oif;
 } libnl_3_11;

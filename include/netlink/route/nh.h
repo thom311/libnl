@@ -53,6 +53,9 @@ extern int rtnl_nh_get_oif(struct rtnl_nh *);
 extern int rtnl_nh_set_family(struct rtnl_nh *, uint8_t family);
 extern int rtnl_nh_get_family(struct rtnl_nh *);
 
+extern int rtnl_nh_set_group_type(struct rtnl_nh *, uint16_t group_type);
+extern int rtnl_nh_get_group_type(struct rtnl_nh *);
+
 #ifdef __cplusplus
 }
 #endif

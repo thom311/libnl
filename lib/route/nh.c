@@ -24,7 +24,7 @@ struct rtnl_nh {
 	uint32_t nh_flags;
 
 	uint32_t nh_id;
-	uint32_t nh_group_type;
+	uint16_t nh_group_type;
 	nl_nh_group_t *nh_group;
 	uint32_t nh_oif;
 	struct nl_addr *nh_gateway;
@@ -37,6 +37,7 @@ struct rtnl_nh {
 #define NH_ATTR_OIF (1 << 4)
 #define NH_ATTR_GATEWAY (1 << 5)
 #define NH_ATTR_FLAG_GROUPS (1 << 6)
+#define NH_ATTR_GROUP_TYPE (1 << 7)
 #define NH_ATTR_FLAG_FDB (1 << 8)
 /** @endcond */
 
@@ -135,6 +136,7 @@ static int nh_clone(struct nl_object *_src, struct nl_object *_dst)
 	dst->nh_family = src->nh_family;
 	dst->nh_id = src->nh_id;
 	dst->nh_oif = src->nh_oif;
+	dst->nh_group_type = src->nh_group_type;
 	dst->ce_mask = src->ce_mask;
 
 	if (src->nh_gateway) {
@@ -257,6 +259,28 @@ int rtnl_nh_get_family(struct rtnl_nh *nexthop)
 		return -NLE_INVAL;
 
 	return nexthop->nh_family;
+}
+
+int rtnl_nh_set_group_type(struct rtnl_nh *nexthop, uint16_t group_type)
+{
+	if (!nexthop)
+		return -NLE_INVAL;
+
+	nexthop->nh_group_type = group_type;
+	nexthop->ce_mask |= NH_ATTR_GROUP_TYPE;
+
+	return 0;
+}
+
+int rtnl_nh_get_group_type(struct rtnl_nh *nexthop)
+{
+	if (!nexthop)
+		return -NLE_INVAL;
+
+	if (!(nexthop->ce_mask & NH_ATTR_GROUP_TYPE))
+		return -NLE_INVAL;
+
+	return (int)nexthop->nh_group_type;
 }
 
 int rtnl_nh_set_group(struct rtnl_nh *nexthop,
@@ -402,6 +426,11 @@ static int nexthop_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		nexthop->ce_mask |= NH_ATTR_GATEWAY;
 	}
 
+	if (tb[NHA_GROUP_TYPE]) {
+		nexthop->nh_group_type = nla_get_u16(tb[NHA_GROUP_TYPE]);
+		nexthop->ce_mask |= NH_ATTR_GROUP_TYPE;
+	}
+
 	if (tb[NHA_BLACKHOLE]) {
 		nexthop->ce_mask |= NH_ATTR_FLAG_BLACKHOLE;
 	}
@@ -523,6 +552,8 @@ static uint64_t nh_compare(struct nl_object *a, struct nl_object *b,
 	diff |= _DIFF(NH_ATTR_OIF, src->nh_oif != dst->nh_oif);
 	diff |= _DIFF(NH_ATTR_GROUP,
 		      rtnh_nh_grp_cmp(src->nh_group, dst->nh_group));
+	diff |= _DIFF(NH_ATTR_GROUP_TYPE,
+		      src->nh_group_type != dst->nh_group_type);
 	diff |= _DIFF(NH_ATTR_FLAG_FDB, false);
 	diff |= _DIFF(NH_ATTR_FLAG_GROUPS, false);
 	diff |= _DIFF(NH_ATTR_FLAG_BLACKHOLE, false);

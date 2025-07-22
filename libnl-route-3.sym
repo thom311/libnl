@@ -1373,6 +1373,7 @@ global:
 	rtnl_nh_get_family;
 	rtnl_nh_get_oif;
 	rtnl_nh_set_family;
+	rtnl_nh_set_group;
 	rtnl_nh_set_id;
 	rtnl_nh_set_oif;
 } libnl_3_11;

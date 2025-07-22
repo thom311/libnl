@@ -42,6 +42,9 @@ extern int rtnl_nh_get_fdb(struct rtnl_nh *);
 extern int rtnl_nh_get_group_entry(struct rtnl_nh *, int n);
 extern int rtnl_nh_get_group_size(struct rtnl_nh *);
 
+extern int rtnl_nh_set_group(struct rtnl_nh *,
+			     const nl_nh_group_info_t *entries, unsigned size);
+
 extern int rtnl_nh_set_id(struct rtnl_nh *, uint32_t id);
 extern int rtnl_nh_get_id(struct rtnl_nh *);
 extern int rtnl_nh_set_oif(struct rtnl_nh *, uint32_t ifindex);

@@ -259,6 +259,43 @@ int rtnl_nh_get_family(struct rtnl_nh *nexthop)
 	return nexthop->nh_family;
 }
 
+int rtnl_nh_set_group(struct rtnl_nh *nexthop,
+		      const nl_nh_group_info_t *entries, unsigned size)
+{
+	nl_nh_group_t *nhg = NULL;
+
+	if (!nexthop)
+		return -NLE_INVAL;
+
+	/* Both size and entries must be either set or 0/NULL */
+	if ((size == 0) != (entries == NULL)) {
+		return -NLE_INVAL;
+	}
+
+	if (size == 0) {
+		/* size is 0, thus we want to remove the nh group */
+
+		rtnl_nh_grp_put(nexthop->nh_group);
+		nexthop->nh_group = NULL;
+		nexthop->ce_mask &= ~NH_ATTR_GROUP;
+
+		return 0;
+	}
+
+	nhg = rtnl_nh_grp_alloc(size);
+	if (!nhg)
+		return -NLE_NOMEM;
+
+	memcpy(nhg->entries, entries, size * sizeof(*nhg->entries));
+
+	/* Replace an existing group if present. */
+	rtnl_nh_grp_put(nexthop->nh_group);
+	nexthop->nh_group = nhg;
+	nexthop->ce_mask |= NH_ATTR_GROUP;
+
+	return 0;
+}
+
 int rtnl_nh_get_group_entry(struct rtnl_nh *nexthop, int n)
 {
 	if (!(nexthop->ce_mask & NH_ATTR_GROUP) || !nexthop->nh_group)

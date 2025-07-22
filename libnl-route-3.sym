@@ -1373,9 +1373,15 @@ global:
 	rtnl_nh_get_family;
 	rtnl_nh_get_group_type;
 	rtnl_nh_get_oif;
+	rtnl_nh_get_res_group_bucket_size;
+	rtnl_nh_get_res_group_idle_timer;
+	rtnl_nh_get_res_group_unbalanced_timer;
 	rtnl_nh_set_family;
 	rtnl_nh_set_group;
 	rtnl_nh_set_group_type;
 	rtnl_nh_set_id;
 	rtnl_nh_set_oif;
+	rtnl_nh_set_res_group_bucket_size;
+	rtnl_nh_set_res_group_idle_timer;
+	rtnl_nh_set_res_group_unbalanced_timer;
 } libnl_3_11;

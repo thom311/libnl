@@ -18,6 +18,7 @@
 #include <netlink/route/nh.h>
 #include <netlink/route/link.h>
 #include <netlink/route/addr.h>
+#include <netlink/route/nexthop.h>
 
 #include "cksuite-all.h"
 
@@ -72,6 +73,72 @@ START_TEST(test_kernel_roundtrip_basic_v4)
 	ck_assert_ptr_nonnull(rtnl_nh_get_gateway(nh_kernel));
 	ck_assert_int_eq(nl_addr_get_family(rtnl_nh_get_gateway(nh_kernel)),
 			 AF_INET);
+}
+END_TEST
+
+/* Kernel round-trip tests for MPLS encap on rtnl_nh */
+
+START_TEST(test_kernel_roundtrip_encap_mpls)
+{
+	const char *IFNAME_DUMMY = "nh-dummy-encap0";
+	_nltst_auto_delete_link const char *auto_del_dummy = NULL;
+	_nl_auto_nl_socket struct nl_sock *sk = NULL;
+	_nl_auto_nl_cache struct nl_cache *cache = NULL;
+	_nl_auto_rtnl_nh struct rtnl_nh *nh = NULL;
+	struct rtnl_nh *knh;
+	struct rtnl_nh_encap *kencap;
+	_nl_auto_nl_addr struct nl_addr *gw4 = NULL;
+	_nl_auto_nl_addr struct nl_addr *labels = NULL;
+	struct rtnl_nh_encap *encap = NULL;
+	int ifindex_dummy;
+
+	if (_nltst_skip_no_netns())
+		return;
+
+	sk = _nltst_socket(NETLINK_ROUTE);
+
+	/* Create underlay */
+	auto_del_dummy = IFNAME_DUMMY;
+	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
+	_nltst_link_up(sk, IFNAME_DUMMY);
+	_nltst_addr4_add(sk, ifindex_dummy, "192.0.2.2", 24);
+
+	/* Build nexthop: v4 gw over dummy with MPLS encap */
+	nh = rtnl_nh_alloc();
+	ck_assert_ptr_nonnull(nh);
+	ck_assert_int_eq(rtnl_nh_set_id(nh, 3101), 0);
+
+	/* Surprisingly the kernel accepts a nexthop with encap and a gw */
+	ck_assert_int_eq(nl_addr_parse("192.0.2.1", AF_INET, &gw4), 0);
+	ck_assert_int_eq(rtnl_nh_set_gateway(nh, gw4), 0);
+
+	encap = rtnl_nh_encap_alloc();
+	ck_assert_ptr_nonnull(encap);
+	ck_assert_int_eq(nl_addr_parse("100", AF_MPLS, &labels), 0);
+	ck_assert_int_eq(rtnl_nh_encap_mpls(encap, labels, 64), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap(nh, encap), 0);
+
+	/* Fails - we need a family & oif*/
+	ck_assert_int_eq(rtnl_nh_add(sk, nh, NLM_F_CREATE), -NLE_INVAL);
+
+	/* Fails, we need a family */
+	ck_assert_int_eq(rtnl_nh_set_oif(nh, (uint32_t)ifindex_dummy), 0);
+	ck_assert_int_eq(rtnl_nh_add(sk, nh, NLM_F_CREATE), -NLE_INVAL);
+
+	ck_assert_int_eq(rtnl_nh_set_family(nh, AF_INET), 0);
+	ck_assert_int_eq(rtnl_nh_add(sk, nh, NLM_F_CREATE), 0);
+
+	/* Query and verify */
+	ck_assert_int_eq(rtnl_nh_alloc_cache(sk, AF_UNSPEC, &cache), 0);
+	knh = rtnl_nh_get(cache, 3101);
+	ck_assert_ptr_nonnull(knh);
+	ck_assert_int_eq(rtnl_nh_get_id(knh), 3101);
+	ck_assert_int_eq(rtnl_nh_get_oif(knh), ifindex_dummy);
+
+	kencap = rtnl_nh_get_encap(knh);
+	ck_assert_ptr_nonnull(kencap);
+	ck_assert_ptr_nonnull(rtnl_nh_get_encap_mpls_dst(kencap));
+	ck_assert_uint_eq(rtnl_nh_get_encap_mpls_ttl(kencap), 64);
 }
 END_TEST
 
@@ -518,6 +585,56 @@ START_TEST(test_api_set_get_all)
 }
 END_TEST
 
+/* Userspace tests for MPLS encap on rtnl_nh */
+
+START_TEST(test_api_encap_mpls_set_get)
+{
+	_nl_auto_rtnl_nh struct rtnl_nh *nh = NULL;
+	struct rtnl_nh_encap *encap = NULL;
+	struct rtnl_nh_encap *got = NULL;
+	_nl_auto_nl_addr struct nl_addr *labels = NULL;
+
+	/* Allocate nh and an encap container */
+	nh = rtnl_nh_alloc();
+	ck_assert_ptr_nonnull(nh);
+
+	/* Negative: NULL nh */
+	encap = rtnl_nh_encap_alloc();
+	ck_assert_ptr_nonnull(encap);
+	/* This will free encap */
+	ck_assert_int_eq(rtnl_nh_set_encap(NULL, encap), -NLE_INVAL);
+
+	encap = rtnl_nh_encap_alloc();
+	ck_assert_ptr_nonnull(encap);
+
+	/* "empty" encap (no type set) cannot be assigned. */
+	ck_assert_int_eq(rtnl_nh_set_encap(nh, encap), -NLE_INVAL);
+	ck_assert_ptr_eq(rtnl_nh_get_encap_mpls_dst(rtnl_nh_get_encap(nh)),
+			 NULL);
+	ck_assert_uint_eq(rtnl_nh_get_encap_mpls_ttl(rtnl_nh_get_encap(nh)),
+			  -NLE_INVAL);
+
+	encap = rtnl_nh_encap_alloc();
+	ck_assert_ptr_nonnull(encap);
+	/* Now build a valid MPLS encap: push label 100 with TTL 64 */
+	ck_assert_int_eq(nl_addr_parse("100", AF_MPLS, &labels), 0);
+	ck_assert_int_eq(rtnl_nh_encap_mpls(encap, labels, 64), 0);
+
+	/* Attach and retrieve */
+	ck_assert_int_eq(rtnl_nh_set_encap(nh, encap), 0);
+	got = rtnl_nh_get_encap(nh);
+	ck_assert_ptr_nonnull(got);
+
+	/* Access MPLS-specific getters */
+	ck_assert_ptr_nonnull(rtnl_nh_get_encap_mpls_dst(got));
+	ck_assert_uint_eq(rtnl_nh_get_encap_mpls_ttl(got), 64);
+
+	/* Clear encap */
+	ck_assert_int_eq(rtnl_nh_set_encap(nh, NULL), 0);
+	ck_assert_ptr_eq(rtnl_nh_get_encap(nh), NULL);
+}
+END_TEST
+
 Suite *make_nl_route_nh_suite(void)
 {
 	Suite *suite = suite_create("route-nh");
@@ -526,6 +643,8 @@ Suite *make_nl_route_nh_suite(void)
 
 	/* Comprehensive API setter/getter test (userspace only) */
 	tcase_add_test(tc_api, test_api_set_get_all);
+	/* Userspace encap tests */
+	tcase_add_test(tc_api, test_api_encap_mpls_set_get);
 	suite_add_tcase(suite, tc_api);
 
 	/* Kernel round-trip – needs private netns */
@@ -538,6 +657,8 @@ Suite *make_nl_route_nh_suite(void)
 	tcase_add_test(tc_kernel, test_kernel_roundtrip_oif_only);
 	tcase_add_test(tc_kernel, test_kernel_roundtrip_group_mpath);
 	tcase_add_test(tc_kernel, test_kernel_roundtrip_group_resilient);
+	/* Encap (MPLS) on rtnl_nh */
+	tcase_add_test(tc_kernel, test_kernel_roundtrip_encap_mpls);
 	/* Negative tests: kernel should reject invalid nexthops */
 	tcase_add_test(tc_kernel, test_kernel_negative_mismatched_gw_family);
 	tcase_add_test(tc_kernel, test_kernel_negative_group_without_entries);

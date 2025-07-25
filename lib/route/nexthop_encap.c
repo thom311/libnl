@@ -78,23 +78,34 @@ int nh_encap_parse_msg(struct nlattr *encap, struct nlattr *encap_type,
 
 	if (e_type == LWTUNNEL_ENCAP_NONE) {
 		NL_DBG(2, "RTA_ENCAP_TYPE should not be LWTUNNEL_ENCAP_NONE\n");
-		return -NLE_INVAL;
+
+		goto unsupported_encap;
 	}
+
 	if (e_type > LWTUNNEL_ENCAP_MAX) {
 		NL_DBG(2, "Unknown RTA_ENCAP_TYPE: %d\n", e_type);
-		return -NLE_INVAL;
+
+		goto unsupported_encap;
 	}
 
 	if (!lwtunnel_encap_types[e_type].ops) {
 		NL_DBG(2, "RTA_ENCAP_TYPE %s is not implemented\n",
 		       lwtunnel_encap_types[e_type].name);
-		return -NLE_MSGTYPE_NOSUPPORT;
+
+		goto unsupported_encap;
 	}
 
-	if (!lwtunnel_encap_types[e_type].ops->parse_msg)
-		return -NLE_MSGTYPE_NOSUPPORT;
-
 	return lwtunnel_encap_types[e_type].ops->parse_msg(encap, encap_out);
+
+unsupported_encap:
+	/* If we don't yet support this lwtunnel, just return 0.
+	 *
+	 * Force encap_out to NULL so that subsequent calls to set
+	 * it on a nexthop/route will simply reset the encapsulation
+	 * on that nexthop/route.
+	 */
+	*encap_out = NULL;
+	return 0;
 }
 
 int nh_encap_compare(struct rtnl_nh_encap *a, struct rtnl_nh_encap *b)

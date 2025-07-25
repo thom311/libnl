@@ -72,6 +72,11 @@ extern int rtnl_nh_set_res_group_unbalanced_timer(struct rtnl_nh *,
 extern int rtnl_nh_get_res_group_unbalanced_timer(struct rtnl_nh *,
 						  uint32_t *out_value);
 
+/* lwtunnel encapsulation */
+struct rtnl_nh_encap;
+extern int rtnl_nh_set_encap(struct rtnl_nh *, struct rtnl_nh_encap *);
+extern struct rtnl_nh_encap *rtnl_nh_get_encap(struct rtnl_nh *);
+
 #ifdef __cplusplus
 }
 #endif

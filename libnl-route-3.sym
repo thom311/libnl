@@ -1391,6 +1391,8 @@ global:
 	rtnl_nh_set_res_group_bucket_size;
 	rtnl_nh_set_res_group_idle_timer;
 	rtnl_nh_set_res_group_unbalanced_timer;
+	rtnl_nh_set_encap;
+	rtnl_nh_get_encap;
 	rtnl_route_nh_set_encap;
 	rtnl_route_nh_get_encap;
 } libnl_3_11;

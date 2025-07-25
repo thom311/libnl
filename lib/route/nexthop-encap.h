@@ -8,6 +8,7 @@ struct nh_encap_ops {
 	int (*parse_msg)(struct nlattr *nla, struct rtnl_nexthop *rtnh);
 
 	int (*compare)(void *a, void *b);
+	void *(*clone)(void *priv);
 
 	void (*dump)(void *priv, struct nl_dump_params *dp);
 	void (*destructor)(void *priv);

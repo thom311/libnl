@@ -65,32 +65,34 @@ struct rtnl_nexthop *rtnl_route_nh_clone(struct rtnl_nexthop *src)
 
 	if (src->rtnh_gateway) {
 		nh->rtnh_gateway = nl_addr_clone(src->rtnh_gateway);
-		if (!nh->rtnh_gateway) {
-			free(nh);
-			return NULL;
-		}
+		if (!nh->rtnh_gateway)
+			goto err;
 	}
 
 	if (src->rtnh_newdst) {
 		nh->rtnh_newdst = nl_addr_clone(src->rtnh_newdst);
-		if (!nh->rtnh_newdst) {
-			nl_addr_put(nh->rtnh_gateway);
-			free(nh);
-			return NULL;
-		}
+		if (!nh->rtnh_newdst)
+			goto err;
 	}
 
 	if (src->rtnh_via) {
 		nh->rtnh_via = nl_addr_clone(src->rtnh_via);
-		if (!nh->rtnh_via) {
-			nl_addr_put(nh->rtnh_gateway);
-			nl_addr_put(nh->rtnh_newdst);
-			free(nh);
-			return NULL;
-		}
+		if (!nh->rtnh_via)
+			goto err;
+	}
+
+	/* Clone encapsulation information if present */
+	if (src->rtnh_encap) {
+		nh->rtnh_encap = rtnl_nh_encap_clone(src->rtnh_encap);
+		if (!nh->rtnh_encap)
+			goto err;
 	}
 
 	return nh;
+
+err:
+	rtnl_route_nh_free(nh);
+	return NULL;
 }
 
 void rtnl_route_nh_free(struct rtnl_nexthop *nh)

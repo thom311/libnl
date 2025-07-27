@@ -1149,11 +1149,19 @@ static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 			}
 
 			if (ntb[RTA_ENCAP] && ntb[RTA_ENCAP_TYPE]) {
+				struct rtnl_nh_encap *encap = NULL;
+
 				err = nh_encap_parse_msg(ntb[RTA_ENCAP],
 							 ntb[RTA_ENCAP_TYPE],
-							 nh);
+							 &encap);
 				if (err < 0)
 					return err;
+
+				err = rtnl_route_nh_set_encap(nh, encap);
+				if (err < 0) {
+					rtnl_nh_encap_free(encap);
+					return err;
+				}
 			}
 		}
 
@@ -1358,13 +1366,21 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 	}
 
 	if (tb[RTA_ENCAP] && tb[RTA_ENCAP_TYPE]) {
+		struct rtnl_nh_encap *encap = NULL;
+
 		if (!old_nh && !(old_nh = rtnl_route_nh_alloc()))
 			return -NLE_NOMEM;
 
 		err = nh_encap_parse_msg(tb[RTA_ENCAP],
-					 tb[RTA_ENCAP_TYPE], old_nh);
+					 tb[RTA_ENCAP_TYPE], &encap);
 		if (err < 0)
 			return err;
+
+		err = rtnl_route_nh_set_encap(old_nh, encap);
+		if (err < 0) {
+			rtnl_nh_encap_free(encap);
+			return err;
+		}
 	}
 
 	if (tb[RTA_NH_ID]) {

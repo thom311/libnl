@@ -70,11 +70,12 @@ static struct nla_policy mpls_encap_policy[MPLS_IPTUNNEL_MAX + 1] = {
 	[MPLS_IPTUNNEL_TTL] = { .type = NLA_U8 },
 };
 
-static int mpls_encap_parse_msg(struct nlattr *nla, struct rtnl_nexthop *nh)
+static int mpls_encap_parse_msg(struct nlattr *nla,
+				struct rtnl_nh_encap **encap_out)
 {
 	struct nlattr *tb[MPLS_IPTUNNEL_MAX + 1];
-	struct rtnl_nh_encap *nh_encap;
-	struct nl_addr *labels;
+	struct rtnl_nh_encap *nh_encap = NULL;
+	struct nl_addr *labels = NULL;
 	uint8_t ttl = 0;
 	int err;
 
@@ -99,15 +100,10 @@ static int mpls_encap_parse_msg(struct nlattr *nla, struct rtnl_nexthop *nh)
 	}
 
 	err = rtnl_nh_encap_mpls(nh_encap, labels, ttl);
-	if (err < 0) {
+	if (err < 0)
 		goto err_out;
-	}
 
-	err = rtnl_route_nh_set_encap(nh, nh_encap);
-	if (err < 0) {
-		goto err_out;
-	}
-
+	*encap_out = nh_encap;
 	nl_addr_put(labels);
 
 	return 0;
@@ -115,7 +111,6 @@ static int mpls_encap_parse_msg(struct nlattr *nla, struct rtnl_nexthop *nh)
 err_out:
 	rtnl_nh_encap_free(nh_encap);
 	nl_addr_put(labels);
-
 	return err;
 }
 

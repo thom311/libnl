@@ -21,14 +21,14 @@
 #include "nl-priv-dynamic-core/nl-core.h"
 
 /** @cond SKIP */
-#define NH_ATTR_FLAGS   0x000001
-#define NH_ATTR_WEIGHT  0x000002
+#define NH_ATTR_FLAGS 0x000001
+#define NH_ATTR_WEIGHT 0x000002
 #define NH_ATTR_IFINDEX 0x000004
 #define NH_ATTR_GATEWAY 0x000008
-#define NH_ATTR_REALMS  0x000010
-#define NH_ATTR_NEWDST  0x000020
-#define NH_ATTR_VIA     0x000040
-#define NH_ATTR_ENCAP   0x000080
+#define NH_ATTR_REALMS 0x000010
+#define NH_ATTR_NEWDST 0x000020
+#define NH_ATTR_VIA 0x000040
+#define NH_ATTR_ENCAP 0x000080
 /** @endcond */
 
 /**
@@ -149,8 +149,9 @@ int rtnl_route_nh_identical(struct rtnl_nexthop *a, struct rtnl_nexthop *b)
 {
 	return !rtnl_route_nh_compare(a, b,
 				      NH_ATTR_IFINDEX | NH_ATTR_REALMS |
-				      NH_ATTR_GATEWAY | NH_ATTR_NEWDST |
-				      NH_ATTR_VIA | NH_ATTR_ENCAP, 0);
+					      NH_ATTR_GATEWAY | NH_ATTR_NEWDST |
+					      NH_ATTR_VIA | NH_ATTR_ENCAP,
+				      0);
 }
 
 static void nh_dump_line(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
@@ -170,18 +171,16 @@ static void nh_dump_line(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 	nl_dump(dp, "via");
 
 	if (nh->ce_mask & NH_ATTR_VIA)
-		nl_dump(dp, " %s",
-			nl_addr2str(nh->rtnh_via, buf, sizeof(buf)));
+		nl_dump(dp, " %s", nl_addr2str(nh->rtnh_via, buf, sizeof(buf)));
 
 	if (nh->ce_mask & NH_ATTR_GATEWAY)
-		nl_dump(dp, " %s", nl_addr2str(nh->rtnh_gateway,
-						   buf, sizeof(buf)));
+		nl_dump(dp, " %s",
+			nl_addr2str(nh->rtnh_gateway, buf, sizeof(buf)));
 
-	if(nh->ce_mask & NH_ATTR_IFINDEX) {
+	if (nh->ce_mask & NH_ATTR_IFINDEX) {
 		if (link_cache) {
 			nl_dump(dp, " dev %s",
-				rtnl_link_i2name(link_cache,
-						 nh->rtnh_ifindex,
+				rtnl_link_i2name(link_cache, nh->rtnh_ifindex,
 						 buf, sizeof(buf)));
 		} else
 			nl_dump(dp, " dev %d", nh->rtnh_ifindex);
@@ -214,14 +213,13 @@ static void nh_dump_details(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 			nl_addr2str(nh->rtnh_via, buf, sizeof(buf)));
 
 	if (nh->ce_mask & NH_ATTR_GATEWAY)
-		nl_dump(dp, " via %s", nl_addr2str(nh->rtnh_gateway,
-						   buf, sizeof(buf)));
+		nl_dump(dp, " via %s",
+			nl_addr2str(nh->rtnh_gateway, buf, sizeof(buf)));
 
-	if(nh->ce_mask & NH_ATTR_IFINDEX) {
+	if (nh->ce_mask & NH_ATTR_IFINDEX) {
 		if (link_cache) {
 			nl_dump(dp, " dev %s",
-				rtnl_link_i2name(link_cache,
-						 nh->rtnh_ifindex,
+				rtnl_link_i2name(link_cache, nh->rtnh_ifindex,
 						 buf, sizeof(buf)));
 		} else
 			nl_dump(dp, " dev %d", nh->rtnh_ifindex);
@@ -236,8 +234,9 @@ static void nh_dump_details(struct rtnl_nexthop *nh, struct nl_dump_params *dp)
 			RTNL_REALM_TO(nh->rtnh_realms));
 
 	if (nh->ce_mask & NH_ATTR_FLAGS)
-		nl_dump(dp, " <%s>", rtnl_route_nh_flags2str(nh->rtnh_flags,
-							buf, sizeof(buf)));
+		nl_dump(dp, " <%s>",
+			rtnl_route_nh_flags2str(nh->rtnh_flags, buf,
+						sizeof(buf)));
 
 	if (link_cache)
 		nl_cache_put(link_cache);
@@ -304,7 +303,7 @@ void rtnl_route_nh_set_ifindex(struct rtnl_nexthop *nh, int ifindex)
 int rtnl_route_nh_get_ifindex(struct rtnl_nexthop *nh)
 {
 	return nh->rtnh_ifindex;
-}	
+}
 
 /* FIXME: Convert to return an int */
 void rtnl_route_nh_set_gateway(struct rtnl_nexthop *nh, struct nl_addr *addr)
@@ -390,7 +389,7 @@ int rtnl_route_nh_set_via(struct rtnl_nexthop *nh, struct nl_addr *addr)
 		nh->ce_mask |= NH_ATTR_VIA;
 	} else {
 		nh->ce_mask &= ~NH_ATTR_VIA;
-		nh->rtnh_via= NULL;
+		nh->rtnh_via = NULL;
 	}
 
 	if (old)

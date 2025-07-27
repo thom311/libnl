@@ -1,16 +1,16 @@
 #ifndef NETLINK_NEXTHOP_ENCAP_H_
-#define	NETLINK_NEXTHOP_ENCAP_H_
+#define NETLINK_NEXTHOP_ENCAP_H_
 
 struct nh_encap_ops {
 	uint16_t encap_type;
 
-	int	(*build_msg)(struct nl_msg *msg, void *priv);
-	int	(*parse_msg)(struct nlattr *nla, struct rtnl_nexthop *rtnh);
+	int (*build_msg)(struct nl_msg *msg, void *priv);
+	int (*parse_msg)(struct nlattr *nla, struct rtnl_nexthop *rtnh);
 
-	int	(*compare)(void *a, void *b);
+	int (*compare)(void *a, void *b);
 
-	void	(*dump)(void *priv, struct nl_dump_params *dp);
-	void	(*destructor)(void *priv);
+	void (*dump)(void *priv, struct nl_dump_params *dp);
+	void (*destructor)(void *priv);
 };
 
 struct rtnl_nh_encap;

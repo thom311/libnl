@@ -48,8 +48,8 @@ static void mpls_encap_destructor(void *priv)
 }
 
 static struct nla_policy mpls_encap_policy[MPLS_IPTUNNEL_MAX + 1] = {
-	[MPLS_IPTUNNEL_DST]     = { .type = NLA_U32 },
-	[MPLS_IPTUNNEL_TTL]     = { .type = NLA_U8 },
+	[MPLS_IPTUNNEL_DST] = { .type = NLA_U32 },
+	[MPLS_IPTUNNEL_TTL] = { .type = NLA_U8 },
 };
 
 static int mpls_encap_parse_msg(struct nlattr *nla, struct rtnl_nexthop *nh)
@@ -93,16 +93,15 @@ static int mpls_encap_compare(void *_a, void *_b)
 }
 
 struct nh_encap_ops mpls_encap_ops = {
-	.encap_type	= LWTUNNEL_ENCAP_MPLS,
-	.build_msg	= mpls_encap_build_msg,
-	.parse_msg	= mpls_encap_parse_msg,
-	.compare	= mpls_encap_compare,
-	.dump		= mpls_encap_dump,
-	.destructor	= mpls_encap_destructor,
+	.encap_type = LWTUNNEL_ENCAP_MPLS,
+	.build_msg = mpls_encap_build_msg,
+	.parse_msg = mpls_encap_parse_msg,
+	.compare = mpls_encap_compare,
+	.dump = mpls_encap_dump,
+	.destructor = mpls_encap_destructor,
 };
 
-int rtnl_route_nh_encap_mpls(struct rtnl_nexthop *nh,
-			     struct nl_addr *addr,
+int rtnl_route_nh_encap_mpls(struct rtnl_nexthop *nh, struct nl_addr *addr,
 			     uint8_t ttl)
 {
 	struct mpls_iptunnel_encap *mpls_encap;
@@ -136,7 +135,8 @@ struct nl_addr *rtnl_route_nh_get_encap_mpls_dst(struct rtnl_nexthop *nh)
 {
 	struct mpls_iptunnel_encap *mpls_encap;
 
-	if (!nh->rtnh_encap || nh->rtnh_encap->ops->encap_type != LWTUNNEL_ENCAP_MPLS)
+	if (!nh->rtnh_encap ||
+	    nh->rtnh_encap->ops->encap_type != LWTUNNEL_ENCAP_MPLS)
 		return NULL;
 
 	mpls_encap = (struct mpls_iptunnel_encap *)nh->rtnh_encap->priv;
@@ -150,7 +150,8 @@ uint8_t rtnl_route_nh_get_encap_mpls_ttl(struct rtnl_nexthop *nh)
 {
 	struct mpls_iptunnel_encap *mpls_encap;
 
-	if (!nh->rtnh_encap || nh->rtnh_encap->ops->encap_type != LWTUNNEL_ENCAP_MPLS)
+	if (!nh->rtnh_encap ||
+	    nh->rtnh_encap->ops->encap_type != LWTUNNEL_ENCAP_MPLS)
 		return 0;
 
 	mpls_encap = (struct mpls_iptunnel_encap *)nh->rtnh_encap->priv;

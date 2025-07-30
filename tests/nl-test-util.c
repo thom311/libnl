@@ -731,7 +731,7 @@ void _nltst_assert_link_exists_full(const char *ifname, bool exists)
 
 			ck_assert_msg(
 				0,
-				"link(%s) does not exist (stat(%s) failed with r=%d, errno=%d (%s)",
+				"link(%s) does not exist (stat(%s) failed with r=%d, errno=%d (%s))",
 				ifname, path, r, errsv, strerror(errsv));
 		}
 	} else {

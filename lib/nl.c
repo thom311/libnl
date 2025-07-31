@@ -896,7 +896,10 @@ continue_reading:
 		    hdr->nlmsg_type == NLMSG_OVERRUN) {
 			/* We can't check for !NLM_F_MULTI since some netlink
 			 * users in the kernel are broken. */
-			sk->s_seq_expect++;
+			if (sk->s_seq_expect != UINT_MAX)
+				sk->s_seq_expect++;
+			else
+				sk->s_seq_expect = 0;
 			NL_DBG(3, "recvmsgs(%p): Increased expected " \
 			       "sequence number to %d\n",
 			       sk, sk->s_seq_expect);

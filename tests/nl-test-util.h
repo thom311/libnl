@@ -552,4 +552,13 @@ void _nltst_assert_route_cache_v(struct nl_cache *cache,
 	_nltst_assert_route_cache_v(cache,    \
 				    ((const char *const[200]){ __VA_ARGS__ }))
 
+static void _nltst_delete_link_no_sock(const char *ifname)
+{
+	if (ifname)
+		_nltst_delete_link(NULL, ifname);
+}
+#define _nltst_auto_delete_link _nl_auto(_nltst_auto_delete_link_fcn)
+_NL_AUTO_DEFINE_FCN_TYPED0(const char *, _nltst_auto_delete_link_fcn,
+			   _nltst_delete_link_no_sock);
+
 #endif /* __NL_TEST_UTIL_H__ */

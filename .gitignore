@@ -128,7 +128,6 @@ test-suite.log
 /tests/test-create-bridge
 /tests/test-create-geneve
 /tests/test-create-ifb
-/tests/test-create-ip6tnl
 /tests/test-create-ipgre
 /tests/test-create-ipgretap
 /tests/test-create-ipip

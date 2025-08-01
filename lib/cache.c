@@ -55,6 +55,7 @@
 #include "nl-priv-dynamic-core/nl-core.h"
 #include "nl-priv-dynamic-core/object-api.h"
 #include "nl-priv-dynamic-core/cache-api.h"
+#include "hashtable-api.h"
 #include "nl-aux-core/nl-core.h"
 
 /**
@@ -200,14 +201,7 @@ struct nl_cache *nl_cache_alloc(struct nl_cache_ops *ops)
 	 * cache objects for faster lookups
 	 */
 	if (ops->co_obj_ops->oo_keygen) {
-		int hashtable_size;
-
-		if (ops->co_hash_size)
-			hashtable_size = ops->co_hash_size;
-		else
-			hashtable_size = NL_MAX_HASH_ENTRIES;
-
-		cache->hashtable = nl_hash_table_alloc(hashtable_size);
+		cache->hashtable = nl_rhash_table_alloc();
 	}
 
 	NL_DBG(2, "Allocated cache %p <%s>.\n", cache, nl_cache_name(cache));
@@ -379,7 +373,7 @@ static void __nl_cache_free(struct nl_cache *cache)
 	nl_cache_clear(cache);
 
 	if (cache->hashtable)
-		nl_hash_table_free(cache->hashtable);
+		nl_rhash_table_free(cache->hashtable);
 
 	NL_DBG(2, "Freeing cache %p <%s>...\n", cache, nl_cache_name(cache));
 	free(cache);
@@ -439,7 +433,7 @@ static int __cache_add(struct nl_cache *cache, struct nl_object *obj)
 	obj->ce_cache = cache;
 
 	if (cache->hashtable) {
-		ret = nl_hash_table_add(cache->hashtable, obj);
+		ret = nl_rhash_table_add(cache->hashtable, obj);
 		if (ret < 0) {
 			obj->ce_cache = NULL;
 			return ret;
@@ -558,7 +552,7 @@ void nl_cache_remove(struct nl_object *obj)
 		return;
 
 	if (cache->hashtable) {
-		ret = nl_hash_table_del(cache->hashtable, obj);
+		ret = nl_rhash_table_del(cache->hashtable, obj);
 		if (ret < 0)
 			NL_DBG(2, "Failed to delete %p from cache %p <%s>.\n",
 			       obj, cache, nl_cache_name(cache));
@@ -1095,7 +1089,7 @@ static struct nl_object *__cache_fast_lookup(struct nl_cache *cache,
 {
 	struct nl_object *obj;
 
-	obj = nl_hash_table_lookup(cache->hashtable, needle);
+	obj = nl_rhash_table_lookup(cache->hashtable, needle);
 	if (obj) {
 		nl_object_get(obj);
 		return obj;

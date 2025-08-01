@@ -163,9 +163,6 @@ struct nl_cache_ops
 	/** Netlink protocol */
 	int			co_protocol;
 
-	/** cache object hash size **/
-	int			co_hash_size;
-
 	/** cache flags */
 	unsigned int		co_flags;
 
@@ -261,7 +258,7 @@ struct nl_cache {
 	int c_iarg2;
 	int c_refcnt;
 	unsigned int c_flags;
-	struct nl_hash_table *hashtable;
+	struct nl_rhash_table *hashtable;
 	struct nl_cache_ops *c_ops;
 };
 

@@ -335,6 +335,7 @@ noinst_HEADERS = \
 	include/nl-aux-xfrm/nl-xfrm.h \
 	include/nl-default.h \
 	include/nl-priv-dynamic-core/cache-api.h \
+	lib/hashtable-api.h \
 	include/nl-priv-dynamic-core/nl-core.h \
 	include/nl-priv-dynamic-core/object-api.h \
 	include/nl-priv-dynamic-route/nl-priv-dynamic-route.h \

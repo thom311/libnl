@@ -967,7 +967,6 @@ check_PROGRAMS += \
 	tests/test-create-bridge \
 	tests/test-create-geneve \
 	tests/test-create-ifb \
-	tests/test-create-ip6tnl \
 	tests/test-create-ipgre \
 	tests/test-create-ipgretap \
 	tests/test-create-ipip \
@@ -998,8 +997,6 @@ tests_test_create_geneve_CPPFLAGS                 = $(tests_cppflags)
 tests_test_create_geneve_LDADD                    = $(tests_ldadd)
 tests_test_create_ifb_CPPFLAGS                    = $(tests_cppflags)
 tests_test_create_ifb_LDADD                       = $(tests_ldadd)
-tests_test_create_ip6tnl_CPPFLAGS                 = $(tests_cppflags)
-tests_test_create_ip6tnl_LDADD                    = $(tests_ldadd)
 tests_test_create_ipgre_CPPFLAGS                  = $(tests_cppflags)
 tests_test_create_ipgre_LDADD                     = $(tests_ldadd)
 tests_test_create_ipgretap_CPPFLAGS               = $(tests_cppflags)

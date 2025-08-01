@@ -29,16 +29,6 @@
 
 /*****************************************************************************/
 
-static void _nltst_delete_link2(const char *ifname)
-{
-	_nltst_delete_link(NULL, ifname);
-}
-#define _nltst_auto_delete_link _nl_auto(_nltst_auto_delete_link_fcn)
-_NL_AUTO_DEFINE_FCN_TYPED0(const char *, _nltst_auto_delete_link_fcn,
-			   _nltst_delete_link2);
-
-/*****************************************************************************/
-
 START_TEST(cache_and_clone)
 {
 	_nl_auto_nl_socket struct nl_sock *sk = NULL;

@@ -335,7 +335,6 @@ EXCLUDE_PATHS_TOPLEVEL+=(
     "tests/test-complex-HTB-with-hash-filters.c"
     "tests/test-create-bridge.c"
     "tests/test-create-geneve.c"
-    "tests/test-create-ip6tnl.c"
     "tests/test-create-ipgre.c"
     "tests/test-create-ipgretap.c"
     "tests/test-create-ipip.c"

@@ -85,6 +85,7 @@ static void rtnl_nh_grp_put(nl_nh_group_t *nhg)
 	if (nhg->ce_refcnt > 0)
 		return;
 
+	free(nhg->entries);
 	free(nhg);
 }
 

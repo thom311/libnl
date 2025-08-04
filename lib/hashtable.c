@@ -5,13 +5,13 @@
 
 #include "nl-default.h"
 
+#include "hashtable-api.h"
+
 #include <netlink/object.h>
 #include <netlink/hash.h>
 #include <netlink/hashtable.h>
 
 #include "nl-aux-core/nl-core.h"
-
-#include "hashtable-api.h"
 
 /**
  * @ingroup core_types

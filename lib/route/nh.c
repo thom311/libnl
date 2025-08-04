@@ -408,10 +408,8 @@ int rtnl_nh_set_group(struct rtnl_nh *nexthop,
 	if (!nexthop)
 		return -NLE_INVAL;
 
-	/* Both size and entries must be either set or 0/NULL */
-	if ((size == 0) != (entries == NULL)) {
+	if (size > 0 && !entries)
 		return -NLE_INVAL;
-	}
 
 	if (size == 0) {
 		/* size is 0, thus we want to remove the nh group */

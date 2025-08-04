@@ -62,8 +62,8 @@ START_TEST(test_kernel_roundtrip_all)
 	r = rtnl_link_ip6_tnl_set_link(link, ifindex_dummy);
 	ck_assert_int_eq(r, 0);
 
-	inet_pton(AF_INET6, "2001:db8::10", &addr_local);
-	inet_pton(AF_INET6, "2001:db8::20", &addr_remote);
+	addr_local = _nltst_inet6("2001:db8::10");
+	addr_remote = _nltst_inet6("2001:db8::20");
 
 	r = rtnl_link_ip6_tnl_set_local(link, &addr_local);
 	ck_assert_int_eq(r, 0);
@@ -172,8 +172,8 @@ START_TEST(test_api_set_get_all)
 	ck_assert_uint_eq(rtnl_link_ip6_tnl_get_link(link), 123);
 
 	/* Local / Remote addresses */
-	inet_pton(AF_INET6, "2001:db8::1", &addr_local);
-	inet_pton(AF_INET6, "2001:db8::2", &addr_remote);
+	addr_local = _nltst_inet6("2001:db8::1");
+	addr_remote = _nltst_inet6("2001:db8::2");
 	r = rtnl_link_ip6_tnl_set_local(link, &addr_local);
 	ck_assert_int_eq(r, 0);
 	r = rtnl_link_ip6_tnl_set_remote(link, &addr_remote);

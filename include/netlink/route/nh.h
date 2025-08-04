@@ -42,8 +42,34 @@ extern int rtnl_nh_get_fdb(struct rtnl_nh *);
 extern int rtnl_nh_get_group_entry(struct rtnl_nh *, int n);
 extern int rtnl_nh_get_group_size(struct rtnl_nh *);
 
+extern int rtnl_nh_set_group(struct rtnl_nh *,
+			     const nl_nh_group_info_t *entries, unsigned size);
+
+extern int rtnl_nh_set_id(struct rtnl_nh *, uint32_t id);
 extern int rtnl_nh_get_id(struct rtnl_nh *);
+extern int rtnl_nh_set_oif(struct rtnl_nh *, uint32_t ifindex);
 extern int rtnl_nh_get_oif(struct rtnl_nh *);
+
+extern int rtnl_nh_set_family(struct rtnl_nh *, uint8_t family);
+extern int rtnl_nh_get_family(struct rtnl_nh *);
+
+extern int rtnl_nh_set_group_type(struct rtnl_nh *, uint16_t group_type);
+extern int rtnl_nh_get_group_type(struct rtnl_nh *);
+
+/* Resilient nexthop group specific setters/getters */
+extern int rtnl_nh_set_res_group_bucket_size(struct rtnl_nh *,
+					     uint16_t buckets);
+extern int rtnl_nh_get_res_group_bucket_size(struct rtnl_nh *);
+
+extern int rtnl_nh_set_res_group_idle_timer(struct rtnl_nh *,
+					    uint32_t idle_timer);
+extern int rtnl_nh_get_res_group_idle_timer(struct rtnl_nh *,
+					    uint32_t *out_value);
+
+extern int rtnl_nh_set_res_group_unbalanced_timer(struct rtnl_nh *,
+						  uint32_t unbalanced_timer);
+extern int rtnl_nh_get_res_group_unbalanced_timer(struct rtnl_nh *,
+						  uint32_t *out_value);
 
 #ifdef __cplusplus
 }

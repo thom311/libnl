@@ -24,10 +24,15 @@ struct rtnl_nh {
 	uint32_t nh_flags;
 
 	uint32_t nh_id;
-	uint32_t nh_group_type;
+	uint16_t nh_group_type;
 	nl_nh_group_t *nh_group;
 	uint32_t nh_oif;
 	struct nl_addr *nh_gateway;
+
+	/* Resilient nexthop group parameters */
+	uint16_t res_grp_buckets;
+	uint32_t res_grp_idle_timer;
+	uint32_t res_grp_unbalanced_timer;
 };
 
 #define NH_ATTR_FLAGS (1 << 0)
@@ -37,7 +42,13 @@ struct rtnl_nh {
 #define NH_ATTR_OIF (1 << 4)
 #define NH_ATTR_GATEWAY (1 << 5)
 #define NH_ATTR_FLAG_GROUPS (1 << 6)
+#define NH_ATTR_GROUP_TYPE (1 << 7)
 #define NH_ATTR_FLAG_FDB (1 << 8)
+/* Resilient nexthop group attributes */
+#define NH_ATTR_RES_GROUP (1 << 9)
+#define NH_ATTR_RES_BUCKETS (1 << 10)
+#define NH_ATTR_RES_IDLE_TIMER (1 << 11)
+#define NH_ATTR_RES_UNBALANCED_TIMER (1 << 12)
 /** @endcond */
 
 struct nla_policy rtnl_nh_policy[NHA_MAX + 1] = {
@@ -47,6 +58,7 @@ struct nla_policy rtnl_nh_policy[NHA_MAX + 1] = {
 	[NHA_GROUP_TYPE] = { .type = NLA_U16 },
 	[NHA_BLACKHOLE] = { .type = NLA_UNSPEC },
 	[NHA_OIF] = { .type = NLA_U32 },
+	[NHA_RES_GROUP] = { .type = NLA_NESTED },
 };
 
 static struct nl_cache_ops rtnl_nh_ops;
@@ -135,6 +147,10 @@ static int nh_clone(struct nl_object *_src, struct nl_object *_dst)
 	dst->nh_family = src->nh_family;
 	dst->nh_id = src->nh_id;
 	dst->nh_oif = src->nh_oif;
+	dst->nh_group_type = src->nh_group_type;
+	dst->res_grp_buckets = src->res_grp_buckets;
+	dst->res_grp_idle_timer = src->res_grp_idle_timer;
+	dst->res_grp_unbalanced_timer = src->res_grp_unbalanced_timer;
 	dst->ce_mask = src->ce_mask;
 
 	if (src->nh_gateway) {
@@ -221,9 +237,202 @@ int rtnl_nh_get_oif(struct rtnl_nh *nexthop)
 	return 0;
 }
 
+int rtnl_nh_set_oif(struct rtnl_nh *nexthop, uint32_t ifindex)
+{
+	if (!nexthop)
+		return -NLE_INVAL;
+
+	nexthop->nh_oif = (uint32_t)ifindex;
+
+	if (nexthop->nh_oif)
+		nexthop->ce_mask |= NH_ATTR_OIF;
+	else
+		nexthop->ce_mask &= ~NH_ATTR_OIF;
+
+	return 0;
+}
+
 int rtnl_nh_get_fdb(struct rtnl_nh *nexthop)
 {
 	return nexthop->ce_mask & NH_ATTR_FLAG_FDB;
+}
+
+int rtnl_nh_set_family(struct rtnl_nh *nexthop, uint8_t family)
+{
+	if (!nexthop)
+		return -NLE_INVAL;
+
+	nexthop->nh_family = family;
+
+	return 0;
+}
+
+int rtnl_nh_get_family(struct rtnl_nh *nexthop)
+{
+	if (!nexthop)
+		return -NLE_INVAL;
+
+	return nexthop->nh_family;
+}
+
+int rtnl_nh_set_group_type(struct rtnl_nh *nexthop, uint16_t group_type)
+{
+	if (!nexthop)
+		return -NLE_INVAL;
+
+	nexthop->nh_group_type = group_type;
+	nexthop->ce_mask |= NH_ATTR_GROUP_TYPE;
+
+	return 0;
+}
+
+int rtnl_nh_get_group_type(struct rtnl_nh *nexthop)
+{
+	if (!nexthop)
+		return -NLE_INVAL;
+
+	if (!(nexthop->ce_mask & NH_ATTR_GROUP_TYPE))
+		return -NLE_INVAL;
+
+	return (int)nexthop->nh_group_type;
+}
+
+static int _nh_resilient_check(struct rtnl_nh *nexthop)
+{
+	if (!nexthop)
+		return -NLE_INVAL;
+
+	/* Group type must be explicitly set to resilient */
+	if (nexthop->nh_group_type != NEXTHOP_GRP_TYPE_RES)
+		return -NLE_INVAL;
+
+	return 0;
+}
+
+int rtnl_nh_set_res_group_bucket_size(struct rtnl_nh *nexthop, uint16_t buckets)
+{
+	int err = _nh_resilient_check(nexthop);
+	if (err < 0)
+		return err;
+
+	nexthop->res_grp_buckets = buckets;
+
+	if (buckets) {
+		nexthop->ce_mask |= NH_ATTR_RES_BUCKETS;
+	} else {
+		nexthop->ce_mask &= ~NH_ATTR_RES_BUCKETS;
+	}
+
+	return 0;
+}
+
+int rtnl_nh_get_res_group_bucket_size(struct rtnl_nh *nexthop)
+{
+	int err = _nh_resilient_check(nexthop);
+	if (err < 0)
+		return err;
+
+	if (!(nexthop->ce_mask & NH_ATTR_RES_BUCKETS))
+		return -NLE_MISSING_ATTR;
+
+	return nexthop->res_grp_buckets;
+}
+
+int rtnl_nh_set_res_group_idle_timer(struct rtnl_nh *nexthop,
+				     uint32_t idle_timer)
+{
+	int err = _nh_resilient_check(nexthop);
+	if (err < 0)
+		return err;
+
+	nexthop->res_grp_idle_timer = idle_timer;
+	nexthop->ce_mask |= NH_ATTR_RES_IDLE_TIMER;
+
+	return 0;
+}
+
+int rtnl_nh_get_res_group_idle_timer(struct rtnl_nh *nexthop,
+				     uint32_t *out_value)
+{
+	int err = _nh_resilient_check(nexthop);
+	if (err < 0)
+		return err;
+
+	if (!out_value)
+		return -NLE_INVAL;
+
+	if (!(nexthop->ce_mask & NH_ATTR_RES_IDLE_TIMER))
+		return -NLE_MISSING_ATTR;
+
+	*out_value = nexthop->res_grp_idle_timer;
+
+	return 0;
+}
+
+int rtnl_nh_set_res_group_unbalanced_timer(struct rtnl_nh *nexthop,
+					   uint32_t unbalanced_timer)
+{
+	int err = _nh_resilient_check(nexthop);
+	if (err < 0)
+		return err;
+
+	nexthop->res_grp_unbalanced_timer = unbalanced_timer;
+	nexthop->ce_mask |= NH_ATTR_RES_UNBALANCED_TIMER;
+
+	return 0;
+}
+
+int rtnl_nh_get_res_group_unbalanced_timer(struct rtnl_nh *nexthop,
+					   uint32_t *out_value)
+{
+	int err = _nh_resilient_check(nexthop);
+	if (err < 0)
+		return err;
+
+	if (!out_value)
+		return -NLE_INVAL;
+
+	if (!(nexthop->ce_mask & NH_ATTR_RES_UNBALANCED_TIMER))
+		return -NLE_MISSING_ATTR;
+
+	*out_value = nexthop->res_grp_unbalanced_timer;
+
+	return 0;
+}
+
+int rtnl_nh_set_group(struct rtnl_nh *nexthop,
+		      const nl_nh_group_info_t *entries, unsigned size)
+{
+	nl_nh_group_t *nhg = NULL;
+
+	if (!nexthop)
+		return -NLE_INVAL;
+
+	if (size > 0 && !entries)
+		return -NLE_INVAL;
+
+	if (size == 0) {
+		/* size is 0, thus we want to remove the nh group */
+
+		rtnl_nh_grp_put(nexthop->nh_group);
+		nexthop->nh_group = NULL;
+		nexthop->ce_mask &= ~NH_ATTR_GROUP;
+
+		return 0;
+	}
+
+	nhg = rtnl_nh_grp_alloc(size);
+	if (!nhg)
+		return -NLE_NOMEM;
+
+	memcpy(nhg->entries, entries, size * sizeof(*nhg->entries));
+
+	/* Replace an existing group if present. */
+	rtnl_nh_grp_put(nexthop->nh_group);
+	nexthop->nh_group = nhg;
+	nexthop->ce_mask |= NH_ATTR_GROUP;
+
+	return 0;
 }
 
 int rtnl_nh_get_group_entry(struct rtnl_nh *nexthop, int n)
@@ -273,6 +482,29 @@ int rtnl_nh_get_id(struct rtnl_nh *nh)
 	return -NLE_INVAL;
 }
 
+int rtnl_nh_set_id(struct rtnl_nh *nh, uint32_t id)
+{
+	if (!nh)
+		return -NLE_INVAL;
+
+	nh->nh_id = id;
+
+	if (nh->nh_id)
+		nh->ce_mask |= NH_ATTR_ID;
+	else
+		nh->ce_mask &= ~NH_ATTR_ID;
+
+	return 0;
+}
+
+static struct nla_policy nh_res_group_policy[NHA_RES_GROUP_MAX + 1] = {
+	[NHA_RES_GROUP_UNSPEC] = { .type = NLA_UNSPEC },
+	[NHA_RES_GROUP_BUCKETS] = { .type = NLA_U16 },
+	[NHA_RES_GROUP_IDLE_TIMER] = { .type = NLA_U32 },
+	[NHA_RES_GROUP_UNBALANCED_TIMER] = { .type = NLA_U32 },
+	[NHA_RES_GROUP_UNBALANCED_TIME] = { .type = NLA_U64 },
+};
+
 static int nexthop_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 			      struct nlmsghdr *n, struct nl_parser_param *pp)
 {
@@ -317,6 +549,11 @@ static int nexthop_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 		nexthop->ce_mask |= NH_ATTR_GATEWAY;
 	}
 
+	if (tb[NHA_GROUP_TYPE]) {
+		nexthop->nh_group_type = nla_get_u16(tb[NHA_GROUP_TYPE]);
+		nexthop->ce_mask |= NH_ATTR_GROUP_TYPE;
+	}
+
 	if (tb[NHA_BLACKHOLE]) {
 		nexthop->ce_mask |= NH_ATTR_FLAG_BLACKHOLE;
 	}
@@ -347,6 +584,34 @@ static int nexthop_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 
 		nexthop->nh_group = nh_group;
 		nexthop->ce_mask |= NH_ATTR_GROUP;
+	}
+
+	/* Parse resilient nexthop group parameters if present */
+	if (tb[NHA_RES_GROUP]) {
+		struct nlattr *rg[NHA_RES_GROUP_MAX + 1];
+
+		err = nla_parse_nested(rg, NHA_RES_GROUP_MAX, tb[NHA_RES_GROUP],
+				       nh_res_group_policy);
+		if (err < 0)
+			return err;
+
+		if (rg[NHA_RES_GROUP_BUCKETS]) {
+			nexthop->res_grp_buckets =
+				nla_get_u16(rg[NHA_RES_GROUP_BUCKETS]);
+			nexthop->ce_mask |= NH_ATTR_RES_BUCKETS;
+		}
+		if (rg[NHA_RES_GROUP_IDLE_TIMER]) {
+			nexthop->res_grp_idle_timer =
+				nla_get_u32(rg[NHA_RES_GROUP_IDLE_TIMER]);
+			nexthop->ce_mask |= NH_ATTR_RES_IDLE_TIMER;
+		}
+		if (rg[NHA_RES_GROUP_UNBALANCED_TIMER]) {
+			nexthop->res_grp_unbalanced_timer =
+				nla_get_u32(rg[NHA_RES_GROUP_UNBALANCED_TIMER]);
+			nexthop->ce_mask |= NH_ATTR_RES_UNBALANCED_TIMER;
+		}
+		/* Mark that we have a resilient group block */
+		nexthop->ce_mask |= NH_ATTR_RES_GROUP;
 	}
 
 	return pp->pp_cb((struct nl_object *)nexthop, pp);
@@ -410,6 +675,17 @@ static void nh_dump_line(struct nl_object *obj, struct nl_dump_params *dp)
 	if (nh->ce_mask & NH_ATTR_GROUP)
 		dump_nh_group(nh->nh_group, dp);
 
+	/* Dump resilient group parameters */
+	if (nh->nh_group_type == NEXTHOP_GRP_TYPE_RES) {
+		if (nh->ce_mask & NH_ATTR_RES_BUCKETS)
+			nl_dump(dp, " buckets %u", nh->res_grp_buckets);
+		if (nh->ce_mask & NH_ATTR_RES_IDLE_TIMER)
+			nl_dump(dp, " idle-timer %u", nh->res_grp_idle_timer);
+		if (nh->ce_mask & NH_ATTR_RES_UNBALANCED_TIMER)
+			nl_dump(dp, " unbalanced-timer %u",
+				nh->res_grp_unbalanced_timer);
+	}
+
 	if (nh->ce_mask & NH_ATTR_FLAG_FDB)
 		nl_dump(dp, " fdb");
 
@@ -438,9 +714,18 @@ static uint64_t nh_compare(struct nl_object *a, struct nl_object *b,
 	diff |= _DIFF(NH_ATTR_OIF, src->nh_oif != dst->nh_oif);
 	diff |= _DIFF(NH_ATTR_GROUP,
 		      rtnh_nh_grp_cmp(src->nh_group, dst->nh_group));
+	diff |= _DIFF(NH_ATTR_GROUP_TYPE,
+		      src->nh_group_type != dst->nh_group_type);
 	diff |= _DIFF(NH_ATTR_FLAG_FDB, false);
 	diff |= _DIFF(NH_ATTR_FLAG_GROUPS, false);
 	diff |= _DIFF(NH_ATTR_FLAG_BLACKHOLE, false);
+	diff |= _DIFF(NH_ATTR_RES_BUCKETS,
+		      src->res_grp_buckets != dst->res_grp_buckets);
+	diff |= _DIFF(NH_ATTR_RES_IDLE_TIMER,
+		      src->res_grp_idle_timer != dst->res_grp_idle_timer);
+	diff |= _DIFF(NH_ATTR_RES_UNBALANCED_TIMER,
+		      src->res_grp_unbalanced_timer !=
+			      dst->res_grp_unbalanced_timer);
 #undef _DIFF
 
 	return diff;

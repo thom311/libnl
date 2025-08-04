@@ -97,6 +97,7 @@ static void rtnl_nh_grp_put(nl_nh_group_t *nhg)
 	if (nhg->ce_refcnt > 0)
 		return;
 
+	free(nhg->entries);
 	free(nhg);
 }
 
@@ -204,12 +205,28 @@ static void nexthop_keygen(struct nl_object *obj, uint32_t *hashkey,
 
 int rtnl_nh_set_gateway(struct rtnl_nh *nexthop, struct nl_addr *addr)
 {
-	if (nexthop->ce_mask & NH_ATTR_GATEWAY) {
-		nl_addr_put(nexthop->nh_gateway);
+	struct nl_addr *old = NULL;
+
+	if (!nexthop)
+		return -NLE_INVAL;
+
+	/* preserve old pointer to release after successful update */
+	old = nexthop->nh_gateway;
+
+	if (addr) {
+		struct nl_addr *cloned = nl_addr_clone(addr);
+		if (!cloned)
+			return -NLE_NOMEM;
+
+		nexthop->nh_gateway = cloned;
+		nexthop->ce_mask |= NH_ATTR_GATEWAY;
+	} else {
+		nexthop->nh_gateway = NULL;
+		nexthop->ce_mask &= ~NH_ATTR_GATEWAY;
 	}
 
-	nexthop->nh_gateway = nl_addr_clone(addr);
-	nexthop->ce_mask |= NH_ATTR_GATEWAY;
+	if (old)
+		nl_addr_put(old);
 
 	return 0;
 }

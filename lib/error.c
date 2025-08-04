@@ -44,6 +44,7 @@ static const char *errmsg[NLE_MAX+1] = {
 [NLE_DUMP_INTR]		= "Dump inconsistency detected, interrupted",
 [NLE_ATTRSIZE]		= "Attribute max length exceeded",
 [NLE_HOSTUNREACH]	= "Host is unreachable",
+[NLE_NETDOWN]		= "Network is down",
 };
 
 /**
@@ -106,6 +107,7 @@ int nl_syserr2nlerr(int error)
 	case ERANGE:		return NLE_RANGE;
 	case ENODEV:		return NLE_NODEV;
 	case EHOSTUNREACH:	return NLE_HOSTUNREACH;
+	case ENETDOWN:		return NLE_NETDOWN;
 	default:		return NLE_FAILURE;
 	}
 }

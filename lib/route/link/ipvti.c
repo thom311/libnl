@@ -144,7 +144,7 @@ static int ipvti_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (ipvti->ipvti_mask & IPVTI_ATTR_IKEY)
 		NLA_PUT_U32(msg, IFLA_VTI_IKEY, ipvti->ikey);
 
-	if (ipvti->ipvti_mask & IFLA_VTI_IKEY)
+	if (ipvti->ipvti_mask & IPVTI_ATTR_OKEY)
 		NLA_PUT_U32(msg, IFLA_VTI_OKEY, ipvti->okey);
 
 	if (ipvti->ipvti_mask & IPVTI_ATTR_LOCAL)
@@ -264,7 +264,7 @@ static struct rtnl_link_info_ops ipvti_info_ops = {
 
 #define IS_IPVTI_LINK_ASSERT(link)                                          \
         if ((link)->l_info_ops != &ipvti_info_ops) {                        \
-                APPBUG("Link is not a ipvti link. set type \vti\" first."); \
+                APPBUG("Link is not a ipvti link. set type \"vti\" first.");\
                 return -NLE_OPNOTSUPP;                                      \
         }
 

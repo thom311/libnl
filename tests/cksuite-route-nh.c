@@ -24,34 +24,6 @@
 /*****************************************************************************/
 /* Kernel round-trip tests exercising rtnl_nh_add() and message parsing */
 
-static void _nh_link_up(struct nl_sock *sk, const char *ifname)
-{
-	_nl_auto_rtnl_link struct rtnl_link *link_obj = NULL;
-	_nl_auto_rtnl_link struct rtnl_link *change = NULL;
-
-	_nltst_get_link(sk, ifname, NULL, &link_obj);
-	change = rtnl_link_alloc();
-	ck_assert_ptr_nonnull(change);
-	rtnl_link_set_flags(change, IFF_UP);
-	ck_assert_int_eq(rtnl_link_change(sk, link_obj, change, 0), 0);
-}
-
-static void _nh_addr4_add(struct nl_sock *sk, int ifindex, const char *ip,
-			  int prefixlen)
-{
-	_nl_auto_rtnl_addr struct rtnl_addr *addr = NULL;
-	_nl_auto_nl_addr struct nl_addr *local4 = NULL;
-
-	addr = rtnl_addr_alloc();
-	ck_assert_ptr_nonnull(addr);
-	rtnl_addr_set_ifindex(addr, ifindex);
-	rtnl_addr_set_family(addr, AF_INET);
-	ck_assert_int_eq(nl_addr_parse(ip, AF_INET, &local4), 0);
-	ck_assert_int_eq(rtnl_addr_set_local(addr, local4), 0);
-	rtnl_addr_set_prefixlen(addr, prefixlen);
-	ck_assert_int_eq(rtnl_addr_add(sk, addr, 0), 0);
-}
-
 START_TEST(test_kernel_roundtrip_basic_v4)
 {
 	const char *IFNAME_DUMMY = "nh-dummy0";
@@ -74,8 +46,8 @@ START_TEST(test_kernel_roundtrip_basic_v4)
 	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
 
 	/* Bring up and add an IPv4 address via libnl */
-	_nh_link_up(sk, IFNAME_DUMMY);
-	_nh_addr4_add(sk, ifindex_dummy, "192.0.2.2", 24);
+	_nltst_link_up(sk, IFNAME_DUMMY);
+	_nltst_addr4_add(sk, ifindex_dummy, "192.0.2.2", 24);
 
 	/* Build nexthop: v4 gateway over dummy OIF with explicit id */
 	nh = rtnl_nh_alloc();
@@ -119,7 +91,7 @@ START_TEST(test_kernel_negative_mismatched_gw_family)
 
 	auto_del_dummy = IFNAME_DUMMY;
 	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
-	_nh_link_up(sk, IFNAME_DUMMY);
+	_nltst_link_up(sk, IFNAME_DUMMY);
 
 	/* Build nexthop with AF_INET6 but an IPv4 gateway -> invalid */
 	nh = rtnl_nh_alloc();
@@ -172,7 +144,7 @@ START_TEST(test_kernel_negative_gateway_without_oif)
 	/* Create a dummy device to avoid dependency on system state */
 	auto_del_dummy = IFNAME_DUMMY;
 	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
-	_nh_link_up(sk, IFNAME_DUMMY);
+	_nltst_link_up(sk, IFNAME_DUMMY);
 
 	/* Build nexthop with IPv4 gateway but no OIF -> invalid */
 	nh = rtnl_nh_alloc();
@@ -206,7 +178,7 @@ START_TEST(test_kernel_roundtrip_oif_only)
 	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
 
 	/* Bring interface up via libnl */
-	_nh_link_up(sk, IFNAME_DUMMY);
+	_nltst_link_up(sk, IFNAME_DUMMY);
 
 	/* Build nexthop: OIF only, unspecified family */
 	nh = rtnl_nh_alloc();
@@ -256,7 +228,7 @@ START_TEST(test_kernel_roundtrip_group_mpath)
 	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
 
 	/* Bring interface up via libnl */
-	_nh_link_up(sk, IFNAME_DUMMY);
+	_nltst_link_up(sk, IFNAME_DUMMY);
 
 	/* Two basic nexthops to reference in the group */
 	nh1 = rtnl_nh_alloc();
@@ -331,7 +303,7 @@ START_TEST(test_kernel_roundtrip_group_resilient)
 	auto_del_dummy = IFNAME_DUMMY;
 	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
 	/* Bring interface up via libnl */
-	_nh_link_up(sk, IFNAME_DUMMY);
+	_nltst_link_up(sk, IFNAME_DUMMY);
 
 	/* Two basic nexthops to reference in the group */
 	nh1 = rtnl_nh_alloc();

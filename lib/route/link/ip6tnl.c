@@ -238,9 +238,10 @@ static void ip6_tnl_dump_details(struct rtnl_link *link,
 {
 	struct ip6_tnl_info *ip6_tnl = link->l_info;
 	char *name, addr[INET6_ADDRSTRLEN];
-	struct rtnl_link *parent;
 
 	if (ip6_tnl->ip6_tnl_mask & IP6_TNL_ATTR_LINK) {
+		struct rtnl_link *parent;
+
 		nl_dump(p, "      link ");
 
 		name = NULL;

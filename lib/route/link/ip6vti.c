@@ -180,8 +180,15 @@ static void ip6vti_dump_details(struct rtnl_link *link, struct nl_dump_params *p
 	char addr[INET6_ADDRSTRLEN];
 
 	if (ip6vti->ip6vti_mask & IP6VTI_ATTR_LINK) {
+		struct rtnl_link *parent;
+
 		nl_dump(p, "      link ");
-		name = rtnl_link_get_name(link);
+
+		name = NULL;
+		parent = link_lookup(link->ce_cache, ip6vti->link);
+		if (parent)
+			name = rtnl_link_get_name(parent);
+
 		if (name)
 			nl_dump_line(p, "%s\n", name);
 		else

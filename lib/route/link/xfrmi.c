@@ -29,6 +29,7 @@
 
 #include "nl-route.h"
 #include "link-api.h"
+#include "nl-aux-route/nl-route.h"
 
 #define XFRMI_ATTR_LINK  (1 << 0)
 #define XFRMI_ATTR_IF_ID (1 << 1)
@@ -134,7 +135,7 @@ static void xfrmi_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 	struct xfrmi_info *xfrmi = link->l_info;
 
 	if (xfrmi->xfrmi_mask & XFRMI_ATTR_LINK) {
-		struct rtnl_link *parent;
+		_nl_auto_rtnl_link struct rtnl_link *parent = NULL;
 		char *name;
 
 		nl_dump(p, "      link ");

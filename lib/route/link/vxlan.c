@@ -29,6 +29,7 @@
 
 #include "nl-route.h"
 #include "link-api.h"
+#include "nl-aux-route/nl-route.h"
 
 /** @cond SKIP */
 #define VXLAN_ATTR_ID                  (1<<0)
@@ -312,8 +313,7 @@ static void vxlan_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 static void vxlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct vxlan_info *vxi = link->l_info;
-	char *name, addr[INET6_ADDRSTRLEN];
-	struct rtnl_link *parent;
+	char addr[INET6_ADDRSTRLEN];
 
 	nl_dump_line(p, "    vxlan-id %u\n", vxi->vxi_id);
 
@@ -328,6 +328,9 @@ static void vxlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 	}
 
 	if (vxi->ce_mask & VXLAN_ATTR_LINK) {
+		_nl_auto_rtnl_link struct rtnl_link *parent = NULL;
+		char *name;
+
 		nl_dump(p, "      link ");
 
 		name = NULL;

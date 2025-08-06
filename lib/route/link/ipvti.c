@@ -29,6 +29,7 @@
 
 #include "nl-route.h"
 #include "link-api.h"
+#include "nl-aux-route/nl-route.h"
 
 #define IPVTI_ATTR_LINK		 (1 << 0)
 #define IPVTI_ATTR_IKEY		 (1 << 1)
@@ -179,10 +180,12 @@ static void ipvti_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 static void ipvti_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct ipvti_info *ipvti = link->l_info;
-	char *name, addr[INET_ADDRSTRLEN];
-	struct rtnl_link *parent;
+	char addr[INET_ADDRSTRLEN];
 
 	if (ipvti->ipvti_mask & IPVTI_ATTR_LINK) {
+		_nl_auto_rtnl_link struct rtnl_link *parent = NULL;
+		char *name;
+
 		nl_dump(p, "      link ");
 
 		name = NULL;

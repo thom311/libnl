@@ -29,6 +29,7 @@
 
 #include "nl-route.h"
 #include "link-api.h"
+#include "nl-aux-route/nl-route.h"
 
 #define IPIP_ATTR_LINK          (1 << 0)
 #define IPIP_ATTR_LOCAL         (1 << 1)
@@ -189,10 +190,12 @@ static void ipip_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 static void ipip_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct ipip_info *ipip = link->l_info;
-	char *name, addr[INET_ADDRSTRLEN];
-	struct rtnl_link *parent;
+	char addr[INET_ADDRSTRLEN];
 
 	if (ipip->ipip_mask & IPIP_ATTR_LINK) {
+		_nl_auto_rtnl_link struct rtnl_link *parent = NULL;
+		char *name;
+
 		nl_dump(p, "      link ");
 
 		name = NULL;

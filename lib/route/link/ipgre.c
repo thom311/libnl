@@ -181,10 +181,10 @@ static int ipgre_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (ipgre->ipgre_mask & IPGRE_ATTR_LINK)
 		NLA_PUT_U32(msg, IFLA_GRE_LINK, ipgre->link);
 
-	if (ipgre->ipgre_mask & IFLA_GRE_IFLAGS)
+	if (ipgre->ipgre_mask & IPGRE_ATTR_IFLAGS)
 		NLA_PUT_U16(msg, IFLA_GRE_IFLAGS, ipgre->iflags);
 
-	if (ipgre->ipgre_mask & IFLA_GRE_OFLAGS)
+	if (ipgre->ipgre_mask & IPGRE_ATTR_OFLAGS)
 		NLA_PUT_U16(msg, IFLA_GRE_OFLAGS, ipgre->oflags);
 
 	if (ipgre->ipgre_mask & IPGRE_ATTR_IKEY)
@@ -263,7 +263,7 @@ static void ipgre_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (ipgre->ipgre_mask & IPGRE_ATTR_IKEY) {
 		nl_dump(p, "    ikey   ");
-		nl_dump_line(p, "%x\n",ipgre->ikey);
+		nl_dump_line(p, "%x\n", ipgre->ikey);
 	}
 
 	if (ipgre->ipgre_mask & IPGRE_ATTR_OKEY) {
@@ -273,18 +273,18 @@ static void ipgre_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (ipgre->ipgre_mask & IPGRE_ATTR_LOCAL) {
 		nl_dump(p, "      local ");
-		if(inet_ntop(AF_INET, &ipgre->local, addr, sizeof(addr)))
+		if (inet_ntop(AF_INET, &ipgre->local, addr, sizeof(addr)))
 			nl_dump_line(p, "%s\n", addr);
 		else
-			nl_dump_line(p, "%#x\n", ntohs(ipgre->local));
+			nl_dump_line(p, "%#x\n", ntohl(ipgre->local));
 	}
 
 	if (ipgre->ipgre_mask & IPGRE_ATTR_REMOTE) {
 		nl_dump(p, "      remote ");
-		if(inet_ntop(AF_INET, &ipgre->remote, addr, sizeof(addr)))
+		if (inet_ntop(AF_INET, &ipgre->remote, addr, sizeof(addr)))
 			nl_dump_line(p, "%s\n", addr);
 		else
-			nl_dump_line(p, "%#x\n", ntohs(ipgre->remote));
+			nl_dump_line(p, "%#x\n", ntohl(ipgre->remote));
 	}
 
 	if (ipgre->ipgre_mask & IPGRE_ATTR_TTL) {

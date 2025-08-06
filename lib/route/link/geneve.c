@@ -294,7 +294,7 @@ static int geneve_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
                 NLA_PUT_U32(msg, IFLA_GENEVE_LABEL, geneve->label);
 
         if (geneve->mask & GENEVE_ATTR_PORT)
-                NLA_PUT_U32(msg, IFLA_GENEVE_PORT, geneve->port);
+                NLA_PUT_U16(msg, IFLA_GENEVE_PORT, geneve->port);
 
         if (geneve->mask & GENEVE_ATTR_UDP_CSUM)
                 NLA_PUT_U8(msg, IFLA_GENEVE_UDP_CSUM, geneve->udp_csum);

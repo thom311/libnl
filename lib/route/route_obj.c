@@ -955,7 +955,8 @@ struct rtnl_nexthop *rtnl_route_nexthop_n(struct rtnl_route *r, int n)
 
 		i = 0;
 		nl_list_for_each_entry(nh, &r->rt_nexthops, rtnh_list) {
-			if (i == n) return nh;
+			if (i == n)
+				return nh;
 			i++;
 		}
 	}

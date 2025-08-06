@@ -514,6 +514,143 @@ int rtnl_nh_set_id(struct rtnl_nh *nh, uint32_t id)
 	return 0;
 }
 
+/* ------------------------------------------------------------------------- */
+/* Message construction & kernel interaction                                */
+/* ------------------------------------------------------------------------- */
+
+/* Build a netlink message representing the supplied nexthop object. */
+static int rtnl_nh_build_msg(struct nl_msg *msg, struct rtnl_nh *nh)
+{
+	struct nhmsg hdr = {
+		.nh_family = nh->nh_family,
+		.nh_protocol = 0, /* kernel will fill in */
+		.nh_flags = nh->nh_flags,
+	};
+
+	if (nlmsg_append(msg, &hdr, sizeof(hdr), NLMSG_ALIGNTO) < 0)
+		return -NLE_MSGSIZE;
+
+	/* Optional attributes */
+	if (nh->ce_mask & NH_ATTR_ID)
+		NLA_PUT_U32(msg, NHA_ID, nh->nh_id);
+
+	if (nh->ce_mask & NH_ATTR_OIF)
+		NLA_PUT_U32(msg, NHA_OIF, nh->nh_oif);
+
+	if (nh->ce_mask & NH_ATTR_GATEWAY) {
+		if (!nh->nh_gateway)
+			return -NLE_INVAL;
+		NLA_PUT_ADDR(msg, NHA_GATEWAY, nh->nh_gateway);
+	}
+
+	if (nh->ce_mask & NH_ATTR_FLAG_BLACKHOLE)
+		NLA_PUT_FLAG(msg, NHA_BLACKHOLE);
+
+	/* Nexthop group */
+	if (nh->ce_mask & NH_ATTR_GROUP) {
+		struct nexthop_grp *grp;
+		struct nlattr *attr;
+		unsigned int sz;
+
+		if (!nh->nh_group || nh->nh_group->size == 0)
+			return -NLE_INVAL;
+
+		sz = nh->nh_group->size * sizeof(struct nexthop_grp);
+		attr = nla_reserve(msg, NHA_GROUP, sz);
+		if (!attr)
+			goto nla_put_failure;
+
+		grp = nla_data(attr);
+		for (unsigned int i = 0; i < nh->nh_group->size; i++) {
+			grp[i].id = nh->nh_group->entries[i].nh_id;
+			grp[i].weight = nh->nh_group->entries[i].weight;
+			grp[i].resvd1 = 0;
+			grp[i].resvd2 = 0;
+		}
+
+		/* Optional group type */
+		if (nh->nh_group_type)
+			NLA_PUT_U16(msg, NHA_GROUP_TYPE, nh->nh_group_type);
+
+		/* If the group type is resilient and the caller supplied additional
+		 * resilient parameters (bucket size, timers, ...), add them as a
+		 * nested NHA_RES_GROUP attribute. Only pass through the parameters
+		 * that were explicitly set on the nexthop object.
+		 */
+		if (nh->nh_group_type == NEXTHOP_GRP_TYPE_RES &&
+		    (nh->ce_mask &
+		     (NH_ATTR_RES_BUCKETS | NH_ATTR_RES_IDLE_TIMER |
+		      NH_ATTR_RES_UNBALANCED_TIMER))) {
+			struct nlattr *res_grp;
+
+			res_grp = nla_nest_start(msg, NHA_RES_GROUP);
+			if (!res_grp)
+				goto nla_put_failure;
+
+			if (nh->ce_mask & NH_ATTR_RES_BUCKETS)
+				NLA_PUT_U16(msg, NHA_RES_GROUP_BUCKETS,
+					    nh->res_grp_buckets);
+
+			if (nh->ce_mask & NH_ATTR_RES_IDLE_TIMER)
+				NLA_PUT_U32(msg, NHA_RES_GROUP_IDLE_TIMER,
+					    nh->res_grp_idle_timer);
+
+			if (nh->ce_mask & NH_ATTR_RES_UNBALANCED_TIMER)
+				NLA_PUT_U32(msg, NHA_RES_GROUP_UNBALANCED_TIMER,
+					    nh->res_grp_unbalanced_timer);
+
+			nla_nest_end(msg, res_grp);
+		}
+	}
+
+	return 0;
+
+nla_put_failure:
+	return -NLE_MSGSIZE;
+}
+
+/* Helper to build generic nexthop request messages */
+static int build_nh_msg(struct rtnl_nh *tmpl, int cmd, int flags,
+			struct nl_msg **result)
+{
+	_nl_auto_nl_msg struct nl_msg *msg = NULL;
+	int err;
+
+	msg = nlmsg_alloc_simple(cmd, flags);
+	if (!msg)
+		return -NLE_NOMEM;
+
+	err = rtnl_nh_build_msg(msg, tmpl);
+	if (err < 0) {
+		return err;
+	}
+
+	*result = _nl_steal_pointer(&msg);
+	return 0;
+}
+
+static int rtnl_nh_build_add_request(struct rtnl_nh *tmpl, int flags,
+				     struct nl_msg **result)
+{
+	return build_nh_msg(tmpl, RTM_NEWNEXTHOP, NLM_F_CREATE | flags, result);
+}
+
+int rtnl_nh_add(struct nl_sock *sk, struct rtnl_nh *nh, int flags)
+{
+	_nl_auto_nl_msg struct nl_msg *msg = NULL;
+	int err;
+
+	err = rtnl_nh_build_add_request(nh, flags, &msg);
+	if (err < 0)
+		return err;
+
+	err = nl_send_auto_complete(sk, msg);
+	if (err < 0)
+		return err;
+
+	return wait_for_ack(sk);
+}
+
 static struct nla_policy nh_res_group_policy[NHA_RES_GROUP_MAX + 1] = {
 	[NHA_RES_GROUP_UNSPEC] = { .type = NLA_UNSPEC },
 	[NHA_RES_GROUP_BUCKETS] = { .type = NLA_U16 },

@@ -46,8 +46,9 @@ extern "C" {
 #define NLE_DUMP_INTR		33
 #define NLE_ATTRSIZE		34
 #define NLE_HOSTUNREACH		35
+#define NLE_NETDOWN		36
 
-#define NLE_MAX		NLE_HOSTUNREACH
+#define NLE_MAX		NLE_NETDOWN
 
 extern const char *	nl_geterror(int);
 extern void		nl_perror(int, const char *);

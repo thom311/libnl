@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
 	srunner_add_suite(runner, make_nl_ematch_tree_clone_suite());
 	srunner_add_suite(runner, make_nl_netns_suite());
 	srunner_add_suite(runner, make_nl_ip6_tnl_suite());
+	srunner_add_suite(runner, make_nl_route_nh_suite());
 
 	srunner_run_all(runner, CK_ENV);
 

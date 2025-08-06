@@ -13,6 +13,12 @@ void rtnl_link_put(struct rtnl_link *);
 _NL_AUTO_DEFINE_FCN_TYPED0(struct rtnl_link *, _nl_auto_rtnl_link_fcn,
 			   rtnl_link_put);
 
+struct rtnl_addr;
+void rtnl_addr_put(struct rtnl_addr *);
+#define _nl_auto_rtnl_addr _nl_auto(_nl_auto_rtnl_addr_fcn)
+_NL_AUTO_DEFINE_FCN_TYPED0(struct rtnl_addr *, _nl_auto_rtnl_addr_fcn,
+			   rtnl_addr_put);
+
 struct rtnl_route;
 void rtnl_route_put(struct rtnl_route *);
 #define _nl_auto_rtnl_route _nl_auto(_nl_auto_rtnl_route_fcn)

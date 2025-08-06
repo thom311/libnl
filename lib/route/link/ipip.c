@@ -208,18 +208,20 @@ static void ipip_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (ipip->ipip_mask & IPIP_ATTR_LOCAL) {
 		nl_dump(p, "      local ");
-		if(inet_ntop(AF_INET, &ipip->local, addr, sizeof(addr)))
+
+		if (inet_ntop(AF_INET, &ipip->local, addr, sizeof(addr)))
 			nl_dump_line(p, "%s\n", addr);
 		else
-			nl_dump_line(p, "%#x\n", ntohs(ipip->local));
+			nl_dump_line(p, "%#x\n", ntohl(ipip->local));
 	}
 
 	if (ipip->ipip_mask & IPIP_ATTR_REMOTE) {
 		nl_dump(p, "      remote ");
-		if(inet_ntop(AF_INET, &ipip->remote, addr, sizeof(addr)))
+
+		if (inet_ntop(AF_INET, &ipip->remote, addr, sizeof(addr)))
 			nl_dump_line(p, "%s\n", addr);
 		else
-			nl_dump_line(p, "%#x\n", ntohs(ipip->remote));
+			nl_dump_line(p, "%#x\n", ntohl(ipip->remote));
 	}
 
 	if (ipip->ipip_mask & IPIP_ATTR_TTL) {

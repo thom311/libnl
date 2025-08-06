@@ -276,18 +276,20 @@ static void sit_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (sit->sit_mask & SIT_ATTR_LOCAL) {
 		nl_dump(p, "      local ");
-		if(inet_ntop(AF_INET, &sit->local, addr, sizeof(addr)))
+
+		if (inet_ntop(AF_INET, &sit->local, addr, sizeof(addr)))
 			nl_dump_line(p, "%s\n", addr);
 		else
-			nl_dump_line(p, "%#x\n", ntohs(sit->local));
+			nl_dump_line(p, "%#x\n", ntohl(sit->local));
 	}
 
 	if (sit->sit_mask & SIT_ATTR_REMOTE) {
 		nl_dump(p, "      remote ");
-		if(inet_ntop(AF_INET, &sit->remote, addr, sizeof(addr)))
+
+		if (inet_ntop(AF_INET, &sit->remote, addr, sizeof(addr)))
 			nl_dump_line(p, "%s\n", addr);
 		else
-			nl_dump_line(p, "%#x\n", ntohs(sit->remote));
+			nl_dump_line(p, "%#x\n", ntohl(sit->remote));
 	}
 
 	if (sit->sit_mask & SIT_ATTR_TTL) {

@@ -276,18 +276,14 @@ static void ipgre_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (ipgre->ipgre_mask & IPGRE_ATTR_LOCAL) {
 		nl_dump(p, "      local ");
-		if (inet_ntop(AF_INET, &ipgre->local, addr, sizeof(addr)))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "%#x\n", ntohl(ipgre->local));
+		_nl_inet_ntop4(ipgre->local, addr);
+		nl_dump_line(p, "%s\n", addr);
 	}
 
 	if (ipgre->ipgre_mask & IPGRE_ATTR_REMOTE) {
 		nl_dump(p, "      remote ");
-		if (inet_ntop(AF_INET, &ipgre->remote, addr, sizeof(addr)))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "%#x\n", ntohl(ipgre->remote));
+		_nl_inet_ntop4(ipgre->remote, addr);
+		nl_dump_line(p, "%s\n", addr);
 	}
 
 	if (ipgre->ipgre_mask & IPGRE_ATTR_TTL) {

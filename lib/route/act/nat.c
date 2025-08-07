@@ -87,12 +87,12 @@ static void nat_dump_line(struct rtnl_tc *tc, void *data,
 		pfx++;
 	}
 
-	inet_ntop(AF_INET, &nat->old_addr, buf, sizeof(buf));
+	_nl_inet_ntop4(nat->old_addr, buf);
 	nl_dump(p, " %s", buf);
 	if (pfx < 32)
 		nl_dump(p, "/%d", pfx);
 
-	inet_ntop(AF_INET, &nat->new_addr, buf, sizeof(buf));
+	_nl_inet_ntop4(nat->new_addr, buf);
 	nl_dump(p, " %s", buf);
 	if (pfx < 32)
 		nl_dump(p, "/%d", pfx);

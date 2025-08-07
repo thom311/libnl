@@ -343,14 +343,14 @@ static void flower_dump_details(struct rtnl_tc *tc, void *data,
 		nl_dump(p, " dscp_mask %u", f->cf_ip_dscp_mask);
 
 	if (f->cf_mask & FLOWER_ATTR_IPV4_SRC) {
-		inet_ntop(AF_INET, &f->cf_ipv4_src, addr_str, sizeof(addr_str));
-		inet_ntop(AF_INET, &f->cf_ipv4_src_mask, mask_str, sizeof(mask_str));
+		_nl_inet_ntop4(f->cf_ipv4_src, addr_str);
+		_nl_inet_ntop4(f->cf_ipv4_src_mask, mask_str);
 		nl_dump(p, "IPv4 src %s mask %s\n", addr_str, mask_str);
 	}
 
 	if (f->cf_mask & FLOWER_ATTR_IPV4_DST) {
-		inet_ntop(AF_INET, &f->cf_ipv4_dst, addr_str, sizeof(addr_str));
-		inet_ntop(AF_INET, &f->cf_ipv4_dst_mask, mask_str, sizeof(mask_str));
+		_nl_inet_ntop4(f->cf_ipv4_dst, addr_str);
+		_nl_inet_ntop4(f->cf_ipv4_dst_mask, mask_str);
 		nl_dump(p, "IPv4 dst %s mask %s\n", addr_str, mask_str);
 	}
 }

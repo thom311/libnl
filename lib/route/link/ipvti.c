@@ -29,6 +29,7 @@
 
 #include "nl-route.h"
 #include "link-api.h"
+#include "nl-aux-route/nl-route.h"
 
 #define IPVTI_ATTR_LINK		 (1 << 0)
 #define IPVTI_ATTR_IKEY		 (1 << 1)
@@ -144,7 +145,7 @@ static int ipvti_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 	if (ipvti->ipvti_mask & IPVTI_ATTR_IKEY)
 		NLA_PUT_U32(msg, IFLA_VTI_IKEY, ipvti->ikey);
 
-	if (ipvti->ipvti_mask & IFLA_VTI_IKEY)
+	if (ipvti->ipvti_mask & IPVTI_ATTR_OKEY)
 		NLA_PUT_U32(msg, IFLA_VTI_OKEY, ipvti->okey);
 
 	if (ipvti->ipvti_mask & IPVTI_ATTR_LOCAL)
@@ -179,10 +180,12 @@ static void ipvti_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 static void ipvti_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct ipvti_info *ipvti = link->l_info;
-	char *name, addr[INET_ADDRSTRLEN];
-	struct rtnl_link *parent;
+	char addr[INET_ADDRSTRLEN];
 
 	if (ipvti->ipvti_mask & IPVTI_ATTR_LINK) {
+		_nl_auto_rtnl_link struct rtnl_link *parent = NULL;
+		char *name;
+
 		nl_dump(p, "      link ");
 
 		name = NULL;
@@ -208,18 +211,20 @@ static void ipvti_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (ipvti->ipvti_mask & IPVTI_ATTR_LOCAL) {
 		nl_dump(p, "      local ");
-		if(inet_ntop(AF_INET, &ipvti->local, addr, sizeof(addr)))
+
+		if (inet_ntop(AF_INET, &ipvti->local, addr, sizeof(addr)))
 			nl_dump_line(p, "%s\n", addr);
 		else
-			nl_dump_line(p, "%#x\n", ntohs(ipvti->local));
+			nl_dump_line(p, "%#x\n", ntohl(ipvti->local));
 	}
 
 	if (ipvti->ipvti_mask & IPVTI_ATTR_REMOTE) {
 		nl_dump(p, "      remote ");
-		if(inet_ntop(AF_INET, &ipvti->remote, addr, sizeof(addr)))
+
+		if (inet_ntop(AF_INET, &ipvti->remote, addr, sizeof(addr)))
 			nl_dump_line(p, "%s\n", addr);
 		else
-			nl_dump_line(p, "%#x\n", ntohs(ipvti->remote));
+			nl_dump_line(p, "%#x\n", ntohl(ipvti->remote));
 	}
 
 	if (ipvti->ipvti_mask & IPVTI_ATTR_FWMARK) {
@@ -264,7 +269,7 @@ static struct rtnl_link_info_ops ipvti_info_ops = {
 
 #define IS_IPVTI_LINK_ASSERT(link)                                          \
         if ((link)->l_info_ops != &ipvti_info_ops) {                        \
-                APPBUG("Link is not a ipvti link. set type \vti\" first."); \
+                APPBUG("Link is not a ipvti link. set type \"vti\" first.");\
                 return -NLE_OPNOTSUPP;                                      \
         }
 

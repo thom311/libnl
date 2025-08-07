@@ -29,6 +29,7 @@
 
 #include "nl-route.h"
 #include "link-api.h"
+#include "nl-aux-route/nl-route.h"
 
 #define IP6_TNL_ATTR_LINK (1 << 0)
 #define IP6_TNL_ATTR_LOCAL (1 << 1)
@@ -237,10 +238,12 @@ static void ip6_tnl_dump_details(struct rtnl_link *link,
 				 struct nl_dump_params *p)
 {
 	struct ip6_tnl_info *ip6_tnl = link->l_info;
-	char *name, addr[INET6_ADDRSTRLEN];
-	struct rtnl_link *parent;
+	char addr[INET6_ADDRSTRLEN];
 
 	if (ip6_tnl->ip6_tnl_mask & IP6_TNL_ATTR_LINK) {
+		_nl_auto_rtnl_link struct rtnl_link *parent = NULL;
+		char *name;
+
 		nl_dump(p, "      link ");
 
 		name = NULL;

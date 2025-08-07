@@ -29,6 +29,7 @@
 
 #include "nl-route.h"
 #include "link-api.h"
+#include "nl-aux-route/nl-route.h"
 
 /** @cond SKIP */
 #define VXLAN_ATTR_ID                  (1<<0)
@@ -312,8 +313,7 @@ static void vxlan_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 static void vxlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct vxlan_info *vxi = link->l_info;
-	char *name, addr[INET6_ADDRSTRLEN];
-	struct rtnl_link *parent;
+	char addr[INET6_ADDRSTRLEN];
 
 	nl_dump_line(p, "    vxlan-id %u\n", vxi->vxi_id);
 
@@ -328,6 +328,9 @@ static void vxlan_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 	}
 
 	if (vxi->ce_mask & VXLAN_ATTR_LINK) {
+		_nl_auto_rtnl_link struct rtnl_link *parent = NULL;
+		char *name;
+
 		nl_dump(p, "      link ");
 
 		name = NULL;
@@ -572,7 +575,7 @@ static int vxlan_put_attrs(struct nl_msg *msg, struct rtnl_link *link)
 		NLA_PUT_U8(msg, IFLA_VXLAN_L3MISS, vxi->vxi_l3miss);
 
 	if (vxi->ce_mask & VXLAN_ATTR_PORT)
-		NLA_PUT_U32(msg, IFLA_VXLAN_PORT, vxi->vxi_port);
+		NLA_PUT_U16(msg, IFLA_VXLAN_PORT, vxi->vxi_port);
 
 	if (vxi->ce_mask & VXLAN_ATTR_UDP_CSUM)
 		NLA_PUT_U8(msg, IFLA_VXLAN_UDP_CSUM, vxi->vxi_udp_csum);
@@ -643,13 +646,15 @@ static int vxlan_compare(struct rtnl_link *link_a, struct rtnl_link *link_b,
 						sizeof(a->vxi_group6)) != 0);
 	diff |= _DIFF(VXLAN_ATTR_LOCAL6, memcmp(&a->vxi_local6, &b->vxi_local6,
 						sizeof(a->vxi_local6)) != 0);
-	diff |= _DIFF(VXLAN_ATTR_UDP_CSUM, a->vxi_proxy != b->vxi_proxy);
+	diff |= _DIFF(VXLAN_ATTR_UDP_CSUM, a->vxi_udp_csum != b->vxi_udp_csum);
 	diff |= _DIFF(VXLAN_ATTR_UDP_ZERO_CSUM6_TX,
-		      a->vxi_proxy != b->vxi_proxy);
+		      a->vxi_udp_zero_csum6_tx != b->vxi_udp_zero_csum6_tx);
 	diff |= _DIFF(VXLAN_ATTR_UDP_ZERO_CSUM6_RX,
-		      a->vxi_proxy != b->vxi_proxy);
-	diff |= _DIFF(VXLAN_ATTR_REMCSUM_TX, a->vxi_proxy != b->vxi_proxy);
-	diff |= _DIFF(VXLAN_ATTR_REMCSUM_RX, a->vxi_proxy != b->vxi_proxy);
+		      a->vxi_udp_zero_csum6_rx != b->vxi_udp_zero_csum6_rx);
+	diff |= _DIFF(VXLAN_ATTR_REMCSUM_TX,
+		      a->vxi_remcsum_tx != b->vxi_remcsum_tx);
+	diff |= _DIFF(VXLAN_ATTR_REMCSUM_RX,
+		      a->vxi_remcsum_rx != b->vxi_remcsum_rx);
 	diff |= _DIFF(VXLAN_ATTR_COLLECT_METADATA,
 		      a->vxi_collect_metadata != b->vxi_collect_metadata);
 	diff |= _DIFF(VXLAN_ATTR_LABEL, a->vxi_label != b->vxi_label);

@@ -26,6 +26,7 @@
 
 #include "nl-route.h"
 #include "link-api.h"
+#include "nl-aux-route/nl-route.h"
 
 #define IP6VTI_ATTR_LINK      (1 << 0)
 #define IP6VTI_ATTR_IKEY      (1 << 1)
@@ -176,12 +177,19 @@ static void ip6vti_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 static void ip6vti_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct ip6vti_info *ip6vti = link->l_info;
-	char *name;
 	char addr[INET6_ADDRSTRLEN];
 
 	if (ip6vti->ip6vti_mask & IP6VTI_ATTR_LINK) {
+		_nl_auto_rtnl_link struct rtnl_link *parent = NULL;
+		char *name;
+
 		nl_dump(p, "      link ");
-		name = rtnl_link_get_name(link);
+
+		name = NULL;
+		parent = link_lookup(link->ce_cache, ip6vti->link);
+		if (parent)
+			name = rtnl_link_get_name(parent);
+
 		if (name)
 			nl_dump_line(p, "%s\n", name);
 		else

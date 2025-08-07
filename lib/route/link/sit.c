@@ -29,6 +29,7 @@
 
 #include "nl-route.h"
 #include "link-api.h"
+#include "nl-aux-route/nl-route.h"
 
 #define SIT_ATTR_LINK          (1 << 0)
 #define SIT_ATTR_LOCAL         (1 << 1)
@@ -257,10 +258,12 @@ static void sit_dump_line(struct rtnl_link *link, struct nl_dump_params *p)
 static void sit_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 {
 	struct sit_info *sit = link->l_info;
-	char *name, addr[INET_ADDRSTRLEN], addr6[INET6_ADDRSTRLEN];
-	struct rtnl_link *parent;
+	char addr[INET_ADDRSTRLEN], addr6[INET6_ADDRSTRLEN];
 
 	if (sit->sit_mask & SIT_ATTR_LINK) {
+		_nl_auto_rtnl_link struct rtnl_link *parent = NULL;
+		char *name;
+
 		nl_dump(p, "      link ");
 
 		name = NULL;
@@ -276,18 +279,20 @@ static void sit_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (sit->sit_mask & SIT_ATTR_LOCAL) {
 		nl_dump(p, "      local ");
-		if(inet_ntop(AF_INET, &sit->local, addr, sizeof(addr)))
+
+		if (inet_ntop(AF_INET, &sit->local, addr, sizeof(addr)))
 			nl_dump_line(p, "%s\n", addr);
 		else
-			nl_dump_line(p, "%#x\n", ntohs(sit->local));
+			nl_dump_line(p, "%#x\n", ntohl(sit->local));
 	}
 
 	if (sit->sit_mask & SIT_ATTR_REMOTE) {
 		nl_dump(p, "      remote ");
-		if(inet_ntop(AF_INET, &sit->remote, addr, sizeof(addr)))
+
+		if (inet_ntop(AF_INET, &sit->remote, addr, sizeof(addr)))
 			nl_dump_line(p, "%s\n", addr);
 		else
-			nl_dump_line(p, "%#x\n", ntohs(sit->remote));
+			nl_dump_line(p, "%#x\n", ntohl(sit->remote));
 	}
 
 	if (sit->sit_mask & SIT_ATTR_TTL) {

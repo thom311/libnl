@@ -61,6 +61,7 @@ struct rtnl_nexthop *rtnl_route_nh_clone(struct rtnl_nexthop *src)
 	nh->rtnh_flag_mask = src->rtnh_flag_mask;
 	nh->rtnh_weight = src->rtnh_weight;
 	nh->rtnh_ifindex = src->rtnh_ifindex;
+	nh->rtnh_realms = src->rtnh_realms;
 	nh->ce_mask = src->ce_mask;
 
 	if (src->rtnh_gateway) {

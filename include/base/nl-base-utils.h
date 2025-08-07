@@ -708,6 +708,18 @@ static inline char *_nl_inet_ntop_dup(int addr_family, const void *addr)
 						    INET6_ADDRSTRLEN));
 }
 
+static inline char *_nl_inet_ntop4(in_addr_t addr,
+				   char buf[static INET_ADDRSTRLEN])
+{
+	return _nl_inet_ntop(AF_INET, &addr, buf);
+}
+
+static inline char *_nl_inet_ntop6(const struct in6_addr *addr,
+				   char buf[static INET6_ADDRSTRLEN])
+{
+	return _nl_inet_ntop(AF_INET6, &addr, buf);
+}
+
 /*****************************************************************************/
 
 static inline size_t _nl_ptrarray_len_(const void *const *ptr, ssize_t len)

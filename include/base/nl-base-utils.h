@@ -680,7 +680,8 @@ typedef union {
 	struct in6_addr a6;
 } _NLIPAddr;
 
-static inline char *_nl_inet_ntop(int addr_family, const void *addr, char *buf)
+static inline char *_nl_inet_ntop(int addr_family, const void *addr,
+				  char buf[static INET_ADDRSTRLEN])
 {
 	char *r;
 

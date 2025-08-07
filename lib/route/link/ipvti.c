@@ -211,20 +211,14 @@ static void ipvti_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (ipvti->ipvti_mask & IPVTI_ATTR_LOCAL) {
 		nl_dump(p, "      local ");
-
-		if (inet_ntop(AF_INET, &ipvti->local, addr, sizeof(addr)))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "%#x\n", ntohl(ipvti->local));
+		_nl_inet_ntop4(ipvti->local, addr);
+		nl_dump_line(p, "%s\n", addr);
 	}
 
 	if (ipvti->ipvti_mask & IPVTI_ATTR_REMOTE) {
 		nl_dump(p, "      remote ");
-
-		if (inet_ntop(AF_INET, &ipvti->remote, addr, sizeof(addr)))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "%#x\n", ntohl(ipvti->remote));
+		_nl_inet_ntop4(ipvti->remote, addr);
+		nl_dump_line(p, "%s\n", addr);
 	}
 
 	if (ipvti->ipvti_mask & IPVTI_ATTR_FWMARK) {

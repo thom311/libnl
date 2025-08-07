@@ -279,20 +279,14 @@ static void sit_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (sit->sit_mask & SIT_ATTR_LOCAL) {
 		nl_dump(p, "      local ");
-
-		if (inet_ntop(AF_INET, &sit->local, addr, sizeof(addr)))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "%#x\n", ntohl(sit->local));
+		_nl_inet_ntop4(sit->local, addr);
+		nl_dump_line(p, "%s\n", addr);
 	}
 
 	if (sit->sit_mask & SIT_ATTR_REMOTE) {
 		nl_dump(p, "      remote ");
-
-		if (inet_ntop(AF_INET, &sit->remote, addr, sizeof(addr)))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "%#x\n", ntohl(sit->remote));
+		_nl_inet_ntop4(sit->remote, addr);
+		nl_dump_line(p, "%s\n", addr);
 	}
 
 	if (sit->sit_mask & SIT_ATTR_TTL) {
@@ -317,18 +311,14 @@ static void sit_dump_details(struct rtnl_link *link, struct nl_dump_params *p)
 
 	if (sit->sit_mask & SIT_ATTR_6RD_PREFIX) {
 		nl_dump(p, "      6rd_prefix   ");
-		if(inet_ntop(AF_INET6, &sit->ip6rd_prefix, addr6, INET6_ADDRSTRLEN))
-			nl_dump_line(p, "%s\n", addr6);
-		else
-			nl_dump_line(p, "[unknown]\n");
+		_nl_inet_ntop6(&sit->ip6rd_prefix, addr6);
+		nl_dump_line(p, "%s\n", addr6);
 	}
 
 	if (sit->sit_mask & SIT_ATTR_6RD_RELAY_PREFIX) {
 		nl_dump(p, "      6rd_relay_prefix   ");
-		if(inet_ntop(AF_INET, &sit->ip6rd_relay_prefix, addr, sizeof(addr)))
-			nl_dump_line(p, "%s\n", addr);
-		else
-			nl_dump_line(p, "[unknown]\n");
+		_nl_inet_ntop4(sit->ip6rd_relay_prefix, addr);
+		nl_dump_line(p, "%s\n", addr);
 	}
 
 	if (sit->sit_mask & SIT_ATTR_6RD_PREFIXLEN) {

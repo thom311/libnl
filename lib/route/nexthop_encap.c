@@ -13,10 +13,10 @@ static struct lwtunnel_encap_type {
 } lwtunnel_encap_types[__LWTUNNEL_ENCAP_MAX] = {
 	[LWTUNNEL_ENCAP_NONE] = { .name = "none" },
 	[LWTUNNEL_ENCAP_MPLS] = { .name = "mpls", .ops = &mpls_encap_ops },
-	[LWTUNNEL_ENCAP_IP]   = { .name = "ip" },
-	[LWTUNNEL_ENCAP_IP6]  = { .name = "ip6" },
-	[LWTUNNEL_ENCAP_ILA]  = { .name = "ila" },
-	[LWTUNNEL_ENCAP_BPF]  = { .name = "bpf" },
+	[LWTUNNEL_ENCAP_IP] = { .name = "ip" },
+	[LWTUNNEL_ENCAP_IP6] = { .name = "ip6" },
+	[LWTUNNEL_ENCAP_ILA] = { .name = "ila" },
+	[LWTUNNEL_ENCAP_BPF] = { .name = "bpf" },
 };
 
 static const char *nh_encap_type2str(unsigned int type)
@@ -72,7 +72,7 @@ nla_put_failure:
 }
 
 int nh_encap_parse_msg(struct nlattr *encap, struct nlattr *encap_type,
-		       struct rtnl_nexthop *rtnh)
+		       struct rtnl_nh_encap **encap_out)
 {
 	uint16_t e_type = nla_get_u16(encap_type);
 
@@ -91,7 +91,10 @@ int nh_encap_parse_msg(struct nlattr *encap, struct nlattr *encap_type,
 		return -NLE_MSGTYPE_NOSUPPORT;
 	}
 
-	return lwtunnel_encap_types[e_type].ops->parse_msg(encap, rtnh);
+	if (!lwtunnel_encap_types[e_type].ops->parse_msg)
+		return -NLE_MSGTYPE_NOSUPPORT;
+
+	return lwtunnel_encap_types[e_type].ops->parse_msg(encap, encap_out);
 }
 
 int nh_encap_compare(struct rtnl_nh_encap *a, struct rtnl_nh_encap *b)

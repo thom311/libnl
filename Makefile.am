@@ -1066,6 +1066,7 @@ tests_check_all_SOURCES = \
 	tests/cksuite-all-netns.c \
 	tests/cksuite-link-ip6tnl.c \
 	tests/cksuite-route-nh.c \
+	tests/cksuite-route-nexthop.c \
 	tests/cksuite-all.h \
 	$(NULL)
 

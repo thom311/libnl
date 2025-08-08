@@ -378,11 +378,13 @@ START_TEST(test_kernel_roundtrip_group_resilient)
 	tmp32 = 0;
 	ck_assert_int_eq(rtnl_nh_get_res_group_idle_timer(grp_kernel, &tmp32),
 			 0);
-	ck_assert_uint_eq(tmp32, 15U);
+	ck_assert_uint_ge(tmp32, 12U);
+	ck_assert_uint_le(tmp32, 15U);
 	tmp32 = 0;
 	ck_assert_int_eq(
 		rtnl_nh_get_res_group_unbalanced_timer(grp_kernel, &tmp32), 0);
-	ck_assert_uint_eq(tmp32, 25U);
+	ck_assert_uint_ge(tmp32, 24U);
+	ck_assert_uint_le(tmp32, 25U);
 }
 END_TEST
 

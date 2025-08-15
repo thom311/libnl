@@ -669,6 +669,27 @@ void rtnl_nh_encap_free(struct rtnl_nh_encap *nh_encap)
 	free(nh_encap);
 }
 
+struct rtnl_nh_encap *rtnl_nh_encap_clone(struct rtnl_nh_encap *src)
+{
+	_nl_auto_rtnl_nh_encap struct rtnl_nh_encap *new_encap = NULL;
+
+	if (!src)
+		return NULL;
+
+	new_encap = rtnl_nh_encap_alloc();
+	if (!new_encap)
+		return NULL;
+
+	new_encap->ops = src->ops;
+	if (new_encap->ops) {
+		new_encap->priv = new_encap->ops->clone(src->priv);
+		if (!new_encap->priv)
+			return NULL;
+	}
+
+	return _nl_steal_pointer(&new_encap);
+}
+
 /*
  * Retrieve the encapsulation associated with a nexthop if any.
  */

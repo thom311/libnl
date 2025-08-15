@@ -49,6 +49,24 @@ static void mpls_encap_destructor(void *priv)
 	nl_addr_put(encap_info->dst);
 }
 
+static void *mpls_encap_clone(void *priv)
+{
+	struct mpls_iptunnel_encap *src = priv;
+	struct mpls_iptunnel_encap *clone;
+
+	if (!src)
+		return NULL;
+
+	clone = calloc(1, sizeof(*clone));
+	if (!clone)
+		return NULL;
+
+	clone->dst = nl_addr_get(src->dst);
+	clone->ttl = src->ttl;
+
+	return clone;
+}
+
 static struct nla_policy mpls_encap_policy[MPLS_IPTUNNEL_MAX + 1] = {
 	[MPLS_IPTUNNEL_DST] = { .type = NLA_U32 },
 	[MPLS_IPTUNNEL_TTL] = { .type = NLA_U8 },
@@ -108,6 +126,7 @@ struct nh_encap_ops mpls_encap_ops = {
 	.build_msg = mpls_encap_build_msg,
 	.parse_msg = mpls_encap_parse_msg,
 	.compare = mpls_encap_compare,
+	.clone = mpls_encap_clone,
 	.dump = mpls_encap_dump,
 	.destructor = mpls_encap_destructor,
 };

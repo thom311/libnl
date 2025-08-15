@@ -36,8 +36,10 @@ START_TEST(test_route_nexthop_api_set_get_all)
 	_nl_auto_nl_addr struct nl_addr *via6 = NULL;
 	_nl_auto_nl_addr struct nl_addr *mpls = NULL;
 	_nl_auto_rtnl_nexthop struct rtnl_nexthop *clone = NULL;
+	_nl_auto_rtnl_nexthop struct rtnl_nexthop *clone_with_encap = NULL;
 	struct rtnl_nh_encap *encap = NULL;
 	struct rtnl_nh_encap *got = NULL;
+	struct rtnl_nh_encap *encap_clone = NULL;
 	uint32_t realms = 0xAABBCCDDu;
 	char flags_buf[64];
 	int flags_parsed;
@@ -140,6 +142,28 @@ START_TEST(test_route_nexthop_api_set_get_all)
 	/* Access MPLS encap details through the new getters */
 	ck_assert_ptr_nonnull(rtnl_nh_get_encap_mpls_dst(got));
 	ck_assert_int_eq(rtnl_nh_get_encap_mpls_ttl(got), 64);
+
+	/* Exercise rtnl_nh_encap_clone() directly */
+	encap_clone = rtnl_nh_encap_clone(encap);
+	ck_assert_ptr_nonnull(encap_clone);
+	ck_assert_ptr_nonnull(rtnl_nh_get_encap_mpls_dst(encap_clone));
+	ck_assert_int_eq(
+		nl_addr_cmp(rtnl_nh_get_encap_mpls_dst(encap_clone), mpls), 0);
+	ck_assert_uint_eq(rtnl_nh_get_encap_mpls_ttl(encap_clone), 64);
+	/* Free the cloned encap explicitly */
+	rtnl_nh_encap_free(encap_clone);
+	encap_clone = NULL;
+
+	/* Exercise nexthop clone with encap: encap should be deep-cloned */
+	clone_with_encap = rtnl_route_nh_clone(nh);
+	ck_assert_ptr_nonnull(clone_with_encap);
+	encap_clone = rtnl_route_nh_get_encap(clone_with_encap);
+	ck_assert_ptr_nonnull(encap_clone);
+	/* The encap on the clone must not be the same pointer */
+	ck_assert_ptr_ne(encap_clone, encap);
+	ck_assert_int_eq(
+		nl_addr_cmp(rtnl_nh_get_encap_mpls_dst(encap_clone), mpls), 0);
+	ck_assert_uint_eq(rtnl_nh_get_encap_mpls_ttl(encap_clone), 64);
 
 	/* Clear encap and verify it is removed */
 	ck_assert_int_eq(rtnl_route_nh_set_encap(nh, NULL), 0);

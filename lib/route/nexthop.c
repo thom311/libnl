@@ -83,6 +83,13 @@ struct rtnl_nexthop *rtnl_route_nh_clone(struct rtnl_nexthop *src)
 			return NULL;
 	}
 
+	/* Clone encapsulation information if present */
+	if (src->rtnh_encap) {
+		nh->rtnh_encap = rtnl_nh_encap_clone(src->rtnh_encap);
+		if (!nh->rtnh_encap)
+			return NULL;
+	}
+
 	return _nl_steal_pointer(&nh);
 }
 

@@ -90,6 +90,21 @@ extern int rtnl_nh_set_encap_ip6_src(struct rtnl_nh_encap *, struct nl_addr *);
 struct nl_addr *rtnl_nh_get_encap_ip6_src(struct rtnl_nh_encap *);
 extern int rtnl_nh_set_encap_ip6_flags(struct rtnl_nh_encap *, uint16_t);
 extern int rtnl_nh_get_encap_ip6_flags(struct rtnl_nh_encap *);
+
+/* IPv4 encap */
+extern int rtnl_nh_encap_ip(struct rtnl_nh_encap *nh_encap,
+			    struct nl_addr *dst);
+struct nl_addr *rtnl_nh_get_encap_ip_dst(struct rtnl_nh_encap *);
+extern int rtnl_nh_set_encap_ip_src(struct rtnl_nh_encap *, struct nl_addr *);
+struct nl_addr *rtnl_nh_get_encap_ip_src(struct rtnl_nh_encap *);
+extern int rtnl_nh_set_encap_ip_ttl(struct rtnl_nh_encap *, uint8_t);
+extern int rtnl_nh_get_encap_ip_ttl(struct rtnl_nh_encap *);
+extern int rtnl_nh_set_encap_ip_tos(struct rtnl_nh_encap *, uint8_t);
+extern int rtnl_nh_get_encap_ip_tos(struct rtnl_nh_encap *);
+extern int rtnl_nh_set_encap_ip_id(struct rtnl_nh_encap *, uint64_t);
+extern uint64_t rtnl_nh_get_encap_ip_id(struct rtnl_nh_encap *);
+extern int rtnl_nh_set_encap_ip_flags(struct rtnl_nh_encap *, uint16_t);
+extern int rtnl_nh_get_encap_ip_flags(struct rtnl_nh_encap *);
 #ifdef __cplusplus
 }
 #endif

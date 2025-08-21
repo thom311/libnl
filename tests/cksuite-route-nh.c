@@ -751,6 +751,115 @@ START_TEST(test_api_encap_ip6)
 }
 END_TEST
 
+/* Userspace tests for IPv4 encap on rtnl_nh (set/get + wrong-type negatives) */
+
+START_TEST(test_api_encap_ip)
+{
+	_nl_auto_rtnl_nh struct rtnl_nh *nh = NULL;
+	_nl_auto_rtnl_nh_encap struct rtnl_nh_encap *encap = NULL;
+	struct rtnl_nh_encap *got = NULL;
+	struct nl_addr *got_dst = NULL;
+	struct nl_addr *got_src = NULL;
+	_nl_auto_nl_addr struct nl_addr *dst6 = NULL;
+	_nl_auto_nl_addr struct nl_addr *src6 = NULL;
+	_nl_auto_nl_addr struct nl_addr *dst4 = NULL;
+	_nl_auto_nl_addr struct nl_addr *src4 = NULL;
+	_nl_auto_rtnl_nh_encap struct rtnl_nh_encap *encap_mpls = NULL;
+	_nl_auto_nl_addr struct nl_addr *label = NULL;
+	uint64_t id = 0;
+
+	nh = rtnl_nh_alloc();
+	ck_assert_ptr_nonnull(nh);
+
+	encap = rtnl_nh_encap_alloc();
+	ck_assert_ptr_nonnull(encap);
+	/* This will free encap */
+	ck_assert_int_eq(rtnl_nh_set_encap(NULL, _nl_steal_pointer(&encap)),
+			 -NLE_INVAL);
+
+	encap = rtnl_nh_encap_alloc();
+	ck_assert_ptr_nonnull(encap);
+
+	/* Family mismatch should be rejected */
+	ck_assert_int_eq(nl_addr_parse("2001:db8::1", AF_INET6, &dst6), 0);
+	ck_assert_int_eq(rtnl_nh_encap_ip(encap, dst6), -NLE_INVAL);
+
+	/* Build a valid IPv4 encap */
+	ck_assert_int_eq(nl_addr_parse("198.51.100.1", AF_INET, &dst4), 0);
+	ck_assert_int_eq(rtnl_nh_encap_ip(encap, dst4), 0);
+	ck_assert_int_eq(nl_addr_parse("2001:db8::2", AF_INET6, &src6), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_src(encap, src6), -NLE_INVAL);
+	ck_assert_int_eq(nl_addr_parse("198.51.100.2", AF_INET, &src4), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_src(encap, src4), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_id(encap, 0x123456789ULL), 0);
+	ck_assert_uint_eq(rtnl_nh_get_encap_ip_id(encap), 0x123456789ULL);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_ttl(encap, 32), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_tos(encap, 0x2e), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_flags(encap, 0x3), 0);
+
+	/* Attach and retrieve */
+	ck_assert_int_eq(rtnl_nh_set_encap(nh, _nl_steal_pointer(&encap)), 0);
+	got = rtnl_nh_get_encap(nh);
+	ck_assert_ptr_nonnull(got);
+	ck_assert_int_eq(rtnl_nh_encap_get_type(got), LWTUNNEL_ENCAP_IP);
+
+	/* Access IPv4-specific getters */
+	got_dst = rtnl_nh_get_encap_ip_dst(got);
+	ck_assert_ptr_nonnull(got_dst);
+	ck_assert_int_eq(nl_addr_cmp(got_dst, dst4), 0);
+	got_src = rtnl_nh_get_encap_ip_src(got);
+	ck_assert_ptr_nonnull(got_src);
+	ck_assert_int_eq(nl_addr_cmp(got_src, src4), 0);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip_ttl(got), 32);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip_tos(got), 0x2e);
+	ck_assert_uint_eq(rtnl_nh_get_encap_ip_id(NULL), 0);
+	ck_assert_uint_eq(rtnl_nh_get_encap_ip_id(got), 0x123456789ULL);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_id(got, 0x987654321ULL), 0);
+	id = rtnl_nh_get_encap_ip_id(got);
+	ck_assert(id == 0x987654321ULL);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip_flags(got), 0x3);
+
+	/* Clear/zero optional fields and verify getters */
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_ttl(got, 0), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_tos(got, 0), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_id(got, 0), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_flags(got, 0), 0);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip_ttl(got), 0);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip_tos(got), 0);
+	ck_assert_uint_eq(rtnl_nh_get_encap_ip_id(got), 0);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip_flags(got), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_src(got, NULL), 0);
+	ck_assert_ptr_eq(rtnl_nh_get_encap_ip_src(got), NULL);
+
+	/* Clear encap */
+	ck_assert_int_eq(rtnl_nh_set_encap(nh, NULL), 0);
+	ck_assert_ptr_eq(rtnl_nh_get_encap(nh), NULL);
+	/* Type getter negative on NULL */
+	ck_assert_int_eq(rtnl_nh_encap_get_type(NULL), -NLE_INVAL);
+
+	/* Negative tests for IPv4 setters on a non-IPv4 encap (wrong type) */
+	encap_mpls = rtnl_nh_encap_alloc();
+	ck_assert_ptr_nonnull(encap_mpls);
+	ck_assert_int_eq(nl_addr_parse("100", AF_MPLS, &label), 0);
+	ck_assert_int_eq(rtnl_nh_encap_mpls(encap_mpls, label, 64), 0);
+
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_ttl(encap_mpls, 16), -NLE_INVAL);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_tos(encap_mpls, 1), -NLE_INVAL);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_id(encap_mpls, 1), -NLE_INVAL);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_flags(encap_mpls, 1), -NLE_INVAL);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_src(encap_mpls, NULL),
+			 -NLE_INVAL);
+	ck_assert_int_eq(rtnl_nh_encap_get_type(encap_mpls),
+			 LWTUNNEL_ENCAP_MPLS);
+	ck_assert_ptr_eq(rtnl_nh_get_encap_ip_dst(encap_mpls), NULL);
+	ck_assert_ptr_eq(rtnl_nh_get_encap_ip_src(encap_mpls), NULL);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip_ttl(encap_mpls), -NLE_INVAL);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip_tos(encap_mpls), -NLE_INVAL);
+	ck_assert_uint_eq(rtnl_nh_get_encap_ip_id(encap_mpls), 0);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip_flags(encap_mpls), -NLE_INVAL);
+}
+END_TEST
+
 /* Kernel round-trip tests for IPv6 encap on rtnl_nh */
 
 START_TEST(test_kernel_roundtrip_encap_ip6)
@@ -832,6 +941,86 @@ START_TEST(test_kernel_roundtrip_encap_ip6)
 }
 END_TEST
 
+/* Kernel round-trip tests for IPv4 encap on rtnl_nh */
+
+START_TEST(test_kernel_roundtrip_encap_ip)
+{
+	const char *IFNAME_DUMMY = "nh-dummy-encap4";
+	_nltst_auto_delete_link const char *auto_del_dummy = NULL;
+	_nl_auto_nl_socket struct nl_sock *sk = NULL;
+	_nl_auto_nl_cache struct nl_cache *cache = NULL;
+	_nl_auto_rtnl_nh struct rtnl_nh *nh = NULL;
+	struct rtnl_nh *knh;
+	struct rtnl_nh_encap *kencap;
+	struct nl_addr *kdst = NULL;
+	struct nl_addr *ksrc = NULL;
+	_nl_auto_nl_addr struct nl_addr *gw4 = NULL;
+	_nl_auto_nl_addr struct nl_addr *dst4 = NULL;
+	_nl_auto_nl_addr struct nl_addr *src4 = NULL;
+	_nl_auto_rtnl_nh_encap struct rtnl_nh_encap *encap = NULL;
+	int ifindex_dummy;
+	uint64_t id = 0;
+
+	if (_nltst_skip_no_netns())
+		return;
+
+	sk = _nltst_socket(NETLINK_ROUTE);
+
+	/* Create underlay and assign an IPv4 address */
+	auto_del_dummy = IFNAME_DUMMY;
+	_nltst_add_dummy_v4_with_addr(sk, IFNAME_DUMMY, &ifindex_dummy,
+				      "192.0.2.2", 24);
+
+	/* Build nexthop: IPv4 encap with dst/src/ttl/tos and IPv4 gw */
+	nh = rtnl_nh_alloc();
+	ck_assert_ptr_nonnull(nh);
+	ck_assert_int_eq(rtnl_nh_set_id(nh, 3301), 0);
+
+	ck_assert_int_eq(nl_addr_parse("192.0.2.1", AF_INET, &gw4), 0);
+	ck_assert_int_eq(rtnl_nh_set_gateway(nh, gw4), 0);
+
+	encap = rtnl_nh_encap_alloc();
+	ck_assert_ptr_nonnull(encap);
+	ck_assert_int_eq(nl_addr_parse("198.51.100.1", AF_INET, &dst4), 0);
+	ck_assert_int_eq(rtnl_nh_encap_ip(encap, dst4), 0);
+	ck_assert_int_eq(nl_addr_parse("198.51.100.2", AF_INET, &src4), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_src(encap, src4), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_id(encap, 0xABCDEFULL), 0);
+	ck_assert_uint_eq(rtnl_nh_get_encap_ip_id(encap), 0xABCDEFULL);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_ttl(encap, 32), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_tos(encap, 0x2e), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip_flags(encap, 0x5), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap(nh, _nl_steal_pointer(&encap)), 0);
+
+	/* Set required attributes and add */
+	ck_assert_int_eq(rtnl_nh_set_oif(nh, (uint32_t)ifindex_dummy), 0);
+	ck_assert_int_eq(rtnl_nh_set_family(nh, AF_INET), 0);
+	ck_assert_int_eq(rtnl_nh_add(sk, nh, NLM_F_CREATE), 0);
+
+	/* Query and verify */
+	ck_assert_int_eq(rtnl_nh_alloc_cache(sk, AF_UNSPEC, &cache), 0);
+	knh = rtnl_nh_get(cache, 3301);
+	ck_assert_ptr_nonnull(knh);
+	ck_assert_int_eq(rtnl_nh_get_id(knh), 3301);
+	ck_assert_int_eq(rtnl_nh_get_oif(knh), ifindex_dummy);
+
+	kencap = rtnl_nh_get_encap(knh);
+	ck_assert_ptr_nonnull(kencap);
+	ck_assert_int_eq(rtnl_nh_encap_get_type(kencap), LWTUNNEL_ENCAP_IP);
+	kdst = rtnl_nh_get_encap_ip_dst(kencap);
+	ck_assert_ptr_nonnull(kdst);
+	ck_assert_int_eq(nl_addr_cmp(kdst, dst4), 0);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip_ttl(kencap), 32);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip_tos(kencap), 0x2e);
+	id = rtnl_nh_get_encap_ip_id(kencap);
+	ck_assert(id == 0xABCDEFULL);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip_flags(kencap), 0x5);
+	ksrc = rtnl_nh_get_encap_ip_src(kencap);
+	ck_assert_ptr_nonnull(ksrc);
+	ck_assert_int_eq(nl_addr_cmp(ksrc, src4), 0);
+}
+END_TEST
+
 Suite *make_nl_route_nh_suite(void)
 {
 	Suite *suite = suite_create("route-nh");
@@ -844,6 +1033,8 @@ Suite *make_nl_route_nh_suite(void)
 	tcase_add_test(tc_api, test_api_encap_mpls_set_get);
 	/* Userspace IPv6 encap tests */
 	tcase_add_test(tc_api, test_api_encap_ip6);
+	/* Userspace IPv4 encap tests */
+	tcase_add_test(tc_api, test_api_encap_ip);
 	suite_add_tcase(suite, tc_api);
 
 	/* Kernel round-trip – needs private netns */
@@ -860,6 +1051,8 @@ Suite *make_nl_route_nh_suite(void)
 	tcase_add_test(tc_kernel, test_kernel_roundtrip_encap_mpls);
 	/* Encap (IPv6) on rtnl_nh */
 	tcase_add_test(tc_kernel, test_kernel_roundtrip_encap_ip6);
+	/* Encap (IPv4) on rtnl_nh */
+	tcase_add_test(tc_kernel, test_kernel_roundtrip_encap_ip);
 	/* Negative tests: kernel should reject invalid nexthops */
 	tcase_add_test(tc_kernel, test_kernel_negative_mismatched_gw_family);
 	tcase_add_test(tc_kernel, test_kernel_negative_group_without_entries);

@@ -1374,6 +1374,7 @@ global:
 	rtnl_nh_encap_alloc;
 	rtnl_nh_encap_clone;
 	rtnl_nh_encap_free;
+	rtnl_nh_encap_get_type;
 	rtnl_nh_encap_mpls;
 	rtnl_nh_get_encap;
 	rtnl_nh_get_encap_mpls_dst;

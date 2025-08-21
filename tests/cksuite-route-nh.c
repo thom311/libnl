@@ -12,8 +12,9 @@
 
 #include "nl-default.h"
 
-#include <linux/nexthop.h>
 #include <linux/if.h>
+#include <linux/lwtunnel.h>
+#include <linux/nexthop.h>
 
 #include <netlink/route/nh.h>
 #include <netlink/route/link.h>
@@ -114,6 +115,8 @@ START_TEST(test_kernel_roundtrip_encap_mpls)
 
 	encap = rtnl_nh_encap_alloc();
 	ck_assert_ptr_nonnull(encap);
+	ck_assert_ptr_null(rtnl_nh_get_encap_mpls_dst(encap));
+	ck_assert_int_eq(rtnl_nh_get_encap_mpls_ttl(encap), -NLE_INVAL);
 	ck_assert_int_eq(nl_addr_parse("100", AF_MPLS, &labels), 0);
 	ck_assert_int_eq(rtnl_nh_encap_mpls(encap, labels, 64), 0);
 	ck_assert_int_eq(rtnl_nh_set_encap(nh, encap), 0);
@@ -137,6 +140,7 @@ START_TEST(test_kernel_roundtrip_encap_mpls)
 
 	kencap = rtnl_nh_get_encap(knh);
 	ck_assert_ptr_nonnull(kencap);
+	ck_assert_int_eq(rtnl_nh_encap_get_type(kencap), LWTUNNEL_ENCAP_MPLS);
 	ck_assert_ptr_nonnull(rtnl_nh_get_encap_mpls_dst(kencap));
 	ck_assert_uint_eq(rtnl_nh_get_encap_mpls_ttl(kencap), 64);
 }
@@ -613,10 +617,16 @@ START_TEST(test_api_encap_mpls_set_get)
 			 NULL);
 	ck_assert_uint_eq(rtnl_nh_get_encap_mpls_ttl(rtnl_nh_get_encap(nh)),
 			  -NLE_INVAL);
+	/* Type getter negatives */
+	ck_assert_int_eq(rtnl_nh_encap_get_type(NULL), -NLE_INVAL);
+	ck_assert_int_eq(rtnl_nh_encap_get_type(rtnl_nh_get_encap(nh)),
+			 -NLE_INVAL);
 
 	encap = rtnl_nh_encap_alloc();
 	ck_assert_ptr_nonnull(encap);
 	/* Now build a valid MPLS encap: push label 100 with TTL 64 */
+	ck_assert_ptr_null(rtnl_nh_get_encap_mpls_dst(encap));
+	ck_assert_int_eq(rtnl_nh_get_encap_mpls_ttl(encap), -NLE_INVAL);
 	ck_assert_int_eq(nl_addr_parse("100", AF_MPLS, &labels), 0);
 	ck_assert_int_eq(rtnl_nh_encap_mpls(encap, labels, 64), 0);
 
@@ -624,6 +634,7 @@ START_TEST(test_api_encap_mpls_set_get)
 	ck_assert_int_eq(rtnl_nh_set_encap(nh, encap), 0);
 	got = rtnl_nh_get_encap(nh);
 	ck_assert_ptr_nonnull(got);
+	ck_assert_int_eq(rtnl_nh_encap_get_type(got), LWTUNNEL_ENCAP_MPLS);
 
 	/* Access MPLS-specific getters */
 	ck_assert_ptr_nonnull(rtnl_nh_get_encap_mpls_dst(got));

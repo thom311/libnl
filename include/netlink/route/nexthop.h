@@ -63,6 +63,7 @@ extern int rtnl_route_nh_str2flags(const char *);
 extern struct rtnl_nh_encap *rtnl_nh_encap_alloc(void);
 extern void rtnl_nh_encap_free(struct rtnl_nh_encap *nh_encap);
 extern struct rtnl_nh_encap *rtnl_nh_encap_clone(struct rtnl_nh_encap *src);
+extern int rtnl_nh_encap_get_type(struct rtnl_nh_encap *nh_encap);
 
 extern int rtnl_nh_encap_mpls(struct rtnl_nh_encap *nh_encap,
 			      struct nl_addr *dst, uint8_t ttl);

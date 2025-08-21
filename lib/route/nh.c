@@ -737,6 +737,16 @@ struct rtnl_nh_encap *rtnl_nh_encap_alloc(void)
 	return calloc(1, sizeof(struct rtnl_nh_encap));
 }
 
+int rtnl_nh_encap_get_type(struct rtnl_nh_encap *nh_encap)
+{
+	if (!nh_encap)
+		return -NLE_INVAL;
+	if (!nh_encap->ops)
+		return -NLE_INVAL;
+
+	return nh_encap->ops->encap_type;
+}
+
 void rtnl_nh_encap_free(struct rtnl_nh_encap *nh_encap)
 {
 	if (!nh_encap)

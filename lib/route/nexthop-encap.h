@@ -27,6 +27,9 @@ void nh_encap_dump(struct rtnl_nh_encap *rtnh_encap, struct nl_dump_params *dp);
 
 int nh_encap_compare(struct rtnl_nh_encap *a, struct rtnl_nh_encap *b);
 
+void *nh_encap_check_and_get_priv(struct rtnl_nh_encap *nh_encap,
+				  uint16_t encap_type);
+
 /*
  * MPLS encap
  */

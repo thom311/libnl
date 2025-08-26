@@ -17,8 +17,9 @@
 #include <netlink/route/route.h>
 
 #include "nexthop-encap.h"
-#include "nl-route.h"
+#include "nl-aux-route/nl-route.h"
 #include "nl-priv-dynamic-core/nl-core.h"
+#include "nl-route.h"
 
 /** @cond SKIP */
 #define NH_ATTR_FLAGS 0x000001
@@ -51,7 +52,7 @@ struct rtnl_nexthop *rtnl_route_nh_alloc(void)
 
 struct rtnl_nexthop *rtnl_route_nh_clone(struct rtnl_nexthop *src)
 {
-	struct rtnl_nexthop *nh;
+	_nl_auto_rtnl_nexthop struct rtnl_nexthop *nh = NULL;
 
 	nh = rtnl_route_nh_alloc();
 	if (!nh)
@@ -66,32 +67,23 @@ struct rtnl_nexthop *rtnl_route_nh_clone(struct rtnl_nexthop *src)
 
 	if (src->rtnh_gateway) {
 		nh->rtnh_gateway = nl_addr_clone(src->rtnh_gateway);
-		if (!nh->rtnh_gateway) {
-			free(nh);
+		if (!nh->rtnh_gateway)
 			return NULL;
-		}
 	}
 
 	if (src->rtnh_newdst) {
 		nh->rtnh_newdst = nl_addr_clone(src->rtnh_newdst);
-		if (!nh->rtnh_newdst) {
-			nl_addr_put(nh->rtnh_gateway);
-			free(nh);
+		if (!nh->rtnh_newdst)
 			return NULL;
-		}
 	}
 
 	if (src->rtnh_via) {
 		nh->rtnh_via = nl_addr_clone(src->rtnh_via);
-		if (!nh->rtnh_via) {
-			nl_addr_put(nh->rtnh_gateway);
-			nl_addr_put(nh->rtnh_newdst);
-			free(nh);
+		if (!nh->rtnh_via)
 			return NULL;
-		}
 	}
 
-	return nh;
+	return _nl_steal_pointer(&nh);
 }
 
 void rtnl_route_nh_free(struct rtnl_nexthop *nh)

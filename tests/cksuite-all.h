@@ -11,5 +11,6 @@ Suite *make_nl_ematch_tree_clone_suite(void);
 Suite *make_nl_netns_suite(void);
 Suite *make_nl_ip6_tnl_suite(void);
 Suite *make_nl_route_nh_suite(void);
+Suite *make_nl_route_nexthop_suite(void);
 
 #endif /* __LIBNL3_TESTS_CHECK_ALL_H__ */

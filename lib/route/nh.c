@@ -6,11 +6,14 @@
 #include "nl-default.h"
 
 #include <linux/nexthop.h>
+#include <linux/lwtunnel.h>
+#include <linux/mpls_iptunnel.h>
 
 #include <netlink/route/nh.h>
 #include <netlink/hashtable.h>
 #include <netlink/route/nexthop.h>
 
+#include "nexthop-encap.h"
 #include "nl-aux-route/nl-route.h"
 #include "nl-route.h"
 #include "nl-priv-dynamic-core/nl-core.h"
@@ -28,6 +31,7 @@ struct rtnl_nh {
 	nl_nh_group_t *nh_group;
 	uint32_t nh_oif;
 	struct nl_addr *nh_gateway;
+	struct rtnl_nh_encap *nh_encap;
 
 	/* Resilient nexthop group parameters */
 	uint16_t res_grp_buckets;
@@ -49,6 +53,7 @@ struct rtnl_nh {
 #define NH_ATTR_RES_BUCKETS (1 << 10)
 #define NH_ATTR_RES_IDLE_TIMER (1 << 11)
 #define NH_ATTR_RES_UNBALANCED_TIMER (1 << 12)
+#define NH_ATTR_ENCAP (1 << 13)
 /** @endcond */
 
 struct nla_policy rtnl_nh_policy[NHA_MAX + 1] = {
@@ -59,6 +64,8 @@ struct nla_policy rtnl_nh_policy[NHA_MAX + 1] = {
 	[NHA_BLACKHOLE] = { .type = NLA_UNSPEC },
 	[NHA_OIF] = { .type = NLA_U32 },
 	[NHA_RES_GROUP] = { .type = NLA_NESTED },
+	[NHA_ENCAP] = { .type = NLA_NESTED },
+	[NHA_ENCAP_TYPE] = { .type = NLA_U16 },
 };
 
 static struct nl_cache_ops rtnl_nh_ops;
@@ -154,6 +161,13 @@ static int nh_clone(struct nl_object *_src, struct nl_object *_dst)
 	dst->res_grp_unbalanced_timer = src->res_grp_unbalanced_timer;
 	dst->ce_mask = src->ce_mask;
 
+	if (src->nh_encap) {
+		dst->nh_encap = rtnl_nh_encap_clone(src->nh_encap);
+		if (!dst->nh_encap)
+			return -NLE_NOMEM;
+		dst->ce_mask |= NH_ATTR_ENCAP;
+	}
+
 	if (src->nh_gateway) {
 		dst->nh_gateway = nl_addr_clone(src->nh_gateway);
 		if (!dst->nh_gateway) {
@@ -173,10 +187,10 @@ static int nh_clone(struct nl_object *_src, struct nl_object *_dst)
 static void nh_free(struct nl_object *obj)
 {
 	struct rtnl_nh *nh = nl_object_priv(obj);
-	nl_addr_put(nh->nh_gateway);
 
-	if (nh->nh_group)
-		rtnl_nh_grp_put(nh->nh_group);
+	nl_addr_put(nh->nh_gateway);
+	rtnl_nh_encap_free(nh->nh_encap);
+	rtnl_nh_grp_put(nh->nh_group);
 }
 
 void rtnl_nh_put(struct rtnl_nh *nh)
@@ -234,6 +248,52 @@ int rtnl_nh_set_gateway(struct rtnl_nh *nexthop, struct nl_addr *addr)
 struct nl_addr *rtnl_nh_get_gateway(struct rtnl_nh *nexthop)
 {
 	return nexthop->nh_gateway;
+}
+
+/**
+ * Set nexthop encapsulation
+ * @arg nh          Nexthop object
+ * @arg encap       Encapsulation descriptor
+ *
+ * Assigns ownership of the encapsulation object to the nexthop. Any
+ * previously configured encapsulation is released. Passing a NULL
+ * encapsulation clears the encapsulation on the nexthop.
+ *
+ * On failure, the function consumes and frees encap.
+ *
+ * @return 0 on success, or the appropriate error-code on failure.
+ */
+int rtnl_nh_set_encap(struct rtnl_nh *nh, struct rtnl_nh_encap *encap)
+{
+	if (!nh) {
+		rtnl_nh_encap_free(encap);
+		return -NLE_INVAL;
+	}
+
+	if (encap && !encap->ops) {
+		rtnl_nh_encap_free(encap);
+		return -NLE_INVAL;
+	}
+
+	rtnl_nh_encap_free(nh->nh_encap);
+
+	if (encap) {
+		nh->nh_encap = encap;
+		nh->ce_mask |= NH_ATTR_ENCAP;
+	} else {
+		nh->nh_encap = NULL;
+		nh->ce_mask &= ~NH_ATTR_ENCAP;
+	}
+
+	return 0;
+}
+
+struct rtnl_nh_encap *rtnl_nh_get_encap(struct rtnl_nh *nh)
+{
+	if (!nh || !(nh->ce_mask & NH_ATTR_ENCAP))
+		return NULL;
+
+	return nh->nh_encap;
 }
 
 int rtnl_nh_set_fdb(struct rtnl_nh *nexthop, int value)
@@ -546,6 +606,27 @@ static int rtnl_nh_build_msg(struct nl_msg *msg, struct rtnl_nh *nh)
 	if (nh->ce_mask & NH_ATTR_FLAG_BLACKHOLE)
 		NLA_PUT_FLAG(msg, NHA_BLACKHOLE);
 
+	if (nh->ce_mask & NH_ATTR_ENCAP) {
+		struct nlattr *encap;
+
+		if (!nh->nh_encap || !nh->nh_encap->ops)
+			return -NLE_INVAL;
+
+		NLA_PUT_U16(msg, NHA_ENCAP_TYPE, nh->nh_encap->ops->encap_type);
+
+		encap = nla_nest_start(msg, NHA_ENCAP);
+		if (!encap)
+			goto nla_put_failure;
+
+		if (nh->nh_encap->ops->build_msg) {
+			int err = nh->nh_encap->ops->build_msg(
+				msg, nh->nh_encap->priv);
+			if (err < 0)
+				return err;
+		}
+		nla_nest_end(msg, encap);
+	}
+
 	/* Nexthop group */
 	if (nh->ce_mask & NH_ATTR_GROUP) {
 		struct nexthop_grp *grp;
@@ -651,6 +732,55 @@ int rtnl_nh_add(struct nl_sock *sk, struct rtnl_nh *nh, int flags)
 	return wait_for_ack(sk);
 }
 
+struct rtnl_nh_encap *rtnl_nh_encap_alloc(void)
+{
+	return calloc(1, sizeof(struct rtnl_nh_encap));
+}
+
+void rtnl_nh_encap_free(struct rtnl_nh_encap *nh_encap)
+{
+	if (!nh_encap)
+		return;
+
+	if (nh_encap->ops && nh_encap->ops->destructor)
+		nh_encap->ops->destructor(nh_encap->priv);
+
+	free(nh_encap->priv);
+	free(nh_encap);
+}
+
+struct rtnl_nh_encap *rtnl_nh_encap_clone(struct rtnl_nh_encap *src)
+{
+	_nl_auto_rtnl_nh_encap struct rtnl_nh_encap *new_encap = NULL;
+
+	if (!src)
+		return NULL;
+
+	new_encap = rtnl_nh_encap_alloc();
+	if (!new_encap)
+		return NULL;
+
+	new_encap->ops = src->ops;
+	if (new_encap->ops) {
+		new_encap->priv = new_encap->ops->clone(src->priv);
+		if (!new_encap->priv)
+			return NULL;
+	}
+
+	return _nl_steal_pointer(&new_encap);
+}
+
+/*
+ * Retrieve the encapsulation associated with a nexthop if any.
+ */
+struct rtnl_nh_encap *rtnl_route_nh_get_encap(struct rtnl_nexthop *nh)
+{
+	if (!nh)
+		return NULL;
+
+	return nh->rtnh_encap;
+}
+
 static struct nla_policy nh_res_group_policy[NHA_RES_GROUP_MAX + 1] = {
 	[NHA_RES_GROUP_UNSPEC] = { .type = NLA_UNSPEC },
 	[NHA_RES_GROUP_BUCKETS] = { .type = NLA_U16 },
@@ -706,6 +836,19 @@ static int nexthop_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	if (tb[NHA_GROUP_TYPE]) {
 		nexthop->nh_group_type = nla_get_u16(tb[NHA_GROUP_TYPE]);
 		nexthop->ce_mask |= NH_ATTR_GROUP_TYPE;
+	}
+
+	if (tb[NHA_ENCAP] && tb[NHA_ENCAP_TYPE]) {
+		_nl_auto_rtnl_nh_encap struct rtnl_nh_encap *nh_encap = NULL;
+
+		err = nh_encap_parse_msg(tb[NHA_ENCAP], tb[NHA_ENCAP_TYPE],
+					 &nh_encap);
+		if (err < 0)
+			return err;
+
+		err = rtnl_nh_set_encap(nexthop, _nl_steal_pointer(&nh_encap));
+		if (err < 0)
+			return err;
 	}
 
 	if (tb[NHA_BLACKHOLE]) {
@@ -820,6 +963,9 @@ static void nh_dump_line(struct nl_object *obj, struct nl_dump_params *dp)
 		nl_dump(dp, " via %s",
 			nl_addr2str(nh->nh_gateway, buf, sizeof(buf)));
 
+	if (nh->ce_mask & NH_ATTR_ENCAP && nh->nh_encap)
+		nh_encap_dump(nh->nh_encap, dp);
+
 	if (nh->ce_mask & NH_ATTR_FLAG_BLACKHOLE)
 		nl_dump(dp, " blackhole");
 
@@ -880,6 +1026,8 @@ static uint64_t nh_compare(struct nl_object *a, struct nl_object *b,
 	diff |= _DIFF(NH_ATTR_RES_UNBALANCED_TIMER,
 		      src->res_grp_unbalanced_timer !=
 			      dst->res_grp_unbalanced_timer);
+	diff |= _DIFF(NH_ATTR_ENCAP,
+		      nh_encap_compare(src->nh_encap, dst->nh_encap));
 #undef _DIFF
 
 	return diff;

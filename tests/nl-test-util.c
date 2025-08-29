@@ -6,6 +6,7 @@
 
 #include <fcntl.h>
 #include <fnmatch.h>
+#include <linux/if.h>
 #include <sched.h>
 #include <stdio.h>
 #include <sys/mount.h>
@@ -13,6 +14,7 @@
 #include <netlink/netlink.h>
 #include <netlink/route/link.h>
 #include <netlink/route/route.h>
+#include <netlink/route/addr.h>
 #include <netlink/socket.h>
 
 #include "lib/route/nl-route.h"
@@ -568,6 +570,34 @@ void _nltst_get_link(struct nl_sock *sk, const char *ifname, int *out_ifindex,
 		nl_object_get((struct nl_object *)link);
 		*out_link = link;
 	}
+}
+
+void _nltst_link_up(struct nl_sock *sk, const char *ifname)
+{
+	_nl_auto_rtnl_link struct rtnl_link *link_obj = NULL;
+	_nl_auto_rtnl_link struct rtnl_link *change = NULL;
+
+	_nltst_get_link(sk, ifname, NULL, &link_obj);
+	change = rtnl_link_alloc();
+	ck_assert_ptr_nonnull(change);
+	rtnl_link_set_flags(change, IFF_UP);
+	ck_assert_int_eq(rtnl_link_change(sk, link_obj, change, 0), 0);
+}
+
+void _nltst_addr4_add(struct nl_sock *sk, int ifindex, const char *ip,
+		      int prefixlen)
+{
+	_nl_auto_rtnl_addr struct rtnl_addr *addr = NULL;
+	_nl_auto_nl_addr struct nl_addr *local4 = NULL;
+
+	addr = rtnl_addr_alloc();
+	ck_assert_ptr_nonnull(addr);
+	rtnl_addr_set_ifindex(addr, ifindex);
+	rtnl_addr_set_family(addr, AF_INET);
+	ck_assert_int_eq(nl_addr_parse(ip, AF_INET, &local4), 0);
+	ck_assert_int_eq(rtnl_addr_set_local(addr, local4), 0);
+	rtnl_addr_set_prefixlen(addr, prefixlen);
+	ck_assert_int_eq(rtnl_addr_add(sk, addr, 0), 0);
 }
 
 struct nl_cache *_nltst_rtnl_link_alloc_cache(struct nl_sock *sk,

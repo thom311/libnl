@@ -955,7 +955,8 @@ struct rtnl_nexthop *rtnl_route_nexthop_n(struct rtnl_route *r, int n)
 
 		i = 0;
 		nl_list_for_each_entry(nh, &r->rt_nexthops, rtnh_list) {
-			if (i == n) return nh;
+			if (i == n)
+				return nh;
 			i++;
 		}
 	}
@@ -1148,9 +1149,17 @@ static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 			}
 
 			if (ntb[RTA_ENCAP] && ntb[RTA_ENCAP_TYPE]) {
+				_nl_auto_rtnl_nh_encap struct rtnl_nh_encap
+					*encap = NULL;
+
 				err = nh_encap_parse_msg(ntb[RTA_ENCAP],
 							 ntb[RTA_ENCAP_TYPE],
-							 nh);
+							 &encap);
+				if (err < 0)
+					return err;
+
+				err = rtnl_route_nh_set_encap(
+					nh, _nl_steal_pointer(&encap));
 				if (err < 0)
 					return err;
 			}
@@ -1357,11 +1366,18 @@ int rtnl_route_parse(struct nlmsghdr *nlh, struct rtnl_route **result)
 	}
 
 	if (tb[RTA_ENCAP] && tb[RTA_ENCAP_TYPE]) {
+		_nl_auto_rtnl_nh_encap struct rtnl_nh_encap *encap = NULL;
+
 		if (!old_nh && !(old_nh = rtnl_route_nh_alloc()))
 			return -NLE_NOMEM;
 
-		err = nh_encap_parse_msg(tb[RTA_ENCAP],
-					 tb[RTA_ENCAP_TYPE], old_nh);
+		err = nh_encap_parse_msg(tb[RTA_ENCAP], tb[RTA_ENCAP_TYPE],
+					 &encap);
+		if (err < 0)
+			return err;
+
+		err = rtnl_route_nh_set_encap(old_nh,
+					      _nl_steal_pointer(&encap));
 		if (err < 0)
 			return err;
 	}

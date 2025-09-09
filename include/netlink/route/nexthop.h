@@ -91,6 +91,23 @@ struct nl_addr *rtnl_nh_get_encap_ip6_src(struct rtnl_nh_encap *);
 extern int rtnl_nh_set_encap_ip6_flags(struct rtnl_nh_encap *, uint16_t);
 extern int rtnl_nh_get_encap_ip6_flags(struct rtnl_nh_encap *);
 
+/* ILA encap */
+extern int rtnl_nh_encap_ila(struct rtnl_nh_encap *nh_encap, uint64_t locator);
+extern int rtnl_nh_get_encap_ila_locator(struct rtnl_nh_encap *nh_encap,
+					 uint64_t *locator);
+extern int rtnl_nh_set_encap_ila_csum_mode(struct rtnl_nh_encap *nh_encap,
+					   uint8_t csum_mode);
+extern int rtnl_nh_clear_encap_ila_csum_mode(struct rtnl_nh_encap *nh_encap);
+extern int rtnl_nh_get_encap_ila_csum_mode(struct rtnl_nh_encap *nh_encap);
+extern int rtnl_nh_set_encap_ila_ident_type(struct rtnl_nh_encap *nh_encap,
+					    uint8_t ident_type);
+extern int rtnl_nh_clear_encap_ila_ident_type(struct rtnl_nh_encap *nh_encap);
+extern int rtnl_nh_get_encap_ila_ident_type(struct rtnl_nh_encap *nh_encap);
+extern int rtnl_nh_set_encap_ila_hook_type(struct rtnl_nh_encap *nh_encap,
+					   uint8_t hook_type);
+extern int rtnl_nh_clear_encap_ila_hook_type(struct rtnl_nh_encap *nh_encap);
+extern int rtnl_nh_get_encap_ila_hook_type(struct rtnl_nh_encap *nh_encap);
+
 /* IPv4 encap */
 extern int rtnl_nh_encap_ip(struct rtnl_nh_encap *nh_encap,
 			    struct nl_addr *dst);

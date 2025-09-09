@@ -44,4 +44,9 @@ extern struct nh_encap_ops ip6_encap_ops;
  * IPv4 encap
  */
 extern struct nh_encap_ops ip_encap_ops;
+
+/*
+ * ILA encap
+ */
+extern struct nh_encap_ops ila_encap_ops;
 #endif

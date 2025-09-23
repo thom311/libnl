@@ -1375,8 +1375,15 @@ global:
 	rtnl_nh_encap_clone;
 	rtnl_nh_encap_free;
 	rtnl_nh_encap_get_type;
+	rtnl_nh_encap_ip6;
 	rtnl_nh_encap_mpls;
 	rtnl_nh_get_encap;
+	rtnl_nh_get_encap_ip6_dst;
+	rtnl_nh_get_encap_ip6_flags;
+	rtnl_nh_get_encap_ip6_hoplimit;
+	rtnl_nh_get_encap_ip6_id;
+	rtnl_nh_get_encap_ip6_src;
+	rtnl_nh_get_encap_ip6_tc;
 	rtnl_nh_get_encap_mpls_dst;
 	rtnl_nh_get_encap_mpls_ttl;
 	rtnl_nh_get_family;
@@ -1386,6 +1393,11 @@ global:
 	rtnl_nh_get_res_group_idle_timer;
 	rtnl_nh_get_res_group_unbalanced_timer;
 	rtnl_nh_set_encap;
+	rtnl_nh_set_encap_ip6_flags;
+	rtnl_nh_set_encap_ip6_hoplimit;
+	rtnl_nh_set_encap_ip6_id;
+	rtnl_nh_set_encap_ip6_src;
+	rtnl_nh_set_encap_ip6_tc;
 	rtnl_nh_set_family;
 	rtnl_nh_set_group;
 	rtnl_nh_set_group_type;

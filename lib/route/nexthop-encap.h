@@ -34,4 +34,9 @@ void *nh_encap_check_and_get_priv(struct rtnl_nh_encap *nh_encap,
  * MPLS encap
  */
 extern struct nh_encap_ops mpls_encap_ops;
+
+/*
+ * IPv6 encap
+ */
+extern struct nh_encap_ops ip6_encap_ops;
 #endif

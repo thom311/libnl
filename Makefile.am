@@ -528,6 +528,7 @@ lib_libnl_route_3_la_SOURCES = \
 	lib/route/nexthop.c \
 	lib/route/nexthop_encap.c \
 	lib/route/nh.c \
+	lib/route/nh_encap_ip6.c \
 	lib/route/nh_encap_mpls.c \
 	lib/route/nl-route.h \
 	lib/route/pktloc.c \

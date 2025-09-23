@@ -15,6 +15,7 @@
 #include <linux/if.h>
 #include <linux/lwtunnel.h>
 #include <linux/nexthop.h>
+#include <linux-private/linux/if_tunnel.h>
 
 #include <netlink/route/nh.h>
 #include <netlink/route/link.h>
@@ -632,6 +633,205 @@ START_TEST(test_api_encap_mpls_set_get)
 }
 END_TEST
 
+/* Userspace tests for IPv6 encap on rtnl_nh (set/get + wrong-type negatives) */
+
+START_TEST(test_api_encap_ip6)
+{
+	_nl_auto_rtnl_nh struct rtnl_nh *nh = NULL;
+	_nl_auto_rtnl_nh_encap struct rtnl_nh_encap *encap = NULL;
+	struct rtnl_nh_encap *got = NULL;
+	struct nl_addr *got_dst = NULL;
+	struct nl_addr *got_src = NULL;
+	_nl_auto_nl_addr struct nl_addr *dst6 = NULL;
+	_nl_auto_nl_addr struct nl_addr *src6 = NULL;
+	_nl_auto_rtnl_nh_encap struct rtnl_nh_encap *encap_mpls = NULL;
+	_nl_auto_nl_addr struct nl_addr *label = NULL;
+	uint64_t id_val;
+	uint16_t flags;
+
+	/* Allocate nh and an encap container */
+	nh = rtnl_nh_alloc();
+	ck_assert_ptr_nonnull(nh);
+
+	/* Negative: NULL nh */
+	encap = rtnl_nh_encap_alloc();
+	ck_assert_ptr_nonnull(encap);
+
+	/* This will free encap */
+	ck_assert_int_eq(rtnl_nh_set_encap(NULL, _nl_steal_pointer(&encap)),
+			 -NLE_INVAL);
+
+	/* Allocate a fresh encap after negative test freed the previous one */
+	encap = rtnl_nh_encap_alloc();
+	ck_assert_ptr_nonnull(encap);
+
+	/* Now build a valid IPv6 encap */
+	ck_assert_int_eq(nl_addr_parse("2001:db8:1::1", AF_INET6, &dst6), 0);
+	ck_assert_int_eq(rtnl_nh_encap_ip6(encap, dst6), 0);
+	ck_assert_int_eq(nl_addr_parse("2001:db8:1::2", AF_INET6, &src6), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_src(encap, src6), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_hoplimit(encap, 32), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_tc(encap, 0x2e), 0);
+	flags = TUNNEL_KEY | TUNNEL_CSUM | TUNNEL_SEQ;
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_flags(encap, flags), 0);
+
+	ck_assert_uint_eq(rtnl_nh_get_encap_ip6_id(encap), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_id(encap, 0x1122334455667788ULL),
+			 0);
+	ck_assert_uint_eq(rtnl_nh_get_encap_ip6_id(encap),
+			  0x1122334455667788ULL);
+
+	/* Attach and retrieve */
+	ck_assert_int_eq(rtnl_nh_set_encap(nh, _nl_steal_pointer(&encap)), 0);
+	got = rtnl_nh_get_encap(nh);
+	ck_assert_ptr_nonnull(got);
+	ck_assert_int_eq(rtnl_nh_encap_get_type(got), LWTUNNEL_ENCAP_IP6);
+
+	/* Access IPv6-specific getters */
+	got_dst = rtnl_nh_get_encap_ip6_dst(got);
+	ck_assert_ptr_nonnull(got_dst);
+	ck_assert_int_eq(nl_addr_cmp(got_dst, dst6), 0);
+	got_src = rtnl_nh_get_encap_ip6_src(got);
+	ck_assert_ptr_nonnull(got_src);
+	ck_assert_int_eq(nl_addr_cmp(got_src, src6), 0);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip6_hoplimit(got), 32);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip6_tc(got), 0x2e);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip6_flags(got), flags);
+	ck_assert_uint_eq(rtnl_nh_get_encap_ip6_id(NULL), 0);
+	ck_assert_uint_eq(rtnl_nh_get_encap_ip6_id(got), 0x1122334455667788ULL);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_id(got, 0x8877665544332211ULL),
+			 0);
+	id_val = rtnl_nh_get_encap_ip6_id(got);
+	ck_assert(id_val == 0x8877665544332211ULL);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_id(got, 0), 0);
+	ck_assert_uint_eq(rtnl_nh_get_encap_ip6_id(got), 0);
+
+	/* Clear/zero optional fields and verify getters */
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_hoplimit(got, 0), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_tc(got, 0), 0);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip6_hoplimit(got), 0);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip6_tc(got), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_flags(got, 0), 0);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip6_flags(got), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_src(got, NULL), 0);
+	ck_assert_ptr_eq(rtnl_nh_get_encap_ip6_src(got), NULL);
+
+	/* Clear encap */
+	ck_assert_int_eq(rtnl_nh_set_encap(nh, NULL), 0);
+	ck_assert_ptr_eq(rtnl_nh_get_encap(nh), NULL);
+	/* Type getter negative on NULL */
+	ck_assert_int_eq(rtnl_nh_encap_get_type(NULL), -NLE_INVAL);
+
+	/* Negative tests for IPv6 setters on a non-IPv6 encap (wrong type) */
+	encap_mpls = rtnl_nh_encap_alloc();
+	ck_assert_ptr_nonnull(encap_mpls);
+	ck_assert_int_eq(nl_addr_parse("100", AF_MPLS, &label), 0);
+	ck_assert_int_eq(rtnl_nh_encap_mpls(encap_mpls, label, 64), 0);
+
+	/* Now try IPv6-specific setters/getters on MPLS encap */
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_hoplimit(encap_mpls, 16),
+			 -NLE_INVAL);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_tc(encap_mpls, 1), -NLE_INVAL);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_src(encap_mpls, NULL),
+			 -NLE_INVAL);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_flags(encap_mpls, 1),
+			 -NLE_INVAL);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_id(encap_mpls, 1), -NLE_INVAL);
+	ck_assert_uint_eq(rtnl_nh_get_encap_ip6_id(encap_mpls), 0);
+	/* And verify its type is MPLS */
+	ck_assert_int_eq(rtnl_nh_encap_get_type(encap_mpls),
+			 LWTUNNEL_ENCAP_MPLS);
+	ck_assert_ptr_eq(rtnl_nh_get_encap_ip6_dst(encap_mpls), NULL);
+	ck_assert_ptr_eq(rtnl_nh_get_encap_ip6_src(encap_mpls), NULL);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip6_hoplimit(encap_mpls),
+			 -NLE_INVAL);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip6_tc(encap_mpls), -NLE_INVAL);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip6_flags(encap_mpls), -NLE_INVAL);
+	ck_assert_uint_eq(rtnl_nh_get_encap_ip6_id(encap_mpls), 0);
+}
+END_TEST
+
+/* Kernel round-trip tests for IPv6 encap on rtnl_nh */
+
+START_TEST(test_kernel_roundtrip_encap_ip6)
+{
+	const char *IFNAME_DUMMY = "nh-dummy-encap6";
+	_nltst_auto_delete_link const char *auto_del_dummy = NULL;
+	_nl_auto_nl_socket struct nl_sock *sk = NULL;
+	_nl_auto_nl_cache struct nl_cache *cache = NULL;
+	_nl_auto_rtnl_nh struct rtnl_nh *nh = NULL;
+	struct rtnl_nh *knh;
+	struct rtnl_nh_encap *kencap;
+	struct nl_addr *kdst = NULL;
+	struct nl_addr *ksrc = NULL;
+	_nl_auto_nl_addr struct nl_addr *gw6 = NULL;
+	_nl_auto_nl_addr struct nl_addr *dst6 = NULL;
+	_nl_auto_nl_addr struct nl_addr *src6 = NULL;
+	_nl_auto_rtnl_nh_encap struct rtnl_nh_encap *encap = NULL;
+	uint16_t flags;
+	int ifindex_dummy;
+
+	if (_nltst_skip_no_netns())
+		return;
+
+	sk = _nltst_socket(NETLINK_ROUTE);
+
+	/* Create underlay, bring it up and assign an IPv6 address */
+	auto_del_dummy = IFNAME_DUMMY;
+	_nltst_add_dummy_v6_with_addr(sk, IFNAME_DUMMY, &ifindex_dummy,
+				      "2001:db8::2", 64);
+
+	/* Build nexthop: IPv6 encap with dst/src/hoplimit/tc/flags and IPv6 gw */
+	nh = rtnl_nh_alloc();
+	ck_assert_ptr_nonnull(nh);
+	ck_assert_int_eq(rtnl_nh_set_id(nh, 3201), 0);
+
+	ck_assert_int_eq(nl_addr_parse("2001:db8::1", AF_INET6, &gw6), 0);
+	ck_assert_int_eq(rtnl_nh_set_gateway(nh, gw6), 0);
+
+	encap = rtnl_nh_encap_alloc();
+	ck_assert_ptr_nonnull(encap);
+	ck_assert_int_eq(nl_addr_parse("2001:db8:1::1", AF_INET6, &dst6), 0);
+	ck_assert_int_eq(rtnl_nh_encap_ip6(encap, dst6), 0);
+	ck_assert_int_eq(nl_addr_parse("2001:db8:1::2", AF_INET6, &src6), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_src(encap, src6), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_hoplimit(encap, 32), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_tc(encap, 0x2e), 0);
+	flags = TUNNEL_KEY | TUNNEL_CSUM | TUNNEL_SEQ;
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_flags(encap, flags), 0);
+	ck_assert_int_eq(rtnl_nh_set_encap_ip6_id(encap, 0x1122334455667788ULL),
+			 0);
+	ck_assert_int_eq(rtnl_nh_set_encap(nh, _nl_steal_pointer(&encap)), 0);
+
+	/* Set required attributes and add */
+	ck_assert_int_eq(rtnl_nh_set_oif(nh, (uint32_t)ifindex_dummy), 0);
+	ck_assert_int_eq(rtnl_nh_set_family(nh, AF_INET6), 0);
+	ck_assert_int_eq(rtnl_nh_add(sk, nh, NLM_F_CREATE), 0);
+
+	/* Query and verify */
+	ck_assert_int_eq(rtnl_nh_alloc_cache(sk, AF_UNSPEC, &cache), 0);
+	knh = rtnl_nh_get(cache, 3201);
+	ck_assert_ptr_nonnull(knh);
+	ck_assert_int_eq(rtnl_nh_get_id(knh), 3201);
+	ck_assert_int_eq(rtnl_nh_get_oif(knh), ifindex_dummy);
+
+	kencap = rtnl_nh_get_encap(knh);
+	ck_assert_ptr_nonnull(kencap);
+	ck_assert_int_eq(rtnl_nh_encap_get_type(kencap), LWTUNNEL_ENCAP_IP6);
+	kdst = rtnl_nh_get_encap_ip6_dst(kencap);
+	ck_assert_ptr_nonnull(kdst);
+	ck_assert_int_eq(nl_addr_cmp(kdst, dst6), 0);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip6_hoplimit(kencap), 32);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip6_tc(kencap), 0x2e);
+	ksrc = rtnl_nh_get_encap_ip6_src(kencap);
+	ck_assert_ptr_nonnull(ksrc);
+	ck_assert_int_eq(nl_addr_cmp(ksrc, src6), 0);
+	ck_assert_int_eq(rtnl_nh_get_encap_ip6_flags(kencap), flags);
+	ck_assert_uint_eq(rtnl_nh_get_encap_ip6_id(kencap),
+			  0x1122334455667788ULL);
+}
+END_TEST
+
 Suite *make_nl_route_nh_suite(void)
 {
 	Suite *suite = suite_create("route-nh");
@@ -642,6 +842,8 @@ Suite *make_nl_route_nh_suite(void)
 	tcase_add_test(tc_api, test_api_set_get_all);
 	/* Userspace encap tests */
 	tcase_add_test(tc_api, test_api_encap_mpls_set_get);
+	/* Userspace IPv6 encap tests */
+	tcase_add_test(tc_api, test_api_encap_ip6);
 	suite_add_tcase(suite, tc_api);
 
 	/* Kernel round-trip – needs private netns */
@@ -656,6 +858,8 @@ Suite *make_nl_route_nh_suite(void)
 	tcase_add_test(tc_kernel, test_kernel_roundtrip_group_resilient);
 	/* Encap (MPLS) on rtnl_nh */
 	tcase_add_test(tc_kernel, test_kernel_roundtrip_encap_mpls);
+	/* Encap (IPv6) on rtnl_nh */
+	tcase_add_test(tc_kernel, test_kernel_roundtrip_encap_ip6);
 	/* Negative tests: kernel should reject invalid nexthops */
 	tcase_add_test(tc_kernel, test_kernel_negative_mismatched_gw_family);
 	tcase_add_test(tc_kernel, test_kernel_negative_group_without_entries);

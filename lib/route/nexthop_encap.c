@@ -14,7 +14,7 @@ static struct lwtunnel_encap_type {
 	[LWTUNNEL_ENCAP_NONE] = { .name = "none" },
 	[LWTUNNEL_ENCAP_MPLS] = { .name = "mpls", .ops = &mpls_encap_ops },
 	[LWTUNNEL_ENCAP_IP] = { .name = "ip" },
-	[LWTUNNEL_ENCAP_IP6] = { .name = "ip6" },
+	[LWTUNNEL_ENCAP_IP6] = { .name = "ip6", .ops = &ip6_encap_ops },
 	[LWTUNNEL_ENCAP_ILA] = { .name = "ila" },
 	[LWTUNNEL_ENCAP_BPF] = { .name = "bpf" },
 };

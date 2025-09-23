@@ -542,8 +542,18 @@ void _nltst_delete_link(struct nl_sock *sk, const char *ifname);
 void _nltst_get_link(struct nl_sock *sk, const char *ifname, int *out_ifindex,
 		     struct rtnl_link **out_link);
 
-void _nltst_link_up(struct nl_sock *sk, const char *ifname);
+void _nltst_add_dummy_and_up(struct nl_sock *sk, const char *ifname,
+			     int *out_ifindex);
+void _nltst_add_dummy_v4_with_addr(struct nl_sock *sk, const char *ifname,
+				   int *out_ifindex, const char *ip,
+				   int prefixlen);
+void _nltst_add_dummy_v6_with_addr(struct nl_sock *sk, const char *ifname,
+				   int *out_ifindex, const char *ip,
+				   int prefixlen);
+
 void _nltst_addr4_add(struct nl_sock *sk, int ifindex, const char *ip,
+		      int prefixlen);
+void _nltst_addr6_add(struct nl_sock *sk, int ifindex, const char *ip,
 		      int prefixlen);
 
 void _nltst_assert_route_list(struct nl_object *const *objs, ssize_t len,

@@ -43,13 +43,10 @@ START_TEST(test_kernel_roundtrip_basic_v4)
 
 	sk = _nltst_socket(NETLINK_ROUTE);
 
-	/* Create dummy underlay */
+	/* Create dummy underlay, bring up and add an IPv4 address */
 	auto_del_dummy = IFNAME_DUMMY;
-	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
-
-	/* Bring up and add an IPv4 address via libnl */
-	_nltst_link_up(sk, IFNAME_DUMMY);
-	_nltst_addr4_add(sk, ifindex_dummy, "192.0.2.2", 24);
+	_nltst_add_dummy_v4_with_addr(sk, IFNAME_DUMMY, &ifindex_dummy,
+				      "192.0.2.2", 24);
 
 	/* Build nexthop: v4 gateway over dummy OIF with explicit id */
 	nh = rtnl_nh_alloc();
@@ -98,11 +95,10 @@ START_TEST(test_kernel_roundtrip_encap_mpls)
 
 	sk = _nltst_socket(NETLINK_ROUTE);
 
-	/* Create underlay */
+	/* Create underlay with IPv4 address */
 	auto_del_dummy = IFNAME_DUMMY;
-	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
-	_nltst_link_up(sk, IFNAME_DUMMY);
-	_nltst_addr4_add(sk, ifindex_dummy, "192.0.2.2", 24);
+	_nltst_add_dummy_v4_with_addr(sk, IFNAME_DUMMY, &ifindex_dummy,
+				      "192.0.2.2", 24);
 
 	/* Build nexthop: v4 gw over dummy with MPLS encap */
 	nh = rtnl_nh_alloc();
@@ -161,8 +157,7 @@ START_TEST(test_kernel_negative_mismatched_gw_family)
 	sk = _nltst_socket(NETLINK_ROUTE);
 
 	auto_del_dummy = IFNAME_DUMMY;
-	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
-	_nltst_link_up(sk, IFNAME_DUMMY);
+	_nltst_add_dummy_and_up(sk, IFNAME_DUMMY, &ifindex_dummy);
 
 	/* Build nexthop with AF_INET6 but an IPv4 gateway -> invalid */
 	nh = rtnl_nh_alloc();
@@ -214,8 +209,7 @@ START_TEST(test_kernel_negative_gateway_without_oif)
 
 	/* Create a dummy device to avoid dependency on system state */
 	auto_del_dummy = IFNAME_DUMMY;
-	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
-	_nltst_link_up(sk, IFNAME_DUMMY);
+	_nltst_add_dummy_and_up(sk, IFNAME_DUMMY, &ifindex_dummy);
 
 	/* Build nexthop with IPv4 gateway but no OIF -> invalid */
 	nh = rtnl_nh_alloc();
@@ -246,10 +240,7 @@ START_TEST(test_kernel_roundtrip_oif_only)
 	sk = _nltst_socket(NETLINK_ROUTE);
 
 	auto_del_dummy = IFNAME_DUMMY;
-	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
-
-	/* Bring interface up via libnl */
-	_nltst_link_up(sk, IFNAME_DUMMY);
+	_nltst_add_dummy_and_up(sk, IFNAME_DUMMY, &ifindex_dummy);
 
 	/* Build nexthop: OIF only, unspecified family */
 	nh = rtnl_nh_alloc();
@@ -296,10 +287,7 @@ START_TEST(test_kernel_roundtrip_group_mpath)
 	sk = _nltst_socket(NETLINK_ROUTE);
 
 	auto_del_dummy = IFNAME_DUMMY;
-	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
-
-	/* Bring interface up via libnl */
-	_nltst_link_up(sk, IFNAME_DUMMY);
+	_nltst_add_dummy_and_up(sk, IFNAME_DUMMY, &ifindex_dummy);
 
 	/* Two basic nexthops to reference in the group */
 	nh1 = rtnl_nh_alloc();
@@ -372,9 +360,7 @@ START_TEST(test_kernel_roundtrip_group_resilient)
 	sk = _nltst_socket(NETLINK_ROUTE);
 
 	auto_del_dummy = IFNAME_DUMMY;
-	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
-	/* Bring interface up via libnl */
-	_nltst_link_up(sk, IFNAME_DUMMY);
+	_nltst_add_dummy_and_up(sk, IFNAME_DUMMY, &ifindex_dummy);
 
 	/* Two basic nexthops to reference in the group */
 	nh1 = rtnl_nh_alloc();

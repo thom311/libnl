@@ -153,7 +153,7 @@ static int ila_encap_parse_msg(struct nlattr *nla,
 	return 0;
 }
 
-struct nh_encap_ops ila_encap_ops = {
+const struct nh_encap_ops ila_encap_ops = {
 	.encap_type = LWTUNNEL_ENCAP_ILA,
 	.build_msg = ila_encap_build_msg,
 	.parse_msg = ila_encap_parse_msg,

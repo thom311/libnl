@@ -120,7 +120,7 @@ static int mpls_encap_compare(void *_a, void *_b)
 	return diff;
 }
 
-struct nh_encap_ops mpls_encap_ops = {
+const struct nh_encap_ops mpls_encap_ops = {
 	.encap_type = LWTUNNEL_ENCAP_MPLS,
 	.build_msg = mpls_encap_build_msg,
 	.parse_msg = mpls_encap_parse_msg,

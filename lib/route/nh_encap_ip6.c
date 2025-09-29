@@ -214,7 +214,7 @@ static int ip6_encap_compare(void *_a, void *_b)
 	return diff;
 }
 
-struct nh_encap_ops ip6_encap_ops = {
+const struct nh_encap_ops ip6_encap_ops = {
 	.encap_type = LWTUNNEL_ENCAP_IP6,
 	.build_msg = ip6_encap_build_msg,
 	.parse_msg = ip6_encap_parse_msg,

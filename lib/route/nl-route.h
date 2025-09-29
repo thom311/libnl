@@ -77,7 +77,7 @@ struct rtnl_link {
 };
 
 struct rtnl_nh_encap {
-	struct nh_encap_ops *ops;
+	const struct nh_encap_ops *ops;
 	void *priv; /* private data for encap type */
 };
 

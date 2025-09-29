@@ -7,9 +7,9 @@
 #include "nl-route.h"
 #include "nexthop-encap.h"
 
-static struct lwtunnel_encap_type {
+static const struct lwtunnel_encap_type {
 	const char *name;
-	struct nh_encap_ops *ops;
+	const struct nh_encap_ops *ops;
 } lwtunnel_encap_types[__LWTUNNEL_ENCAP_MAX] = {
 	[LWTUNNEL_ENCAP_NONE] = { .name = "none" },
 	[LWTUNNEL_ENCAP_MPLS] = { .name = "mpls", .ops = &mpls_encap_ops },

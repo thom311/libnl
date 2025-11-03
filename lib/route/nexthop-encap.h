@@ -27,8 +27,26 @@ void nh_encap_dump(struct rtnl_nh_encap *rtnh_encap, struct nl_dump_params *dp);
 
 int nh_encap_compare(struct rtnl_nh_encap *a, struct rtnl_nh_encap *b);
 
+void *nh_encap_check_and_get_priv(struct rtnl_nh_encap *nh_encap,
+				  uint16_t encap_type);
+
 /*
  * MPLS encap
  */
 extern struct nh_encap_ops mpls_encap_ops;
+
+/*
+ * IPv6 encap
+ */
+extern struct nh_encap_ops ip6_encap_ops;
+
+/*
+ * IPv4 encap
+ */
+extern struct nh_encap_ops ip_encap_ops;
+
+/*
+ * ILA encap
+ */
+extern struct nh_encap_ops ila_encap_ops;
 #endif

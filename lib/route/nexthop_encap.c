@@ -13,9 +13,9 @@ static struct lwtunnel_encap_type {
 } lwtunnel_encap_types[__LWTUNNEL_ENCAP_MAX] = {
 	[LWTUNNEL_ENCAP_NONE] = { .name = "none" },
 	[LWTUNNEL_ENCAP_MPLS] = { .name = "mpls", .ops = &mpls_encap_ops },
-	[LWTUNNEL_ENCAP_IP] = { .name = "ip" },
-	[LWTUNNEL_ENCAP_IP6] = { .name = "ip6" },
-	[LWTUNNEL_ENCAP_ILA] = { .name = "ila" },
+	[LWTUNNEL_ENCAP_IP] = { .name = "ip", .ops = &ip_encap_ops },
+	[LWTUNNEL_ENCAP_IP6] = { .name = "ip6", .ops = &ip6_encap_ops },
+	[LWTUNNEL_ENCAP_ILA] = { .name = "ila", .ops = &ila_encap_ops },
 	[LWTUNNEL_ENCAP_BPF] = { .name = "bpf" },
 };
 
@@ -120,4 +120,15 @@ int nh_encap_compare(struct rtnl_nh_encap *a, struct rtnl_nh_encap *b)
 		return 0;
 
 	return a->ops->compare(a->priv, b->priv);
+}
+
+void *nh_encap_check_and_get_priv(struct rtnl_nh_encap *nh_encap,
+				  uint16_t encap_type)
+{
+	if (!nh_encap || !nh_encap->ops ||
+	    nh_encap->ops->encap_type != encap_type) {
+		return NULL;
+	}
+
+	return nh_encap->priv;
 }

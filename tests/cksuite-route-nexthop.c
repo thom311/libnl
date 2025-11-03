@@ -231,9 +231,8 @@ START_TEST(test_kernel_route_roundtrip_single_v4)
 	sk = _nltst_socket(NETLINK_ROUTE);
 
 	auto_del_dummy = IFNAME_DUMMY;
-	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
-	_nltst_link_up(sk, IFNAME_DUMMY);
-	_nltst_addr4_add(sk, ifindex_dummy, "192.0.2.2", 24);
+	_nltst_add_dummy_v4_with_addr(sk, IFNAME_DUMMY, &ifindex_dummy,
+				      "192.0.2.2", 24);
 
 	/* Build a simple IPv4 route via gateway on dummy */
 	route = rtnl_route_alloc();
@@ -339,9 +338,8 @@ START_TEST(test_kernel_route_roundtrip_multipath_v4)
 	sk = _nltst_socket(NETLINK_ROUTE);
 
 	auto_del_dummy = IFNAME_DUMMY;
-	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
-	_nltst_link_up(sk, IFNAME_DUMMY);
-	_nltst_addr4_add(sk, ifindex_dummy, "192.0.2.2", 24);
+	_nltst_add_dummy_v4_with_addr(sk, IFNAME_DUMMY, &ifindex_dummy,
+				      "192.0.2.2", 24);
 
 	/* Build IPv4 ECMP route with 2 nexthops differing by gateway */
 	route = rtnl_route_alloc();
@@ -425,9 +423,8 @@ START_TEST(test_kernel_route_roundtrip_nh_mpls_encap_v4)
 	sk = _nltst_socket(NETLINK_ROUTE);
 
 	auto_del_dummy = IFNAME_DUMMY;
-	_nltst_add_link(sk, IFNAME_DUMMY, "dummy", &ifindex_dummy);
-	_nltst_link_up(sk, IFNAME_DUMMY);
-	_nltst_addr4_add(sk, ifindex_dummy, "192.0.2.2", 24);
+	_nltst_add_dummy_v4_with_addr(sk, IFNAME_DUMMY, &ifindex_dummy,
+				      "192.0.2.2", 24);
 
 	/* Build a simple IPv4 route via gateway on dummy with MPLS encap */
 	route = rtnl_route_alloc();

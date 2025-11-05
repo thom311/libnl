@@ -141,6 +141,18 @@ struct rtnl_link_af_ops
 	int		      (*ao_compare)(struct rtnl_link *,
 					    struct rtnl_link *, int, uint32_t, int);
 
+	/**
+	 * Update function
+	 *
+	 * Will be called when af data of the link object given by first argument
+	 * needs to be updated with the af data of the second supplied link object
+	 *
+	 * The function must return 0 for success and error for failure
+	 * to update. In case of failure its assumed that the original
+	 * object is not touched
+	 */
+	int		      (*ao_update)(struct rtnl_link *, struct rtnl_link *);
+
 	/* RTM_NEWLINK override
 	 *
 	 * Called if a change link request is set to the kernel. If this returns

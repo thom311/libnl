@@ -56,7 +56,7 @@ Copy() {
             md5sum "./$F" > "./$F.md5sum"
             sha256sum "./$F" > "./$F.sha256sum"
             if [ "$NO_GPG_SIGN" != 1 ]; then
-                gpg ${GPG_USER--u thaller@redhat.com} --armor --verbose -o "./$F.sig" --detach-sign "./$F"
+                gpg ${GPG_USER--u thom311@gmail.com} --armor --verbose -o "./$F.sig" --detach-sign "./$F"
             fi
         done
     )

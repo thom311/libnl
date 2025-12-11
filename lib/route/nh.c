@@ -643,10 +643,10 @@ static int rtnl_nh_build_msg(struct nl_msg *msg, struct rtnl_nh *nh)
 
 		grp = nla_data(attr);
 		for (unsigned int i = 0; i < nh->nh_group->size; i++) {
-			grp[i].id = nh->nh_group->entries[i].nh_id;
-			grp[i].weight = nh->nh_group->entries[i].weight;
-			grp[i].resvd1 = 0;
-			grp[i].resvd2 = 0;
+			grp[i] = (struct nexthop_grp){
+				.id = nh->nh_group->entries[i].nh_id,
+				.weight = nh->nh_group->entries[i].weight,
+			};
 		}
 
 		/* Optional group type */

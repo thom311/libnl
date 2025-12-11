@@ -16,7 +16,7 @@
 #include <linux/ila.h>
 #include <linux/lwtunnel.h>
 #include <linux/nexthop.h>
-#include <linux-private/linux/if_tunnel.h>
+#include <linux/if_tunnel.h>
 
 #include <netlink/route/nh.h>
 #include <netlink/route/link.h>

@@ -8,7 +8,7 @@ env:
   NLTST_IN_CI: 1
 
 jobs:
-  clang-format:
+  lint:
     runs-on: ubuntu-latest
     container:
       image: fedora:41
@@ -30,6 +30,14 @@ jobs:
         run: |
           clang-format --version
           ./tools/clang-format.sh -n
+
+      - name: Check Linux Header Copy
+        run: |
+          git grep '# *[i]nclude.*linux' \
+            | grep -v "^python/netlink/genl/capi.i:" \
+            | sed 's/.*include <\(linux\/[^>]*\)>.*$/include\/linux-private\/\1/' \
+            | sort -u \
+            | xargs -d '\n' ls -la
 
   ci:
     strategy:

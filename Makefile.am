@@ -278,6 +278,7 @@ noinst_HEADERS = \
 	include/linux-private/linux/if_packet.h \
 	include/linux-private/linux/if_tunnel.h \
 	include/linux-private/linux/if_vlan.h \
+	include/linux-private/linux/ila.h \
 	include/linux-private/linux/in.h \
 	include/linux-private/linux/in6.h \
 	include/linux-private/linux/in_route.h \

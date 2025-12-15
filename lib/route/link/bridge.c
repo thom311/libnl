@@ -973,6 +973,29 @@ static int bridge_compare(struct rtnl_link *_a, struct rtnl_link *_b,
 }
 /** @endcond */
 
+static int bridge_update(struct rtnl_link *old_obj, struct rtnl_link *new_obj)
+{
+	struct bridge_data *dst = bridge_data(old_obj);
+	struct bridge_data *src = bridge_data(new_obj);
+
+	/*
+	 * Update only when we're dealing with a case of bridge
+	 * notification on changes to itself as a bridge port.
+	 * E.g. after `bridge vlan add dev br0 vid 3 self`
+	 * Such notifications don't have full bridge details
+	 * and thus have to be merged with parent rather than replace it.
+	 * Reliable criterion to detect the case we're interested in
+	 * is to look if there is IFLA_MASTER attr equal to ifi_index
+	 * in the same message.
+	 */
+	if (new_obj->l_index != new_obj->l_master)
+		return -NLE_OPNOTSUPP;
+
+	*dst = *src;
+
+	return NLE_SUCCESS;
+}
+
 /**
  * Allocate link object of type bridge
  *
@@ -1851,6 +1874,7 @@ static struct rtnl_link_af_ops bridge_ops = {
 	.ao_parse_protinfo		= &bridge_parse_protinfo,
 	.ao_dump[NL_DUMP_DETAILS]	= &bridge_dump_details,
 	.ao_compare			= &bridge_compare,
+	.ao_update			= &bridge_update,
 	.ao_parse_af_full		= &bridge_parse_af_full,
 	.ao_get_af			= &bridge_get_af,
 	.ao_fill_af			= &bridge_fill_af,

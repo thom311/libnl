@@ -529,6 +529,13 @@ static int route_update(struct nl_object *old_obj, struct nl_object *new_obj)
 		return -NLE_OPNOTSUPP;
 
 	/*
+	 * If the route's nexthop id has changed, the new route replaces the
+	 * old one
+	 */
+	if (rtnl_route_get_nhid(old_route) != rtnl_route_get_nhid(new_route))
+		return -NLE_OPNOTSUPP;
+
+	/*
 	 * Get the only nexthop entry from the new route. For
 	 * IPv6 we always get a route with a 0th NH
 	 * filled or nothing at all

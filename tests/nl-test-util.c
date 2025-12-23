@@ -838,6 +838,17 @@ bool _nltst_skip_no_iproute2(const char *msg)
 
 /*****************************************************************************/
 
+bool _nltst_skip_eopnotsupp(int err)
+{
+	if (err != -NLE_OPNOTSUPP)
+		return false;
+
+	printf("skip test after operation failed with NLE_OPNOTSUPP. This indicates missing kernel support");
+	return true;
+}
+
+/*****************************************************************************/
+
 void _nltst_add_dummy_and_up(struct nl_sock *sk, const char *ifname,
 			     int *out_ifindex)
 {

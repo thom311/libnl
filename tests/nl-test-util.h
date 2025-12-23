@@ -449,6 +449,10 @@ bool _nltst_skip_no_iproute2(const char *msg);
 
 /*****************************************************************************/
 
+bool _nltst_skip_eopnotsupp(int err);
+
+/*****************************************************************************/
+
 typedef struct {
 	int addr_family;
 	int ifindex;

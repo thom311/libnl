@@ -1054,10 +1054,8 @@ START_TEST(test_kernel_roundtrip_encap_ila)
 	ck_assert_int_eq(rtnl_nh_set_oif(nh, (uint32_t)ifindex_dummy), 0);
 	ck_assert_int_eq(rtnl_nh_set_family(nh, AF_INET6), 0);
 	ret = rtnl_nh_add(sk, nh, NLM_F_CREATE);
-	if (ret == -NLE_OPNOTSUPP) {
-		/* ila module is not loaded - skipping */
+	if (_nltst_skip_eopnotsupp(ret))
 		return;
-	}
 	ck_assert_int_eq(ret, 0);
 
 	ck_assert_int_eq(rtnl_nh_alloc_cache(sk, AF_UNSPEC, &cache), 0);

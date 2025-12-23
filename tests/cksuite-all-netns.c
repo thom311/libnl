@@ -273,8 +273,7 @@ START_TEST(test_create_iface)
 	}
 
 	r = rtnl_link_add(sk, link, NLM_F_CREATE);
-	if (r == -NLE_OPNOTSUPP) {
-		/* Hm, no kernel module? Skip the test. */
+	if (_nltst_skip_eopnotsupp(r)) {
 		_nltst_assert_link_not_exists(IFNAME);
 		IFNAME = NULL;
 		return;

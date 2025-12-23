@@ -91,6 +91,7 @@ START_TEST(test_kernel_roundtrip_encap_mpls)
 	_nl_auto_nl_addr struct nl_addr *labels = NULL;
 	struct rtnl_nh_encap *encap = NULL;
 	int ifindex_dummy;
+	int r;
 
 	if (_nltst_skip_no_netns())
 		return;
@@ -127,7 +128,11 @@ START_TEST(test_kernel_roundtrip_encap_mpls)
 	ck_assert_int_eq(rtnl_nh_add(sk, nh, NLM_F_CREATE), -NLE_INVAL);
 
 	ck_assert_int_eq(rtnl_nh_set_family(nh, AF_INET), 0);
-	ck_assert_int_eq(rtnl_nh_add(sk, nh, NLM_F_CREATE), 0);
+
+	r = rtnl_nh_add(sk, nh, NLM_F_CREATE);
+	if (_nltst_skip_eopnotsupp(r))
+		return;
+	ck_assert_int_eq(r, 0);
 
 	/* Query and verify */
 	ck_assert_int_eq(rtnl_nh_alloc_cache(sk, AF_UNSPEC, &cache), 0);
@@ -944,6 +949,7 @@ START_TEST(test_kernel_roundtrip_encap_ip6)
 	_nl_auto_rtnl_nh_encap struct rtnl_nh_encap *encap = NULL;
 	uint16_t flags;
 	int ifindex_dummy;
+	int r;
 
 	if (_nltst_skip_no_netns())
 		return;
@@ -980,7 +986,11 @@ START_TEST(test_kernel_roundtrip_encap_ip6)
 	/* Set required attributes and add */
 	ck_assert_int_eq(rtnl_nh_set_oif(nh, (uint32_t)ifindex_dummy), 0);
 	ck_assert_int_eq(rtnl_nh_set_family(nh, AF_INET6), 0);
-	ck_assert_int_eq(rtnl_nh_add(sk, nh, NLM_F_CREATE), 0);
+
+	r = rtnl_nh_add(sk, nh, NLM_F_CREATE);
+	if (_nltst_skip_eopnotsupp(r))
+		return;
+	ck_assert_int_eq(r, 0);
 
 	/* Query and verify */
 	ck_assert_int_eq(rtnl_nh_alloc_cache(sk, AF_UNSPEC, &cache), 0);
@@ -1097,6 +1107,7 @@ START_TEST(test_kernel_roundtrip_encap_ip)
 	_nl_auto_rtnl_nh_encap struct rtnl_nh_encap *encap = NULL;
 	int ifindex_dummy;
 	uint64_t id = 0;
+	int r;
 
 	if (_nltst_skip_no_netns())
 		return;
@@ -1132,7 +1143,11 @@ START_TEST(test_kernel_roundtrip_encap_ip)
 	/* Set required attributes and add */
 	ck_assert_int_eq(rtnl_nh_set_oif(nh, (uint32_t)ifindex_dummy), 0);
 	ck_assert_int_eq(rtnl_nh_set_family(nh, AF_INET), 0);
-	ck_assert_int_eq(rtnl_nh_add(sk, nh, NLM_F_CREATE), 0);
+
+	r = rtnl_nh_add(sk, nh, NLM_F_CREATE);
+	if (_nltst_skip_eopnotsupp(r))
+		return;
+	ck_assert_int_eq(r, 0);
 
 	/* Query and verify */
 	ck_assert_int_eq(rtnl_nh_alloc_cache(sk, AF_UNSPEC, &cache), 0);

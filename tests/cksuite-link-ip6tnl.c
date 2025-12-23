@@ -97,6 +97,8 @@ START_TEST(test_kernel_roundtrip_all)
 	 * This tests the netlink-message construction.
 	 */
 	r = rtnl_link_add(sk, link, NLM_F_CREATE);
+	if (_nltst_skip_eopnotsupp(r))
+		return;
 	ck_assert_int_eq(r, 0);
 
 	/* Now, query it and check whether all the attributes passed.

@@ -416,6 +416,7 @@ START_TEST(test_kernel_route_roundtrip_nh_mpls_encap_v4)
 	struct rtnl_nh_encap *encap2;
 	struct rtnl_nexthop *nh = NULL;
 	int ifindex_dummy;
+	int r;
 
 	if (_nltst_skip_no_netns())
 		return;
@@ -447,7 +448,10 @@ START_TEST(test_kernel_route_roundtrip_nh_mpls_encap_v4)
 	ck_assert_int_eq(rtnl_route_nh_set_encap(nh, encap2), 0);
 	rtnl_route_add_nexthop(route, nh);
 
-	ck_assert_int_eq(rtnl_route_add(sk, route, NLM_F_CREATE), 0);
+	r = rtnl_route_add(sk, route, NLM_F_CREATE);
+	if (_nltst_skip_eopnotsupp(r))
+		return;
+	ck_assert_int_eq(r, 0);
 
 	/* Retrieve the route back by its prefix and validate MPLS encap on nexthop */
 	ck_assert_int_eq(nltst_route_get_by_dst(sk, dst, &got), 0);

@@ -394,6 +394,39 @@ static uint32_t route_id_attrs_get(struct nl_object *obj)
 	if (route->rt_family == AF_MPLS)
 		rv &= ~ROUTE_ATTR_PRIO;
 
+	if (route->rt_protocol == RTPROT_KERNEL) {
+		/*
+		 * If configuring Ip(v4) addresses for the same prefix on
+		 * different interfaces, the kernel will install a
+		 * prefix route for each interface with the ip address
+		 * as preferred source.
+		 */
+		if (route->rt_family == AF_INET &&
+		    route->rt_scope == RT_SCOPE_LINK)
+			rv |= ROUTE_ATTR_PREF_SRC;
+
+		/*
+		 * For IPv6 addresses, the prefix routes will have
+		 * a single dev nexthop.
+		 */
+		if (route->rt_family == AF_INET6 && route->rt_nr_nh == 1) {
+			struct rtnl_nexthop *first;
+
+			first = nl_list_first_entry(&route->rt_nexthops,
+						    struct rtnl_nexthop,
+						    rtnh_list);
+
+			/*
+			 * Only interface, no other values, so force
+			 * nexthop comparison.
+			 */
+			if (!rtnl_route_nh_get_gateway(first) &&
+			    !rtnl_route_nh_get_via(first) &&
+			    !rtnl_route_nh_get_newdst(first))
+				rv |= ROUTE_ATTR_MULTIPATH;
+		}
+	}
+
 	return rv;
 }
 

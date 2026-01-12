@@ -1126,6 +1126,20 @@ static void link_keygen(struct nl_object *obj, uint32_t *hashkey,
 	return;
 }
 
+static int link_update(struct nl_object *old_obj, struct nl_object *new_obj)
+{
+	struct rtnl_link *src = (struct rtnl_link *) new_obj;
+	struct rtnl_link *dst = (struct rtnl_link *) old_obj;
+
+	if (!dst->l_af_ops)
+		return -NLE_OPNOTSUPP;
+
+	if (dst->l_af_ops->ao_update)
+		return dst->l_af_ops->ao_update(dst, src);
+
+	return -NLE_OPNOTSUPP;
+}
+
 static uint64_t link_compare(struct nl_object *_a, struct nl_object *_b,
 			     uint64_t attrs, int flags)
 {
@@ -3215,6 +3229,7 @@ static struct nl_object_ops link_obj_ops = {
 	},
 	.oo_compare		= link_compare,
 	.oo_keygen		= link_keygen,
+	.oo_update		= link_update,
 	.oo_attrs2str		= link_attrs2str,
 	.oo_id_attrs		= LINK_ATTR_IFINDEX | LINK_ATTR_FAMILY,
 };

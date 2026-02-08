@@ -153,7 +153,8 @@ char *rtnl_tc_handle2str(uint32_t handle, char *buf, size_t len)
  */
 int rtnl_tc_str2handle(const char *str, uint32_t *res)
 {
-	char *colon, *end;
+	const char *colon;
+	char *colon2, *end;
 	uint32_t h;
 	int err;
 
@@ -172,7 +173,8 @@ int rtnl_tc_str2handle(const char *str, uint32_t *res)
 		return 0;
 	}
 
-	h = strtoul(str, &colon, 16);
+	h = strtoul(str, &colon2, 16);
+	colon = colon2;
 
 	/* MAJ is not a number */
 	if (colon == str) {

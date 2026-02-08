@@ -946,7 +946,7 @@ int rtnl_netem_set_delay_distribution(struct rtnl_qdisc *qdisc, const char *dist
 	char name[NAME_MAX];
 	char dist_suffix[] = ".dist";
 	_nl_auto_free int16_t *data = NULL;
-	char *test_suffix;
+	const char *test_suffix;
 
 	/* Check several locations for the dist file */
 	char *test_path[] = {

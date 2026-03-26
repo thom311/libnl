@@ -54,9 +54,17 @@ static void delete_cb(struct nl_object *obj, void *arg)
 	if (interactive && !nl_cli_confirm(obj, &params, default_yes))
 		return;
 
-	if ((err = rtnl_cls_delete(sock, cls, 0)) < 0)
-		nl_cli_fatal(err, "Unable to delete classifier: %s\n",
-				nl_geterror(err));
+	if ((err = rtnl_cls_delete(sock, cls, 0)) < 0) {
+                if (err == -NLE_OBJ_NOTFOUND) {
+                        if (!quiet) {
+                                printf("Already removed (cascaded) ");
+                                nl_object_dump(obj, &params);
+                        }
+                        return;
+                }
+                nl_cli_fatal(err, "Unable to delete classifier: %s\n",
+                        nl_geterror(err));
+	}
 
 	if (!quiet) {
 		printf("Deleted ");

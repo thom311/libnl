@@ -19,7 +19,6 @@ EXTRA_DIST = \
 	route.html \
 	index.txt \
 	index.html \
-	libnl.css \
 	stylesheets \
 	images \
 	api

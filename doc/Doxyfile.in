@@ -913,7 +913,7 @@ HTML_FOOTER            =
 # the style sheet file to the HTML output directory, so don't put your own
 # style sheet in the HTML output directory as well, or it will be erased!
 
-HTML_STYLESHEET        = @srcdir@/libnl.css
+HTML_STYLESHEET        =
 
 # The HTML_EXTRA_FILES tag can be used to specify one or more extra images or
 # other source files which should be copied to the HTML output directory. Note
@@ -923,6 +923,18 @@ HTML_STYLESHEET        = @srcdir@/libnl.css
 # the files will be copied as-is; there are no commands or markers available.
 
 HTML_EXTRA_FILES       =
+
+# The HTML_COLORSTYLE tag can be used to specify if the generated HTML output
+# should be rendered with a dark or light theme. Possible values are: LIGHT
+# always generates light mode output, DARK always generates dark mode output,
+# AUTO_LIGHT automatically sets the mode according to the user preference,
+# uses light mode if no preference is set (the default), AUTO_DARK
+# automatically sets the mode according to the user preference, uses dark
+# mode if no preference is set and TOGGLE allows a user to switch between
+# light and dark mode via a button. The default value is: AUTO_LIGHT.
+# This tag requires that the tag GENERATE_HTML is set to YES.
+
+HTML_COLORSTYLE        = TOGGLE
 
 # The HTML_COLORSTYLE_HUE tag controls the color of the HTML output.
 # Doxygen will adjust the colors in the style sheet and background images

@@ -878,8 +878,15 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 
 	if (tb[XFRMA_ALG_AEAD]) {
 		struct xfrm_algo_aead* aead = nla_data(tb[XFRMA_ALG_AEAD]);
+		int attr_len = nla_len(tb[XFRMA_ALG_AEAD]);
+		int key_bytes;
 
-		len = sizeof (struct xfrmnl_algo_aead) + ((aead->alg_key_len + 7) / 8);
+		if (attr_len < (int)sizeof(struct xfrm_algo_aead))
+			return -NLE_INVAL;
+		key_bytes = (aead->alg_key_len + 7) / 8;
+		if (key_bytes > attr_len - (int)sizeof(struct xfrm_algo_aead))
+			return -NLE_INVAL;
+		len = sizeof (struct xfrmnl_algo_aead) + key_bytes;
 		if ((sa->aead = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
 		memcpy ((void *)sa->aead, (void *)aead, len);
@@ -888,8 +895,15 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 
 	if (tb[XFRMA_ALG_AUTH_TRUNC]) {
 		struct xfrm_algo_auth* auth = nla_data(tb[XFRMA_ALG_AUTH_TRUNC]);
+		int attr_len = nla_len(tb[XFRMA_ALG_AUTH_TRUNC]);
+		int key_bytes;
 
-		len = sizeof (struct xfrmnl_algo_auth) + ((auth->alg_key_len + 7) / 8);
+		if (attr_len < (int)sizeof(struct xfrm_algo_auth))
+			return -NLE_INVAL;
+		key_bytes = (auth->alg_key_len + 7) / 8;
+		if (key_bytes > attr_len - (int)sizeof(struct xfrm_algo_auth))
+			return -NLE_INVAL;
+		len = sizeof (struct xfrmnl_algo_auth) + key_bytes;
 		if ((sa->auth = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
 		memcpy ((void *)sa->auth, (void *)auth, len);
@@ -898,20 +912,35 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 
 	if (tb[XFRMA_ALG_AUTH] && !sa->auth) {
 		struct xfrm_algo* auth = nla_data(tb[XFRMA_ALG_AUTH]);
+		int attr_len = nla_len(tb[XFRMA_ALG_AUTH]);
+		int key_bytes;
 
-		len = sizeof (struct xfrmnl_algo_auth) + ((auth->alg_key_len + 7) / 8);
+		if (attr_len < (int)sizeof(struct xfrm_algo))
+			return -NLE_INVAL;
+		key_bytes = (auth->alg_key_len + 7) / 8;
+		if (key_bytes > attr_len - (int)sizeof(struct xfrm_algo))
+			return -NLE_INVAL;
+		len = sizeof (struct xfrmnl_algo_auth) + key_bytes;
 		if ((sa->auth = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
-		strcpy(sa->auth->alg_name, auth->alg_name);
-		memcpy(sa->auth->alg_key, auth->alg_key, (auth->alg_key_len + 7) / 8);
+		/* alg_name is a fixed 64-byte field; dest is calloc'd (zero-terminated) */
+		memcpy(sa->auth->alg_name, auth->alg_name, sizeof(sa->auth->alg_name) - 1);
+		memcpy(sa->auth->alg_key, auth->alg_key, key_bytes);
 		sa->auth->alg_key_len = auth->alg_key_len;
 		sa->ce_mask     |=  XFRM_SA_ATTR_ALG_AUTH;
 	}
 
 	if (tb[XFRMA_ALG_CRYPT]) {
 		struct xfrm_algo* crypt = nla_data(tb[XFRMA_ALG_CRYPT]);
+		int attr_len = nla_len(tb[XFRMA_ALG_CRYPT]);
+		int key_bytes;
 
-		len = sizeof (struct xfrmnl_algo) + ((crypt->alg_key_len + 7) / 8);
+		if (attr_len < (int)sizeof(struct xfrm_algo))
+			return -NLE_INVAL;
+		key_bytes = (crypt->alg_key_len + 7) / 8;
+		if (key_bytes > attr_len - (int)sizeof(struct xfrm_algo))
+			return -NLE_INVAL;
+		len = sizeof (struct xfrmnl_algo) + key_bytes;
 		if ((sa->crypt = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
 		memcpy ((void *)sa->crypt, (void *)crypt, len);
@@ -920,8 +949,15 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 
 	if (tb[XFRMA_ALG_COMP]) {
 		struct xfrm_algo* comp = nla_data(tb[XFRMA_ALG_COMP]);
+		int attr_len = nla_len(tb[XFRMA_ALG_COMP]);
+		int key_bytes;
 
-		len = sizeof (struct xfrmnl_algo) + ((comp->alg_key_len + 7) / 8);
+		if (attr_len < (int)sizeof(struct xfrm_algo))
+			return -NLE_INVAL;
+		key_bytes = (comp->alg_key_len + 7) / 8;
+		if (key_bytes > attr_len - (int)sizeof(struct xfrm_algo))
+			return -NLE_INVAL;
+		len = sizeof (struct xfrmnl_algo) + key_bytes;
 		if ((sa->comp = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
 		memcpy ((void *)sa->comp, (void *)comp, len);
@@ -965,7 +1001,12 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 
 	if (tb[XFRMA_SEC_CTX]) {
 		struct xfrm_user_sec_ctx* sec_ctx = nla_data(tb[XFRMA_SEC_CTX]);
+		int attr_len = nla_len(tb[XFRMA_SEC_CTX]);
 
+		if (attr_len < (int)sizeof(struct xfrm_user_sec_ctx))
+			return -NLE_INVAL;
+		if (sec_ctx->ctx_len > attr_len - (int)sizeof(struct xfrm_user_sec_ctx))
+			return -NLE_INVAL;
 		len = sizeof (struct xfrmnl_user_sec_ctx) + sec_ctx->ctx_len;
 		if ((sa->sec_ctx = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
@@ -985,8 +1026,18 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 
 	if (tb[XFRMA_REPLAY_ESN_VAL]) {
 		struct xfrm_replay_state_esn* esn = nla_data (tb[XFRMA_REPLAY_ESN_VAL]);
+		int attr_len = nla_len(tb[XFRMA_REPLAY_ESN_VAL]);
+		uint32_t bmp_bytes;
 
-		len =   sizeof (struct xfrmnl_replay_state_esn) + (sizeof (uint32_t) * esn->bmp_len);
+		if (attr_len < (int)sizeof(struct xfrm_replay_state_esn))
+			return -NLE_INVAL;
+		/* Guard against integer overflow in bmp_len * sizeof(uint32_t) */
+		if (esn->bmp_len > (UINT32_MAX / sizeof(uint32_t)))
+			return -NLE_INVAL;
+		bmp_bytes = esn->bmp_len * sizeof(uint32_t);
+		if (bmp_bytes > (uint32_t)(attr_len - (int)sizeof(struct xfrm_replay_state_esn)))
+			return -NLE_INVAL;
+		len =   sizeof (struct xfrmnl_replay_state_esn) + bmp_bytes;
 		if ((sa->replay_state_esn = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
 		memcpy ((void *)sa->replay_state_esn, (void *)esn, len);

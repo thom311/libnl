@@ -14,7 +14,7 @@ extern "C" {
 typedef unsigned short  sa_family_t;
 #endif
 
-#ifndef IFNAMSIZ 
+#ifndef IFNAMSIZ
 /** Maximum length of a interface name */
 #define IFNAMSIZ 16
 #endif
@@ -26,7 +26,7 @@ typedef unsigned short  sa_family_t;
 
 /* patch 2.4.x eth header file */
 #ifndef ETH_P_MPLS_UC
-#define ETH_P_MPLS_UC  0x8847 
+#define ETH_P_MPLS_UC  0x8847
 #endif
 
 #ifndef ETH_P_MPLS_MC
@@ -38,7 +38,7 @@ typedef unsigned short  sa_family_t;
 #endif
 
 #ifndef ETH_P_HDLC
-#define ETH_P_HDLC      0x0019 
+#define ETH_P_HDLC      0x0019
 #endif
 
 #ifndef AF_LLC

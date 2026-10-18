@@ -410,7 +410,7 @@ static struct rtnl_tc_ops vlan_ops = {
 	},
 };
 
-static void _nl_init vlan_init(void)
+void _nl_tc_init_vlan(void)
 {
 	rtnl_tc_register(&vlan_ops);
 }

@@ -897,7 +897,7 @@ static struct rtnl_tc_ops u32_ops = {
 	},
 };
 
-static void _nl_init u32_init(void)
+void _nl_tc_init_u32(void)
 {
 	rtnl_tc_register(&u32_ops);
 }

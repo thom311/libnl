@@ -20,7 +20,7 @@ static struct rtnl_tc_ops blackhole_ops = {
 	.to_type		= RTNL_TC_TYPE_QDISC,
 };
 
-static void _nl_init blackhole_init(void)
+void _nl_tc_init_blackhole(void)
 {
 	rtnl_tc_register(&blackhole_ops);
 }

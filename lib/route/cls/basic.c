@@ -282,7 +282,7 @@ static struct rtnl_tc_ops basic_ops = {
 	},
 };
 
-static void _nl_init basic_init(void)
+void _nl_tc_init_basic(void)
 {
 	rtnl_tc_register(&basic_ops);
 }

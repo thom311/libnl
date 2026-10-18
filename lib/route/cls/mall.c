@@ -294,7 +294,7 @@ static struct rtnl_tc_ops mall_ops = {
 	},
 };
 
-static void _nl_init mall_init(void)
+void _nl_tc_init_mall(void)
 {
 	rtnl_tc_register(&mall_ops);
 }

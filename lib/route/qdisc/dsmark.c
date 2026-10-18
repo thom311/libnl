@@ -406,7 +406,7 @@ static struct rtnl_tc_ops dsmark_class_ops = {
 	.to_msg_fill		= dsmark_class_msg_fill,
 };
 
-static void _nl_init dsmark_init(void)
+void _nl_tc_init_dsmark(void)
 {
 	rtnl_tc_register(&dsmark_qdisc_ops);
 	rtnl_tc_register(&dsmark_class_ops);

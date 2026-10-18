@@ -247,7 +247,7 @@ static struct rtnl_tc_ops sfq_ops = {
 	.to_msg_fill		= sfq_msg_fill,
 };
 
-static void _nl_init sfq_init(void)
+void _nl_tc_init_sfq(void)
 {
 	rtnl_tc_register(&sfq_ops);
 }

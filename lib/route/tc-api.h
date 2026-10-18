@@ -95,6 +95,37 @@ extern void 			rtnl_tc_unregister(struct rtnl_tc_ops *);
 extern void			rtnl_tc_type_register(struct rtnl_tc_type_ops *);
 extern void			rtnl_tc_type_unregister(struct rtnl_tc_type_ops *);
 
+/*
+ * Initializers of the built-in traffic control kinds.  tc.c calls them from
+ * a constructor so that the static linker keeps the kind object files.
+ */
+extern void			_nl_tc_init_gact(void);
+extern void			_nl_tc_init_mirred(void);
+extern void			_nl_tc_init_nat(void);
+extern void			_nl_tc_init_skbedit(void);
+extern void			_nl_tc_init_vlan(void);
+extern void			_nl_tc_init_basic(void);
+extern void			_nl_tc_init_cgroup(void);
+extern void			_nl_tc_init_flower(void);
+extern void			_nl_tc_init_fw(void);
+extern void			_nl_tc_init_mall(void);
+extern void			_nl_tc_init_u32(void);
+extern void			_nl_tc_init_blackhole(void);
+extern void			_nl_tc_init_cbq(void);
+extern void			_nl_tc_init_dsmark(void);
+extern void			_nl_tc_init_fifo(void);
+extern void			_nl_tc_init_fq_codel(void);
+extern void			_nl_tc_init_hfsc(void);
+extern void			_nl_tc_init_htb(void);
+extern void			_nl_tc_init_ingress(void);
+extern void			_nl_tc_init_mqprio(void);
+extern void			_nl_tc_init_netem(void);
+extern void			_nl_tc_init_plug(void);
+extern void			_nl_tc_init_prio(void);
+extern void			_nl_tc_init_red(void);
+extern void			_nl_tc_init_sfq(void);
+extern void			_nl_tc_init_tbf(void);
+
 
 extern int rtnl_tc_build_rate_table(struct rtnl_tc *tc, struct rtnl_ratespec *,
 				    uint32_t *);

@@ -280,7 +280,7 @@ static struct rtnl_tc_ops pfifo_fast_ops = {
 	.to_msg_fill		= prio_msg_fill,
 };
 
-static void _nl_init prio_init(void)
+void _nl_tc_init_prio(void)
 {
 	rtnl_tc_register(&prio_ops);
 	rtnl_tc_register(&pfifo_fast_ops);

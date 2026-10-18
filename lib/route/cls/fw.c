@@ -213,7 +213,7 @@ static struct rtnl_tc_ops fw_ops = {
 	},
 };
 
-static void _nl_init fw_init(void)
+void _nl_tc_init_fw(void)
 {
 	rtnl_tc_register(&fw_ops);
 }

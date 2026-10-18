@@ -186,7 +186,7 @@ static struct rtnl_tc_ops cgroup_ops = {
 	},
 };
 
-static void _nl_init cgroup_init(void)
+void _nl_tc_init_cgroup(void)
 {
 	rtnl_tc_register(&cgroup_ops);
 }

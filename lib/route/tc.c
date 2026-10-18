@@ -988,6 +988,50 @@ uint64_t rtnl_tc_compare(struct nl_object *aobj, struct nl_object *bobj,
 
 /** @} */
 
+/*
+ * The traffic control kinds register themselves from constructors in their
+ * own translation units.  Those translation units define no other externally
+ * visible symbol, so the static linker never extracts them from the archive
+ * and the constructors never run; the first lookup then walks an
+ * uninitialized tc_ops_list.  Reference all initializers here so that the
+ * kind objects are always linked in.
+ */
+static void _nl_init tc_kinds_init(void)
+{
+	static void (*const init_funcs[])(void) = {
+		_nl_tc_init_gact,
+		_nl_tc_init_mirred,
+		_nl_tc_init_nat,
+		_nl_tc_init_skbedit,
+		_nl_tc_init_vlan,
+		_nl_tc_init_basic,
+		_nl_tc_init_cgroup,
+		_nl_tc_init_flower,
+		_nl_tc_init_fw,
+		_nl_tc_init_mall,
+		_nl_tc_init_u32,
+		_nl_tc_init_blackhole,
+		_nl_tc_init_cbq,
+		_nl_tc_init_dsmark,
+		_nl_tc_init_fifo,
+		_nl_tc_init_fq_codel,
+		_nl_tc_init_hfsc,
+		_nl_tc_init_htb,
+		_nl_tc_init_ingress,
+		_nl_tc_init_mqprio,
+		_nl_tc_init_netem,
+		_nl_tc_init_plug,
+		_nl_tc_init_prio,
+		_nl_tc_init_red,
+		_nl_tc_init_sfq,
+		_nl_tc_init_tbf,
+	};
+	size_t i;
+
+	for (i = 0; i < ARRAY_SIZE(init_funcs); i++)
+		init_funcs[i]();
+}
+
 /**
  * @name Modules API
  */

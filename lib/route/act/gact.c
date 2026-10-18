@@ -149,7 +149,7 @@ static struct rtnl_tc_ops gact_ops = {
 	},
 };
 
-static void _nl_init gact_init(void)
+void _nl_tc_init_gact(void)
 {
 	rtnl_tc_register(&gact_ops);
 }

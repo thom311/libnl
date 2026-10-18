@@ -1014,7 +1014,7 @@ static struct rtnl_tc_ops netem_ops = {
 	.to_msg_fill_raw	= netem_msg_fill_raw,
 };
 
-static void _nl_init netem_init(void)
+void _nl_tc_init_netem(void)
 {
 	rtnl_tc_register(&netem_ops);
 }

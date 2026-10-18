@@ -910,7 +910,7 @@ static struct rtnl_tc_ops flower_ops = {
 	},
 };
 
-static void _nl_init flower_init(void)
+void _nl_tc_init_flower(void)
 {
 	rtnl_tc_register(&flower_ops);
 }

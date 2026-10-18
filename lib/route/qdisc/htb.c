@@ -746,7 +746,7 @@ static struct rtnl_tc_ops htb_class_ops = {
 	.to_msg_fill		= htb_class_msg_fill,
 };
 
-static void _nl_init htb_init(void)
+void _nl_tc_init_htb(void)
 {
 	rtnl_tc_register(&htb_qdisc_ops);
 	rtnl_tc_register(&htb_class_ops);

@@ -183,7 +183,7 @@ static struct rtnl_tc_ops red_ops = {
 	.to_msg_fill		= red_msg_fill,
 };
 
-static void _nl_init red_init(void)
+void _nl_tc_init_red(void)
 {
 	rtnl_tc_register(&red_ops);
 }

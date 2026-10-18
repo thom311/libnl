@@ -46,7 +46,7 @@ static struct rtnl_tc_ops ingress_ops = {
 	.to_msg_fill		= dumb_msg_fill,
 };
 
-static void _nl_init ingress_init(void)
+void _nl_tc_init_ingress(void)
 {
 	rtnl_tc_register(&ingress_ops);
 }

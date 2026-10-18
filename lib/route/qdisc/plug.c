@@ -164,7 +164,7 @@ static struct rtnl_tc_ops plug_ops = {
 	.to_msg_fill		= plug_msg_fill,
 };
 
-static void _nl_init plug_init(void)
+void _nl_tc_init_plug(void)
 {
 	rtnl_tc_register(&plug_ops);
 }

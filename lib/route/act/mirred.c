@@ -209,7 +209,7 @@ static struct rtnl_tc_ops mirred_ops = {
 	},
 };
 
-static void _nl_init mirred_init(void)
+void _nl_tc_init_mirred(void)
 {
 	rtnl_tc_register(&mirred_ops);
 }

@@ -274,7 +274,7 @@ static struct rtnl_tc_ops nat_ops = {
 	},
 };
 
-static void _nl_init nat_init(void)
+void _nl_tc_init_nat(void)
 {
 	rtnl_tc_register(&nat_ops);
 }

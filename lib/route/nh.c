@@ -54,6 +54,7 @@ struct rtnl_nh {
 #define NH_ATTR_RES_IDLE_TIMER (1 << 11)
 #define NH_ATTR_RES_UNBALANCED_TIMER (1 << 12)
 #define NH_ATTR_ENCAP (1 << 13)
+#define NH_ATTR_FAMILY (1 << 14)
 /** @endcond */
 
 struct nla_policy rtnl_nh_policy[NHA_MAX + 1] = {
@@ -340,6 +341,7 @@ int rtnl_nh_set_family(struct rtnl_nh *nexthop, uint8_t family)
 		return -NLE_INVAL;
 
 	nexthop->nh_family = family;
+	nexthop->ce_mask |= NH_ATTR_FAMILY;
 
 	return 0;
 }
@@ -821,7 +823,7 @@ static int nexthop_msg_parser(struct nl_cache_ops *ops, struct sockaddr_nl *who,
 	family = ifi->nh_family;
 	nexthop->nh_family = family;
 	nexthop->nh_flags = ifi->nh_flags;
-	nexthop->ce_mask = (NH_ATTR_FLAGS);
+	nexthop->ce_mask = NH_ATTR_FLAGS | NH_ATTR_FAMILY;
 
 	err = nlmsg_parse(n, sizeof(*ifi), tb, NHA_MAX, rtnl_nh_policy);
 	if (err < 0)
@@ -1018,6 +1020,7 @@ static uint64_t nh_compare(struct nl_object *a, struct nl_object *b,
 	struct rtnl_nh *dst = nl_object_priv(b);
 
 #define _DIFF(ATTR, EXPR) ATTR_DIFF(attrs, ATTR, a, b, EXPR)
+	diff |= _DIFF(NH_ATTR_FAMILY, src->nh_family != dst->nh_family);
 	diff |= _DIFF(NH_ATTR_ID, src->nh_id != dst->nh_id);
 	diff |= _DIFF(NH_ATTR_GATEWAY,
 		      nl_addr_cmp(src->nh_gateway, dst->nh_gateway));

@@ -18,12 +18,88 @@
 #include <linux/nexthop.h>
 #include <linux/if_tunnel.h>
 
+#include <netlink/attr.h>
+#include <netlink/msg.h>
 #include <netlink/route/nh.h>
 #include <netlink/route/link.h>
 #include <netlink/route/addr.h>
 #include <netlink/route/nexthop.h>
 
 #include "cksuite-all.h"
+
+/*****************************************************************************/
+
+START_TEST(test_nh_compare_family)
+{
+	_nl_auto_rtnl_nh struct rtnl_nh *a = rtnl_nh_alloc();
+	_nl_auto_rtnl_nh struct rtnl_nh *b = rtnl_nh_alloc();
+	_nl_auto_rtnl_nh struct rtnl_nh *clone = NULL;
+
+	ck_assert_ptr_nonnull(a);
+	ck_assert_ptr_nonnull(b);
+	ck_assert_uint_eq(nl_object_diff64(OBJ_CAST(a), OBJ_CAST(b)), 0);
+
+	ck_assert_int_eq(rtnl_nh_set_family(a, AF_INET), 0);
+	ck_assert(nl_object_diff64(OBJ_CAST(a), OBJ_CAST(b)) != 0);
+	/* An unset family in a filter must remain a wildcard. */
+	ck_assert_int_eq(nl_object_match_filter(OBJ_CAST(a), OBJ_CAST(b)), 1);
+	ck_assert_int_eq(nl_object_match_filter(OBJ_CAST(b), OBJ_CAST(a)), 0);
+
+	ck_assert_int_eq(rtnl_nh_set_family(b, AF_INET6), 0);
+	ck_assert(nl_object_diff64(OBJ_CAST(a), OBJ_CAST(b)) != 0);
+	ck_assert_int_eq(nl_object_match_filter(OBJ_CAST(a), OBJ_CAST(b)), 0);
+	ck_assert_int_eq(nl_object_match_filter(OBJ_CAST(b), OBJ_CAST(a)), 0);
+
+	ck_assert_int_eq(rtnl_nh_set_family(b, AF_INET), 0);
+	ck_assert_uint_eq(nl_object_diff64(OBJ_CAST(a), OBJ_CAST(b)), 0);
+	ck_assert_int_eq(nl_object_match_filter(OBJ_CAST(a), OBJ_CAST(b)), 1);
+
+	clone = (struct rtnl_nh *)nl_object_clone(OBJ_CAST(a));
+	ck_assert_ptr_nonnull(clone);
+	ck_assert_uint_eq(nl_object_diff64(OBJ_CAST(a), OBJ_CAST(clone)), 0);
+	ck_assert_int_eq(rtnl_nh_set_family(clone, AF_UNSPEC), 0);
+	ck_assert(nl_object_diff64(OBJ_CAST(a), OBJ_CAST(clone)) != 0);
+	ck_assert_int_eq(nl_object_match_filter(OBJ_CAST(a), OBJ_CAST(clone)),
+			 0);
+}
+END_TEST
+
+START_TEST(test_nh_parse_family)
+{
+	_nl_auto_nl_cache struct nl_cache *cache = NULL;
+	_nl_auto_rtnl_nh struct rtnl_nh *nh = NULL;
+	_nl_auto_rtnl_nh struct rtnl_nh *filter = rtnl_nh_alloc();
+	_nl_auto_nl_msg struct nl_msg *msg = nlmsg_alloc();
+	struct nlmsghdr *nlh;
+	struct nhmsg *hdr;
+	const int families[] = { AF_UNSPEC, AF_INET, AF_INET6 };
+	int family = families[_i];
+
+	ck_assert_ptr_nonnull(msg);
+	ck_assert_ptr_nonnull(filter);
+	ck_assert_int_eq(rtnl_nh_alloc_cache(NULL, AF_UNSPEC, &cache), 0);
+	nlh = nlmsg_put(msg, 0, 0, RTM_NEWNEXTHOP, sizeof(*hdr), 0);
+	ck_assert_ptr_nonnull(nlh);
+	hdr = nlmsg_data(nlh);
+	hdr->nh_family = family;
+	ck_assert_int_eq(nla_put_u32(msg, NHA_ID, 42), 0);
+	nlmsg_set_proto(msg, NETLINK_ROUTE);
+	ck_assert_int_eq(nl_cache_parse_and_add(cache, msg), 0);
+	nh = rtnl_nh_get(cache, 42);
+	ck_assert_ptr_nonnull(nh);
+	ck_assert_int_eq(rtnl_nh_get_family(nh), family);
+
+	ck_assert_int_eq(rtnl_nh_set_family(filter, family), 0);
+	ck_assert_int_eq(nl_object_match_filter(OBJ_CAST(nh), OBJ_CAST(filter)),
+			 1);
+	ck_assert_int_eq(rtnl_nh_set_family(filter, family == AF_INET ?
+							    AF_INET6 :
+							    AF_INET),
+			 0);
+	ck_assert_int_eq(nl_object_match_filter(OBJ_CAST(nh), OBJ_CAST(filter)),
+			 0);
+}
+END_TEST
 
 /*****************************************************************************/
 /* Kernel round-trip tests exercising rtnl_nh_add() and message parsing */
@@ -1178,6 +1254,9 @@ Suite *make_nl_route_nh_suite(void)
 	Suite *suite = suite_create("route-nh");
 	TCase *tc_api = tcase_create("Userspace-API");
 	TCase *tc_kernel = tcase_create("Kernel");
+
+	tcase_add_test(tc_api, test_nh_compare_family);
+	tcase_add_loop_test(tc_api, test_nh_parse_family, 0, 3);
 
 	/* Comprehensive API setter/getter test (userspace only) */
 	tcase_add_test(tc_api, test_api_set_get_all);

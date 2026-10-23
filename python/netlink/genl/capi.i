@@ -99,7 +99,7 @@ PyObject *py_genlmsg_parse(struct nlmsghdr *nlh, int uhl, int max,
 		attrs = PyDict_New();
 		for (i = 0; i <= max; i++)
 			if (tb_msg[i]) {
-				k = PyInt_FromLong((long)i);
+				k = PyLong_FromLong((long)i);
 				v = SWIG_NewPointerObj(SWIG_as_voidptr(tb_msg[i]), SWIGTYPE_p_nlattr, 0 |  0 );
 				PyDict_SetItem(attrs, k, v);
 			}

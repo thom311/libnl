@@ -625,8 +625,8 @@ static int nl_recv_msg_handler(struct nl_msg *msg, void *arg)
 	}
 	resobj = PyObject_CallObject(funcobj, cbparobj);
 	Py_DECREF(cbparobj);
-	if (resobj && PyInt_Check(resobj))
-		result = (int)PyInt_AsLong(resobj);
+	if (resobj && PyLong_Check(resobj))
+		result = (int)PyLong_AsLong(resobj);
 	else
 		result = NL_STOP;
 	Py_XDECREF(resobj);
@@ -661,8 +661,8 @@ static int nl_recv_err_handler(struct sockaddr_nl *nla, struct nlmsgerr *err,
 	}
 	resobj = PyObject_CallObject(funcobj, cbparobj);
 	Py_DECREF(cbparobj);
-	if (resobj && PyInt_Check(resobj))
-		result = (int)PyInt_AsLong(resobj);
+	if (resobj && PyLong_Check(resobj))
+		result = (int)PyLong_AsLong(resobj);
 	else
 		result = NL_STOP;
 	Py_XDECREF(resobj);
@@ -817,8 +817,8 @@ extern int		nla_type(const struct nlattr *);
 	$1 = Py_SIZE($input);
 	if (PyByteArray_Check($input)) {
 		$2 = ($2_ltype)PyByteArray_AsString($input);
-	} else if (PyString_Check($input)) {
-		$2 = ($2_ltype)PyString_AsString($input);
+	} else if (PyUnicode_Check($input)) {
+		$2 = ($2_ltype)PyUnicode_AsUTF8($input);
 	} else
 		SWIG_exception(SWIG_TypeError,
 			       "pointer must be bytearray or string.");
@@ -887,7 +887,7 @@ PyObject *py_nla_parse_nested(int max, struct nlattr *nest_attr, PyObject *p)
 		attrs = PyDict_New();
 		for (i = 0; i <= max; i++)
 			if (tb_msg[i]) {
-				k = PyInt_FromLong((long)i);
+				k = PyLong_FromLong((long)i);
 				v = SWIG_NewPointerObj(SWIG_as_voidptr(tb_msg[i]), SWIGTYPE_p_nlattr, 0 |  0 );
 				PyDict_SetItem(attrs, k, v);
 			}

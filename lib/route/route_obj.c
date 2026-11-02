@@ -1094,6 +1094,9 @@ static int parse_multipath(struct rtnl_route *route, struct nlattr *attr)
 	while (tlen >= sizeof(*rtnh) && tlen >= rtnh->rtnh_len) {
 		_nl_auto_rtnl_nexthop struct rtnl_nexthop *nh = NULL;
 
+		if (rtnh->rtnh_len == 0)
+			break;
+
 		nh = rtnl_route_nh_alloc();
 		if (!nh)
 			return -NLE_NOMEM;

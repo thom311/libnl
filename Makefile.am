@@ -1067,6 +1067,7 @@ tests_check_all_SOURCES = \
 	tests/cksuite-all-addr.c \
 	tests/cksuite-all-attr.c \
 	tests/cksuite-all-ematch-tree-clone.c \
+	tests/cksuite-all-ematch-parse.c \
 	tests/cksuite-all-netns.c \
 	tests/cksuite-all.h \
 	tests/cksuite-link-ip6tnl.c \

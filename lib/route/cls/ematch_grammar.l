@@ -47,9 +47,24 @@
 			}
 
 <QUOTE>[^\\\n\"]+	{
+				size_t len = strlen(yytext);
+				size_t new_len;
+				char *data;
+
+				if (yylval->q.index + len > yylval->q.len) {
+					new_len = yylval->q.len;
+					while (new_len < yylval->q.index + len)
+						new_len *= 2;
+					data = realloc(yylval->q.data, new_len);
+					if (!data)
+						return ERROR;
+					yylval->q.data = data;
+					yylval->q.len = new_len;
+				}
+
 				memcpy(yylval->q.data + yylval->q.index, yytext,
-				       strlen(yytext));
-				yylval->q.index += strlen(yytext);
+				       len);
+				yylval->q.index += len;
 			}
 
 <QUOTE>\"		{

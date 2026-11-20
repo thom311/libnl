@@ -8,6 +8,7 @@
 Suite *make_nl_attr_suite(void);
 Suite *make_nl_addr_suite(void);
 Suite *make_nl_ematch_tree_clone_suite(void);
+Suite *make_nl_ematch_parse_suite(void);
 Suite *make_nl_netns_suite(void);
 Suite *make_nl_ip6_tnl_suite(void);
 Suite *make_nl_route_nh_suite(void);

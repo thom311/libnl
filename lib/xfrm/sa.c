@@ -898,12 +898,17 @@ int xfrmnl_sa_parse(struct nlmsghdr *n, struct xfrmnl_sa **result)
 
 	if (tb[XFRMA_ALG_AUTH] && !sa->auth) {
 		struct xfrm_algo* auth = nla_data(tb[XFRMA_ALG_AUTH]);
+		size_t alg_key_len = (auth->alg_key_len + 7) / 8;
 
-		len = sizeof (struct xfrmnl_algo_auth) + ((auth->alg_key_len + 7) / 8);
+		if ((size_t)nla_len(tb[XFRMA_ALG_AUTH]) < sizeof(*auth) + alg_key_len ||
+		    strnlen(auth->alg_name, sizeof(auth->alg_name)) >= sizeof(auth->alg_name))
+			return -NLE_INVAL;
+
+		len = sizeof (struct xfrmnl_algo_auth) + alg_key_len;
 		if ((sa->auth = calloc (1, len)) == NULL)
 			return -NLE_NOMEM;
-		strcpy(sa->auth->alg_name, auth->alg_name);
-		memcpy(sa->auth->alg_key, auth->alg_key, (auth->alg_key_len + 7) / 8);
+		memcpy(sa->auth->alg_name, auth->alg_name, sizeof(sa->auth->alg_name));
+		memcpy(sa->auth->alg_key, auth->alg_key, alg_key_len);
 		sa->auth->alg_key_len = auth->alg_key_len;
 		sa->ce_mask     |=  XFRM_SA_ATTR_ALG_AUTH;
 	}
